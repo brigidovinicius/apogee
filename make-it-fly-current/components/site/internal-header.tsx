@@ -3,7 +3,7 @@ import Link from "next/link";
 import styles from "./internal-shell.module.css";
 
 type InternalHeaderProps = {
-  current: "galeria" | "loja";
+  current: "galeria" | "loja" | "membros";
 };
 
 export function InternalHeader({ current }: InternalHeaderProps) {
@@ -37,6 +37,13 @@ export function InternalHeader({ current }: InternalHeaderProps) {
           aria-current={current === "loja" ? "page" : undefined}
         >
           Loja
+        </Link>
+        <Link
+          className={current === "membros" ? styles.active : undefined}
+          href="/membros"
+          aria-current={current === "membros" ? "page" : undefined}
+        >
+          Membros
         </Link>
       </nav>
 
