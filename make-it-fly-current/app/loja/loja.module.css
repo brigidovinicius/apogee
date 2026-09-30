@@ -1,0 +1,241 @@
+.page {
+  --store-ink: #07182d;
+  --store-paper: #fff;
+  --store-card: #b9d3ee;
+  --store-line: #b9d3ee;
+  min-height: 100svh;
+  overflow: clip;
+  color: var(--store-ink);
+  background: var(--store-paper);
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.page a { color: inherit; text-decoration: none; }
+.page button { color: inherit; font: inherit; }
+.page button, .page a { -webkit-tap-highlight-color: transparent; }
+.page a:focus-visible, .page button:focus-visible { outline: 2px solid #b9d3ee; outline-offset: 5px; }
+.page dialog { color: var(--store-ink); }
+
+.loader { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1.8rem; background: #fff; pointer-events: none; animation: loader-exit 1.35s cubic-bezier(.76,0,.24,1) both; }
+.loaderBrand { font-size: clamp(2.5rem,7vw,6rem); letter-spacing: -.075em; }
+.loaderLabel { display: flex; align-items: center; gap: 1rem; font-size: .7rem; }
+.loaderLabel i { width: 4rem; height: 1px; background: #171919; transform-origin: left; animation: loader-line 850ms cubic-bezier(.65,0,.35,1) both; }
+.storeHeader { position: fixed; inset: 0 0 auto; z-index: 40; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 3.55rem; padding: 0 1.5rem; border-bottom: 1px solid rgb(190 199 206 / 38%); background: rgb(255 255 255 / 72%); backdrop-filter: blur(22px) saturate(135%); -webkit-backdrop-filter: blur(22px) saturate(135%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 90%), 0 1px 0 rgb(255 255 255 / 55%); }
+.brand { display: inline-flex; align-items: start; justify-self: start; font-size: 1.16rem; line-height: 1; font-weight: 600; letter-spacing: -.065em; }
+.brand > span { margin: -.05em 0 0 .25em; font-size: .44em; letter-spacing: 0; }
+.navigation { display: flex; gap: 2.1rem; font-size: .9rem; }
+.headerActions { display: flex; align-items: center; justify-self: end; gap: 1rem; }
+.release { display: inline-flex; align-items: center; gap: .55rem; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.release .cycleText { font-size: .9rem; }
+.releaseCount { display: grid; width: 1.25rem; height: 1.25rem; place-items: center; border: 1px solid; border-radius: 50%; font-size: .8rem; }
+.menuButton { display: none; }
+.cycleText { position: relative; display: inline-block; overflow: hidden; vertical-align: middle; line-height: 1.2; }
+.cycleText > span { display: block; transition: transform 420ms cubic-bezier(.22,1,.36,1); }
+.cycleText > span:last-child { position: absolute; top: 100%; left: 0; white-space: nowrap; }
+.page a:hover .cycleText > span, .page button:hover .cycleText > span { transform: translateY(-100%); }
+.sideLabel { position: fixed; z-index: 35; top: 50%; left: 1.5rem; display: flex; align-items: start; gap: .4rem; font-size: .72rem; line-height: 1; text-transform: uppercase; writing-mode: vertical-rl; transform: translateY(-50%) rotate(180deg); pointer-events: none; mix-blend-mode: multiply; }
+.sideLabel span:last-child { font-size: .68rem; }
+.apogeeBadge { position: fixed; z-index: 35; top: 50%; right: 0; display: flex; align-items: center; flex-direction: column; gap: 1.1rem; width: 3.35rem; padding: 1rem 0 1.2rem; color: #fff; background: #050505; transform: translateY(-50%); pointer-events: none; }
+.apogeeBadge strong { font-size: 1.2rem; }
+.apogeeBadge span { font-size: .65rem; font-weight: 600; writing-mode: vertical-rl; transform: rotate(180deg); }
+
+.showcase { position: relative; scroll-margin-top: 2rem; }
+.commerceOrb { position: absolute; top: 51%; left: 50%; width: min(48vw,34rem); aspect-ratio: 1; transform: translate(-50%,-50%); }
+.apogeeHero { --commerce-paper: #fff; --commerce-panel: #07182d; --commerce-ink: #fff; --commerce-blue: #b9d3ee; }
+.apogeeHero :global([data-commerce-panel]) { background: #07182d; }
+.apogeeHero :global([aria-label="Navegação da loja"]) a,
+.apogeeHero :global([aria-label="Abrir menu"]) { color: #07182d; }
+.apogeeHero :global([data-store-hero]) h1 { max-width: 23ch; font-family: "GFS Didot", Didot, "Bodoni MT", var(--font-instrument-serif), Georgia, serif; font-weight: 400; line-height: .99; letter-spacing: -.045em; }
+.apogeeHero :global([data-store-hero]) h1 > span:first-child { color: #fff; background: none; -webkit-text-fill-color: currentColor; }
+.apogeeHero :global([data-store-hero]) h1 > span:last-child { color: #b9d3ee; font-style: italic; }
+.apogeeHero :global([data-store-hero]) p { color: #e7eef5; }
+.apogeeHero .pill { color: #07182d; border-color: #fff; background: #fff; }
+.apogeeHero .commerceOrb { opacity: .48; }
+.logoNavy, .logoWhite { display: inline-block; flex: none; width: 7.9rem; height: 3.55rem; background: center / contain no-repeat url("/brand/apogee-logo-navy.svg"); }
+.logoWhite { background-image: url("/brand/apogee-logo-white.svg"); }
+.collectionIntro { display: flex; align-items: end; justify-content: space-between; gap: 2rem; max-width: 70rem; margin: 3.5rem auto 0; padding: 0 3rem 2rem; border-bottom: 1px solid var(--store-line); }
+.collectionIntro > div > p { margin: 0 0 .8rem; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; }
+.collectionIntro h2 { margin: 0; font-family: "GFS Didot", Didot, "Bodoni MT", var(--font-instrument-serif), Georgia, serif; font-size: clamp(2.5rem,5vw,4rem); font-weight: 400; line-height: 1; letter-spacing: -.045em; }
+.collectionIntro > p { max-width: 27ch; margin: 0; color: #36536f; font-size: .9rem; line-height: 1.5; }
+.heroSticky { position: sticky; top: 0; height: 100svh; min-height: 35rem; overflow: hidden; }
+.orbCanvas { position: absolute; top: 50%; left: 50%; width: min(67vmin,40rem); aspect-ratio: 1; transform: translate(-50%,-50%); opacity: 0; animation: orb-enter 1.6s .45s ease forwards; }
+.orbTravel { width: 100%; height: 100%; }
+.heroCopy { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 4rem 1.5rem 2rem; text-align: center; pointer-events: none; }
+.heroCopy h1 { width: 100%; margin: 0; font-size: clamp(4rem,8.8vw,10rem); font-weight: 400; line-height: 1.06; letter-spacing: -.055em; }
+.desktopTitle, .desktopTitle > span { display: block; }
+.desktopTitle > span { overflow: hidden; padding-bottom: .035em; }
+.desktopTitle > span > span { display: block; transform: translateY(115%); animation: line-enter 1.25s .65s cubic-bezier(.22,1,.36,1) forwards; }
+.desktopTitle > span:last-child > span { animation-delay: .78s; }
+.mobileTitle { display: none; }
+.pill { display: inline-flex; align-items: center; justify-content: center; width: fit-content; padding: .78rem 1.5rem; border: 1px solid currentColor; border-radius: 50px; background: transparent; font-size: 1rem; line-height: 1.2; cursor: pointer; }
+.heroCopy > a { margin-top: 2rem; opacity: 0; animation: fade-enter 1s 1.02s forwards; pointer-events: auto; }
+.heroCopy > .pill { background: linear-gradient(145deg,rgb(255 255 255 / 65%),rgb(255 255 255 / 12%) 50%,rgb(215 225 231 / 24%)); backdrop-filter: blur(8px) saturate(125%); -webkit-backdrop-filter: blur(8px) saturate(125%); box-shadow: inset 0 1px 0 #fff, inset 0 -1px 1px rgb(152 168 179 / 30%), 0 3px 12px rgb(20 40 55 / 4%); }
+.productStream { position: relative; z-index: 5; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; gap: 1.5rem; width: min(100%, 78rem); margin: 0 auto; padding: 2.5rem 3rem 7rem; }
+.productSlot { min-width: 0; scroll-margin-top: 2rem; }
+.productCard { --card-background: radial-gradient(ellipse at 46% 38%, #5c83aa, #193b5d 49%, #07182d 86%); width: 100%; max-width: none; text-align: left; }
+.productCard :global([data-card-tilt]) { transform: none; }
+.cardBrand { display: inline-block; flex: none; width: 3.4rem; height: 2.1rem; margin-left: .35rem; background: center / contain no-repeat url("/brand/apogee-logo-white.svg"); }
+.cardArtwork { width: 100%; height: 100%; }
+.cardArtwork > svg { width: 100%; height: 100%; }
+.cardFooter { display: flex; align-items: end; justify-content: space-between; gap: .8rem; width: 100%; color: #fff; font-size: .83rem; line-height: 1.35; letter-spacing: -.01em; }
+.cardFooter > span:first-child { max-width: 22ch; }
+.cardFooter small { display: block; margin-top: .6rem; font-size: .61rem; letter-spacing: .03em; text-transform: uppercase; color: rgb(255 255 255 / 72%); }
+.cardFooter small > span { margin-left: .3rem; }
+.cardNumber { font-size: 1.6rem; line-height: 1; letter-spacing: -.06em; font-weight: 400; color: rgb(255 255 255 / 65%); }
+.footer { position: relative; z-index: 10; min-height: 90svh; padding: 3rem 1.5rem 1.5rem; color: #fff; background: #07182d; }
+.footerBrand { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 3rem; border-bottom: 1px solid rgb(185 211 238 / 32%); }
+.footerEyebrow { margin: 0; color: #b9d3ee; font-size: .75rem; letter-spacing: .13em; text-transform: uppercase; }
+.footer h2 { max-width: 13ch; margin: 0; font-family: "GFS Didot", Didot, "Bodoni MT", var(--font-instrument-serif), Georgia, serif; font-size: clamp(5rem,11.25vw,12rem); font-weight: 400; line-height: .93; letter-spacing: -.04em; }
+.footerContent { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: start; gap: 3rem; margin: 5rem 0 7rem; }
+.footerContent .pill { color: #07182d; background: #fff; border-color: #fff; }
+.footerContent > p { max-width: 28ch; margin: 0; font-size: 1rem; line-height: 1.5; }
+.footerContent nav { display: grid; justify-self: center; gap: .75rem; font-size: 1rem; }
+.footerBottom { display: flex; justify-content: space-between; gap: 2rem; font-size: .8rem; }
+
+.productDialog, .releaseDialog, .mobileMenu { position: fixed; inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; overscroll-behavior: contain; }
+.productDialog::backdrop, .releaseDialog::backdrop, .mobileMenu::backdrop { background: rgb(15 20 25 / 38%); backdrop-filter: blur(4px); }
+.productDialog { overflow-y: auto; background: #fff; }
+.productDialog[open] { animation: product-open 650ms cubic-bezier(.22,1,.36,1) both; }
+.productDialog[data-closing="true"] { animation: product-close 400ms cubic-bezier(.55,0,1,.45) both; }
+.productDialogHeader { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; justify-content: space-between; height: 3.55rem; padding: 0 1.5rem; border-bottom: 1px solid #b9d3ee; background: rgb(255 255 255 / 87%); backdrop-filter: blur(12px); }
+.closeButton { display: inline-flex; align-items: center; gap: .8rem; padding: .5rem 0 .5rem .75rem; border: 0; background: transparent; font-size: .85rem; cursor: pointer; }
+.closeButton > span:last-child:not(.cycleText) { font-size: 1.7rem; line-height: .6; font-weight: 300; }
+.productHero { position: relative; min-height: calc(100svh - 3.55rem); overflow: hidden; background: var(--store-card); isolation: isolate; }
+.productBarcode { position: absolute; z-index: 2; top: 1.5rem; left: 1.5rem; width: .85rem; height: 6rem; background: repeating-linear-gradient(0deg,#171919 0 1px,transparent 1px 3px,#171919 3px 5px,transparent 5px 7px); }
+.productCategory { position: absolute; top: 1.5rem; right: 1.5rem; display: flex; align-items: center; gap: .5rem; font-size: .7rem; text-transform: uppercase; writing-mode: vertical-rl; }
+.productCategory span { font-size: 1rem; }
+.productMarquee { position: absolute; top: 30%; width: 100%; overflow: hidden; color: #fff; font-size: clamp(6rem,17vw,20rem); letter-spacing: -.07em; line-height: 1; }
+.productMarquee > div { display: flex; width: max-content; animation: marquee 36s linear infinite; }
+.productMarquee span { display: block; flex: none; }
+.detailObject { position: absolute; z-index: 1; top: 2%; left: 50%; width: min(70vmin,48rem); height: 83%; transform: translateX(-50%); animation: detail-float 8s ease-in-out infinite; }
+.detailObject svg { width: 100%; height: 100%; }
+.detailNumber { position: absolute; bottom: 18%; left: 1.5rem; display: grid; }
+.detailNumber > span { font-size: .72rem; text-transform: uppercase; }
+.detailNumber strong { font-size: clamp(4.5rem,11vw,11rem); line-height: 1; letter-spacing: -.065em; font-weight: 400; }
+.productSticker { position: absolute; right: 1.5rem; bottom: 24%; display: grid; align-content: center; width: 7rem; height: 7rem; border: 1px solid; border-radius: 50%; font-size: 1rem; text-align: center; transform: rotate(9deg); }
+.productExplore { position: absolute; z-index: 2; left: 50%; bottom: 1.5rem; transform: translateX(-50%); color: #fff !important; border-color: #07182d; background: #07182d; white-space: nowrap; }
+.productStory { display: grid; grid-template-columns: 1.1fr 1fr; gap: 8vw; padding: 6rem 5vw 8rem; scroll-margin-top: 4rem; }
+.productStory > div:first-child > p { margin: 0 0 2rem; font-size: .72rem; text-transform: uppercase; }
+.productStory h2 { margin: 0; font-family: "GFS Didot", Didot, "Bodoni MT", var(--font-instrument-serif), Georgia, serif; font-size: clamp(3rem,5.5vw,6rem); font-weight: 400; line-height: .95; letter-spacing: -.04em; }
+.productStory h3 { max-width: 26ch; margin: 2rem 0 0; font-size: 1.4rem; font-weight: 400; line-height: 1.2; }
+.productStory > div:last-child > p { margin: 0 0 2rem; font-size: 1.3rem; line-height: 1.4; letter-spacing: -.02em; }
+.productStory .developmentNote { padding-top: 2rem; border-top: 1px solid #dedede; color: #63666a; font-size: .95rem !important; letter-spacing: 0 !important; }
+.productStory .pill { margin-top: 1rem; }
+.releaseDialog { overflow: visible; background: transparent; }
+.releaseDialog[open] { display: flex; justify-content: end; }
+.releasePanel { display: flex; flex-direction: column; justify-content: space-between; gap: 4rem; width: min(40rem,52vw); height: 100%; overflow-y: auto; padding: 1.5rem 2.5rem 4rem; background: #fff; animation: panel-enter 600ms cubic-bezier(.22,1,.36,1) both; }
+.releaseDialog[data-closing="true"] .releasePanel { animation: panel-exit 400ms cubic-bezier(.55,0,1,.45) both; }
+.releasePanelHeader { display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; }
+.releasePanelHeader sup { font-size: .75rem; margin-left: .4rem; }
+.releasePanelHeader button { font-size: 2rem; }
+.releasePanel > div:last-child > p:first-child { text-transform: uppercase; font-size: .72rem; }
+.releasePanel h2 { margin: 2rem 0; font-family: "GFS Didot", Didot, "Bodoni MT", var(--font-instrument-serif), Georgia, serif; font-size: clamp(3.5rem,5vw,5.5rem); line-height: .95; letter-spacing: -.045em; font-weight: 400; }
+.releasePanel > div:last-child > p { max-width: 35ch; line-height: 1.5; }
+.releasePanel .pill { margin-top: 2rem; }
+.mobileMenu { overflow-y: auto; padding: 0 1.5rem 1.5rem; background: #fff; }
+.mobileMenu[open] { display: flex; flex-direction: column; animation: menu-enter 550ms cubic-bezier(.22,1,.36,1) both; }
+.mobileMenu[data-closing="true"] { animation: menu-exit 400ms cubic-bezier(.55,0,1,.45) both; }
+.menuHeader { display: flex; align-items: center; justify-content: space-between; min-height: 4.5rem; }
+.menuHeader button { font-size: 2rem; }
+.mobileMenu nav { display: grid; margin: 4rem 0 5rem; }
+.mobileMenu nav a { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; font-size: clamp(2.2rem,9.5vw,4rem); line-height: 1.1; letter-spacing: -.055em; }
+.mobileMenu nav a span { font-size: 1.5rem; }
+.menuBottom { margin-top: auto; }
+.menuBottom p { font-size: .8rem; }
+.menuBottom .menuSignature { display: block; width: min(25rem, 80vw); height: min(16rem, 48vw); background: center / contain no-repeat url("/brand/apogee-logo-navy.svg"); }
+
+@keyframes loader-line { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes loader-exit { 0%,55% { clip-path: inset(0); } 100% { clip-path: inset(0 0 100%); visibility: hidden; } }
+@keyframes line-enter { to { transform: translateY(0); } }
+@keyframes fade-enter { to { opacity: 1; } }
+@keyframes orb-enter { from { opacity: 0; scale: .85; } to { opacity: 1; scale: 1; } }
+@keyframes detail-float { 0%,100% { transform: translateX(-50%) translateY(0) rotate(-3deg); } 50% { transform: translateX(-50%) translateY(-12px) rotate(3deg); } }
+@keyframes product-open { from { opacity: 0; clip-path: inset(12% 18% round 12px); transform: translateY(3rem); } to { opacity: 1; clip-path: inset(0 round 0); transform: none; } }
+@keyframes product-close { to { opacity: 0; transform: translateY(3rem); scale: .96; } }
+@keyframes panel-enter { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes panel-exit { to { transform: translateX(100%); } }
+@keyframes menu-enter { from { clip-path: inset(0 0 100%); } to { clip-path: inset(0); } }
+@keyframes menu-exit { to { clip-path: inset(0 0 100%); } }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+@media (max-width:1100px) and (min-width:761px) {
+  .productStream { grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(100%, 52rem); }
+}
+@media (max-width:1000px) and (min-width:761px) {
+  .heroCopy h1 { font-size: 8.5vw; }
+}
+@media (max-width:760px) {
+  .commerceOrb { width: min(116vw,34rem); top: 50%; }
+  .collectionIntro { display: block; margin-top: 2.5rem; padding: 0 1.25rem 1.5rem; }
+  .collectionIntro > p { margin-top: 1rem; max-width: 34ch; }
+  .storeHeader { grid-template-columns: 1fr auto; height: 4.5rem; padding: 0 .75rem; }
+  .brand { font-size: 1.15rem; }
+  .navigation { display: none; }
+  .headerActions { gap: .3rem; }
+  .release { justify-content: center; min-width: 2.75rem; min-height: 2.75rem; }
+  .release .cycleText { font-size: .85rem; }
+  .menuButton { display: grid; align-content: center; justify-content: center; gap: 3px; width: 2.75rem; height: 2.75rem; padding: 0; border: 0; background: transparent; }
+  .menuButton span { width: 1.1rem; height: 1px; background: currentColor; }
+  .sideLabel { display: none; }
+  .heroSticky { position: relative; height: auto; min-height: 0; overflow: visible; }
+  .orbCanvas { position: fixed; width: 116vw; top: 45svh; }
+  .orbTravel { transform: none; }
+  .heroCopy { position: relative; align-items: start; padding: 6rem 1.5rem 2rem; text-align: left; }
+  .heroCopy h1 { font-size: clamp(2.15rem,11.2vw,4.5rem); line-height: 1.06; letter-spacing: -.048em; }
+  .desktopTitle { display: none; }
+  .mobileTitle { display: block; animation: fade-enter 1s .4s both; }
+  .heroCopy > a { display: none; }
+  .productStream { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; width: min(100%, 44rem); padding: 2rem 1.25rem 5rem; }
+  .apogeeBadge { display: none; }
+  .footer { min-height: 0; padding: 3rem 1.5rem 1.5rem; }
+  .footerEyebrow { font-size: .63rem; }
+  .footer h2 { font-size: clamp(3.7rem,14.2vw,6rem); }
+  .footerContent { grid-template-columns: 1fr 1fr; gap: 2.5rem 1rem; margin: 3rem 0 5rem; }
+  .footerContent > p { grid-column: 1 / -1; grid-row: 1; max-width: 29ch; }
+  .footerContent .pill { font-size: .8rem; padding: .7rem 1rem; }
+  .footerContent nav { justify-self: end; font-size: .85rem; }
+  .footerBottom { font-size: .65rem; gap: 1rem; }
+  .productDialogHeader { height: 4.5rem; padding: 0 1rem; }
+  .productDialogHeader .brand { font-size: 1rem; }
+  .productDialogHeader .closeButton { font-size: .72rem; }
+  .productHero { min-height: calc(100svh - 4.5rem); }
+  .productBarcode { height: 4rem; left: 1rem; }
+  .productCategory { right: 1rem; }
+  .productMarquee { top: 30%; font-size: 27vw; }
+  .detailObject { width: 100%; height: 67%; top: 9%; }
+  .detailNumber { left: 1rem; bottom: 17%; }
+  .detailNumber strong { font-size: 4.8rem; }
+  .detailNumber > span { font-size: .58rem; }
+  .productSticker { width: 5.4rem; height: 5.4rem; right: 1rem; bottom: 18%; font-size: .82rem; }
+  .productExplore { bottom: 1.5rem; font-size: .85rem; }
+  .productStory { grid-template-columns: 1fr; gap: 3rem; padding: 4rem 1.5rem; scroll-margin-top: 4.5rem; }
+  .productStory h2 { font-size: 3.5rem; }
+  .productStory > div:last-child > p { font-size: 1.2rem; }
+  .releasePanel { width: 100%; padding: 1.5rem 1.5rem 3rem; }
+  .releasePanel h2 { font-size: 4rem; }
+}
+@media (max-width:600px) {
+  .productStream { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; width: min(100%, 27rem); }
+}
+@media (max-width:380px) {
+  .storeHeader .brand { font-size: 1rem; }
+  .release .cycleText { display: none; }
+  .release { gap: 0; }
+}
+@media (max-height:500px) and (min-width:761px) {
+  .heroCopy h1 { font-size: 6vw; }
+  .productHero { min-height: 35rem; }
+}
+.page[data-page-hidden="true"] *, .page[data-page-hidden="true"] *::before, .page[data-page-hidden="true"] *::after { animation-play-state: paused !important; }
+.page[data-motion="reduced"] *, .page[data-motion="reduced"] *::before, .page[data-motion="reduced"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+.page[data-motion="reduced"] .loader { display: none; }
+.page[data-motion="reduced"] .orbCanvas, .page[data-motion="reduced"] .heroCopy > a, .page[data-motion="reduced"] .mobileTitle { opacity: 1; }
+.page[data-motion="reduced"] .orbTravel, .page[data-motion="reduced"] .desktopTitle > span > span { transform: none; }
+.page[data-motion="reduced"] .detailObject { transform: translateX(-50%); }
+@media (prefers-reduced-motion:reduce) {
+  .page:not([data-motion="full"]) *, .page:not([data-motion="full"]) *::before, .page:not([data-motion="full"]) *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .page:not([data-motion="full"]) .loader { display: none; }
+  .page:not([data-motion="full"]) .orbCanvas, .page:not([data-motion="full"]) .heroCopy > a, .page:not([data-motion="full"]) .mobileTitle { opacity: 1; }
+  .page:not([data-motion="full"]) .orbTravel, .page:not([data-motion="full"]) .desktopTitle > span > span { transform: none; }
+  .page:not([data-motion="full"]) .detailObject { transform: translateX(-50%); }
+}

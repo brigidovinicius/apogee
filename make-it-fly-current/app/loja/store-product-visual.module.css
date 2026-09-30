@@ -1,0 +1,36 @@
+.visual {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  user-select: none;
+  isolation: isolate;
+}
+
+.visual text {
+  font-family: var(--font-inter), sans-serif;
+  text-rendering: geometricPrecision;
+}
+
+.display {
+  font-weight: 650;
+  letter-spacing: -0.065em;
+}
+
+.label {
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.visual .micro {
+  font-family: var(--font-dm-mono), monospace;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+}
+
+.fineLine {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

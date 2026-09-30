@@ -1,0 +1,165 @@
+.page {
+  min-height: 100svh;
+  padding: clamp(2rem, 5vw, 5rem);
+  color: #07182d;
+  background: #eef5fb;
+}
+
+.header {
+  max-width: 68rem;
+  margin: 0 auto 2.5rem;
+}
+
+.header p,
+.header span,
+.access p,
+.status,
+.cardBody span,
+.cardBody time {
+  color: rgb(7 24 45 / 64%);
+}
+
+.header p {
+  margin: 0 0 0.8rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin: 0 0 0.7rem;
+  font-family: var(--font-instrument-serif), serif;
+  font-size: clamp(3.2rem, 8vw, 7rem);
+  font-weight: 400;
+  line-height: 0.9;
+}
+
+.access {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(16rem, 1.2fr) auto;
+  align-items: end;
+  gap: 1rem;
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 1.4rem;
+  border: 1px solid rgb(7 24 45 / 12%);
+  border-radius: 1rem;
+  background: white;
+}
+
+.access h2,
+.access p {
+  margin: 0;
+}
+
+.access p {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.access label {
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.access input {
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0 0.9rem;
+  border: 1px solid rgb(7 24 45 / 20%);
+  border-radius: 0.65rem;
+  background: #f8fbfe;
+}
+
+.access button,
+.cardBody button {
+  min-height: 2.9rem;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  color: white;
+  font-weight: 700;
+  background: #07182d;
+  cursor: pointer;
+}
+
+.access button:disabled,
+.cardBody button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.status {
+  max-width: 68rem;
+  margin: 1.25rem auto 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1.2rem;
+  max-width: 68rem;
+  margin: 1.5rem auto 0;
+}
+
+.card {
+  overflow: hidden;
+  border: 1px solid rgb(7 24 45 / 12%);
+  border-radius: 1rem;
+  background: white;
+}
+
+.card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #dce9f4;
+}
+
+.cardBody {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.cardBody > div {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.cardBody strong,
+.cardBody span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardBody time {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+}
+
+.cardBody button {
+  flex: none;
+  color: #8a1f1f;
+  background: #fde7e7;
+}
+
+@media (max-width: 760px) {
+  .access {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .cardBody {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Isolated test copy only. The existing Vercel site must remain untouched.
+# Netlify auto-detects Next.js and supplies its maintained OpenNext adapter.
+# The API routes require Node.js; do not use output = "export".
+# Configure server-only secrets in the provider dashboard, never in this file.

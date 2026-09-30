@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.claude
+.agents
+.codex
+*.tsbuildinfo
+APOGEE-DELIVERY.md
+DEPLOYMENT-TEST-ROUTE.md

@@ -1,0 +1,290 @@
+.card {
+  overflow: hidden;
+  color: #07182d;
+  border: 1px solid rgb(7 24 45 / 18%);
+  background: #ffffff;
+  box-shadow: 0 2rem 5rem rgb(7 24 45 / 13%);
+}
+
+.cardBody {
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.headerIcon {
+  display: grid;
+  flex: 0 0 auto;
+  width: 3rem;
+  aspect-ratio: 1;
+  place-items: center;
+  color: #07182d;
+  border-radius: 50%;
+  background: #dceafb;
+}
+
+.headerIcon svg {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.cardHeader h3 {
+  margin: 0;
+  font-family: var(--font-instrument-serif), serif;
+  font-size: 1.85rem;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.cardHeader p {
+  margin: 0.45rem 0 0;
+  color: rgb(7 24 45 / 58%);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.dropzone {
+  margin-top: 1.6rem;
+  border: 1px dashed rgb(7 24 45 / 35%);
+  transition: border-color 200ms ease, background-color 200ms ease, transform 200ms ease;
+}
+
+.dropzone:hover,
+.dropzone:focus-within,
+.dropzoneActive {
+  border-color: #315c88;
+  outline: 0;
+  background: rgb(185 211 238 / 22%);
+}
+
+.dropzoneActive {
+  transform: scale(0.99);
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+}
+
+.dropzoneButton {
+  display: flex;
+  width: 100%;
+  min-height: 17rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: inherit;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+}
+
+.dropzoneButton:focus-visible {
+  outline: 2px solid #315c88;
+  outline-offset: -5px;
+}
+
+.dropIcon {
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: 1.15rem;
+  color: #315c88;
+}
+
+.dropzone strong {
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.formatHint {
+  margin: 0.45rem 0 0;
+  color: rgb(7 24 45 / 56%);
+  font-size: 0.7rem;
+}
+
+.browseButton {
+  margin-top: 1.3rem;
+  padding: 0.68rem 0.9rem;
+  border: 1px solid rgb(7 24 45 / 28%);
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 0.57rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.fileArea {
+  border-top: 1px solid rgb(7 24 45 / 14%);
+}
+
+.fileCount {
+  margin: 0;
+  padding: 1rem clamp(1.25rem, 3vw, 2rem) 0;
+  color: rgb(7 24 45 / 52%);
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.fileArea ul {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0.6rem clamp(1.25rem, 3vw, 2rem) 1.4rem;
+  list-style: none;
+}
+
+.fileArea li {
+  display: grid;
+  grid-template-columns: 2.7rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid rgb(7 24 45 / 10%);
+}
+
+.fileArea li:last-child {
+  border-bottom: 0;
+}
+
+.fileType {
+  display: grid;
+  width: 2.7rem;
+  aspect-ratio: 1;
+  place-items: center;
+  color: #315c88;
+  background: #dceafb;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.fileInfo {
+  min-width: 0;
+}
+
+.fileInfo > strong {
+  display: block;
+  overflow: hidden;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+  color: rgb(7 24 45 / 52%);
+  font-size: 0.64rem;
+}
+
+.statusPreparing { color: #315c88; }
+.statusReady { color: #266749; }
+.statusError { color: #9d2f3d; }
+
+.progressTrack {
+  display: block;
+  height: 0.22rem;
+  margin-top: 0.6rem;
+  overflow: hidden;
+  background: rgb(7 24 45 / 10%);
+}
+
+.progressValue {
+  display: block;
+  width: var(--progress);
+  height: 100%;
+  background: #315c88;
+  transition: width 180ms ease;
+}
+
+.fileActions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.fileActions > svg {
+  width: 1.1rem;
+  color: #266749;
+}
+
+.fileActions > svg[aria-label="Arquivo com erro"] {
+  color: #9d2f3d;
+}
+
+.fileActions button {
+  display: grid;
+  width: 2.2rem;
+  aspect-ratio: 1;
+  place-items: center;
+  color: rgb(7 24 45 / 60%);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.fileActions button:hover,
+.fileActions button:focus-visible {
+  color: #07182d;
+  outline: 0;
+  background: #dceafb;
+}
+
+.fileActions button svg {
+  width: 1rem;
+}
+
+@media (max-width: 500px) {
+  .cardBody,
+  .fileArea ul {
+    padding-inline: 1rem;
+  }
+
+  .fileCount {
+    padding-inline: 1rem;
+  }
+
+  .dropzone {
+    min-height: 15rem;
+  }
+
+  .dropzoneButton {
+    min-height: 15rem;
+    padding-inline: 1rem;
+  }
+
+  .fileArea li {
+    grid-template-columns: 2.45rem minmax(0, 1fr) auto;
+    gap: 0.65rem;
+  }
+
+  .fileType {
+    width: 2.45rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropzone,
+  .progressValue {
+    transition: none;
+  }
+}

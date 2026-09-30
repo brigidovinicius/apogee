@@ -1,0 +1,165 @@
+.support {
+  position: relative;
+  z-index: 3;
+  min-height: 210dvh;
+  overflow: clip;
+  color: var(--paper);
+  background:
+    radial-gradient(circle at 28% 52%, rgb(45 91 162 / 38%), transparent 27%),
+    radial-gradient(circle at 72% 44%, rgb(198 211 226 / 9%), transparent 34%),
+    #04142d;
+}
+
+.stickyScene {
+  position: sticky;
+  top: 0;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+.glow {
+  position: absolute;
+  top: 12%;
+  left: 50%;
+  width: min(58rem, 76vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(62 118 205 / 30%), transparent 67%);
+  filter: blur(18px);
+  transform-origin: center;
+  translate: -50% 0;
+}
+
+.message {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: start center;
+  padding: clamp(7rem, 16vh, 11rem) clamp(1.25rem, 4vw, 4rem) 2rem;
+  transform-origin: center;
+}
+
+.statement {
+  width: 100%;
+  margin: 0;
+  text-align: center;
+}
+
+.statement > span {
+  display: block;
+}
+
+.prelude {
+  margin-bottom: clamp(1.2rem, 2.8vh, 2.2rem);
+  color: rgb(255 255 255 / 58%);
+  font-family: var(--font-dm-mono), monospace;
+  font-size: clamp(0.68rem, 1vw, 0.9rem);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: none;
+}
+
+.firstLine,
+.secondLine {
+  font-family: var(--font-instrument-serif), serif;
+  font-size: clamp(5.8rem, 13vw, 13.8rem);
+  font-weight: 400;
+  line-height: 0.68;
+  letter-spacing: -0.065em;
+  text-wrap: nowrap;
+}
+
+.firstLine {
+  font-style: italic;
+}
+
+.secondLine {
+  margin-top: 0.16em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(255 255 255 / 78%);
+}
+
+.artwork {
+  position: absolute;
+  top: 35%;
+  left: calc(50% - clamp(2.6rem, 4.25vw, 4.25rem));
+  z-index: 4;
+  width: clamp(5.2rem, 8.5vw, 8.5rem);
+  transform-origin: center;
+  filter: drop-shadow(0 2.4rem 2.5rem rgb(0 0 0 / 48%));
+}
+
+.can {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 767px) {
+  .support {
+    min-height: 190dvh;
+  }
+
+  .message {
+    padding-inline: 1rem;
+  }
+
+  .prelude {
+    margin-bottom: 1.25rem;
+    font-size: 0.62rem;
+  }
+
+  .firstLine,
+  .secondLine {
+    font-size: clamp(4.3rem, 21vw, 7rem);
+    line-height: 0.72;
+  }
+
+  .glow {
+    top: 23%;
+    width: 132vw;
+  }
+
+  .artwork {
+    top: 39%;
+    left: calc(50% - 2.6rem);
+    width: 5.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .support {
+    min-height: auto;
+  }
+
+  .stickyScene {
+    position: relative;
+    min-height: auto;
+    padding: 7rem 1rem 5rem;
+  }
+
+  .artwork,
+  .message {
+    position: relative;
+    inset: auto;
+  }
+
+  .message {
+    min-height: 100svh;
+    padding-inline: 1rem;
+    transform: none !important;
+  }
+
+  .artwork {
+    width: 4.8rem;
+    margin: -15rem auto 5rem;
+    transform: none !important;
+  }
+
+  .firstLine,
+  .secondLine {
+    transform: none !important;
+  }
+}
