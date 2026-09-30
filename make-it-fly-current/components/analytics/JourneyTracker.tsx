@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { flushJourneyEvents, trackJourney } from "./journey-client";
+import { flushJourneyEvents, journeyPath, trackJourney } from "./journey-client";
 
 const viewedSections = new Set<string>();
 const reachedDepths = new Set<number>();
@@ -12,10 +12,11 @@ export function JourneyTracker() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (pathname !== "/" && pathname !== "/participar") return;
-    if (lastPath !== pathname) {
-      lastPath = pathname;
-      trackJourney("page_view", pathname === "/" ? "landing" : "application");
+    const path = journeyPath(pathname);
+    if (!path) return;
+    if (lastPath !== path) {
+      lastPath = path;
+      trackJourney("page_view", path === "/" ? "landing" : "application");
     }
 
     const onPageHide = () => void flushJourneyEvents(true);
@@ -23,7 +24,7 @@ export function JourneyTracker() {
     window.addEventListener("pagehide", onPageHide);
     document.addEventListener("visibilitychange", onVisibility);
 
-    if (pathname !== "/") return () => {
+    if (path !== "/") return () => {
       window.removeEventListener("pagehide", onPageHide);
       document.removeEventListener("visibilitychange", onVisibility);
     };

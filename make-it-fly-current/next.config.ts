@@ -13,6 +13,19 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  // O Make It Fly virou uma página do site Apogee (/makeitfly). Mantém vivos os
+  // links já divulgados: o formulário antigo e a raiz do domínio makeitfly.
+  async redirects() {
+    return [
+      { source: "/participar", destination: "/makeitfly/participar", permanent: false },
+      {
+        source: "/",
+        has: [{ type: "host", value: "makeitfly.vercel.app" }],
+        destination: "/makeitfly",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

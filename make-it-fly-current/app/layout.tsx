@@ -51,22 +51,18 @@ const dmMono = localFont({
 
 export const metadata: Metadata = {
   robots: { index: true, follow: true },
-  alternates: { canonical: "https://makeitfly.vercel.app/" },
-  title: "Make it fly",
-  description:
-    "Um dia de coworking, comunidade e foco para tirar uma ideia do papel. Primeira edição com vagas limitadas. Energizados por Red Bull.",
+  title: "Apogee",
+  description: "Apogee: comunidade e experiências para tirar ideias do papel. Conheça o Make It Fly.",
   openGraph: {
-    title: "Make it fly | Tire uma ideia do papel",
-    description:
-      "Coworking, comunidade e foco. Vagas limitadas.",
+    title: "Apogee",
+    description: "Comunidade e experiências para tirar ideias do papel.",
     locale: "pt_BR",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Make it fly | Tire uma ideia do papel",
-    description:
-      "Coworking, comunidade e foco. Vagas limitadas.",
+    title: "Apogee",
+    description: "Comunidade e experiências para tirar ideias do papel.",
   },
 };
 

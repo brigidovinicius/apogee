@@ -129,6 +129,6 @@ export const PARTICIPAR = {
     "Conte um pouco sobre você e sua ideia. Se seu perfil estiver alinhado com esta edição, você segue direto para o ingresso.",
   botao: {
     texto: "Quero participar do evento",
-    href: "/participar",
+    href: "/makeitfly/participar",
   },
 } as const;

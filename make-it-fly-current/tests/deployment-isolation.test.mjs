@@ -71,8 +71,8 @@ test("the single root layout preserves the approved visual wrapper and relocated
   await readMetadata(path);
 });
 
-test("the public homepage directly renders the byte-identical approved page", async () => {
-  const publishedPage = await source("app/page.tsx");
+test("the Make It Fly page directly renders the byte-identical approved page", async () => {
+  const publishedPage = await source("app/makeitfly/page.tsx");
   assert.equal(sha256(publishedPage), "ee79483da8a4f08cb583f4909a920463c617fd8b427f7c24652de5c40b197654");
   assert.equal(publishedPage.match(/@\/components\/landing\/make-it-fly-v2/g)?.length, 1);
   assert.match(publishedPage, /return\s+<MakeItFlyV2\s*\/>/);
@@ -111,7 +111,7 @@ test("all original fonts, public assets and shared legacy dependencies retain th
   await Promise.all(Object.entries(original).map(([path, hash]) => assertUnchanged(path, hash)));
 });
 
-test("only the homepage, application form and its four server endpoints are routable", async () => {
+test("only the Apogee home, its community pages, the Make It Fly routes and their endpoints are routable", async () => {
   const files = [];
   const visit = async directory => {
     for (const entry of await readdir(new URL(`${directory}/`, root), { withFileTypes: true })) {
@@ -123,7 +123,9 @@ test("only the homepage, application form and its four server endpoints are rout
   await visit("app");
   assert.deepEqual(files.filter(path => /\/(?:page|layout|route)\.(?:tsx?|jsx?|mdx)$/.test(path)).sort(), [
     "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/checkout/route.ts",
-    "app/api/journey/route.ts", "app/layout.tsx", "app/page.tsx", "app/participar/page.tsx",
+    "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts", "app/galeria/page.tsx",
+    "app/gerenciar-galeria/page.tsx", "app/layout.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",
+    "app/makeitfly/participar/page.tsx", "app/page.tsx",
   ]);
   for (const path of ["pages", "src/pages", "app/(publicado)/page.tsx", "app/(publicado)/layout.tsx", "app/(teste)/teste-terra/page.tsx", "app/(teste)/layout.tsx"]) {
     assert.equal(existsSync(new URL(path, root)), false, `${path} must not expose another page`);
@@ -132,9 +134,9 @@ test("only the homepage, application form and its four server endpoints are rout
   assert.match(await source("components/landing/make-it-fly-v2.tsx"), /@\/components\/hero\/ApogeeHero/);
 });
 
-test("the sole public page is indexable with the correct canonical and normal scrolling", async () => {
+test("the Make It Fly page is indexable with the correct canonical and normal scrolling", async () => {
   const [publishedMetadata, publishedCss, config, pkg] = await Promise.all([
-    readMetadata("app/layout.tsx"), source("app/globals.css"),
+    readMetadata("app/makeitfly/layout.tsx"), source("app/globals.css"),
     source("next.config.ts"), source("package.json"),
   ]);
   assert.deepEqual(publishedMetadata.robots, { index: true, follow: true });
@@ -150,7 +152,7 @@ test("the sole public page is indexable with the correct canonical and normal sc
     description: "Coworking, comunidade e foco. Vagas limitadas.",
   });
   const canonical = new URL(publishedMetadata.alternates?.canonical, publishedMetadata.metadataBase);
-  assert.equal(canonical.href, "https://makeitfly.vercel.app/");
+  assert.equal(canonical.href, "https://makeitfly.vercel.app/makeitfly");
   assert.doesNotMatch(JSON.stringify(publishedMetadata), /Florianópolis|Setembro|40 participantes|apoio oficial|noindex|teste-terra/i);
   assert.match(publishedCss, /overflow-x:\s*clip/);
   assert.equal(sha256(publishedCss), "a1e9a486e66f4f14df3ee567177c643d905f64bf8f93daeb180ae36858abc070");

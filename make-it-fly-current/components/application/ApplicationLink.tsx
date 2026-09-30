@@ -6,7 +6,7 @@ import ButtonWithIcon from "@/components/ui/button-witn-icon";
 import { rememberAttribution } from "./application-client";
 
 export function ApplicationLink({ children, className }: { children: ReactNode; className?: string }) {
-  return <ButtonWithIcon href="/participar" className={className} onClick={(event) => {
+  return <ButtonWithIcon href="/makeitfly/participar" className={className} onClick={(event) => {
     rememberAttribution();
     const section = event.currentTarget.closest<HTMLElement>("[data-flight-section][id]");
     trackJourney("cta_click", section?.id || "topbar");

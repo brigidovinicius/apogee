@@ -9,7 +9,7 @@ type InternalHeaderProps = {
 export function InternalHeader({ current }: InternalHeaderProps) {
   return (
     <header className={styles.header}>
-      <Link className={styles.brand} href="/" aria-label="Make it fly — início">
+      <Link className={styles.brand} href="/makeitfly" aria-label="Make it fly — início">
         <Image
           src="/brand/apogee-star.svg"
           alt=""
@@ -40,7 +40,7 @@ export function InternalHeader({ current }: InternalHeaderProps) {
         </Link>
       </nav>
 
-      <Link className={styles.backLink} href="/#participar">
+      <Link className={styles.backLink} href="/makeitfly#participar">
         Participar <span aria-hidden>↗</span>
       </Link>
     </header>

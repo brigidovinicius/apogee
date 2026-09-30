@@ -96,13 +96,13 @@ test("the UI confirms every saved application without exposing score or redirect
   assert.match(form, /disabled=\{submitting \|\| !hydrated\}/);
   assert.match(form, /Se sua participação for aprovada, enviaremos o link do ingresso pelo contato informado/);
   assert.match(form, /O envio desta aplicação ainda não garante uma vaga/);
-  const page = await read("app/participar/page.tsx");
+  const page = await read("app/makeitfly/participar/page.tsx");
   assert.match(page, /analisamos cada aplicação e enviamos o link do ingresso a quem for selecionado/);
   assert.doesNotMatch(page, /segue direto para o ingresso/);
 });
 
 test("form accessibility includes step state, field errors, focus management and reduced motion", async () => {
-  const [form, css, page] = await Promise.all([read("components/application/ApplicationForm.tsx"), read("components/application/application.module.css"), read("app/participar/page.tsx")]);
+  const [form, css, page] = await Promise.all([read("components/application/ApplicationForm.tsx"), read("components/application/application.module.css"), read("app/makeitfly/participar/page.tsx")]);
   assert.match(form, /aria-current=\{step === index \? "step"/);
   assert.match(form, /role="alert" tabIndex=\{-1\}/);
   assert.match(form, /\[errorAttempt\]/);
@@ -122,13 +122,13 @@ test("form accessibility includes step state, field errors, focus management and
 
 test("all three participation CTAs reach the local form and leave Earth components intact", async () => {
   const [link, hero, landing, content] = await Promise.all([read("components/application/ApplicationLink.tsx"), read("components/hero/HeroContent.tsx"), read("components/landing/make-it-fly-v2.tsx"), read("content/site.ts")]);
-  assert.match(link, /href="\/participar"/);
+  assert.match(link, /href="\/makeitfly\/participar"/);
   assert.match(link, /onClick=\{\(event\) => \{/);
   assert.match(link, /rememberAttribution\(\)/);
   assert.match(link, /trackJourney\("cta_click"/);
   assert.equal(hero.match(/<ApplicationLink\b/g)?.length, 1);
   assert.equal(landing.match(/<ApplicationLink\b/g)?.length, 2);
-  assert.match(content, /href: "\/participar"/);
+  assert.match(content, /href: "\/makeitfly\/participar"/);
   assert.match(landing, /<ApogeeFlight pageRef=\{pageRef\} onReadyChange=\{setEarthReady\} \/>/);
 });
 

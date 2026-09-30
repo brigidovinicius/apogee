@@ -160,7 +160,7 @@ export function ApplicationForm() {
         <p>Vamos revisar seu perfil e suas respostas com atenção.</p>
         <p className={styles.resultNote}>Se sua participação for aprovada, enviaremos o link do ingresso pelo contato informado. O envio desta aplicação ainda não garante uma vaga.</p>
       </div>
-      <Link href="/" className={styles.secondary}>Voltar ao evento <span aria-hidden="true">↗</span></Link>
+      <Link href="/makeitfly" className={styles.secondary}>Voltar ao evento <span aria-hidden="true">↗</span></Link>
       <p className={styles.resultSignature}>Give your ideas wings.</p>
     </section>
   );

@@ -64,7 +64,7 @@ test("automatic test hero preserves nonempty sponsorship, accessible title and p
   assert.match(html, /alt="Ilustração de uma lata Red Bull"/);
   assert.doesNotMatch(html, /<(?:div|span)\b[^>]*class="support"[^>]*>\s*<\/(?:div|span)>/i);
   assert.match(html, /<h1\b[^>]*id="hero-title"/);
-  assert.match(html, /href="\/participar"[^>]*>Quero participar do evento/);
+  assert.match(html, /href="\/makeitfly\/participar"[^>]*>Quero participar do evento/);
   assert.match(html, /Vagas limitadas/);
 });
 
@@ -82,7 +82,7 @@ test("September is absent from approved content, public metadata and landing cop
   }
   const content = await readContent();
   assert.doesNotMatch(JSON.stringify(content), /setembro|2026/i);
-  assert.equal(content.PARTICIPAR.botao.href, "/participar");
+  assert.equal(content.PARTICIPAR.botao.href, "/makeitfly/participar");
   assert.equal(content.ABERTURA.apoio.rotulo, "Energizados por Red Bull");
 });
 

@@ -118,7 +118,7 @@ test("normal-flow hero preserves HTML content, navigation and fallback independe
   assert.match(content, /ABERTURA\.descricao/);
   assert.match(content, /<ApplicationLink\s+className=\{styles\.cta\}/);
   const applicationLink = await readFile(new URL("../components/application/ApplicationLink.tsx", import.meta.url), "utf8");
-  assert.match(applicationLink, /href="\/participar"/);
+  assert.match(applicationLink, /href="\/makeitfly\/participar"/);
   assert.match(landing, /<header\b/);
   assert.match(landing, /<nav\b[^>]*aria-label="Navegação principal"/);
 });

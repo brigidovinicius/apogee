@@ -16,10 +16,10 @@ export default function ParticipatePage() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link href="/" aria-label="Apogee, voltar ao Make It Fly" className={styles.brand}>
+        <Link href="/makeitfly" aria-label="Apogee, voltar ao Make It Fly" className={styles.brand}>
           <Image src="/brand/apogee-logo-white.svg" alt="Apogee" width={1595} height={986} sizes="104px" priority />
         </Link>
-        <Link href="/" className={styles.backLink}><span aria-hidden="true">←</span> Voltar ao evento</Link>
+        <Link href="/makeitfly" className={styles.backLink}><span aria-hidden="true">←</span> Voltar ao evento</Link>
       </header>
       <main id="experiencia" className={styles.main} tabIndex={-1}>
         <section className={styles.intro} aria-labelledby="application-title">

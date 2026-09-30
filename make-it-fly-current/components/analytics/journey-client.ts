@@ -50,8 +50,16 @@ export function getJourneyId() {
   }
 }
 
+// O Make It Fly vive em /makeitfly, mas os eventos mantêm os caminhos lógicos
+// "/" e "/participar" que o banco já valida.
+export function journeyPath(pathname: string): JourneyEvent["path"] | null {
+  if (pathname === "/makeitfly") return "/";
+  if (pathname === "/makeitfly/participar") return "/participar";
+  return null;
+}
+
 function currentPath(): JourneyEvent["path"] {
-  return window.location.pathname === "/participar" ? "/participar" : "/";
+  return journeyPath(window.location.pathname) ?? "/";
 }
 
 export function trackJourney(eventName: JourneyEventName, context = "", step: number | null = null) {

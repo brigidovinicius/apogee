@@ -34,7 +34,7 @@ export function restorePreApplicationSource(path, source) {
       'Conte um pouco sobre você e sua ideia. Se seu perfil estiver alinhado com esta edição, você segue direto para o ingresso.',
       'Fale com a Rosa para saber mais sobre a primeira edição.');
     result = replaceOnce(result,
-      'texto: "Quero participar do evento",\n    href: "/participar",',
+      'texto: "Quero participar do evento",\n    href: "/makeitfly/participar",',
       'texto: "Falar com a Rosa",\n    // O material ainda não traz um formulário. Mantemos um destino real até o\n    // link oficial de inscrição ser definido.\n    href: AUTORA.instagram,');
   }
   return result;
