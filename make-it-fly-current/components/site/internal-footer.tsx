@@ -19,6 +19,7 @@ export function InternalFooter() {
         <Link href="/">Início</Link>
         <Link href="/galeria">Galeria</Link>
         <Link href="/loja">Loja</Link>
+        <Link href="/membros">Membros</Link>
       </nav>
       <Image
         className={styles.apogeeLogo}

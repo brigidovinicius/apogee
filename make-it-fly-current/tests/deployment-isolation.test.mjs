@@ -122,10 +122,13 @@ test("only the Apogee home, its community pages, the Make It Fly routes and thei
   };
   await visit("app");
   assert.deepEqual(files.filter(path => /\/(?:page|layout|route)\.(?:tsx?|jsx?|mdx)$/.test(path)).sort(), [
-    "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/checkout/route.ts",
+    "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/auth/[...all]/route.ts", "app/api/checkout/route.ts",
     "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts", "app/galeria/page.tsx",
     "app/gerenciar-galeria/page.tsx", "app/layout.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",
-    "app/makeitfly/participar/page.tsx", "app/page.tsx",
+    "app/makeitfly/participar/page.tsx", "app/membros/cadastro/page.tsx", "app/membros/entrar/page.tsx",
+    "app/membros/forum/[categoria]/[topico]/page.tsx", "app/membros/forum/[categoria]/novo/page.tsx",
+    "app/membros/forum/[categoria]/page.tsx", "app/membros/layout.tsx", "app/membros/page.tsx",
+    "app/membros/perfil/[username]/page.tsx", "app/membros/perfil/editar/page.tsx", "app/page.tsx",
   ]);
   for (const path of ["pages", "src/pages", "app/(publicado)/page.tsx", "app/(publicado)/layout.tsx", "app/(teste)/teste-terra/page.tsx", "app/(teste)/layout.tsx"]) {
     assert.equal(existsSync(new URL(path, root)), false, `${path} must not expose another page`);

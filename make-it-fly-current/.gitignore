@@ -7,3 +7,6 @@ node_modules/
 *.tsbuildinfo
 .DS_Store
 .vercel
+infra/membros/certs/*.key
+infra/membros/certs/*.crt
+infra/membros/backups/
