@@ -1,5 +1,5 @@
 export const OPPORTUNITY_KINDS = ["Bolsa", "Programa", "Intercâmbio"] as const;
-export const EDUCATION_LEVELS = ["Ensino médio", "Graduação", "Pós-graduação"] as const;
+export const EDUCATION_LEVELS = ["Ensino médio", "Graduação", "Pós-graduação", "Público diverso"] as const;
 
 export type OpportunityKind = (typeof OPPORTUNITY_KINDS)[number];
 export type EducationLevel = (typeof EDUCATION_LEVELS)[number];

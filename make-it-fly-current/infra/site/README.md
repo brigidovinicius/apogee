@@ -4,12 +4,15 @@ Este stack publica o Next.js por trás do Caddy. Ele é separado do sistema de l
 
 ```text
 Internet -> Caddy (80/443) -> web (sem porta publicada) -> PgBouncer (rede apogee_membros_edge) -> Postgres (rede interna)
+                                                 |
+                                      Radar API (apogee_radar_bridge)
 ```
 
 - `caddy` entra apenas em `apogee_site_public` e é o único serviço com portas do host.
 - `web` não publica porta: recebe tráfego só do Caddy e alcança apenas o PgBouncer pela rede de borda.
 - Postgres continua somente na rede `apogee_membros_internal`; PgBouncer continua limitado a `127.0.0.1:6543` no host como acesso administrativo local.
 - Volumes deste stack usam o prefixo `apogee_site_`; não compartilham volumes com outros projetos.
+- Quando o Radar Acadêmico estiver autorizado, o `web` também entra na rede externa exclusiva `apogee_radar_bridge`. Essa ponte alcança apenas a API de resultados aprovados do Radar; ela não dá acesso ao banco ou ao scheduler.
 
 ## Preparação na VPS
 
@@ -28,6 +31,14 @@ docker compose build web
 docker compose up -d web
 docker compose ps
 ```
+
+Depois do deploy isolado do Radar, acrescente ao `.env` do site, sem usar um valor público:
+
+```sh
+RADAR_ACADEMICO_API_URL=http://radar-academico:3000/api/public/opportunities
+```
+
+O mural mantém o catálogo curado local como contingência e agrega apenas resultados aprovados do Radar. Se o Radar ficar indisponível, a página pública não cai.
 
 O Compose espera encontrar a rede `apogee_membros_edge` e o certificado público existente em `/opt/apogee-membros/certs/server.crt`. Não monte `server.key` no site e não abra a porta 6543 no firewall.
 

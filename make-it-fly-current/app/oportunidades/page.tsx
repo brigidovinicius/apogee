@@ -4,6 +4,9 @@ import Link from "next/link";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
 import styles from "@/components/opportunities/opportunities.module.css";
 import { STUDENT_OPPORTUNITIES } from "@/content/opportunities";
+import { listRadarOpportunities, mergeOpportunities } from "@/lib/opportunities/radar-client";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Oportunidades estudantis | Apogee",
@@ -15,7 +18,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function OpportunitiesPage() {
+export default async function OpportunitiesPage() {
+  const radarOpportunities = await listRadarOpportunities();
+  const opportunities = mergeOpportunities(STUDENT_OPPORTUNITIES, radarOpportunities);
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -50,7 +56,7 @@ export default function OpportunitiesPage() {
           </p>
         </section>
 
-        <OpportunitiesBoard opportunities={STUDENT_OPPORTUNITIES} />
+        <OpportunitiesBoard opportunities={opportunities} />
       </main>
 
       <footer className={styles.footer}>

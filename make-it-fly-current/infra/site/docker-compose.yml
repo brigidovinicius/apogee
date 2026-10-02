@@ -20,7 +20,7 @@ services:
       # Certificado público do PgBouncer, nunca a chave privada.
       - ${PGBOUNCER_CA_PATH:-/opt/apogee-membros/certs/server.crt}:/run/apogee/pgbouncer-ca.crt:ro
       - next_cache:/app/.next/cache
-    networks: [public, members_edge]
+    networks: [public, members_edge, radar_bridge]
     read_only: true
     tmpfs:
       - /tmp
@@ -71,4 +71,8 @@ networks:
     name: apogee_site_public
   members_edge:
     name: apogee_membros_edge
+    external: true
+  # Bridge exclusiva com a API pública do Radar; não dá acesso ao banco Radar.
+  radar_bridge:
+    name: apogee_radar_bridge
     external: true
