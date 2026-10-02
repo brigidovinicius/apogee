@@ -36,9 +36,9 @@ O Compose espera encontrar a rede `apogee_membros_edge` e o certificado público
 Não inicie Caddy antes de `apogee.community` apontar para o IP da VPS e de validar o container `web`. No momento autorizado:
 
 1. confirme que 80 e 443 estão livres e permitidas pela UFW;
-2. altere somente o registro **A** de `apogee.community` para o IP da VPS; preserve MX/TXT/CAA e o `www` como CNAME para o domínio raiz;
+2. altere somente o registro **A** de `apogee.community` para o IP da VPS; preserve MX/TXT/CAA e o `www` como CNAME para o domínio raiz. O Caddy redireciona o domínio raiz para `https://www.apogee.community`;
 3. execute `docker compose --profile public up -d`;
-4. confira o certificado, o redirecionamento de `www`, as rotas públicas e um login real;
+4. confira o certificado, o redirecionamento do domínio raiz para `www`, as rotas públicas e um login real;
 5. só depois mantenha a versão anterior como rollback temporário ou a desative com autorização específica.
 
 O Caddy cuida do certificado TLS e sobrescreve os headers encaminhados; por isso a aplicação usa `APPLICATION_HOSTING_PROVIDER=caddy` para os limites por IP. Nenhum segredo deve ser passado em comando, commit ou log.

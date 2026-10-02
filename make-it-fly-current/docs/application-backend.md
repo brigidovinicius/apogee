@@ -6,12 +6,12 @@ O envio não aprova uma pessoa nem libera ingresso. Todos recebem o mesmo recibo
 
 ## Configuração de produção
 
-- Site: `https://apogee.community`
-- Formulário: `https://apogee.community/participar`
+- Site: `https://www.apogee.community`
+- Formulário: `https://www.apogee.community/makeitfly/participar`
 - Supabase: projeto exclusivo `oqvartwafnclxuqpkltp`, plano Free.
 - Hospedagem planejada: container Next.js atrás de Caddy na VPS; a Vercel fica apenas como legado/rollback até a migração ser validada.
 - Variáveis privadas: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `APPLICATION_SIGNING_SECRET` e `APPLICATION_ORIGIN`.
-- `APPLICATION_ORIGIN` deve ser exatamente `https://apogee.community` em produção.
+- `APPLICATION_ORIGIN` deve ser exatamente `https://www.apogee.community` em produção.
 - `SYMPLA_CHECKOUT_URL` não é usada.
 
 Nenhuma variável privada pode usar prefixo `NEXT_PUBLIC_*`, entrar em Git, HTML, JavaScript do navegador, logs ou documentação. A configuração local real permanece em `.makeitfly-private/app.env`, fora do artefato publicado, com diretório 0700 e arquivo 0600.

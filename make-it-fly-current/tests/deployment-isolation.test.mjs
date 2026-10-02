@@ -155,7 +155,7 @@ test("the Make It Fly page is indexable with the correct canonical and normal sc
     description: "Coworking, comunidade e foco. Vagas limitadas.",
   });
   const canonical = new URL(publishedMetadata.alternates?.canonical, publishedMetadata.metadataBase);
-  assert.equal(canonical.href, "https://makeitfly.vercel.app/makeitfly");
+  assert.equal(canonical.href, "https://www.apogee.community/makeitfly");
   assert.doesNotMatch(JSON.stringify(publishedMetadata), /Florianópolis|Setembro|40 participantes|apoio oficial|noindex|teste-terra/i);
   assert.match(publishedCss, /overflow-x:\s*clip/);
   assert.equal(sha256(publishedCss), "a1e9a486e66f4f14df3ee567177c643d905f64bf8f93daeb180ae36858abc070");

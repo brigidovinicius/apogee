@@ -1,7 +1,7 @@
 /** Manual production smoke test. Creates two retained synthetic applications; never purchases or deletes. */
 import { randomUUID } from "node:crypto";
 
-const configuredOrigin = process.env.APOGEE_PRODUCTION_TEST_ORIGIN || process.env.APPLICATION_ORIGIN || "https://apogee.community";
+const configuredOrigin = process.env.APOGEE_PRODUCTION_TEST_ORIGIN || process.env.APPLICATION_ORIGIN || "https://www.apogee.community";
 const parsedOrigin = new URL(configuredOrigin);
 if (parsedOrigin.protocol !== "https:" || parsedOrigin.username || parsedOrigin.password || parsedOrigin.pathname !== "/" || parsedOrigin.search || parsedOrigin.hash) {
   throw new Error("APOGEE_PRODUCTION_TEST_ORIGIN must be an HTTPS origin without a path.");
