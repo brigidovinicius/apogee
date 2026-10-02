@@ -1,0 +1,11 @@
+# Contexto do build do site. Segredos e artefatos locais nunca entram na imagem.
+.next
+node_modules
+.env
+.env.*
+!.env.example
+npm-debug.log*
+.git
+.gitignore
+infra/site/.env
+infra/site/.env.*

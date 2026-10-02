@@ -1,4 +1,5 @@
 import "server-only";
+import { readFileSync } from "node:fs";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
@@ -11,14 +12,17 @@ const globalForDb = globalThis as typeof globalThis & { __apogeeMembersDb?: Cach
 
 // Conexão preguiçosa: o build na Vercel não precisa do banco, e cada instância
 // serverless reutiliza um único cliente. PgBouncer em modo transaction exige
-// prepare:false. Com DATABASE_CA_CERT o certificado do servidor é validado.
+// prepare:false. Com DATABASE_CA_CERT ou DATABASE_CA_CERT_FILE o certificado
+// do servidor é validado.
 export function getDb(): MembersDb {
   if (globalForDb.__apogeeMembersDb) return globalForDb.__apogeeMembersDb.db;
 
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL não configurada para a área de membros.");
 
-  const ca = process.env.DATABASE_CA_CERT?.replace(/\\n/g, "\n");
+  const ca = process.env.DATABASE_CA_CERT_FILE
+    ? readFileSync(process.env.DATABASE_CA_CERT_FILE, "utf8")
+    : process.env.DATABASE_CA_CERT?.replace(/\\n/g, "\n");
   const client = postgres(url, {
     ssl: ca ? { ca, rejectUnauthorized: true } : "require",
     prepare: false,

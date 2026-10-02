@@ -296,6 +296,22 @@ test("foreign platform and generic forwarding headers cannot rotate rate buckets
   }
 });
 
+test("Caddy uses its overwritten forwarding header for separate rate buckets", async () => {
+  const db = fakeDatabase();
+  const keys = [];
+  for (const ip of ["1.2.3.4", "5.6.7.8"]) {
+    const response = await api.handleApplicationPost(request(payload(), {
+      "x-forwarded-for": ip,
+      "x-vercel-forwarded-for": "192.0.2.1",
+    }), options(db, {
+      env: { ...env, APPLICATION_HOSTING_PROVIDER: "caddy" },
+      rateLimiter: (key) => { keys.push(key); return true; },
+    }));
+    assert.equal(response.status, 201);
+  }
+  assert.notEqual(keys[0], keys[1]);
+});
+
 test("schema grants only server access and enforces eligibility/idempotency without public policies", async () => {
   const sql = await readFile(new URL("../supabase/migrations/202609120001_applications.sql", import.meta.url), "utf8");
   const criteriaSql = await readFile(new URL("../supabase/migrations/202609130002_application_profile_criteria.sql", import.meta.url), "utf8");

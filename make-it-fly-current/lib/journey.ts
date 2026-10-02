@@ -74,7 +74,7 @@ export function createJourneyRateLimiter(limit = 60, windowMs = 600_000) {
 const journeyRateLimiter = createJourneyRateLimiter();
 
 function rateKey(request: Request, config: ReturnType<typeof readApplicationConfig>) {
-  const header = config.hostingProvider === "vercel" ? "x-vercel-forwarded-for" : config.hostingProvider === "netlify" ? "x-nf-client-connection-ip" : null;
+  const header = config.hostingProvider === "vercel" ? "x-vercel-forwarded-for" : config.hostingProvider === "netlify" ? "x-nf-client-connection-ip" : config.hostingProvider === "caddy" ? "x-forwarded-for" : null;
   const ip = (header ? request.headers.get(header) || "unknown" : "unknown").split(",")[0].trim().slice(0, 200);
   return createHmac("sha256", config.signingSecret).update(`makeitfly:journey-rate:${ip}`).digest("hex");
 }
