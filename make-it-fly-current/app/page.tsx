@@ -9,6 +9,7 @@ export default function ApogeeHome() {
       <header className={styles.header}>
         <Image className={styles.logo} src="/brand/apogee-logo-white.svg" alt="Apogee" width={1595} height={986} sizes="120px" priority />
         <nav className={styles.nav} aria-label="Navegação principal">
+          <Link href="/oportunidades">Oportunidades</Link>
           <Link href="/galeria">Galeria</Link>
           <Link href="/loja">Loja</Link>
         </nav>

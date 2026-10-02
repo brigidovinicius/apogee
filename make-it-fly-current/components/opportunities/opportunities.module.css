@@ -1,0 +1,489 @@
+.page {
+  min-height: 100dvh;
+  overflow: hidden;
+  color: #07182d;
+  background: #fff;
+}
+
+.header,
+.main,
+.footer {
+  width: min(100% - 2.5rem, 80rem);
+  margin-inline: auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 5.25rem;
+  color: #fff;
+  border-bottom: 1px solid rgb(185 211 238 / 32%);
+  background: #07182d;
+  box-shadow: 0 0 0 100vmax #07182d;
+  clip-path: inset(0 -100vmax);
+}
+
+.brand,
+.nav a,
+.footer a,
+.externalLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.62rem;
+  font-family: var(--font-noto-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.brandMark {
+  width: 1.35rem;
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.2rem);
+  font-size: 0.8rem;
+}
+
+.nav a {
+  opacity: 0.62;
+  transition: opacity 180ms ease;
+}
+
+.nav a:hover,
+.nav a[aria-current="page"] {
+  opacity: 1;
+}
+
+.nav a[aria-current="page"]::after {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-top: 0.35rem;
+  content: "";
+  background: #b9d3ee;
+}
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(4.5rem, 9vw, 8.5rem) 0 clamp(3rem, 7vw, 6rem);
+}
+
+.hero::before {
+  position: absolute;
+  z-index: -1;
+  top: clamp(1.25rem, 3vw, 3rem);
+  right: clamp(-10rem, -4vw, -3rem);
+  width: min(43vw, 31rem);
+  height: min(53vw, 38rem);
+  content: "";
+  background: url("/brand/apogee-star.svg") center / contain no-repeat;
+  opacity: 0.2;
+}
+
+.eyebrow,
+.kicker,
+.cardTopline,
+.details dt,
+.launchWindow span,
+.cardFooter span {
+  font-family: var(--font-noto-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  margin: 0 0 1.35rem;
+  color: #b9d3ee;
+}
+
+.hero h1,
+.boardHeading h2,
+.empty h3 {
+  margin: 0;
+  font-family: var(--font-gfs-didot), Didot, "Bodoni MT", var(--font-instrument-serif), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.045em;
+}
+
+.hero h1 {
+  max-width: 13ch;
+  font-size: clamp(3.4rem, 8vw, 7.7rem);
+  line-height: 0.86;
+}
+
+.hero h1 em {
+  color: #07182d;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-style: italic;
+}
+
+.lead {
+  max-width: 37rem;
+  margin: 2rem 0 0;
+  color: rgb(7 24 45 / 72%);
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  line-height: 1.65;
+}
+
+.promise {
+  display: flex;
+  display: block;
+  max-width: 40rem;
+  margin: 2rem 0 0;
+  padding-top: 1.2rem;
+  color: rgb(7 24 45 / 74%);
+  border-top: 1px solid rgb(7 24 45 / 28%);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.board {
+  padding: clamp(2rem, 5vw, 4rem) 0 6.5rem;
+  color: #fff;
+  border-top: 1px solid rgb(185 211 238 / 20%);
+  background: #07182d;
+  box-shadow: 0 0 0 100vmax #07182d;
+  clip-path: inset(0 -100vmax);
+}
+
+.boardHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.kicker {
+  margin: 0 0 0.9rem;
+  color: #b9d3ee;
+}
+
+.boardHeading h2 {
+  max-width: 14ch;
+  font-size: clamp(2.55rem, 5vw, 4.6rem);
+  line-height: 0.93;
+}
+
+.count {
+  margin: 0 0 0.3rem;
+  color: rgb(255 255 255 / 58%);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem 1.4rem;
+  align-items: center;
+  margin: 3rem 0 1.75rem;
+  padding: 1rem 0;
+  border-block: 1px solid rgb(185 211 238 / 18%);
+}
+
+.filterLabel {
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+  color: rgb(255 255 255 / 55%);
+  font-size: 0.72rem;
+}
+
+.filterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.filterGroup button,
+.empty button {
+  padding: 0.43rem 0.65rem;
+  color: rgb(255 255 255 / 68%);
+  border: 1px solid rgb(185 211 238 / 20%);
+  background: transparent;
+  font: inherit;
+  font-size: 0.73rem;
+  cursor: pointer;
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+.filterGroup button:hover,
+.filterGroup button.selected,
+.empty button:hover {
+  color: #07182d;
+  border-color: #b9d3ee;
+  background: #b9d3ee;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  background: rgb(185 211 238 / 18%);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  min-height: 29rem;
+  padding: clamp(1.25rem, 2.5vw, 1.8rem);
+  background: #0a0a0a;
+  transition: background-color 180ms ease;
+}
+
+.card:hover {
+  background: #141414;
+}
+
+.cardTopline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgb(255 255 255 / 48%);
+}
+
+.kind {
+  color: #b9d3ee;
+}
+
+.cardMain {
+  margin-top: 3.2rem;
+}
+
+.organization {
+  margin: 0 0 0.8rem;
+  color: #b9d3ee;
+  font-size: 0.79rem;
+}
+
+.card h3 {
+  max-width: 22ch;
+  margin: 0;
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  line-height: 1.1;
+}
+
+.summary {
+  max-width: 38rem;
+  margin: 1rem 0 0;
+  color: rgb(255 255 255 / 64%);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.details {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0 0;
+}
+
+.details div {
+  display: grid;
+  grid-template-columns: minmax(4.6rem, 0.58fr) 1.45fr;
+  gap: 0.8rem;
+}
+
+.details dt {
+  color: rgb(255 255 255 / 42%);
+}
+
+.details dd {
+  margin: 0;
+  color: rgb(255 255 255 / 78%);
+  font-size: 0.78rem;
+  line-height: 1.48;
+}
+
+.launchWindow {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  margin-top: auto;
+  padding-top: 2rem;
+  color: #b9d3ee;
+}
+
+.launchWindow > svg {
+  flex: 0 0 auto;
+  margin-top: 0.16rem;
+}
+
+.launchWindow div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.launchWindow span {
+  color: rgb(185 211 238 / 64%);
+}
+
+.launchWindow strong {
+  font-size: 0.87rem;
+  font-weight: 550;
+  line-height: 1.35;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1.45rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgb(185 211 238 / 16%);
+}
+
+.cardFooter span {
+  color: rgb(255 255 255 / 40%);
+  letter-spacing: 0.07em;
+}
+
+.externalLink {
+  display: inline-flex;
+  gap: 0.42rem;
+  align-items: center;
+  color: #b9d3ee;
+  font-size: 0.78rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.externalLink:hover {
+  color: #fff;
+}
+
+.brand:focus-visible,
+.nav a:focus-visible,
+.filterGroup button:focus-visible,
+.empty button:focus-visible,
+.externalLink:focus-visible,
+.footer a:focus-visible {
+  outline: 2px solid #b9d3ee;
+  outline-offset: 4px;
+}
+
+.empty {
+  display: grid;
+  justify-items: start;
+  gap: 0.9rem;
+  padding: 4rem 0;
+  color: #b9d3ee;
+}
+
+.empty h3 {
+  font-size: 2.15rem;
+}
+
+.empty p {
+  max-width: 32rem;
+  margin: 0;
+  color: rgb(255 255 255 / 64%);
+  line-height: 1.55;
+}
+
+.empty button {
+  margin-top: 0.35rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.5rem 0 2rem;
+  color: rgb(255 255 255 / 58%);
+  border-top: 1px solid rgb(255 255 255 / 16%);
+  background: #0a0a0a;
+  box-shadow: 0 0 0 100vmax #0a0a0a;
+  clip-path: inset(0 -100vmax);
+  font-family: var(--font-noto-mono), monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.footer a:hover {
+  color: #b9d3ee;
+}
+
+@media (max-width: 760px) {
+  .header,
+  .main,
+  .footer {
+    width: min(100% - 2rem, 80rem);
+  }
+
+  .header {
+    min-height: 4.7rem;
+  }
+
+  .nav {
+    gap: 1rem;
+    font-size: 0.75rem;
+  }
+
+  .hero {
+    padding-top: 4.25rem;
+  }
+
+  .hero::before {
+    top: 1rem;
+    right: -8rem;
+    width: 22rem;
+    height: 27rem;
+  }
+
+  .boardHeading,
+  .cardFooter,
+  .footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .count {
+    white-space: normal;
+  }
+
+  .filters {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 0;
+  }
+
+  .cardMain {
+    margin-top: 2.5rem;
+  }
+
+  .launchWindow {
+    margin-top: 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav a,
+  .filterGroup button,
+  .card {
+    transition: none;
+  }
+}
