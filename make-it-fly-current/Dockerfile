@@ -12,10 +12,14 @@ RUN npm run build
 
 FROM node:24-bookworm-slim AS runner
 WORKDIR /app
+ARG APOGEE_RELEASE_SHA=local
+LABEL org.opencontainers.image.title="Apogee Site" \
+      org.opencontainers.image.revision="${APOGEE_RELEASE_SHA}"
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
-    HOSTNAME=0.0.0.0
+    HOSTNAME=0.0.0.0 \
+    APOGEE_RELEASE_SHA=${APOGEE_RELEASE_SHA}
 RUN groupadd --system --gid 1001 nextjs \
   && useradd --system --uid 1001 --gid nextjs nextjs
 COPY --from=builder --chown=nextjs:nextjs /app/public ./public

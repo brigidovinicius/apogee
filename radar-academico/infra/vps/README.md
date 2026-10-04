@@ -36,6 +36,8 @@ partir de um crawler.
 
    ```sh
    cd /opt/radar-academico/repo/infra/vps
+   APOGEE_RELEASE_SHA="$(git -C ../.. rev-parse HEAD)"
+   export APOGEE_RELEASE_SHA
    docker compose config -q
    docker compose up -d postgres
    docker compose --profile migrate run --rm migrate

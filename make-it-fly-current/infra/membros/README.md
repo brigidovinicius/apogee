@@ -11,7 +11,7 @@ Stack Docker **isolado**, que só guarda os dados da área de membros (login e f
 | Banco / role | `apogee_membros` / `apogee_app` (sem superuser) |
 | Porta do host | PgBouncer em `127.0.0.1:PGBOUNCER_PORT` (padrão 6543), com TLS obrigatório |
 
-O Postgres não publica porta e o PgBouncer fica limitado ao loopback da VPS. A aplicação na Vercel não deve usar diretamente o IP da VPS: antes de publicar a área de membros, escolha um banco gerenciado ou habilite uma conectividade remota explicitamente aprovada, com TLS e allowlist de IPs estáticos.
+O Postgres não publica porta e o PgBouncer fica limitado ao loopback da VPS. A aplicação Apogee hospedada na mesma VPS alcança o PgBouncer somente pela rede Docker privada `apogee_membros_edge`; não use o IP público da VPS para essa conexão. Uma aplicação externa à VPS exigiria outra conectividade privada explicitamente aprovada.
 
 ## 1. Subir na VPS
 
@@ -35,21 +35,19 @@ docker compose ps
 
 Firewall: não abra `6543/tcp`. O bind em loopback protege o PgBouncer mesmo em hosts onde portas publicadas pelo Docker não respeitam a cadeia padrão da UFW.
 
-## 2. Variáveis na Vercel e no `.env.local`
+## 2. Variáveis do site Apogee e do `.env.local`
 
 Todas são server-only. **Nunca** use o prefixo `NEXT_PUBLIC_`.
 
 ```
-# Use somente o endpoint aprovado para o ambiente em questão; nunca o IP público da VPS.
-DATABASE_URL=postgres://apogee_app:<APP_DB_PASSWORD>@<ENDPOINT_APROVADO>:5432/apogee_membros
-DATABASE_CA_CERT=<conteúdo de certs/server.crt, com \n no lugar das quebras de linha>
+# Na VPS, use o DNS privado do serviço; nunca o IP público da VPS.
+DATABASE_URL=postgres://apogee_app:<APP_DB_PASSWORD>@pgbouncer:5432/apogee_membros
+DATABASE_CA_CERT_FILE=/run/apogee/pgbouncer-ca.crt
 BETTER_AUTH_SECRET=<openssl rand -hex 32>
-BETTER_AUTH_URL=https://makeitfly.vercel.app
+BETTER_AUTH_URL=https://www.apogee.community
 ```
 
-Com `DATABASE_CA_CERT`, o app valida o certificado do servidor e fica protegido contra MITM. Sem ele a conexão continua cifrada, mas sem validação. Para gerar o valor em uma linha: `awk '{printf "%s\\n", $0}' certs/server.crt`.
-
-Dica: na Vercel, escolha para as Functions a região mais próxima da VPS (Project → Settings → Functions → Region). Isso reduz a latência de cada consulta.
+O Compose do site monta somente o certificado público em `DATABASE_CA_CERT_FILE`; a chave privada do PgBouncer não entra no container da aplicação. Para desenvolvimento fora da VPS, `DATABASE_CA_CERT` continua aceito conforme o ambiente local seguro.
 
 ## 3. Criar as tabelas e as categorias
 
@@ -91,4 +89,4 @@ docker compose up -d --force-recreate pgbouncer
 
 - Somente se for aprovada uma conectividade remota: troque o cert self-signed por Let's Encrypt, por exemplo `db.seudominio.com.br`, e atualize `DATABASE_CA_CERT` (ou remova-o, se usar uma CA pública).
 - Configure o Resend e ative a verificação de e-mail e a recuperação de senha no Better Auth (`lib/members/auth.ts`).
-- Atualize `BETTER_AUTH_URL`.
+- Mantenha `BETTER_AUTH_URL=https://www.apogee.community` em produção.

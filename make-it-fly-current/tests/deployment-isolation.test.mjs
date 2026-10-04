@@ -138,10 +138,14 @@ test("only the Apogee home, its community pages, the Make It Fly routes and thei
 });
 
 test("the Make It Fly page is indexable with the correct canonical and normal scrolling", async () => {
-  const [publishedMetadata, publishedCss, config, pkg] = await Promise.all([
+  const [rootMetadata, homeMetadata, publishedMetadata, publishedCss, config, pkg] = await Promise.all([
+    readMetadata("app/layout.tsx"), readMetadata("app/page.tsx"),
     readMetadata("app/makeitfly/layout.tsx"), source("app/globals.css"),
     source("next.config.ts"), source("package.json"),
   ]);
+  assert.equal(rootMetadata.metadataBase.href, "https://www.apogee.community/");
+  assert.equal(new URL(homeMetadata.alternates?.canonical, rootMetadata.metadataBase).href,
+    "https://www.apogee.community/");
   assert.deepEqual(publishedMetadata.robots, { index: true, follow: true });
   assert.equal(publishedMetadata.title, "Make it fly");
   assert.equal(publishedMetadata.description, "Um dia de coworking, comunidade e foco para tirar uma ideia do papel. Primeira edição com vagas limitadas. Energizados por Red Bull.");

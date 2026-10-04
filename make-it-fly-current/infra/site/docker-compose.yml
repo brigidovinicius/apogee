@@ -6,7 +6,9 @@ services:
     build:
       context: ../..
       dockerfile: Dockerfile
-    image: apogee-site:local
+      args:
+        APOGEE_RELEASE_SHA: ${APOGEE_RELEASE_SHA:-local}
+    image: apogee-site:${APOGEE_RELEASE_SHA:-local}
     restart: unless-stopped
     init: true
     env_file: ${APOGEE_SITE_ENV_FILE:-.env}

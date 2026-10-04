@@ -1,6 +1,6 @@
-# Site Apogee na VPS
+# Aplicação Apogee na VPS
 
-Este stack publica o Next.js por trás do Caddy. Ele é separado do sistema de locação e reutiliza **somente** a rede externa `apogee_membros_edge`, já exclusiva da área de membros. A topologia é:
+Este stack executa o Next.js na mesma VPS dos serviços privados Apogee, sem fundir os projetos Compose nem renomear recursos existentes. Ele é separado do sistema de locação e entra **somente** nas redes externas `apogee_membros_edge` e `apogee_radar_bridge`, exclusivas da Apogee. A topologia é:
 
 ```text
 Internet -> Caddy (80/443) -> web (sem porta publicada) -> PgBouncer (rede apogee_membros_edge) -> Postgres (rede interna)
@@ -8,7 +8,7 @@ Internet -> Caddy (80/443) -> web (sem porta publicada) -> PgBouncer (rede apoge
                                       Radar API (apogee_radar_bridge)
 ```
 
-- `caddy` entra apenas em `apogee_site_public` e é o único serviço com portas do host.
+- `caddy` permanece atrás do profile opcional `public`; ativá-lo é um gate operacional separado e não faz parte da preparação local.
 - `web` não publica porta: recebe tráfego só do Caddy e alcança apenas o PgBouncer pela rede de borda.
 - Postgres continua somente na rede `apogee_membros_internal`; PgBouncer continua limitado a `127.0.0.1:6543` no host como acesso administrativo local.
 - Volumes deste stack usam o prefixo `apogee_site_`; não compartilham volumes com outros projetos.
@@ -21,15 +21,17 @@ Faça esta etapa somente depois de revisar o commit e autorizar o deploy:
 ```sh
 sudo install -d -m 0750 /opt/apogee-site
 # coloque o checkout Git aprovado em /opt/apogee-site/repo
-# (o compose precisa permanecer em repo/infra/site para que ../../ seja a raiz do app).
-cd /opt/apogee-site/repo/infra/site
+# A aplicação é aninhada e o Compose deve permanecer em make-it-fly-current/infra/site.
+cd /opt/apogee-site/repo/make-it-fly-current/infra/site
 cp .env.example .env
 chmod 600 .env
 # preencha exclusivamente os valores privados já existentes e gere BETTER_AUTH_SECRET se ainda não houver um.
-docker compose config -q
-docker compose build web
-docker compose up -d web
-docker compose ps
+APOGEE_RELEASE_SHA="$(git -C ../../ rev-parse HEAD)"
+export APOGEE_RELEASE_SHA
+docker compose --env-file .env config -q
+docker compose --env-file .env build web
+docker compose --env-file .env up -d web
+docker compose --env-file .env ps
 ```
 
 Depois do deploy isolado do Radar, acrescente ao `.env` do site, sem usar um valor público:
@@ -40,7 +42,7 @@ RADAR_ACADEMICO_API_URL=http://radar-academico:3000/api/public/opportunities
 
 O mural mantém o catálogo curado local como contingência e agrega apenas resultados aprovados do Radar. Se o Radar ficar indisponível, a página pública não cai.
 
-O Compose espera encontrar a rede `apogee_membros_edge` e o certificado público existente em `/opt/apogee-membros/certs/server.crt`. Não monte `server.key` no site e não abra a porta 6543 no firewall.
+O Compose espera encontrar as redes `apogee_membros_edge` e `apogee_radar_bridge`, além do certificado público existente em `/opt/apogee-membros/certs/server.crt`. Não monte `server.key` no site e não abra a porta 6543 no firewall. `APPLICATION_ORIGIN` e `BETTER_AUTH_URL` devem ser exatamente `https://www.apogee.community`; `DATABASE_URL` deve resolver `pgbouncer:5432` pela rede privada e `RADAR_ACADEMICO_API_URL` deve resolver `radar-academico:3000` pela ponte privada.
 
 ## Publicação do domínio (gate final)
 
