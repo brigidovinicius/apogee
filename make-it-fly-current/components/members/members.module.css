@@ -270,6 +270,55 @@
   text-underline-offset: 3px;
 }
 
+.oauthDivider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.oauthDivider span {
+  height: 1px;
+  background: var(--line);
+}
+
+.googleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 3.1rem;
+  padding: 0.8rem 1.2rem;
+  color: var(--navy);
+  background: #ffffff;
+  border: 1px solid #a9b3bf;
+  border-radius: 0;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.googleButton:hover {
+  background: #f2f6fa;
+  border-color: var(--navy);
+}
+
+.googleButton:disabled {
+  color: var(--muted);
+  cursor: wait;
+}
+
+.googleButton svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+}
+
 /* Barra do membro */
 
 .memberBar {
