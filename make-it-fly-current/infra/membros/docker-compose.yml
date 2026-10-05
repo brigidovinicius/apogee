@@ -75,11 +75,14 @@ services:
       - |
         while true; do
           file="/backups/apogee_membros-$$(date +%Y%m%d-%H%M%S).sql.gz"
-          if pg_dump --no-owner | gzip > "$$file"; then
+          tmp="$$file.tmp"
+          rm -f "$$tmp"
+          if pg_dump --no-owner > "$$tmp" && test -s "$$tmp" && gzip -c "$$tmp" > "$$file" && gzip -t "$$file"; then
+            rm -f "$$tmp"
             echo "backup ok: $$file"
           else
             echo "backup FALHOU" >&2
-            rm -f "$$file"
+            rm -f "$$tmp" "$$file"
           fi
           find /backups -name 'apogee_membros-*.sql.gz' -mtime +$$BACKUP_RETENTION_DAYS -delete
           sleep 86400
