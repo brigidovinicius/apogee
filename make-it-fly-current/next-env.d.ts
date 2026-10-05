@@ -1,0 +1,1 @@
+/Users/viniciusbrigido/Apogee - Site Interativo/make-it-fly-current/next-env.d.ts
