@@ -35,6 +35,8 @@ test("/login is the canonical Stack Auth entry and permits only safe returns", a
   assert.match(login, /<SignIn\s*\/>/);
   assert.doesNotMatch(login, /GOOGLE_CLIENT_SECRET/);
   for (const layout of [loginLayout, membersLayout]) {
+    assert.match(layout, /await connection\(\)/);
+    assert.match(layout, /getHexclaveServerApp\(\)/);
     assert.match(layout, /<HexclaveProvider app=\{hexclaveServerApp\}>/);
   }
   for (const page of [legacySignIn, legacySignUp]) {
@@ -76,10 +78,10 @@ test("Hexclave uses the official Google callback and requested declarative produ
 
 test("member routes validate the Hexclave session and send unauthenticated traffic to /login", async () => {
   const [proxy, dal] = await Promise.all([source("proxy.ts"), source("lib/members/dal.ts")]);
-  assert.match(proxy, /hexclaveServerApp\.getUser\(\{ tokenStore: request \}\)/);
+  assert.match(proxy, /getHexclaveServerApp\(\)\.getUser\(\{ tokenStore: request \}\)/);
   assert.match(proxy, /new URL\("\/login", request\.url\)/);
   assert.match(proxy, /login\.searchParams\.set\("next", pathname \+ search\)/);
-  assert.match(dal, /hexclaveServerApp\.getUser\(\)/);
+  assert.match(dal, /getHexclaveServerApp\(\)\.getUser\(\)/);
   assert.match(dal, /await connection\(\)/);
   assert.match(dal, /redirect\(next \? `\/login\?next=\$\{encodeURIComponent\(next\)\}` : "\/login"\)/);
 });

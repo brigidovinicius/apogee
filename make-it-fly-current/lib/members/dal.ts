@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { hexclaveServerApp } from "@/lib/hexclave/server";
+import { getHexclaveServerApp } from "@/lib/hexclave/server";
 import { getDb } from "./db";
 import { stableMemberUsername } from "./google-oauth";
 import { hexclaveIdentity, user } from "./schema";
@@ -102,7 +102,7 @@ export const getCurrentMember = cache(async (): Promise<CurrentMember | null> =>
   // A sessão deve ser lida por requisição. Isso também impede que o Next tente
   // pré-renderizar páginas autenticadas durante o build da imagem Docker.
   await connection();
-  const hexclaveUser = await hexclaveServerApp.getUser();
+  const hexclaveUser = await getHexclaveServerApp().getUser();
   if (!hexclaveUser) return null;
   return provisionLegacyMember({
     hexclaveUserId: hexclaveUser.id,

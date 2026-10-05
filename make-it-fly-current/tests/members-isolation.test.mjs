@@ -66,6 +66,6 @@ test("the app role is not a superuser and the Node client disables prepared stat
 test("proxy only guards the members area and sends unauthenticated traffic to canonical login", async () => {
   const proxy = await source("proxy.ts");
   assert.match(proxy, /matcher: \["\/membros", "\/membros\/:path\*"\]/);
-  assert.match(proxy, /hexclaveServerApp\.getUser\(\{ tokenStore: request \}\)/);
+  assert.match(proxy, /getHexclaveServerApp\(\)\.getUser\(\{ tokenStore: request \}\)/);
   assert.match(proxy, /new URL\("\/login", request\.url\)/);
 });

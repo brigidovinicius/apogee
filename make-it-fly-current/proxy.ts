@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { hexclaveServerApp } from "@/lib/hexclave/server";
+import { getHexclaveServerApp } from "@/lib/hexclave/server";
 
 // Proxy reduz navegações desnecessárias; a autorização também é revalidada no
 // servidor (lib/members/dal.ts) antes de qualquer leitura ou escrita do fórum.
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  const member = await hexclaveServerApp.getUser({ tokenStore: request });
+  const member = await getHexclaveServerApp().getUser({ tokenStore: request });
   if (!member) {
     const login = new URL("/login", request.url);
     login.searchParams.set("next", pathname + search);
