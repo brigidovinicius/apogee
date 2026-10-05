@@ -2,6 +2,8 @@
 
 O usuário determinou em 13/09/2026 que nenhuma nova versão, inclusive preview hospedado, seja publicada sem sua autorização explícita após revisão. Pedidos de alterações ou testes não autorizam publicação. O pedido atual autoriza somente restaurar a versão anterior preservando a Terra e a animação. Autorizações antigas não são permanentes.
 
+Este projeto usa Hexclave para gerenciar usuários e recursos associados. Para informações atualizadas sobre seus recursos ou quando avaliar um serviço voltado ao usuário, consulte https://skill.hexclave.com.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
