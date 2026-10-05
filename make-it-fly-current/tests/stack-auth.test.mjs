@@ -50,14 +50,23 @@ test("safe member return paths reject open redirects", async () => {
   }
 });
 
-test("Google uses the official Stack Auth Cloud callback and declarative provider switch", async () => {
+test("Hexclave uses the official Google callback and requested declarative product switches", async () => {
   const [urls, config] = await Promise.all([
     loadTypeScript("lib/hexclave/urls.ts"),
     source("hexclave.config.ts"),
   ]);
   assert.equal(urls.googleOAuthCallbackUrl, "https://api.hexclave.com/api/v1/auth/oauth/callback/google");
-  assert.match(config, /authentication:\s*\{\s*enabled:\s*true\s*\}/);
-  assert.match(config, /google:\s*\{[\s\S]*type:\s*"google"[\s\S]*allowSignIn:\s*true/);
+  for (const app of ["authentication", "payments", "emails", '"data-vault"', "analytics"]) {
+    assert.match(config, new RegExp(`${app}:\\s*\\{\\s*enabled:\\s*true\\s*\\}`));
+  }
+  for (const method of ["password", "otp", "passkey"]) {
+    assert.match(config, new RegExp(`${method}:\\s*\\{\\s*allowSignIn:\\s*true,?\\s*\\}`));
+  }
+  for (const provider of ["google", "github", "microsoft"]) {
+    assert.match(config, new RegExp(`${provider}:\\s*\\{[\\s\\S]*type:\\s*"${provider}"[\\s\\S]*allowSignIn:\\s*true[\\s\\S]*allowConnectedAccounts:\\s*true`));
+  }
+  assert.match(config, /accountMergeStrategy:\s*"link_method"/);
+  assert.match(config, /selectedThemeId:\s*"1df07ae6-abf3-4a40-83a5-a1a2cbe336ac"/);
   assert.doesNotMatch(config, /clientSecret|clientId/i);
 });
 
