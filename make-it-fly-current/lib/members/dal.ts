@@ -1,5 +1,6 @@
 import "server-only";
 import { eq } from "drizzle-orm";
+import { connection } from "next/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
@@ -98,6 +99,9 @@ async function provisionLegacyMember(input: {
 
 // Verificação real da sessão; o proxy só antecipa o redirecionamento.
 export const getCurrentMember = cache(async (): Promise<CurrentMember | null> => {
+  // A sessão deve ser lida por requisição. Isso também impede que o Next tente
+  // pré-renderizar páginas autenticadas durante o build da imagem Docker.
+  await connection();
   const hexclaveUser = await hexclaveServerApp.getUser();
   if (!hexclaveUser) return null;
   return provisionLegacyMember({

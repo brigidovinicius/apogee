@@ -80,7 +80,20 @@ test("member routes validate the Hexclave session and send unauthenticated traff
   assert.match(proxy, /new URL\("\/login", request\.url\)/);
   assert.match(proxy, /login\.searchParams\.set\("next", pathname \+ search\)/);
   assert.match(dal, /hexclaveServerApp\.getUser\(\)/);
+  assert.match(dal, /await connection\(\)/);
   assert.match(dal, /redirect\(next \? `\/login\?next=\$\{encodeURIComponent\(next\)\}` : "\/login"\)/);
+});
+
+test("Docker builds receive only the public Hexclave project ID", async () => {
+  const [dockerfile, compose] = await Promise.all([
+    source("Dockerfile"),
+    source("infra/site/docker-compose.yml"),
+  ]);
+  assert.match(dockerfile, /ARG NEXT_PUBLIC_HEXCLAVE_PROJECT_ID/);
+  assert.match(dockerfile, /HEXCLAVE_PROJECT_ID=\$\{NEXT_PUBLIC_HEXCLAVE_PROJECT_ID\}/);
+  assert.match(compose, /NEXT_PUBLIC_HEXCLAVE_PROJECT_ID: \$\{NEXT_PUBLIC_HEXCLAVE_PROJECT_ID\}/);
+  assert.doesNotMatch(dockerfile, /HEXCLAVE_SECRET_SERVER_KEY/);
+  assert.doesNotMatch(compose, /HEXCLAVE_SECRET_SERVER_KEY/);
 });
 
 test("logout delegates to the Stack Auth session and legacy forum identity is preserved", async () => {

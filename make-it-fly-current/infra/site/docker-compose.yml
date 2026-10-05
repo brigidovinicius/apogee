@@ -8,6 +8,9 @@ services:
       dockerfile: Dockerfile
       args:
         APOGEE_RELEASE_SHA: ${APOGEE_RELEASE_SHA:-local}
+        # ID público necessário no `next build`; a chave de servidor nunca é
+        # enviada para uma camada de build.
+        NEXT_PUBLIC_HEXCLAVE_PROJECT_ID: ${NEXT_PUBLIC_HEXCLAVE_PROJECT_ID}
     image: apogee-site:${APOGEE_RELEASE_SHA:-local}
     restart: unless-stopped
     init: true

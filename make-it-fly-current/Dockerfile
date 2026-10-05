@@ -6,6 +6,12 @@ RUN npm ci
 FROM node:24-bookworm-slim AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+# O ID do projeto é público e o Next.js precisa conhecê-lo no build para
+# incluí-lo no bundle do cliente. A chave de servidor permanece apenas no
+# ambiente de execução do container.
+ARG NEXT_PUBLIC_HEXCLAVE_PROJECT_ID
+ENV NEXT_PUBLIC_HEXCLAVE_PROJECT_ID=${NEXT_PUBLIC_HEXCLAVE_PROJECT_ID} \
+    HEXCLAVE_PROJECT_ID=${NEXT_PUBLIC_HEXCLAVE_PROJECT_ID}
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
