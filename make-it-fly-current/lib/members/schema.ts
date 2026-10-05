@@ -81,6 +81,18 @@ export const rateLimit = pgTable("rate_limit", {
   lastRequest: bigint("last_request", { mode: "number" }).notNull(),
 });
 
+// Vínculo entre a identidade hospedada pelo Stack Auth Cloud (Hexclave) e o
+// usuário legado que é referenciado pelo fórum. Preserva IDs, autoria e todas
+// as tabelas criadas para Better Auth durante a transição de sessão.
+export const hexclaveIdentity = pgTable("hexclave_identity", {
+  hexclaveUserId: text("hexclave_user_id").primaryKey(),
+  memberId: text("member_id")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Fórum
 
 export const forumCategory = pgTable("forum_category", {

@@ -63,8 +63,9 @@ test("the app role is not a superuser and the Node client disables prepared stat
   assert.match(db, /rejectUnauthorized: true/);
 });
 
-test("proxy only guards the members area and leaves login and sign-up public", async () => {
+test("proxy only guards the members area and sends unauthenticated traffic to canonical login", async () => {
   const proxy = await source("proxy.ts");
   assert.match(proxy, /matcher: \["\/membros", "\/membros\/:path\*"\]/);
-  assert.match(proxy, /"\/membros\/entrar", "\/membros\/cadastro"/);
+  assert.match(proxy, /hexclaveServerApp\.getUser\(\{ tokenStore: request \}\)/);
+  assert.match(proxy, /new URL\("\/login", request\.url\)/);
 });

@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { signOut } from "@/app/membros/actions";
 import type { CurrentMember } from "@/lib/members/dal";
 import { AvatarInitials } from "./avatar-initials";
+import { SignOutButton } from "./sign-out-button";
 import styles from "./members.module.css";
 
 export function MemberBar({ member, current }: { member: CurrentMember; current?: "forum" | "perfil" }) {
@@ -18,11 +18,7 @@ export function MemberBar({ member, current }: { member: CurrentMember; current?
       <div className={styles.memberIdentity}>
         <AvatarInitials name={member.name} size="small" />
         <span>@{member.username}</span>
-        <form action={signOut}>
-          <button className={styles.linkButton} type="submit">
-            Sair
-          </button>
-        </form>
+        <SignOutButton />
       </div>
     </div>
   );

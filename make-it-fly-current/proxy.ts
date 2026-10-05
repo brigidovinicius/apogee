@@ -1,16 +1,13 @@
-import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
+import { hexclaveServerApp } from "@/lib/hexclave/server";
 
-// Checagem otimista: só confere se existe cookie de sessão. A validação real
-// acontece no servidor (lib/members/dal.ts) em cada página e action.
-const PUBLIC_MEMBER_PATHS = new Set(["/membros/entrar", "/membros/cadastro"]);
-
-export function proxy(request: NextRequest) {
+// Proxy reduz navegações desnecessárias; a autorização também é revalidada no
+// servidor (lib/members/dal.ts) antes de qualquer leitura ou escrita do fórum.
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  if (PUBLIC_MEMBER_PATHS.has(pathname)) return NextResponse.next();
-
-  if (!getSessionCookie(request)) {
-    const login = new URL("/membros/entrar", request.url);
+  const member = await hexclaveServerApp.getUser({ tokenStore: request });
+  if (!member) {
+    const login = new URL("/login", request.url);
     login.searchParams.set("next", pathname + search);
     return NextResponse.redirect(login);
   }

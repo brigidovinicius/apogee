@@ -34,21 +34,20 @@ test("Google OAuth errors are safe and actionable without exposing provider deta
   assert.equal(googleOAuthErrorMessage(undefined), undefined);
 });
 
-test("Google is configured server-side and sign-up stays explicit", async () => {
-  const [auth, forms, example] = await Promise.all([
-    readFile(new URL("../lib/members/auth.ts", import.meta.url), "utf8"),
-    readFile(new URL("../components/members/auth-forms.tsx", import.meta.url), "utf8"),
+test("Google is configured through Stack Auth Cloud without local OAuth secrets", async () => {
+  const [config, urls, login, example] = await Promise.all([
+    readFile(new URL("../hexclave.config.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/hexclave/urls.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/login/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../.env.example", import.meta.url), "utf8"),
   ]);
-  assert.match(auth, /socialProviders:\s*\{\s*google:/s);
-  assert.match(auth, /GOOGLE_CLIENT_ID/);
-  assert.match(auth, /GOOGLE_CLIENT_SECRET/);
-  assert.match(auth, /disableImplicitSignUp:\s*true/);
-  assert.match(auth, /requireEmailVerification:\s*true/);
-  assert.match(forms, /provider:\s*"google"/);
-  assert.match(forms, /requestSignUp/);
-  assert.match(forms, /errorCallbackURL/);
-  assert.match(example, /^GOOGLE_CLIENT_ID=$/m);
-  assert.match(example, /^GOOGLE_CLIENT_SECRET=$/m);
-  assert.doesNotMatch(example, /^NEXT_PUBLIC_.*GOOGLE/m);
+  assert.match(config, /google:\s*\{[\s\S]*type:\s*"google"[\s\S]*allowSignIn:\s*true/);
+  assert.match(config, /accountMergeStrategy:\s*"link_method"/);
+  assert.match(urls, /https:\/\/api\.hexclave\.com\/api\/v1\/auth\/oauth\/callback\/google/);
+  assert.match(login, /<SignIn\s*\/>/);
+  assert.match(example, /^NEXT_PUBLIC_HEXCLAVE_PROJECT_ID=$/m);
+  assert.match(example, /^HEXCLAVE_PROJECT_ID=$/m);
+  assert.match(example, /^HEXCLAVE_SECRET_SERVER_KEY=$/m);
+  assert.doesNotMatch(config, /clientSecret|clientId/i);
+  assert.doesNotMatch(example, /^NEXT_PUBLIC_.*(?:SECRET|GOOGLE_CLIENT)/m);
 });
