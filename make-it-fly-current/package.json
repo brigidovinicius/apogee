@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "prebuild": "node scripts/ensure-next-env.mjs",
-    "build": "next typegen --webpack && next build --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "typegen": "next typegen --webpack",
