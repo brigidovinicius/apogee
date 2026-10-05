@@ -51,9 +51,10 @@ test("safe member return paths reject open redirects", async () => {
 });
 
 test("Hexclave uses the official Google callback and requested declarative product switches", async () => {
-  const [urls, config] = await Promise.all([
+  const [urls, config, packageJson] = await Promise.all([
     loadTypeScript("lib/hexclave/urls.ts"),
     source("hexclave.config.ts"),
+    source("package.json").then(JSON.parse),
   ]);
   assert.equal(urls.googleOAuthCallbackUrl, "https://api.hexclave.com/api/v1/auth/oauth/callback/google");
   for (const app of ["authentication", "payments", "emails", '"data-vault"', "analytics"]) {
@@ -68,6 +69,9 @@ test("Hexclave uses the official Google callback and requested declarative produ
   assert.match(config, /accountMergeStrategy:\s*"link_method"/);
   assert.match(config, /selectedThemeId:\s*"1df07ae6-abf3-4a40-83a5-a1a2cbe336ac"/);
   assert.doesNotMatch(config, /clientSecret|clientId/i);
+  assert.equal(packageJson.devDependencies["@hexclave/cli"], "1.0.123");
+  assert.equal(packageJson.scripts.dev, "hexclave dev --config-file ./hexclave.config.ts -- npm run dev:inner");
+  assert.equal(packageJson.scripts["dev:inner"], "next dev --webpack");
 });
 
 test("member routes validate the Hexclave session and send unauthenticated traffic to /login", async () => {

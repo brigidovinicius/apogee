@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "hexclave dev --config-file ./hexclave.config.ts -- npm run dev:inner",
+    "dev:inner": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
@@ -38,6 +39,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@hexclave/cli": "1.0.123",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
