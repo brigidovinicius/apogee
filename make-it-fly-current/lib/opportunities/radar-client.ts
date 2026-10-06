@@ -1,8 +1,9 @@
+import "server-only";
 import {
   type EducationLevel,
   type OpportunityKind,
   type StudentOpportunity,
-} from "@/content/opportunities";
+} from "@/lib/opportunities/types";
 
 type RadarResponse = {
   version: number;
@@ -10,6 +11,7 @@ type RadarResponse = {
 };
 
 const radarApiUrl = process.env.RADAR_ACADEMICO_API_URL;
+const radarApiToken = process.env.RADAR_ACADEMICO_API_TOKEN;
 
 const scholarshipBenefits = new Set([
   "academic_scholarship",
@@ -108,12 +110,12 @@ function toOpportunity(value: unknown): StudentOpportunity | null {
  * catalogue available instead of breaking the public mural.
  */
 export async function listRadarOpportunities(): Promise<StudentOpportunity[]> {
-  if (!radarApiUrl) return [];
+  if (!radarApiUrl || !radarApiToken) return [];
 
   try {
     const response = await fetch(radarApiUrl, {
       cache: "no-store",
-      headers: { Accept: "application/json" },
+      headers: { Accept: "application/json", Authorization: `Bearer ${radarApiToken}` },
       signal: AbortSignal.timeout(2_000),
     });
     if (!response.ok) return [];

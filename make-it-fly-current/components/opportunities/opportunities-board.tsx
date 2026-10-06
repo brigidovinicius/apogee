@@ -12,7 +12,7 @@ import {
   dateInBrazil,
   isOpportunityOpen,
   sortByDeadline,
-} from "@/content/opportunities";
+} from "@/lib/opportunities/types";
 import styles from "./opportunities.module.css";
 
 type OpportunityBoardProps = {
