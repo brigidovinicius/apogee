@@ -28,7 +28,16 @@ test("/login is the public login entry and forwards only a safe next path", asyn
 test("/login rejects external next values before it reaches the member login", async () => {
   const { safeNextPath } = await loadTypeScript("lib/members/validation.ts");
   assert.equal(safeNextPath("/membros/forum/ideias?pagina=2"), "/membros/forum/ideias?pagina=2");
-  for (const unsafe of ["https://evil.example", "//evil.example", "/login", "/membros\\evil"]) {
+  assert.equal(safeNextPath("/membros/forum/ideias?pagina=2#fim"), "/membros/forum/ideias?pagina=2#fim");
+  for (const unsafe of [
+    "https://evil.example",
+    "//evil.example",
+    "/login",
+    "/membrosexterno",
+    "/membros/../login",
+    "/membros/%2e%2e/login",
+    "/membros\\evil",
+  ]) {
     assert.equal(safeNextPath(unsafe), "/membros", unsafe);
   }
 });
