@@ -57,3 +57,10 @@ test("Google is configured server-side and sign-up stays explicit", async () => 
   assert.match(example, /^GOOGLE_CLIENT_SECRET=$/m);
   assert.doesNotMatch(example, /^NEXT_PUBLIC_.*GOOGLE/m);
 });
+
+test("members database keeps TLS required unless local mode is explicit", async () => {
+  const db = await readFile(new URL("../lib/members/db.ts", import.meta.url), "utf8");
+  assert.match(db, /const sslMode = process\.env\.DATABASE_SSL_MODE/);
+  assert.match(db, /sslMode !== "disable" && sslMode !== "require"/);
+  assert.match(db, /sslMode === "disable" \? false : "require"/);
+});

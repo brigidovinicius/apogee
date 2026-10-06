@@ -23,8 +23,14 @@ export function getDb(): MembersDb {
   const ca = process.env.DATABASE_CA_CERT_FILE
     ? readFileSync(process.env.DATABASE_CA_CERT_FILE, "utf8")
     : process.env.DATABASE_CA_CERT?.replace(/\\n/g, "\n");
+  const sslMode = process.env.DATABASE_SSL_MODE;
+  if (sslMode && sslMode !== "disable" && sslMode !== "require") {
+    throw new Error("DATABASE_SSL_MODE deve ser 'disable' ou 'require'.");
+  }
   const client = postgres(url, {
-    ssl: ca ? { ca, rejectUnauthorized: true } : "require",
+    // Produção continua exigindo TLS. O desligamento só é possível quando
+    // explicitamente solicitado para um banco local de desenvolvimento.
+    ssl: ca ? { ca, rejectUnauthorized: true } : sslMode === "disable" ? false : "require",
     prepare: false,
     max: Number(process.env.DATABASE_POOL_MAX ?? 1),
     idle_timeout: 20,
