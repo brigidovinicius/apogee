@@ -13,6 +13,7 @@ No ambiente GitHub **Production** do repositório, configure somente:
 | Variable | `VPS_HOST` | IP ou hostname da VPS Apogee. |
 | Secret | `VPS_SSH_PRIVATE_KEY` | Chave privada ED25519 exclusiva para deploy. |
 | Secret | `VPS_SSH_KNOWN_HOSTS` | Entrada `known_hosts` previamente conferida da VPS. |
+| Secret | `LINEAR_API_KEY` | Chave pessoal do Linear, limitada à atualização do issue do deploy. |
 
 A chave pública correspondente deve ser instalada na conta `root` da VPS com
 permissões restritas ao necessário para o deploy. Nunca versione, imprima ou
@@ -22,9 +23,12 @@ cole a chave privada no repositório, nos logs ou em issues.
 
 1. Abra **Actions → Deploy Apogee site to VPS → Run workflow**.
 2. Informe o SHA completo já existente no GitHub.
-3. Escolha a branch que contém o workflow.
-4. Registre o resultado no issue Linear Apogee correspondente, com SHA,
-   status público das duas rotas e SHA de rollback exibido pelo job.
+3. Opcionalmente informe o issue Linear (o padrão é `APG-6`).
+4. Escolha a branch que contém o workflow.
+
+Ao concluir, o job registra automaticamente no issue Linear escolhido o
+status, SHA e link da execução. Ele não altera o status do issue: a decisão
+de mover um cartão para *Done* continua dependente da validação apropriada.
 
 O job falha antes de qualquer alteração se o SHA, host, chave, identidade da
 VPS, checkout, permissão do `.env` ou Compose não forem válidos. Depois do

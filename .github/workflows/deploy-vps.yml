@@ -7,6 +7,11 @@ on:
         description: Full Git commit SHA to deploy
         required: true
         type: string
+      linear_issue_identifier:
+        description: Linear issue to receive the deployment result
+        required: false
+        default: APG-6
+        type: string
 
 permissions:
   contents: read
@@ -24,6 +29,7 @@ jobs:
     env:
       VPS_HOST: ${{ vars.VPS_HOST }}
       RELEASE_SHA: ${{ inputs.release_sha }}
+      LINEAR_ISSUE_IDENTIFIER: ${{ inputs.linear_issue_identifier }}
     steps:
       - name: Validate requested revision and configuration
         shell: bash
@@ -31,6 +37,27 @@ jobs:
           set -Eeuo pipefail
           [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
           test -n "$VPS_HOST"
+
+      - name: Resolve Linear issue
+        id: linear_issue
+        shell: bash
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        run: |
+          set -Eeuo pipefail
+          test -n "$LINEAR_API_KEY"
+          test -n "$LINEAR_ISSUE_IDENTIFIER"
+
+          payload=$(jq -cn --arg identifier "$LINEAR_ISSUE_IDENTIFIER" '{query: "query ($identifier: String!) { issue(id: $identifier) { id identifier } }", variables: {identifier: $identifier}}')
+          response=$(curl --fail-with-body --silent --show-error \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: $LINEAR_API_KEY" \
+            --data "$payload" \
+            https://api.linear.app/graphql)
+          test "$(jq -r '.errors | length' <<<"$response")" = 0
+          issue_id=$(jq -r '.data.issue.id // empty' <<<"$response")
+          test -n "$issue_id"
+          printf 'id=%s\n' "$issue_id" >> "$GITHUB_OUTPUT"
 
       - name: Configure restricted SSH client
         shell: bash
@@ -114,3 +141,23 @@ jobs:
           printf 'members_status=%s login_status=%s\n' "$members_status" "$login_status"
           [[ "$members_status" =~ ^[23][0-9][0-9]$ ]]
           [[ "$login_status" =~ ^[23][0-9][0-9]$ ]]
+
+      - name: Publish deployment result to Linear
+        if: always() && steps.linear_issue.outputs.id != ''
+        shell: bash
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          LINEAR_ISSUE_ID: ${{ steps.linear_issue.outputs.id }}
+          JOB_STATUS: ${{ job.status }}
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -Eeuo pipefail
+          body=$(printf 'VPS deploy **%s**. SHA: `%s`. Workflow: %s' "$JOB_STATUS" "$RELEASE_SHA" "$WORKFLOW_URL")
+          payload=$(jq -cn --arg issueId "$LINEAR_ISSUE_ID" --arg body "$body" '{query: "mutation ($input: CommentCreateInput!) { commentCreate(input: $input) { success comment { id } } }", variables: {input: {issueId: $issueId, body: $body}}}')
+          response=$(curl --fail-with-body --silent --show-error \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: $LINEAR_API_KEY" \
+            --data "$payload" \
+            https://api.linear.app/graphql)
+          test "$(jq -r '.errors | length' <<<"$response")" = 0
+          test "$(jq -r '.data.commentCreate.success' <<<"$response")" = true
