@@ -1,0 +1,116 @@
+name: Deploy Apogee site to VPS
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Full Git commit SHA to deploy
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apogee-site-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy site only
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 20
+    env:
+      VPS_HOST: ${{ vars.VPS_HOST }}
+      RELEASE_SHA: ${{ inputs.release_sha }}
+    steps:
+      - name: Validate requested revision and configuration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test -n "$VPS_HOST"
+
+      - name: Configure restricted SSH client
+        shell: bash
+        env:
+          VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          install -d -m 700 ~/.ssh
+          umask 077
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          test -s ~/.ssh/id_ed25519
+          test -s ~/.ssh/known_hosts
+
+      - name: Verify VPS identity
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 \
+            "root@$VPS_HOST" 'test "$(whoami)" = root && hostname && pwd'
+
+      - name: Deploy only apogee-site web and keep rollback SHA
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 \
+            "root@$VPS_HOST" "RELEASE_SHA='$RELEASE_SHA' bash -s" <<'REMOTE'
+          set -Eeuo pipefail
+
+          repo=/opt/apogee-site/repo
+          compose_file="$repo/make-it-fly-current/infra/site/docker-compose.yml"
+          env_file="$repo/make-it-fly-current/infra/site/.env"
+
+          test -d "$repo/.git"
+          test -f "$compose_file"
+          test -f "$env_file"
+          test "$(stat -c '%a' "$env_file")" = 600
+
+          cd "$repo"
+          git diff --quiet
+          git diff --cached --quiet
+          previous_sha=$(git rev-parse HEAD)
+          git fetch --quiet origin "$RELEASE_SHA"
+          git cat-file -e "$RELEASE_SHA^{commit}"
+          git checkout --detach --quiet "$RELEASE_SHA"
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+
+          export APOGEE_RELEASE_SHA="$RELEASE_SHA"
+          export APOGEE_SITE_ENV_FILE="$env_file"
+          docker compose --env-file "$env_file" -f "$compose_file" config -q
+
+          rollback() {
+            git checkout --detach --quiet "$previous_sha"
+            export APOGEE_RELEASE_SHA="$previous_sha"
+            docker compose --env-file "$env_file" -f "$compose_file" up -d --build web
+          }
+          trap rollback ERR
+
+          docker compose --env-file "$env_file" -f "$compose_file" up -d --build web
+
+          for attempt in $(seq 1 20); do
+            health=$(docker inspect apogee-site-web-1 --format '{{.State.Health.Status}}')
+            if test "$health" = healthy; then
+              printf 'rollback_sha=%s deployed_sha=%s health=%s\n' "$previous_sha" "$RELEASE_SHA" "$health"
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
+          REMOTE
+
+      - name: Probe public login routes
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          members_status=$(curl --silent --show-error --location --max-time 30 --output /dev/null --write-out '%{http_code}' \
+            'https://www.apogee.community/membros/entrar?next=%2Fmembros')
+          login_status=$(curl --silent --show-error --location --max-time 30 --output /dev/null --write-out '%{http_code}' \
+            'https://www.apogee.community/login')
+          printf 'members_status=%s login_status=%s\n' "$members_status" "$login_status"
+          [[ "$members_status" =~ ^[23][0-9][0-9]$ ]]
+          [[ "$login_status" =~ ^[23][0-9][0-9]$ ]]
