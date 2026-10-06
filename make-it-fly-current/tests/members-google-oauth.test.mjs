@@ -30,6 +30,11 @@ test("Google OAuth uses a stable, valid non-identifying forum username", async (
 test("Google OAuth errors are safe and actionable without exposing provider details", async () => {
   const { googleOAuthErrorMessage } = await loadTypeScript("lib/members/social-auth.ts");
   assert.equal(googleOAuthErrorMessage("access_denied"), "A autorização com o Google foi cancelada.");
+  assert.equal(
+    googleOAuthErrorMessage("account not linked"),
+    "Já existe uma conta com este e-mail. Entre com e-mail e senha.",
+  );
+  assert.equal(googleOAuthErrorMessage("signup disabled"), "Crie sua conta com Google pela página de cadastro.");
   assert.match(googleOAuthErrorMessage("upstream_private_detail"), /^Não foi possível concluir/);
   assert.equal(googleOAuthErrorMessage(undefined), undefined);
 });
