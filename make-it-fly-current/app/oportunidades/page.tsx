@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
+import { OpportunitiesPreview } from "@/components/opportunities/opportunities-preview";
 import styles from "@/components/opportunities/opportunities.module.css";
-import { STUDENT_OPPORTUNITIES } from "@/content/opportunities";
-import { listRadarOpportunities, mergeOpportunities } from "@/lib/opportunities/radar-client";
+import { listPublicOpportunityPreviews } from "@/lib/opportunities/access";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default async function OpportunitiesPage() {
-  const radarOpportunities = await listRadarOpportunities();
-  const opportunities = mergeOpportunities(STUDENT_OPPORTUNITIES, radarOpportunities);
+  const opportunities = await listPublicOpportunityPreviews();
 
   return (
     <div className={styles.page}>
@@ -39,6 +37,7 @@ export default async function OpportunitiesPage() {
         <nav className={styles.nav} aria-label="Navegação principal">
           <Link href="/">Início</Link>
           <Link href="/oportunidades" aria-current="page">Oportunidades</Link>
+          <Link href="/membros/entrar?next=%2Fmembros%2Foportunidades">Entrar</Link>
         </nav>
       </header>
 
@@ -47,16 +46,16 @@ export default async function OpportunitiesPage() {
           <p className={styles.eyebrow}>Apogee · oportunidades estudantis</p>
           <h1 id="opportunities-title">Conhecimento muda <em>trajetórias.</em></h1>
           <p className={styles.lead}>
-            Um ponto de partida para encontrar bolsas, programas e intercâmbios
-            com inscrições abertas para estudantes brasileiros.
+            Conheça as oportunidades em destaque e acesse o Radar completo pela
+            área de membros.
           </p>
           <p className={styles.promise}>
-            Cada chamada é conferida em sua fonte oficial antes de aparecer aqui.
-            Leia o edital completo para confirmar se o seu perfil atende aos critérios.
+            A prévia pública mostra apenas uma amostra. Critérios, apoios, prazos
+            e links oficiais ficam protegidos para membros autenticados.
           </p>
         </section>
 
-        <OpportunitiesBoard opportunities={opportunities} />
+        <OpportunitiesPreview opportunities={opportunities} />
       </main>
 
       <footer className={styles.footer}>

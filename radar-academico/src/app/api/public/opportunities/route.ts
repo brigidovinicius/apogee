@@ -1,4 +1,5 @@
 import { queryPublic } from "@/lib/db/client";
+import { isRadarConsumerAuthorized } from "@/lib/auth/radar-consumer";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,7 +26,14 @@ type PublicOpportunityResponse = {
  * RLS remains the last line of defence: only approved, verified, open and
  * published opportunities can leave this endpoint.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  if (!isRadarConsumerAuthorized(request)) {
+    return Response.json(
+      { error: "Não autorizado" },
+      { status: 401, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
   try {
     const result = await queryPublic<PublicOpportunityResponse>(
       `select
