@@ -76,10 +76,18 @@ test("pagination only accepts sane positive integers", () => {
 
 test("post-login redirects stay inside the members area", () => {
   assert.equal(v.safeNextPath("/membros/forum/ideias"), "/membros/forum/ideias");
-  for (const bad of ["https://evil.example", "//evil.example", "/membrosX\\evil", "/loja", undefined, 42]) {
-    const result = v.safeNextPath(bad);
-    assert.ok(result === "/membros" || (result.startsWith("/membros") && !result.startsWith("//")), String(bad));
+  assert.equal(v.safeNextPath("/membros/forum/ideias?pagina=2#fim"), "/membros/forum/ideias?pagina=2#fim");
+  for (const bad of [
+    "https://evil.example",
+    "//evil.example",
+    "/membrosexterno",
+    "/membros/../login",
+    "/membros/%2e%2e/login",
+    "/membrosX\\evil",
+    "/loja",
+    undefined,
+    42,
+  ]) {
+    assert.equal(v.safeNextPath(bad), "/membros", String(bad));
   }
-  assert.equal(v.safeNextPath("//evil.example"), "/membros");
-  assert.equal(v.safeNextPath("https://evil.example"), "/membros");
 });
