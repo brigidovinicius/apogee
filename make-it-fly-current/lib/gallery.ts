@@ -131,7 +131,9 @@ export async function listCommunityPhotos(request?: Request): Promise<Response> 
 
 const attempts = new Map<string, { count: number; expires: number }>();
 function allowUpload(request: Request, settings: GalleryConfig): boolean {
-  const source = process.env.VERCEL === "1" ? request.headers.get("x-vercel-forwarded-for") : "local";
+  const provider = process.env.APPLICATION_HOSTING_PROVIDER || (process.env.VERCEL === "1" ? "vercel" : "unknown");
+  const header = provider === "vercel" ? "x-vercel-forwarded-for" : provider === "caddy" ? "x-forwarded-for" : null;
+  const source = header ? request.headers.get(header) : "local";
   const ip = (source || "unknown").split(",")[0].trim().slice(0, 200);
   const key = createHmac("sha256", settings.signingSecret).update(`gallery:${ip}`).digest("hex");
   const now = Date.now();

@@ -96,11 +96,20 @@ export function parsePage(value: string | string[] | undefined): number {
   return Number.isInteger(page) && page >= 1 && page <= 10_000 ? page : 1;
 }
 
-/** Aceita só caminhos internos da área de membros para evitar open redirect. */
+const INTERNAL_ORIGIN = "https://apogee.invalid";
+
+/** Aceita só caminhos internos e normalizados da área de membros para evitar open redirect. */
 export function safeNextPath(value: unknown): string {
-  if (typeof value !== "string") return "/membros";
-  if (!value.startsWith("/membros") || value.startsWith("//") || value.includes("\\")) return "/membros";
-  return value;
+  if (typeof value !== "string" || value.includes("\\")) return "/membros";
+
+  try {
+    const next = new URL(value, INTERNAL_ORIGIN);
+    if (next.origin !== INTERNAL_ORIGIN) return "/membros";
+    if (next.pathname !== "/membros" && !next.pathname.startsWith("/membros/")) return "/membros";
+    return `${next.pathname}${next.search}${next.hash}`;
+  } catch {
+    return "/membros";
+  }
 }
 
 export type FieldErrors = Partial<Record<string, string>>;

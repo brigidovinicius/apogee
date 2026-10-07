@@ -45,6 +45,10 @@ test("the isolated compose stack exposes only PgBouncer and requires TLS", async
   assert.ok(postgres && pgbouncer);
   assert.doesNotMatch(postgres, /\n\s+ports:/, "postgres must not publish ports");
   assert.match(pgbouncer, /ports:/);
+  assert.match(pgbouncer, /"127\.0\.0\.1:\$\{PGBOUNCER_PORT:-6543\}:5432"/,
+    "PgBouncer must bind only to the VPS loopback interface");
+  assert.doesNotMatch(pgbouncer, /"(?:0\.0\.0\.0|\[::\]):/,
+    "PgBouncer must never bind a public interface");
   assert.match(pgbouncer, /CLIENT_TLS_SSLMODE: require/);
   assert.match(pgbouncer, /POOL_MODE: transaction/);
   assert.match(compose, /internal: true/);

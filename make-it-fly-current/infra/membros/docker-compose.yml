@@ -48,9 +48,10 @@ services:
       CLIENT_TLS_PROTOCOLS: tlsv1.2,tlsv1.3
     volumes:
       - ./certs:/etc/pgbouncer/certs:ro
-    # Única porta exposta do stack. Troque PGBOUNCER_PORT se colidir com o outro sistema.
+    # Mantém o banco acessível apenas pela própria VPS. Para acesso remoto, use uma
+    # camada de rede com allowlist explícita; não publique o PgBouncer na internet.
     ports:
-      - "${PGBOUNCER_PORT:-6543}:5432"
+      - "127.0.0.1:${PGBOUNCER_PORT:-6543}:5432"
     networks: [internal, edge]
     mem_limit: 128m
     cpus: 0.5
@@ -74,11 +75,14 @@ services:
       - |
         while true; do
           file="/backups/apogee_membros-$$(date +%Y%m%d-%H%M%S).sql.gz"
-          if pg_dump --no-owner | gzip > "$$file"; then
+          tmp="$$file.tmp"
+          rm -f "$$tmp"
+          if pg_dump --no-owner > "$$tmp" && test -s "$$tmp" && gzip -c "$$tmp" > "$$file" && gzip -t "$$file"; then
+            rm -f "$$tmp"
             echo "backup ok: $$file"
           else
             echo "backup FALHOU" >&2
-            rm -f "$$file"
+            rm -f "$$tmp" "$$file"
           fi
           find /backups -name 'apogee_membros-*.sql.gz' -mtime +$$BACKUP_RETENTION_DAYS -delete
           sleep 86400

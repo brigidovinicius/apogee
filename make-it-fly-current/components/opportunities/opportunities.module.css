@@ -1,8 +1,12 @@
 .page {
+  --opportunity-ink: var(--apogee-surface-inverse);
+  --opportunity-sky: var(--apogee-sky);
+  --opportunity-paper: var(--apogee-surface);
+
   min-height: 100dvh;
   overflow: hidden;
-  color: #07182d;
-  background: #fff;
+  color: var(--apogee-text);
+  background: var(--opportunity-paper);
 }
 
 .header,
@@ -12,6 +16,15 @@
   margin-inline: auto;
 }
 
+.loadingPage {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: clamp(1.25rem, 5vw, 4rem);
+  color: var(--apogee-text);
+  background: var(--opportunity-paper);
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -19,8 +32,8 @@
   min-height: 5.25rem;
   color: #fff;
   border-bottom: 1px solid rgb(185 211 238 / 32%);
-  background: #07182d;
-  box-shadow: 0 0 0 100vmax #07182d;
+  background: var(--opportunity-ink);
+  box-shadow: 0 0 0 100vmax var(--opportunity-ink);
   clip-path: inset(0 -100vmax);
 }
 
@@ -35,18 +48,12 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.62rem;
-  font-family: var(--font-noto-mono), monospace;
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  min-height: 3.25rem;
 }
 
-.brandMark {
-  width: 1.35rem;
+.brandLogo {
+  width: clamp(7.5rem, 11vw, 10rem);
   height: auto;
-  filter: brightness(0) invert(1);
 }
 
 .nav {
@@ -72,7 +79,7 @@
   height: 1px;
   margin-top: 0.35rem;
   content: "";
-  background: #b9d3ee;
+  background: var(--opportunity-sky);
 }
 
 .hero {
@@ -99,7 +106,8 @@
 .details dt,
 .launchWindow span,
 .cardFooter span {
-  font-family: var(--font-noto-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
   font-size: 0.66rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -107,14 +115,14 @@
 
 .eyebrow {
   margin: 0 0 1.35rem;
-  color: #b9d3ee;
+  color: var(--opportunity-sky);
 }
 
 .hero h1,
 .boardHeading h2,
 .empty h3 {
   margin: 0;
-  font-family: var(--font-gfs-didot), Didot, "Bodoni MT", var(--font-instrument-serif), Georgia, serif;
+  font-family: var(--font-instrument-serif), Georgia, serif;
   font-weight: 400;
   letter-spacing: -0.045em;
 }
@@ -126,7 +134,7 @@
 }
 
 .hero h1 em {
-  color: #07182d;
+  color: var(--apogee-text);
   font-family: var(--font-instrument-serif), Georgia, serif;
   font-style: italic;
 }
@@ -140,7 +148,6 @@
 }
 
 .promise {
-  display: flex;
   display: block;
   max-width: 40rem;
   margin: 2rem 0 0;
@@ -155,8 +162,8 @@
   padding: clamp(2rem, 5vw, 4rem) 0 6.5rem;
   color: #fff;
   border-top: 1px solid rgb(185 211 238 / 20%);
-  background: #07182d;
-  box-shadow: 0 0 0 100vmax #07182d;
+  background: var(--opportunity-ink);
+  box-shadow: 0 0 0 100vmax var(--opportunity-ink);
   clip-path: inset(0 -100vmax);
 }
 
@@ -195,6 +202,81 @@
   border-block: 1px solid rgb(185 211 238 / 18%);
 }
 
+.previewCta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: center;
+  margin: 3rem 0 1.75rem;
+  padding: 1rem;
+  border: 1px solid rgb(185 211 238 / 28%);
+  background: rgb(185 211 238 / 8%);
+}
+
+.previewCta > div:first-child {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.previewCta svg {
+  flex: 0 0 auto;
+  margin-top: 0.08rem;
+  color: #b9d3ee;
+}
+
+.previewCta p {
+  max-width: 38rem;
+  margin: 0;
+  color: rgb(255 255 255 / 78%);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.previewActions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.previewPrimary,
+.previewLogin,
+.previewCardLink {
+  text-decoration: none;
+}
+
+.previewPrimary,
+.previewLogin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--apogee-control-min-height);
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--apogee-radius-soft);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.previewPrimary {
+  color: var(--apogee-text);
+  background: var(--opportunity-sky);
+}
+
+.previewPrimary:hover {
+  background: #fff;
+}
+
+.previewLogin {
+  color: #b9d3ee;
+  border: 1px solid rgb(185 211 238 / 34%);
+}
+
+.previewLogin:hover {
+  color: #fff;
+  border-color: #fff;
+}
+
 .filterLabel {
   display: inline-flex;
   gap: 0.45rem;
@@ -211,10 +293,12 @@
 
 .filterGroup button,
 .empty button {
+  min-height: var(--apogee-control-min-height);
   padding: 0.43rem 0.65rem;
   color: rgb(255 255 255 / 68%);
   border: 1px solid rgb(185 211 238 / 20%);
   background: transparent;
+  border-radius: var(--apogee-radius-soft);
   font: inherit;
   font-size: 0.73rem;
   cursor: pointer;
@@ -224,9 +308,9 @@
 .filterGroup button:hover,
 .filterGroup button.selected,
 .empty button:hover {
-  color: #07182d;
-  border-color: #b9d3ee;
-  background: #b9d3ee;
+  color: var(--apogee-text);
+  border-color: var(--opportunity-sky);
+  background: var(--opportunity-sky);
 }
 
 .grid {
@@ -242,12 +326,60 @@
   flex-direction: column;
   min-height: 29rem;
   padding: clamp(1.25rem, 2.5vw, 1.8rem);
-  background: #0a0a0a;
+  background: var(--apogee-black);
   transition: background-color 180ms ease;
 }
 
 .card:hover {
-  background: #141414;
+  background: var(--opportunity-ink);
+}
+
+.previewCard {
+  min-height: 24rem;
+}
+
+.previewDetails {
+  display: grid;
+  gap: 0.75rem;
+  margin: 2rem 0 0;
+  filter: blur(5px);
+  opacity: 0.78;
+  user-select: none;
+}
+
+.previewDetails span {
+  display: block;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgb(185 211 238 / 30%), rgb(185 211 238 / 10%));
+}
+
+.previewDetails span:nth-child(2) {
+  width: 84%;
+}
+
+.previewDetails span:nth-child(3) {
+  width: 92%;
+  margin-top: 0.8rem;
+}
+
+.previewDetails span:nth-child(4) {
+  width: 67%;
+}
+
+.previewCardLink {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 2rem;
+  color: #b9d3ee;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.previewCardLink:hover {
+  color: #fff;
 }
 
 .cardTopline {
@@ -372,9 +504,24 @@
 .filterGroup button:focus-visible,
 .empty button:focus-visible,
 .externalLink:focus-visible,
+.previewPrimary:focus-visible,
+.previewLogin:focus-visible,
+.previewCardLink:focus-visible,
 .footer a:focus-visible {
   outline: 2px solid #b9d3ee;
   outline-offset: 4px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .empty {
@@ -407,10 +554,11 @@
   padding: 1.5rem 0 2rem;
   color: rgb(255 255 255 / 58%);
   border-top: 1px solid rgb(255 255 255 / 16%);
-  background: #0a0a0a;
-  box-shadow: 0 0 0 100vmax #0a0a0a;
+  background: var(--apogee-black);
+  box-shadow: 0 0 0 100vmax var(--apogee-black);
   clip-path: inset(0 -100vmax);
-  font-family: var(--font-noto-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -459,6 +607,13 @@
   }
 
   .filters {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .previewCta,
+  .previewCta > div:first-child,
+  .previewActions {
     align-items: flex-start;
     flex-direction: column;
   }

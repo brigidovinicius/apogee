@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
+import { OpportunitiesPreview } from "@/components/opportunities/opportunities-preview";
 import styles from "@/components/opportunities/opportunities.module.css";
-import { STUDENT_OPPORTUNITIES } from "@/content/opportunities";
+import { listPublicOpportunityPreviews } from "@/lib/opportunities/access";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Oportunidades estudantis | Apogee",
@@ -15,24 +17,27 @@ export const metadata: Metadata = {
   },
 };
 
-export default function OpportunitiesPage() {
+export default async function OpportunitiesPage() {
+  const opportunities = await listPublicOpportunityPreviews();
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <Link className={styles.brand} href="/" aria-label="Apogee — início">
           <Image
-            className={styles.brandMark}
-            src="/brand/apogee-star.svg"
-            alt=""
-            width={703}
-            height={870}
-            aria-hidden
+            className={styles.brandLogo}
+            src="/brand/apogee-logo-white.svg"
+            alt="Apogee"
+            width={1595}
+            height={986}
+            sizes="(max-width: 760px) 120px, 160px"
+            priority
           />
-          Apogee
         </Link>
         <nav className={styles.nav} aria-label="Navegação principal">
           <Link href="/">Início</Link>
           <Link href="/oportunidades" aria-current="page">Oportunidades</Link>
+          <Link href="/membros/entrar?next=%2Fmembros%2Foportunidades">Entrar</Link>
         </nav>
       </header>
 
@@ -41,16 +46,16 @@ export default function OpportunitiesPage() {
           <p className={styles.eyebrow}>Apogee · oportunidades estudantis</p>
           <h1 id="opportunities-title">Conhecimento muda <em>trajetórias.</em></h1>
           <p className={styles.lead}>
-            Um ponto de partida para encontrar bolsas, programas e intercâmbios
-            com inscrições abertas para estudantes brasileiros.
+            Conheça as oportunidades em destaque e acesse o Radar completo pela
+            área de membros.
           </p>
           <p className={styles.promise}>
-            Cada chamada é conferida em sua fonte oficial antes de aparecer aqui.
-            Leia o edital completo para confirmar se o seu perfil atende aos critérios.
+            A prévia pública mostra apenas uma amostra. Critérios, apoios, prazos
+            e links oficiais ficam protegidos para membros autenticados.
           </p>
         </section>
 
-        <OpportunitiesBoard opportunities={STUDENT_OPPORTUNITIES} />
+        <OpportunitiesPreview opportunities={opportunities} />
       </main>
 
       <footer className={styles.footer}>

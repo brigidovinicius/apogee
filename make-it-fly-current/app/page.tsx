@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./home.module.css";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 // Home provisória da Apogee até o site oficial existir. O Make It Fly vive em /makeitfly.
 export default function ApogeeHome() {

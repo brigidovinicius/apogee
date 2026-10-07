@@ -1,0 +1,16 @@
+# Caddy is the only internet-facing service. It provisions and renews TLS after
+# apogee.community points to this VPS and ports 80/443 reach this container.
+apogee.community {
+  redir https://www.apogee.community{uri} permanent
+}
+
+www.apogee.community {
+  encode zstd gzip
+  header {
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "camera=(), geolocation=(), microphone=()"
+    -Server
+  }
+  reverse_proxy web:3000
+}

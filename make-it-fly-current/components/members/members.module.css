@@ -1,19 +1,19 @@
 .page {
-  --ink: #07182d;
-  --navy: #0a1c33;
-  --blue: #7fa7d1;
-  --sky: #b9d3ee;
-  --ice: #dceafb;
-  --paper: #f5f8fc;
-  --line: #dce3ea;
-  --muted: #5b6b7d;
-  --error: #b3261e;
+  --ink: var(--apogee-surface-inverse);
+  --navy: var(--apogee-text);
+  --blue: var(--apogee-sky);
+  --sky: var(--apogee-sky);
+  --ice: color-mix(in srgb, var(--apogee-sky) 68%, var(--apogee-white));
+  --paper: var(--apogee-surface);
+  --line: var(--apogee-border);
+  --muted: var(--apogee-text-muted);
+  --error: var(--apogee-danger);
 
   min-height: 70vh;
-  padding: clamp(2rem, 5vw, 4.5rem) clamp(1rem, 4vw, 4rem) clamp(3rem, 7vw, 6rem);
+  padding: clamp(var(--apogee-space-6), 5vw, 4.5rem) clamp(var(--apogee-space-4), 4vw, var(--apogee-space-8)) clamp(var(--apogee-space-7), 7vw, 6rem);
   color: #ffffff;
   background:
-    radial-gradient(60rem 30rem at 85% -10%, rgb(127 167 209 / 18%), transparent 70%),
+    radial-gradient(60rem 30rem at 85% -10%, rgb(185 211 238 / 18%), transparent 70%),
     var(--ink);
 }
 
@@ -27,10 +27,15 @@
   margin-inline: auto;
 }
 
+.authIntro {
+  max-width: 34rem;
+}
+
 .eyebrow {
   margin: 0 0 0.9rem;
   color: var(--sky);
-  font-family: var(--font-dm-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
   font-size: 0.66rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -63,6 +68,69 @@
   margin-bottom: 2.25rem;
 }
 
+.radarEntry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+  margin: 0 0 2.25rem;
+  padding: clamp(1.35rem, 3vw, 2rem);
+  color: var(--navy);
+  background:
+    radial-gradient(circle at top right, rgb(185 211 238 / 44%), transparent 40%),
+    var(--ice);
+  border: 1px solid rgb(185 211 238 / 55%);
+}
+
+.radarEntryEyebrow {
+  margin: 0 0 0.65rem;
+  color: rgb(7 24 45 / 70%);
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.radarEntry h2 {
+  margin: 0;
+  font-family: var(--font-instrument-serif), serif;
+  font-size: clamp(1.65rem, 3vw, 2.2rem);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.radarEntry p:not(.radarEntryEyebrow) {
+  max-width: 38rem;
+  margin: 0.65rem 0 0;
+  color: rgb(7 24 45 / 76%);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.radarEntryLink {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding: 0.75rem 1rem;
+  color: #ffffff !important;
+  background: var(--navy);
+  border: 1px solid var(--navy);
+  font-size: 0.82rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.radarEntryLink:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
 .breadcrumbs {
   display: flex;
   flex-wrap: wrap;
@@ -71,7 +139,8 @@
   padding: 0;
   list-style: none;
   color: rgb(255 255 255 / 60%);
-  font-family: var(--font-dm-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
   font-size: 0.66rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -109,10 +178,17 @@
   padding: clamp(1.5rem, 4vw, 2.5rem);
   color: var(--navy);
   background: var(--paper);
+  border: 1px solid rgb(185 211 238 / 34%);
+  border-radius: var(--apogee-radius-soft);
+  box-shadow: 0 1.25rem 3.5rem rgb(0 0 0 / 18%);
 }
 
 .panel + .panel {
   margin-top: 1px;
+}
+
+.authPanel {
+  margin-top: var(--apogee-space-6);
 }
 
 .panelTitle {
@@ -147,7 +223,7 @@
   padding: 0.75rem 0.8rem;
   color: var(--navy);
   background: #ffffff;
-  border: 1px solid #a9b3bf;
+  border: 1px solid rgb(7 24 45 / 36%);
   border-radius: 0;
   font: inherit;
   font-size: 1rem;
@@ -204,12 +280,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  min-height: 3.1rem;
+  min-height: var(--apogee-control-min-height);
   padding: 0.8rem 1.2rem;
   color: #ffffff;
   background: var(--navy);
   border: 1px solid var(--navy);
-  border-radius: 0;
+  border-radius: var(--apogee-radius-soft);
   font: inherit;
   font-size: 0.82rem;
   font-weight: 600;
@@ -219,11 +295,11 @@
 }
 
 .primary:hover {
-  background: #143557;
+  background: var(--ink);
 }
 
 .primary:disabled {
-  background: #43566c;
+  background: rgb(7 24 45 / 56%);
   cursor: wait;
 }
 
@@ -270,6 +346,55 @@
   text-underline-offset: 3px;
 }
 
+.oauthDivider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.oauthDivider span {
+  height: 1px;
+  background: var(--line);
+}
+
+.googleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: var(--apogee-control-min-height);
+  padding: 0.8rem 1.2rem;
+  color: var(--navy);
+  background: #ffffff;
+  border: 1px solid rgb(7 24 45 / 36%);
+  border-radius: var(--apogee-radius-soft);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.googleButton:hover {
+  background: rgb(185 211 238 / 20%);
+  border-color: var(--navy);
+}
+
+.googleButton:disabled {
+  color: var(--muted);
+  cursor: wait;
+}
+
+.googleButton svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+}
+
 /* Barra do membro */
 
 .memberBar {
@@ -277,7 +402,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--apogee-space-4);
   margin-bottom: 2.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid rgb(255 255 255 / 14%);
@@ -292,6 +417,9 @@
 }
 
 .memberBar a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--apogee-control-min-height);
   text-decoration: none;
   opacity: 0.75;
 }
@@ -302,6 +430,7 @@
 }
 
 .memberBar form button {
+  min-height: var(--apogee-control-min-height);
   color: rgb(255 255 255 / 75%);
 }
 
@@ -365,7 +494,8 @@
   display: flex;
   gap: 1.5rem;
   color: var(--muted);
-  font-family: var(--font-dm-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
   font-size: 0.68rem;
   text-align: right;
   white-space: nowrap;
@@ -498,9 +628,9 @@
 
 .sectionTitle {
   margin: 0 0 1rem;
-  font-family: var(--font-dm-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
   font-size: 0.7rem;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--sky);
@@ -523,6 +653,10 @@
 }
 
 @media (max-width: 640px) {
+  .radarEntryLink {
+    width: 100%;
+  }
+
   .listItem {
     grid-template-columns: 1fr;
   }

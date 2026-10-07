@@ -9,9 +9,9 @@ Stack Docker **isolado**, que só guarda os dados da área de membros (login e f
 | Redes | `apogee_membros_internal` (interna, sem internet) e `apogee_membros_edge` |
 | Volume | `apogee_membros_pgdata` |
 | Banco / role | `apogee_membros` / `apogee_app` (sem superuser) |
-| Porta pública | só o PgBouncer, `PGBOUNCER_PORT` (padrão 6543), com TLS obrigatório |
+| Porta do host | PgBouncer em `127.0.0.1:PGBOUNCER_PORT` (padrão 6543), com TLS obrigatório |
 
-O Postgres não publica porta. O Next.js na Vercel fala só com o PgBouncer (modo transaction e TLS), usando o role `apogee_app`.
+O Postgres não publica porta e o PgBouncer fica limitado ao loopback da VPS. A aplicação Apogee hospedada na mesma VPS alcança o PgBouncer somente pela rede Docker privada `apogee_membros_edge`; não use o IP público da VPS para essa conexão. Uma aplicação externa à VPS exigiria outra conectividade privada explicitamente aprovada.
 
 ## 1. Subir na VPS
 
@@ -33,33 +33,28 @@ docker compose up -d
 docker compose ps
 ```
 
-Firewall: abra só a porta do PgBouncer (a 5432 continua fechada, porque nada a publica):
+Firewall: não abra `6543/tcp`. O bind em loopback protege o PgBouncer mesmo em hosts onde portas publicadas pelo Docker não respeitam a cadeia padrão da UFW.
 
-```sh
-sudo ufw allow 6543/tcp comment 'apogee-membros pgbouncer'
-```
-
-## 2. Variáveis na Vercel e no `.env.local`
+## 2. Variáveis do site Apogee e do `.env.local`
 
 Todas são server-only. **Nunca** use o prefixo `NEXT_PUBLIC_`.
 
 ```
-DATABASE_URL=postgres://apogee_app:<APP_DB_PASSWORD>@<IP_DA_VPS>:6543/apogee_membros
-DATABASE_CA_CERT=<conteúdo de certs/server.crt, com \n no lugar das quebras de linha>
+# Na VPS, use o DNS privado do serviço; nunca o IP público da VPS.
+DATABASE_URL=postgres://apogee_app:<APP_DB_PASSWORD>@pgbouncer:5432/apogee_membros
+DATABASE_CA_CERT_FILE=/run/apogee/pgbouncer-ca.crt
 BETTER_AUTH_SECRET=<openssl rand -hex 32>
-BETTER_AUTH_URL=https://makeitfly.vercel.app
+BETTER_AUTH_URL=https://www.apogee.community
 ```
 
-Com `DATABASE_CA_CERT`, o app valida o certificado do servidor e fica protegido contra MITM. Sem ele a conexão continua cifrada, mas sem validação. Para gerar o valor em uma linha: `awk '{printf "%s\\n", $0}' certs/server.crt`.
-
-Dica: na Vercel, escolha para as Functions a região mais próxima da VPS (Project → Settings → Functions → Region). Isso reduz a latência de cada consulta.
+O Compose do site monta somente o certificado público em `DATABASE_CA_CERT_FILE`; a chave privada do PgBouncer não entra no container da aplicação. Para desenvolvimento fora da VPS, `DATABASE_CA_CERT` continua aceito conforme o ambiente local seguro.
 
 ## 3. Criar as tabelas e as categorias
 
-Rode no seu computador, a partir de `make-it-fly-current/`:
+Rode a partir de uma sessão autorizada que alcance o endpoint aprovado. Para uma manutenção local da VPS, use um túnel SSH autorizado e o loopback:
 
 ```sh
-export DATABASE_URL='postgres://apogee_app:...@<IP_DA_VPS>:6543/apogee_membros'
+export DATABASE_URL='postgres://apogee_app:...@127.0.0.1:6543/apogee_membros'
 export DATABASE_CA_CERT_FILE=./infra/membros/certs/server.crt   # cópia do cert da VPS
 npm run db:migrate
 npm run db:seed
@@ -87,11 +82,11 @@ NEW=$(openssl rand -hex 32)
 docker compose exec postgres psql -U postgres -c "ALTER ROLE apogee_app PASSWORD '$NEW'"
 # atualize APP_DB_PASSWORD no .env e recrie o pgbouncer (o userlist é gerado no start):
 docker compose up -d --force-recreate pgbouncer
-# atualize DATABASE_URL na Vercel e faça redeploy
+# atualize DATABASE_URL somente no ambiente que tenha conectividade aprovada e faça redeploy
 ```
 
 ## Quando houver domínio próprio
 
-- Troque o cert self-signed por Let's Encrypt, por exemplo `db.seudominio.com.br`, e atualize `DATABASE_CA_CERT` (ou remova-o, se usar uma CA pública).
+- Somente se for aprovada uma conectividade remota: troque o cert self-signed por Let's Encrypt, por exemplo `db.seudominio.com.br`, e atualize `DATABASE_CA_CERT` (ou remova-o, se usar uma CA pública).
 - Configure o Resend e ative a verificação de e-mail e a recuperação de senha no Better Auth (`lib/members/auth.ts`).
-- Atualize `BETTER_AUTH_URL`.
+- Mantenha `BETTER_AUTH_URL=https://www.apogee.community` em produção.

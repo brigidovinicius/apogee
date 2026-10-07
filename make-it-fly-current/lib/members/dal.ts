@@ -36,8 +36,8 @@ export async function requireMember(next?: string): Promise<CurrentMember> {
 
 export async function clientIp(): Promise<string> {
   const list = await headers();
-  if (process.env.VERCEL === "1") {
-    return list.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  }
+  const provider = process.env.APPLICATION_HOSTING_PROVIDER || (process.env.VERCEL === "1" ? "vercel" : "unknown");
+  const header = provider === "vercel" ? "x-vercel-forwarded-for" : provider === "caddy" ? "x-forwarded-for" : null;
+  if (header) return list.get(header)?.split(",")[0]?.trim() || "unknown";
   return "local";
 }

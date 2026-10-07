@@ -4,6 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { username } from "better-auth/plugins";
 import { getDb } from "./db";
+import { googleUsernameFromSubject } from "./google-oauth";
 import * as schema from "./schema";
 import { nameSchema, usernameSchema } from "./validation";
 
@@ -26,6 +27,31 @@ function createAuth() {
       minPasswordLength: 8,
       maxPasswordLength: 128,
       autoSignIn: true,
+    },
+    socialProviders: {
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+        // O Google informa a verificação do e-mail no ID token. Exigimos esse
+        // sinal antes de criar sessão ou permitir a entrada com este provider.
+        requireEmailVerification: true,
+        // A tela de entrada não deve criar uma conta por acidente. A tela de
+        // cadastro envia requestSignUp explicitamente.
+        disableImplicitSignUp: true,
+        mapProfileToUser: (profile) => ({ username: googleUsernameFromSubject(profile.sub) }),
+      },
+    },
+    account: {
+      accountLinking: {
+        // O app ainda não verifica e-mail no cadastro por senha. Um e-mail
+        // local não verificado não pode impedir que o Google, que comprovou
+        // esse mesmo e-mail, vincule a credencial à conta existente.
+        requireLocalEmailVerified: false,
+        // O vínculo automático continua limitado ao e-mail idêntico e não
+        // altera nenhum dado da conta local já existente.
+        allowDifferentEmails: false,
+        updateUserInfoOnLink: false,
+      },
     },
     user: {
       additionalFields: {
