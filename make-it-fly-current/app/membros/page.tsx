@@ -23,6 +23,19 @@ export default async function ForumHomePage() {
         </div>
       </header>
 
+      <section className={styles.radarEntry} aria-labelledby="radar-entry-title">
+        <div>
+          <p className={styles.radarEntryEyebrow}>Área exclusiva para membros</p>
+          <h2 id="radar-entry-title">Radar de Oportunidades</h2>
+          <p>
+            Encontre bolsas, programas e intercâmbios com critérios, apoios, prazos e fontes oficiais.
+          </p>
+        </div>
+        <Link className={styles.radarEntryLink} href="/membros/oportunidades">
+          Abrir Radar completo <span aria-hidden="true">→</span>
+        </Link>
+      </section>
+
       {categories.length === 0 ? (
         <p className={styles.empty}>Nenhuma categoria criada ainda.</p>
       ) : (
