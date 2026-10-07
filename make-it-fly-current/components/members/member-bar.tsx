@@ -7,7 +7,7 @@ import styles from "./members.module.css";
 export function MemberBar({ member, current }: { member: CurrentMember; current?: "forum" | "perfil" | "radar" }) {
   return (
     <div className={styles.memberBar}>
-      <nav aria-label="Área de membros">
+      <nav aria-label="Navegação da área de membros">
         <Link href="/membros" aria-current={current === "forum" ? "page" : undefined}>
           Fórum
         </Link>

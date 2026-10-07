@@ -1,8 +1,12 @@
 .page {
+  --opportunity-ink: var(--apogee-surface-inverse);
+  --opportunity-sky: var(--apogee-sky);
+  --opportunity-paper: var(--apogee-surface);
+
   min-height: 100dvh;
   overflow: hidden;
-  color: var(--apogee-navy);
-  background: var(--apogee-white);
+  color: var(--apogee-text);
+  background: var(--opportunity-paper);
 }
 
 .header,
@@ -19,8 +23,8 @@
   min-height: 5.25rem;
   color: #fff;
   border-bottom: 1px solid rgb(185 211 238 / 32%);
-  background: #07182d;
-  box-shadow: 0 0 0 100vmax #07182d;
+  background: var(--opportunity-ink);
+  box-shadow: 0 0 0 100vmax var(--opportunity-ink);
   clip-path: inset(0 -100vmax);
 }
 
@@ -66,7 +70,7 @@
   height: 1px;
   margin-top: 0.35rem;
   content: "";
-  background: #b9d3ee;
+  background: var(--opportunity-sky);
 }
 
 .hero {
@@ -102,7 +106,7 @@
 
 .eyebrow {
   margin: 0 0 1.35rem;
-  color: #b9d3ee;
+  color: var(--opportunity-sky);
 }
 
 .hero h1,
@@ -121,7 +125,7 @@
 }
 
 .hero h1 em {
-  color: #07182d;
+  color: var(--apogee-text);
   font-family: var(--font-instrument-serif), Georgia, serif;
   font-style: italic;
 }
@@ -149,8 +153,8 @@
   padding: clamp(2rem, 5vw, 4rem) 0 6.5rem;
   color: #fff;
   border-top: 1px solid rgb(185 211 238 / 20%);
-  background: #07182d;
-  box-shadow: 0 0 0 100vmax #07182d;
+  background: var(--opportunity-ink);
+  box-shadow: 0 0 0 100vmax var(--opportunity-ink);
   clip-path: inset(0 -100vmax);
 }
 
@@ -235,14 +239,19 @@
 
 .previewPrimary,
 .previewLogin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--apogee-control-min-height);
   padding: 0.6rem 0.8rem;
+  border-radius: var(--apogee-radius-soft);
   font-size: 0.78rem;
   font-weight: 650;
 }
 
 .previewPrimary {
-  color: #07182d;
-  background: #b9d3ee;
+  color: var(--apogee-text);
+  background: var(--opportunity-sky);
 }
 
 .previewPrimary:hover {
@@ -275,10 +284,12 @@
 
 .filterGroup button,
 .empty button {
+  min-height: var(--apogee-control-min-height);
   padding: 0.43rem 0.65rem;
   color: rgb(255 255 255 / 68%);
   border: 1px solid rgb(185 211 238 / 20%);
   background: transparent;
+  border-radius: var(--apogee-radius-soft);
   font: inherit;
   font-size: 0.73rem;
   cursor: pointer;
@@ -288,9 +299,9 @@
 .filterGroup button:hover,
 .filterGroup button.selected,
 .empty button:hover {
-  color: #07182d;
-  border-color: #b9d3ee;
-  background: #b9d3ee;
+  color: var(--apogee-text);
+  border-color: var(--opportunity-sky);
+  background: var(--opportunity-sky);
 }
 
 .grid {
@@ -306,12 +317,12 @@
   flex-direction: column;
   min-height: 29rem;
   padding: clamp(1.25rem, 2.5vw, 1.8rem);
-  background: #0a0a0a;
+  background: var(--apogee-black);
   transition: background-color 180ms ease;
 }
 
 .card:hover {
-  background: #07182d;
+  background: var(--opportunity-ink);
 }
 
 .previewCard {
@@ -534,8 +545,8 @@
   padding: 1.5rem 0 2rem;
   color: rgb(255 255 255 / 58%);
   border-top: 1px solid rgb(255 255 255 / 16%);
-  background: #0a0a0a;
-  box-shadow: 0 0 0 100vmax #0a0a0a;
+  background: var(--apogee-black);
+  box-shadow: 0 0 0 100vmax var(--apogee-black);
   clip-path: inset(0 -100vmax);
   font-family: var(--font-inter), sans-serif;
   font-weight: 500;

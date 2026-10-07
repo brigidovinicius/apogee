@@ -16,10 +16,12 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className={styles.narrow}>
-      <p className={styles.eyebrow}>Área de membros</p>
-      <h1 className={styles.title}>Criar conta</h1>
-      <p className={styles.lead}>Entre para a comunidade e participe do fórum.</p>
-      <div className={styles.panel} style={{ marginTop: "2rem" }}>
+      <header className={styles.authIntro}>
+        <p className={styles.eyebrow}>Área de membros</p>
+        <h1 className={styles.title}>Criar conta</h1>
+        <p className={styles.lead}>Entre para a comunidade, participe do fórum e acompanhe o Radar de oportunidades.</p>
+      </header>
+      <div className={`${styles.panel} ${styles.authPanel}`}>
         <SignUpForm next={next} googleError={googleOAuthErrorMessage(params.error)} />
       </div>
       <p className={styles.switchAuth}>

@@ -1,16 +1,16 @@
 .page {
-  --ink: var(--apogee-navy);
-  --navy: var(--apogee-black);
-  --blue: var(--apogee-navy);
+  --ink: var(--apogee-surface-inverse);
+  --navy: var(--apogee-text);
+  --blue: var(--apogee-sky);
   --sky: var(--apogee-sky);
-  --ice: var(--apogee-sky);
-  --paper: var(--apogee-white);
-  --line: rgb(7 24 45 / 16%);
-  --muted: rgb(7 24 45 / 72%);
-  --error: #b3261e;
+  --ice: color-mix(in srgb, var(--apogee-sky) 68%, var(--apogee-white));
+  --paper: var(--apogee-surface);
+  --line: var(--apogee-border);
+  --muted: var(--apogee-text-muted);
+  --error: var(--apogee-danger);
 
   min-height: 70vh;
-  padding: clamp(2rem, 5vw, 4.5rem) clamp(1rem, 4vw, 4rem) clamp(3rem, 7vw, 6rem);
+  padding: clamp(var(--apogee-space-6), 5vw, 4.5rem) clamp(var(--apogee-space-4), 4vw, var(--apogee-space-8)) clamp(var(--apogee-space-7), 7vw, 6rem);
   color: #ffffff;
   background:
     radial-gradient(60rem 30rem at 85% -10%, rgb(185 211 238 / 18%), transparent 70%),
@@ -25,6 +25,10 @@
 .narrow {
   width: min(100%, 30rem);
   margin-inline: auto;
+}
+
+.authIntro {
+  max-width: 34rem;
 }
 
 .eyebrow {
@@ -174,10 +178,17 @@
   padding: clamp(1.5rem, 4vw, 2.5rem);
   color: var(--navy);
   background: var(--paper);
+  border: 1px solid rgb(185 211 238 / 34%);
+  border-radius: var(--apogee-radius-soft);
+  box-shadow: 0 1.25rem 3.5rem rgb(0 0 0 / 18%);
 }
 
 .panel + .panel {
   margin-top: 1px;
+}
+
+.authPanel {
+  margin-top: var(--apogee-space-6);
 }
 
 .panelTitle {
@@ -269,12 +280,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  min-height: 3.1rem;
+  min-height: var(--apogee-control-min-height);
   padding: 0.8rem 1.2rem;
   color: #ffffff;
   background: var(--navy);
   border: 1px solid var(--navy);
-  border-radius: 0;
+  border-radius: var(--apogee-radius-soft);
   font: inherit;
   font-size: 0.82rem;
   font-weight: 600;
@@ -355,12 +366,12 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  min-height: 3.1rem;
+  min-height: var(--apogee-control-min-height);
   padding: 0.8rem 1.2rem;
   color: var(--navy);
   background: #ffffff;
   border: 1px solid rgb(7 24 45 / 36%);
-  border-radius: 0;
+  border-radius: var(--apogee-radius-soft);
   font: inherit;
   font-size: 0.82rem;
   font-weight: 600;
@@ -391,7 +402,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--apogee-space-4);
   margin-bottom: 2.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid rgb(255 255 255 / 14%);
@@ -406,6 +417,9 @@
 }
 
 .memberBar a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--apogee-control-min-height);
   text-decoration: none;
   opacity: 0.75;
 }
@@ -416,6 +430,7 @@
 }
 
 .memberBar form button {
+  min-height: var(--apogee-control-min-height);
   color: rgb(255 255 255 / 75%);
 }
 
