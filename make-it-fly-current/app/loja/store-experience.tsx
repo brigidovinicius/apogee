@@ -76,7 +76,7 @@ export function StoreExperience() {
   const closeModal = () => {
     if (closing) return;
     setClosing(true);
-    const duration = motionEnabled ? 400 : 0;
+    const duration = motionEnabled && !window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 400 : 0;
     closeTimer.current = setTimeout(() => {
       setSelected(null);
       setMenuOpen(false);
@@ -86,7 +86,7 @@ export function StoreExperience() {
   };
 
   return (
-    <div className={styles.page} data-motion="full">
+    <div className={styles.page} data-motion={motionEnabled ? "full" : "reduced"}>
       <div className={styles.loader} aria-hidden>
         <span className={styles.logoNavy} role="img" aria-label="Apogee" />
         <span className={styles.loaderLabel}>Carregando coleção <i /></span>
@@ -100,7 +100,6 @@ export function StoreExperience() {
           description="Peças, objetos e edições da comunidade Apogee Builders Club. Explore os estudos da nossa primeira coleção."
           navigation={[{ name: "Início", href: "/" }, { name: "Coleção", href: "#produtos" }, { name: "Nossa história", href: "/galeria" }]}
           categories={[]}
-          motionEnabled={motionEnabled}
           onMenuRequest={() => setMenuOpen(true)}
           menuOpen={menuOpen}
           menuControls="store-mobile-menu"

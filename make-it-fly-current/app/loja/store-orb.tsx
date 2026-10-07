@@ -72,9 +72,10 @@ export function StoreOrb({ motionEnabled }: { motionEnabled: boolean }) {
         scene.add(droplet);
 
         const mobileLayout = matchMedia("(max-width: 760px)");
+        const reducedMotionQuery = matchMedia("(prefers-reduced-motion: reduce)");
         const showcase = host.closest("section");
         const hero = showcase?.querySelector<HTMLElement>("[data-store-hero]") ?? showcase?.querySelector("h1");
-        let reducedMotion = !motionEnabledRef.current;
+        let reducedMotion = !motionEnabledRef.current || reducedMotionQuery.matches;
         let hostVisible = true;
         let sectionVisible = true;
         let heroVisible = true;
@@ -199,7 +200,7 @@ export function StoreOrb({ motionEnabled }: { motionEnabled: boolean }) {
         }
         function onPointerLeave() { pointerX = 0; pointerY = 0; }
         function onMotionChange() {
-          reducedMotion = !motionEnabledRef.current;
+          reducedMotion = !motionEnabledRef.current || reducedMotionQuery.matches;
           impulseTarget = 0;
           if (reducedMotion) {
             smoothX = smoothY = impulse = scrollDrive = 0;
@@ -236,6 +237,7 @@ export function StoreOrb({ motionEnabled }: { motionEnabled: boolean }) {
         dialogObserver.observe(document.body, { subtree: true, attributes: true, attributeFilter: ["open"] });
         syncMotion.current = onMotionChange;
         mobileLayout.addEventListener("change", resize);
+        reducedMotionQuery.addEventListener("change", onMotionChange);
         document.addEventListener("visibilitychange", resume);
         document.addEventListener("pointerleave", onPointerLeave);
         window.addEventListener("pointermove", onPointer, { passive: true });
@@ -249,6 +251,7 @@ export function StoreOrb({ motionEnabled }: { motionEnabled: boolean }) {
           dialogObserver.disconnect();
           syncMotion.current = null;
           mobileLayout.removeEventListener("change", resize);
+          reducedMotionQuery.removeEventListener("change", onMotionChange);
           document.removeEventListener("visibilitychange", resume);
           document.removeEventListener("pointerleave", onPointerLeave);
           window.removeEventListener("pointermove", onPointer);
