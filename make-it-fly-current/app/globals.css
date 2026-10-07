@@ -49,6 +49,11 @@
 }
 
 :root {
+  /* Manual de Marca Apogee VF: tokens de identidade compartilhados. */
+  --apogee-navy: #07182d;
+  --apogee-black: #0a0a0a;
+  --apogee-white: #ffffff;
+  --apogee-sky: #b9d3ee;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

@@ -1,8 +1,8 @@
 .page {
   min-height: 100dvh;
   overflow: hidden;
-  color: #07182d;
-  background: #fff;
+  color: var(--apogee-navy);
+  background: var(--apogee-white);
 }
 
 .header,
@@ -35,18 +35,12 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.62rem;
-  font-family: var(--font-noto-mono), monospace;
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  min-height: 3.25rem;
 }
 
-.brandMark {
-  width: 1.35rem;
+.brandLogo {
+  width: clamp(7.5rem, 11vw, 10rem);
   height: auto;
-  filter: brightness(0) invert(1);
 }
 
 .nav {
@@ -99,7 +93,8 @@
 .details dt,
 .launchWindow span,
 .cardFooter span {
-  font-family: var(--font-noto-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
   font-size: 0.66rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -114,7 +109,7 @@
 .boardHeading h2,
 .empty h3 {
   margin: 0;
-  font-family: var(--font-gfs-didot), Didot, "Bodoni MT", var(--font-instrument-serif), Georgia, serif;
+  font-family: var(--font-instrument-serif), Georgia, serif;
   font-weight: 400;
   letter-spacing: -0.045em;
 }
@@ -140,7 +135,6 @@
 }
 
 .promise {
-  display: flex;
   display: block;
   max-width: 40rem;
   margin: 2rem 0 0;
@@ -317,7 +311,7 @@
 }
 
 .card:hover {
-  background: #141414;
+  background: #07182d;
 }
 
 .previewCard {
@@ -543,7 +537,8 @@
   background: #0a0a0a;
   box-shadow: 0 0 0 100vmax #0a0a0a;
   clip-path: inset(0 -100vmax);
-  font-family: var(--font-noto-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;

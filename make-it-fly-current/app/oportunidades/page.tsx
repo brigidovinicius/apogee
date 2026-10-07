@@ -25,14 +25,14 @@ export default async function OpportunitiesPage() {
       <header className={styles.header}>
         <Link className={styles.brand} href="/" aria-label="Apogee — início">
           <Image
-            className={styles.brandMark}
-            src="/brand/apogee-star.svg"
-            alt=""
-            width={703}
-            height={870}
-            aria-hidden
+            className={styles.brandLogo}
+            src="/brand/apogee-logo-white.svg"
+            alt="Apogee"
+            width={1595}
+            height={986}
+            sizes="(max-width: 760px) 120px, 160px"
+            priority
           />
-          Apogee
         </Link>
         <nav className={styles.nav} aria-label="Navegação principal">
           <Link href="/">Início</Link>

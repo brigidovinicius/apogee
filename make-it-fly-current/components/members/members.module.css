@@ -1,19 +1,19 @@
 .page {
-  --ink: #07182d;
-  --navy: #0a1c33;
-  --blue: #7fa7d1;
-  --sky: #b9d3ee;
-  --ice: #dceafb;
-  --paper: #f5f8fc;
-  --line: #dce3ea;
-  --muted: #5b6b7d;
+  --ink: var(--apogee-navy);
+  --navy: var(--apogee-black);
+  --blue: var(--apogee-navy);
+  --sky: var(--apogee-sky);
+  --ice: var(--apogee-sky);
+  --paper: var(--apogee-white);
+  --line: rgb(7 24 45 / 16%);
+  --muted: rgb(7 24 45 / 72%);
   --error: #b3261e;
 
   min-height: 70vh;
   padding: clamp(2rem, 5vw, 4.5rem) clamp(1rem, 4vw, 4rem) clamp(3rem, 7vw, 6rem);
   color: #ffffff;
   background:
-    radial-gradient(60rem 30rem at 85% -10%, rgb(127 167 209 / 18%), transparent 70%),
+    radial-gradient(60rem 30rem at 85% -10%, rgb(185 211 238 / 18%), transparent 70%),
     var(--ink);
 }
 
@@ -30,7 +30,8 @@
 .eyebrow {
   margin: 0 0 0.9rem;
   color: var(--sky);
-  font-family: var(--font-dm-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
   font-size: 0.66rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -73,15 +74,16 @@
   padding: clamp(1.35rem, 3vw, 2rem);
   color: var(--navy);
   background:
-    radial-gradient(circle at top right, rgb(127 167 209 / 44%), transparent 40%),
+    radial-gradient(circle at top right, rgb(185 211 238 / 44%), transparent 40%),
     var(--ice);
   border: 1px solid rgb(185 211 238 / 55%);
 }
 
 .radarEntryEyebrow {
   margin: 0 0 0.65rem;
-  color: #385a7f;
-  font-family: var(--font-dm-mono), monospace;
+  color: rgb(7 24 45 / 70%);
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
   font-size: 0.66rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -98,7 +100,7 @@
 .radarEntry p:not(.radarEntryEyebrow) {
   max-width: 38rem;
   margin: 0.65rem 0 0;
-  color: #425a73;
+  color: rgb(7 24 45 / 76%);
   font-size: 0.9rem;
   line-height: 1.6;
 }
@@ -121,8 +123,8 @@
 }
 
 .radarEntryLink:hover {
-  background: #143557;
-  border-color: #143557;
+  background: var(--ink);
+  border-color: var(--ink);
 }
 
 .breadcrumbs {
@@ -133,7 +135,8 @@
   padding: 0;
   list-style: none;
   color: rgb(255 255 255 / 60%);
-  font-family: var(--font-dm-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
   font-size: 0.66rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -209,7 +212,7 @@
   padding: 0.75rem 0.8rem;
   color: var(--navy);
   background: #ffffff;
-  border: 1px solid #a9b3bf;
+  border: 1px solid rgb(7 24 45 / 36%);
   border-radius: 0;
   font: inherit;
   font-size: 1rem;
@@ -281,11 +284,11 @@
 }
 
 .primary:hover {
-  background: #143557;
+  background: var(--ink);
 }
 
 .primary:disabled {
-  background: #43566c;
+  background: rgb(7 24 45 / 56%);
   cursor: wait;
 }
 
@@ -356,7 +359,7 @@
   padding: 0.8rem 1.2rem;
   color: var(--navy);
   background: #ffffff;
-  border: 1px solid #a9b3bf;
+  border: 1px solid rgb(7 24 45 / 36%);
   border-radius: 0;
   font: inherit;
   font-size: 0.82rem;
@@ -366,7 +369,7 @@
 }
 
 .googleButton:hover {
-  background: #f2f6fa;
+  background: rgb(185 211 238 / 20%);
   border-color: var(--navy);
 }
 
@@ -476,7 +479,8 @@
   display: flex;
   gap: 1.5rem;
   color: var(--muted);
-  font-family: var(--font-dm-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
   font-size: 0.68rem;
   text-align: right;
   white-space: nowrap;
@@ -609,9 +613,9 @@
 
 .sectionTitle {
   margin: 0 0 1rem;
-  font-family: var(--font-dm-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
   font-size: 0.7rem;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--sky);
