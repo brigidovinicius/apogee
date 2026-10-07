@@ -61,13 +61,13 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
           Filtrar por
         </div>
         <FilterGroup
-          label="modalidade"
+          label="Modalidade"
           options={OPPORTUNITY_KINDS}
           value={kind}
           onChange={setKind}
         />
         <FilterGroup
-          label="formação"
+          label="Formação"
           options={EDUCATION_LEVELS}
           value={level}
           onChange={setLevel}
@@ -142,19 +142,23 @@ type FilterGroupProps<T extends string> = {
 
 function FilterGroup<T extends string>({ label, options, value, onChange }: FilterGroupProps<T>) {
   return (
-    <div className={styles.filterGroup} aria-label={`Filtrar por ${label}`}>
-      {(["Todas", ...options] as Filter<T>[]).map((option) => (
-        <button
-          key={option}
-          type="button"
-          className={value === option ? styles.selected : undefined}
-          aria-pressed={value === option}
-          aria-controls="opportunity-results"
-          onClick={() => onChange(option)}
-        >
-          {option}
-        </button>
-      ))}
-    </div>
+    <fieldset className={styles.filterFieldset}>
+      <legend>{label}</legend>
+      <div className={styles.filterGroup}>
+        {(["Todas", ...options] as Filter<T>[]).map((option) => (
+          <button
+            key={option}
+            type="button"
+            className={value === option ? styles.selected : undefined}
+            aria-label={`${label}: ${option}`}
+            aria-pressed={value === option}
+            aria-controls="opportunity-results"
+            onClick={() => onChange(option)}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </fieldset>
   );
 }
