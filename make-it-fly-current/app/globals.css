@@ -49,6 +49,37 @@
 }
 
 :root {
+  /*
+   * Fundação Apogee: os tokens mantêm a linguagem de voo já presente no
+   * produto, mas dão às próximas superfícies uma escala comum de tipo,
+   * espaço, contraste e controles.
+   */
+  --apogee-ink: #07182d;
+  --apogee-navy: #0a1c33;
+  --apogee-sky: #b9d3ee;
+  --apogee-ice: #dceafb;
+  --apogee-white: #ffffff;
+  --apogee-surface-base: var(--apogee-ink);
+  --apogee-surface-raised: var(--apogee-navy);
+  --apogee-surface-subtle: #102a48;
+  --apogee-content-primary: var(--apogee-white);
+  --apogee-content-muted: #b9d3ee;
+  --apogee-border-subtle: rgb(255 255 255 / 18%);
+  --apogee-focus: var(--apogee-sky);
+  --apogee-focus-offset: var(--apogee-ink);
+  --apogee-control-height: 2.75rem;
+  --apogee-control-radius: 0.75rem;
+  --apogee-space-1: 0.25rem;
+  --apogee-space-2: 0.5rem;
+  --apogee-space-3: 0.75rem;
+  --apogee-space-4: 1rem;
+  --apogee-space-5: 1.5rem;
+  --apogee-space-6: 2rem;
+  --apogee-space-8: 3rem;
+  --apogee-text-caption: 0.8125rem;
+  --apogee-text-body: 1rem;
+  --apogee-leading-body: 1.55;
+  --apogee-leading-display: 1.04;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -84,24 +115,24 @@
 }
 
 .dark {
-  --background: #07182d;
-  --foreground: #ffffff;
-  --card: #0a1c33;
-  --card-foreground: #ffffff;
-  --popover: #0a1c33;
-  --popover-foreground: #ffffff;
-  --primary: #ffffff;
-  --primary-foreground: #07182d;
-  --secondary: #102a48;
-  --secondary-foreground: #ffffff;
-  --muted: #102a48;
-  --muted-foreground: #b9d3ee;
-  --accent: #b9d3ee;
-  --accent-foreground: #07182d;
+  --background: var(--apogee-surface-base);
+  --foreground: var(--apogee-content-primary);
+  --card: var(--apogee-surface-raised);
+  --card-foreground: var(--apogee-content-primary);
+  --popover: var(--apogee-surface-raised);
+  --popover-foreground: var(--apogee-content-primary);
+  --primary: var(--apogee-content-primary);
+  --primary-foreground: var(--apogee-ink);
+  --secondary: var(--apogee-surface-subtle);
+  --secondary-foreground: var(--apogee-content-primary);
+  --muted: var(--apogee-surface-subtle);
+  --muted-foreground: var(--apogee-content-muted);
+  --accent: var(--apogee-content-muted);
+  --accent-foreground: var(--apogee-ink);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: rgb(255 255 255 / 18%);
+  --border: var(--apogee-border-subtle);
   --input: rgb(255 255 255 / 20%);
-  --ring: #b9d3ee;
+  --ring: var(--apogee-focus);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -121,13 +152,49 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    scroll-padding-block-start: var(--apogee-space-4);
+  }
+
   body {
     @apply bg-background text-foreground;
+    min-width: 20rem;
     overflow-x: clip;
+    font-size: var(--apogee-text-body);
+    line-height: var(--apogee-leading-body);
+    text-rendering: optimizeLegibility;
   }
+
+  :where(h1, h2, h3) {
+    line-height: var(--apogee-leading-display);
+    text-wrap: balance;
+  }
+
+  :where(button, input, select, textarea) {
+    font: inherit;
+  }
+
+  :where(button, [role="button"], a[href]) {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid var(--apogee-focus);
+    outline-offset: 3px;
+  }
+
+  :where(button:disabled, input:disabled, select:disabled, textarea:disabled, [aria-disabled="true"]) {
+    cursor: not-allowed;
+  }
+
+  :where([aria-busy="true"]) {
+    cursor: progress;
+  }
+
   html {
     @apply font-sans;
-    background: #07182d;
+    background: var(--apogee-ink);
     scroll-behavior: smooth;
   }
 }
@@ -166,7 +233,7 @@
 
 .flight-button {
   display: inline-flex;
-  min-height: 3.25rem;
+  min-height: max(3.25rem, var(--apogee-control-height));
   align-items: center;
   justify-content: center;
   gap: 1rem;
@@ -190,8 +257,14 @@
 }
 
 .flight-button:focus-visible {
-  outline: 2px solid #6aa7ec;
+  outline-color: var(--apogee-focus);
   outline-offset: 4px;
+}
+
+.flight-button:disabled,
+.flight-button[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.56;
 }
 
 .flight-button--secondary {
@@ -213,6 +286,15 @@
  * JS.
  */
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
   html {
     scroll-behavior: auto;
   }
