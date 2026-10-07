@@ -20,7 +20,7 @@ type Config = {
   signingSecret: string;
   spreadsheetWebhookUrl: string;
   spreadsheetWebhookSecret: string;
-  hostingProvider: "vercel" | "netlify" | "unknown";
+  hostingProvider: "vercel" | "netlify" | "caddy" | "unknown";
 };
 type ValidApplication = {
   name: string;
@@ -87,7 +87,7 @@ export function readApplicationConfig(env: Environment): Config {
       if (spreadsheetWebhookSecret.length < 32 || spreadsheetWebhookSecret.length > 256) unavailable();
     }
     const provider = env.APPLICATION_HOSTING_PROVIDER || (env.VERCEL === "1" ? "vercel" : env.NETLIFY === "true" ? "netlify" : "unknown");
-    const hostingProvider = provider === "vercel" || provider === "netlify" ? provider : "unknown";
+    const hostingProvider = provider === "vercel" || provider === "netlify" || provider === "caddy" ? provider : "unknown";
     return { origin: origin.origin, supabaseUrl: database.origin, databaseKey, signingSecret, spreadsheetWebhookUrl, spreadsheetWebhookSecret, hostingProvider };
   } catch {
     unavailable();
@@ -176,7 +176,7 @@ const applicationRateLimiter = createApplicationRateLimiter();
 function rateLimitKey(request: Request, config: Config) {
   // Trust only the active hosting platform's own overwritten header. A caller
   // cannot select the platform by supplying a header. Unknown hosts share a bucket.
-  const header = config.hostingProvider === "vercel" ? "x-vercel-forwarded-for" : config.hostingProvider === "netlify" ? "x-nf-client-connection-ip" : null;
+  const header = config.hostingProvider === "vercel" ? "x-vercel-forwarded-for" : config.hostingProvider === "netlify" ? "x-nf-client-connection-ip" : config.hostingProvider === "caddy" ? "x-forwarded-for" : null;
   const ip = (header ? request.headers.get(header) || "unknown" : "unknown").split(",")[0].trim().slice(0, 200);
   return createHmac("sha256", config.signingSecret).update(`makeitfly:rate:${ip}`).digest("hex");
 }

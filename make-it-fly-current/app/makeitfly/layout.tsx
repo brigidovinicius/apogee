@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
   robots: { index: true, follow: true },
-  alternates: { canonical: "https://makeitfly.vercel.app/makeitfly" },
+  alternates: { canonical: "https://www.apogee.community/makeitfly" },
   title: "Make it fly",
   description:
     "Um dia de coworking, comunidade e foco para tirar uma ideia do papel. Primeira edição com vagas limitadas. Energizados por Red Bull.",

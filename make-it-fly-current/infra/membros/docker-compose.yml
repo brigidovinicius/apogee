@@ -1,0 +1,103 @@
+# Área de membros Apogee — banco isolado.
+# Projeto compose, rede, volumes, usuários e porta são exclusivos deste stack;
+# nada é compartilhado com outros sistemas da VPS.
+name: apogee-membros
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: postgres
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?defina APP_DB_PASSWORD no .env}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    # Sem "ports": o Postgres só é acessível pela rede interna.
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d apogee_membros"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 512m
+    cpus: 1.0
+
+  pgbouncer:
+    image: edoburu/pgbouncer:v1.26.0-p0
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_NAME: apogee_membros
+      DB_USER: apogee_app
+      DB_PASSWORD: ${APP_DB_PASSWORD}
+      AUTH_TYPE: scram-sha-256
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 200
+      DEFAULT_POOL_SIZE: 15
+      ADMIN_USERS: apogee_app
+      CLIENT_TLS_SSLMODE: require
+      CLIENT_TLS_CERT_FILE: /etc/pgbouncer/certs/server.crt
+      CLIENT_TLS_KEY_FILE: /etc/pgbouncer/certs/server.key
+      CLIENT_TLS_PROTOCOLS: tlsv1.2,tlsv1.3
+    volumes:
+      - ./certs:/etc/pgbouncer/certs:ro
+    # Mantém o banco acessível apenas pela própria VPS. Para acesso remoto, use uma
+    # camada de rede com allowlist explícita; não publique o PgBouncer na internet.
+    ports:
+      - "127.0.0.1:${PGBOUNCER_PORT:-6543}:5432"
+    networks: [internal, edge]
+    mem_limit: 128m
+    cpus: 0.5
+
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGUSER: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: apogee_membros
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-7}
+    volumes:
+      - ./backups:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          file="/backups/apogee_membros-$$(date +%Y%m%d-%H%M%S).sql.gz"
+          tmp="$$file.tmp"
+          rm -f "$$tmp"
+          if pg_dump --no-owner > "$$tmp" && test -s "$$tmp" && gzip -c "$$tmp" > "$$file" && gzip -t "$$file"; then
+            rm -f "$$tmp"
+            echo "backup ok: $$file"
+          else
+            echo "backup FALHOU" >&2
+            rm -f "$$tmp" "$$file"
+          fi
+          find /backups -name 'apogee_membros-*.sql.gz' -mtime +$$BACKUP_RETENTION_DAYS -delete
+          sleep 86400
+        done
+    networks: [internal]
+    mem_limit: 256m
+    cpus: 0.5
+
+volumes:
+  pgdata:
+    name: apogee_membros_pgdata
+
+networks:
+  internal:
+    name: apogee_membros_internal
+    internal: true
+  edge:
+    name: apogee_membros_edge

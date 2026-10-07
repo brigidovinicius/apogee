@@ -1,0 +1,20 @@
+services:
+  radar-academico:
+    build:
+      context: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${RADAR_PORT:-3100}:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - radar_internal
+
+networks:
+  radar_internal:
+    driver: bridge

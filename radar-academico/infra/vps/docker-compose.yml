@@ -1,0 +1,95 @@
+# Coletor Radar Acadêmico: isolado do site Apogee e de outros projetos da VPS.
+name: radar-academico
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${RADAR_DB_NAME}
+      POSTGRES_USER: ${RADAR_DB_USER}
+      POSTGRES_PASSWORD: ${RADAR_DB_PASSWORD}
+    volumes:
+      - radar_pgdata:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        APOGEE_RELEASE_SHA: ${APOGEE_RELEASE_SHA:-local}
+    image: radar-academico:${APOGEE_RELEASE_SHA:-local}
+    restart: unless-stopped
+    init: true
+    env_file: ${RADAR_ENV_FILE:-.env}
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    expose: ["3000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      internal: {}
+      apogee_radar_bridge:
+        aliases: [radar-academico]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  scheduler:
+    image: radar-academico:${APOGEE_RELEASE_SHA:-local}
+    restart: unless-stopped
+    init: true
+    env_file: ${RADAR_ENV_FILE:-.env}
+    environment:
+      RADAR_INTERNAL_ORIGIN: http://web:3000
+    command: ["node", "scripts/run-scheduled-ingestion.mjs"]
+    depends_on:
+      web:
+        condition: service_healthy
+    networks: [internal]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
+  migrate:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: builder
+    profiles: [migrate]
+    env_file: ${RADAR_ENV_FILE:-.env}
+    command: ["node", "scripts/migrate.mjs"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [internal]
+    restart: "no"
+
+volumes:
+  radar_pgdata:
+    name: radar_academico_pgdata
+
+networks:
+  internal:
+    name: radar_academico_internal
+    internal: true
+  apogee_radar_bridge:
+    name: apogee_radar_bridge
+    external: true

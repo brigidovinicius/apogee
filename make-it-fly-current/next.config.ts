@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Gera um servidor Node enxuto para o container da VPS. Os assets públicos
+  // são copiados pelo Dockerfile conforme a documentação de self-hosting.
+  output: "standalone",
   // Preserve the approved landing's CSS output during promotion to the root.
   experimental: { cssChunking: false },
   // Desliga o double-mount do StrictMode em dev: ele monta/desmonta o Canvas

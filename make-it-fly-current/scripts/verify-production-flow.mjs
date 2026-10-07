@@ -1,7 +1,12 @@
 /** Manual production smoke test. Creates two retained synthetic applications; never purchases or deletes. */
 import { randomUUID } from "node:crypto";
 
-const origin = "https://makeitfly.vercel.app";
+const configuredOrigin = process.env.APOGEE_PRODUCTION_TEST_ORIGIN || process.env.APPLICATION_ORIGIN || "https://www.apogee.community";
+const parsedOrigin = new URL(configuredOrigin);
+if (parsedOrigin.protocol !== "https:" || parsedOrigin.username || parsedOrigin.password || parsedOrigin.pathname !== "/" || parsedOrigin.search || parsedOrigin.hash) {
+  throw new Error("APOGEE_PRODUCTION_TEST_ORIGIN must be an HTTPS origin without a path.");
+}
+const origin = parsedOrigin.origin;
 const database = new URL(process.env.SUPABASE_URL || "about:blank");
 const databaseKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 if (process.env.MAKEITFLY_RUN_PRODUCTION_TEST !== "1") throw new Error("Set MAKEITFLY_RUN_PRODUCTION_TEST=1 to authorize two retained synthetic rows.");

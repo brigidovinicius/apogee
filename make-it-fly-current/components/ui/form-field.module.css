@@ -1,0 +1,66 @@
+.field {
+  display: grid;
+  gap: var(--apogee-space-2);
+}
+
+.label {
+  color: inherit;
+  font-size: 0.82rem;
+  font-weight: 550;
+}
+
+.control {
+  width: 100%;
+  min-height: var(--apogee-control-min-height);
+  padding: var(--apogee-space-3) var(--apogee-space-3);
+  color: var(--apogee-navy);
+  background: var(--apogee-white);
+  border: 1px solid var(--apogee-border);
+  border-radius: var(--apogee-radius-sharp);
+  font: inherit;
+  font-size: var(--apogee-text-body);
+  line-height: var(--apogee-leading-body);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.control:hover {
+  border-color: var(--apogee-navy);
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--apogee-focus-ring);
+  outline-offset: var(--apogee-focus-offset);
+}
+
+.control[aria-invalid="true"] {
+  border-color: var(--apogee-danger);
+}
+
+textarea.control {
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.hint,
+.error {
+  font-size: var(--apogee-text-label);
+  line-height: 1.6;
+}
+
+.hint {
+  color: var(--apogee-text-muted);
+}
+
+.error {
+  color: var(--apogee-danger);
+}
+
+.message {
+  margin: 0;
+  padding: var(--apogee-space-3) var(--apogee-space-4);
+  color: var(--apogee-danger);
+  background: #fff3ef;
+  border-left: 3px solid var(--apogee-danger);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}

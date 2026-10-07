@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GFS_Didot } from "next/font/google";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { JourneyTracker } from "@/components/analytics/JourneyTracker";
@@ -8,6 +9,13 @@ const inter = localFont({
   src: "./fonts/inter-variable-latin.woff2",
   variable: "--font-inter",
   weight: "100 900",
+  display: "swap",
+});
+
+const didot = GFS_Didot({
+  variable: "--font-gfs-didot",
+  weight: "400",
+  subsets: ["latin"],
   display: "swap",
 });
 
@@ -50,6 +58,7 @@ const dmMono = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.apogee.community"),
   robots: { index: true, follow: true },
   title: "Apogee",
   description: "Apogee: comunidade e experiências para tirar ideias do papel. Conheça o Make It Fly.",
@@ -70,7 +79,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html
       lang="pt-BR"
-      className={`${inter.variable} ${instrumentSerif.variable} ${dmMono.variable} ${notoMono.variable} dark h-full antialiased`}
+      className={`${inter.variable} ${didot.variable} ${instrumentSerif.variable} ${dmMono.variable} ${notoMono.variable} dark h-full antialiased`}
     >
       <head>
         <noscript>
