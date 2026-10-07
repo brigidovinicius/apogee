@@ -39,7 +39,7 @@ test("Google OAuth errors are safe and actionable without exposing provider deta
   assert.equal(googleOAuthErrorMessage(undefined), undefined);
 });
 
-test("Google is configured server-side and sign-up stays explicit", async () => {
+test("Google keeps sign-up explicit while a verified matching email can link an existing account", async () => {
   const [auth, forms, example] = await Promise.all([
     readFile(new URL("../lib/members/auth.ts", import.meta.url), "utf8"),
     readFile(new URL("../components/members/auth-forms.tsx", import.meta.url), "utf8"),
@@ -50,8 +50,13 @@ test("Google is configured server-side and sign-up stays explicit", async () => 
   assert.match(auth, /GOOGLE_CLIENT_SECRET/);
   assert.match(auth, /disableImplicitSignUp:\s*true/);
   assert.match(auth, /requireEmailVerification:\s*true/);
+  assert.match(auth, /accountLinking:\s*\{[\s\S]*requireLocalEmailVerified:\s*false/);
+  assert.match(auth, /accountLinking:\s*\{[\s\S]*allowDifferentEmails:\s*false/);
+  assert.match(auth, /accountLinking:\s*\{[\s\S]*updateUserInfoOnLink:\s*false/);
   assert.match(forms, /provider:\s*"google"/);
   assert.match(forms, /requestSignUp/);
+  assert.match(forms, /requestSignUp = false/);
+  assert.match(forms, /requestSignUp \? "Criar conta com Google" : "Entrar com Google"/);
   assert.match(forms, /errorCallbackURL/);
   assert.match(example, /^GOOGLE_CLIENT_ID=$/m);
   assert.match(example, /^GOOGLE_CLIENT_SECRET=$/m);
