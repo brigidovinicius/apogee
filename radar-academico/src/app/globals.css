@@ -1,14 +1,41 @@
 @import "tailwindcss";
 
 :root {
+  /* Etapa 1 aprovada (e147ddf): mesmo contrato visual para o Radar independente. */
   --apogee-navy: #07182d;
   --apogee-black: #0a0a0a;
   --apogee-white: #ffffff;
   --apogee-sky: #b9d3ee;
+  --apogee-surface: var(--apogee-white);
+  --apogee-surface-inverse: var(--apogee-navy);
+  --apogee-text: var(--apogee-navy);
+  --apogee-text-muted: rgb(7 24 45 / 72%);
+  --apogee-border: rgb(7 24 45 / 18%);
+  --apogee-danger: #b3261e;
+  --apogee-focus-ring: var(--apogee-sky);
+  --apogee-focus-offset: 3px;
+  --apogee-space-1: 0.25rem;
+  --apogee-space-2: 0.5rem;
+  --apogee-space-3: 0.75rem;
+  --apogee-space-4: 1rem;
+  --apogee-space-5: 1.5rem;
+  --apogee-space-6: 2rem;
+  --apogee-space-7: 3rem;
+  --apogee-space-8: 4rem;
+  --apogee-control-min-height: 2.75rem;
+  --apogee-radius-sharp: 0;
+  --apogee-radius-soft: 0.625rem;
   --font-inter: Inter;
   --font-instrument-serif: "Instrument Serif";
-  --background: var(--apogee-white);
-  --foreground: var(--apogee-navy);
+  --apogee-font-sans: var(--font-inter), Arial, Helvetica, sans-serif;
+  --apogee-font-heading: var(--font-instrument-serif), Georgia, serif;
+  --apogee-text-label: 0.75rem;
+  --apogee-text-body: 1rem;
+  --apogee-text-title: clamp(2.25rem, 5vw, 4.5rem);
+  --apogee-leading-body: 1.5;
+  --apogee-leading-heading: 0.98;
+  --background: var(--apogee-surface);
+  --foreground: var(--apogee-text);
 }
 
 * { box-sizing: border-box; }
@@ -17,8 +44,8 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  font-family: var(--apogee-font-sans);
 }
 a { text-underline-offset: 3px; }
 button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--apogee-sky); outline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--apogee-focus-ring); outline-offset: var(--apogee-focus-offset); }

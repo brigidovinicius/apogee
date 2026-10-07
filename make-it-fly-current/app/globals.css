@@ -7,9 +7,28 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-apogee-navy: var(--apogee-navy);
+  --color-apogee-black: var(--apogee-black);
+  --color-apogee-white: var(--apogee-white);
+  --color-apogee-sky: var(--apogee-sky);
+  --color-apogee-surface: var(--apogee-surface);
+  --color-apogee-surface-inverse: var(--apogee-surface-inverse);
+  --color-apogee-text: var(--apogee-text);
+  --color-apogee-text-muted: var(--apogee-text-muted);
+  --color-apogee-border: var(--apogee-border);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-dm-mono);
   --font-heading: var(--font-instrument-serif);
+  --font-apogee-sans: var(--apogee-font-sans);
+  --font-apogee-heading: var(--apogee-font-heading);
+  --spacing-apogee-1: var(--apogee-space-1);
+  --spacing-apogee-2: var(--apogee-space-2);
+  --spacing-apogee-3: var(--apogee-space-3);
+  --spacing-apogee-4: var(--apogee-space-4);
+  --spacing-apogee-5: var(--apogee-space-5);
+  --spacing-apogee-6: var(--apogee-space-6);
+  --spacing-apogee-7: var(--apogee-space-7);
+  --spacing-apogee-8: var(--apogee-space-8);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,29 +68,59 @@
 }
 
 :root {
-  /* Manual de Marca Apogee VF: tokens de identidade compartilhados. */
+  /* Etapa 1 aprovada (e147ddf): Manual de Marca Apogee VF e contratos semânticos. */
   --apogee-navy: #07182d;
   --apogee-black: #0a0a0a;
   --apogee-white: #ffffff;
   --apogee-sky: #b9d3ee;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+
+  --apogee-surface: var(--apogee-white);
+  --apogee-surface-inverse: var(--apogee-navy);
+  --apogee-text: var(--apogee-navy);
+  --apogee-text-muted: rgb(7 24 45 / 72%);
+  --apogee-border: rgb(7 24 45 / 18%);
+  --apogee-danger: #b3261e;
+  --apogee-focus-ring: var(--apogee-sky);
+  --apogee-focus-offset: 3px;
+
+  --apogee-space-1: 0.25rem;
+  --apogee-space-2: 0.5rem;
+  --apogee-space-3: 0.75rem;
+  --apogee-space-4: 1rem;
+  --apogee-space-5: 1.5rem;
+  --apogee-space-6: 2rem;
+  --apogee-space-7: 3rem;
+  --apogee-space-8: 4rem;
+  --apogee-control-min-height: 2.75rem;
+  --apogee-radius-sharp: 0;
+  --apogee-radius-soft: 0.625rem;
+
+  --apogee-font-sans: var(--font-inter), Arial, sans-serif;
+  --apogee-font-heading: var(--font-instrument-serif), Georgia, serif;
+  --apogee-text-label: 0.75rem;
+  --apogee-text-body: 1rem;
+  --apogee-text-title: clamp(2.25rem, 5vw, 4.5rem);
+  --apogee-leading-body: 1.5;
+  --apogee-leading-heading: 0.98;
+
+  --background: var(--apogee-surface);
+  --foreground: var(--apogee-text);
+  --card: var(--apogee-surface);
+  --card-foreground: var(--apogee-text);
+  --popover: var(--apogee-surface);
+  --popover-foreground: var(--apogee-text);
+  --primary: var(--apogee-navy);
+  --primary-foreground: var(--apogee-white);
+  --secondary: var(--apogee-sky);
+  --secondary-foreground: var(--apogee-navy);
+  --muted: rgb(185 211 238 / 24%);
+  --muted-foreground: var(--apogee-text-muted);
+  --accent: var(--apogee-sky);
+  --accent-foreground: var(--apogee-navy);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: var(--apogee-border);
+  --input: var(--apogee-border);
+  --ring: var(--apogee-focus-ring);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -89,8 +138,8 @@
 }
 
 .dark {
-  --background: #07182d;
-  --foreground: #ffffff;
+  --background: var(--apogee-navy);
+  --foreground: var(--apogee-white);
   --card: #0a1c33;
   --card-foreground: #ffffff;
   --popover: #0a1c33;
@@ -106,7 +155,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: rgb(255 255 255 / 18%);
   --input: rgb(255 255 255 / 20%);
-  --ring: #b9d3ee;
+  --ring: var(--apogee-focus-ring);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -137,6 +186,11 @@
   }
 }
 
+:focus-visible {
+  outline: 2px solid var(--apogee-focus-ring);
+  outline-offset: var(--apogee-focus-offset);
+}
+
 ::selection {
   background: #b9d3ee;
   color: #07182d;
@@ -158,8 +212,8 @@
 
 .skip-link:focus {
   translate: 0;
-  outline: 2px solid #b9d3ee;
-  outline-offset: 3px;
+  outline: 2px solid var(--apogee-focus-ring);
+  outline-offset: var(--apogee-focus-offset);
 }
 
 .flight-grain {
@@ -195,8 +249,8 @@
 }
 
 .flight-button:focus-visible {
-  outline: 2px solid #6aa7ec;
-  outline-offset: 4px;
+  outline: 2px solid var(--apogee-focus-ring);
+  outline-offset: var(--apogee-focus-offset);
 }
 
 .flight-button--secondary {
