@@ -81,7 +81,6 @@
   --apogee-content-primary: var(--apogee-white);
   --apogee-content-muted: var(--apogee-sky);
   --apogee-border-subtle: rgb(255 255 255 / 18%);
-
   --apogee-surface: var(--apogee-white);
   --apogee-surface-inverse: var(--apogee-navy);
   --apogee-text: var(--apogee-navy);
@@ -91,6 +90,10 @@
   --apogee-focus-ring: var(--apogee-sky);
   --apogee-focus: var(--apogee-focus-ring);
   --apogee-focus-offset: 3px;
+  --apogee-surface-grouped: rgb(255 255 255 / 10%);
+  --apogee-surface-control: rgb(255 255 255 / 14%);
+  --apogee-control-fill: #f6f9fd;
+  --apogee-group-radius: 1.25rem;
   --apogee-space-1: 0.25rem;
   --apogee-space-2: 0.5rem;
   --apogee-space-3: 0.75rem;
@@ -210,6 +213,14 @@
     font: inherit;
   }
 
+  :where(button, input, select) {
+    min-height: var(--apogee-control-height);
+  }
+
+  :where(input, select, textarea) {
+    border-radius: var(--apogee-control-radius);
+  }
+
   :where(button, [role="button"], a[href]) {
     -webkit-tap-highlight-color: transparent;
   }
@@ -225,6 +236,10 @@
 
   :where([aria-busy="true"]) {
     cursor: progress;
+  }
+
+  :where(button, [role="button"], a[href]) {
+    touch-action: manipulation;
   }
 
   html {

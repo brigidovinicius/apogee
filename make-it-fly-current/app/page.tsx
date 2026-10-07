@@ -12,7 +12,9 @@ export default function ApogeeHome() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Image className={styles.logo} src="/brand/apogee-logo-white.svg" alt="Apogee" width={1595} height={986} sizes="120px" priority />
+        <Link href="/" className={styles.brand} aria-label="Apogee, início">
+          <Image className={styles.logo} src="/brand/apogee-logo-white.svg" alt="Apogee" width={1595} height={986} sizes="120px" priority />
+        </Link>
         <nav className={styles.nav} aria-label="Navegação principal">
           <Link href="/oportunidades">Oportunidades</Link>
           <Link href="/galeria">Galeria</Link>
@@ -21,18 +23,26 @@ export default function ApogeeHome() {
       </header>
 
       <main id="experiencia" className={styles.main} tabIndex={-1}>
-        <p className={styles.eyebrow}>Apogee</p>
-        <h1 className={styles.title}>Ideias que chegam ao <em>ponto mais alto.</em></h1>
-        <p className={styles.lead}>Comunidade e experiências para quem quer tirar uma ideia do papel. O site completo está a caminho.</p>
+        <section className={styles.intro} aria-labelledby="home-title">
+          <h1 id="home-title" className={styles.title}>Ideias que chegam ao ponto mais alto.</h1>
+          <p className={styles.lead}>Comunidade e experiências para quem quer tirar uma ideia do papel. O site completo está a caminho.</p>
+          <div className={styles.actions}>
+            <Link href="/makeitfly" className={styles.primaryAction}>Conhecer o Make It Fly</Link>
+            <Link href="/galeria" className={styles.secondaryAction}>Ver a galeria</Link>
+          </div>
+        </section>
 
-        <Link href="/makeitfly" className={styles.card}>
-          <Image className={styles.wordmark} src="/brand/make-it-fly-wordmark.png" alt="Make It Fly — Building the future" width={2097} height={523} sizes="(max-width: 640px) 70vw, 320px" />
-          <span className={styles.cardCopy}>Um dia de coworking, comunidade e foco. Vagas limitadas.</span>
-          <span className={styles.cardCta}>Conhecer o evento <span aria-hidden="true">↗</span></span>
-        </Link>
+        <section className={styles.event} aria-labelledby="event-title">
+          <Image className={styles.wordmark} src="/brand/make-it-fly-wordmark.png" alt="Make It Fly — Building the future" width={2097} height={523} sizes="(max-width: 720px) 16rem, 22rem" />
+          <div className={styles.eventContent}>
+            <h2 id="event-title">Um dia para avançar sua ideia.</h2>
+            <p>Um encontro de coworking, comunidade e foco para quem quer dar o próximo passo.</p>
+          </div>
+          <Link href="/makeitfly" className={styles.eventLink}>Ver detalhes do evento <span aria-hidden="true">›</span></Link>
+        </section>
       </main>
 
-      <footer className={styles.footer}>Apogee</footer>
+      <footer className={styles.footer}><span>Apogee</span><span>Ideias em movimento.</span></footer>
     </div>
   );
 }
