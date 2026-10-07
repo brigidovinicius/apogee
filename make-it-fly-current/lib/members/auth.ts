@@ -41,6 +41,18 @@ function createAuth() {
         mapProfileToUser: (profile) => ({ username: googleUsernameFromSubject(profile.sub) }),
       },
     },
+    account: {
+      accountLinking: {
+        // O app ainda não verifica e-mail no cadastro por senha. Um e-mail
+        // local não verificado não pode impedir que o Google, que comprovou
+        // esse mesmo e-mail, vincule a credencial à conta existente.
+        requireLocalEmailVerified: false,
+        // O vínculo automático continua limitado ao e-mail idêntico e não
+        // altera nenhum dado da conta local já existente.
+        allowDifferentEmails: false,
+        updateUserInfoOnLink: false,
+      },
+    },
     user: {
       additionalFields: {
         bio: { type: "string", required: false, input: false },
