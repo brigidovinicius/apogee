@@ -1,0 +1,230 @@
+# Integração do mockup de UI Apogee
+
+## Decisão e limites da Etapa 1
+
+Este documento é o resultado de diagnóstico da Etapa 1. Ele **não implementa
+nenhuma tela**, não move arquivos e não altera o material de origem.
+
+O alvo canônico da integração é `make-it-fly-current/`. Embora a raiz do
+repositório também contenha um projeto Next, é esse app que já concentra as
+rotas públicas e de membros, autenticação, o Radar e os testes de isolamento.
+As referências a caminhos abaixo são relativas a `make-it-fly-current/`, salvo
+indicação contrária.
+
+O material foi localizado somente para leitura em
+`/Users/viniciusbrigido/Downloads/UI MOCKUO APOGEE`. Não há README, PRD ou
+brief adicional no pacote. Os arquivos `.dc.html` são handoffs de interface
+com estados demonstrativos, não uma implementação que possa ser copiada como
+aplicação.
+
+### Limitações verificadas
+
+- Este checkout não possui `node_modules/` em sua raiz, no app alvo ou no
+  `radar-academico/`. Portanto não existe
+  `node_modules/next/dist/docs/` instalado para leitura nesta Etapa 1, nem foi
+  instalada dependência somente para produzir este plano.
+- Antes de qualquer código das Etapas 2-4, instalar dependências a partir do
+  lockfile no app alvo e ler as guias da versão efetivamente resolvida em
+  `node_modules/next/dist/docs/` para App Router (layouts/pages), composição
+  Server/Client Component, `next/font`, `next/image`, metadata e as APIs
+  dinâmicas usadas pelo app. Registrar as rotas dos arquivos lidos no PR/commit
+  daquela etapa e respeitar avisos de depreciação.
+- O pacote de design declara interações visuais, mas não especifica contratos
+  de dados, regras de pagamento, CMS, analítica, persistência de salvos ou
+  permissão Premium. Nenhuma dessas ações deve ser simulada como concluída.
+
+## Inventário do mockup
+
+### Telas
+
+| Handoff | Tela/estado representado | Situação no app alvo |
+| --- | --- | --- |
+| `Home.dc.html` | Home institucional e navegação global | Existe `/`, mas é uma home provisória menor. |
+| `Radar.dc.html` | Radar público, gratuito e Premium; filtros | Existem `/oportunidades` e `/membros/oportunidades`; não há nível Premium. |
+| `Detalhe.dc.html` | Detalhe de oportunidade e candidatura | Não existe rota de detalhe nem contrato correspondente. |
+| `Onboarding.dc.html` | Perfil em cinco passos | Existe edição de perfil, apenas nome e bio; não existe fluxo/persistência dos cinco passos. |
+| `Dashboard.dc.html` | Visão do membro, prazos, alertas e biblioteca | `/membros` é hoje a entrada do fórum. |
+| `Planos.dc.html` | Comparação de planos e FAQ | Não existe rota ou modelo de planos; `/api/checkout` responde 410. |
+| `UpgradeModal.dc.html` | Modal de upgrade por estado de acesso | Não há entitlement, preço configurado ou pagamento ativo. |
+| `Blog.dc.html` | Listagem e categoria | Não existe rota, fonte editorial ou modelo de posts. |
+| `Post.dc.html` | Artigo e oportunidades relacionadas | Não existe rota, fonte editorial ou modelo de posts. |
+| `MakeItFly.dc.html` | Evento, agenda, pessoas, inscrição e FAQ | Existem `/makeitfly` e `/makeitfly/participar`, com implementação própria. |
+| `Apogee Telas.dc.html` | Prancha de 13 telas: capa, Home, estados Radar, detalhe, onboarding, dashboard, planos, upgrade, Blog, categoria, post e Make It Fly | É índice de cobertura, não uma rota adicional. |
+
+### Componentes e fundamentos declarados
+
+- `Header.dc.html`: contexto `site` ou `radar`, visitante/gratuito/pago e menu
+  móvel.
+- `Footer.dc.html`: grupos de navegação e assinatura da marca.
+- `TabBar.dc.html`: navegação móvel de membro para Início, Radar, Salvos,
+  Biblioteca e Conta.
+- `OpCard.dc.html`: variantes membro, prévia, bloqueado e encerrado; marcador
+  de salvo e estados por nível.
+- `UpgradeModal.dc.html`: CTA e comunicação de upgrade.
+- `Apogee Design System.dc.html`: tokens, header, cards, filtros, sheet móvel,
+  modal, tabela de planos, cards de Blog e estados vazio/carregando/confirmação.
+
+O manual visual traz Instrument Serif (normal/itálico) para display e Inter
+para interface. A paleta é Navy `#07182D`, preto `#0A0A0A`, branco `#FFFFFF` e
+Sky `#B9D3EE`. Esses mesmos quatro valores e as duas famílias já estão
+representados pelos tokens e fontes locais do app alvo.
+
+### Assets e tipografia
+
+O pacote contém seis PNGs RGBA: wordmark e tagline em navy/branco, e estrela
+em navy/branco. Também contém o PDF `Manual de Marca.pdf` (8 páginas) e oito
+PNGs de páginas do manual. Os PNGs do manual são material de referência, não
+assets de produção.
+
+O app alvo já possui fontes locais Inter e Instrument Serif em `app/fonts/`, e
+assets de marca em `public/brand/` (`apogee-logo-*.svg`, `apogee-star.svg` e
+`make-it-fly-wordmark.png`). A etapa que importar UI deve primeiro comparar
+geometria, cor e licença das assinaturas; não deve substituir nem duplicar
+arquivos atuais por nome presumido.
+
+### Interações vistas, mas ainda não contratadas
+
+Os handoffs demonstram: menu móvel expansível; filtros/ordenação; abertura de
+sheet móvel; salvar/remover oportunidade; modal de upgrade; onboarding de cinco
+passos; FAQ expansível; seleção de plano; inscrição/newsletter; e feedback
+toast. Os `onClick` e atributos ARIA são placeholders do handoff, não provas
+de persistência ou navegação funcional.
+
+## Mapa para o estado atual
+
+| Mockup | Rota/componente de destino | Reuso obrigatório | Lacuna ou conflito a resolver antes de implementar |
+| --- | --- | --- | --- |
+| Home e Header/Footer | `/`, `components/site/` | `app/globals.css`, fontes locais e `public/brand/` | O header/footer internos atuais são específicos de Make It Fly; não substituí-los globalmente antes de haver uma shell institucional própria. |
+| Radar prévia pública | `/oportunidades`, `components/opportunities/opportunities-preview.tsx` | `listPublicOpportunityPreviews()` e sua DTO servidor-only | Nunca ampliar a DTO pública nem serializar prazo, URL, requisitos, benefícios ou resumo. |
+| Radar de membro | `/membros/oportunidades`, `opportunities-board.tsx` | `requireMember()`, `listMemberOpportunities()` e filtros existentes | “Free/Premium”, salvos, alertas e ordenação Premium ainda não possuem modelo/serviço. |
+| Detalhe | nova rota a decidir, sob `/membros/oportunidades/…` | DAL do membro e fonte de oportunidades | Exige identificador público seguro, lookup autorizado e critérios de escopo para candidatura/salvo. Não criar detalhe público com campos privados. |
+| Onboarding/Dashboard/TabBar | `/membros`, perfil e novos componentes de membro | Better Auth, `MemberBar`, formulário de perfil e ações servidoras | A home de membros é Fórum; os dados de curso, interesses, alertas, biblioteca e salvos não existem no schema atual. |
+| Planos/Upgrade | rota e componentes novos, somente depois de contrato | controles e acessibilidade já adotados | Pagamento desativado; plano, entitlement, preço, cancelamento e webhook requerem decisão de produto/segurança separada. |
+| Blog/Post | rotas e fonte editorial novas | shell institucional, metadata e `next/image` conforme guia instalada | Não há CMS, conteúdo aprovado, slugs, imagens nem política de compartilhamento. |
+| Make It Fly | `/makeitfly`, `/makeitfly/participar` | conteúdo existente, CTA e testes do evento | Adaptar visual sem trocar fatos aprovados, fluxo de inscrição ou os assets protegidos pelos testes de isolamento. |
+
+## Estratégia de assets e design system
+
+1. Preservar o pacote em Downloads como fonte imutável. Em cada Etapa, copiar
+   somente o asset aprovado para um caminho novo e explícito em `public/brand/`
+   ou `public/<domínio>/`; não incluir o PDF, screenshots do manual, `.DS_Store`
+   ou `support.js` de handoff no build.
+2. Priorizar os assets de marca já versionados quando forem equivalentes. Para
+   cada candidato novo, registrar origem, finalidade, dimensões, licença/uso
+   autorizado e hash antes de referenciá-lo.
+3. Estender tokens semânticos existentes em `app/globals.css`; não introduzir
+   valores hex repetidos por tela. Manter Instrument Serif/Inter locais com
+   `next/font/local`; não carregar fontes do Google a partir do handoff.
+4. Construir componentes por domínio (`components/site`, `components/opportunities`,
+   `components/members`) em vez de converter HTML inline. Estados de loading,
+   vazio, erro, foco, teclado e movimento reduzido fazem parte de cada
+   componente.
+
+## Plano incremental executável
+
+### Etapa 2 — fundação visual e shell institucional
+
+**Escopo.** Após ler a documentação Next instalada, consolidar tokens que ainda
+faltarem, implementar uma shell institucional própria e componentes
+reutilizáveis de Header, Footer, botão, card, chips/filtros e navegação móvel.
+Aplicar somente às rotas já existentes e explicitamente selecionadas: `/`,
+`/oportunidades`, `/membros`, `/membros/oportunidades`, `/makeitfly` e
+`/makeitfly/participar`. Não criar Blog, Planos, checkout, Premium ou um
+backend novo nesta etapa.
+
+**Sequência.**
+
+1. Instalar dependências pelo lockfile dentro de `make-it-fly-current/`, ler as
+   guias Next indicadas acima e anotar a versão resolvida.
+2. Comparar assets por hash/dimensão e adicionar somente arquivos aprovados.
+3. Extrair tokens/componentes, migrando uma rota de cada vez e mantendo os
+   contratos existentes de dados, links e metadata.
+4. Atualizar ou criar testes estruturais para tokens, navegação, foco e
+   responsividade sem enfraquecer testes de isolamento.
+
+**Aceite verificável.**
+
+- As seis rotas listadas renderizam com header/rodapé apropriados em viewport
+  desktop e móvel, sem menu visualmente inacessível.
+- Todo controle é alcançável por teclado, tem nome acessível e foco visível;
+  a preferência de movimento reduzido não deixa conteúdo oculto.
+- A prévia pública continua limitada à DTO controlada, e os testes de acesso do
+  Radar continuam verdes.
+- Não há carregamento externo de fontes nem mudança não autorizada em conteúdo
+  factual do Make It Fly.
+
+### Etapa 3 — Radar e experiência de membro
+
+**Escopo.** Aplicar os componentes do mockup aos estados já suportados de
+Radar: prévia pública, lista autenticada, filtros e vazios. Evoluir a área de
+membros de forma compatível com Fórum e perfil. Implementar detalhe,
+onboarding, salvos ou alertas somente depois de contratos de produto, schema,
+migração, autorização e testes serem aprovados separadamente.
+
+**Rotas afetadas inicialmente.** `/oportunidades`, `/membros`,
+`/membros/oportunidades`, `/membros/perfil/[username]` e
+`/membros/perfil/editar`. Rotas condicionais, fora do escopo até contrato:
+`/membros/oportunidades/[id-ou-slug]`, `/membros/salvos` e qualquer rota de
+onboarding.
+
+**Aceite verificável.**
+
+- Visitante enxerga no máximo os campos da DTO pública; inspeções de HTML, RSC
+  e chamadas de rede não expõem campos privados.
+- Cada rota de membro verifica a sessão no servidor; controles cliente não são
+  a única proteção.
+- Filtros preservam semântica, `aria-pressed`, contagem anunciada e um estado
+  vazio recuperável; o layout é de uma coluna no breakpoint móvel adotado.
+- Se um recurso de salvo/alerta/detalhe for autorizado, seus testes cobrem
+  proprietário, não autorizado, falha e atualização visual sem vazar dados.
+
+### Etapa 4 — superfícies novas condicionais
+
+**Escopo.** Só após decisão de produto, implementar em incrementos distintos:
+Blog/Posts, Planos/Upgrade e qualquer extensão do Make It Fly. Cada domínio
+tem seu próprio contrato de conteúdo/dados e revisão; não compartilhar um
+commit que introduza simultaneamente CMS, cobrança e redesign amplo.
+
+**Decisões bloqueadoras.**
+
+- Blog: origem editorial, autores, imagens, slugs, publicação, SEO e conteúdo
+  aprovado.
+- Planos/Upgrade: níveis de acesso, preço/moeda, provedor, termos,
+  cancelamento, entitlement, webhook idempotente e estados de falha. O endpoint
+  de checkout atual não é um ponto de integração ativo.
+- Detalhe/candidatura: fonte de verdade, modelagem do progresso e confirmação
+  de que nenhum dado da oportunidade deve se tornar público.
+
+**Aceite verificável.**
+
+- Novas rotas têm metadata, loading/error/empty states, teclado, foco e testes
+  de viewport.
+- Conteúdo não publicado não é indexável nem exposto por rota/API/estado
+  serializado.
+- Qualquer cobrança ou alteração de acesso é validada no servidor, auditável e
+  testada com sucesso, cancelamento, duplicidade e falha antes de qualquer
+  ativação pública.
+
+## Validação local por etapa
+
+Antes de código: `git status --short --branch`, leitura das guias Next
+instaladas e revisão do diff. Depois de uma alteração de UI, a base mínima no
+diretório do app alvo é `npm run lint`, `npm run typecheck`, `npm test` e
+`npm run build`, mais os testes focados do domínio e inspeção manual desktop,
+móvel, teclado e movimento reduzido. Para a fronteira do Radar, incluir os
+testes de acesso e inspeção dos canais público/RSC/API aplicáveis. Só declarar
+um resultado como verde quando o comando correspondente tiver realmente
+concluído com sucesso.
+
+## Registro da Etapa 1
+
+- Worktree analisado: raiz deste repositório; `HEAD` em `f446815` no início da
+  etapa, sem alterações locais.
+- Material de origem: somente leitura; nenhum arquivo foi movido, apagado ou
+  modificado.
+- Evidências consultadas: inventário dos handoffs, PDF/PNGs do manual, rotas,
+  componentes, tokens, testes e fronteiras de acesso do app alvo.
+- Validações executadas nesta etapa documental: inventário de arquivos e
+  metadados dos assets; extração e renderização visual da capa do manual;
+  verificação de ausência de README/PRD no pacote; verificação de ausência de
+  `node_modules/next/dist/docs/` neste worktree.
