@@ -328,3 +328,39 @@ Em caso de rollback autorizado:
 consolidado e os gates focados/local smoke passaram, mas a suíte completa tem
 18 falhas e o build ainda falha no prerender de rotas preexistentes. Nenhum
 push, deploy, VPS, DNS, Vercel, credencial ou alteração pública foi realizado.
+
+## Correção dos bloqueios técnicos de integração — 2026-10-08
+
+O consolidado original `5f71a6d` tinha `f446815` como primeiro pai e não era
+ancestral de `origin/main` (`8a3ba213`). A integração foi refeita em uma branch
+nova a partir de `origin/main`, por cherry-pick sem reescrever histórico. O
+único conflito em `app/page.tsx` preservou a home HIG já integrada e aplicou
+somente a shell institucional desta cadeia.
+
+Antes da correção foram lidos, na versão Next `16.3.8` resolvida pelo lockfile,
+os guias locais de `layout`, `page`, Server/Client Components, `next/image` e
+upgrade para a versão 16. A shell mantém a prévia filtrável no Client Component
+e a DTO no servidor; imagens de destaque usam `preload`, a API atual da versão
+16. A fonte `next/font/google` remota que contrariava a regra de fontes locais
+foi removida; a família Instrument Serif já versionada continua sendo usada.
+
+Os cinco subtestes inicialmente falhos de `deployment-isolation.test.mjs`
+tinham contratos de integridade defasados por rotas, tokens e recursos já
+presentes no artefato aprovado, além do asset protegido
+`public/rosa/retrato-nasa.webp` ausente do checkout. O asset foi restaurado
+pelo blob Git cujo SHA-1 já era exigido pelo teste. As proteções foram mantidas
+estritas: a allow-list de rotas agora enumera explicitamente `/login`,
+`/oportunidades` e `/membros/oportunidades`; os recursos protegidos continuam
+com hashes exatos; e as rotas de membro/Radar continuam testadas no servidor.
+
+Validações desta correção: os cinco testes de isolamento/deploy e os testes
+focados de UI, login, membros, Radar e arquitetura passaram (32/32); lint não
+teve erros e mantém somente o aviso legado de `<img>` em
+`gallery-admin.tsx`; typecheck passou. A suíte completa fechou em 174/187, com
+13 falhas fora deste escopo em Make It Fly, aplicação/jornada, loja e energia.
+O smoke isolado respondeu `200` em `/`, `/oportunidades` e na entrada de
+membros; a rota protegida `/membros/oportunidades` respondeu `307` para a
+entrada segura. A tentativa de build isolada não produziu artefato verde por
+`ENOSPC` no cache Webpack. Portanto esta branch não está pronta para push ou
+deploy de release até que esses gates independentes e a capacidade de disco
+sejam resolvidos e validados.
