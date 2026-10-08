@@ -8,6 +8,7 @@ export function MemberBar({ member, current }: { member: CurrentMember; current?
   return (
     <div className={styles.memberBar}>
       <nav aria-label="Navegação da área de membros">
+        <span className={styles.memberNavLabel}>Área de membros</span>
         <Link href="/membros" aria-current={current === "forum" ? "page" : undefined}>
           Fórum
         </Link>

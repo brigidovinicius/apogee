@@ -33,7 +33,7 @@ export function SiteHeader({
             width={1595}
             height={986}
             sizes="112px"
-            priority
+            preload
           />
         </Link>
 

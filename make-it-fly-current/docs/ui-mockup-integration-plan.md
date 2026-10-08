@@ -228,3 +228,26 @@ concluído com sucesso.
   metadados dos assets; extração e renderização visual da capa do manual;
   verificação de ausência de README/PRD no pacote; verificação de ausência de
   `node_modules/next/dist/docs/` neste worktree.
+
+## Registro da Etapa 3
+
+- Escopo integrado: filtros client-side para a DTO pública já limitada, estados
+  vazio e de recuperação de filtros, e navegação de membro responsiva para
+  Fórum, Radar e perfil existentes.
+- Limites preservados: o cliente recebe somente `id`, título, instituição, tipo
+  e nível da prévia; os detalhes continuam atrás de `requireMember()` na rota e
+  na DAL. Não foram criadas rotas de detalhe, salvos, alertas, onboarding,
+  planos ou Premium.
+- Compatibilidade Next: as guias instaladas da versão resolvida foram lidas;
+  o novo uso da shell substitui o `priority` depreciado de `next/image` por
+  `preload`.
+- Validações desta fatia: testes focados de Etapa 3, isolamento do Radar e
+  shell passaram; lint sem erros (um aviso existente de `<img>` em
+  `gallery-admin.tsx`) e typecheck passaram. Em localhost, `/oportunidades`
+  respondeu 200 com a DTO limitada e o visitante em
+  `/membros/oportunidades` recebeu redirecionamento 307 para entrar.
+- Limitações atuais: a suíte completa ficou em 169/187 por 18 falhas fora do
+  diff (Make It Fly, energia e backend de jornada). O build compilou e passou
+  pelo TypeScript, mas falhou no prerender de rotas existentes com
+  `Response cache requires a source route`; nenhuma destas falhas foi alterada
+  nesta etapa. Não havia integração/autorização Linear disponível nesta sessão.
