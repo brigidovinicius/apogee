@@ -19,6 +19,7 @@ const env = {
   SUPABASE_URL: "https://test-project.supabase.co",
   SUPABASE_SECRET_KEY: "sb_secret_testonly012345678901234567890",
 };
+const WEBHOOK_SECRET = "test-sheets-webhook-secret-1234567890";
 
 function payload(overrides = {}) {
   return { name: "TESTE INTERNO", email: "test@example.com", phone: "+1 (202) 555-0101", age: 28, profession: "Design de produto", hasIdea: true, ideaDescription: "", hasLaptop: true, usesPaidAI: true, journeyId: randomUUID(), website: "", idempotencyKey: randomUUID(), ...overrides };
@@ -179,6 +180,7 @@ test("spreadsheet webhook is optional, restricted to Apps Script and best effort
 
   const db = fakeDatabase();
   const webhookUrl = "https://script.google.com/macros/s/abcdefghijklmnopqrstuvwxyz123456/exec";
+  assert.throws(() => api.readApplicationConfig({ ...env, GOOGLE_SHEETS_WEBHOOK_URL: webhookUrl }), { status: 503 });
   const sheetCalls = [];
   const fetcher = async (url, init) => {
     if (url === webhookUrl) {
@@ -188,7 +190,7 @@ test("spreadsheet webhook is optional, restricted to Apps Script and best effort
     return db.fetcher(url, init);
   };
   const response = await api.handleApplicationPost(request(payload()), options(db, {
-    env: { ...env, GOOGLE_SHEETS_WEBHOOK_URL: webhookUrl }, fetcher,
+    env: { ...env, GOOGLE_SHEETS_WEBHOOK_URL: webhookUrl, GOOGLE_SHEETS_WEBHOOK_SECRET: WEBHOOK_SECRET }, fetcher,
   }));
   assert.equal(response.status, 201);
   assert.equal(sheetCalls.length, 1);
@@ -201,7 +203,7 @@ test("spreadsheet webhook is optional, restricted to Apps Script and best effort
 
   const unavailable = fakeDatabase();
   const outage = await api.handleApplicationPost(request(payload()), options(unavailable, {
-    env: { ...env, GOOGLE_SHEETS_WEBHOOK_URL: webhookUrl },
+    env: { ...env, GOOGLE_SHEETS_WEBHOOK_URL: webhookUrl, GOOGLE_SHEETS_WEBHOOK_SECRET: WEBHOOK_SECRET },
     fetcher: async (url, init) => url === webhookUrl ? Promise.reject(new Error("sheets unavailable")) : unavailable.fetcher(url, init),
   }));
   assert.equal(outage.status, 201);

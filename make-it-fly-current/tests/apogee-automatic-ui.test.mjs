@@ -26,6 +26,7 @@ async function renderHeroContent() {
     if (specifier === "react/jsx-runtime") return jsxRuntime;
     if (specifier === "next/link") return { default: ({ href, className, children }) => jsxRuntime.jsx("a", { href, className, children }) };
     if (specifier === "@/components/analytics/journey-client") return { flushJourneyEvents() {}, trackJourney() {} };
+    if (specifier === "@/components/ui/button-witn-icon") return { default: ({ href, className, children }) => jsxRuntime.jsx("a", { href, className, children }) };
     if (specifier === "./application-client") return { rememberAttribution() {} };
     throw new Error(`Unexpected ApplicationLink import: ${specifier}`);
   }, linkExports);
