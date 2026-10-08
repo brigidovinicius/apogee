@@ -186,6 +186,40 @@ test("gallery management requires the existing admin token and deletes only the 
   }
 });
 
+test("gallery management accepts an authenticated admin role and rejects a member role", async () => {
+  setGalleryEnvironment();
+  const gallery = await loadGallery();
+  const id = "2026-09-23T01-38-36-784Z-450e2012-5e58-49c6-b59e-cc431e29b073";
+  const requests = [];
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    requests.push({ url: String(url), method: init.method });
+    return Response.json({});
+  };
+  try {
+    const member = await gallery.manageCommunityPhotos(new Request("https://www.apogee.community/api/gallery/admin", {
+      method: "DELETE",
+      headers: { origin: "https://www.apogee.community", "content-type": "application/json" },
+      body: JSON.stringify({ id }),
+    }), { memberRole: "member" });
+    assert.equal(member.status, 404);
+    assert.equal(requests.length, 0);
+
+    const admin = await gallery.manageCommunityPhotos(new Request("https://www.apogee.community/api/gallery/admin", {
+      method: "DELETE",
+      headers: { origin: "https://www.apogee.community", "content-type": "application/json" },
+      body: JSON.stringify({ id }),
+    }), { memberRole: "admin" });
+    assert.equal(admin.status, 200);
+    assert.deepEqual(requests, [
+      { url: `https://test.supabase.co/storage/v1/object/apogee-community-photos/photos/${id}.webp`, method: "DELETE" },
+      { url: `https://test.supabase.co/storage/v1/object/apogee-community-photos/entries/${id}.json`, method: "DELETE" },
+    ]);
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});
+
 test("the retired identified test photo is removed while anonymous gallery entries remain", async () => {
   setGalleryEnvironment();
   const gallery = await loadGallery();

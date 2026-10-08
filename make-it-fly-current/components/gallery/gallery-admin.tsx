@@ -7,7 +7,6 @@ import styles from "./gallery-admin.module.css";
 type GalleryResponse = { photos?: CommunityPhoto[]; error?: string };
 
 export function GalleryAdmin() {
-  const [token, setToken] = useState("");
   const [photos, setPhotos] = useState<CommunityPhoto[]>([]);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +18,6 @@ export function GalleryAdmin() {
     try {
       const response = await fetch("/api/gallery/admin", {
         cache: "no-store",
-        headers: { Authorization: `Bearer ${token.trim()}` },
       });
       const body = await response.json() as GalleryResponse;
       if (!response.ok || !Array.isArray(body.photos)) throw new Error(body.error || "Acesso negado.");
@@ -42,7 +40,6 @@ export function GalleryAdmin() {
       const response = await fetch("/api/gallery/admin", {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${token.trim()}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id: photo.id }),
@@ -69,19 +66,9 @@ export function GalleryAdmin() {
       <section className={styles.access} aria-labelledby="access-title">
         <div>
           <h2 id="access-title">Acesso protegido</h2>
-          <p>A credencial fica apenas nesta aba e não é salva no navegador.</p>
+          <p>Sua sessão administrativa é verificada novamente pelo servidor a cada operação.</p>
         </div>
-        <label>
-          <span>Credencial administrativa</span>
-          <input
-            type="password"
-            value={token}
-            onChange={(event) => setToken(event.target.value)}
-            autoComplete="off"
-            spellCheck={false}
-          />
-        </label>
-        <button type="button" onClick={() => void loadPhotos()} disabled={loading || token.trim().length !== 64}>
+        <button type="button" onClick={() => void loadPhotos()} disabled={loading}>
           {loading ? "Carregando…" : "Abrir galeria"}
         </button>
       </section>

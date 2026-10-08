@@ -1,6 +1,6 @@
 import "server-only";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { getAuth } from "./auth";
 
@@ -11,10 +11,7 @@ export type CurrentMember = {
   role: "member" | "admin";
 };
 
-// Verificação real da sessão (o proxy.ts faz só a checagem otimista do cookie).
-export const getCurrentMember = cache(async (): Promise<CurrentMember | null> => {
-  // headers() primeiro: torna a rota dinâmica antes de tocar no banco/segredo.
-  const requestHeaders = await headers();
+export async function getMemberFromHeaders(requestHeaders: Headers): Promise<CurrentMember | null> {
   const session = await getAuth().api.getSession({ headers: requestHeaders });
   if (!session) return null;
   const { user } = session;
@@ -24,6 +21,12 @@ export const getCurrentMember = cache(async (): Promise<CurrentMember | null> =>
     username: user.username ?? "",
     role: user.role === "admin" ? "admin" : "member",
   };
+}
+
+// Verificação real da sessão (o proxy.ts faz só a checagem otimista do cookie).
+export const getCurrentMember = cache(async (): Promise<CurrentMember | null> => {
+  // headers() primeiro: torna a rota dinâmica antes de tocar no banco/segredo.
+  return getMemberFromHeaders(await headers());
 });
 
 export async function requireMember(next?: string): Promise<CurrentMember> {
@@ -31,6 +34,12 @@ export async function requireMember(next?: string): Promise<CurrentMember> {
   if (!member) {
     redirect(next ? `/membros/entrar?next=${encodeURIComponent(next)}` : "/membros/entrar");
   }
+  return member;
+}
+
+export async function requireAdmin(next?: string): Promise<CurrentMember> {
+  const member = await requireMember(next);
+  if (member.role !== "admin") notFound();
   return member;
 }
 
