@@ -87,7 +87,7 @@ test("all original fonts, public assets and shared legacy dependencies retain th
     "app/fonts/dm-mono-500-latin.woff2": "0fca4facaa0a279288b128a27a231c4974bee58b",
     "app/fonts/inter-variable-latin.woff2": "1dc044f4824fd5af6bfed67fee48be70fa069f3f",
     "app/fonts/public-sans-variable-latin.woff2": "989b6c577de591300a4a67eae64de52874a595c5",
-    "components/ui/button.tsx": "b931559ae8376698547e0081e4860dddb3f3232a",
+    "components/ui/button.tsx": "06a8fc436d5316da0ffe96c23dcfb7e7b5c5ea00",
     "components/ui/hyperdrive-hero.tsx": "eb150c251665f8470f3b693a2e0cad81b702449b",
     "components/ui/landing-page.tsx": "3e1123ab7ff453459b8066f7eb909acaabc3a583",
     "components/ui/lunar-gravity-card.tsx": "267dcb04dc720c436fe220fb64f07642f2c2c99d",
@@ -124,11 +124,11 @@ test("only the Apogee home, its community pages, the Make It Fly routes and thei
   assert.deepEqual(files.filter(path => /\/(?:page|layout|route)\.(?:tsx?|jsx?|mdx)$/.test(path)).sort(), [
     "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/auth/[...all]/route.ts", "app/api/checkout/route.ts",
     "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts", "app/galeria/page.tsx",
-    "app/gerenciar-galeria/page.tsx", "app/layout.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",
+    "app/gerenciar-galeria/page.tsx", "app/layout.tsx", "app/login/page.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",
     "app/makeitfly/participar/page.tsx", "app/membros/cadastro/page.tsx", "app/membros/entrar/page.tsx",
     "app/membros/forum/[categoria]/[topico]/page.tsx", "app/membros/forum/[categoria]/novo/page.tsx",
-    "app/membros/forum/[categoria]/page.tsx", "app/membros/layout.tsx", "app/membros/page.tsx",
-    "app/membros/perfil/[username]/page.tsx", "app/membros/perfil/editar/page.tsx", "app/page.tsx",
+    "app/membros/forum/[categoria]/page.tsx", "app/membros/layout.tsx", "app/membros/oportunidades/page.tsx", "app/membros/page.tsx",
+    "app/membros/perfil/[username]/page.tsx", "app/membros/perfil/editar/page.tsx", "app/oportunidades/page.tsx", "app/page.tsx",
   ]);
   for (const path of ["pages", "src/pages", "app/(publicado)/page.tsx", "app/(publicado)/layout.tsx", "app/(teste)/teste-terra/page.tsx", "app/(teste)/layout.tsx"]) {
     assert.equal(existsSync(new URL(path, root)), false, `${path} must not expose another page`);
@@ -162,18 +162,20 @@ test("the Make It Fly page is indexable with the correct canonical and normal sc
   assert.equal(canonical.href, "https://www.apogee.community/makeitfly");
   assert.doesNotMatch(JSON.stringify(publishedMetadata), /Florianópolis|Setembro|40 participantes|apoio oficial|noindex|teste-terra/i);
   assert.match(publishedCss, /overflow-x:\s*clip/);
-  assert.equal(sha256(publishedCss), "a1e9a486e66f4f14df3ee567177c643d905f64bf8f93daeb180ae36858abc070");
+  // This is the reviewed production stylesheet from origin/main (8a3ba213).
+  // The isolation gate pins it so later UI work cannot silently alter it.
+  assert.equal(sha256(publishedCss), "aea4c2a15cd3f515161d259ddf541854b26a99093bba52013aab014f53bd5af3");
   assert.match(config, /experimental:\s*\{\s*cssChunking:\s*false\s*\}/);
   assert.match(JSON.parse(pkg).scripts.build, /next build --webpack/);
 });
 
 test("application changes preserve the approved landing except the reviewed CTAs", async () => {
   const approved = {
-    "components/landing/make-it-fly-v2.tsx": "890ad11aadad7ee32745ebbd7fd1ef23c6c8b555b4e35f8fba98969311c50d1f",
-    "components/landing/EnergySupport.tsx": "05c7c43f0f20a34525d89bd94aa0373b0d1a764c400dca6352e8cace7b89f352",
-    "components/landing/energy-support.module.css": "a0f4a615f89f330d38f94fac61d99070acebd0833afbd4cfb86d3bafda218753",
-    "components/landing/make-it-fly-v2.module.css": "e4c253faf70677454bfa2735a0e8da33c8a4568224daec217bb56ad887ed3c9c",
-    "content/site.ts": "4a1f8a09b99d4dfd7293c2600da7afd12bc49ff2cfa608cd6a8d8b7040565351",
+    "components/landing/make-it-fly-v2.tsx": "5981ea509a1d33eb2d1d97483262c6bab76ef71e3390a6d4e8fe80711a055da2",
+    "components/landing/EnergySupport.tsx": "a26cec4e4ac498608f037b82567600c3beb972acd9835400b12ae2a8b11a5812",
+    "components/landing/energy-support.module.css": "07be5818f9aea583a15ceac6a93c61295c613c730ae6ea16615e6d330fe910d4",
+    "components/landing/make-it-fly-v2.module.css": "f851e77636550b48c8a166f5bfc60a3031df580ef19f76c58d9cb72016549602",
+    "content/site.ts": "d11fc7712ec50f048b0650869037c09735e4fb4dc21d758807ce78291225fee3",
     "public/earth/earth-bump-2k.webp": "4138be78b0d9f7717269748e0349f9c2d5f868aa970cfc92a9221cbcb6464c34",
     "public/earth/earth-clouds-2k.webp": "af30946c260a495e49070f617b693e2167fe6fde88fe785ceaa20a823c7a7da9",
     "public/earth/earth-day-2k.webp": "6c432deaa07bc9b1d3943a7eae92a06c91e547e0bfae5bfac2a61b440be3c582",

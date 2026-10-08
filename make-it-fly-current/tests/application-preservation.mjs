@@ -20,10 +20,10 @@ export function restorePreApplicationSource(path, source) {
   }
   if (path === "components/landing/make-it-fly-v2.tsx") {
     result = replaceOnce(result,
-      '<ApplicationLink className={styles.topbarCta}>\n            Participar <span aria-hidden>↗</span>\n          </ApplicationLink>',
+      '<ApplicationLink className={styles.topbarCta}>\n              Participar\n            </ApplicationLink>',
       '<a className={styles.topbarCta} href="#participar">\n            Participar <span aria-hidden>↗</span>\n          </a>');
     result = replaceOnce(result,
-      '<ApplicationLink className={styles.finalCta}>\n                    {PARTICIPAR.botao.texto} <span aria-hidden>↗</span>\n                  </ApplicationLink>',
+      '<ApplicationLink className={styles.finalCta}>\n                    {PARTICIPAR.botao.texto}\n                  </ApplicationLink>',
       '<a\n                    className={styles.finalCta}\n                    href={PARTICIPAR.botao.href}\n                    target="_blank"\n                    rel="noreferrer"\n                  >\n                    {ABERTURA.cta} <span aria-hidden>↗</span>\n                  </a>');
   }
   if (path === "content/site.ts") {
