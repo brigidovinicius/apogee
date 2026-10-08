@@ -63,8 +63,8 @@ test("the app role is not a superuser and the Node client disables prepared stat
   assert.match(db, /rejectUnauthorized: true/);
 });
 
-test("proxy only guards the members area and leaves login and sign-up public", async () => {
+test("proxy guards members and admin while leaving member login and sign-up public", async () => {
   const proxy = await source("proxy.ts");
-  assert.match(proxy, /matcher: \["\/membros", "\/membros\/:path\*"\]/);
+  assert.match(proxy, /matcher: \["\/membros", "\/membros\/:path\*", "\/admin", "\/admin\/:path\*"\]/);
   assert.match(proxy, /"\/membros\/entrar", "\/membros\/cadastro"/);
 });

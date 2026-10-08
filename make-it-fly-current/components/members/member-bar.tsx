@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signOut } from "@/app/membros/actions";
+import { AdminModeSwitcher } from "@/components/admin/admin-mode-switcher";
 import type { CurrentMember } from "@/lib/members/dal";
 import { AvatarInitials } from "./avatar-initials";
 import styles from "./members.module.css";
@@ -7,6 +8,7 @@ import styles from "./members.module.css";
 export function MemberBar({ member, current }: { member: CurrentMember; current?: "forum" | "perfil" | "radar" }) {
   return (
     <div className={styles.memberBar}>
+      {member.role === "admin" ? <AdminModeSwitcher mode="user" /> : null}
       <nav aria-label="Navegação da área de membros">
         <span className={styles.memberNavLabel}>Área de membros</span>
         <Link href="/membros" aria-current={current === "forum" ? "page" : undefined}>

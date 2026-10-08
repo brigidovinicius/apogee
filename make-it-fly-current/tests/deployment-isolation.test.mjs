@@ -110,7 +110,7 @@ test("all original fonts, public assets and shared legacy dependencies retain th
   await Promise.all(Object.entries(original).map(([path, hash]) => assertUnchanged(path, hash)));
 });
 
-test("only the Apogee home, its community pages, the Make It Fly routes and their endpoints are routable", async () => {
+test("only the approved Apogee, admin, community and Make It Fly surfaces are routable", async () => {
   const files = [];
   const visit = async directory => {
     for (const entry of await readdir(new URL(`${directory}/`, root), { withFileTypes: true })) {
@@ -121,6 +121,8 @@ test("only the Apogee home, its community pages, the Make It Fly routes and thei
   };
   await visit("app");
   assert.deepEqual(files.filter(path => /\/(?:page|layout|route)\.(?:tsx?|jsx?|mdx)$/.test(path)).sort(), [
+    "app/admin/acesso-negado/page.tsx", "app/admin/curadoria/page.tsx", "app/admin/layout.tsx", "app/admin/page.tsx",
+    "app/admin/posts/novo/page.tsx", "app/admin/usuarios/page.tsx",
     "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/auth/[...all]/route.ts", "app/api/checkout/route.ts",
     "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts", "app/galeria/page.tsx",
     "app/gerenciar-galeria/page.tsx", "app/layout.tsx", "app/login/page.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",

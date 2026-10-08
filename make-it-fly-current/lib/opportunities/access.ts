@@ -1,5 +1,6 @@
 import "server-only";
 import { STUDENT_OPPORTUNITIES } from "@/content/opportunities";
+import { requireAdmin } from "@/lib/admin/access";
 import { requireMember } from "@/lib/members/dal";
 import { mergeOpportunities, listRadarOpportunities } from "@/lib/opportunities/radar-client";
 import {
@@ -40,5 +41,11 @@ export async function listPublicOpportunityPreviews(): Promise<OpportunityPrevie
 /** A fonte completa só pode ser consultada depois de uma sessão válida. */
 export async function listMemberOpportunities(): Promise<StudentOpportunity[]> {
   await requireMember("/membros/oportunidades");
+  return listAllOpportunities();
+}
+
+/** A administração atual pode auditar o catálogo, mas ainda não há fila de revisão. */
+export async function listAdminOpportunityCatalogue(): Promise<StudentOpportunity[]> {
+  await requireAdmin("/admin/curadoria");
   return listAllOpportunities();
 }

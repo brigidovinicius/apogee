@@ -86,7 +86,7 @@ test("visitantes continuam redirecionados e não recebem os dados completos do R
     source("lib/opportunities/access.ts"),
   ]);
 
-  assert.match(proxy, /matcher: \["\/membros", "\/membros\/:path\*"\]/);
+  assert.match(proxy, /matcher: \["\/membros", "\/membros\/:path\*", "\/admin", "\/admin\/:path\*"\]/);
   assert.match(proxy, /login\.searchParams\.set\("next", pathname \+ search\)/);
   assert.match(memberPage, /await requireMember\("\/membros\/oportunidades"\)/);
   assert.match(access, /await requireMember\("\/membros\/oportunidades"\)/);
