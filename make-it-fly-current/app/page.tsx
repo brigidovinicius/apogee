@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { SiteFooter } from "@/components/site/site-footer";
+import { SiteHeader } from "@/components/site/site-header";
 import styles from "./home.module.css";
 
 export const metadata: Metadata = {
@@ -9,18 +11,9 @@ export const metadata: Metadata = {
 
 // Home provisória da Apogee até o site oficial existir. O Make It Fly vive em /makeitfly.
 export default function ApogeeHome() {
-  return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <Link href="/" className={styles.brand} aria-label="Apogee, início">
-          <Image className={styles.logo} src="/brand/apogee-logo-white.svg" alt="Apogee" width={1595} height={986} sizes="120px" priority />
-        </Link>
-        <nav className={styles.nav} aria-label="Navegação principal">
-          <Link href="/oportunidades">Oportunidades</Link>
-          <Link href="/galeria">Galeria</Link>
-          <Link href="/loja">Loja</Link>
-        </nav>
-      </header>
+    return (
+      <div className={styles.page}>
+      <SiteHeader current="home" />
 
       <main id="experiencia" className={styles.main} tabIndex={-1}>
         <section className={styles.intro} aria-labelledby="home-title">
@@ -42,7 +35,7 @@ export default function ApogeeHome() {
         </section>
       </main>
 
-      <footer className={styles.footer}><span>Apogee</span><span>Ideias em movimento.</span></footer>
+      <SiteFooter />
     </div>
   );
 }

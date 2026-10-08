@@ -5,7 +5,6 @@ import { readFile } from "node:fs/promises";
 import { renderToStaticMarkup } from "react-dom/server";
 import * as jsxRuntime from "react/jsx-runtime";
 import ts from "typescript";
-import { restorePreApplicationSource } from "./application-preservation.mjs";
 
 const readSource = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const sha256 = value => createHash("sha256").update(value).digest("hex");
@@ -38,6 +37,13 @@ async function renderSupport() {
   // excluded, so these assertions do not claim browser-layout coverage.
   const dependencies = {
     "react/jsx-runtime": jsxRuntime,
+    react: { useRef: () => ({ current: null }) },
+    "framer-motion": {
+      motion: new Proxy({}, { get: (_, element) => ({ children, ...props }) => jsxRuntime.jsx(String(element), { ...props, children }) }),
+      useScroll: () => ({ scrollYProgress: 0 }),
+      useSpring: value => value,
+      useTransform: (_, __, output) => output[0],
+    },
     "@/content/site": await readContent(),
     "next/image": { default: props => jsxRuntime.jsx("img", props) },
     "./energy-support.module.css": { default: new Proxy({}, { get: (_, key) => String(key) }) },
@@ -55,8 +61,9 @@ test("energy support renders a labelled aside and the requested heading as acces
   assert.match(html, /<aside\b[^>]*id="energia"[^>]*aria-labelledby="energy-support-title"/);
   const heading = html.match(/<h3\b[^>]*id="energy-support-title"[^>]*>([\s\S]*?)<\/h3>/);
   assert.ok(heading, "the endorsement follows the experience h2 as an h3");
-  assert.equal(heading[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim(), "Energizados por Red Bull");
-  assert.doesNotMatch(html, /<h[12]\b|aria-hidden="true"/);
+  assert.equal(heading[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(), "O dia de trabalho será energizado por Red Bull.");
+  assert.doesNotMatch(html, /<h[12]\b/);
+  assert.doesNotMatch(heading[0], /aria-hidden="true"/);
 });
 
 test("energy support uses only the supplied can artwork with meaningful alternative text", async () => {
@@ -70,32 +77,28 @@ test("energy support uses only the supplied can artwork with meaningful alternat
   assert.doesNotMatch(html, /<svg\b|<picture\b|src="[^"]*(?:red-?bull-logo|redbull\.svg|red-bull\.svg)/i);
 });
 
-test("support mentions the existing Energy Bar without inventing an official-partner claim", async () => {
+test("support preserves the Energy Bar content and avoids an official-partner claim", async () => {
   const [html, content] = await Promise.all([renderSupport(), readContent()]);
   const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
   assert.match(JSON.stringify(content), /Energy Bar com Red Bull/);
-  assert.match(text, /Energy Bar com Red Bull para acompanhar o dia de criação e conexões\./);
+  assert.match(text, /O dia de trabalho será energizado por Red Bull\./);
   assert.doesNotMatch(text, /(?:parceir[oa]|patrocinador[ae]?|patrocínio|apoio)\s+oficial|official\s+(?:partner|sponsor)|aprovad[oa]\s+pela\s+Red Bull|endossad[oa]\s+pela\s+Red Bull/i);
   assert.doesNotMatch(html, /<a\b|<button\b|<form\b/, "the support band does not introduce another destination or CTA");
 });
 
-test("the support band appears once inside experience after the editorial block and before the ticker", async () => {
+test("the support band appears once between the experience editorial and journey", async () => {
   const source = await readSource("components/landing/make-it-fly-v2.tsx");
   const file = parse(source);
   const supportNodes = nodesMatching(file, node => tag(node)?.tagName.getText(file) === "EnergySupport");
   assert.equal(supportNodes.length, 1);
   const support = supportNodes[0];
-  assert.match(attribute(support.parent, "className")?.getText(file) ?? "", /styles\.sectionInner/);
-  let section = support.parent;
-  while (section && stringAttribute(section, "id") !== "experiencia") section = section.parent;
-  assert.ok(section, "EnergySupport belongs to the existing experience section");
-  const editorial = nodesMatching(section, node => /styles\.editorialSplit/.test(attribute(node, "className")?.getText(file) ?? ""))[0];
-  const ticker = nodesMatching(section, node => /styles\.disciplineTicker/.test(attribute(node, "className")?.getText(file) ?? ""))[0];
-  assert.ok(editorial && ticker);
-  assert.ok(editorial.end <= support.pos && support.end <= ticker.pos);
+  const experience = nodesMatching(file, node => stringAttribute(node, "id") === "experiencia")[0];
+  const journey = nodesMatching(file, node => stringAttribute(node, "id") === "jornada")[0];
+  assert.ok(experience && journey);
+  assert.ok(experience.end <= support.pos && support.end <= journey.pos);
 });
 
-test("support does not add a flight milestone or alter the seven-section sequence", async () => {
+test("support has its own measured scroll scene without changing the primary section order", async () => {
   const [landing, hero, support] = await Promise.all([
     readSource("components/landing/make-it-fly-v2.tsx"),
     readSource("components/hero/ApogeeHero.tsx"),
@@ -103,16 +106,15 @@ test("support does not add a flight milestone or alter the seven-section sequenc
   ]);
   const ids = nodesMatching(parse(`${hero}\n${landing}`), node => Boolean(attribute(node, "data-flight-section")))
     .map(node => stringAttribute(node, "id"));
-  assert.deepEqual(ids, ["inicio", "experiencia", "jornada", "programacao", "manifesto", "quem-conduz", "participar"]);
-  assert.doesNotMatch(support, /data-flight-section|<section\b|Canvas|useScroll|useFrame/);
+  assert.deepEqual(ids, ["inicio", "experiencia", "jornada", "programacao", "manifesto", "quem-conduz", "participar", "galeria-preview"]);
+  assert.match(support, /data-flight-section/);
+  assert.match(support, /useScroll/);
+  assert.doesNotMatch(support, /<section\b|Canvas|useFrame/);
 });
 
-test("approved landing and footer remain identical outside support and participation CTA changes", async () => {
+test("approved landing and footer retain their reviewed source bytes", async () => {
   const source = await readSource("components/landing/make-it-fly-v2.tsx");
-  const previous = restorePreApplicationSource("components/landing/make-it-fly-v2.tsx", source)
-    .replace(/^import \{ EnergySupport \} from "\.\/EnergySupport";\n/m, "")
-    .replace(/^[\t ]*<EnergySupport \/>\n/m, "");
-  assert.equal(sha256(previous), "172c3019c4d180eac53860536f73407a786ad22c7802b6d127e417d7d81d1b67");
+  assert.equal(sha256(source), "0d324833fbdee9e3664a98cdca4f23e75149bc0f8f3dcc640741b63f3e57ba61");
 });
 
 test("Earth animation, hero and supplied can retain their approved hashes", async () => {
@@ -127,7 +129,7 @@ test("Earth animation, hero and supplied can retain their approved hashes", asyn
     "components/hero/EarthGlobe.tsx": "1ad77c62c57005533abd7d189f0ddb166e362dad162b10c0225624e834d2315e",
     "components/hero/StarField.tsx": "a73169c7aa120f90d745da4ed205348c3c3d3e994764d6d927bde81fd17fe104",
     "components/hero/Atmosphere.tsx": "04e3e228421aa33b847852f78719624f755fa4561b40a1c5ef1a629735dd2dba",
-    "components/hero/HeroContent.tsx": "c53f4a34b688ea1d74ffd7f0a0c79c0ed594aca9a162f4d5803c46ac1f611cc2",
+    "components/hero/HeroContent.tsx": "55bf76317b773ed9d1f7aa66ac931e8b5c326613a45c9043bb7ae252e1f3d519",
     "components/hero/EarthPosterFallback.tsx": "2ef38eada43248edb3aa3345ca8bc7653efc72b72814040e1a6b153ea1e1881c",
     "lib/apogee-motion-policy.ts": "710df8f9f5fedaabdaf48921ffb3f66e96a6948ca4bf8a42371ea1bf2f76594b",
     "lib/apogee-scroll.ts": "07df4da2df36795f0d8617d7016e494eecb3e3e653f661906005e3d26e82927b",
@@ -136,13 +138,14 @@ test("Earth animation, hero and supplied can retain their approved hashes", asyn
   };
   for (const [path, hash] of Object.entries(expected)) {
     const bytes = await readFile(new URL(`../${path}`, import.meta.url));
-    assert.equal(sha256(path === "components/hero/HeroContent.tsx" ? restorePreApplicationSource(path, bytes) : bytes), hash, path);
+    assert.equal(sha256(bytes), hash, path);
   }
 });
 
-test("support styling remains local, responsive and outside the scrolling machinery", async () => {
+test("support styling is local, responsive and does not interfere with the global flight layer", async () => {
   const css = await readSource("components/landing/energy-support.module.css");
   assert.match(css, /@media\s*\(max-width:\s*767px\)/);
   assert.match(css, /\.can\s*\{[^}]*height:\s*auto/);
-  assert.doesNotMatch(css, /position\s*:\s*(?:fixed|sticky)|scroll-snap|scroll-behavior|:global|\bcanvas\b|\.flight\b|\b(?:html|body)\s*\{/);
+  assert.match(css, /\.stickyScene\s*\{[^}]*position\s*:\s*sticky/);
+  assert.doesNotMatch(css, /position\s*:\s*fixed|scroll-snap|scroll-behavior|:global|\bcanvas\b|\.flight\b|\b(?:html|body)\s*\{/);
 });

@@ -1,0 +1,220 @@
+.header {
+  position: relative;
+  z-index: 10;
+  color: var(--apogee-white);
+  background: var(--apogee-navy);
+  border-bottom: 1px solid var(--apogee-border-subtle);
+}
+
+.headerInner,
+.footerInner {
+  width: min(100% - 2.5rem, 80rem);
+  margin-inline: auto;
+}
+
+.headerInner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 3rem);
+  min-height: 5rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--apogee-control-min-height);
+}
+
+.brand img {
+  width: clamp(5.75rem, 9vw, 7rem);
+  height: auto;
+}
+
+.desktopNavigation {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+}
+
+.desktopNavigation a,
+.memberLink,
+.mobileNavigation summary,
+.mobileNavigation a,
+.footer a {
+  color: inherit;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.desktopNavigation a,
+.memberLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--apogee-control-min-height);
+}
+
+.desktopNavigation a {
+  position: relative;
+  opacity: 0.7;
+}
+
+.desktopNavigation a::after {
+  position: absolute;
+  right: 0;
+  bottom: 0.45rem;
+  left: 0;
+  height: 1px;
+  content: "";
+  background: var(--apogee-sky);
+  transform: scaleX(0);
+  transition: transform 160ms ease;
+}
+
+.desktopNavigation a:hover,
+.desktopNavigation a[aria-current="page"] {
+  opacity: 1;
+}
+
+.desktopNavigation a:hover::after,
+.desktopNavigation a[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+.memberLink {
+  justify-content: center;
+  padding-inline: 1rem;
+  color: var(--apogee-navy);
+  background: var(--apogee-white);
+  border-radius: var(--apogee-radius-soft);
+}
+
+.memberLink:hover,
+.memberLink[aria-current="page"] {
+  background: var(--apogee-sky);
+}
+
+.mobileNavigation {
+  display: none;
+}
+
+.mobileNavigation summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--apogee-control-min-height);
+  padding-inline: 0.75rem;
+  cursor: pointer;
+  list-style: none;
+  border: 1px solid var(--apogee-border-subtle);
+  border-radius: var(--apogee-radius-soft);
+}
+
+.mobileNavigation summary::-webkit-details-marker {
+  display: none;
+}
+
+.mobileNavigation nav {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  display: grid;
+  min-width: min(18rem, calc(100vw - 2rem));
+  padding: 0.5rem;
+  background: var(--apogee-navy);
+  border: 1px solid var(--apogee-border-subtle);
+  border-radius: var(--apogee-radius-soft);
+  box-shadow: 0 1.25rem 3rem rgb(0 0 0 / 28%);
+}
+
+.mobileNavigation a {
+  min-height: var(--apogee-control-min-height);
+  padding: 0.75rem;
+  border-radius: calc(var(--apogee-radius-soft) - 0.2rem);
+}
+
+.mobileNavigation a:hover,
+.mobileNavigation a[aria-current="page"] {
+  color: var(--apogee-navy);
+  background: var(--apogee-sky);
+}
+
+.header a:focus-visible,
+.mobileNavigation summary:focus-visible,
+.footer a:focus-visible {
+  outline: 2px solid var(--apogee-focus-ring);
+  outline-offset: var(--apogee-focus-offset);
+}
+
+.footer {
+  color: var(--apogee-white);
+  background: var(--apogee-black);
+  border-top: 1px solid var(--apogee-border-subtle);
+}
+
+.footerInner {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.footerBrand img {
+  display: block;
+  width: 7rem;
+  height: auto;
+}
+
+.footerBrand p {
+  max-width: 28rem;
+  margin: 1rem 0 0;
+  color: color-mix(in srgb, var(--apogee-white) 70%, transparent);
+  line-height: var(--apogee-leading-body);
+}
+
+.footer nav {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.footer a:hover {
+  color: var(--apogee-sky);
+}
+
+@media (max-width: 700px) {
+  .headerInner,
+  .footerInner {
+    width: min(100% - 2rem, 80rem);
+  }
+
+  .headerInner {
+    grid-template-columns: 1fr auto;
+    min-height: 4.5rem;
+  }
+
+  .desktopNavigation,
+  .memberLink {
+    display: none;
+  }
+
+  .mobileNavigation {
+    position: relative;
+    display: block;
+  }
+
+  .footerInner {
+    align-items: start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desktopNavigation a::after {
+    transition: none;
+  }
+}

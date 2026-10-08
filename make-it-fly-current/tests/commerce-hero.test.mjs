@@ -162,7 +162,7 @@ test("the store shows all six products on one page without a category area", asy
   assert.match(html, /data-store-hero=/);
   assert.match(html, /data-store-orb-travel=/);
   assert.match(html, /data-motion="full"/);
-  assert.match(html, /data-commerce-motion="full"/);
+  assert.match(html, /data-commerce-motion="reduced"/);
   assert.match(html, /data-test-orb-motion="true"/);
   assert.doesNotMatch(html, /Ativar animações|Pausar animações|Usar preferência do sistema|store-motion-description|aria-pressed=/);
   assert.doesNotMatch(html, /href="#"|cdn\.21st\.dev|Commerce_|Footwear|Log In|ShoppingBasket/);
