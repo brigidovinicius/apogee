@@ -24,6 +24,7 @@ const env = {
   SUPABASE_URL: "https://test-project.supabase.co",
   SUPABASE_SECRET_KEY: "sb_secret_testonly012345678901234567890",
 };
+const WEBHOOK_SECRET = "test-sheets-webhook-secret-1234567890";
 
 function event(overrides = {}) {
   return { eventId: randomUUID(), journeyId: randomUUID(), eventName: "page_view", path: "/", context: "landing", step: null, device: "desktop", ...overrides };
@@ -107,11 +108,12 @@ test("database and Sheets outages never leak details; Sheets remains best effort
     if (url === webhook) { sheetCalls += 1; sheetBody = JSON.parse(init?.body || "null"); throw new Error("private sheet detail"); }
     databaseCalls += 1;
     return new Response(null, { status: 201 });
-  }, { env: { ...env, GOOGLE_SHEETS_WEBHOOK_URL: webhook } }));
+  }, { env: { ...env, GOOGLE_SHEETS_WEBHOOK_URL: webhook, GOOGLE_SHEETS_WEBHOOK_SECRET: WEBHOOK_SECRET } }));
   assert.equal(response.status, 202);
   assert.equal(databaseCalls, 1);
   assert.equal(sheetCalls, 1);
   assert.equal(sheetBody.kind, "journey_events");
+  assert.equal(sheetBody.webhookSecret, WEBHOOK_SECRET);
   assert.equal(sheetBody.events[0].receivedAt, "1970-01-01T00:00:00.001Z");
 });
 
