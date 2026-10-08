@@ -20,6 +20,16 @@ async function loadInstagram() {
 
 async function loadGallery() {
   const instagram = await loadInstagram();
+  const adminAuthSource = await readFile(new URL("../lib/admin-auth.ts", import.meta.url), "utf8");
+  const adminAuthOutput = ts.transpileModule(adminAuthSource, {
+    fileName: "admin-auth.ts",
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const adminAuthModule = { exports: {} };
+  new Function("require", "module", "exports", adminAuthOutput)((specifier) => {
+    if (specifier === "server-only") return {};
+    return require(specifier);
+  }, adminAuthModule, adminAuthModule.exports);
   const source = await readFile(new URL("../lib/gallery.ts", import.meta.url), "utf8");
   const output = ts.transpileModule(source, {
     fileName: "gallery.ts",
@@ -28,6 +38,7 @@ async function loadGallery() {
   const loadedModule = { exports: {} };
   new Function("require", "module", "exports", output)((specifier) => {
     if (specifier === "server-only") return {};
+    if (specifier === "./admin-auth") return adminAuthModule.exports;
     if (specifier === "./instagram") return instagram;
     return require(specifier);
   }, loadedModule, loadedModule.exports);
@@ -217,6 +228,49 @@ test("gallery management accepts an authenticated admin role and rejects a membe
     ]);
   } finally {
     globalThis.fetch = previousFetch;
+  }
+});
+
+test("gallery management rejects an oversized streamed delete body before storage access", async () => {
+  setGalleryEnvironment();
+  process.env.APPLICATION_EXPORT_TOKEN = "a".repeat(64);
+  const gallery = await loadGallery();
+  let pulls = 0;
+  let cancelled = false;
+  const body = new ReadableStream({
+    pull(controller) {
+      pulls += 1;
+      if (pulls <= 2) controller.enqueue(new Uint8Array(700));
+      else controller.error(new Error("body was read past the configured limit"));
+    },
+    cancel() {
+      cancelled = true;
+    },
+  }, { highWaterMark: 0 });
+  let storageCalls = 0;
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    storageCalls += 1;
+    return Response.json({});
+  };
+  try {
+    const response = await gallery.manageCommunityPhotos(new Request("https://makeitfly.vercel.app/api/gallery/admin", {
+      method: "DELETE",
+      headers: {
+        origin: "https://makeitfly.vercel.app",
+        authorization: `Bearer ${"a".repeat(64)}`,
+        "content-type": "application/json",
+      },
+      body,
+      duplex: "half",
+    }));
+    assert.equal(response.status, 413);
+    assert.equal(pulls, 2);
+    assert.equal(cancelled, true);
+    assert.equal(storageCalls, 0);
+  } finally {
+    globalThis.fetch = previousFetch;
+    delete process.env.APPLICATION_EXPORT_TOKEN;
   }
 });
 

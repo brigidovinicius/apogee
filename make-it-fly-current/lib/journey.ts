@@ -4,6 +4,7 @@ import { createHmac } from "node:crypto";
 import { ApplicationError, readApplicationConfig } from "@/lib/applications";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const MAX_BODY_BYTES = 12 * 1024;
 const EVENT_NAMES = new Set([
   "page_view", "section_view", "scroll_depth", "cta_click", "form_view",
   "form_started", "form_step_completed", "form_validation_error",
@@ -44,9 +45,29 @@ function validateEvent(value: unknown): JourneyEvent {
 
 async function readEvents(request: Request) {
   if (request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") throw new ApplicationError(415, "Formato inválido.");
-  if (Number(request.headers.get("content-length")) > 12 * 1024) throw new ApplicationError(413, "Eventos excedem o tamanho permitido.");
-  const body = await request.text();
-  if (Buffer.byteLength(body) > 12 * 1024) throw new ApplicationError(413, "Eventos excedem o tamanho permitido.");
+  if (Number(request.headers.get("content-length")) > MAX_BODY_BYTES) throw new ApplicationError(413, "Eventos excedem o tamanho permitido.");
+  if (!request.body) throw new ApplicationError(400, "Eventos inválidos.");
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let bytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > MAX_BODY_BYTES) {
+        await reader.cancel();
+        throw new ApplicationError(413, "Eventos excedem o tamanho permitido.");
+      }
+      chunks.push(value);
+    }
+  } catch (error) {
+    if (error instanceof ApplicationError) throw error;
+    throw new ApplicationError(400, "Eventos inválidos.");
+  } finally {
+    reader.releaseLock();
+  }
+  const body = Buffer.concat(chunks).toString("utf8");
   let parsed: unknown;
   try { parsed = JSON.parse(body); } catch { throw new ApplicationError(400, "Eventos inválidos."); }
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) || Object.keys(parsed).some((key) => key !== "events")) throw new ApplicationError(400, "Eventos inválidos.");

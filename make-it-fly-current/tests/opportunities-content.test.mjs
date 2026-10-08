@@ -42,3 +42,75 @@ test("catalogue is ordered by deadline with continuous opportunities last", () =
     assert.ok(ordered[index - 1].deadline <= ordered[index].deadline);
   }
 });
+
+test("filter options come only from structured fields on open opportunities", () => {
+  const opportunities = [
+    {
+      ...catalogue.STUDENT_OPPORTUNITIES[0],
+      id: "open-bolsa-graduacao",
+      kind: "Bolsa",
+      level: "Graduação",
+      deadline: "2026-10-20",
+    },
+    {
+      ...catalogue.STUDENT_OPPORTUNITIES[0],
+      id: "open-programa-medio",
+      kind: "Programa",
+      level: "Ensino médio",
+      deadline: null,
+    },
+    {
+      ...catalogue.STUDENT_OPPORTUNITIES[0],
+      id: "expired-intercambio-pos",
+      kind: "Intercâmbio",
+      level: "Pós-graduação",
+      deadline: "2026-10-01",
+    },
+  ];
+
+  assert.deepEqual(logic.getOpportunityFilterOptions(opportunities, "2026-10-08"), {
+    kinds: ["Bolsa", "Programa"],
+    levels: ["Ensino médio", "Graduação"],
+  });
+});
+
+test("filters combine, count active selections and clear without mutating the catalogue", () => {
+  const opportunities = [
+    {
+      ...catalogue.STUDENT_OPPORTUNITIES[0],
+      id: "bolsa-graduacao",
+      kind: "Bolsa",
+      level: "Graduação",
+      deadline: "2026-10-20",
+    },
+    {
+      ...catalogue.STUDENT_OPPORTUNITIES[0],
+      id: "bolsa-medio",
+      kind: "Bolsa",
+      level: "Ensino médio",
+      deadline: "2026-10-21",
+    },
+    {
+      ...catalogue.STUDENT_OPPORTUNITIES[0],
+      id: "programa-graduacao",
+      kind: "Programa",
+      level: "Graduação",
+      deadline: "2026-10-22",
+    },
+  ];
+  const combined = { kind: "Bolsa", level: "Graduação" };
+
+  assert.equal(logic.countActiveOpportunityFilters(combined), 2);
+  assert.deepEqual(
+    logic.filterOpportunities(opportunities, combined, "2026-10-08").map((item) => item.id),
+    ["bolsa-graduacao"],
+  );
+  assert.equal(logic.countActiveOpportunityFilters(logic.EMPTY_OPPORTUNITY_FILTERS), 0);
+  assert.deepEqual(
+    logic
+      .filterOpportunities(opportunities, logic.EMPTY_OPPORTUNITY_FILTERS, "2026-10-08")
+      .map((item) => item.id),
+    ["bolsa-graduacao", "bolsa-medio", "programa-graduacao"],
+  );
+  assert.equal(opportunities.length, 3);
+});

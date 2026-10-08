@@ -1,13 +1,15 @@
 import "server-only";
 
-import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import sharp from "sharp";
+import { adminAuthorized } from "./admin-auth";
 import type { CommunityPhoto } from "./gallery-types";
 import { normalizeInstagram } from "./instagram";
 
 const BUCKET = "apogee-community-photos";
 const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
 const MAX_PUBLIC_BYTES = 3 * 1024 * 1024;
+const MAX_ADMIN_BODY_BYTES = 1024;
 const MAX_PHOTOS = 24;
 const PHOTO_ID_PATTERN = /^[0-9T-Z-]{19,28}-[a-f0-9-]{36}$/;
 const RETIRED_PHOTO_IDS = new Set([
@@ -234,13 +236,9 @@ export async function uploadCommunityPhoto(request: Request): Promise<Response> 
 
 type GalleryAdminContext = { memberRole?: "member" | "admin" | null };
 
-function adminAuthorized(request: Request, context: GalleryAdminContext): boolean {
+function galleryAdminAuthorized(request: Request, context: GalleryAdminContext): boolean {
   if (context.memberRole === "admin") return true;
-  const expected = process.env.APPLICATION_EXPORT_TOKEN || "";
-  const authorization = request.headers.get("authorization") || "";
-  const received = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
-  if (!/^[a-f0-9]{64}$/.test(expected) || received.length !== expected.length) return false;
-  return timingSafeEqual(Buffer.from(received), Buffer.from(expected));
+  return adminAuthorized(request);
 }
 
 function privateJson(value: unknown, status = 200): Response {
@@ -255,12 +253,45 @@ function privateJson(value: unknown, status = 200): Response {
   });
 }
 
+async function readAdminDeleteBody(request: Request): Promise<unknown> {
+  if (request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") {
+    throw new GalleryError(415, "Formato de envio inválido.");
+  }
+  const lengthHeader = request.headers.get("content-length");
+  const length = lengthHeader === null ? null : Number(lengthHeader);
+  if (length !== null && (!Number.isFinite(length) || length < 1)) throw new GalleryError(400, "Solicitação inválida.");
+  if (length !== null && length > MAX_ADMIN_BODY_BYTES) throw new GalleryError(413, "Solicitação excede o tamanho permitido.");
+  if (!request.body) throw new GalleryError(400, "Solicitação inválida.");
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_ADMIN_BODY_BYTES) {
+        await reader.cancel();
+        throw new GalleryError(413, "Solicitação excede o tamanho permitido.");
+      }
+      chunks.push(value);
+    }
+    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  } catch (error) {
+    if (error instanceof GalleryError) throw error;
+    throw new GalleryError(400, "Solicitação inválida.");
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 export async function manageCommunityPhotos(
   request: Request,
   context: GalleryAdminContext = {},
 ): Promise<Response> {
   try {
-    if (!adminAuthorized(request, context)) return privateJson({ error: "Não encontrado." }, 404);
+    if (!galleryAdminAuthorized(request, context)) return privateJson({ error: "Não encontrado." }, 404);
 
     if (request.method === "GET") return listCommunityPhotos(request);
     if (request.method !== "DELETE") return privateJson({ error: "Método não permitido." }, 405);
@@ -268,8 +299,9 @@ export async function manageCommunityPhotos(
     const origin = request.headers.get("origin");
     if (!origin || origin !== new URL(request.url).origin) return privateJson({ error: "Origem não autorizada." }, 403);
 
-    const body = await request.json().catch(() => null) as { id?: unknown } | null;
-    const id = typeof body?.id === "string" ? body.id : "";
+    const body = await readAdminDeleteBody(request);
+    const validShape = Boolean(body && typeof body === "object" && !Array.isArray(body) && Object.keys(body).length === 1 && "id" in body);
+    const id = validShape && typeof (body as { id?: unknown }).id === "string" ? (body as { id: string }).id : "";
     if (!PHOTO_ID_PATTERN.test(id)) return privateJson({ error: "Foto inválida." }, 400);
 
     const settings = config();
@@ -282,7 +314,8 @@ export async function manageCommunityPhotos(
       return privateJson({ error: "Não foi possível excluir a foto agora. Tente novamente." }, 503);
     }
     return privateJson({ deleted: id });
-  } catch {
+  } catch (error) {
+    if (error instanceof GalleryError) return privateJson({ error: error.message }, error.status);
     return privateJson({ error: "Não foi possível concluir agora. Tente novamente." }, 503);
   }
 }

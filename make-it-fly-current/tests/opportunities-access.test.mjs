@@ -66,6 +66,19 @@ test("o Radar completo exige sessão tanto na rota quanto na camada de acesso", 
   assert.match(radarApi, /status: 401/);
 });
 
+test("o painel de filtros expõe estado, relações e fechamento por teclado", async () => {
+  const board = await source("components/opportunities/opportunities-board.tsx");
+
+  assert.match(board, /aria-expanded=\{filtersOpen\}/);
+  assert.match(board, /aria-controls="opportunity-filter-panel"/);
+  assert.match(board, /role="region"/);
+  assert.match(board, /hidden=\{!filtersOpen\}/);
+  assert.match(board, /event\.key === "Escape"/);
+  assert.match(board, /filterButtonRef\.current\?\.focus\(\)/);
+  assert.match(board, /aria-live="polite"/);
+  assert.match(board, /disabled=\{activeFilterCount === 0\}/);
+});
+
 test("a credencial da integração do Radar falha fechada e só aceita o bearer configurado", async () => {
   const { isRadarConsumerAuthorized } = await loadRadarConsumer();
   const originalToken = process.env.RADAR_ACADEMICO_API_TOKEN;
