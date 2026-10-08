@@ -231,6 +231,49 @@ test("gallery management accepts an authenticated admin role and rejects a membe
   }
 });
 
+test("gallery management rejects an oversized streamed delete body before storage access", async () => {
+  setGalleryEnvironment();
+  process.env.APPLICATION_EXPORT_TOKEN = "a".repeat(64);
+  const gallery = await loadGallery();
+  let pulls = 0;
+  let cancelled = false;
+  const body = new ReadableStream({
+    pull(controller) {
+      pulls += 1;
+      if (pulls <= 2) controller.enqueue(new Uint8Array(700));
+      else controller.error(new Error("body was read past the configured limit"));
+    },
+    cancel() {
+      cancelled = true;
+    },
+  }, { highWaterMark: 0 });
+  let storageCalls = 0;
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    storageCalls += 1;
+    return Response.json({});
+  };
+  try {
+    const response = await gallery.manageCommunityPhotos(new Request("https://makeitfly.vercel.app/api/gallery/admin", {
+      method: "DELETE",
+      headers: {
+        origin: "https://makeitfly.vercel.app",
+        authorization: `Bearer ${"a".repeat(64)}`,
+        "content-type": "application/json",
+      },
+      body,
+      duplex: "half",
+    }));
+    assert.equal(response.status, 413);
+    assert.equal(pulls, 2);
+    assert.equal(cancelled, true);
+    assert.equal(storageCalls, 0);
+  } finally {
+    globalThis.fetch = previousFetch;
+    delete process.env.APPLICATION_EXPORT_TOKEN;
+  }
+});
+
 test("the retired identified test photo is removed while anonymous gallery entries remain", async () => {
   setGalleryEnvironment();
   const gallery = await loadGallery();
