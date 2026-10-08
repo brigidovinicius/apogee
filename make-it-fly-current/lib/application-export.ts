@@ -1,7 +1,6 @@
 import "server-only";
 
-import { timingSafeEqual } from "node:crypto";
-
+import { adminAuthorized } from "@/lib/admin-auth";
 import { ApplicationError, readApplicationConfig } from "@/lib/applications";
 
 type Environment = Record<string, string | undefined>;
@@ -41,17 +40,6 @@ const RESPONSE_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "X-Robots-Tag": "noindex, nofollow, noarchive",
 };
-
-function exportToken(env: Environment) {
-  const token = env.APPLICATION_EXPORT_TOKEN ?? "";
-  if (!/^[a-f0-9]{64}$/.test(token)) throw new ApplicationError(503, "Exportação indisponível.");
-  return token;
-}
-
-function matchesToken(received: string | null, expected: string) {
-  if (!received || received.length !== expected.length) return false;
-  return timingSafeEqual(Buffer.from(received), Buffer.from(expected));
-}
 
 function databaseHeaders(databaseKey: string) {
   const headers: Record<string, string> = { apikey: databaseKey, Accept: "application/json" };
@@ -137,10 +125,10 @@ type HandlerOptions = { env?: Environment; fetcher?: Fetcher };
 export async function handleApplicationsExportGet(request: Request, options: HandlerOptions = {}) {
   try {
     const env = options.env ?? process.env;
-    const config = readApplicationConfig(env);
-    if (!matchesToken(new URL(request.url).searchParams.get("token"), exportToken(env))) {
+    if (!adminAuthorized(request, env)) {
       return new Response("Não encontrado.", { status: 404, headers: RESPONSE_HEADERS });
     }
+    const config = readApplicationConfig(env);
 
     const response = await (options.fetcher ?? fetch)(
       `${config.supabaseUrl}/rest/v1/applications?select=${EXPORT_FIELDS}&order=created_at.asc&limit=1000`,

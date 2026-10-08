@@ -1,7 +1,8 @@
 import "server-only";
 
-import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import sharp from "sharp";
+import { adminAuthorized } from "./admin-auth";
 import type { CommunityPhoto } from "./gallery-types";
 import { normalizeInstagram } from "./instagram";
 
@@ -234,13 +235,9 @@ export async function uploadCommunityPhoto(request: Request): Promise<Response> 
 
 type GalleryAdminContext = { memberRole?: "member" | "admin" | null };
 
-function adminAuthorized(request: Request, context: GalleryAdminContext): boolean {
+function galleryAdminAuthorized(request: Request, context: GalleryAdminContext): boolean {
   if (context.memberRole === "admin") return true;
-  const expected = process.env.APPLICATION_EXPORT_TOKEN || "";
-  const authorization = request.headers.get("authorization") || "";
-  const received = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
-  if (!/^[a-f0-9]{64}$/.test(expected) || received.length !== expected.length) return false;
-  return timingSafeEqual(Buffer.from(received), Buffer.from(expected));
+  return adminAuthorized(request);
 }
 
 function privateJson(value: unknown, status = 200): Response {
@@ -260,7 +257,7 @@ export async function manageCommunityPhotos(
   context: GalleryAdminContext = {},
 ): Promise<Response> {
   try {
-    if (!adminAuthorized(request, context)) return privateJson({ error: "Não encontrado." }, 404);
+    if (!galleryAdminAuthorized(request, context)) return privateJson({ error: "Não encontrado." }, 404);
 
     if (request.method === "GET") return listCommunityPhotos(request);
     if (request.method !== "DELETE") return privateJson({ error: "Método não permitido." }, 405);

@@ -20,6 +20,16 @@ async function loadInstagram() {
 
 async function loadGallery() {
   const instagram = await loadInstagram();
+  const adminAuthSource = await readFile(new URL("../lib/admin-auth.ts", import.meta.url), "utf8");
+  const adminAuthOutput = ts.transpileModule(adminAuthSource, {
+    fileName: "admin-auth.ts",
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const adminAuthModule = { exports: {} };
+  new Function("require", "module", "exports", adminAuthOutput)((specifier) => {
+    if (specifier === "server-only") return {};
+    return require(specifier);
+  }, adminAuthModule, adminAuthModule.exports);
   const source = await readFile(new URL("../lib/gallery.ts", import.meta.url), "utf8");
   const output = ts.transpileModule(source, {
     fileName: "gallery.ts",
@@ -28,6 +38,7 @@ async function loadGallery() {
   const loadedModule = { exports: {} };
   new Function("require", "module", "exports", output)((specifier) => {
     if (specifier === "server-only") return {};
+    if (specifier === "./admin-auth") return adminAuthModule.exports;
     if (specifier === "./instagram") return instagram;
     return require(specifier);
   }, loadedModule, loadedModule.exports);

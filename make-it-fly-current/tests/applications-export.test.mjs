@@ -8,9 +8,17 @@ const applicationsOutput = ts.transpileModule(applicationsSource.replace('import
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
 }).outputText;
 const applicationsUrl = `data:text/javascript;base64,${Buffer.from(applicationsOutput).toString("base64")}`;
+const adminAuthSource = await readFile(new URL("../lib/admin-auth.ts", import.meta.url), "utf8");
+const adminAuthOutput = ts.transpileModule(adminAuthSource.replace('import "server-only";', ""), {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
+}).outputText;
+const adminAuthUrl = `data:text/javascript;base64,${Buffer.from(adminAuthOutput).toString("base64")}`;
 const exportSource = await readFile(new URL("../lib/application-export.ts", import.meta.url), "utf8");
 const exportOutput = ts.transpileModule(
-  exportSource.replace('import "server-only";', "").replace('from "@/lib/applications"', `from "${applicationsUrl}"`),
+  exportSource
+    .replace('import "server-only";', "")
+    .replace('from "@/lib/admin-auth"', `from "${adminAuthUrl}"`)
+    .replace('from "@/lib/applications"', `from "${applicationsUrl}"`),
   { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } },
 ).outputText;
 const api = await import(`data:text/javascript;base64,${Buffer.from(exportOutput).toString("base64")}`);
@@ -48,18 +56,28 @@ const row = {
 test("export stays private and never queries Supabase with a missing or invalid token", async () => {
   let calls = 0;
   const fetcher = async () => { calls += 1; return Response.json([row]); };
-  for (const token of [null, "short", "b".repeat(64)]) {
-    const suffix = token === null ? "" : `?token=${token}`;
-    const response = await api.handleApplicationsExportGet(new Request(`https://makeitfly.vercel.app/api/applications-export${suffix}`), { env, fetcher });
+  for (const authorization of [null, "Bearer short", `Bearer ${"b".repeat(64)}`, `Bearer ${"á".repeat(64)}`]) {
+    const headers = authorization === null ? {} : { authorization };
+    const response = await api.handleApplicationsExportGet(new Request("https://makeitfly.vercel.app/api/applications-export", { headers }), { env, fetcher });
     assert.equal(response.status, 404);
   }
+  const querySecret = await api.handleApplicationsExportGet(new Request(`https://makeitfly.vercel.app/api/applications-export?token=${TOKEN}`), { env, fetcher });
+  assert.equal(querySecret.status, 404);
+
+  const missingConfig = await api.handleApplicationsExportGet(new Request("https://makeitfly.vercel.app/api/applications-export"), {
+    env: { APPLICATION_EXPORT_TOKEN: TOKEN },
+    fetcher,
+  });
+  assert.equal(missingConfig.status, 404);
   assert.equal(calls, 0);
 });
 
 test("authorized CSV includes the new profile fields and sanitizes formulas", async () => {
   const calls = [];
   const fetcher = async (url, options) => { calls.push({ url, options }); return Response.json([row]); };
-  const response = await api.handleApplicationsExportGet(new Request(`https://makeitfly.vercel.app/api/applications-export?token=${TOKEN}`), { env, fetcher });
+  const response = await api.handleApplicationsExportGet(new Request("https://makeitfly.vercel.app/api/applications-export", {
+    headers: { authorization: `Bearer ${TOKEN}` },
+  }), { env, fetcher });
   assert.equal(response.status, 200);
   assert.match(calls[0].url, /age,profession,has_laptop&order=created_at\.asc&limit=1000$/);
   const csv = await response.text();
@@ -89,7 +107,9 @@ test("database errors and invalid new fields fail closed", async () => {
     async () => Response.json([{ ...row, age: "31" }]),
     async () => Response.json([{ ...row, has_laptop: "Sim" }]),
   ]) {
-    const response = await api.handleApplicationsExportGet(new Request(`https://makeitfly.vercel.app/api/applications-export?token=${TOKEN}`), { env, fetcher });
+    const response = await api.handleApplicationsExportGet(new Request("https://makeitfly.vercel.app/api/applications-export", {
+      headers: { authorization: `Bearer ${TOKEN}` },
+    }), { env, fetcher });
     assert.equal(response.status, 503);
     assert.equal((await response.text()).includes(TOKEN), false);
   }
