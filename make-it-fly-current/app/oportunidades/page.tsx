@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { OpportunitiesPreview } from "@/components/opportunities/opportunities-preview";
+import { SiteFooter } from "@/components/site/site-footer";
+import { SiteHeader } from "@/components/site/site-header";
 import styles from "@/components/opportunities/opportunities.module.css";
 import { listPublicOpportunityPreviews } from "@/lib/opportunities/access";
 
@@ -22,24 +22,11 @@ export default async function OpportunitiesPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <Link className={styles.brand} href="/" aria-label="Apogee — início">
-          <Image
-            className={styles.brandLogo}
-            src="/brand/apogee-logo-white.svg"
-            alt="Apogee"
-            width={1595}
-            height={986}
-            sizes="(max-width: 760px) 120px, 160px"
-            priority
-          />
-        </Link>
-        <nav className={styles.nav} aria-label="Navegação principal">
-          <Link href="/">Início</Link>
-          <Link href="/oportunidades" aria-current="page">Oportunidades</Link>
-          <Link href="/membros/entrar?next=%2Fmembros%2Foportunidades">Entrar</Link>
-        </nav>
-      </header>
+      <SiteHeader
+        current="opportunities"
+        memberHref="/membros/entrar?next=%2Fmembros%2Foportunidades"
+        memberLabel="Entrar"
+      />
 
       <main id="experiencia" className={styles.main} tabIndex={-1}>
         <section className={styles.hero} aria-labelledby="opportunities-title">
@@ -58,10 +45,7 @@ export default async function OpportunitiesPage() {
         <OpportunitiesPreview opportunities={opportunities} />
       </main>
 
-      <footer className={styles.footer}>
-        <span>Apogee · oportunidades estudantis</span>
-        <Link href="/">Voltar ao início</Link>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
