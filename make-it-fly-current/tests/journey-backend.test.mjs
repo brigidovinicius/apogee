@@ -95,6 +95,35 @@ test("origin, content type, body shape, size and batch limit fail before persist
   assert.equal(calls, 0);
 });
 
+test("oversized streamed bodies stop at the byte limit without Content-Length", async () => {
+  let pulls = 0;
+  let cancelled = false;
+  const body = new ReadableStream({
+    pull(controller) {
+      pulls += 1;
+      if (pulls <= 2) controller.enqueue(new Uint8Array(8 * 1024));
+      else controller.error(new Error("body was read past the configured limit"));
+    },
+    cancel() {
+      cancelled = true;
+    },
+  }, { highWaterMark: 0 });
+  const streamed = new Request(`${ORIGIN}/api/journey`, {
+    method: "POST",
+    headers: { origin: ORIGIN, "content-type": "application/json" },
+    body,
+    duplex: "half",
+  });
+
+  const response = await api.handleJourneyPost(streamed, options(async () => {
+    throw new Error("must not persist");
+  }));
+
+  assert.equal(response.status, 413);
+  assert.equal(pulls, 2);
+  assert.equal(cancelled, true);
+});
+
 test("database and Sheets outages never leak details; Sheets remains best effort", async () => {
   const databaseFailure = await api.handleJourneyPost(request([event()]), options(async () => { throw new Error("private database detail"); }));
   assert.equal(databaseFailure.status, 503);
