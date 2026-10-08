@@ -192,14 +192,163 @@
   white-space: nowrap;
 }
 
-.filters {
+.filterToolbar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.7rem 1.4rem;
+  justify-content: space-between;
+  gap: 1rem;
   align-items: center;
   margin: 3rem 0 1.75rem;
   padding: 1rem 0;
   border-block: 1px solid rgb(185 211 238 / 18%);
+}
+
+.filterTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: var(--apogee-control-min-height);
+  padding: 0.58rem 0.8rem;
+  color: var(--opportunity-ink);
+  border: 1px solid var(--opportunity-sky);
+  border-radius: var(--apogee-radius-soft);
+  background: var(--opportunity-sky);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+.filterTrigger:hover {
+  border-color: #fff;
+  background: #fff;
+}
+
+.filterBadge {
+  display: inline-grid;
+  min-width: 1.35rem;
+  min-height: 1.35rem;
+  place-items: center;
+  padding-inline: 0.3rem;
+  color: #fff;
+  border-radius: 999px;
+  background: var(--opportunity-ink);
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.filterSummary {
+  margin: 0;
+  color: rgb(255 255 255 / 58%);
+  font-size: 0.76rem;
+}
+
+.filterPanel {
+  margin: -0.55rem 0 1.75rem;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border: 1px solid rgb(185 211 238 / 26%);
+  background: rgb(185 211 238 / 7%);
+}
+
+.filterPanel[hidden] {
+  display: none;
+}
+
+.filterPanelHeader,
+.filterPanelFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.filterPanelHeader {
+  position: relative;
+}
+
+.filterPanelEyebrow {
+  margin: 0 0 0.35rem;
+  color: #b9d3ee;
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.filterPanel h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.filterPanelDescription,
+.filterPanelFooter p {
+  margin: 0.42rem 0 0;
+  color: rgb(255 255 255 / 58%);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.filterClose {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: var(--apogee-control-min-height);
+  height: var(--apogee-control-min-height);
+  place-items: center;
+  padding: 0;
+  color: #b9d3ee;
+  border: 1px solid rgb(185 211 238 / 28%);
+  border-radius: var(--apogee-radius-soft);
+  background: transparent;
+  cursor: pointer;
+}
+
+.filterClose:hover {
+  color: #fff;
+  border-color: #fff;
+}
+
+.filterFields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1.5rem;
+  margin-top: 1.4rem;
+}
+
+.filterPanelFooter {
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgb(185 211 238 / 16%);
+}
+
+.filterPanelFooter p {
+  max-width: 35rem;
+  margin: 0;
+  text-align: right;
+}
+
+.clearFilters {
+  flex: 0 0 auto;
+  min-height: var(--apogee-control-min-height);
+  padding: 0.48rem 0.72rem;
+  color: #b9d3ee;
+  border: 1px solid rgb(185 211 238 / 28%);
+  border-radius: var(--apogee-radius-soft);
+  background: transparent;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.clearFilters:hover:not(:disabled) {
+  color: #fff;
+  border-color: #fff;
+}
+
+.clearFilters:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
 }
 
 .previewCta {
@@ -300,14 +449,6 @@
 .previewLogin:hover {
   color: #fff;
   border-color: #fff;
-}
-
-.filterLabel {
-  display: inline-flex;
-  gap: 0.45rem;
-  align-items: center;
-  color: rgb(255 255 255 / 55%);
-  font-size: 0.72rem;
 }
 
 .filterFieldset {
@@ -540,6 +681,9 @@
 
 .brand:focus-visible,
 .nav a:focus-visible,
+.filterTrigger:focus-visible,
+.filterClose:focus-visible,
+.clearFilters:focus-visible,
 .filterGroup button:focus-visible,
 .empty button:focus-visible,
 .clearPreviewFilters:focus-visible,
@@ -646,9 +790,36 @@
     white-space: normal;
   }
 
-  .filters {
-    align-items: flex-start;
+  .filterToolbar,
+  .filterPanelHeader,
+  .filterPanelFooter {
+    align-items: stretch;
     flex-direction: column;
+  }
+
+  .filterTrigger {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .filterSummary,
+  .filterPanelFooter p {
+    text-align: left;
+  }
+
+  .filterClose {
+    position: absolute;
+    top: 0;
+    right: 0;
+    align-self: flex-end;
+  }
+
+  .filterPanelHeader > div {
+    padding-right: calc(var(--apogee-control-min-height) + 0.75rem);
+  }
+
+  .clearFilters {
+    width: 100%;
   }
 
   .previewCta,
@@ -677,6 +848,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .nav a,
+  .filterTrigger,
+  .filterClose,
+  .clearFilters,
   .filterGroup button,
   .card {
     transition: none;

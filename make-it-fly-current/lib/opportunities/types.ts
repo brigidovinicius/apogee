@@ -25,6 +25,16 @@ export type StudentOpportunity = OpportunityPreview & {
   verifiedAt: string;
 };
 
+export type OpportunityFilters = {
+  kind: OpportunityKind | null;
+  level: EducationLevel | null;
+};
+
+export const EMPTY_OPPORTUNITY_FILTERS: OpportunityFilters = {
+  kind: null,
+  level: null,
+};
+
 export function dateInBrazil(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/Sao_Paulo",
@@ -48,4 +58,37 @@ export function sortByDeadline(opportunities: readonly StudentOpportunity[]) {
     if (right.deadline === null) return -1;
     return left.deadline.localeCompare(right.deadline);
   });
+}
+
+export function getOpportunityFilterOptions(
+  opportunities: readonly StudentOpportunity[],
+  today = dateInBrazil(),
+) {
+  const openOpportunities = opportunities.filter((opportunity) =>
+    isOpportunityOpen(opportunity, today),
+  );
+
+  return {
+    kinds: OPPORTUNITY_KINDS.filter((kind) =>
+      openOpportunities.some((opportunity) => opportunity.kind === kind),
+    ),
+    levels: EDUCATION_LEVELS.filter((level) =>
+      openOpportunities.some((opportunity) => opportunity.level === level),
+    ),
+  };
+}
+
+export function filterOpportunities(
+  opportunities: readonly StudentOpportunity[],
+  filters: OpportunityFilters,
+  today = dateInBrazil(),
+) {
+  return sortByDeadline(opportunities)
+    .filter((opportunity) => isOpportunityOpen(opportunity, today))
+    .filter((opportunity) => filters.kind === null || opportunity.kind === filters.kind)
+    .filter((opportunity) => filters.level === null || opportunity.level === filters.level);
+}
+
+export function countActiveOpportunityFilters(filters: OpportunityFilters) {
+  return Number(filters.kind !== null) + Number(filters.level !== null);
 }

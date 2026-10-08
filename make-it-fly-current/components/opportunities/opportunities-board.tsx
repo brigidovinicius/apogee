@@ -1,25 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, CalendarDays, Compass, SlidersHorizontal } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowUpRight, CalendarDays, Compass, SlidersHorizontal, X } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import {
-  EDUCATION_LEVELS,
-  OPPORTUNITY_KINDS,
+  EMPTY_OPPORTUNITY_FILTERS,
+  countActiveOpportunityFilters,
   type EducationLevel,
+  filterOpportunities,
+  getOpportunityFilterOptions,
   type OpportunityKind,
+  type OpportunityFilters,
   type StudentOpportunity,
   dateInBrazil,
-  isOpportunityOpen,
-  sortByDeadline,
 } from "@/lib/opportunities/types";
 import styles from "./opportunities.module.css";
 
 type OpportunityBoardProps = {
   opportunities: readonly StudentOpportunity[];
 };
-
-type Filter<T extends string> = T | "Todas";
 
 const formatDate = (date: string) =>
   new Intl.DateTimeFormat("pt-BR", {
@@ -30,18 +29,28 @@ const formatDate = (date: string) =>
   }).format(new Date(`${date}T12:00:00Z`));
 
 export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
-  const [kind, setKind] = useState<Filter<OpportunityKind>>("Todas");
-  const [level, setLevel] = useState<Filter<EducationLevel>>("Todas");
+  const [filters, setFilters] = useState<OpportunityFilters>(() => ({
+    ...EMPTY_OPPORTUNITY_FILTERS,
+  }));
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [today] = useState(() => dateInBrazil());
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   const visible = useMemo(
-    () =>
-      sortByDeadline(opportunities)
-        .filter((opportunity) => isOpportunityOpen(opportunity, today))
-        .filter((opportunity) => kind === "Todas" || opportunity.kind === kind)
-        .filter((opportunity) => level === "Todas" || opportunity.level === level),
-    [kind, level, opportunities, today],
+    () => filterOpportunities(opportunities, filters, today),
+    [filters, opportunities, today],
   );
+  const filterOptions = useMemo(
+    () => getOpportunityFilterOptions(opportunities, today),
+    [opportunities, today],
+  );
+  const activeFilterCount = countActiveOpportunityFilters(filters);
+
+  const clearFilters = () => setFilters({ ...EMPTY_OPPORTUNITY_FILTERS });
+  const closeFilters = () => {
+    setFiltersOpen(false);
+    filterButtonRef.current?.focus();
+  };
 
   return (
     <section className={styles.board} aria-labelledby="mural-title">
@@ -55,23 +64,93 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
         </p>
       </div>
 
-      <div className={styles.filters} aria-label="Filtrar oportunidades">
-        <div className={styles.filterLabel}>
-          <SlidersHorizontal size={15} aria-hidden />
-          Filtrar por
+      <div className={styles.filterToolbar}>
+        <button
+          ref={filterButtonRef}
+          type="button"
+          className={styles.filterTrigger}
+          aria-expanded={filtersOpen}
+          aria-controls="opportunity-filter-panel"
+          aria-label={`${filtersOpen ? "Fechar" : "Abrir"} filtros de oportunidades${
+            activeFilterCount === 0
+              ? ""
+              : `, ${activeFilterCount} ${activeFilterCount === 1 ? "ativo" : "ativos"}`
+          }`}
+          onClick={() => setFiltersOpen((open) => !open)}
+        >
+          <SlidersHorizontal size={17} aria-hidden />
+          <span>Filtros</span>
+          {activeFilterCount > 0 ? (
+            <span className={styles.filterBadge} aria-hidden="true">
+              {activeFilterCount}
+            </span>
+          ) : null}
+        </button>
+        <p className={styles.filterSummary}>
+          {activeFilterCount === 0
+            ? "Mostrando todas as classificações disponíveis"
+            : `${activeFilterCount} ${activeFilterCount === 1 ? "filtro ativo" : "filtros ativos"}`}
+        </p>
+      </div>
+
+      <div
+        id="opportunity-filter-panel"
+        className={styles.filterPanel}
+        role="region"
+        aria-labelledby="opportunity-filter-title"
+        hidden={!filtersOpen}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") closeFilters();
+        }}
+      >
+        <div className={styles.filterPanelHeader}>
+          <div>
+            <p className={styles.filterPanelEyebrow}>Refine o radar</p>
+            <h3 id="opportunity-filter-title">Filtrar oportunidades</h3>
+            <p className={styles.filterPanelDescription}>
+              Só aparecem opções presentes nos dados estruturados das chamadas abertas.
+            </p>
+          </div>
+          <button
+            type="button"
+            className={styles.filterClose}
+            aria-label="Fechar painel de filtros"
+            onClick={closeFilters}
+          >
+            <X size={18} aria-hidden />
+          </button>
         </div>
-        <FilterGroup
-          label="Modalidade"
-          options={OPPORTUNITY_KINDS}
-          value={kind}
-          onChange={setKind}
-        />
-        <FilterGroup
-          label="Formação"
-          options={EDUCATION_LEVELS}
-          value={level}
-          onChange={setLevel}
-        />
+
+        <div className={styles.filterFields}>
+          {filterOptions.kinds.length > 0 ? (
+            <FilterGroup<OpportunityKind>
+              label="Modalidade"
+              options={filterOptions.kinds}
+              value={filters.kind}
+              onChange={(kind) => setFilters((current) => ({ ...current, kind }))}
+            />
+          ) : null}
+          {filterOptions.levels.length > 0 ? (
+            <FilterGroup<EducationLevel>
+              label="Formação"
+              options={filterOptions.levels}
+              value={filters.level}
+              onChange={(level) => setFilters((current) => ({ ...current, level }))}
+            />
+          ) : null}
+        </div>
+
+        <div className={styles.filterPanelFooter}>
+          <button
+            type="button"
+            className={styles.clearFilters}
+            disabled={activeFilterCount === 0}
+            onClick={clearFilters}
+          >
+            Limpar filtros
+          </button>
+          <p>Remuneração, localização e idade aguardam campos estruturados da fonte.</p>
+        </div>
       </div>
 
       {visible.length > 0 ? (
@@ -122,11 +201,21 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
       ) : (
         <div id="opportunity-results" className={styles.empty} role="status">
           <Compass size={28} aria-hidden />
-          <h3>Nenhuma oportunidade com estes filtros.</h3>
-          <p>Remova um filtro para explorar as chamadas verificadas pela Apogee.</p>
-          <button type="button" onClick={() => { setKind("Todas"); setLevel("Todas"); }}>
-            Limpar filtros
-          </button>
+          <h3>
+            {activeFilterCount > 0
+              ? "Nenhuma oportunidade com estes filtros."
+              : "Nenhuma oportunidade aberta no momento."}
+          </h3>
+          <p>
+            {activeFilterCount > 0
+              ? "Limpe ou ajuste os filtros para explorar outras chamadas verificadas pela Apogee."
+              : "Novas chamadas verificadas aparecerão aqui assim que estiverem disponíveis."}
+          </p>
+          {activeFilterCount > 0 ? (
+            <button type="button" onClick={clearFilters}>
+              Limpar filtros
+            </button>
+          ) : null}
         </div>
       )}
     </section>
@@ -136,8 +225,8 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
 type FilterGroupProps<T extends string> = {
   label: string;
   options: readonly T[];
-  value: Filter<T>;
-  onChange: (value: Filter<T>) => void;
+  value: T | null;
+  onChange: (value: T | null) => void;
 };
 
 function FilterGroup<T extends string>({ label, options, value, onChange }: FilterGroupProps<T>) {
@@ -145,7 +234,17 @@ function FilterGroup<T extends string>({ label, options, value, onChange }: Filt
     <fieldset className={styles.filterFieldset}>
       <legend>{label}</legend>
       <div className={styles.filterGroup}>
-        {(["Todas", ...options] as Filter<T>[]).map((option) => (
+        <button
+          type="button"
+          className={value === null ? styles.selected : undefined}
+          aria-label={`${label}: Todas`}
+          aria-pressed={value === null}
+          aria-controls="opportunity-results"
+          onClick={() => onChange(null)}
+        >
+          Todas
+        </button>
+        {options.map((option) => (
           <button
             key={option}
             type="button"
