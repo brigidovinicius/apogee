@@ -232,7 +232,10 @@ export async function uploadCommunityPhoto(request: Request): Promise<Response> 
   }
 }
 
-function adminAuthorized(request: Request): boolean {
+type GalleryAdminContext = { memberRole?: "member" | "admin" | null };
+
+function adminAuthorized(request: Request, context: GalleryAdminContext): boolean {
+  if (context.memberRole === "admin") return true;
   const expected = process.env.APPLICATION_EXPORT_TOKEN || "";
   const authorization = request.headers.get("authorization") || "";
   const received = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
@@ -252,9 +255,12 @@ function privateJson(value: unknown, status = 200): Response {
   });
 }
 
-export async function manageCommunityPhotos(request: Request): Promise<Response> {
+export async function manageCommunityPhotos(
+  request: Request,
+  context: GalleryAdminContext = {},
+): Promise<Response> {
   try {
-    if (!adminAuthorized(request)) return privateJson({ error: "Não encontrado." }, 404);
+    if (!adminAuthorized(request, context)) return privateJson({ error: "Não encontrado." }, 404);
 
     if (request.method === "GET") return listCommunityPhotos(request);
     if (request.method !== "DELETE") return privateJson({ error: "Método não permitido." }, 405);

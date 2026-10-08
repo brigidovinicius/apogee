@@ -58,8 +58,15 @@ export DATABASE_URL='postgres://apogee_app:...@127.0.0.1:6543/apogee_membros'
 export DATABASE_CA_CERT_FILE=./infra/membros/certs/server.crt   # cópia do cert da VPS
 npm run db:migrate
 npm run db:seed
-# Para promover alguém a admin depois do cadastro:
-MEMBERS_ADMIN_EMAIL=voce@exemplo.com npm run db:seed
+```
+
+Para conceder o papel administrativo a uma conta já cadastrada, use somente o
+comando estreito empacotado no serviço do site. Ele exige exatamente uma conta,
+altera apenas `role`, é idempotente e imprime somente evidência sanitizada:
+
+```sh
+docker exec -e MEMBERS_ADMIN_EMAIL=voce@exemplo.com apogee-site-web-1 \
+  npm run members:grant-admin
 ```
 
 Quando o schema (`lib/members/schema.ts`) mudar, rode `npm run db:generate`, revise o SQL em `drizzle/` e rode `npm run db:migrate`.
