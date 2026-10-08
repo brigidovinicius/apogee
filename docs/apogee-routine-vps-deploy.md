@@ -90,3 +90,33 @@ Se o novo container não ficar saudável, use a mesma sequência do passo 3 com 
 ## OAuth Google em modo de teste
 
 O Google OAuth do ambiente atual possui criação explícita de conta em `/membros/cadastro` e login em `/membros/entrar`. Enquanto o consentimento OAuth estiver como **Testando**, somente usuários adicionados à audiência de teste no Console Google conseguem concluir a autorização. A inclusão de usuários de teste e a publicação do consentimento são ações administrativas separadas do deploy e exigem confirmação própria.
+
+## Registro de release — modo administrativo (2026-10-08)
+
+- PR: `#6` (`feat(admin): add secure mode switcher and shell`).
+- SHA publicado: `b8a2f7658e70481e67c6743725e64f84807ff694`.
+- Rollback de código e imagem: `695cb337550d010d9e8fd0a449cccd033eee96ca`.
+- Preflight: `root@srv1439756`, checkout limpo, Compose válido, `.env` modo
+  `600`, container anterior saudável e imagem/commit de rollback presentes.
+- Troca: `git fetch` com refspec explícito de `main`, `git switch --detach`
+  para o SHA aprovado e `docker compose up -d --build --force-recreate web`.
+  A primeira tentativa de fetch parou antes da troca porque o ref remoto
+  `origin/main` não foi criado pelo fetch simples; não houve build ou recreate
+  nessa tentativa.
+- Resultado: somente `apogee-site-web-1` foi recriado. O container terminou
+  `healthy`, com label e imagem no SHA publicado; checkout remoto permaneceu
+  limpo. Não houve migração, alteração de DNS, Caddy, Vercel, credenciais,
+  volumes, redes ou stacks vizinhas.
+- HTTP público: `/` e `/membros/entrar` responderam `200`; `/membros`,
+  `/admin`, `/admin/usuarios`, `/admin/curadoria` e `/gerenciar-galeria`
+  redirecionaram visitantes ao login; `/api/gallery/admin` respondeu `404`
+  sem sessão.
+- Seletor para conta administrativa: `https://www.apogee.community/admin`
+  mostra **Modo Administrador** e permite abrir a pré-visualização; em
+  `https://www.apogee.community/membros` aparece **Pré-visualização de
+  Usuário** com retorno fácil ao modo Administrador.
+- Limitação: não foi feito login como o usuário. A presença das rotas e do
+  seletor foi verificada no manifesto/bundle publicado e a ausência para
+  visitante foi verificada por HTTP. A conta alvo permaneceu com papel
+  `admin`; como a sessão de banco lê o usuário atual e não guarda o papel como
+  claim no cookie, não é necessário encerrar a sessão para renovar permissões.
