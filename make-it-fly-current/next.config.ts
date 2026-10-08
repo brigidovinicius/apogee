@@ -16,6 +16,13 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  // A imagem de produção é construída em uma camada limpa, sem reutilizar
+  // `.next/cache`. Mantemos o cache de desenvolvimento, mas evitamos gravar
+  // o cache persistente do Webpack em cada build de produção.
+  webpack(config, { dev }) {
+    if (config.cache && !dev) config.cache = { type: "memory" };
+    return config;
+  },
   // O Make It Fly virou uma página do site Apogee (/makeitfly). Mantém vivos os
   // links já divulgados: o formulário antigo e a raiz do domínio makeitfly.
   async redirects() {

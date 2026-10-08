@@ -364,3 +364,26 @@ entrada segura. A tentativa de build isolada não produziu artefato verde por
 `ENOSPC` no cache Webpack. Portanto esta branch não está pronta para push ou
 deploy de release até que esses gates independentes e a capacidade de disco
 sejam resolvidos e validados.
+
+Na continuação da auditoria, as 13 falhas restantes foram classificadas como
+contratos de teste anteriores ao estado já publicado em `origin/main`, e não
+como permissões de isolamento. Os adaptadores de render agora conhecem os
+componentes reais compostos; os fixtures de webhook incluem e verificam o
+segredo obrigatório; e a cobertura de Energy Support valida sua cena local,
+ordem, acessibilidade e hashes atuais sem deixar de proibir interferência na
+cena global. Nenhum controle de acesso, allow-list, hash de recurso protegido
+ou restrição de webhook foi relaxado.
+
+O build Webpack de produção passou a usar cache em memória. A documentação
+local do Next 16 prevê esta configuração para ambientes que não preservam
+`.next/cache`; a imagem da VPS é construída de uma camada limpa. O cache de
+desenvolvimento não foi alterado.
+
+Validação final local desta cadeia: a suíte completa passou em `187/187`; lint
+e typecheck passaram sem erros (permanece somente o aviso legado de `<img>` em
+`gallery-admin.tsx`). Com a saída isolada do outro worktree, `npm run build`
+passou e gerou manifesto de prerender. O smoke do artefato de produção em
+localhost devolveu `200` para `/`, `/oportunidades` e a entrada de membros;
+`/membros/oportunidades` devolveu `307` para a entrada protegida e `/login`
+devolveu `307` para `/membros/entrar`. A saída temporária do build foi removida
+e o link `.next` compartilhado foi restaurado após o smoke.
