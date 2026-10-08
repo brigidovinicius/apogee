@@ -19,10 +19,11 @@ async function loadRadarConsumer() {
 }
 
 test("a prévia pública recebe apenas a DTO controlada e não importa fontes completas", async () => {
-  const [access, page, preview, board, catalogue, radar] = await Promise.all([
+  const [access, page, preview, publicPreview, board, catalogue, radar] = await Promise.all([
     source("lib/opportunities/access.ts"),
     source("app/oportunidades/page.tsx"),
     source("components/opportunities/opportunities-preview.tsx"),
+    source("components/opportunities/public-opportunities-preview.tsx"),
     source("components/opportunities/opportunities-board.tsx"),
     source("content/opportunities.ts"),
     source("lib/opportunities/radar-client.ts"),
@@ -37,12 +38,13 @@ test("a prévia pública recebe apenas a DTO controlada e não importa fontes co
   assert.match(page, /OpportunitiesPreview/);
   assert.doesNotMatch(page, /STUDENT_OPPORTUNITIES|listRadarOpportunities|OpportunitiesBoard/);
   assert.doesNotMatch(board, /@\/content\/opportunities|@\/lib\/opportunities\/(access|radar-client)/);
+  assert.match(preview, /<PublicOpportunitiesPreview opportunities=\{opportunities\} memberNext=\{memberNext\} \/>/);
 
   for (const privateField of ["summary", "eligibility", "benefit", "deadline", "officialUrl", "verifiedAt"]) {
-    assert.doesNotMatch(preview, new RegExp(`opportunity\\.${privateField}`), privateField);
+    assert.doesNotMatch(publicPreview, new RegExp(`opportunity\\.${privateField}`), privateField);
   }
-  assert.match(preview, /aria-hidden="true"/);
-  assert.match(preview, /Os detalhes desta oportunidade ficam disponíveis somente para membros autenticados\./);
+  assert.match(publicPreview, /aria-hidden="true"/);
+  assert.match(publicPreview, /Os detalhes desta oportunidade ficam disponíveis somente para membros autenticados\./);
 });
 
 test("o Radar completo exige sessão tanto na rota quanto na camada de acesso", async () => {
