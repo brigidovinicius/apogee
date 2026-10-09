@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { ArrowDown, ArrowRight, ArrowUpRight } from "lucide-react";
 import { Robonauta } from "@/components/home/robonauta";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -8,8 +9,8 @@ import styles from "./apogee-home.module.css";
 
 const titleLines = ["Ideias que", "chegam", "mais alto", "juntos."];
 const lead = "Gente curiosa e com sede de construir o futuro.";
-const titlePace = 45;
-const titleStart = 100;
+const titlePace = 65;
+const titleStart = 220;
 
 function titleLineStart(index: number) {
   return titleStart + titleLines.slice(0, index).reduce((count, line) => count + line.length + 1, 0) * titlePace;
@@ -31,7 +32,10 @@ function TypedLetters({ text, start, pace }: { text: string; start: number; pace
                 <span
                   key={letterIndex}
                   className={styles.typedLetter}
-                  style={{ animationDelay: `${start + (firstLetter + letterIndex) * pace}ms` }}
+                  style={{
+                    animationDelay: `${start + (firstLetter + letterIndex) * pace}ms`,
+                    "--typing-pace": `${pace}ms`,
+                  } as CSSProperties}
                 >
                   {letter}
                 </span>
@@ -57,7 +61,7 @@ export function ApogeeHome() {
                 <span className={styles.srOnly}>{titleLines.join(" ")}</span>
                 {titleLines.map((line, index) => (
                   <span key={line} className={styles.titleLine}>
-                    {index < 2
+                    {index < 3
                       ? <TypedLetters text={line} start={titleLineStart(index)} pace={titlePace} />
                       : <em><TypedLetters text={line} start={titleLineStart(index)} pace={titlePace} /></em>}
                   </span>
@@ -65,7 +69,7 @@ export function ApogeeHome() {
               </h1>
               <p className={styles.lead}>
                 <span className={styles.srOnly}>{lead}</span>
-                <TypedLetters text={lead} start={titleLineStart(titleLines.length) + 150} pace={28} />
+                <TypedLetters text={lead} start={titleLineStart(titleLines.length) + 150} pace={38} />
               </p>
               <div className={styles.actions}>
                 <Link href="/makeitfly" className={styles.primaryLink}>
