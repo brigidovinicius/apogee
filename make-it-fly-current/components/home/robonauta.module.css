@@ -25,17 +25,6 @@
   -webkit-mask-composite: source-in;
 }
 
-.motion {
-  position: absolute;
-  inset: 0;
-  transform-origin: 50% 55%;
-  transform: perspective(1100px)
-    translate3d(calc(var(--robonauta-x, 0) * 7px), calc(var(--robonauta-y, 0) * 4px), 0)
-    rotateX(calc(var(--robonauta-y, 0) * -1.2deg))
-    rotateY(calc(var(--robonauta-x, 0) * 2deg));
-  transition: transform 240ms ease-out;
-}
-
 .poster,
 .video {
   position: absolute;

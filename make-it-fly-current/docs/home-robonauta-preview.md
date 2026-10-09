@@ -13,21 +13,21 @@ Pedido de 09/10/2026: testar uma home da Apogee com o mascote aprovado.
 
 Hero claro com Robonauta, mensagem da comunidade, links existentes para Make It Fly e galeria, seção do encontro, caminhos para galeria/Radar e rodapé compartilhado. O header ganhou uma variante clara opcional; o padrão continua escuro.
 
-Os assets aprovados de `direcao-personagem-apogee` foram integrados a `public/mascot`: poster WebP de 120.770 bytes e dois MP4 H.264 silenciosos de oito segundos, com proporção 6:5. Os originais foram preservados. O poster mantém os olhos, monitor, roupas e cabos aprovados.
+O poster WebP aprovado (120.770 bytes) e o repouso existente foram mantidos. A revisão de 09/10/2026 acrescenta dois MP4 H.264 silenciosos de oito segundos, 864×720, 24 fps e `faststart`: `robonauta-olhar-esquerda.mp4` (2.080.222 bytes) e `robonauta-olhar-direita.mp4` (1.920.634 bytes). Originais do Flow preservados em `direcao-personagem-apogee`; a primeira tentativa de direita, que virou para o lado errado, foi guardada em `intermediarios` e não integra a página.
 
-O componente inicia o repouso automaticamente, em loop e sem som. A reação ocorre ao entrar ou movimentar o cursor sobre o palco e retorna ao repouso ao terminar. O cursor também controla um deslocamento máximo de 7 px × 4 px e inclinação máxima de 2° × 1,2°, aplicados apenas à camada interna do mascote, com suavização de 240 ms. Ao sair, o personagem volta ao centro. Toque breve dispara a reação; arraste para rolar não dispara.
+### Giro da cabeça solicitado em 09/10/2026
 
-### Movimento contínuo solicitado em 09/10/2026
+Removido o deslocamento e a inclinação CSS da imagem inteira. Os novos clipes mostram a cabeça girando em relação ao pescoço, com mudança de perspectiva da carcaça do monitor e movimento dos cabos. As direções foram conferidas em sequências de quadros, sem espelhar os assets. São animações pré-renderizadas geradas no Flow (Veo 3.1 Lite); não há malha 3D ou acompanhamento contínuo do ângulo exato do cursor. A geração ainda pode produzir pequenas variações de forma/roupa entre quadros.
 
-Por solicitação explícita do usuário, removidos os controles de reprodução/pausa/reação, as dicas de ativação e o bloqueio por `prefers-reduced-motion`. Esta decisão substitui a versão anterior de movimento opcional nesta prévia; não representa conformidade integral com as recomendações Apple. Tipografia, layout da home e assets foram preservados.
+Entrar ou mover o cursor sobre o lado esquerdo/direito do palco escolhe a reação correspondente. Há uma faixa neutra central de 12% e histerese de 2% para evitar alternâncias na borda. Permanecer no mesmo lado não reinicia o clipe. Durante uma reação, apenas o último lado oposto fica pendente; centro/saída/aba oculta cancelam essa pendência. O clipe em andamento termina e volta ao repouso, com 160 ms antes de consumir uma direção pendente. Toque breve alterna lados; arraste para rolagem não dispara.
 
-O vídeo continua quando se rola a home e pausa apenas quando a aba/documento fica oculto ou o componente é desmontado. Retorna automaticamente quando a página volta a ficar visível. Ambos os clipes são pré-carregados para reduzir a latência da reação; somente o clipe ativo reproduz. Se o navegador bloquear autoplay, um gesto real de ponteiro/teclado tenta `play()` diretamente, sem exibir um controle adicional. Erro de mídia mantém o poster.
+### Movimento contínuo
 
-A camada anterior permanece visível, pausada, até o próximo clipe começar; a troca usa fade de 160 ms. A reação não reinicia a cada evento do ponteiro. A posição é medida no palco imóvel e aplicada por `requestAnimationFrame`, com cancelamento ao sair, ocultar a página ou desmontar o componente. Eventos de movimento também disparam a reação, recuperando uma entrada de mouse ocorrida antes da hidratação.
+Por solicitação explícita do usuário, a prévia mantém reprodução automática sem controles de reprodução/pausa/reação, dicas de ativação ou bloqueio por `prefers-reduced-motion`. Essa decisão substitui o movimento opcional da primeira versão; não representa conformidade integral com as recomendações Apple. Tipografia e layout foram mantidos.
 
-Validação dessa revisão: ESLint do componente e build com TypeScript passaram; a prévia standalone foi atualizada na mesma porta. Navegador confirmou autoplay sem qualquer clique, ausência dos controles, reação usando somente `Input.dispatchMouseEvent` com `type: mouseMoved`, deslocamento em ambas as direções, retorno ao centro e retorno automático ao repouso. O teste partiu do navegador que antes sinalizava movimento reduzido.
+O repouso roda em loop silencioso; só o clipe ativo reproduz. Os três clipes são pré-carregados enquanto o documento está visível. A reprodução continua ao rolar a home e pausa com a aba oculta ou desmontagem. A camada anterior permanece visível até o próximo `play()` confirmar início; troca com fade de 160 ms. Bloqueio de autoplay é retomado dentro de um gesto real de ponteiro/teclado. Falha de uma direção desativa apenas aquele clipe e preserva o repouso; falha do repouso mantém o poster. Recarregar permite nova tentativa.
 
-Verificação a 390×844: vídeo em reprodução automática, nenhum botão de animação e nenhuma rolagem horizontal. A suíte existente foi reexecutada e passou em 212/212 testes. Nenhum teste foi relaxado nesta revisão.
+Validação da revisão: `npm run lint` passou com o único aviso anterior de `no-img-element` em `gallery-admin.tsx:81`; `npm test` passou em 212/212; `npm run build` passou, incluindo TypeScript e geração da rota. Prévia standalone atualizada na mesma porta 3112. Navegador confirmou autoplay sem clique, carregamento dos três vídeos, reações à esquerda/direita disparadas somente por `Input.dispatchMouseEvent` (`mouseMoved`) e ausência de transformação CSS da imagem. Sequência de quadros e captura da própria home mostram o giro da cabeça.
 
 Não há conversa, voz, microfone ou novas dependências. Upload, autenticação, consentimento e backend não foram alterados.
 
@@ -43,7 +43,7 @@ Não há conversa, voz, microfone ou novas dependências. Upload, autenticação
 
 ## Limites
 
-O movimento combina os clipes aprovados e transformação leve da camada visual: não é um modelo 3D articulado nem rastreamento contínuo dos olhos. Toque foi implementado com distinção entre toque e arraste; não foi validado em aparelho físico. Suspensão por visibilidade, retry de bloqueio de autoplay e fallback de erro foram revisados no código, sem teste de falhas induzidas. Um erro de mídia mantém a imagem e exige recarregar para tentar reproduzir novamente. Sem JavaScript, a imagem e a navegação permanecem disponíveis.
+O movimento usa clipes direcionais de duração finita; ele não segue cada posição do mouse em tempo real. Toque foi implementado com distinção entre toque e arraste, sem validação em aparelho físico. Retry de autoplay, pausa por visibilidade e fallback individual foram revisados no código, sem teste de falhas induzidas nesta revisão. Sem JavaScript, imagem e navegação permanecem disponíveis.
 
 Durante o desenvolvimento, abrir o menu nativo antes da hidratação terminou produziu um aviso de divergência do atributo `open`; essa interação precoce não foi reproduzida como falha funcional. A versão compilada foi usada para a revisão final. Uma chamada CDP do navegador demorou excessivamente; as demais verificações finais usaram os controles normais da página.
 
