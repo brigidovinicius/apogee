@@ -11,7 +11,6 @@
   overflow: hidden;
   isolation: isolate;
   background: #bebebe;
-  touch-action: pan-y pinch-zoom;
 }
 
 .artwork {
@@ -26,7 +25,7 @@
 }
 
 .poster,
-.video {
+.canvas {
   position: absolute;
   inset: 0;
   display: block;
@@ -37,14 +36,17 @@
   user-select: none;
 }
 
-.poster { object-fit: contain; }
-.video {
-  object-fit: cover;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 160ms ease, visibility 0s linear 160ms;
+.poster {
+  object-fit: contain;
+  opacity: 1;
+  transition: opacity 180ms ease;
 }
-.visible { opacity: 1; visibility: visible; transition-delay: 0s; }
+.posterHidden { opacity: 0; }
+.canvas {
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.visible { opacity: 1; }
 
 .name {
   margin: .65rem 0 .85rem;
