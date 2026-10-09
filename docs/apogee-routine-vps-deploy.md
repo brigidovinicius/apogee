@@ -51,7 +51,7 @@ SITE_ENV="$SITE_DIR/.env"
 
 cd "$REPO"
 test -z "$(git status --porcelain)"
-git fetch --quiet origin "$RELEASE_BRANCH"
+git fetch --quiet origin "refs/heads/$RELEASE_BRANCH:refs/remotes/origin/$RELEASE_BRANCH"
 git cat-file -e "$RELEASE_SHA^{commit}"
 git switch --detach "$RELEASE_SHA"
 test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
@@ -64,11 +64,14 @@ APOGEE_SITE_ENV_FILE="$SITE_ENV" \
 APOGEE_RELEASE_SHA="$RELEASE_SHA" \
 APOGEE_SITE_ENV_FILE="$SITE_ENV" \
   docker compose --env-file "$SITE_ENV" -f "$SITE_DIR/docker-compose.yml" \
-  up -d --build --force-recreate web
+  up -d --no-deps --build --force-recreate web
 REMOTE
 ```
 
 `--force-recreate` aplica mudanças de variáveis de execução já presentes no `.env` sem exibir seus valores. Ele não executa migrações.
+O refspec explícito atualiza a referência de acompanhamento mesmo quando a VPS
+tem `remote.origin.fetch` limitado a outra branch. `--no-deps` restringe a
+recriação ao serviço web.
 
 ## 4. Verificar saúde e revisão implantada
 
@@ -153,3 +156,94 @@ O Google OAuth do ambiente atual possui criação explícita de conta em `/membr
   ingestão canônica estão versionadas, mas sua ativação ponta a ponta requer
   autorização separada para migração e deploy desse serviço. Até lá, a release
   permanece em **Review**, sem alegação de ativação do monitor externo.
+
+## Registro de release web — hardening APG-78 (2026-10-09, card 32ed1)
+
+### Código integrado e evidência reaproveitada
+
+- [PR funcional #11](https://github.com/brigidovinicius/apogee/pull/11), entregue
+  pelo e5bad e integrado sem conflitos, force ou push direto para main.
+- Head revisado: `1d794a94c5d818c9565cc8a1f5d20839bc4ffed8`.
+- Merge e primeira publicação web desta etapa:
+  `38b681b7d7634e0f31385b3d8ffe7d97d89c5371`.
+- CI oficial [37876043244](https://github.com/brigidovinicius/apogee/actions/runs/37876043244):
+  três jobs sequenciais em Node 22, 283 testes aprovados (67 Radar, 212 web,
+  4 legado), typegen/typecheck, lint, audit runtime, três builds standalone e
+  três smokes com configuração sintética. Um aviso preexistente de `img` no
+  lint web; zero erros. Não foram repetidas suítes nem builds no Mac; Docker
+  local não foi iniciado.
+- O checkout efetivamente testado pelo CI foi o merge sintético
+  `f52c4e221aaec3c593e134d3a1b1c49b0f210590`. Sua árvore, a do head e a do merge
+  publicado são idênticas: `3318452a94ddc40b3376d7347794ada9b20d37f5`, comprovadas
+  por `git show -s --format='%H %T %P'` e `git diff --exit-code`. Por isso não
+  foi repetida a suíte para o primeiro deploy.
+- Auditoria 3436e e histórico 89dcc relidos; o Done antigo de 89dcc não foi
+  usado como evidência. Alterações funcionais vieram exclusivamente do PR #11.
+
+### Preflight e publicação
+
+- `ssh -o BatchMode=yes -o ConnectTimeout=10 apogee-vps`: identidade
+  `root@srv1439756`, `/opt/apogee-site/repo` limpo, `.env` modo `600`, web
+  saudável, aproximadamente 63 GiB livres e 5,7 GiB de memória disponível.
+- SHA anterior e rollback:
+  `ee6cbb4c1ebb7ff5f0bd7a52d0a91dad570b3a68`; imagem preservada
+  `sha256:8c1be6b5ac488da13e77e254ef6663f9581cc4d6829ce06400da92c6786375ea`.
+- O primeiro gate abortou antes de trocar HEAD: fetch simples atualizou
+  `FETCH_HEAD`, mas `origin/main` continuou antigo devido ao refspec restrito.
+  Nenhum build/recreate ocorreu nessa tentativa. O refspec explícito do
+  procedimento acima resolveu a referência sem reescrever histórico/configuração.
+- Comandos de publicação: `git fetch --quiet origin
+  refs/heads/main:refs/remotes/origin/main`, conferência do SHA, `git switch
+  --detach 38b681b7d7634e0f31385b3d8ffe7d97d89c5371`, `docker compose ... config
+  -q` e `docker compose ... up -d --no-deps --build --force-recreate web`, com
+  `APOGEE_RELEASE_SHA` e `APOGEE_SITE_ENV_FILE` apontando para os alvos do runbook.
+- Build VPS Node 24 / Next 16.3.8 / Webpack aprovado; TypeScript e geração de
+  páginas concluídos com um worker. Container executa `node server.js` standalone.
+- Checkout local da release, `origin/main`, checkout/ref remoto, imagem e label
+  do container confirmados no SHA publicado. Container `healthy`, zero restarts,
+  aproximadamente 60 GiB livres após o build. Imagem resultante:
+  `sha256:596f36b099bafc35b32d70de981c85952dcc7f36f74230b91b27371cd2ec1be8`.
+- Comparação de IDs, imagens e horários de início antes/depois: somente
+  `apogee-site-web-1` mudou; outros 11 containers permaneceram idênticos,
+  incluindo Radar, bancos, Caddy e sistema de locação.
+
+### Validação pública e limites
+
+- GET `/`, `/oportunidades`, `/membros/entrar`, `/membros/cadastro` e asset JS:
+  `200`. Headers nosniff, DENY, Referrer-Policy, CSP frame-ancestors e HSTS
+  presentes; `X-Powered-By` ausente.
+- HTTP apex redireciona `308` para HTTPS; HTTPS apex redireciona `301` para www.
+- Sem cookie, `/membros`, `/membros/oportunidades?uf=SP&cidade=Praia%20Grande`,
+  `/admin`, `/admin/usuarios` e `/admin/curadoria` respondem `307` para login,
+  preservando `next` e os filtros. `/api/gallery/admin` responde `404`.
+- Cookie exclusivamente sintético e inválido foi recusado server-side nas
+  mesmas páginas. Neste caso Next emite `200` com meta refresh para login e
+  digest `NEXT_REDIRECT;replace;...;307;`, sem campos privados. A primeira
+  asserção, que esperava apenas status 3xx, foi corrigida conforme o guia
+  instalado `next/dist/docs/01-app/03-api-reference/04-functions/redirect.md`;
+  não houve alteração no controle de acesso da aplicação.
+- HTML e RSC da prévia, inclusive com filtros: três objetos com exatamente
+  `id`, `title`, `organization`, `kind`, `level`. Campos de resumo, requisitos,
+  benefícios, prazos, URLs, verificação e localização ausentes. O request RSC
+  sem `_rsc` é normalizado por `307`; com `RSC: 1` e `&_rsc` retorna
+  `200 text/x-component`. Asserções HTTP/DTO executadas sequencialmente por
+  `python3 /tmp/apogee-32ed1-public-smoke.py` e checagem específica de HTML/RSC.
+- `npm ci` do builder relatou 17 alertas na árvore completa de desenvolvimento.
+  Rechecagem atual `npm audit --omit=dev --package-lock-only --json` no app web:
+  zero alertas de runtime. Isso não atesta ausência de vulnerabilidades de dev
+  ou de vulnerabilidades desconhecidas; não foi aplicado `audit fix`.
+- Autorização positiva de usuário real/OAuth não foi exercitada. Foram usadas
+  evidências do CI sintético e rejeições públicas, sem sessão de terceiros.
+- Não houve migração 0002, alteração de roles, credenciais, DNS, Caddy, Vercel,
+  certificados, redes, volumes ou backups. Não houve deploy do serviço Radar,
+  ingestão real nem decisão editorial/autopublicação. Esses gates continuam no
+  card 2c812 e exigem autorização específica. O código Radar integrado no Git
+  ainda não equivale a hardening implantado naquele serviço.
+- Rollback disponível: reaplicar o procedimento somente para web com o SHA
+  anterior acima; preservar banco e configuração. Não foi necessário executá-lo.
+
+A consolidação deste registro altera somente documentação. Se seu merge for
+publicado para alinhar os SHAs operacionais, a árvore dos aplicativos permanece
+igual; registrar o SHA final exato, o PR de documentação e a nova conferência de
+imagem/container no resultado do card 32ed1. Não confundir esse SHA documental
+com alteração funcional adicional ou ativação do Radar.

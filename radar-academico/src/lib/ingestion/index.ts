@@ -1,6 +1,6 @@
 import { loadActiveOfficialSources, officialSourceRegistry } from "./official-source-registry";
 import { deduplicateCandidates } from "./detect-duplicates";
-import { fetchOfficialResource } from "./fetch-source";
+import { fetchOfficialResource, boundedInteger } from "./fetch-source";
 import { normalizeOpportunity } from "./normalize-opportunity";
 import { parseHtml } from "./parse-html";
 import { parseRss } from "./parse-rss";
@@ -42,17 +42,17 @@ async function ingestSource(source: OfficialSource, budget: { remaining: number 
         if (candidate) result.discovered.push(candidate);
         else result.ignored += 1;
       }
-    } catch (error) {
+    } catch {
       result.failed += 1;
-      result.warnings.push(`${listingUrl}: ${error instanceof Error ? error.message : "erro desconhecido"}`);
+      result.warnings.push("Falha ao consultar fonte oficial; revisar configuração e disponibilidade.");
     }
   }
   result.discovered = deduplicateCandidates(result.discovered);
   return result;
 }
 
-export async function runOfficialSourceIngestion() {
-  const budget = { remaining: Number(process.env.INGESTION_MAX_PAGES_PER_RUN ?? 20) };
+async function runIngestion() {
+  const budget = { remaining: boundedInteger(process.env.INGESTION_MAX_PAGES_PER_RUN, 20, 1, 100) };
   const report = [];
   if (process.env.DATABASE_URL) {
     const { syncOfficialSource } = await import("./save-review-item");
@@ -74,4 +74,12 @@ export async function runOfficialSourceIngestion() {
     published: 0,
     sources: report,
   };
+}
+
+let running = false;
+export async function runOfficialSourceIngestion() {
+  if (running) throw new Error("Ingestão já em andamento");
+  running = true;
+  try { return await runIngestion(); }
+  finally { running = false; }
 }

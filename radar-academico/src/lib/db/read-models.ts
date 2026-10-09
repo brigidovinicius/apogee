@@ -1,3 +1,4 @@
+import { publishedOpportunityPredicate } from "./publication-filter";
 import { queryPublic, withAdminTransaction } from "./client";
 import { BRAZILIAN_STATE_CODES, type BrazilianStateCode } from "@/lib/location";
 
@@ -27,7 +28,7 @@ export async function listPublicOpportunities(): Promise<PublicOpportunity[]> {
       os.source_page_url,os.official_document_url,os.application_url,os.last_checked_at
      from opportunities o join lateral (
        select * from opportunity_sources where opportunity_id=o.id and active order by is_primary desc, created_at desc limit 1
-     ) os on true order by o.deadline_at nulls last`,
+     ) os on true where ${publishedOpportunityPredicate} order by o.deadline_at nulls last`,
   );
   return result.rows;
 }
@@ -40,7 +41,7 @@ export async function getPublicOpportunity(id: string): Promise<PublicOpportunit
       os.source_page_url,os.official_document_url,os.application_url,os.last_checked_at
      from opportunities o join lateral (
        select * from opportunity_sources where opportunity_id=o.id and active order by is_primary desc, created_at desc limit 1
-     ) os on true where o.id=$1`, [id],
+     ) os on true where o.id=$1 and ${publishedOpportunityPredicate}`, [id],
   );
   return result.rows[0] ?? null;
 }

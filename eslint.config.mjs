@@ -7,6 +7,9 @@ const eslintConfig = defineConfig([
   ...nextTs,
   // Override default ignores of eslint-config-next.
   globalIgnores([
+    // Independent applications have their own lint/typecheck/CI jobs.
+    "make-it-fly-current/**",
+    "radar-academico/**",
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
