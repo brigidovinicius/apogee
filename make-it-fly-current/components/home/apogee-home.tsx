@@ -1,10 +1,52 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { ArrowDown, ArrowRight, ArrowUpRight } from "lucide-react";
 import { Robonauta } from "@/components/home/robonauta";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import styles from "./apogee-home.module.css";
+
+const titleLines = ["Ideias que", "chegam", "mais alto", "juntos."];
+const lead = "Gente curiosa e com sede de construir o futuro.";
+const titlePace = 65;
+const titleStart = 220;
+
+function titleLineStart(index: number) {
+  return titleStart + titleLines.slice(0, index).reduce((count, line) => count + line.length + 1, 0) * titlePace;
+}
+
+function TypedLetters({ text, start, pace }: { text: string; start: number; pace: number }) {
+  const words = text.split(" ");
+
+  return (
+    <span aria-hidden="true">
+      {words.map((word, wordIndex) => {
+        const firstLetter = words.slice(0, wordIndex).join(" ").length + (wordIndex > 0 ? 1 : 0);
+
+        return (
+          <span key={wordIndex}>
+            {wordIndex > 0 ? " " : null}
+            <span className={styles.typedWord}>
+              {Array.from(word).map((letter, letterIndex) => (
+                <span
+                  key={letterIndex}
+                  className={styles.typedLetter}
+                  style={{
+                    animationDelay: `${start + (firstLetter + letterIndex) * pace}ms`,
+                    "--typing-pace": `${pace}ms`,
+                  } as CSSProperties}
+                >
+                  {letter}
+                </span>
+              ))}
+            </span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
 
 export function ApogeeHome() {
   return (
@@ -16,11 +58,18 @@ export function ApogeeHome() {
             <div className={styles.intro}>
               <p className={styles.eyebrow}>Comunidade & experiências</p>
               <h1 id="home-title">
-                Ideias que<br />chegam<br /><em>mais alto.</em>
+                <span className={styles.srOnly}>{titleLines.join(" ")}</span>
+                {titleLines.map((line, index) => (
+                  <span key={line} className={styles.titleLine}>
+                    {index < 3
+                      ? <TypedLetters text={line} start={titleLineStart(index)} pace={titlePace} />
+                      : <em><TypedLetters text={line} start={titleLineStart(index)} pace={titlePace} /></em>}
+                  </span>
+                ))}
               </h1>
               <p className={styles.lead}>
-                Gente curiosa. Encontros que movem.{" "}<br />
-                Um lugar para tirar sua ideia do papel.
+                <span className={styles.srOnly}>{lead}</span>
+                <TypedLetters text={lead} start={titleLineStart(titleLines.length) + 150} pace={38} />
               </p>
               <div className={styles.actions}>
                 <Link href="/makeitfly" className={styles.primaryLink}>

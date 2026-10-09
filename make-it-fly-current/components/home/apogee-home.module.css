@@ -31,22 +31,69 @@
   text-transform: uppercase;
 }
 
+.intro .eyebrow {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
+  letter-spacing: .17em;
+}
+
 .intro h1 {
   margin: 0;
   font-family: var(--font-instrument-serif), serif;
   font-size: clamp(4.5rem, 7.7vw, 7.4rem);
   font-weight: 400;
-  letter-spacing: -.035em;
+  letter-spacing: -.01em;
   line-height: .91;
 }
 
 .intro h1 em, .eventCopy h2 em, .discover h2 em { font-weight: 400; }
 
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.titleLine { display: block; white-space: nowrap; }
+.typedWord { display: inline-block; white-space: nowrap; }
+.typedLetter {
+  position: relative;
+  opacity: 0;
+  animation: typeLetter 10ms linear both;
+}
+.typedLetter::after {
+  position: absolute;
+  top: .13em;
+  right: -.09em;
+  width: max(2px, .025em);
+  height: .75em;
+  background: currentColor;
+  content: "";
+  opacity: 0;
+  animation: typeCaret var(--typing-pace) steps(1, end);
+  animation-delay: inherit;
+}
+
+@keyframes typeLetter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes typeCaret {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .lead {
   margin: 1.8rem 0 1.5rem;
   font-size: clamp(.88rem, 1.2vw, 1rem);
-  line-height: 1.7;
-  letter-spacing: -.02em;
+  line-height: 1.45;
+  letter-spacing: 0;
 }
 
 .actions { display: flex; align-items: flex-start; flex-direction: column; gap: .7rem; }
@@ -170,4 +217,8 @@
   .destinationTitle { font-size: 1.35rem; }
 }
 
-@media (prefers-reduced-motion: reduce) { .primaryLink { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .primaryLink { transition: none; }
+  .typedLetter { animation: none; opacity: 1; }
+  .typedLetter::after { animation: none; opacity: 0; }
+}

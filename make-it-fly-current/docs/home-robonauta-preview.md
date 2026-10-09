@@ -1,15 +1,30 @@
-# Home experimental com Robonauta
+# Home da Apogee com Robonauta
 
 Pedido de 09/10/2026: testar uma home da Apogee com Robonauta. A revisão atual
 substitui as reações em vídeo por acompanhamento contínuo do ponteiro com cabeça
-3D. A validação registrada abaixo separa esta revisão das versões anteriores.
+3D. A versão aprovada foi publicada na VPS em 09/10/2026. A validação registrada
+abaixo separa esta release das experiências anteriores.
 
-## Acesso local
+## Publicação atual
+
+- Home pública: [www.apogee.community](https://www.apogee.community/).
+- [PR #13](https://github.com/brigidovinicius/apogee/pull/13) integrado; release
+  `6c2eb17540a4c0cc7c10c75bb4dec18f7d4ca386` publicada na VPS com autorização.
+- Mesma árvore do head testado `878aacc`:
+  `19a507d41971de2fb3f2854cb2569dd6ab14b397`.
+- A experiência aprovada está na raiz `/`, com `index, follow` e canonical
+  `https://www.apogee.community/`. `/home-robonauta` permanece como rota de
+  comparação com `noindex, nofollow`; isso não é controle de acesso.
+- Hospedagem exclusivamente na VPS. O usuário reiterou que Vercel nunca deve
+  ser usado, inclusive para previews.
+- Este documento foi atualizado e versionado localmente **após** a publicação.
+  O commit documental posterior não foi implantado na VPS.
+
+## Acesso local usado na validação
 
 - Endereço da prévia compilada: `http://127.0.0.1:3112/home-robonauta`. Revisão 3D compilada e servidor standalone reiniciado; a aba do usuário foi recarregada.
 - Desenvolvimento: `http://127.0.0.1:3108/home-robonauta`.
-- Rota independente, com `noindex, nofollow`. Isso é orientação de indexação, não controle de acesso. Nenhuma publicação ou push foi realizado.
-- A home `/` e a alteração que já existia em `app/page.tsx` foram preservadas.
+- A primeira etapa preservou a home `/` e a alteração preexistente de `app/page.tsx`; posteriormente, a aprovação para publicação autorizou a promoção desta experiência para a raiz.
 
 ## Implementação atual — cabeça 3D com corpo fotográfico
 
@@ -70,6 +85,42 @@ Upload, autenticação, consentimento e backend não foram alterados nesta revis
 - `npm run typecheck` e `npm run build`: passaram. O build final inclui câmera em perspectiva e carcaça com profundidade de 1,5 unidades; a placa do corpo conserva o enquadramento original. Standalone reiniciado na porta 3112 com os assets atualizados.
 - Navegador na versão compilada: canvas Three.js pronto, zero elementos de vídeo, nenhuma transformação CSS do canvas e nenhum overflow horizontal na viewport atual de 629×725. Movimentos reais de mouse confirmaram yaw à esquerda −0,338 rad, posição intermediária +0,121 rad, pitch acima −0,146 rad e abaixo +0,167 rad, com mudança imediata do alvo e amortecimento contínuo. Capturas mostram o corpo fixo, as laterais do monitor e os cabos. São observações funcionais/visuais; não um benchmark de FPS.
 
+### Validação da release e da VPS
+
+- Local: **217/217 testes**, typegen, typecheck, lint, build e smoke sintético
+  aprovados; permanece o aviso anterior de `img` em `gallery-admin.tsx:81`.
+- [CI 37936242780](https://github.com/brigidovinicius/apogee/actions/runs/37936242780):
+  três jobs aprovados — Radar, site e legado — incluindo typegen/typecheck, lint,
+  auditoria de runtime, build e standalone.
+- VPS: checkout limpo, `.env` modo `600`, publicação por Git/SSH com refspec
+  explícito de main e checkout detached da release. Apenas o serviço web foi
+  reconstruído; os outros 11 containers mantiveram ID, imagem e início.
+- Web `healthy`, zero reinícios e label OCI com o SHA exato da release. Imagem
+  `sha256:d4df7d27cb1cbce161c81c13331542e7f36fdae9f9aff67d749956f0cba289d1`.
+- Rollback preservado em `af523bfd98800e11ca3d6ba6c8931c159c0413f5`, imagem
+  `sha256:236689554ff21e3efeedf71e986c73afe58e4411c1105a361b198577409412ae`.
+- HTTP público: `/`, `/galeria`, `/makeitfly`, `/oportunidades` e
+  `/membros/entrar` retornaram `200`; `/membros`, `/admin` e `/admin/usuarios`
+  retornaram `307` para login; `/api/gallery/admin` retornou `404`.
+- Canonical/indexação da raiz e `noindex` da prévia conferidos, assim como
+  cabeçalhos de segurança. Poster e corpo WebP públicos são idênticos em bytes
+  aos arquivos locais validados.
+- Navegador público em **1280×720**: canvas pronto, zero vídeos, nenhuma
+  transformação CSS da imagem/canvas e nenhum overflow horizontal. Mouse à
+  esquerda produziu yaw **−0,25480 rad**; à direita, **+0,33056 rad**, com pitch
+  **+0,10401 rad**. Acompanhamento ativo (`tracking=true`) e corpo fixo visível.
+- Console sem erros, mas com **dois avisos Three.js** sobre `sigmaRadians=0,06`
+  exceder o limite de amostras do blur de iluminação. Foram registrados como
+  observação não bloqueante; não houve alteração da implementação aprovada para
+  silenciá-los. Não se trata de console inteiramente limpo.
+- Captura pública: `apogee-home-publicada-vps.png`, na pasta de visualizações do
+  chat. OAuth real, aparelho físico e benchmark não foram testados.
+
+Os comandos operacionais e as evidências estão registrados em
+[`apogee-routine-vps-deploy.md`](../../docs/apogee-routine-vps-deploy.md), no
+registro da release Robonauta. Não houve alterações em Caddy, DNS, banco,
+migrações ou infraestrutura de outros serviços, nem uso de Vercel.
+
 ### Limites atuais
 
 O corpo é uma fotografia em um plano, não uma malha anatômica. A frente do
@@ -128,4 +179,5 @@ Durante o desenvolvimento, abrir o menu nativo antes da hidratação terminou pr
 Para iniciar novamente a prévia, execute `npm run build` e confirme seu sucesso,
 copie `public` e `.next/static` para `.next/standalone` e rode o servidor
 standalone na porta local escolhida. A prévia depende do processo local
-permanecer ativo. Esta validação é local; não houve push ou deploy.
+permanecer ativo. Reiniciar uma prévia local não altera a publicação na VPS;
+qualquer nova release continua exigindo autorização própria.

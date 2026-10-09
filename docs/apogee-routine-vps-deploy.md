@@ -5,10 +5,11 @@ Este é o procedimento padrão para publicar uma revisão já aprovada da Apogee
 ## Regras
 
 - Só execute este runbook com autorização explícita para o SHA e o deploy.
+- A hospedagem da Apogee é exclusivamente na VPS. O usuário reiterou em 09/10/2026: nunca usar Vercel, inclusive para previews.
 - Não use `git pull`, `git reset --hard`, `git clean`, cópia manual de arquivos, nem comandos no checkout de `sistema-de-locacao`.
 - O checkout remoto deve estar limpo antes da troca de revisão. Se não estiver, pare e investigue; não descarte arquivos remotos.
 - Preserve `.env`, certificados, volumes, redes e backups. Nunca passe valores privados na linha de comando, no Git ou nos logs.
-- Uma mudança de código não autoriza migração de banco, DNS, Caddy, Vercel ou publicação de OAuth para todos os usuários. Cada um continua sendo um gate próprio.
+- Uma mudança de código não autoriza migração de banco, DNS, Caddy ou publicação de OAuth para todos os usuários. Cada um continua sendo um gate próprio; Vercel não integra o fluxo permitido.
 - Para a atualização ordinária do site, reconstrua somente `web` no Compose da Apogee. Não use o profile `public` e não toque nos outros stacks.
 
 ## 1. Publicar a revisão local no Git
@@ -247,3 +248,70 @@ publicado para alinhar os SHAs operacionais, a árvore dos aplicativos permanece
 igual; registrar o SHA final exato, o PR de documentação e a nova conferência de
 imagem/container no resultado do card 32ed1. Não confundir esse SHA documental
 com alteração funcional adicional ou ativação do Radar.
+
+## Registro de release web — home com Robonauta (2026-10-09)
+
+### Revisão aprovada e validação
+
+- Publicação na VPS autorizada pelo usuário; [PR #13](https://github.com/brigidovinicius/apogee/pull/13) integrado.
+- Release publicada: `6c2eb17540a4c0cc7c10c75bb4dec18f7d4ca386`.
+- O merge publicado e o head testado `878aacc` têm a mesma árvore:
+  `19a507d41971de2fb3f2854cb2569dd6ab14b397`. A equivalência de árvore mantém
+  a rastreabilidade da validação; não confundir head de revisão com SHA publicado.
+- [CI 37936242780](https://github.com/brigidovinicius/apogee/actions/runs/37936242780)
+  aprovado nos três jobs — Radar, site e legado — incluindo typegen/typecheck,
+  lint, auditoria de runtime, build e smoke standalone.
+- Validação local: 217/217 testes, typegen, typecheck, lint, build e smoke com
+  configuração sintética aprovados. O lint manteve apenas o aviso anterior de
+  `no-img-element` em `components/gallery/gallery-admin.tsx:81`.
+- A home pública passa a usar a composição de corpo fotográfico e cabeça 3D,
+  com acompanhamento contínuo do ponteiro. Não é um modelo 3D completo do corpo
+  e não utiliza os vídeos das versões anteriores.
+
+### Preflight, publicação e rollback preservado
+
+- Preflight por SSH confirmou `root@srv1439756`, checkout limpo em
+  `/opt/apogee-site/repo` e `.env` com modo `600`, sem expor seu conteúdo.
+- Publicação pelo fluxo Git/SSH: fetch com refspec explícito de main
+  (`refs/heads/main:refs/remotes/origin/main`), conferência da revisão e
+  `git switch --detach 6c2eb17540a4c0cc7c10c75bb4dec18f7d4ca386`.
+- Reconstrução restrita ao site: `docker compose ... up -d --no-deps --build
+  --force-recreate web`. Apenas `apogee-site-web-1` mudou; os outros 11 containers
+  mantiveram IDs, imagens e horários de início.
+- Container `healthy`, zero reinícios; label OCI `org.opencontainers.image.revision`
+  igual ao SHA completo da release. Imagem publicada:
+  `sha256:d4df7d27cb1cbce161c81c13331542e7f36fdae9f9aff67d749956f0cba289d1`.
+- Rollback preservado, sem necessidade de execução:
+  `af523bfd98800e11ca3d6ba6c8931c159c0413f5`, imagem
+  `sha256:236689554ff21e3efeedf71e986c73afe58e4411c1105a361b198577409412ae`.
+
+### Evidência pública e limites
+
+- HTTP `200`: `/`, `/galeria`, `/makeitfly`, `/oportunidades` e `/membros/entrar`.
+- Sem autenticação, `/membros`, `/admin` e `/admin/usuarios` respondem `307`
+  para login; `/api/gallery/admin` responde `404`.
+- A raiz está com `index, follow` e canonical em `https://www.apogee.community/`.
+  A rota de comparação `/home-robonauta` permanece com `noindex`.
+- Os WebP públicos de poster e corpo têm bytes idênticos aos arquivos locais
+  validados. Cabeçalhos de segurança foram conferidos nas respostas públicas.
+- Navegador público em 1280×720: canvas pronto, zero elementos de vídeo,
+  nenhuma transformação CSS da imagem/canvas e ausência de overflow horizontal.
+  Movimento real de mouse confirmou yaw à esquerda de −0,25480 rad e à direita
+  de +0,33056 rad; na posição à direita, pitch de +0,10401 rad. `tracking=true`
+  e corpo fixo foram observados.
+- Console sem erros, com **dois avisos Three.js**: `sigmaRadians=0,06` excede o
+  limite de amostras do blur de iluminação. Observação não bloqueante desta
+  publicação; a implementação aprovada não foi alterada por causa do aviso.
+  Não descrever o console como inteiramente limpo.
+- Captura pública: `apogee-home-publicada-vps.png`, na pasta de visualizações
+  deste chat. É evidência visual da home publicada, não benchmark de desempenho.
+- OAuth real, aparelho físico e benchmark de FPS não foram exercitados.
+- Nenhuma alteração em Vercel, Caddy, DNS, banco, migrações ou infraestrutura de
+  outros serviços. A hospedagem permanece exclusivamente na VPS; Vercel está
+  excluído também para previews.
+
+Este registro é documentação posterior à release, acrescentada localmente sem
+nova publicação. O SHA implantado acima identifica a aplicação publicada.
+Um commit documental posterior não altera esse estado nem implica que este
+acréscimo já esteja presente no checkout da VPS; nenhuma outra publicação foi
+feita por causa deste registro.
