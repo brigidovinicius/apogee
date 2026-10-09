@@ -1,3 +1,4 @@
+import { publishedOpportunityPredicate } from "@/lib/db/publication-filter";
 import { queryPublic } from "@/lib/db/client";
 import { isRadarConsumerAuthorized } from "@/lib/auth/radar-consumer";
 
@@ -25,7 +26,7 @@ type PublicOpportunityResponse = {
  * Private integration contract for the Apogee mural.
  *
  * `queryPublic` opens the transaction with `app.is_admin=false`, so PostgreSQL
- * RLS remains the last line of defence: only approved, verified, open and
+ * Explicit filters also protect against accidental RLS bypass: only approved, verified, open and
  * published opportunities can leave this endpoint.
  */
 export async function GET(request: Request) {
@@ -60,6 +61,7 @@ export async function GET(request: Request) {
          order by is_primary desc, created_at desc
          limit 1
        ) os on true
+       where ${publishedOpportunityPredicate}
        order by o.deadline_at nulls last`,
     );
 

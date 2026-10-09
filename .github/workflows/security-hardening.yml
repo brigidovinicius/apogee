@@ -1,0 +1,42 @@
+name: Security hardening
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        app: [radar-academico, make-it-fly-current, .]
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      BUILD_STANDALONE: 'true'
+      NODE_OPTIONS: --max-old-space-size=3072
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+      - run: npm ci --no-fund --no-audit
+      - run: npm test
+      - run: npm run typegen
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm audit --omit=dev --audit-level=low
+      - run: npm run build
+      - name: Standalone smoke with synthetic configuration only
+        run: node "$GITHUB_WORKSPACE/scripts/security-smoke.mjs" "${{ matrix.app }}"
+      - run: git diff --check
