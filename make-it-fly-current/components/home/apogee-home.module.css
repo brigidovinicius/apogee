@@ -219,6 +219,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .primaryLink { transition: none; }
-  .typedLetter { animation: none; opacity: 1; }
+  /* Revealing letters changes no position; only the moving caret is omitted. */
   .typedLetter::after { animation: none; opacity: 0; }
 }
