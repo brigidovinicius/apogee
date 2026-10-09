@@ -120,3 +120,36 @@ O Google OAuth do ambiente atual possui criação explícita de conta em `/membr
   visitante foi verificada por HTTP. A conta alvo permaneceu com papel
   `admin`; como a sessão de banco lê o usuário atual e não guarda o papel como
   claim no cookie, não é necessário encerrar a sessão para renovar permissões.
+
+## Registro de release — filtros de localização do Radar (2026-10-08)
+
+- PR funcional: `#9` (`feat(radar): add canonical location filters`).
+- Commit funcional: `51f096eeff04bdd38320c9eb5e6f02c368709af8`.
+- SHA publicado no web Apogee: `230026b85b8672e620d951b2796e9c5278cca719`.
+- SHA anterior e rollback de código/imagem:
+  `49d4f114ca8bf9b47ce237dbe42aae14dc5cec35`.
+- Preflight: `root@srv1439756`, checkout limpo, container anterior saudável,
+  aproximadamente 62 GiB livres, `.env` modo `600` e imagem de rollback
+  presente. `/opt/sistema-de-locacao` foi somente verificado, sem alterações.
+- Troca: `git fetch` com refspec explícito de `main`, confirmação do commit,
+  `git switch --detach` para o SHA aprovado, validação do Compose e
+  `docker compose up -d --build --force-recreate web`. Somente
+  `apogee-site-web-1` foi reconstruído e recriado.
+- Validação: site `212/212` testes; Radar `25/25` testes; typecheck e lint dos
+  dois projetos; builds standalone Next `16.3.8`; smokes standalone e HTTP.
+  A primeira tentativa do build do site encontrou cache `.next` obsoleto; o
+  artefato gerado foi isolado e typegen/build limpos passaram. O build do
+  Radar passou com Webpack, sem instalar dependências.
+- Resultado web: checkout, imagem e label OCI no SHA publicado; container
+  `healthy`. `/` e `/oportunidades?uf=SP&cidade=Praia%20Grande` responderam
+  `200`; a rota de membros preservou os parâmetros no redirecionamento `307`
+  para login. HTML e RSC públicos não continham os campos privados auditados.
+- Escopo preservado: não houve crawl real, autopublicação, migração, alteração
+  de banco, DNS, Caddy, Vercel, credenciais, certificados, volumes, redes,
+  backups ou serviços vizinhos.
+- Gate pendente: a migração estrutural
+  `radar-academico/db/migrations/0002_canonical_location.sql` não foi aplicada
+  e o serviço externo do Radar não foi implantado. A tela de monitoramento e a
+  ingestão canônica estão versionadas, mas sua ativação ponta a ponta requer
+  autorização separada para migração e deploy desse serviço. Até lá, a release
+  permanece em **Review**, sem alegação de ativação do monitor externo.
