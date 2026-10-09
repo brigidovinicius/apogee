@@ -15,6 +15,8 @@ export const STUDENT_OPPORTUNITIES: readonly StudentOpportunity[] = [
     kind: "Intercâmbio",
     level: "Graduação",
     location: "Fatecs · exterior",
+    stateCode: null,
+    cityName: null,
     eligibility:
       "Estudantes de Fatecs presenciais, maiores de 18 anos, com PPI entre 40% e 80%, conforme edital.",
     benefit: "Isenção de matrícula e mensalidades acadêmicas por um semestre.",
@@ -32,6 +34,8 @@ export const STUDENT_OPPORTUNITIES: readonly StudentOpportunity[] = [
     kind: "Bolsa",
     level: "Graduação",
     location: "Porto Alegre · RS",
+    stateCode: "RS",
+    cityName: "Porto Alegre",
     eligibility: "Estudantes elegíveis à seleção no Sistema de Bolsas da UFCSPA.",
     benefit: "Bolsa mensal de R$ 700 por nove meses.",
     summary:
@@ -49,6 +53,8 @@ export const STUDENT_OPPORTUNITIES: readonly StudentOpportunity[] = [
     kind: "Bolsa",
     level: "Ensino médio",
     location: "Juína · MT",
+    stateCode: "MT",
+    cityName: "Juína",
     eligibility:
       "Estudantes de cursos técnicos do IFMT Campus Juína, conforme perfil socioeconômico do edital.",
     benefit: "Seis bolsas de R$ 400 mensais, de novembro de 2026 a agosto de 2027.",
@@ -67,6 +73,8 @@ export const STUDENT_OPPORTUNITIES: readonly StudentOpportunity[] = [
     kind: "Intercâmbio",
     level: "Graduação",
     location: "Argentina, Colômbia e Peru",
+    stateCode: null,
+    cityName: null,
     eligibility: "Estudantes de cursos superiores correspondentes do IFSULDEMINAS.",
     benefit:
       "Auxílios para viagem, seguro, passaporte e despesas, além de residência e alimentação no destino.",
@@ -85,6 +93,8 @@ export const STUDENT_OPPORTUNITIES: readonly StudentOpportunity[] = [
     kind: "Bolsa",
     level: "Graduação",
     location: "Rio Verde · GO",
+    stateCode: "GO",
+    cityName: "Rio Verde",
     eligibility: "Estudantes que atendam aos critérios da Secretaria Municipal de Assistência Social.",
     benefit: "Bolsa universitária; consulte as condições e documentos no atendimento oficial.",
     summary:
@@ -101,6 +111,8 @@ export const STUDENT_OPPORTUNITIES: readonly StudentOpportunity[] = [
     kind: "Programa",
     level: "Ensino médio",
     location: "Praia Grande · SP",
+    stateCode: "SP",
+    cityName: "Praia Grande",
     eligibility:
       "Alunos do ensino médio público integral de Praia Grande que atendam aos critérios de residência, renda e CadÚnico.",
     benefit: "Auxílio financeiro para apoiar a permanência escolar.",
@@ -119,6 +131,8 @@ export const STUDENT_OPPORTUNITIES: readonly StudentOpportunity[] = [
     kind: "Programa",
     level: "Graduação",
     location: "Brasil",
+    stateCode: null,
+    cityName: null,
     eligibility:
       "Estudantes de licenciaturas presenciais com alto desempenho no Enem, ingressantes por SiSU, Prouni ou Fies, conforme edital.",
     benefit: "R$ 700 mensais e R$ 350 mensais como incentivo à docência em poupança.",
@@ -137,6 +151,8 @@ export const STUDENT_OPPORTUNITIES: readonly StudentOpportunity[] = [
     kind: "Bolsa",
     level: "Graduação",
     location: "Brasil",
+    stateCode: null,
+    cityName: null,
     eligibility: "Estudantes indígenas e quilombolas, conforme regras e documentação do programa.",
     benefit: "Bolsa mensal de R$ 1.400, após homologação e autorização do programa.",
     summary:

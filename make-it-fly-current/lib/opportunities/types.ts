@@ -1,3 +1,9 @@
+import {
+  BRAZILIAN_STATE_CODES,
+  normalizeBrazilianLocation,
+  type BrazilianStateCode,
+} from "@/lib/opportunities/location";
+
 export const OPPORTUNITY_KINDS = ["Bolsa", "Programa", "Intercâmbio"] as const;
 export const EDUCATION_LEVELS = ["Ensino médio", "Graduação", "Pós-graduação", "Público diverso"] as const;
 
@@ -16,6 +22,8 @@ export type OpportunityPreview = {
 /** Dados editoriais completos: só podem cruzar a fronteira para membros autenticados. */
 export type StudentOpportunity = OpportunityPreview & {
   location: string;
+  stateCode: BrazilianStateCode | null;
+  cityName: string | null;
   eligibility: string;
   benefit: string;
   summary: string;
@@ -28,11 +36,22 @@ export type StudentOpportunity = OpportunityPreview & {
 export type OpportunityFilters = {
   kind: OpportunityKind | null;
   level: EducationLevel | null;
+  stateCode: BrazilianStateCode | null;
+  cityName: string | null;
 };
 
 export const EMPTY_OPPORTUNITY_FILTERS: OpportunityFilters = {
   kind: null,
   level: null,
+  stateCode: null,
+  cityName: null,
+};
+
+export type OpportunityFilterOptions = {
+  kinds: OpportunityKind[];
+  levels: EducationLevel[];
+  states: BrazilianStateCode[];
+  citiesByState: Partial<Record<BrazilianStateCode, string[]>>;
 };
 
 export function dateInBrazil(now = new Date()) {
@@ -63,7 +82,7 @@ export function sortByDeadline(opportunities: readonly StudentOpportunity[]) {
 export function getOpportunityFilterOptions(
   opportunities: readonly StudentOpportunity[],
   today = dateInBrazil(),
-) {
+): OpportunityFilterOptions {
   const openOpportunities = opportunities.filter((opportunity) =>
     isOpportunityOpen(opportunity, today),
   );
@@ -75,7 +94,69 @@ export function getOpportunityFilterOptions(
     levels: EDUCATION_LEVELS.filter((level) =>
       openOpportunities.some((opportunity) => opportunity.level === level),
     ),
+    states: BRAZILIAN_STATE_CODES.filter((stateCode) =>
+      openOpportunities.some((opportunity) => opportunity.stateCode === stateCode),
+    ),
+    citiesByState: Object.fromEntries(
+      BRAZILIAN_STATE_CODES.map((stateCode) => [
+        stateCode,
+        [...new Set(
+          openOpportunities
+            .filter((opportunity) => opportunity.stateCode === stateCode)
+            .map((opportunity) => opportunity.cityName)
+            .filter((cityName): cityName is string => cityName !== null),
+        )].sort((left, right) => left.localeCompare(right, "pt-BR")),
+      ]).filter(([, cities]) => cities.length > 0),
+    ) as Partial<Record<BrazilianStateCode, string[]>>,
   };
+}
+
+export function sanitizeOpportunityFilters(
+  filters: OpportunityFilters,
+  options: OpportunityFilterOptions,
+): OpportunityFilters {
+  const stateCode = filters.stateCode && options.states.includes(filters.stateCode)
+    ? filters.stateCode
+    : null;
+  const cityName = stateCode && filters.cityName && options.citiesByState[stateCode]?.includes(filters.cityName)
+    ? filters.cityName
+    : null;
+
+  return { ...filters, stateCode, cityName };
+}
+
+export function opportunityFiltersFromSearchParams(searchParams: URLSearchParams): OpportunityFilters {
+  const kindValue = searchParams.get("modalidade");
+  const levelValue = searchParams.get("formacao");
+  const location = normalizeBrazilianLocation({
+    stateCode: searchParams.get("uf"),
+    cityName: searchParams.get("cidade"),
+  });
+
+  return {
+    kind: OPPORTUNITY_KINDS.find((kind) => kind === kindValue) ?? null,
+    level: EDUCATION_LEVELS.find((level) => level === levelValue) ?? null,
+    stateCode: location.status === "valid" ? location.location.stateCode : null,
+    cityName: location.status === "valid" ? location.location.cityName : null,
+  };
+}
+
+export function setOpportunityFilterSearchParams(
+  searchParams: URLSearchParams,
+  filters: OpportunityFilters,
+) {
+  const values = {
+    modalidade: filters.kind,
+    formacao: filters.level,
+    uf: filters.stateCode,
+    cidade: filters.stateCode ? filters.cityName : null,
+  };
+
+  for (const [key, value] of Object.entries(values)) {
+    if (value) searchParams.set(key, value);
+    else searchParams.delete(key);
+  }
+  return searchParams;
 }
 
 export function filterOpportunities(
@@ -86,9 +167,14 @@ export function filterOpportunities(
   return sortByDeadline(opportunities)
     .filter((opportunity) => isOpportunityOpen(opportunity, today))
     .filter((opportunity) => filters.kind === null || opportunity.kind === filters.kind)
-    .filter((opportunity) => filters.level === null || opportunity.level === filters.level);
+    .filter((opportunity) => filters.level === null || opportunity.level === filters.level)
+    .filter((opportunity) => filters.stateCode === null || opportunity.stateCode === filters.stateCode)
+    .filter((opportunity) => filters.cityName === null || (
+      opportunity.stateCode === filters.stateCode && opportunity.cityName === filters.cityName
+    ));
 }
 
 export function countActiveOpportunityFilters(filters: OpportunityFilters) {
-  return Number(filters.kind !== null) + Number(filters.level !== null);
+  return Number(filters.kind !== null) + Number(filters.level !== null) +
+    Number(filters.stateCode !== null) + Number(filters.cityName !== null);
 }

@@ -1,21 +1,26 @@
 import { withAdminTransaction } from "@/lib/db/client";
 import type { IngestionResult, OfficialSource, OpportunityCandidate } from "./types";
 import { canonicalOpportunityKey } from "./revision-key";
+import { normalizeBrazilianLocation } from "@/lib/location";
 
 export async function syncOfficialSource(source: OfficialSource) {
   if (!process.env.DATABASE_URL) return;
+  const normalizedLocation = normalizeBrazilianLocation(source.location ?? {});
+  if (normalizedLocation.status === "invalid") throw new Error(`Fonte ${source.id} com localização inválida`);
   await withAdminTransaction(async (client) => {
     await client.query(
       `insert into official_sources
-       (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,audience_scope,geographic_scope,categories,priority,active,verification_status,notes)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'verified',$16)
+       (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,audience_scope,geographic_scope,state_code,city_name,categories,priority,active,verification_status,notes)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,'verified',$18)
        on conflict (id) do update set
        name=excluded.name, allowed_domains=excluded.allowed_domains,
        allowed_path_prefixes=excluded.allowed_path_prefixes, listing_urls=excluded.listing_urls,
-       extraction_mode=excluded.extraction_mode, updated_at=now()`,
+       extraction_mode=excluded.extraction_mode, geographic_scope=excluded.geographic_scope,
+       state_code=excluded.state_code, city_name=excluded.city_name, updated_at=now()`,
       [source.id, source.name, source.institutionName, source.institutionAcronym, source.sourceType,
        source.baseUrl, source.allowedDomains, source.allowedPathPrefixes, source.listingUrls,
-       source.extractionMode, source.audienceScope, source.geographicScope, source.categories,
+       source.extractionMode, source.audienceScope, source.geographicScope,
+       normalizedLocation.location.stateCode, normalizedLocation.location.cityName, source.categories,
        source.priority, source.active, source.notes ?? null],
     );
   });
@@ -32,7 +37,11 @@ export async function saveReviewItems(source: OfficialSource, result: IngestionR
        values ($1,now(),now(),$2,$3,$4,0,$5,$6,$7,$8) returning id`,
       [source.id, result.failed ? "completed_with_warnings" : "completed", result.pagesChecked,
        result.discovered.length, result.ignored, result.failed, result.warnings.join("\n") || null,
-       { automatic_publish: false }],
+       { automatic_publish: false, location: {
+         valid: result.discovered.filter((candidate) => candidate.stateCode !== null).length,
+         missing: result.discovered.filter((candidate) => candidate.stateCode === null).length,
+         rejected: result.locationRejected,
+       } }],
     );
     for (const candidate of result.discovered) {
       const canonicalKey = canonicalOpportunityKey(candidate.officialSourceId, candidate.title);
@@ -59,14 +68,14 @@ export async function saveReviewItems(source: OfficialSource, result: IngestionR
       const inserted = await client.query<{ id: string }>(
         `insert into opportunities
          (title,institution,review_status,opportunity_status,applicant_type,application_route,
-          target_academic_levels,benefit_type,deadline_at,deadline_precision,official_source_id,
+          target_academic_levels,benefit_type,deadline_at,deadline_precision,state_code,city_name,official_source_id,
           extraction_method,extracted_at,evidence_json,content_hash,canonical_key,requirements_text,amount_text)
-         values ($1,$2,'pending_review',$3,$4,$5,$6,$7,$8,$9,$10,$11,now(),$12,$13,$14,$15,$16)
+         values ($1,$2,'pending_review',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,now(),$14,$15,$16,$17,$18)
          on conflict (official_source_id,content_hash) do nothing returning id`,
         [candidate.title, candidate.institution, candidate.opportunityStatus, candidate.applicantType,
          candidate.applicationRoute, [candidate.applicantType], candidate.benefitType,
-         candidate.deadlineAt ?? null, candidate.deadlinePrecision, candidate.officialSourceId,
-         candidate.extractionMethod, candidate.evidenceJson, candidate.contentHash, canonicalKey,
+         candidate.deadlineAt ?? null, candidate.deadlinePrecision, candidate.stateCode, candidate.cityName,
+         candidate.officialSourceId, candidate.extractionMethod, candidate.evidenceJson, candidate.contentHash, canonicalKey,
          candidate.requirementsText, candidate.amountText],
       );
       const opportunityId = inserted.rows[0]?.id;

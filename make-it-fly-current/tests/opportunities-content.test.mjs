@@ -9,8 +9,10 @@ const { outputText } = ts.transpileModule(catalogueSource, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
 });
 const catalogue = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`);
-const logicSource = await readFile(new URL("../lib/opportunities/types.ts", import.meta.url), "utf8");
-const { outputText: logicOutput } = ts.transpileModule(logicSource, {
+const locationSource = await readFile(new URL("../lib/opportunities/location.ts", import.meta.url), "utf8");
+const logicSource = (await readFile(new URL("../lib/opportunities/types.ts", import.meta.url), "utf8"))
+  .replace(/^import \{[\s\S]*?\} from "@\/lib\/opportunities\/location";\s*/m, "");
+const { outputText: logicOutput } = ts.transpileModule(`${locationSource}\n${logicSource}`, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
 });
 const logic = await import(`data:text/javascript;base64,${Buffer.from(logicOutput).toString("base64")}`);
@@ -71,6 +73,8 @@ test("filter options come only from structured fields on open opportunities", ()
   assert.deepEqual(logic.getOpportunityFilterOptions(opportunities, "2026-10-08"), {
     kinds: ["Bolsa", "Programa"],
     levels: ["Ensino médio", "Graduação"],
+    states: [],
+    citiesByState: {},
   });
 });
 
@@ -98,7 +102,7 @@ test("filters combine, count active selections and clear without mutating the ca
       deadline: "2026-10-22",
     },
   ];
-  const combined = { kind: "Bolsa", level: "Graduação" };
+  const combined = { kind: "Bolsa", level: "Graduação", stateCode: null, cityName: null };
 
   assert.equal(logic.countActiveOpportunityFilters(combined), 2);
   assert.deepEqual(
@@ -113,4 +117,48 @@ test("filters combine, count active selections and clear without mutating the ca
     ["bolsa-graduacao", "bolsa-medio", "programa-graduacao"],
   );
   assert.equal(opportunities.length, 3);
+});
+
+test("UF and city filters are dependent, canonical and combined with the other filters", () => {
+  const base = catalogue.STUDENT_OPPORTUNITIES.find((item) => item.id === "praia-grande-bolsa-ensino-medio-2026");
+  const opportunities = [
+    { ...base, id: "sp-praia-bolsa", kind: "Bolsa", level: "Graduação", stateCode: "SP", cityName: "Praia Grande" },
+    { ...base, id: "sp-santos-programa", kind: "Programa", level: "Graduação", stateCode: "SP", cityName: "Santos" },
+    { ...base, id: "sc-praia-bolsa", kind: "Bolsa", level: "Graduação", stateCode: "SC", cityName: "Praia Grande" },
+    { ...base, id: "missing-location", kind: "Bolsa", level: "Graduação", stateCode: null, cityName: null },
+  ];
+  const options = logic.getOpportunityFilterOptions(opportunities, "2026-10-08");
+
+  assert.deepEqual(options.states, ["SC", "SP"]);
+  assert.deepEqual(options.citiesByState, { SC: ["Praia Grande"], SP: ["Praia Grande", "Santos"] });
+  assert.deepEqual(
+    logic.filterOpportunities(opportunities, {
+      kind: "Bolsa", level: "Graduação", stateCode: "SP", cityName: "Praia Grande",
+    }, "2026-10-08").map((item) => item.id),
+    ["sp-praia-bolsa"],
+  );
+  assert.deepEqual(
+    logic.filterOpportunities(opportunities, logic.EMPTY_OPPORTUNITY_FILTERS, "2026-10-08").map((item) => item.id),
+    ["sp-praia-bolsa", "sp-santos-programa", "sc-praia-bolsa", "missing-location"],
+  );
+});
+
+test("URL filters round-trip and incompatible cities are cleared with the UF", () => {
+  const params = new URLSearchParams("modalidade=Bolsa&formacao=Gradua%C3%A7%C3%A3o&uf=SP&cidade=Praia+Grande&origem=radar");
+  const parsed = logic.opportunityFiltersFromSearchParams(params);
+  assert.deepEqual(parsed, {
+    kind: "Bolsa", level: "Graduação", stateCode: "SP", cityName: "Praia Grande",
+  });
+  assert.equal(logic.countActiveOpportunityFilters(parsed), 4);
+
+  logic.setOpportunityFilterSearchParams(params, { ...parsed, stateCode: "SC", cityName: null });
+  assert.equal(params.get("uf"), "SC");
+  assert.equal(params.has("cidade"), false);
+  assert.equal(params.get("origem"), "radar");
+
+  const sanitized = logic.sanitizeOpportunityFilters(
+    { ...parsed, stateCode: "SC", cityName: "Praia Grande" },
+    { kinds: ["Bolsa"], levels: ["Graduação"], states: ["SC"], citiesByState: { SC: ["Florianópolis"] } },
+  );
+  assert.deepEqual(sanitized, { ...parsed, stateCode: "SC", cityName: null });
 });

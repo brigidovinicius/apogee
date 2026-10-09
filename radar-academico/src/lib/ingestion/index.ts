@@ -7,9 +7,16 @@ import { parseRss } from "./parse-rss";
 import { saveReviewItems } from "./save-review-item";
 import type { IngestionResult, OfficialSource } from "./types";
 import { isOfficialSourceUrl } from "./validate-url";
+import { normalizeBrazilianLocation } from "@/lib/location";
 
 async function ingestSource(source: OfficialSource, budget: { remaining: number }): Promise<IngestionResult> {
-  const result: IngestionResult = { sourceId: source.id, pagesChecked: 0, discovered: [], ignored: 0, failed: 0, warnings: [] };
+  const result: IngestionResult = { sourceId: source.id, pagesChecked: 0, discovered: [], ignored: 0, failed: 0, locationRejected: 0, warnings: [] };
+  if (normalizeBrazilianLocation(source.location ?? {}).status === "invalid") {
+    result.failed = 1;
+    result.locationRejected = 1;
+    result.warnings.push(`Fonte ${source.id}: localização estruturada inválida; execução interrompida.`);
+    return result;
+  }
   if (source.extractionMode === "reference_only" || source.extractionMode === "disabled") return result;
   if (source.extractionMode === "manual_assisted") {
     result.warnings.push("Fonte configurada para importação manual assistida.");

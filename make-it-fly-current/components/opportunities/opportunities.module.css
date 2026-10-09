@@ -465,6 +465,43 @@
   font-weight: 650;
 }
 
+.locationField {
+  display: grid;
+  align-content: start;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.locationField label {
+  color: #b9d3ee;
+  font-size: 0.73rem;
+  font-weight: 650;
+}
+
+.locationField select {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--apogee-control-min-height);
+  padding: 0.55rem 2rem 0.55rem 0.7rem;
+  color: #fff;
+  border: 1px solid rgb(185 211 238 / 30%);
+  border-radius: var(--apogee-radius-soft);
+  background: var(--opportunity-ink);
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.locationField select:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.fieldHint {
+  color: rgb(255 255 255 / 58%);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
 .filterGroup {
   display: flex;
   flex-wrap: wrap;
@@ -483,6 +520,18 @@
   font-size: 0.73rem;
   cursor: pointer;
   transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+.locationValue {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.locationValue svg {
+  flex: 0 0 auto;
+  margin-top: 0.18rem;
+  color: #b9d3ee;
 }
 
 .filterGroup button:hover,

@@ -17,6 +17,8 @@ interface SourceRow {
   extraction_mode: OfficialSource["extractionMode"];
   audience_scope: OfficialSource["audienceScope"];
   geographic_scope: string[];
+  state_code: string | null;
+  city_name: string | null;
   categories: string[];
   priority: number;
   active: boolean;
@@ -35,6 +37,7 @@ export async function loadActiveOfficialSources(): Promise<OfficialSource[]> {
     allowedPathPrefixes: row.allowed_path_prefixes, listingUrls: row.listing_urls,
     extractionMode: row.extraction_mode, audienceScope: row.audience_scope,
     geographicScope: row.geographic_scope, categories: row.categories,
+    location: { stateCode: row.state_code, cityName: row.city_name },
     priority: row.priority, active: row.active, notes: row.notes ?? undefined,
   }));
 }

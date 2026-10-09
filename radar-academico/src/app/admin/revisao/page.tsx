@@ -5,13 +5,13 @@ import { reviewOpportunity, reviewRevision } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-interface ReviewItem { id: string; title: string; institution: string; applicant_type: string; application_route: string; deadline_at: string | null; deadline_precision: string; evidence_json: Record<string, { source_url: string; excerpt: string; page?: number }>; source_page_url: string; official_document_url: string | null }
+interface ReviewItem { id: string; title: string; institution: string; applicant_type: string; application_route: string; state_code: string | null; city_name: string | null; deadline_at: string | null; deadline_precision: string; evidence_json: Record<string, { source_url: string; excerpt: string; page?: number }>; source_page_url: string; official_document_url: string | null }
 interface RevisionItem { id: string; opportunity_id: string; source_url: string; change_summary: string; previous_data: Record<string, unknown>; new_data: Record<string, unknown> }
 
 export default async function ReviewPage() {
   await requireAdmin();
   const items = await adminRows<ReviewItem>(
-    `select o.id,o.title,o.institution,o.applicant_type,o.application_route,o.deadline_at,o.deadline_precision,o.evidence_json,
+    `select o.id,o.title,o.institution,o.applicant_type,o.application_route,o.state_code,o.city_name,o.deadline_at,o.deadline_precision,o.evidence_json,
       os.source_page_url,os.official_document_url from opportunities o
       join lateral (select * from opportunity_sources where opportunity_id=o.id order by is_primary desc limit 1) os on true
       where o.review_status in ('pending_review','needs_information') order by o.created_at`,
@@ -29,7 +29,7 @@ export default async function ReviewPage() {
             <div className="mt-5 space-y-4">{Object.entries(item.evidence_json ?? {}).map(([field, evidence]) => <div key={field}><p className="text-xs font-semibold text-slate-500">{field}{evidence.page ? ` · página ${evidence.page}` : ""}</p><p className="mt-1 text-sm leading-6 text-slate-700">{evidence.excerpt}</p></div>)}</div>
           </div>
           <div className="p-6"><p className="text-sm text-slate-500">{item.institution}</p><h2 className="mt-2 text-xl font-bold">{item.title}</h2>
-            <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2"><div><dt className="text-slate-500">Público</dt><dd className="mt-1 font-semibold">{item.applicant_type}</dd></div><div><dt className="text-slate-500">Candidatura</dt><dd className="mt-1 font-semibold">{item.application_route}</dd></div><div><dt className="text-slate-500">Prazo</dt><dd className="mt-1 font-semibold">{item.deadline_at ?? item.deadline_precision}</dd></div></dl>
+            <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2"><div><dt className="text-slate-500">Público</dt><dd className="mt-1 font-semibold">{item.applicant_type}</dd></div><div><dt className="text-slate-500">Candidatura</dt><dd className="mt-1 font-semibold">{item.application_route}</dd></div><div><dt className="text-slate-500">Localização estruturada</dt><dd className="mt-1 font-semibold">{item.city_name ? `${item.city_name} · ${item.state_code}` : item.state_code ?? "Não informada"}</dd></div><div><dt className="text-slate-500">Prazo</dt><dd className="mt-1 font-semibold">{item.deadline_at ?? item.deadline_precision}</dd></div></dl>
             <form action={reviewOpportunity} className="mt-8 flex gap-3"><input type="hidden" name="id" value={item.id} /><button name="decision" value="approve" className="rounded-lg bg-emerald-700 px-4 py-3 font-semibold text-white">Aprovar e publicar</button><button name="decision" value="reject" className="rounded-lg border border-red-200 px-4 py-3 font-semibold text-red-700">Rejeitar</button></form>
           </div>
         </article>

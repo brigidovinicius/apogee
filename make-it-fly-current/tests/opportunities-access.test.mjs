@@ -40,7 +40,7 @@ test("a prévia pública recebe apenas a DTO controlada e não importa fontes co
   assert.doesNotMatch(board, /@\/content\/opportunities|@\/lib\/opportunities\/(access|radar-client)/);
   assert.match(preview, /<PublicOpportunitiesPreview opportunities=\{opportunities\} memberNext=\{memberNext\} \/>/);
 
-  for (const privateField of ["summary", "eligibility", "benefit", "deadline", "officialUrl", "verifiedAt"]) {
+  for (const privateField of ["summary", "eligibility", "benefit", "deadline", "officialUrl", "verifiedAt", "location", "stateCode", "cityName"]) {
     assert.doesNotMatch(publicPreview, new RegExp(`opportunity\\.${privateField}`), privateField);
   }
   assert.match(publicPreview, /aria-hidden="true"/);
@@ -77,6 +77,10 @@ test("o painel de filtros expõe estado, relações e fechamento por teclado", a
   assert.match(board, /filterButtonRef\.current\?\.focus\(\)/);
   assert.match(board, /aria-live="polite"/);
   assert.match(board, /disabled=\{activeFilterCount === 0\}/);
+  assert.match(board, /id="opportunity-state"/);
+  assert.match(board, /id="opportunity-city"/);
+  assert.match(board, /disabled=\{!filters\.stateCode \|\| cityOptions\.length === 0\}/);
+  assert.match(board, /router\.replace\(query \? `\$\{pathname\}\?\$\{query\}` : pathname, \{ scroll: false \}\)/);
 });
 
 test("a credencial da integração do Radar falha fechada e só aceita o bearer configurado", async () => {
