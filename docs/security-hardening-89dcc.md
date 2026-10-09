@@ -61,7 +61,7 @@ Nenhuma skill externa foi instalada/executada.
 Execução local sequencial, sem Docker, banco, fontes, dados ou serviços reais:
 
 - Raiz: `npm test` (4 testes), `npm run typegen`, `npm run typecheck`, `npm run lint`.
-- Radar: `npm test` (66 testes + 1 teste editorial focado), `npm run typegen`, `npm run typecheck`, `npm run lint`.
+- Radar: `npm test` (67 testes, incluindo regressões de segurança), `npm run typegen`, `npm run typecheck`, `npm run lint`.
 - App ativo: `npm test` (212 testes), `npm run typegen`, `npm run typecheck`,
   `npm run lint` (zero erros, um aviso preexistente de img em gallery-admin.tsx).
 - `npm audit --omit=dev --package-lock-only --json` nos três apps: **zero alertas**
@@ -77,6 +77,12 @@ Execução local sequencial, sem Docker, banco, fontes, dados ou serviços reais
 - Smoke `scripts/security-smoke.mjs`: inicia o server.js standalone em loopback
   com ambiente sintético, valida headers, assets, redirects e rejeições de acesso;
   encerra o processo ao terminar. Nenhuma credencial real é herdada.
+
+PR oficial: https://github.com/brigidovinicius/apogee/pull/11.
+Primeiro commit publicado: `d682dbf79f6950ec2f2074ce1f5412197f5969f4`.
+Workflow: `.github/workflows/security-hardening.yml`; consultar os checks do PR
+para o SHA final. O primeiro run é
+https://github.com/brigidovinicius/apogee/actions/runs/37875797329.
 
 O PR e seus checks remotos são a evidência final de publicação do código. Não
 houve deploy, migração, crawl real, mudança DNS/Caddy/Vercel nem release público.

@@ -4,6 +4,7 @@ vi.mock("next/headers", () => ({ cookies: vi.fn(), headers: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn((path: string) => { throw new Error(path); }) }));
 import { cookies, headers } from "next/headers";
 import { createAdminSession, verifyAdminPassword, verifyAdminToken } from "@/lib/auth/admin";
+import * as adminAuth from "@/lib/auth/admin";
 import { secretMatches, trustedClientIp, WindowLimiter, readLimitedBody } from "@/lib/security";
 const key = "test-only-session-key-".repeat(3);
 afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); });
@@ -35,17 +36,22 @@ describe("admin fail closed", () => {
     const syncSpy = vi.spyOn(crypto, "scryptSync");
     expect(await verifyAdminPassword("correct")).toBe(true);
     expect(syncSpy).not.toHaveBeenCalled();
+    expect(await Promise.all([
+      verifyAdminPassword("correct"), verifyAdminPassword("correct"), verifyAdminPassword("correct"),
+    ])).toEqual([true, true, false]);
     expect(await verifyAdminPassword("wrong")).toBe(false);
     expect(await verifyAdminPassword("a".repeat(1025))).toBe(false);
     vi.stubEnv("ADMIN_PASSWORD_HASH", "scrypt$salt$zz");
     expect(await verifyAdminPassword("correct")).toBe(false);
   });
   it("login limits attempts before hashing, including spoofed forwarded IPs", async () => {
+    const verify = vi.spyOn(adminAuth, "verifyAdminPassword").mockResolvedValue(false);
     vi.stubEnv("TRUST_PROXY_CLIENT_IP", "false");
     vi.mocked(headers).mockResolvedValue(new Headers({ "x-forwarded-for": "8.8.8.8" }) as never);
     const { login } = await import("@/app/admin/login/actions");
     const form = new FormData(); form.set("password", "wrong");
     for (let i = 0; i < 6; i++) await expect(login(form)).rejects.toThrow("/admin/login?erro=1");
+    expect(verify).toHaveBeenCalledTimes(5);
   });
 });
 
