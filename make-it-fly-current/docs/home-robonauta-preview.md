@@ -15,7 +15,15 @@ Hero claro com Robonauta, mensagem da comunidade, links existentes para Make It 
 
 Os assets aprovados de `direcao-personagem-apogee` foram integrados a `public/mascot`: poster WebP de 120.770 bytes e dois MP4 H.264 silenciosos de oito segundos, com proporção 6:5. Os originais foram preservados. O poster mantém os olhos, monitor, roupas e cabos aprovados.
 
-O componente cliente reproduz repouso, reage ao cursor ou toque breve e retorna ao repouso. Há controles de reprodução/pausa e reação por teclado. Movimento reduzido começa estático, com reprodução por escolha explícita. Vídeos usam `preload="none"`, pausam fora da área visível/aba e têm fallback para a imagem. Sem JavaScript, os controles ficam desabilitados e a imagem/navegação continuam disponíveis.
+O componente cliente reproduz repouso, reage ao cursor ou toque breve e retorna ao repouso. Há controles de reprodução/pausa e reação por teclado. Movimento reduzido começa estático, com reprodução por escolha explícita. O repouso usa `preload="none"`; metadados da reação só são antecipados enquanto o movimento está habilitado e o mascote está visível. Vídeos pausam fora da área visível/aba e têm fallback para a imagem. Sem JavaScript, os controles ficam desabilitados e a imagem/navegação continuam disponíveis.
+
+### Refinamento da reação ao mouse
+
+Mantidas a tipografia, as imagens e a composição. A camada anterior permanece visível, pausada, até o próximo clipe estar reproduzindo; a troca usa um fade de 160 ms. A preferência por movimento reduzido também desativa esse fade. Uma dica contextual explica como interagir e informa quando movimento reduzido ou pausa manual estão ativos. Corrigido um espaço entre frases que se uniam na largura intermediária da home.
+
+Orientação consultada: [Apple HIG — Motion](https://developer.apple.com/design/human-interface-guidelines/motion), que recomenda movimento opcional, feedback breve e controle para interromper animações. Isto não representa certificação de conformidade de toda a página.
+
+Validação desse refinamento: ESLint do componente e build com TypeScript passaram; a prévia standalone foi reiniciada na mesma porta. No navegador, o ponteiro com movimento reduzido manteve ambos os vídeos pausados; após reprodução explícita, disparou a reação e retornou ao repouso. Pausa manual confirmada. O tratamento de toque permanece implementado, sem novo teste em aparelho físico.
 
 Não há conversa, voz, microfone ou novas dependências. Upload, autenticação, consentimento e backend não foram alterados.
 

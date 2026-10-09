@@ -26,7 +26,7 @@ export default function RobonautaHomePage() {
                 Ideias que<br />chegam<br /><em>mais alto.</em>
               </h1>
               <p className={styles.lead}>
-                Gente curiosa. Encontros que movem.<br />
+                Gente curiosa. Encontros que movem.{" "}<br />
                 Um lugar para tirar sua ideia do papel.
               </p>
               <div className={styles.actions}>

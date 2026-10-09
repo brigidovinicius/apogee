@@ -38,8 +38,13 @@
 }
 
 .poster { object-fit: contain; }
-.video { object-fit: cover; visibility: hidden; }
-.visible { visibility: visible; }
+.video {
+  object-fit: cover;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 160ms ease, visibility 0s linear 160ms;
+}
+.visible { opacity: 1; visibility: visible; transition-delay: 0s; }
 
 .controls {
   display: flex;
@@ -81,6 +86,15 @@
 
 .name { font-family: var(--font-dm-mono), monospace; font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; }
 
+.hint {
+  min-height: 1.5em;
+  margin: 0 .5rem .35rem;
+  color: #34404c;
+  font-size: .625rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
 .status {
   margin: 0.25rem 0 0;
   text-align: center;
@@ -89,6 +103,10 @@
 }
 
 .status:empty { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .video { transition: none; }
+}
 
 @media (forced-colors: active) {
   .controls button { border: 1px solid ButtonText; }

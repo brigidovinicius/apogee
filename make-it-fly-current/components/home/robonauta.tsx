@@ -51,7 +51,11 @@ export function Robonauta() {
   const motionAllowed = !reduced || optedIn;
   const enabled = hydrated && motionAllowed && !paused && !unavailable;
   const active = enabled && inView && !hidden;
-  const showVideo = motionAllowed && !unavailable && visibleVideo === mode;
+  const showVideo = motionAllowed && !unavailable;
+  const hint = !hydrated ? "" : reduced && !optedIn
+    ? "Movimento reduzido ativo. Reproduza para interagir."
+    : paused ? "Animação pausada. Reproduza para interagir."
+    : "Passe o mouse ou toque no Robonauta.";
 
   useEffect(() => {
     const element = frame.current;
@@ -114,7 +118,6 @@ export function Robonauta() {
     if (!active || reactionInFlight.current || performance.now() < cooldownUntil.current) return;
     reactionInFlight.current = true;
     resetMode.current = "reaction";
-    setVisibleVideo(null);
     setMode("reaction");
   }
 
@@ -122,7 +125,6 @@ export function Robonauta() {
     reactionInFlight.current = false;
     cooldownUntil.current = performance.now() + 500;
     resetMode.current = "idle";
-    setVisibleVideo(null);
     setMode("idle");
   }
 
@@ -158,6 +160,7 @@ export function Robonauta() {
         id={stageId}
         ref={frame}
         className={styles.stage}
+        aria-describedby={`${stageId}-hint`}
         onPointerEnter={(event) => { if (event.pointerType === "mouse" || event.pointerType === "pen") react(); }}
         onPointerDown={startTouch}
         onPointerMove={trackTouch}
@@ -177,7 +180,7 @@ export function Robonauta() {
           />
           <video
             ref={idleVideo}
-            className={`${styles.video} ${showVideo && mode === "idle" ? styles.visible : ""}`}
+            className={`${styles.video} ${showVideo && visibleVideo === "idle" ? styles.visible : ""}`}
             src="/mascot/robonauta-repouso.mp4"
             poster={poster}
             preload="none"
@@ -190,10 +193,10 @@ export function Robonauta() {
           />
           <video
             ref={reactionVideo}
-            className={`${styles.video} ${showVideo && mode === "reaction" ? styles.visible : ""}`}
+            className={`${styles.video} ${showVideo && visibleVideo === "reaction" ? styles.visible : ""}`}
             src="/mascot/robonauta-reacao.mp4"
             poster={poster}
-            preload="none"
+            preload={enabled && inView ? "metadata" : "none"}
             muted
             playsInline
             aria-hidden="true"
@@ -214,6 +217,9 @@ export function Robonauta() {
           Reagir
         </button>
       </div>
+      <p id={`${stageId}-hint`} className={styles.hint}>
+        {unavailable ? "" : hint}
+      </p>
       <p className={styles.status} role="status" aria-live="polite">
         {unavailable ? "A animação está indisponível no momento." : ""}
       </p>
