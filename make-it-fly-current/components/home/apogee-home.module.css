@@ -199,14 +199,14 @@
 
 @media (max-width: 700px) {
   .heroInner { display: flex; flex-direction: column; width: 100%; min-height: auto; }
-  .intro { width: 100%; padding: 2.6rem 1.5rem 0; }
-  .intro .eyebrow { margin-bottom: 1.5rem; font-size: .62rem; }
-  .intro h1 { font-size: clamp(3.5rem, 14.5vw, 6rem); line-height: .95; }
-  .lead { margin-top: 1.4rem; font-size: .84rem; }
+  .intro { width: 100%; padding: 2rem 1.5rem 0; }
+  .intro .eyebrow { margin-bottom: 1rem; font-size: .62rem; }
+  .intro h1 { font-size: clamp(3.1rem, 13.7vw, 5.3rem); line-height: .95; }
+  .lead { margin: 1rem 0 1.1rem; font-size: .84rem; }
   .actions { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .1rem 1.2rem; }
   .primaryLink { padding: .75rem 1.1rem; font-size: .75rem; gap: 1rem; }
   .textLink { font-size: .75rem; }
-  .mascot { width: 115%; margin: -.15rem -7.5% 0; }
+  .mascot { width: 115%; margin: -.9rem -7.5% 0; }
   .heroBottom { width: calc(100% - 3rem); min-height: 3.5rem; }
   .heroBottom p { display: none; }
   .eventInner, .discover { grid-template-columns: 1fr; padding: 3.5rem 1.5rem; gap: 2.7rem; }
