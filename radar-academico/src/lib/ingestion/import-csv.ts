@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { officialSourceRegistry } from "./official-source-registry";
 import { canStoreExternalApplicationUrl, isOfficialSourceUrl } from "./validate-url";
 import type { ApplicantType, ApplicationRoute, OpportunityCandidate } from "./types";
+import { normalizeBrazilianLocation } from "@/lib/location";
 
 function parseLine(line: string) {
   const values: string[] = [];
@@ -37,6 +38,11 @@ export function parseManualCsv(csv: string) {
     if (row.application_url && !canStoreExternalApplicationUrl({ applicationUrl: row.application_url, primaryOfficialUrl: row.source_page_url, source })) throw new Error(`Linha ${rowIndex + 2}: candidatura externa sem vínculo oficial`);
     if (!applicants.has(row.applicant_type) || !routes.has(row.application_route)) throw new Error(`Linha ${rowIndex + 2}: classificação inválida`);
     if (!row.deadline || Number.isNaN(Date.parse(row.last_verified_at))) throw new Error(`Linha ${rowIndex + 2}: prazo ou verificação inválidos`);
+    const location = normalizeBrazilianLocation({
+      stateCode: row.state_code || source.location?.stateCode,
+      cityName: row.city_name || source.location?.cityName,
+    });
+    if (location.status === "invalid") throw new Error(`Linha ${rowIndex + 2}: localização estruturada inválida`);
 
     const continuous = /fluxo contínuo/i.test(row.deadline);
     const candidate: OpportunityCandidate = {
@@ -47,6 +53,7 @@ export function parseManualCsv(csv: string) {
       deadlineAt: continuous ? undefined : row.deadline, deadlinePrecision: continuous ? "continuous_flow" : "date_only",
       requirementsText: "Não informado na fonte oficial. Consulte o edital.",
       amountText: "Não informado na fonte oficial. Consulte o edital.",
+      stateCode: location.location.stateCode, cityName: location.location.cityName,
       reviewStatus: "pending_review", opportunityStatus: "unknown", extractionMethod: "manual_assisted",
       evidenceJson: { deadline_at: { source_url: row.source_page_url, excerpt: row.deadline } },
       contentHash: crypto.createHash("sha256").update(JSON.stringify(row)).digest("hex"),

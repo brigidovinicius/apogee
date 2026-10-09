@@ -6,6 +6,7 @@ import { detectRetification } from "./detect-retification";
 import { detectSuspension } from "./detect-suspension";
 import { generateEvidence } from "./generate-evidence";
 import type { BenefitType, OfficialSource, OpportunityCandidate } from "./types";
+import { normalizeBrazilianLocation } from "@/lib/location";
 
 const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|seleção de bolsista|oportunidade/i;
 const excluded = /licitaç|pregão|compra pública|concurso público|processo administrativo/i;
@@ -29,6 +30,8 @@ export function normalizeOpportunity(input: {
   source: OfficialSource;
 }): OpportunityCandidate | null {
   const combined = `${input.title}\n${input.text}`.replace(/\s+/g, " ").trim();
+  const normalizedLocation = normalizeBrazilianLocation(input.source.location ?? {});
+  if (normalizedLocation.status === "invalid") return null;
   if (!relevant.test(combined) || excluded.test(combined)) return null;
   const applicantType = classifyAudience(combined);
   const applicationRoute = classifyApplicationRoute(combined);
@@ -50,6 +53,8 @@ export function normalizeOpportunity(input: {
     deadlinePrecision: deadline.precision,
     requirementsText: "Não informado na fonte oficial. Consulte o edital.",
     amountText: "Não informado na fonte oficial. Consulte o edital.",
+    stateCode: normalizedLocation.location.stateCode,
+    cityName: normalizedLocation.location.cityName,
     reviewStatus: "pending_review",
     opportunityStatus: statusSignal ?? "unknown",
     evidenceJson: generateEvidence(input.url, combined),

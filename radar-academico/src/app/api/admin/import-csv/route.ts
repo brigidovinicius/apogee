@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     for (const row of rows) {
       const result = await saveReviewItems(row.source, {
         sourceId: row.source.id, pagesChecked: 0, discovered: [row.candidate],
-        ignored: 0, failed: 0, warnings: ["Importação manual assistida"],
+        ignored: 0, failed: 0, locationRejected: 0, warnings: ["Importação manual assistida"],
       });
       saved += result.saved;
     }

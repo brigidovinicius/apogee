@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, CalendarDays, Compass, SlidersHorizontal, X } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ArrowUpRight, CalendarDays, Compass, MapPin, SlidersHorizontal, X } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import {
   EMPTY_OPPORTUNITY_FILTERS,
@@ -13,7 +14,11 @@ import {
   type OpportunityFilters,
   type StudentOpportunity,
   dateInBrazil,
+  opportunityFiltersFromSearchParams,
+  sanitizeOpportunityFilters,
+  setOpportunityFilterSearchParams,
 } from "@/lib/opportunities/types";
+import type { BrazilianStateCode } from "@/lib/opportunities/location";
 import styles from "./opportunities.module.css";
 
 type OpportunityBoardProps = {
@@ -29,24 +34,42 @@ const formatDate = (date: string) =>
   }).format(new Date(`${date}T12:00:00Z`));
 
 export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
-  const [filters, setFilters] = useState<OpportunityFilters>(() => ({
-    ...EMPTY_OPPORTUNITY_FILTERS,
-  }));
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [today] = useState(() => dateInBrazil());
   const filterButtonRef = useRef<HTMLButtonElement>(null);
 
-  const visible = useMemo(
-    () => filterOpportunities(opportunities, filters, today),
-    [filters, opportunities, today],
-  );
   const filterOptions = useMemo(
     () => getOpportunityFilterOptions(opportunities, today),
     [opportunities, today],
   );
+  const filters = useMemo(
+    () => sanitizeOpportunityFilters(
+      opportunityFiltersFromSearchParams(new URLSearchParams(searchParams.toString())),
+      filterOptions,
+    ),
+    [filterOptions, searchParams],
+  );
+  const visible = useMemo(
+    () => filterOpportunities(opportunities, filters, today),
+    [filters, opportunities, today],
+  );
   const activeFilterCount = countActiveOpportunityFilters(filters);
+  const cityOptions = filters.stateCode
+    ? filterOptions.citiesByState[filters.stateCode] ?? []
+    : [];
 
-  const clearFilters = () => setFilters({ ...EMPTY_OPPORTUNITY_FILTERS });
+  const updateFilters = (nextFilters: OpportunityFilters) => {
+    const params = setOpportunityFilterSearchParams(
+      new URLSearchParams(searchParams.toString()),
+      nextFilters,
+    );
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
+  const clearFilters = () => updateFilters({ ...EMPTY_OPPORTUNITY_FILTERS });
   const closeFilters = () => {
     setFiltersOpen(false);
     filterButtonRef.current?.focus();
@@ -127,7 +150,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
               label="Modalidade"
               options={filterOptions.kinds}
               value={filters.kind}
-              onChange={(kind) => setFilters((current) => ({ ...current, kind }))}
+              onChange={(kind) => updateFilters({ ...filters, kind })}
             />
           ) : null}
           {filterOptions.levels.length > 0 ? (
@@ -135,9 +158,55 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
               label="Formação"
               options={filterOptions.levels}
               value={filters.level}
-              onChange={(level) => setFilters((current) => ({ ...current, level }))}
+              onChange={(level) => updateFilters({ ...filters, level })}
             />
           ) : null}
+          {filterOptions.states.length > 0 ? (
+            <div className={styles.locationField}>
+              <label htmlFor="opportunity-state">Estado/UF</label>
+              <select
+                id="opportunity-state"
+                value={filters.stateCode ?? ""}
+                aria-controls="opportunity-results opportunity-city"
+                onChange={(event) => updateFilters({
+                  ...filters,
+                  stateCode: (event.target.value || null) as BrazilianStateCode | null,
+                  cityName: null,
+                })}
+              >
+                <option value="">Todos os estados</option>
+                {filterOptions.states.map((stateCode) => (
+                  <option key={stateCode} value={stateCode}>{stateCode}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          <div className={styles.locationField}>
+            <label htmlFor="opportunity-city">Cidade</label>
+            <select
+              id="opportunity-city"
+              value={filters.cityName ?? ""}
+              disabled={!filters.stateCode || cityOptions.length === 0}
+              aria-controls="opportunity-results"
+              aria-describedby="opportunity-city-hint"
+              onChange={(event) => updateFilters({
+                ...filters,
+                cityName: event.target.value || null,
+              })}
+            >
+              <option value="">Todas as cidades</option>
+              {cityOptions.map((cityName) => (
+                <option key={`${filters.stateCode}-${cityName}`} value={cityName}>{cityName}</option>
+              ))}
+            </select>
+            <span id="opportunity-city-hint" className={styles.fieldHint}>
+              {filters.stateCode
+                ? cityOptions.length > 0
+                  ? `Cidades disponíveis em ${filters.stateCode}.`
+                  : `Nenhuma cidade estruturada disponível em ${filters.stateCode}.`
+                : "Selecione uma UF para escolher a cidade."}
+            </span>
+          </div>
         </div>
 
         <div className={styles.filterPanelFooter}>
@@ -149,7 +218,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
           >
             Limpar filtros
           </button>
-          <p>Remuneração, localização e idade aguardam campos estruturados da fonte.</p>
+          <p>Registros sem UF ou cidade permanecem em Todos e não recebem localização inferida.</p>
         </div>
       </div>
 
@@ -167,6 +236,10 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
                 <p className={styles.summary}>{opportunity.summary}</p>
               </div>
               <dl className={styles.details}>
+                <div>
+                  <dt>Localização</dt>
+                  <dd className={styles.locationValue}><MapPin size={15} aria-hidden />{opportunity.location}</dd>
+                </div>
                 <div>
                   <dt>Para quem</dt>
                   <dd>{opportunity.eligibility}</dd>

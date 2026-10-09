@@ -16,6 +16,8 @@ type PublicOpportunityResponse = {
   amountText: string;
   officialUrl: string;
   applicationUrl: string | null;
+  stateCode: string | null;
+  cityName: string | null;
   lastCheckedAt: string;
 };
 
@@ -46,6 +48,8 @@ export async function GET(request: Request) {
          o.deadline_precision as "deadlinePrecision",
          o.requirements_text as "requirementsText",
          o.amount_text as "amountText",
+         o.state_code as "stateCode",
+         o.city_name as "cityName",
          coalesce(os.official_document_url, os.source_page_url) as "officialUrl",
          os.application_url as "applicationUrl",
          os.last_checked_at::text as "lastCheckedAt"
@@ -61,7 +65,7 @@ export async function GET(request: Request) {
 
     return Response.json(
       {
-        version: 1,
+        version: 2,
         generatedAt: new Date().toISOString(),
         opportunities: result.rows,
       },

@@ -1,3 +1,5 @@
+import type { BrazilianStateCode } from "@/lib/location";
+
 export type SourceType =
   | "federal_government" | "state_government" | "government_foundation"
   | "federal_university" | "state_university" | "federal_institute"
@@ -46,6 +48,7 @@ export interface OfficialSource {
   extractionMode: ExtractionMode;
   audienceScope: ApplicantType[];
   geographicScope: string[];
+  location?: { stateCode?: string | null; cityName?: string | null };
   categories: string[];
   priority: number;
   active: boolean;
@@ -73,6 +76,8 @@ export interface OpportunityCandidate {
   deadlinePrecision: DeadlinePrecision;
   requirementsText: string;
   amountText: string;
+  stateCode: BrazilianStateCode | null;
+  cityName: string | null;
   reviewStatus: ReviewStatus;
   opportunityStatus: OpportunityStatus;
   evidenceJson: Record<string, FieldEvidence>;
@@ -89,5 +94,6 @@ export interface IngestionResult {
   discovered: OpportunityCandidate[];
   ignored: number;
   failed: number;
+  locationRejected: number;
   warnings: string[];
 }

@@ -9,7 +9,8 @@ const source: OfficialSource = {
   sourceType: "federal_university", baseUrl: "https://propesq.ufsc.br/",
   allowedDomains: ["propesq.ufsc.br"], allowedPathPrefixes: ["/"],
   listingUrls: [], extractionMode: "html", audienceScope: ["mixed"],
-  geographicScope: ["SC"], categories: [], priority: 1, active: true,
+  geographicScope: ["SC"], location: { stateCode: "SC", cityName: null },
+  categories: [], priority: 1, active: true,
 };
 
 const candidate: OpportunityCandidate = {
@@ -18,6 +19,7 @@ const candidate: OpportunityCandidate = {
   applicationRoute: "direct_student_application", benefitType: "research_scholarship",
   deadlineAt: "2027-10-20T23:59:00-03:00", deadlinePrecision: "exact_datetime",
   requirementsText: "Consulte o edital", amountText: "Consulte o edital",
+  stateCode: "SC", cityName: null,
   reviewStatus: "approved", opportunityStatus: "open", evidenceJson: {},
   extractionMethod: "html", contentHash: "abc",
 };
@@ -34,6 +36,8 @@ describe("regras de publicação", () => {
       url: "https://propesq.ufsc.br/edital", source,
     });
     expect(item?.reviewStatus).toBe("pending_review");
+    expect(item?.stateCode).toBe("SC");
+    expect(item?.cityName).toBeNull();
   });
 
   it("não publica sem prazo", () => {
