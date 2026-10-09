@@ -8,6 +8,7 @@ export async function reviewOpportunity(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const decision = String(formData.get("decision") ?? "");
+  if (!["approve", "reject"].includes(decision)) throw new Error("Decisão inválida");
   await withAdminTransaction(async (client) => {
     if (decision === "reject") {
       await client.query("update opportunities set review_status='rejected', updated_at=now() where id=$1", [id]);
@@ -35,6 +36,7 @@ export async function reviewRevision(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const decision = String(formData.get("decision") ?? "");
+  if (!["approve", "reject"].includes(decision)) throw new Error("Decisão inválida");
   await withAdminTransaction(async (client) => {
     const result = await client.query("select * from opportunity_revisions where id=$1 and review_status='pending_review'", [id]);
     const revision = result.rows[0];

@@ -36,6 +36,9 @@ export async function queryPublic<T extends QueryResultRow>(text: string, values
     const result = await client.query<T>(text, values);
     await client.query("commit");
     return result;
+  } catch (error) {
+    await client.query("rollback");
+    throw error;
   } finally {
     client.release();
   }

@@ -6,7 +6,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${RADAR_PORT:-3100}:3000"
+      - "127.0.0.1:${RADAR_PORT:-3100}:3000"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
