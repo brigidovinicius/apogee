@@ -417,6 +417,7 @@
   padding: clamp(7rem, 11vw, 11rem) clamp(1.25rem, 4vw, 4rem);
   background: var(--sky);
   color: var(--ink);
+  font-family: var(--apogee-font-sans);
 }
 
 .kicker,
@@ -424,10 +425,16 @@
   color: rgb(7 24 45 / 60%);
 }
 
+.uploadIntro .kicker {
+  color: var(--apogee-text-muted);
+  font-family: var(--apogee-font-sans);
+  font-size: var(--apogee-text-label);
+}
+
 .uploadIntro h2 {
   max-width: 10ch;
   font-size: clamp(4rem, 8vw, 8.5rem);
-  line-height: 0.78;
+  line-height: 0.92;
 }
 
 .uploadIntro > p:not(.kicker) {
@@ -442,10 +449,8 @@
   margin: 3rem 0 0;
   padding: 0;
   list-style: none;
-  font-family: var(--font-dm-mono), monospace;
-  font-size: 0.66rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: var(--apogee-text-caption);
+  line-height: 1.5;
 }
 
 .uploadIntro li {
@@ -480,10 +485,8 @@
 .creditChoice legend {
   margin-bottom: 0.85rem;
   padding: 0;
-  font-family: var(--font-dm-mono), monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: var(--apogee-text-caption);
+  font-weight: 600;
 }
 
 .creditChoice label {
@@ -493,8 +496,9 @@
   min-height: 3.5rem;
   padding: 0.8rem 0.95rem;
   border: 1px solid rgb(7 24 45 / 22%);
+  border-radius: var(--apogee-control-radius);
   cursor: pointer;
-  font-size: 0.76rem;
+  font-size: 0.875rem;
   line-height: 1.35;
 }
 
@@ -518,15 +522,14 @@
   margin-top: 1rem;
   padding: 1rem;
   border: 1px solid rgb(7 24 45 / 18%);
-  background: var(--paper);
+  border-radius: var(--apogee-group-radius);
+  background: var(--apogee-white);
 }
 
 .selectedPreview > p {
   margin: 0 0 0.75rem;
-  font-family: var(--font-dm-mono), monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: var(--apogee-text-caption);
+  font-weight: 600;
 }
 
 .selectedPreview > div {
@@ -538,6 +541,7 @@
 .selectedPreview figure {
   margin: 0;
   overflow: hidden;
+  border-radius: var(--apogee-radius-soft);
   background: var(--sky);
 }
 
@@ -551,23 +555,22 @@
 .selectedPreview figcaption {
   overflow: hidden;
   padding: 0.6rem;
-  font-size: 0.65rem;
+  font-size: var(--apogee-text-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .fields label > span {
-  font-family: var(--font-dm-mono), monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: var(--apogee-text-caption);
+  font-weight: 600;
 }
 
 .submissionDetails {
   margin-top: 1rem;
   padding: clamp(1.2rem, 3vw, 2rem);
   border: 1px solid rgb(7 24 45 / 18%);
-  background: var(--paper);
+  border-radius: var(--apogee-group-radius);
+  background: var(--apogee-white);
   box-shadow: 0 2rem 5rem rgb(7 24 45 / 10%);
 }
 
@@ -586,17 +589,17 @@
 .fields input {
   width: 100%;
   min-height: 3.3rem;
-  padding: 0.85rem 0;
+  padding: 0.85rem 1rem;
   color: var(--ink);
-  border: 0;
-  border-bottom: 1px solid rgb(7 24 45 / 28%);
-  border-radius: 0;
+  border: 1px solid rgb(7 24 45 / 28%);
+  border-radius: var(--apogee-control-radius);
   background: transparent;
   font: inherit;
 }
 
 .fields input:focus {
-  outline: 0;
+  outline: 2px solid var(--ink);
+  outline-offset: var(--apogee-focus-offset);
   border-color: var(--ink);
 }
 
@@ -606,17 +609,23 @@
   line-height: 1.35;
 }
 
-.fieldHint { color: rgb(7 24 45 / 55%); }
+.fieldHint {
+  color: var(--apogee-text-muted);
+  font-size: var(--apogee-text-caption);
+  line-height: 1.5;
+}
 .fieldError { color: #aa2f3b; }
 
 .consent {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.8rem;
+  min-height: var(--apogee-control-height);
   margin-top: 1.5rem;
-  color: rgb(7 24 45 / 67%);
-  font-size: 0.73rem;
+  color: var(--apogee-text-muted);
+  font-size: var(--apogee-text-caption);
   line-height: 1.5;
+  cursor: pointer;
 }
 
 .consent input {
@@ -636,8 +645,8 @@
 
 .formFooter p {
   margin: 0;
-  color: rgb(7 24 45 / 58%);
-  font-size: 0.72rem;
+  color: var(--apogee-text-muted);
+  font-size: var(--apogee-text-caption);
   line-height: 1.5;
 }
 
@@ -648,13 +657,20 @@
   gap: 2rem;
   min-height: 3.5rem;
   padding: 0.9rem 1rem 0.9rem 1.2rem;
-  color: var(--paper);
+  color: var(--apogee-white);
   border: 0;
+  border-radius: var(--apogee-control-radius);
   background: var(--ink);
   font: inherit;
-  font-size: 0.76rem;
+  font-size: 0.875rem;
   font-weight: 650;
   cursor: pointer;
+}
+
+.consent input:focus-visible,
+.formFooter button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: var(--apogee-focus-offset);
 }
 
 .formFooter button:disabled {
