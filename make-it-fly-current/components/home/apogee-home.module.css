@@ -42,6 +42,29 @@
 
 .intro h1 em, .eventCopy h2 em, .discover h2 em { font-weight: 400; }
 
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.titleLine { display: block; white-space: nowrap; }
+.typedWord { display: inline-block; white-space: nowrap; }
+.typedLetter {
+  opacity: 0;
+  animation: typeLetter 10ms linear both;
+}
+
+@keyframes typeLetter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .lead {
   margin: 1.8rem 0 1.5rem;
   font-size: clamp(.88rem, 1.2vw, 1rem);
@@ -170,4 +193,7 @@
   .destinationTitle { font-size: 1.35rem; }
 }
 
-@media (prefers-reduced-motion: reduce) { .primaryLink { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .primaryLink { transition: none; }
+  .typedLetter { animation: none; opacity: 1; }
+}
