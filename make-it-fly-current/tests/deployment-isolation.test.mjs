@@ -125,7 +125,7 @@ test("only the approved Apogee, admin, community and Make It Fly surfaces are ro
     "app/admin/posts/novo/page.tsx", "app/admin/usuarios/page.tsx",
     "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/auth/[...all]/route.ts", "app/api/checkout/route.ts",
     "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts", "app/galeria/page.tsx",
-    "app/gerenciar-galeria/page.tsx", "app/layout.tsx", "app/login/page.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",
+    "app/gerenciar-galeria/page.tsx", "app/home-robonauta/page.tsx", "app/layout.tsx", "app/login/page.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",
     "app/makeitfly/participar/page.tsx", "app/membros/cadastro/page.tsx", "app/membros/entrar/page.tsx",
     "app/membros/forum/[categoria]/[topico]/page.tsx", "app/membros/forum/[categoria]/novo/page.tsx",
     "app/membros/forum/[categoria]/page.tsx", "app/membros/layout.tsx", "app/membros/oportunidades/page.tsx", "app/membros/page.tsx",
@@ -138,15 +138,20 @@ test("only the approved Apogee, admin, community and Make It Fly surfaces are ro
   assert.match(await source("components/landing/make-it-fly-v2.tsx"), /@\/components\/hero\/ApogeeHero/);
 });
 
-test("the Make It Fly page is indexable with the correct canonical and normal scrolling", async () => {
-  const [rootMetadata, homeMetadata, publishedMetadata, publishedCss, config, pkg] = await Promise.all([
+test("public home and Make It Fly remain indexable while the Robonauta preview stays noindex", async () => {
+  const [rootMetadata, homeMetadata, previewMetadata, publishedMetadata, publishedCss, config, pkg] = await Promise.all([
     readMetadata("app/layout.tsx"), readMetadata("app/page.tsx"),
+    readMetadata("app/home-robonauta/page.tsx"),
     readMetadata("app/makeitfly/layout.tsx"), source("app/globals.css"),
     source("next.config.ts"), source("package.json"),
   ]);
   assert.equal(rootMetadata.metadataBase.href, "https://www.apogee.community/");
   assert.equal(new URL(homeMetadata.alternates?.canonical, rootMetadata.metadataBase).href,
     "https://www.apogee.community/");
+  assert.deepEqual(homeMetadata.robots ?? rootMetadata.robots, { index: true, follow: true });
+  assert.equal(homeMetadata.title ?? rootMetadata.title, "Apogee");
+  assert.deepEqual(previewMetadata.robots, { index: false, follow: false });
+  assert.equal(previewMetadata.title, "Apogee — Home com Robonauta");
   assert.deepEqual(publishedMetadata.robots, { index: true, follow: true });
   assert.equal(publishedMetadata.title, "Make it fly");
   assert.equal(publishedMetadata.description, "Um dia de coworking, comunidade e foco para tirar uma ideia do papel. Primeira edição com vagas limitadas. Energizados por Red Bull.");

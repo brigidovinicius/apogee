@@ -8,6 +8,7 @@ type SiteHeaderProps = {
   current?: SiteSection;
   memberHref?: string;
   memberLabel?: string;
+  tone?: "dark" | "light";
 };
 
 const navigation: ReadonlyArray<{ href: string; label: string; section?: SiteSection }> = [
@@ -22,13 +23,14 @@ export function SiteHeader({
   current,
   memberHref = "/membros",
   memberLabel = "Membros",
+  tone = "dark",
 }: SiteHeaderProps) {
   return (
-    <header className={styles.header}>
+    <header className={styles.header} data-tone={tone}>
       <div className={styles.headerInner}>
         <Link className={styles.brand} href="/" aria-label="Apogee — início">
           <Image
-            src="/brand/apogee-logo-white.svg"
+            src={tone === "light" ? "/brand/apogee-logo-navy.svg" : "/brand/apogee-logo-white.svg"}
             alt=""
             width={1595}
             height={986}

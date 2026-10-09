@@ -6,6 +6,35 @@
   border-bottom: 1px solid var(--apogee-border-subtle);
 }
 
+.header[data-tone="light"] {
+  color: var(--apogee-navy);
+  background: #bebebe;
+  border-bottom-color: rgb(7 24 45 / 17%);
+  --apogee-focus-ring: var(--apogee-navy);
+}
+
+.header[data-tone="light"] .desktopNavigation a::after {
+  background: var(--apogee-navy);
+}
+
+.header[data-tone="light"] .memberLink {
+  color: var(--apogee-white);
+  background: var(--apogee-navy);
+}
+
+.header[data-tone="light"] .memberLink:hover {
+  background: #213b58;
+}
+
+.header[data-tone="light"] .mobileNavigation summary {
+  border-color: rgb(7 24 45 / 30%);
+}
+
+.header[data-tone="light"] .mobileNavigation nav {
+  background: #ececea;
+  border-color: rgb(7 24 45 / 20%);
+}
+
 .headerInner,
 .footerInner {
   width: min(100% - 2.5rem, 80rem);
