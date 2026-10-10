@@ -27,6 +27,8 @@ it("every outward SQL query includes editorial and publication constraints", asy
     expect(sql).toContain("where"); expect(sql).toContain("o.review_status='approved'");
     expect(sql).toContain("o.published_at is not null"); expect(sql).toContain("o.human_verified_at is not null");
     expect(sql).toContain("o.opportunity_status='open'"); expect(sql).toContain("o.deadline_at >= now()");
+    expect(sql).toContain("o.deadline_precision='date_only'");
+    expect(sql).toContain("America/Sao_Paulo");
   }
 });
 it("standalone pages redirect before reading full data", () => {

@@ -40,20 +40,32 @@ function isHttpsUrl(value: string) {
 }
 
 function deadlineLabel(deadline: string | null, precision: string) {
-  if (!deadline || precision === "continuous_flow") return "Inscrições em fluxo contínuo";
-  const parsed = new Date(deadline);
-  if (Number.isNaN(parsed.getTime())) return "Prazo no edital oficial";
+  if (precision === "continuous_flow") return "Inscrições em fluxo contínuo";
+  if (!deadline) return "Prazo no edital oficial";
+  const dateOnlyValue = dateOnly(deadline, precision);
+  if (!dateOnlyValue) return "Prazo no edital oficial";
   const date = new Intl.DateTimeFormat("pt-BR", {
     day: "numeric",
     month: "long",
     timeZone: "UTC",
-  }).format(parsed);
+  }).format(new Date(`${dateOnlyValue}T12:00:00Z`));
   return `Inscrições até ${date}`;
 }
 
-function dateOnly(value: string) {
+function dateOnly(value: string, precision = "exact_datetime") {
+  if (precision === "date_only") {
+    const date = value.slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+    const parsed = new Date(`${date}T12:00:00Z`);
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date ? date : null;
+  }
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString().slice(0, 10);
+  if (Number.isNaN(parsed.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(parsed);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
 function kindFromRadar(value: string): OpportunityKind {
@@ -91,6 +103,8 @@ function toOpportunity(value: unknown): StudentOpportunity | null {
 
   const verifiedAt = dateOnly(lastCheckedAt);
   if (!verifiedAt) return null;
+  const deadline = deadlineAt ? dateOnly(deadlineAt, deadlinePrecision) : null;
+  if (deadlinePrecision !== "continuous_flow" && !deadline) return null;
 
   return {
     id: `radar-${id}`,
@@ -106,7 +120,7 @@ function toOpportunity(value: unknown): StudentOpportunity | null {
     eligibility: stringValue(value.requirementsText) ?? "Consulte o edital oficial para os critérios de elegibilidade.",
     benefit: stringValue(value.amountText) ?? "Consulte o edital oficial para o apoio previsto.",
     summary: "Oportunidade identificada pelo Radar Acadêmico em fonte oficial e aprovada em revisão editorial.",
-    deadline: deadlineAt ? dateOnly(deadlineAt) : null,
+    deadline,
     deadlineLabel: deadlineLabel(deadlineAt, deadlinePrecision),
     officialUrl,
     verifiedAt,

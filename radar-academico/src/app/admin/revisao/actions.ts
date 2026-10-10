@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/admin";
 import { withAdminTransaction } from "@/lib/db/client";
+import { openDeadlinePredicate } from "@/lib/db/publication-filter";
 
 export async function reviewOpportunity(formData: FormData) {
   await requireAdmin();
@@ -15,13 +16,14 @@ export async function reviewOpportunity(formData: FormData) {
       return;
     }
     const result = await client.query(
-      `select o.*, count(os.id) filter (where os.active and (os.source_role='primary_application_source' or os.source_role in ('official_notice','official_document'))) as source_count
+      `select o.*, ${openDeadlinePredicate} as deadline_open,
+         count(os.id) filter (where os.active and (os.source_role='primary_application_source' or os.source_role in ('official_notice','official_document'))) as source_count
        from opportunities o left join opportunity_sources os on os.opportunity_id=o.id where o.id=$1 group by o.id`, [id],
     );
     const item = result.rows[0];
     if (!item || Number(item.source_count) < 1 || !item.official_source_id) throw new Error("Fonte oficial obrigatória");
     if (!item.deadline_at && item.deadline_precision !== "continuous_flow") throw new Error("Prazo obrigatório");
-    if (item.deadline_at && new Date(item.deadline_at).getTime() < Date.now()) throw new Error("Oportunidade vencida não pode ser publicada");
+    if (!item.deadline_open) throw new Error("Oportunidade vencida não pode ser publicada");
     if (["institution","company","professor","researcher"].includes(item.applicant_type)) throw new Error("Chamada não elegível para o Radar estudantil");
     await client.query(
       `update opportunities set review_status='approved', opportunity_status='open',
