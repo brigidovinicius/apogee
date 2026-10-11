@@ -103,9 +103,12 @@ test("API responses are noindex while robots and sitemap remain crawlable", asyn
   assert.deepEqual(rules.find(rule => rule.source === "/api/:path*").headers,
     [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]);
   const robots = (await load("app/robots.ts")).default();
-  const sitemap = (await load("app/sitemap.ts")).default();
+  const publishedAt = new Date("2026-10-11T12:00:00.000Z");
+  const sitemap = await (await load("app/sitemap.ts", {
+    "@/lib/blog/data": { listPublicPostUrls: async () => [{ slug: "ideias-apogee", updatedAt: publishedAt }] },
+  })).default();
   assert.equal(robots.rules.allow, "/");
   assert.equal(robots.sitemap, "https://www.apogee.community/sitemap.xml");
-  assert.deepEqual(sitemap.map(entry => new URL(entry.url).pathname), ["/", "/oportunidades", "/galeria", "/loja", "/makeitfly"]);
-  assert.ok(sitemap.every(entry => !entry.lastModified));
+  assert.deepEqual(sitemap.map(entry => new URL(entry.url).pathname), ["/", "/oportunidades", "/galeria", "/loja", "/makeitfly", "/blog", "/blog/ideias-apogee"]);
+  assert.equal(sitemap.at(-1).lastModified, publishedAt);
 });

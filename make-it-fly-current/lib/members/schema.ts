@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   bigint,
   boolean,
+  check,
   index,
   integer,
   pgTable,
@@ -133,4 +134,51 @@ export const forumPost = pgTable(
       .on(table.topicId)
       .where(sql`${table.isOpening}`),
   ],
+);
+
+// Publicações editoriais. A visibilidade pública também depende da data,
+// para que agendamentos entrem no ar sem um job ou atualização manual.
+export const blogPost = pgTable(
+  "blog_post",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    excerpt: text("excerpt").notNull(),
+    body: text("body").notNull(),
+    category: text("category").notNull(),
+    status: text("status", { enum: ["draft", "scheduled", "published", "archived"] }).notNull().default("draft"),
+    featured: boolean("featured").notNull().default(false),
+    seoTitle: text("seo_title"),
+    seoDescription: text("seo_description"),
+    authorId: text("author_id").references(() => user.id, { onDelete: "set null" }),
+    authorName: text("author_name").notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+    revision: integer("revision").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("blog_post_status_published_idx").on(table.status, table.publishedAt.desc()),
+    index("blog_post_status_scheduled_idx").on(table.status, table.scheduledAt.desc()),
+    index("blog_post_category_idx").on(table.category),
+    check("blog_post_category_check", sql`${table.category} in ('estudos', 'empreendedorismo', 'tecnologia', 'ciencias', 'geral', 'atualidades')`),
+    check("blog_post_status_check", sql`${table.status} in ('draft', 'scheduled', 'published', 'archived')`),
+    check("blog_post_schedule_check", sql`${table.status} <> 'scheduled' or ${table.scheduledAt} is not null`),
+    check("blog_post_publish_check", sql`${table.status} <> 'published' or ${table.publishedAt} is not null`),
+  ],
+);
+
+export const blogPostEvent = pgTable(
+  "blog_post_event",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    postId: integer("post_id").notNull().references(() => blogPost.id, { onDelete: "cascade" }),
+    actorId: text("actor_id").references(() => user.id, { onDelete: "set null" }),
+    actorName: text("actor_name").notNull(),
+    action: text("action").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("blog_post_event_post_idx").on(table.postId, table.createdAt.desc())],
 );

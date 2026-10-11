@@ -113,7 +113,7 @@ test("approved fonts, public assets, icon and shared legacy dependencies retain 
   assert.equal(existsSync(new URL("public/vercel.svg", root)), false);
 });
 
-test("only the approved Apogee, admin, community and Make It Fly surfaces are routable", async () => {
+test("only the approved Apogee, blog, admin, community and Make It Fly surfaces are routable", async () => {
   const files = [];
   const visit = async directory => {
     for (const entry of await readdir(new URL(`${directory}/`, root), { withFileTypes: true })) {
@@ -125,9 +125,9 @@ test("only the approved Apogee, admin, community and Make It Fly surfaces are ro
   await visit("app");
   assert.deepEqual(files.filter(path => /\/(?:page|layout|route)\.(?:tsx?|jsx?|mdx)$/.test(path)).sort(), [
     "app/admin/acesso-negado/page.tsx", "app/admin/curadoria/page.tsx", "app/admin/layout.tsx", "app/admin/page.tsx",
-    "app/admin/posts/novo/page.tsx", "app/admin/radar/page.tsx", "app/admin/usuarios/page.tsx",
+    "app/admin/posts/[id]/page.tsx", "app/admin/posts/novo/page.tsx", "app/admin/posts/page.tsx", "app/admin/radar/page.tsx", "app/admin/usuarios/page.tsx",
     "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/auth/[...all]/route.ts", "app/api/checkout/route.ts",
-    "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts", "app/galeria/page.tsx",
+    "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts", "app/blog/[slug]/page.tsx", "app/blog/page.tsx", "app/galeria/page.tsx",
     "app/gerenciar-galeria/page.tsx", "app/home-robonauta/page.tsx", "app/layout.tsx", "app/login/page.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",
     "app/makeitfly/participar/page.tsx", "app/membros/cadastro/page.tsx", "app/membros/entrar/page.tsx",
     "app/membros/forum/[categoria]/[topico]/page.tsx", "app/membros/forum/[categoria]/novo/page.tsx",
