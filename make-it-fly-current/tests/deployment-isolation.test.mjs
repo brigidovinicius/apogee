@@ -78,9 +78,9 @@ test("the Make It Fly page directly renders the byte-identical approved page", a
   assert.doesNotMatch(publishedPage, /components\/published|redirect\s*\(/);
 });
 
-test("all original fonts, public assets and shared legacy dependencies retain their hashes", async () => {
+test("approved fonts, public assets, icon and shared legacy dependencies retain their hashes", async () => {
   const original = {
-    "app/favicon.ico": "9ecfcc8f0ead0bf3d2d7c39e084b88f41cc89a2e",
+    "app/icon.svg": "e9bc16d3a04b21059cde1f840b7e362d27330fbf",
     "app/fonts/dm-mono-300-latin.woff2": "3155a36f511a94a7d835fdc0bf2a5ed97f818357",
     "app/fonts/dm-mono-400-latin.woff2": "f41e4e83f8222fac2fbd95ac6f3b7bdd2fe4fe5b",
     "app/fonts/dm-mono-500-latin.woff2": "0fca4facaa0a279288b128a27a231c4974bee58b",
@@ -104,10 +104,11 @@ test("all original fonts, public assets and shared legacy dependencies retain th
     "public/rosa/retrato-nasa.webp": "84aeb6d1b0b497bf34e4cf960ac5fcad6bbbdcd2",
     "public/rosa/saturn-v.webp": "47161c087b9a20b89f366fdc20e90237bb59385f",
     "public/textures/moon.jpg": "48b884811328418b4feda05019d4db0b5e8ae41e",
-    "public/vercel.svg": "cebb8852d58c8886be3e9051a26957f42bb82f1a",
     "public/window.svg": "54c48e0daa6caa317fe1b4c419007fd93e948db9",
   };
   await Promise.all(Object.entries(original).map(([path, hash]) => assertUnchanged(path, hash)));
+  assert.equal(existsSync(new URL("app/favicon.ico", root)), false);
+  assert.equal(existsSync(new URL("public/vercel.svg", root)), false);
 });
 
 test("only the approved Apogee, admin, community and Make It Fly surfaces are routable", async () => {
