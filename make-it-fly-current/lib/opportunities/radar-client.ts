@@ -68,7 +68,8 @@ function dateOnly(value: string, precision = "exact_datetime") {
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
-function kindFromRadar(value: string): OpportunityKind {
+function kindFromRadar(value: string, isCourse: boolean): OpportunityKind {
+  if (isCourse) return "Curso";
   if (value === "mobility_aid") return "Intercâmbio";
   if (scholarshipBenefits.has(value)) return "Bolsa";
   return "Programa";
@@ -89,6 +90,8 @@ function toOpportunity(value: unknown): StudentOpportunity | null {
   const officialUrl = stringValue(value.officialUrl);
   const lastCheckedAt = stringValue(value.lastCheckedAt);
   const benefitType = stringValue(value.benefitType);
+  const isCourse = value.isCourse === true;
+  const nationallyEligible = value.nationallyEligible === true;
   const applicantType = stringValue(value.applicantType);
   const deadlineAt = value.deadlineAt === null ? null : stringValue(value.deadlineAt);
   const deadlinePrecision = stringValue(value.deadlinePrecision) ?? "date_only";
@@ -110,13 +113,14 @@ function toOpportunity(value: unknown): StudentOpportunity | null {
     id: `radar-${id}`,
     title,
     organization,
-    kind: kindFromRadar(benefitType),
+    kind: kindFromRadar(benefitType, isCourse),
     level: levelFromRadar(applicantType),
     location: normalizedLocation.location.cityName
       ? `${normalizedLocation.location.cityName} · ${normalizedLocation.location.stateCode}`
-      : normalizedLocation.location.stateCode ?? "Não informado na fonte pública",
+      : normalizedLocation.location.stateCode ?? (nationallyEligible ? "Brasil" : "Não informado na fonte pública"),
     stateCode: normalizedLocation.location.stateCode,
     cityName: normalizedLocation.location.cityName,
+    nationallyEligible: nationallyEligible && normalizedLocation.location.stateCode === null,
     eligibility: stringValue(value.requirementsText) ?? "Consulte o edital oficial para os critérios de elegibilidade.",
     benefit: stringValue(value.amountText) ?? "Consulte o edital oficial para o apoio previsto.",
     summary: "Oportunidade identificada pelo Radar Acadêmico em fonte oficial e aprovada em revisão editorial.",
@@ -152,18 +156,4 @@ export async function listRadarOpportunities(): Promise<StudentOpportunity[]> {
   } catch {
     return [];
   }
-}
-
-export function mergeOpportunities(
-  curated: readonly StudentOpportunity[],
-  radar: readonly StudentOpportunity[],
-): StudentOpportunity[] {
-  const results = new Map<string, StudentOpportunity>();
-
-  for (const opportunity of [...curated, ...radar]) {
-    const key = opportunity.officialUrl.toLowerCase();
-    results.set(key, opportunity);
-  }
-
-  return [...results.values()];
 }

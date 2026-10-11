@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/access";
-import { mutateRadarEditorialSource } from "@/lib/opportunities/radar-editorial-client";
+import { decideRadarReviewOpportunity, importRadarReviewCsv, mutateRadarEditorialSource } from "@/lib/opportunities/radar-editorial-client";
 
 const SOURCE_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,79}$/;
 
@@ -50,4 +50,30 @@ export async function ingestRadarSource(formData: FormData) {
     action: "ingest", sourceId: id,
     maxPages: limit(formData, "max_pages"), maxCandidates: limit(formData, "max_candidates"),
   }, "coleta-iniciada");
+}
+
+export async function decideRadarOpportunity(formData: FormData) {
+  const admin = await requireAdmin("/admin/radar");
+  const id = String(formData.get("id") ?? "");
+  const decision = formData.get("decision");
+  if (!/^[0-9a-f-]{36}$/i.test(id) || (decision !== "approve" && decision !== "reject")) {
+    redirect("/admin/radar?resultado=erro-revisao");
+  }
+  const ok = await decideRadarReviewOpportunity({ id, decision, reviewer: `apogee:${admin.id}` });
+  if (!ok) redirect("/admin/radar?resultado=erro-revisao");
+  revalidatePath("/admin/radar");
+  revalidatePath("/membros/oportunidades");
+  revalidatePath("/oportunidades");
+  redirect(`/admin/radar?resultado=${decision === "approve" ? "publicada" : "rejeitada"}`);
+}
+
+export async function importRadarCsv(formData: FormData) {
+  await requireAdmin("/admin/radar");
+  const csv = formData.get("csv");
+  if (typeof csv !== "string" || csv.length < 20 || csv.length > 20_000) {
+    redirect("/admin/radar?resultado=erro-importacao");
+  }
+  if (!(await importRadarReviewCsv(csv))) redirect("/admin/radar?resultado=erro-importacao");
+  revalidatePath("/admin/radar");
+  redirect("/admin/radar?resultado=importada");
 }

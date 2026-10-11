@@ -131,7 +131,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
             <p className={styles.filterPanelEyebrow}>Refine o radar</p>
             <h3 id="opportunity-filter-title">Filtrar oportunidades</h3>
             <p className={styles.filterPanelDescription}>
-              Só aparecem opções presentes nos dados estruturados das chamadas abertas.
+              UFs e cidades mostram oportunidades locais e programas nacionais elegíveis no Brasil.
             </p>
           </div>
           <button
@@ -202,7 +202,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
             <span id="opportunity-city-hint" className={styles.fieldHint}>
               {filters.stateCode
                 ? cityOptions.length > 0
-                  ? `Cidades disponíveis em ${filters.stateCode}.`
+                  ? `Cidades para buscar resultados locais e nacionais em ${filters.stateCode}.`
                   : `Nenhuma cidade estruturada disponível em ${filters.stateCode}.`
                 : "Selecione uma UF para escolher a cidade."}
             </span>
@@ -218,7 +218,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
           >
             Limpar filtros
           </button>
-          <p>Registros sem UF ou cidade permanecem em Todos e não recebem localização inferida.</p>
+          <p>Programas nacionais podem aparecer em qualquer UF; a localização exibida continua sendo Brasil.</p>
         </div>
       </div>
 

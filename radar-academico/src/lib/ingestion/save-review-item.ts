@@ -11,7 +11,7 @@ export async function syncOfficialSource(source: OfficialSource) {
     await client.query(
       `insert into official_sources
        (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,audience_scope,geographic_scope,state_code,city_name,categories,priority,active,verification_status,notes)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,'verified',$18)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,false,'pending',$17)
        on conflict (id) do update set
        name=excluded.name, allowed_domains=excluded.allowed_domains,
        allowed_path_prefixes=excluded.allowed_path_prefixes, listing_urls=excluded.listing_urls,
@@ -21,7 +21,7 @@ export async function syncOfficialSource(source: OfficialSource) {
        source.baseUrl, source.allowedDomains, source.allowedPathPrefixes, source.listingUrls,
        source.extractionMode, source.audienceScope, source.geographicScope,
        normalizedLocation.location.stateCode, normalizedLocation.location.cityName, source.categories,
-       source.priority, source.active, source.notes ?? null],
+       source.priority, source.notes ?? null],
     );
   });
 }
@@ -68,12 +68,13 @@ export async function saveReviewItems(source: OfficialSource, result: IngestionR
       const inserted = await client.query<{ id: string }>(
         `insert into opportunities
          (title,institution,review_status,opportunity_status,applicant_type,application_route,
-          target_academic_levels,benefit_type,deadline_at,deadline_precision,state_code,city_name,official_source_id,
+          target_academic_levels,benefit_type,is_course,nationally_eligible,deadline_at,deadline_precision,state_code,city_name,official_source_id,
           extraction_method,extracted_at,evidence_json,content_hash,canonical_key,requirements_text,amount_text)
-         values ($1,$2,'pending_review',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,now(),$14,$15,$16,$17,$18)
+         values ($1,$2,'pending_review',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,now(),$16,$17,$18,$19,$20)
          on conflict (official_source_id,content_hash) do nothing returning id`,
         [candidate.title, candidate.institution, candidate.opportunityStatus, candidate.applicantType,
          candidate.applicationRoute, [candidate.applicantType], candidate.benefitType,
+         candidate.isCourse === true, candidate.nationallyEligible === true,
          candidate.deadlineAt ?? null, candidate.deadlinePrecision, candidate.stateCode, candidate.cityName,
          candidate.officialSourceId, candidate.extractionMethod, candidate.evidenceJson, candidate.contentHash, canonicalKey,
          candidate.requirementsText, candidate.amountText],

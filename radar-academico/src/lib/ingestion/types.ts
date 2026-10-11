@@ -72,6 +72,8 @@ export interface OpportunityCandidate {
   applicantType: ApplicantType;
   applicationRoute: ApplicationRoute;
   benefitType: BenefitType;
+  isCourse?: boolean;
+  nationallyEligible?: boolean;
   deadlineAt?: string;
   deadlinePrecision: DeadlinePrecision;
   requirementsText: string;

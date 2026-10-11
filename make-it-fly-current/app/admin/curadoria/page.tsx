@@ -18,14 +18,15 @@ export default async function AdminCurationPage() {
     <div className={styles.content}>
       <AdminPageHeader
         title="Curadoria"
-        description="Auditoria somente leitura do catálogo que o produto já consome. Ações de publicar, rejeitar, reprocessar e comparar revisões permanecem ausentes até existir contrato de dados e auditoria."
+        description="Auditoria somente leitura do catálogo consumido pelo produto. Oportunidades coletadas no Radar são aprovadas na fila editorial."
         aside={<span className={styles.dataBadge}>Somente leitura</span>}
       />
 
       <AdminNotice
         tone="attention"
-        title="Fila editorial ainda não implementada"
-        description="O app não possui revisões, evidências por campo, justificativas nem transições editoriais persistidas. Esta tela não simula essas operações."
+        title="Aprovação no Radar editorial"
+        description="Confira fontes e evidências antes de aprovar ou rejeitar candidatos à publicação."
+        action={<Link className={styles.textLink} href="/admin/radar">Abrir fila de aprovação</Link>}
       />
 
       {opportunities.length > 0 ? (

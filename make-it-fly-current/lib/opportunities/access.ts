@@ -2,9 +2,10 @@ import "server-only";
 import { STUDENT_OPPORTUNITIES } from "@/content/opportunities";
 import { requireAdmin } from "@/lib/admin/access";
 import { requireMember } from "@/lib/members/dal";
-import { mergeOpportunities, listRadarOpportunities } from "@/lib/opportunities/radar-client";
+import { listRadarOpportunities } from "@/lib/opportunities/radar-client";
 import {
   isOpportunityOpen,
+  mergeOpportunities,
   sortByDeadline,
   type OpportunityPreview,
   type StudentOpportunity,
@@ -44,7 +45,7 @@ export async function listMemberOpportunities(): Promise<StudentOpportunity[]> {
   return listAllOpportunities();
 }
 
-/** A administração atual pode auditar o catálogo, mas ainda não há fila de revisão. */
+/** A curadoria consulta o catálogo publicado; a fila editorial fica em /admin/radar. */
 export async function listAdminOpportunityCatalogue(): Promise<StudentOpportunity[]> {
   await requireAdmin("/admin/curadoria");
   return listAllOpportunities();

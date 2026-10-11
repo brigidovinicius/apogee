@@ -628,6 +628,34 @@
   list-style: none;
 }
 
+.radarCoverageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.radarCoverageGrid li {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.65rem;
+  background: var(--apogee-surface-subtle);
+  border: 1px solid var(--apogee-border-subtle);
+  border-radius: var(--apogee-radius-soft);
+}
+
+.radarCoverageGrid strong {
+  color: var(--apogee-sky);
+  font-family: var(--font-dm-mono), monospace;
+}
+
+.radarCoverageGrid span {
+  color: rgb(255 255 255 / 68%);
+  font-size: 0.72rem;
+}
+
 .radarSourceCard {
   display: grid;
   gap: 1rem;
@@ -645,13 +673,15 @@
 }
 
 .radarSourceHeader h2,
+.radarSourceHeader h3,
 .radarSourceHeader p,
 .radarAuditForm p,
 .radarHint {
   margin: 0;
 }
 
-.radarSourceHeader h2 {
+.radarSourceHeader h2,
+.radarSourceHeader h3 {
   font-family: var(--apogee-font-heading);
   font-size: 1.8rem;
   font-weight: 400;
@@ -718,6 +748,56 @@
 .radarAction {
   display: flex;
   justify-content: start;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.radarEvidence {
+  display: grid;
+  gap: 0.7rem;
+  margin-block: 1rem;
+}
+
+.radarEvidence > div {
+  padding: 0.75rem;
+  border: 1px solid var(--apogee-border-subtle);
+  border-radius: var(--apogee-radius-soft);
+}
+
+.radarEvidence strong {
+  font-size: 0.72rem;
+}
+
+.radarEvidence p {
+  margin: 0.4rem 0;
+  color: rgb(255 255 255 / 72%);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.radarImportForm {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.radarImportForm label {
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.radarImportForm textarea {
+  width: 100%;
+  padding: 0.75rem;
+  color: var(--apogee-white);
+  background: var(--apogee-surface-subtle);
+  border: 1px solid var(--apogee-border-subtle);
+  border-radius: var(--apogee-radius-soft);
+  resize: vertical;
+}
+
+.radarImportForm button {
+  justify-self: start;
 }
 
 .radarIngestionForm {

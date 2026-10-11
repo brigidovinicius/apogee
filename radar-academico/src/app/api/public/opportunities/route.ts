@@ -10,6 +10,8 @@ type PublicOpportunityResponse = {
   title: string;
   institution: string;
   benefitType: string;
+  isCourse: boolean;
+  nationallyEligible: boolean;
   applicantType: string;
   deadlineAt: string | null;
   deadlinePrecision: string;
@@ -44,6 +46,8 @@ export async function GET(request: Request) {
          o.title,
          o.institution,
          o.benefit_type as "benefitType",
+         o.is_course as "isCourse",
+         o.nationally_eligible as "nationallyEligible",
          o.applicant_type as "applicantType",
          o.deadline_at::text as "deadlineAt",
          o.deadline_precision as "deadlinePrecision",
@@ -55,6 +59,8 @@ export async function GET(request: Request) {
          os.application_url as "applicationUrl",
          os.last_checked_at::text as "lastCheckedAt"
        from opportunities o
+       join official_sources source on source.id=o.official_source_id
+         and source.active and source.verification_status='verified'
        join lateral (
          select * from opportunity_sources
          where opportunity_id=o.id and active

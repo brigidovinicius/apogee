@@ -13,6 +13,7 @@ export type EditorialSource = {
   institutionAcronym: string;
   stateCode: string | null;
   cityName: string | null;
+  geographicScope: string[];
   auditEvidenceUrl: string | null;
   allowedDomains: string[];
   listingUrls: string[];
@@ -29,6 +30,7 @@ type EditorialSourceRow = {
   institution_acronym: string;
   state_code: string | null;
   city_name: string | null;
+  geographic_scope: string[];
   audit_evidence_url: string | null;
   allowed_domains: string[];
   listing_urls: string[];
@@ -60,6 +62,7 @@ function mapSource(row: EditorialSourceRow): EditorialSource {
     institutionAcronym: row.institution_acronym,
     stateCode: row.state_code,
     cityName: row.city_name,
+    geographicScope: row.geographic_scope,
     auditEvidenceUrl: row.audit_evidence_url,
     allowedDomains: row.allowed_domains,
     listingUrls: row.listing_urls,
@@ -73,7 +76,7 @@ function mapSource(row: EditorialSourceRow): EditorialSource {
 export async function listEditorialSources(): Promise<EditorialSource[]> {
   return withAdminTransaction(async (client) => {
     const result = await client.query<EditorialSourceRow>(
-      `select id,name,institution_name,institution_acronym,state_code,city_name,
+      `select id,name,institution_name,institution_acronym,state_code,city_name,geographic_scope,
         audit_evidence_url,allowed_domains,listing_urls,extraction_mode,
         verification_status,active,audited_at
        from official_sources
@@ -122,7 +125,8 @@ export async function verifyEditorialSource(input: {
       `update official_sources set verification_status='verified', audited_at=now(), audited_by='admin',
        robots_checked_at=now(), terms_checked_at=now(), updated_at=now()
        where id=$1 and active=false and verification_status='pending'
-         and state_code is not null and audit_evidence_url is not null
+         and audit_evidence_url is not null
+         and (state_code is not null or (city_name is null and geographic_scope @> array['Brasil']::text[]))
        returning id`,
       [id],
     );
