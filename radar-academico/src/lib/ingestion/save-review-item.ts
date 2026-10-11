@@ -106,5 +106,16 @@ export function isPublishable(candidate: OpportunityCandidate & { humanVerifiedA
 export function isVisiblePublicOpportunity(candidate: OpportunityCandidate & { humanVerifiedAt?: string }, now = new Date()) {
   if (!isPublishable(candidate)) return false;
   if (!candidate.deadlineAt || candidate.deadlinePrecision === "continuous_flow") return true;
-  return new Date(candidate.deadlineAt).getTime() >= now.getTime();
+  if (candidate.deadlinePrecision === "date_only") {
+    const deadlineDate = candidate.deadlineAt.slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(deadlineDate)) return false;
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit",
+    }).formatToParts(now);
+    const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? "";
+    const today = `${part("year")}-${part("month")}-${part("day")}`;
+    return deadlineDate >= today;
+  }
+  const deadline = new Date(candidate.deadlineAt).getTime();
+  return Number.isFinite(deadline) && deadline >= now.getTime();
 }

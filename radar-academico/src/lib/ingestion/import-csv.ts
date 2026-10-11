@@ -22,6 +22,12 @@ function parseLine(line: string) {
 const applicants = new Set(["undergraduate_student","postgraduate_student","high_school_student","graduate_professional","professor","researcher","company","institution","mixed"]);
 const routes = new Set(["direct_student_application","application_via_university","application_via_department","application_via_professor","application_via_project_coordinator","institutional_call","invitation_only","unclear"]);
 
+function validDateOnly(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T12:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
 export function parseManualCsv(csv: string) {
   const lines = csv.replace(/^\uFEFF/, "").split(/\r?\n/).filter(Boolean);
   const headers = parseLine(lines.shift() ?? "");
@@ -38,13 +44,14 @@ export function parseManualCsv(csv: string) {
     if (row.application_url && !canStoreExternalApplicationUrl({ applicationUrl: row.application_url, primaryOfficialUrl: row.source_page_url, source })) throw new Error(`Linha ${rowIndex + 2}: candidatura externa sem vínculo oficial`);
     if (!applicants.has(row.applicant_type) || !routes.has(row.application_route)) throw new Error(`Linha ${rowIndex + 2}: classificação inválida`);
     if (!row.deadline || Number.isNaN(Date.parse(row.last_verified_at))) throw new Error(`Linha ${rowIndex + 2}: prazo ou verificação inválidos`);
+    const continuous = /^fluxo contínuo$/i.test(row.deadline);
+    if (!continuous && !validDateOnly(row.deadline)) throw new Error(`Linha ${rowIndex + 2}: prazo deve ser data YYYY-MM-DD ou fluxo contínuo`);
     const location = normalizeBrazilianLocation({
       stateCode: row.state_code || source.location?.stateCode,
       cityName: row.city_name || source.location?.cityName,
     });
     if (location.status === "invalid") throw new Error(`Linha ${rowIndex + 2}: localização estruturada inválida`);
 
-    const continuous = /fluxo contínuo/i.test(row.deadline);
     const candidate: OpportunityCandidate = {
       officialSourceId: source.id, title: row.title, institution: row.institution,
       sourcePageUrl: row.source_page_url, officialDocumentUrl: row.official_document_url || undefined,

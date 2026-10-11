@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { classifyApplicationRoute } from "@/lib/ingestion/classify-application-route";
 import { normalizeOpportunity } from "@/lib/ingestion/normalize-opportunity";
+import { detectDeadline } from "@/lib/ingestion/detect-deadline";
+import { parseManualCsv } from "@/lib/ingestion/import-csv";
 import { isPublishable, isVisiblePublicOpportunity } from "@/lib/ingestion/save-review-item";
 import type { OfficialSource, OpportunityCandidate } from "@/lib/ingestion/types";
 
@@ -54,5 +56,33 @@ describe("regras de publicação", () => {
 
   it("oculta oportunidade vencida", () => {
     expect(isVisiblePublicOpportunity({ ...candidate, deadlineAt: "2025-01-01", humanVerifiedAt: "2024-12-01" }, new Date("2026-01-01"))).toBe(false);
+  });
+
+  it("mantém prazo sem horário aberto até o fim do dia no Brasil", () => {
+    const item = { ...candidate, deadlineAt: "2026-10-10", deadlinePrecision: "date_only" as const, humanVerifiedAt: "2026-10-01" };
+    expect(isVisiblePublicOpportunity(item, new Date("2026-10-11T02:59:00Z"))).toBe(true);
+    expect(isVisiblePublicOpportunity(item, new Date("2026-10-11T03:00:00Z"))).toBe(false);
+  });
+
+  it("fecha prazo com horário no instante indicado", () => {
+    const item = { ...candidate, deadlineAt: "2026-10-10T18:00:00-03:00", humanVerifiedAt: "2026-10-01" };
+    expect(isVisiblePublicOpportunity(item, new Date("2026-10-10T20:59:00Z"))).toBe(true);
+    expect(isVisiblePublicOpportunity(item, new Date("2026-10-10T21:00:01Z"))).toBe(false);
+  });
+
+  it("descarta datas impossíveis antes de persistir candidatos extraídos", () => {
+    expect(detectDeadline("Inscrições até 31/02/2026").precision).toBe("not_informed");
+    expect(detectDeadline("Inscrições até 10/10/2026 às 25h00").precision).toBe("not_informed");
+    expect(detectDeadline("Inscrições até 10/10/2026")).toEqual({
+      deadlineAt: "2026-10-10", precision: "date_only",
+    });
+  });
+
+  it("importação manual aceita somente data civil válida ou fluxo contínuo", () => {
+    const header = "official_source_name,source_page_url,title,institution,applicant_type,application_route,deadline,last_verified_at";
+    const row = (deadline: string) => `ufsc-propesq,https://propesq.ufsc.br/edital,Bolsa,UFSC,undergraduate_student,direct_student_application,${deadline},2026-10-01`;
+    expect(() => parseManualCsv(`${header}\n${row("2026-02-31")}`)).toThrow(/prazo deve ser data/);
+    expect(parseManualCsv(`${header}\n${row("2026-10-10")}`)[0].candidate.deadlinePrecision).toBe("date_only");
+    expect(parseManualCsv(`${header}\n${row("fluxo contínuo")}`)[0].candidate.deadlinePrecision).toBe("continuous_flow");
   });
 });

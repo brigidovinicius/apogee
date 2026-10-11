@@ -55,9 +55,13 @@ No admin, acesse **Fontes → Nova fonte**. Cadastre somente domínio, subdomín
 
 Envie CSV autenticado para `POST /api/admin/import-csv` com `Content-Type: text/csv`. Colunas obrigatórias:
 
-`official_source_name,source_page_url,official_document_url,title,institution,applicant_type,application_route,deadline,last_verified_at`
+`official_source_name,source_page_url,title,institution,applicant_type,application_route,deadline,last_verified_at`
 
-Todas as linhas entram em revisão. Formulários externos só são aceitos como `application_url` quando vinculados a uma página oficial registrada.
+Colunas opcionais: `official_document_url`, `application_url`, `state_code` e `city_name`. A página da fonte deve ser oficial; um formulário externo só é aceito quando vinculado a ela.
+
+Use `YYYY-MM-DD` em `deadline` quando a fonte informar somente a data, ou `fluxo contínuo` quando não houver encerramento definido. Uma data sem horário permanece aberta até o fim do dia no horário de São Paulo.
+
+Todas as linhas entram em revisão.
 
 ## Verificação
 
