@@ -17,9 +17,9 @@ aprovadas. Nenhum arquivo da origem foi copiado ou alterado.
 | A4 | Curadoria: novas, retificações, conflitos e falta de evidência | Fila, comparação campo a campo, evidências e impacto da publicação | Curador/editor ou administrador; publicar/rejeitar exige justificativa |
 
 O menu do protótipo também cita Fontes, Moderação, Assinaturas, Conciliação,
-Fila e jobs e Auditoria. O próprio material informa que essas telas ainda não
-foram desenhadas. Elas aparecem no shell implementado como indisponíveis, sem
-rotas ou ações fictícias.
+Fila e jobs e Auditoria. A operação de fontes agora está disponível como
+`/admin/radar`, ligada ao contrato editorial real do Radar. As demais telas
+continuam indisponíveis, sem rotas ou ações fictícias.
 
 ## Relação com a UI e o PRD existentes
 
@@ -39,6 +39,7 @@ controles e alvos mínimos foram reutilizados da UI consolidada.
 | Painel | Schema atual contém usuários, sessões e fórum; não contém billing, alertas, analytics, fontes ou jobs | `/admin` usa apenas contagens reais de contas e fórum e separa lacunas conhecidas como pendências, sem reproduzir números demonstrativos |
 | Usuários | Better Auth persiste nome, e-mail, usuário, verificação, papel e data; `role` aceita somente `member` ou `admin` | `/admin/usuarios` oferece leitura filtrada e limitada. Não existem mutações de papel, suspensão, entitlement ou exportação |
 | Curadoria | O catálogo vigente é lido de conteúdo local e, quando configurado, do Radar remoto já autenticado; não há revisão/evidência persistida | `/admin/curadoria` é somente leitura e mantém a fonte oficial. Publicar, rejeitar e reprocessar não são simulados |
+| Radar editorial | O Radar mantém fontes, evidência, UF/cidade estruturadas, estado de auditoria e fila de candidatos em banco próprio | `/admin/radar` permite confirmar os três itens de auditoria, ativar uma fonte já verificada e iniciar uma coleta limitada. A ponte usa token privado entre os dois serviços e nunca entrega a credencial ao navegador |
 | Posts | Não existe tabela, DAL, CMS, armazenamento de imagens, slug ou política editorial | `/admin/posts/novo` mostra o estado indisponível e o contrato mínimo necessário; campos e ação permanecem desabilitados |
 | Galeria | `/gerenciar-galeria` e `/api/gallery/admin` aceitam uma sessão de membro com papel `admin`; a credencial operacional legada permanece como fallback server-side | A página e a API refazem a autorização no servidor. A interface não coleta nem serializa a credencial operacional |
 
@@ -47,8 +48,11 @@ controles e alvos mínimos foram reutilizados da UI consolidada.
 - O proxy faz somente a checagem otimista de presença da sessão em `/admin`.
 - Cada página administrativa chama `requireAdmin()` no servidor antes de
   renderizar conteúdo operacional.
-- Cada leitura em `lib/admin/data.ts` e a leitura administrativa do Radar
-  repetem `requireAdmin()` na camada de dados.
+- `/admin/radar` repete `requireAdmin()` na página e em cada Server Action
+  antes de chamar a ponte privada do Radar.
+- A ponte aceita apenas uma credencial editorial dedicada na rede
+  `apogee_radar_bridge`; a URL e o token permanecem em módulos server-only e
+  não são serializados para o navegador.
 - `/gerenciar-galeria` e `/api/gallery/admin` também repetem a verificação do
   papel real da sessão no servidor.
 - Usuário autenticado sem papel `admin` é redirecionado ao estado explícito
@@ -91,6 +95,9 @@ controles e alvos mínimos foram reutilizados da UI consolidada.
   IA ou operação. Esses indicadores do protótipo não são exibidos como reais.
 - Não foram criadas ações de exportar, suspender, atribuir papel, publicar,
   rejeitar, reprocessar ou salvar post.
+- A ponte do Radar limita esta tela à auditoria de fonte, ativação e coleta
+  controlada. Candidatos ainda exigem a revisão humana própria do Radar antes
+  de qualquer publicação.
 - A galeria continua sendo um sistema adjacente. A sessão administrativa pode
   abrir sua superfície, sem alterar armazenamento, credencial legada ou APIs
   públicas da galeria.

@@ -5,14 +5,14 @@ Este stack executa o Next.js na mesma VPS dos serviços privados Apogee, sem fun
 ```text
 Internet -> Caddy (80/443) -> web (sem porta publicada) -> PgBouncer (rede apogee_membros_edge) -> Postgres (rede interna)
                                                  |
-                                      Radar API (apogee_radar_bridge)
+                       Radar API privada (catálogo e auditoria editorial)
 ```
 
 - `caddy` permanece atrás do profile opcional `public`; ativá-lo é um gate operacional separado e não faz parte da preparação local.
 - `web` não publica porta: recebe tráfego só do Caddy e alcança apenas o PgBouncer pela rede de borda.
 - Postgres continua somente na rede `apogee_membros_internal`; PgBouncer continua limitado a `127.0.0.1:6543` no host como acesso administrativo local.
 - Volumes deste stack usam o prefixo `apogee_site_`; não compartilham volumes com outros projetos.
-- Quando o Radar Acadêmico estiver autorizado, o `web` também entra na rede externa exclusiva `apogee_radar_bridge`. Essa ponte alcança apenas a API de resultados aprovados do Radar; ela não dá acesso ao banco ou ao scheduler.
+- Quando o Radar Acadêmico estiver autorizado, o `web` também entra na rede externa exclusiva `apogee_radar_bridge`. Essa ponte alcança as APIs privadas de catálogo e auditoria do Radar; ela não dá acesso ao banco ou ao scheduler.
 
 ## Preparação na VPS
 
@@ -38,11 +38,16 @@ Depois do deploy isolado do Radar, acrescente ao `.env` do site, sem usar um val
 
 ```sh
 RADAR_ACADEMICO_API_URL=http://radar-academico:3000/api/public/opportunities
+RADAR_ACADEMICO_ADMIN_API_URL=http://radar-academico:3000/api/internal/editorial/sources
 ```
+
+`RADAR_ACADEMICO_ADMIN_API_TOKEN` deve ter o mesmo valor privado configurado no
+Radar. Ele é usado somente pelo servidor em `/admin/radar` e nunca deve ter o
+prefixo `NEXT_PUBLIC`.
 
 O mural mantém o catálogo curado local como contingência e agrega apenas resultados aprovados do Radar. Se o Radar ficar indisponível, a página pública não cai.
 
-O Compose espera encontrar as redes `apogee_membros_edge` e `apogee_radar_bridge`, além do certificado público existente em `/opt/apogee-membros/certs/server.crt`. Não monte `server.key` no site e não abra a porta 6543 no firewall. `APPLICATION_ORIGIN` e `BETTER_AUTH_URL` devem ser exatamente `https://www.apogee.community`; `DATABASE_URL` deve resolver `pgbouncer:5432` pela rede privada e `RADAR_ACADEMICO_API_URL` deve resolver `radar-academico:3000` pela ponte privada.
+O Compose espera encontrar as redes `apogee_membros_edge` e `apogee_radar_bridge`, além do certificado público existente em `/opt/apogee-membros/certs/server.crt`. Não monte `server.key` no site e não abra a porta 6543 no firewall. `APPLICATION_ORIGIN` e `BETTER_AUTH_URL` devem ser exatamente `https://www.apogee.community`; `DATABASE_URL` deve resolver `pgbouncer:5432` pela rede privada e as duas URLs `RADAR_ACADEMICO_*_API_URL` devem resolver `radar-academico:3000` pela ponte privada.
 
 ## Publicação do domínio (gate final)
 

@@ -46,20 +46,35 @@ test("non-admin members receive an explicit denied state without operational rea
 });
 
 test("admin pages are read-only where the product has no mutation contract", async () => {
-  const [curation, editor, navigation] = await Promise.all([
+  const [curation, editor, navigation, radarPage, radarActions, radarClient] = await Promise.all([
     source("app/admin/curadoria/page.tsx"),
     source("app/admin/posts/novo/page.tsx"),
     source("components/admin/admin-nav.tsx"),
+    source("app/admin/radar/page.tsx"),
+    source("app/admin/radar/actions.ts"),
+    source("lib/opportunities/radar-editorial-client.ts"),
   ]);
 
   assert.match(curation, /Somente leitura/);
   assert.doesNotMatch(curation, /<form|action=|Publicar|Rejeitar|Reprocessar/);
   assert.match(editor, /disabled/);
   assert.doesNotMatch(editor, /action=|useActionState|fetch\(/);
-  for (const label of ["Fontes", "Moderação", "Assinaturas", "Conciliação", "Fila e jobs", "Auditoria"]) {
+  for (const label of ["Moderação", "Assinaturas", "Conciliação", "Fila e jobs", "Auditoria"]) {
     assert.match(navigation, new RegExp(`"${label}"`));
   }
   assert.match(navigation, /aria-disabled="true"/);
+  assert.match(navigation, /href: "\/admin\/radar"/);
+
+  assert.match(radarPage, /await requireAdmin\("\/admin\/radar"\)/);
+  assert.match(radarPage, /Nenhum candidato é publicado automaticamente/);
+  assert.match(radarPage, /max="10"/);
+  assert.match(radarActions, /await requireAdmin\("\/admin\/radar"\)/);
+  assert.match(radarActions, /maxPages: limit\(formData, "max_pages"\)/);
+  assert.match(radarActions, /maxCandidates: limit\(formData, "max_candidates"\)/);
+  assert.match(radarClient, /^import "server-only";/m);
+  assert.match(radarClient, /RADAR_ACADEMICO_ADMIN_API_TOKEN/);
+  assert.match(radarClient, /radar-academico/);
+  assert.doesNotMatch(radarClient, /NEXT_PUBLIC/);
 });
 
 test("member navigation reveals the admin switch only for an authorized role", async () => {
