@@ -25,12 +25,8 @@ interface SourceRow {
   notes: string | null;
 }
 
-export async function loadActiveOfficialSources(): Promise<OfficialSource[]> {
-  if (!process.env.DATABASE_URL) return officialSourceRegistry.filter((source) => source.active);
-  const rows = await withAdminTransaction(async (client) =>
-    (await client.query<SourceRow>("select * from official_sources where active=true and verification_status='verified' order by priority desc")).rows,
-  );
-  return rows.map((row) => ({
+function toOfficialSource(row: SourceRow): OfficialSource {
+  return {
     id: row.id, name: row.name, institutionName: row.institution_name,
     institutionAcronym: row.institution_acronym, sourceType: row.source_type,
     baseUrl: row.base_url, allowedDomains: row.allowed_domains,
@@ -39,5 +35,21 @@ export async function loadActiveOfficialSources(): Promise<OfficialSource[]> {
     geographicScope: row.geographic_scope, categories: row.categories,
     location: { stateCode: row.state_code, cityName: row.city_name },
     priority: row.priority, active: row.active, notes: row.notes ?? undefined,
-  }));
+  };
+}
+
+export async function loadOfficialSource(id: string): Promise<OfficialSource | null> {
+  if (!process.env.DATABASE_URL) return getOfficialSource(id) ?? null;
+  const rows = await withAdminTransaction(async (client) =>
+    (await client.query<SourceRow>("select * from official_sources where id=$1 and active=true and verification_status='verified'", [id])).rows,
+  );
+  return rows[0] ? toOfficialSource(rows[0]) : null;
+}
+
+export async function loadActiveOfficialSources(): Promise<OfficialSource[]> {
+  if (!process.env.DATABASE_URL) return officialSourceRegistry.filter((source) => source.active);
+  const rows = await withAdminTransaction(async (client) =>
+    (await client.query<SourceRow>("select * from official_sources where active=true and verification_status='verified' order by priority desc")).rows,
+  );
+  return rows.map(toOfficialSource);
 }

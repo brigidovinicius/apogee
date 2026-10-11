@@ -67,7 +67,7 @@ it("cache limits both entries and bytes, and expires values", () => {
   expect(cache.get("b", 102)).toBeUndefined();
 });
 it("rejects invalid source enum, interval, domain and listing origin", () => {
-  const form = new FormData(); form.set("id", "safe"); form.set("domains", "example.edu.br"); form.set("interval", "24"); form.set("mode", "html");
+  const form = new FormData(); form.set("id", "safe"); form.set("domains", "example.edu.br"); form.set("audit_evidence_url", "https://example.edu.br/evidence"); form.set("interval", "24"); form.set("mode", "html");
   expect(sourceSettings(form).interval).toBe(24);
   for (const value of ["NaN", "Infinity", "1", "2.5", "721"]) { form.set("interval", value); expect(() => sourceSettings(form)).toThrow(); }
   form.set("interval", "24"); form.set("mode", "arbitrary"); expect(() => sourceSettings(form)).toThrow();

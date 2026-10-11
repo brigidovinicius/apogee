@@ -5,6 +5,7 @@ import {
   normalizeBrazilianLocation,
 } from "@/lib/location";
 import { normalizeOpportunity } from "@/lib/ingestion/normalize-opportunity";
+import { sourceEvidenceUrl, sourceLocation } from "@/lib/ingestion/source-settings";
 import type { OfficialSource } from "@/lib/ingestion/types";
 
 const source: OfficialSource = {
@@ -49,6 +50,16 @@ describe("contrato canônico de localização", () => {
       source: { ...source, location: { stateCode: "SC", cityName: "Praia Grande" } },
     });
     expect(candidate).toMatchObject({ stateCode: "SC", cityName: "Praia Grande" });
+  });
+
+  it("exige UF e evidência oficial para uma fonte em auditoria", () => {
+    const form = new FormData();
+    form.set("state_code", "pr"); form.set("city_name", "Curitiba");
+    expect(sourceLocation(form)).toEqual({ stateCode: "PR", cityName: "Curitiba" });
+    form.set("state_code", "");
+    expect(() => sourceLocation(form)).toThrow("UF");
+    expect(sourceEvidenceUrl("https://www.ufpr.br/auditoria", ["www.ufpr.br"])).toBe("https://www.ufpr.br/auditoria");
+    expect(() => sourceEvidenceUrl("https://externo.example/evidencia", ["www.ufpr.br"])).toThrow();
   });
 
   it("mantém o monitor sanitizado, dependente e sem consulta por texto livre", async () => {

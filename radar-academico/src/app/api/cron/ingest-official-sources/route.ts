@@ -1,5 +1,5 @@
 import { runOfficialSourceIngestion } from "@/lib/ingestion";
-import { getOfficialSource } from "@/lib/official-sources/registry";
+import { loadOfficialSource } from "@/lib/ingestion/official-source-registry";
 import { secretMatches } from "@/lib/security";
 
 export const runtime = "nodejs";
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   const sourceId = search.get("sourceId");
   const maxPages = Number(search.get("maxPages") ?? "1");
   const maxCandidates = Number(search.get("maxCandidates") ?? "10");
-  if (!sourceId || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(sourceId) || !getOfficialSource(sourceId)?.active ||
+  if (!sourceId || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(sourceId) || !(await loadOfficialSource(sourceId)) ||
     !Number.isInteger(maxPages) || maxPages < 1 || maxPages > 10 ||
     !Number.isInteger(maxCandidates) || maxCandidates < 1 || maxCandidates > 10) {
     return Response.json({ error: "Parâmetros de ingestão inválidos" }, { status: 400 });

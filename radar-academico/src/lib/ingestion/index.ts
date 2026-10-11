@@ -1,4 +1,4 @@
-import { getOfficialSource, loadActiveOfficialSources, officialSourceRegistry } from "./official-source-registry";
+import { loadOfficialSource } from "./official-source-registry";
 import { deduplicateCandidates } from "./detect-duplicates";
 import { fetchOfficialResource, boundedInteger } from "./fetch-source";
 import { normalizeOpportunity } from "./normalize-opportunity";
@@ -68,6 +68,7 @@ export type OfficialSourceIngestionOptions = {
 };
 
 async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
+  if (!options.sourceId) throw new Error("Selecione uma fonte oficial para a coleta controlada");
   const requestedMaxPages = options.maxPages === undefined ? undefined : String(options.maxPages);
   const requestedMaxCandidates = options.maxCandidates === undefined ? undefined : String(options.maxCandidates);
   const budget = {
@@ -79,18 +80,9 @@ async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
   const maxCandidates = requestedMaxCandidates === undefined
     ? undefined
     : boundedInteger(requestedMaxCandidates, 10, 1, 10);
-  let activeSources: OfficialSource[];
-  if (options.sourceId) {
-    const source = getOfficialSource(options.sourceId);
-    if (!source || !source.active) throw new Error("Fonte oficial inválida ou inativa");
-    activeSources = [source];
-  } else {
-    if (process.env.DATABASE_URL) {
-      const { syncOfficialSource } = await import("./save-review-item");
-      for (const source of officialSourceRegistry) await syncOfficialSource(source);
-    }
-    activeSources = await loadActiveOfficialSources();
-  }
+  const source = await loadOfficialSource(options.sourceId);
+  if (!source) throw new Error("Fonte oficial inválida, não verificada ou inativa");
+  const activeSources: OfficialSource[] = [source];
   for (const source of activeSources.sort((a, b) => b.priority - a.priority)) {
     const result = await ingestSource(source, budget, maxCandidates);
     const persistence = await saveReviewItems(source, result);
