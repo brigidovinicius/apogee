@@ -9,7 +9,7 @@ banco por essa ponte.
 ```text
 fontes oficiais -> scheduler -> Radar web -> Radar Postgres
                                       |
-                         apogee_radar_bridge (somente API pública aprovada)
+                  apogee_radar_bridge (APIs privadas do Radar)
                                       |
                                 Apogee web -> navegador
 ```
@@ -46,7 +46,11 @@ partir de um crawler.
    ```
 
 5. Só então conecte o `web` da Apogee à mesma rede e configure
-   `RADAR_ACADEMICO_API_URL=http://radar-academico:3000/api/public/opportunities`.
+   `RADAR_ACADEMICO_API_URL=http://radar-academico:3000/api/public/opportunities`,
+   `RADAR_ACADEMICO_ADMIN_API_URL=http://radar-academico:3000/api/internal/editorial/sources`
+   e um `RADAR_ACADEMICO_ADMIN_API_TOKEN` dedicado, igual nos dois serviços.
+   Esse token serve apenas à ponte server-to-server de `/admin/radar` e não é
+   encaminhado ao navegador.
 
 Não execute comandos em `/opt/sistema-de-locacao`, não publique a porta 3000 e
 não crie exceções no firewall. Antes da primeira migração, faça um backup do

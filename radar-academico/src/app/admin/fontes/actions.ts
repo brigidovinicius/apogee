@@ -3,42 +3,27 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/admin";
 import { withAdminTransaction } from "@/lib/db/client";
-import { runOfficialSourceIngestion } from "@/lib/ingestion";
 import { redirect } from "next/navigation";
 import { sourceId, sourceDomains, sourceUrls, sourceSettings, sourceEvidenceUrl, sourceLocation, sourceType } from "@/lib/ingestion/source-settings";
-
-function ingestionLimit(value: FormDataEntryValue | null, field: string) {
-  const parsed = Number(value);
-  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 10) throw new Error(`${field} inválido`);
-  return parsed;
-}
+import { runEditorialSourceIngestion, setEditorialSourceActive, verifyEditorialSource } from "@/lib/official-sources/editorial";
 
 export async function toggleSource(formData: FormData) {
   await requireAdmin();
   const id = sourceId(formData.get("id"));
   const rawActive = formData.get("active");
   if (rawActive !== "true" && rawActive !== "false") throw new Error("Configuração inválida");
-  const active = rawActive === "true";
-  await withAdminTransaction(async (client) => {
-    if (!active) {
-      await client.query("update official_sources set active=false, updated_at=now() where id=$1", [id]);
-      return;
-    }
-    const updated = await client.query(
-      "update official_sources set active=true, updated_at=now() where id=$1 and verification_status='verified' returning id",
-      [id],
-    );
-    if (!updated.rows[0]) throw new Error("A fonte precisa ser auditada antes da ativação");
-  });
+  await setEditorialSourceActive({ sourceId: id, active: rawActive === "true" });
   revalidatePath("/admin/fontes");
 }
 
 export async function runIngestion(formData: FormData) {
   await requireAdmin();
   const id = sourceId(formData.get("id"));
-  const maxPages = ingestionLimit(formData.get("max_pages"), "Limite de páginas");
-  const maxCandidates = ingestionLimit(formData.get("max_candidates"), "Limite de candidatos");
-  await runOfficialSourceIngestion({ sourceId: id, maxPages, maxCandidates });
+  await runEditorialSourceIngestion({
+    sourceId: id,
+    maxPages: formData.get("max_pages"),
+    maxCandidates: formData.get("max_candidates"),
+  });
   revalidatePath("/admin/ingestoes");
   revalidatePath("/admin/revisao");
 }
@@ -67,17 +52,11 @@ export async function createSource(formData: FormData) {
 export async function verifySource(formData: FormData) {
   await requireAdmin();
   const id = sourceId(formData.get("id"));
-  if (formData.get("official_source") !== "confirmed" || formData.get("location_confirmed") !== "confirmed" || formData.get("collection_allowed") !== "confirmed") {
-    throw new Error("Confirme os três itens de auditoria antes de verificar a fonte");
-  }
-  await withAdminTransaction(async (client) => {
-    const updated = await client.query(
-      `update official_sources set verification_status='verified', audited_at=now(), audited_by='admin',
-       robots_checked_at=now(), terms_checked_at=now(), updated_at=now()
-       where id=$1 and active=false and state_code is not null and audit_evidence_url is not null returning id`,
-      [id],
-    );
-    if (!updated.rows[0]) throw new Error("Fonte sem evidência, localização ou elegibilidade para auditoria");
+  await verifyEditorialSource({
+    sourceId: id,
+    officialSource: formData.get("official_source") === "confirmed",
+    locationConfirmed: formData.get("location_confirmed") === "confirmed",
+    collectionAllowed: formData.get("collection_allowed") === "confirmed",
   });
   revalidatePath("/admin/fontes");
   revalidatePath(`/admin/fontes/${id}`);
