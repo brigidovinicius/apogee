@@ -80,10 +80,9 @@ async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
   const maxCandidates = requestedMaxCandidates === undefined
     ? undefined
     : boundedInteger(requestedMaxCandidates, 10, 1, 10);
-  let activeSources: OfficialSource[];
   const source = await loadOfficialSource(options.sourceId);
   if (!source) throw new Error("Fonte oficial inválida, não verificada ou inativa");
-  activeSources = [source];
+  const activeSources: OfficialSource[] = [source];
   for (const source of activeSources.sort((a, b) => b.priority - a.priority)) {
     const result = await ingestSource(source, budget, maxCandidates);
     const persistence = await saveReviewItems(source, result);
