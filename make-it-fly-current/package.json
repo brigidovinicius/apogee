@@ -10,6 +10,7 @@
     "typegen": "next typegen --webpack",
     "typecheck": "tsc --noEmit --incremental false",
     "test": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "seo:verify": "node scripts/verify-seo.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "node scripts/members-seed.mjs",

@@ -381,6 +381,8 @@
 }
 
 .loadMore:hover { background: rgb(185 211 238 / 12%); }
+.pagination { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+.pagination a { text-decoration: none; }
 .loadMore:disabled { cursor: wait; opacity: 0.6; }
 .moreError { text-align: center; font-size: 0.8rem; }
 

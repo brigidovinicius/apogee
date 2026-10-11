@@ -8,3 +8,8 @@ export type CommunityPhoto = {
   height: number;
   createdAt: string;
 };
+
+export type CommunityPhotoPage = {
+  photos: CommunityPhoto[];
+  nextOffset: number | null;
+};

@@ -149,20 +149,21 @@ test("public home and Make It Fly remain indexable while the Robonauta preview s
   assert.equal(new URL(homeMetadata.alternates?.canonical, rootMetadata.metadataBase).href,
     "https://www.apogee.community/");
   assert.deepEqual(homeMetadata.robots ?? rootMetadata.robots, { index: true, follow: true });
-  assert.equal(homeMetadata.title ?? rootMetadata.title, "Apogee");
+  assert.equal(homeMetadata.title ?? rootMetadata.title, "Apogee | Comunidade, ideias e experiências");
   assert.deepEqual(previewMetadata.robots, { index: false, follow: false });
   assert.equal(previewMetadata.title, "Apogee — Home com Robonauta");
   assert.deepEqual(publishedMetadata.robots, { index: true, follow: true });
-  assert.equal(publishedMetadata.title, "Make it fly");
-  assert.equal(publishedMetadata.description, "Um dia de coworking, comunidade e foco para tirar uma ideia do papel. Primeira edição com vagas limitadas. Energizados por Red Bull.");
+  assert.equal(publishedMetadata.title, "Make It Fly | Coworking e comunidade Apogee");
+  assert.equal(publishedMetadata.description, "Conheça o Make It Fly, encontro de coworking, comunidade e foco da Apogee para tirar uma ideia do papel. Veja a proposta e como participar.");
   assert.deepEqual(publishedMetadata.openGraph, {
-    title: "Make it fly | Tire uma ideia do papel",
-    description: "Coworking, comunidade e foco. Vagas limitadas.",
+    title: "Make It Fly | Coworking e comunidade Apogee",
+    description: "Um encontro de coworking, comunidade e foco para tirar uma ideia do papel.",
+    url: "/makeitfly", siteName: "Apogee",
     locale: "pt_BR", type: "website",
   });
   assert.deepEqual(publishedMetadata.twitter, {
-    card: "summary", title: "Make it fly | Tire uma ideia do papel",
-    description: "Coworking, comunidade e foco. Vagas limitadas.",
+    card: "summary", title: "Make It Fly | Coworking e comunidade Apogee",
+    description: "Um encontro de coworking, comunidade e foco para tirar uma ideia do papel.",
   });
   const canonical = new URL(publishedMetadata.alternates?.canonical, publishedMetadata.metadataBase);
   assert.equal(canonical.href, "https://www.apogee.community/makeitfly");

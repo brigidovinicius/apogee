@@ -10,10 +10,16 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Oportunidades estudantis | Apogee",
   description:
-    "Bolsas, programas e intercâmbios estudantis verificados pela Apogee, com fontes oficiais e critérios claros.",
+    "Explore uma prévia de bolsas, programas e intercâmbios estudantis do Radar Apogee. Detalhes, prazos e links oficiais estão na área de membros.",
+  alternates: { canonical: "/oportunidades" },
   openGraph: {
     title: "Oportunidades estudantis | Apogee",
-    description: "Chamadas estudantis verificadas e links oficiais para se inscrever.",
+    description: "Prévia de bolsas, programas e intercâmbios. Acesse os detalhes pela área de membros Apogee.",
+    url: "/oportunidades", siteName: "Apogee", locale: "pt_BR", type: "website",
+  },
+  twitter: {
+    card: "summary", title: "Oportunidades estudantis | Apogee",
+    description: "Prévia de bolsas, programas e intercâmbios. Acesse os detalhes pela área de membros Apogee.",
   },
 };
 

@@ -3,9 +3,12 @@
 import { ArrowDownRight } from "lucide-react";
 import { useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { InternalFooter } from "@/components/site/internal-footer";
 import { InternalHeader } from "@/components/site/internal-header";
 import { normalizeInstagram } from "@/lib/instagram";
+import type { CommunityPhotoPage } from "@/lib/gallery-types";
+import { GALLERY_MAX_PAGE, galleryPagePath } from "@/lib/gallery-pagination";
 import {
   FileUploadCard,
   type UploadedMedia,
@@ -31,7 +34,12 @@ const ACCEPTED_TYPES = new Set([
 ]);
 const ACCEPTED_EXTENSIONS = /\.(jpe?g|png|webp|hei[cf]|avif|gif)$/i;
 
-export function GalleryExperience() {
+export function GalleryExperience({ initialPage, initialOffset = 0, pageNumber = 1 }: {
+  initialPage?: CommunityPhotoPage;
+  initialOffset?: number;
+  pageNumber?: number;
+}) {
+  const router = useRouter();
   const [files, setFiles] = useState<UploadedMedia[]>([]);
   const [message, setMessage] = useState("");
   const [author, setAuthor] = useState("");
@@ -39,7 +47,7 @@ export function GalleryExperience() {
   const [anonymous, setAnonymous] = useState(false);
   const [instagramError, setInstagramError] = useState("");
   const [sending, setSending] = useState(false);
-  const { photos, loading, error, refresh, hasMore, loadingMore, loadMore } = useCommunityPhotos();
+  const { photos, loading, error, refresh, hasMore, loadingMore, loadMore } = useCommunityPhotos(initialPage, initialOffset);
   const objectUrlsRef = useRef(new Set<string>());
   const activeMediaIdsRef = useRef(new Set<string>());
   const preparationQueueRef = useRef(Promise.resolve());
@@ -187,6 +195,7 @@ export function GalleryExperience() {
       }
     }
     if (uploaded) await refresh();
+    if (uploaded && !failure && pageNumber > 1) router.replace("/galeria#mural-da-comunidade");
     setSending(false);
     setMessage(failure || `${uploaded} ${uploaded === 1 ? "foto publicada" : "fotos publicadas"} na galeria da comunidade Apogee.`);
     if (uploaded) window.requestAnimationFrame(() => document.getElementById("mural-da-comunidade")?.scrollIntoView({ behavior: "smooth", block: "start" }));
@@ -207,6 +216,8 @@ export function GalleryExperience() {
             hasMore={hasMore}
             loadingMore={loadingMore}
             onLoadMore={loadMore}
+            nextPageHref={hasMore && pageNumber < GALLERY_MAX_PAGE ? galleryPagePath(pageNumber + 1) : undefined}
+            previousPageHref={pageNumber > 1 ? galleryPagePath(pageNumber - 1) : undefined}
           />
         </div>
 
