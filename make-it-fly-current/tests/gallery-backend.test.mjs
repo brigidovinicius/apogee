@@ -15,7 +15,7 @@ async function load(path, mocks = {}) {
   new Function("require", "module", "exports", output)(specifier => {
     if (specifier === "server-only") return {};
     return specifier in mocks ? mocks[specifier] : require(specifier);
-  }, module, loadedModule.exports);
+  }, loadedModule, loadedModule.exports);
   return loadedModule.exports;
 }
 async function fixture(overrides = {}) {

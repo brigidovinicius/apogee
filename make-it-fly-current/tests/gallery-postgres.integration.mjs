@@ -28,7 +28,7 @@ test("reviewed migration, atomic image storage, pagination and deletion work on 
       if (specifier === "server-only") return {};
       if (specifier === "./members/db") return { getSql: () => sql };
       throw new Error(`Unexpected import ${specifier}`);
-    }, module, loadedModule.exports);
+    }, loadedModule, loadedModule.exports);
     const repo = loadedModule.exports;
     const photo = { id, author: "Anônimo", instagram: "", anonymous: true, width: 10, height: 10, createdAt: "2026-10-11T19:00:00.000Z", consentVersion: "2026-09-22", consentedAt: "2026-10-11T19:00:00.000Z" };
     const image = Buffer.from([0, 1, 127, 128, 255]);
