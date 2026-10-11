@@ -55,6 +55,7 @@ export const metadata: Metadata = {
   title: "Apogee",
   description: "Apogee: comunidade e experiências para tirar ideias do papel. Conheça o Make It Fly.",
   openGraph: {
+    siteName: "Apogee",
     title: "Apogee",
     description: "Comunidade e experiências para tirar ideias do papel.",
     locale: "pt_BR",

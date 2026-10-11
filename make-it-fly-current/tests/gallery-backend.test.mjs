@@ -20,6 +20,11 @@ async function loadInstagram() {
 
 async function loadGallery() {
   const instagram = await loadInstagram();
+  const paginationOutput = ts.transpileModule(await readFile(new URL("../lib/gallery-pagination.ts", import.meta.url), "utf8"), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS },
+  }).outputText;
+  const pagination = {};
+  new Function("exports", paginationOutput)(pagination);
   const adminAuthSource = await readFile(new URL("../lib/admin-auth.ts", import.meta.url), "utf8");
   const adminAuthOutput = ts.transpileModule(adminAuthSource, {
     fileName: "admin-auth.ts",
@@ -40,6 +45,7 @@ async function loadGallery() {
     if (specifier === "server-only") return {};
     if (specifier === "./admin-auth") return adminAuthModule.exports;
     if (specifier === "./instagram") return instagram;
+    if (specifier === "./gallery-pagination") return pagination;
     return require(specifier);
   }, loadedModule, loadedModule.exports);
   return loadedModule.exports;
@@ -272,6 +278,31 @@ test("gallery management rejects an oversized streamed delete body before storag
     globalThis.fetch = previousFetch;
     delete process.env.APPLICATION_EXPORT_TOKEN;
   }
+});
+
+test("server gallery rendering reads only public DTOs and never performs cleanup", async () => {
+  setGalleryEnvironment();
+  const gallery = await loadGallery();
+  const id = "2026-09-23T10-57-15-503Z-3033bf41-154b-4294-8a89-5c32c8e423df";
+  const retiredId = "2026-09-23T01-38-36-784Z-450e2012-5e58-49c6-b59e-cc431e29b073";
+  const photo = { id, author: "Anônimo", instagram: "", anonymous: true, width: 900, height: 1600, createdAt: "2026-09-23T10:57:15.503Z", secret: "must-not-leak" };
+  const requests = [];
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    requests.push({ url: String(url), method: init.method, body: init.body });
+    if (String(url).includes("/object/list/")) return Response.json([{ name: `${id}.json` }, { name: `${retiredId}.json` }]);
+    return Response.json(photo);
+  };
+  try {
+    const response = await gallery.listCommunityPhotos(new Request("https://www.apogee.community/api/gallery?offset=24"), { cleanupRetired: false });
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.deepEqual(body.photos.map(item => item.id), [id]);
+    assert.equal(body.photos[0].secret, undefined);
+    assert.equal(body.photos[0].width, 900);
+    assert.equal(requests.some(request => request.method === "DELETE"), false);
+    assert.equal(JSON.parse(requests[0].body).offset, 24);
+  } finally { globalThis.fetch = previousFetch; }
 });
 
 test("the retired identified test photo is removed while anonymous gallery entries remain", async () => {

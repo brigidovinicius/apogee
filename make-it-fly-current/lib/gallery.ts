@@ -5,12 +5,13 @@ import sharp from "sharp";
 import { adminAuthorized } from "./admin-auth";
 import type { CommunityPhoto } from "./gallery-types";
 import { normalizeInstagram } from "./instagram";
+import { GALLERY_PAGE_SIZE } from "./gallery-pagination";
 
 const BUCKET = "apogee-community-photos";
 const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
 const MAX_PUBLIC_BYTES = 3 * 1024 * 1024;
 const MAX_ADMIN_BODY_BYTES = 1024;
-const MAX_PHOTOS = 24;
+const MAX_PHOTOS = GALLERY_PAGE_SIZE;
 const PHOTO_ID_PATTERN = /^[0-9T-Z-]{19,28}-[a-f0-9-]{36}$/;
 const RETIRED_PHOTO_IDS = new Set([
   "2026-09-23T01-38-36-784Z-450e2012-5e58-49c6-b59e-cc431e29b073",
@@ -90,7 +91,8 @@ function validatePhoto(value: unknown, settings: GalleryConfig): CommunityPhoto 
   };
 }
 
-export async function listCommunityPhotos(request?: Request): Promise<Response> {
+// Rendering a page only reads public data; cleanup belongs to the existing API.
+export async function listCommunityPhotos(request?: Request, { cleanupRetired = true } = {}): Promise<Response> {
   try {
     const settings = config();
     const rawOffset = request ? new URL(request.url).searchParams.get("offset") || "0" : "0";
@@ -108,7 +110,7 @@ export async function listCommunityPhotos(request?: Request): Promise<Response> 
       if (typeof entry?.name !== "string" || !entry.name.endsWith(".json")) return false;
       return RETIRED_PHOTO_IDS.has(entry.name.slice(0, -5));
     });
-    await Promise.all(retiredEntries.flatMap(({ name }) => {
+    if (cleanupRetired) await Promise.all(retiredEntries.flatMap(({ name }) => {
       const id = name.slice(0, -5);
       return [
         storageRequest(settings, `object/${BUCKET}/photos/${id}.webp`, { method: "DELETE" }).catch(() => undefined),

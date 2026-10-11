@@ -4,21 +4,22 @@ import type { ReactNode } from "react";
 export const metadata: Metadata = {
   robots: { index: true, follow: true },
   alternates: { canonical: "https://www.apogee.community/makeitfly" },
-  title: "Make it fly",
+  title: "Make It Fly | Coworking e comunidade Apogee",
   description:
-    "Um dia de coworking, comunidade e foco para tirar uma ideia do papel. Primeira edição com vagas limitadas. Energizados por Red Bull.",
+    "Conheça o Make It Fly, encontro de coworking, comunidade e foco da Apogee para tirar uma ideia do papel. Veja a proposta e como participar.",
   openGraph: {
-    title: "Make it fly | Tire uma ideia do papel",
+    title: "Make It Fly | Coworking e comunidade Apogee",
     description:
-      "Coworking, comunidade e foco. Vagas limitadas.",
+      "Um encontro de coworking, comunidade e foco para tirar uma ideia do papel.",
+    url: "/makeitfly", siteName: "Apogee",
     locale: "pt_BR",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Make it fly | Tire uma ideia do papel",
+    title: "Make It Fly | Coworking e comunidade Apogee",
     description:
-      "Coworking, comunidade e foco. Vagas limitadas.",
+      "Um encontro de coworking, comunidade e foco para tirar uma ideia do papel.",
   },
 };
 

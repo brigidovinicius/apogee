@@ -80,7 +80,8 @@ test("the Make It Fly page directly renders the byte-identical approved page", a
 
 test("approved fonts, public assets, icon and shared legacy dependencies retain their hashes", async () => {
   const original = {
-    "app/icon.svg": "e9bc16d3a04b21059cde1f840b7e362d27330fbf",
+    "app/icon.png": "552fe973a5eb07f389c8a3a33cdec72c420dc4a4",
+    "app/apple-icon.png": "fab2a05d6958be0929a66d9d46ef8cd6936d80dc",
     "app/fonts/dm-mono-300-latin.woff2": "3155a36f511a94a7d835fdc0bf2a5ed97f818357",
     "app/fonts/dm-mono-400-latin.woff2": "f41e4e83f8222fac2fbd95ac6f3b7bdd2fe4fe5b",
     "app/fonts/dm-mono-500-latin.woff2": "0fca4facaa0a279288b128a27a231c4974bee58b",
@@ -108,6 +109,7 @@ test("approved fonts, public assets, icon and shared legacy dependencies retain 
   };
   await Promise.all(Object.entries(original).map(([path, hash]) => assertUnchanged(path, hash)));
   assert.equal(existsSync(new URL("app/favicon.ico", root)), false);
+  assert.equal(existsSync(new URL("app/icon.svg", root)), false);
   assert.equal(existsSync(new URL("public/vercel.svg", root)), false);
 });
 
@@ -150,20 +152,21 @@ test("public home and Make It Fly remain indexable while the Robonauta preview s
   assert.equal(new URL(homeMetadata.alternates?.canonical, rootMetadata.metadataBase).href,
     "https://www.apogee.community/");
   assert.deepEqual(homeMetadata.robots ?? rootMetadata.robots, { index: true, follow: true });
-  assert.equal(homeMetadata.title ?? rootMetadata.title, "Apogee");
+  assert.equal(homeMetadata.title ?? rootMetadata.title, "Apogee | Comunidade, ideias e experiências");
   assert.deepEqual(previewMetadata.robots, { index: false, follow: false });
   assert.equal(previewMetadata.title, "Apogee — Home com Robonauta");
   assert.deepEqual(publishedMetadata.robots, { index: true, follow: true });
-  assert.equal(publishedMetadata.title, "Make it fly");
-  assert.equal(publishedMetadata.description, "Um dia de coworking, comunidade e foco para tirar uma ideia do papel. Primeira edição com vagas limitadas. Energizados por Red Bull.");
+  assert.equal(publishedMetadata.title, "Make It Fly | Coworking e comunidade Apogee");
+  assert.equal(publishedMetadata.description, "Conheça o Make It Fly, encontro de coworking, comunidade e foco da Apogee para tirar uma ideia do papel. Veja a proposta e como participar.");
   assert.deepEqual(publishedMetadata.openGraph, {
-    title: "Make it fly | Tire uma ideia do papel",
-    description: "Coworking, comunidade e foco. Vagas limitadas.",
+    title: "Make It Fly | Coworking e comunidade Apogee",
+    description: "Um encontro de coworking, comunidade e foco para tirar uma ideia do papel.",
+    url: "/makeitfly", siteName: "Apogee",
     locale: "pt_BR", type: "website",
   });
   assert.deepEqual(publishedMetadata.twitter, {
-    card: "summary", title: "Make it fly | Tire uma ideia do papel",
-    description: "Coworking, comunidade e foco. Vagas limitadas.",
+    card: "summary", title: "Make It Fly | Coworking e comunidade Apogee",
+    description: "Um encontro de coworking, comunidade e foco para tirar uma ideia do papel.",
   });
   const canonical = new URL(publishedMetadata.alternates?.canonical, publishedMetadata.metadataBase);
   assert.equal(canonical.href, "https://www.apogee.community/makeitfly");
