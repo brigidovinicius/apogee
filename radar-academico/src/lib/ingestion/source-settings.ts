@@ -1,7 +1,9 @@
 import { isAllowedHostname } from "./validate-url";
-import type { ExtractionMode } from "./types";
+import { normalizeBrazilianLocation } from "@/lib/location";
+import type { ExtractionMode, SourceType } from "./types";
 
 const modes: ExtractionMode[] = ["rss", "html", "pdf", "api", "sitemap", "manual_assisted", "reference_only", "disabled"];
+const sourceTypes: SourceType[] = ["federal_government", "state_government", "government_foundation", "federal_university", "state_university", "federal_institute", "public_research_institution", "official_reference"];
 export function sourceId(value: FormDataEntryValue | null) {
   const id = String(value ?? "");
   if (!/^[a-z0-9][a-z0-9-]{0,79}$/.test(id)) throw new Error("Fonte inválida");
@@ -27,11 +29,27 @@ export function sourceUrls(value: FormDataEntryValue | null, domains: string[]) 
   })) throw new Error("URLs inválidas");
   return urls;
 }
+export function sourceEvidenceUrl(value: FormDataEntryValue | null, domains: string[]) {
+  const urls = sourceUrls(value, domains);
+  if (urls.length !== 1) throw new Error("Evidência da fonte inválida");
+  return urls[0];
+}
+export function sourceLocation(form: FormData) {
+  const normalized = normalizeBrazilianLocation({ stateCode: form.get("state_code"), cityName: form.get("city_name") });
+  if (normalized.status !== "valid" || !normalized.location.stateCode) throw new Error("UF da fonte é obrigatória");
+  return normalized.location;
+}
+export function sourceType(value: FormDataEntryValue | null) {
+  const type = String(value ?? "");
+  if (!sourceTypes.includes(type as SourceType)) throw new Error("Tipo de fonte inválido");
+  return type as SourceType;
+}
 export function sourceSettings(form: FormData) {
   const id = sourceId(form.get("id"));
   const domains = sourceDomains(form.get("domains"));
+  const evidenceUrl = sourceEvidenceUrl(form.get("audit_evidence_url"), domains);
   const interval = Number(form.get("interval"));
   const mode = String(form.get("mode")) as ExtractionMode;
   if (!Number.isInteger(interval) || interval < 2 || interval > 720 || !modes.includes(mode)) throw new Error("Configurações inválidas");
-  return { id, domains, interval, mode };
+  return { id, domains, evidenceUrl, interval, mode };
 }
