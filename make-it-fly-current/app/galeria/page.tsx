@@ -30,7 +30,6 @@ export default async function GalleryPage({ searchParams }: GalleryPageProps) {
   const offset = (page - 1) * GALLERY_PAGE_SIZE;
   const response = await listCommunityPhotos(
     new Request(`https://www.apogee.community/api/gallery?offset=${offset}`),
-    { cleanupRetired: false },
   );
   const initialPage: CommunityPhotoPage | undefined = response.ok ? await response.json() : undefined;
   if (initialPage && page > 1 && initialPage.photos.length === 0) notFound();

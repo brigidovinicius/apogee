@@ -1,6 +1,6 @@
 # Banco da área de membros (VPS)
 
-Stack Docker **isolado**, que só guarda os dados da área de membros (login e fórum). Ele não compartilha nada com o outro sistema da VPS:
+Stack Docker **isolado**, que guarda os dados da Apogee (login, fórum e galeria). Ele não compartilha nada com o outro sistema da VPS:
 
 | Recurso | Nome |
 |---|---|
@@ -69,7 +69,7 @@ docker exec -e MEMBERS_ADMIN_EMAIL=voce@exemplo.com apogee-site-web-1 \
   npm run members:grant-admin
 ```
 
-Quando o schema (`lib/members/schema.ts`) mudar, rode `npm run db:generate`, revise o SQL em `drizzle/` e rode `npm run db:migrate`.
+Quando o schema (`lib/members/schema.ts` ou `lib/gallery-schema.ts`) mudar, rode `npm run db:generate`, revise o SQL em `drizzle/` e rode `npm run db:migrate`.
 
 ## 4. Backups
 

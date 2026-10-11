@@ -45,7 +45,7 @@ test("gallery pages have their own canonical URL and server-rendered public data
   assert.deepEqual(result.props.initialPage, { photos: [{ id: "public-photo" }], nextOffset: 48 });
   assert.equal(result.props.initialOffset, 24);
   assert.equal(result.key, "2");
-  assert.deepEqual(calls, [{ offset: "24", options: { cleanupRetired: false } }]);
+  assert.deepEqual(calls, [{ offset: "24", options: undefined }]);
   const first = await route.generateMetadata({ searchParams: Promise.resolve({}) });
   assert.equal(first.alternates.canonical, "/galeria");
 });
