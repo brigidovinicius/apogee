@@ -315,3 +315,18 @@ nova publicação. O SHA implantado acima identifica a aplicação publicada.
 Um commit documental posterior não altera esse estado nem implica que este
 acréscimo já esteja presente no checkout da VPS; nenhuma outra publicação foi
 feita por causa deste registro.
+
+## Registro de release — SEO e galeria PostgreSQL (2026-10-11)
+
+- Autorização: usuário aprovou push/deploy das melhorias SEO e depois a correção da galeria com PostgreSQL direto na VPS.
+- SEO: PR 19, CI 38165094585; SHA 294b3cb863264878a1bdc76fe79fe9d455fd2089 publicado e saudável, com subtree do site igual ao head testado 244f0aa. A varredura encontrou a dependência legada Supabase da galeria em 503.
+- Correção: PR 21, CI final 38167703754, quatro jobs aprovados. Revisão testada ff41bc7f4fd374edb1a6029084ec8115f5104280; publicada 7741a7199a0780f8850a1cbeb8c3b4b4f638e4c2, incorporando a administração já aprovada na PR 20.
+- Preflight: checkout e6c1822 limpo, imagem anterior healthy, configuração 600, rollback presente, 6 GB disponíveis e 74 GB livres. Outros serviços não foram reconstruídos.
+- Fluxo: fetch explícito de main, comparação do código testado, detach no SHA aprovado, Compose config -q e build somente web; pg_dump -Fc protegido e conferido; execução do comando estreito `gallery:migrate` da imagem aprovada; up -d --no-deps --force-recreate web.
+- Backup preservado: `/opt/apogee-membros/backups/apogee_membros-before-gallery-20261011T193000Z.dump`, 27.360 bytes, 600, legível por pg_restore --list. Não foi realizado restore de teste.
+- Migração aditiva criou somente `gallery_photo` e registrou hash no histórico Drizzle. Resultado changed=true; duas migrações, zero fotos, proprietário apogee_app. Oito schemas de tabelas anteriores iguais nos snapshots.
+- Ao passar um script por SSH/stdin, comandos Compose run precisam receber `< /dev/null` para não consumir as linhas seguintes do script. A primeira execução concluiu a migração e terminou antes do recreate; SHA/imagem atuais foram relidos e o recreate foi concluído separadamente, sem repetir a migração.
+- Resultado: checkout limpo, revisão 7741a71, imagem `sha256:d45e4e0d9f85c4f7429d4882d0884950ff6e02eb8b2adb28d28aa228713f6066`, healthy, zero reinícios. Somente web mudou; outros 11 containers conservaram ID, imagem e início. Hash/mode da configuração protegida preservados; sem transferência de segredos ou alterações de DNS, Caddy e redes por esta correção.
+- Rollback de código: e6c18222485c54a1b44b0d14fc518a886f9eba6d, imagem `sha256:d88b86f4fd481b514b93ff3fa4b4c910099fb0d109d670aec768cc178268e2d7`. Preservar tabela e novos envios; não executar DROP nem restore amplo para rollback de código.
+- HTTP: verificadores estritos passaram em cinco páginas públicas, oito superfícies excluídas, 12 rotas protegidas, APIs, 404, 40 recursos internos, sitemap/robots e domínio canônico. Galeria/API 200 sem fotos e sem erro; nenhum upload sintético publicado em produção.
+- Evidências e limites: `docs/google-search-essentials-audit.md` e `docs/gallery-postgres-repair.md`. A revisão de documentação posterior fica na branch autorizada; não representa outra imagem de produção.
