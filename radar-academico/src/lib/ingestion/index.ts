@@ -1,4 +1,4 @@
-import { loadActiveOfficialSources, officialSourceRegistry } from "./official-source-registry";
+import { getOfficialSource, loadActiveOfficialSources, officialSourceRegistry } from "./official-source-registry";
 import { deduplicateCandidates } from "./detect-duplicates";
 import { fetchOfficialResource, boundedInteger } from "./fetch-source";
 import { normalizeOpportunity } from "./normalize-opportunity";
@@ -9,7 +9,11 @@ import type { IngestionResult, OfficialSource } from "./types";
 import { isOfficialSourceUrl } from "./validate-url";
 import { normalizeBrazilianLocation } from "@/lib/location";
 
-async function ingestSource(source: OfficialSource, budget: { remaining: number }): Promise<IngestionResult> {
+async function ingestSource(
+  source: OfficialSource,
+  budget: { remaining: number },
+  maxCandidates?: number,
+): Promise<IngestionResult> {
   const result: IngestionResult = { sourceId: source.id, pagesChecked: 0, discovered: [], ignored: 0, failed: 0, locationRejected: 0, warnings: [] };
   if (normalizeBrazilianLocation(source.location ?? {}).status === "invalid") {
     result.failed = 1;
@@ -47,20 +51,48 @@ async function ingestSource(source: OfficialSource, budget: { remaining: number 
       result.warnings.push("Falha ao consultar fonte oficial; revisar configuração e disponibilidade.");
     }
   }
-  result.discovered = deduplicateCandidates(result.discovered);
+  const deduplicated = deduplicateCandidates(result.discovered);
+  if (maxCandidates !== undefined && deduplicated.length > maxCandidates) {
+    result.ignored += deduplicated.length - maxCandidates;
+    result.discovered = deduplicated.slice(0, maxCandidates);
+  } else {
+    result.discovered = deduplicated;
+  }
   return result;
 }
 
-async function runIngestion() {
-  const budget = { remaining: boundedInteger(process.env.INGESTION_MAX_PAGES_PER_RUN, 20, 1, 100) };
+export type OfficialSourceIngestionOptions = {
+  sourceId?: string;
+  maxPages?: number;
+  maxCandidates?: number;
+};
+
+async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
+  const requestedMaxPages = options.maxPages === undefined ? undefined : String(options.maxPages);
+  const requestedMaxCandidates = options.maxCandidates === undefined ? undefined : String(options.maxCandidates);
+  const budget = {
+    remaining: requestedMaxPages === undefined
+      ? boundedInteger(process.env.INGESTION_MAX_PAGES_PER_RUN, 20, 1, 100)
+      : boundedInteger(requestedMaxPages, 1, 1, 10),
+  };
   const report = [];
-  if (process.env.DATABASE_URL) {
-    const { syncOfficialSource } = await import("./save-review-item");
-    for (const source of officialSourceRegistry) await syncOfficialSource(source);
+  const maxCandidates = requestedMaxCandidates === undefined
+    ? undefined
+    : boundedInteger(requestedMaxCandidates, 10, 1, 10);
+  let activeSources: OfficialSource[];
+  if (options.sourceId) {
+    const source = getOfficialSource(options.sourceId);
+    if (!source || !source.active) throw new Error("Fonte oficial inválida ou inativa");
+    activeSources = [source];
+  } else {
+    if (process.env.DATABASE_URL) {
+      const { syncOfficialSource } = await import("./save-review-item");
+      for (const source of officialSourceRegistry) await syncOfficialSource(source);
+    }
+    activeSources = await loadActiveOfficialSources();
   }
-  const activeSources = await loadActiveOfficialSources();
   for (const source of activeSources.sort((a, b) => b.priority - a.priority)) {
-    const result = await ingestSource(source, budget);
+    const result = await ingestSource(source, budget, maxCandidates);
     const persistence = await saveReviewItems(source, result);
     report.push({ ...result, ...persistence });
     if (budget.remaining <= 0) break;
@@ -77,9 +109,9 @@ async function runIngestion() {
 }
 
 let running = false;
-export async function runOfficialSourceIngestion() {
+export async function runOfficialSourceIngestion(options?: OfficialSourceIngestionOptions) {
   if (running) throw new Error("Ingestão já em andamento");
   running = true;
-  try { return await runIngestion(); }
+  try { return await runIngestion(options); }
   finally { running = false; }
 }

@@ -40,8 +40,11 @@ it("cron fails closed and does not disclose internal failures", async () => {
   expect((await cron(new Request("https://radar.example/cron"))).status).toBe(401);
   vi.stubEnv("CRON_SECRET", "fixture");
   vi.mocked(runOfficialSourceIngestion).mockRejectedValue(new Error("postgres://secret"));
-  const response = await cron(new Request("https://radar.example/cron", { headers: { authorization: "Bearer fixture" } }));
+  expect((await cron(new Request("https://radar.example/cron", { headers: { authorization: "Bearer fixture" } }))).status).toBe(400);
+  expect((await cron(new Request("https://radar.example/cron?sourceId=ufsc-propesq&maxPages=0", { headers: { authorization: "Bearer fixture" } }))).status).toBe(400);
+  const response = await cron(new Request("https://radar.example/cron?sourceId=ufsc-propesq&maxPages=1&maxCandidates=10", { headers: { authorization: "Bearer fixture" } }));
   expect(response.status).toBe(500); expect(await response.text()).not.toMatch(/postgres|secret/);
+  expect(runOfficialSourceIngestion).toHaveBeenCalledWith({ sourceId: "ufsc-propesq", maxPages: 1, maxCandidates: 10 });
 });
 it("CSV requires admin and returns only generic parser errors", async () => {
   vi.mocked(isAdmin).mockResolvedValue(false);
