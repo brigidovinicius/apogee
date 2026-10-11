@@ -3,384 +3,149 @@ import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import test from "node:test";
 import ts from "typescript";
-
 const require = createRequire(import.meta.url);
 const sharp = require("sharp");
-
-async function loadInstagram() {
-  const source = await readFile(new URL("../lib/instagram.ts", import.meta.url), "utf8");
-  const output = ts.transpileModule(source, {
-    fileName: "instagram.ts",
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText;
-  const exports = {};
-  new Function("exports", output)(exports);
-  return exports;
-}
-
-async function loadGallery() {
-  const instagram = await loadInstagram();
-  const paginationOutput = ts.transpileModule(await readFile(new URL("../lib/gallery-pagination.ts", import.meta.url), "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS },
-  }).outputText;
-  const pagination = {};
-  new Function("exports", paginationOutput)(pagination);
-  const adminAuthSource = await readFile(new URL("../lib/admin-auth.ts", import.meta.url), "utf8");
-  const adminAuthOutput = ts.transpileModule(adminAuthSource, {
-    fileName: "admin-auth.ts",
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText;
-  const adminAuthModule = { exports: {} };
-  new Function("require", "module", "exports", adminAuthOutput)((specifier) => {
-    if (specifier === "server-only") return {};
-    return require(specifier);
-  }, adminAuthModule, adminAuthModule.exports);
-  const source = await readFile(new URL("../lib/gallery.ts", import.meta.url), "utf8");
-  const output = ts.transpileModule(source, {
-    fileName: "gallery.ts",
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
-  }).outputText;
+const origin = "https://www.apogee.community";
+const id = "2026-09-23T10-57-15-503Z-3033bf41-154b-4294-8a89-5c32c8e423df";
+const retiredId = "2026-09-23T01-38-36-784Z-450e2012-5e58-49c6-b59e-cc431e29b073";
+async function load(path, mocks = {}) {
+  const source = await readFile(new URL(`../lib/${path}.ts`, import.meta.url), "utf8");
+  const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } }).outputText;
   const loadedModule = { exports: {} };
-  new Function("require", "module", "exports", output)((specifier) => {
+  new Function("require", "module", "exports", output)(specifier => {
     if (specifier === "server-only") return {};
-    if (specifier === "./admin-auth") return adminAuthModule.exports;
-    if (specifier === "./instagram") return instagram;
-    if (specifier === "./gallery-pagination") return pagination;
-    return require(specifier);
-  }, loadedModule, loadedModule.exports);
+    return specifier in mocks ? mocks[specifier] : require(specifier);
+  }, module, loadedModule.exports);
   return loadedModule.exports;
 }
-
-test("Instagram credit accepts @handles and profile links, but rejects post links", async () => {
-  const { normalizeInstagram } = await loadInstagram();
-  assert.equal(normalizeInstagram(" @pessoa.teste "), "pessoa.teste");
-  assert.equal(normalizeInstagram("https://www.instagram.com/pessoa.teste/?igsh=abc"), "pessoa.teste");
-  assert.equal(normalizeInstagram("instagram.com/pessoa.teste/"), "pessoa.teste");
-  assert.equal(normalizeInstagram("https://www.instagram.com/p/abc/"), null);
-  assert.equal(normalizeInstagram("https://instagram.com.evil.test/pessoa"), null);
-});
-
-function setGalleryEnvironment() {
-  process.env.SUPABASE_URL = "https://test.supabase.co/";
-  process.env.SUPABASE_SECRET_KEY = `sb_secret_${"x".repeat(36)}`;
-  process.env.APPLICATION_SIGNING_SECRET = "test-signing-secret-longer-than-32-chars";
-  process.env.VERCEL = "0";
+async function fixture(overrides = {}) {
+  // Ausência/valor inválido de Supabase nunca interfere na galeria PostgreSQL.
+  delete process.env.SUPABASE_SECRET_KEY;
+  process.env.SUPABASE_URL = "invalid";
+  process.env.BETTER_AUTH_SECRET = "test-auth-secret-longer-than-32-characters";
+  process.env.APPLICATION_HOSTING_PROVIDER = "caddy";
+  const calls = [];
+  const rows = new Map();
+  const repository = {
+    async listStoredPhotos(offset, limit) { calls.push({ method: "list", offset, limit }); return [...rows.values()].map(row => row.photo).filter(photo => photo.id !== retiredId).sort((a,b) => b.id.localeCompare(a.id)).slice(offset, offset + limit); },
+    async saveStoredPhoto(photo, image) { calls.push({ method: "save", photo, image }); rows.set(photo.id, { photo, image }); },
+    async readStoredImage(id) { calls.push({ method: "image", id }); return rows.get(id)?.image ?? null; },
+    async deleteStoredPhoto(id) { calls.push({ method: "delete", id }); rows.delete(id); },
+    ...overrides,
+  };
+  const gallery = await load("gallery", {
+    "./admin-auth": await load("admin-auth"), "./instagram": await load("instagram"),
+    "./gallery-pagination": await load("gallery-pagination"), "./gallery-repository": repository,
+  });
+  return { gallery, calls, rows };
 }
-
-test("gallery rejects cross-origin uploads before touching storage", async () => {
-  setGalleryEnvironment();
-  const gallery = await loadGallery();
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = async () => { throw new Error("Storage must not be contacted"); };
-  try {
-    const response = await gallery.uploadCommunityPhoto(new Request("https://makeitfly.vercel.app/api/gallery", {
-      method: "POST",
-      headers: { origin: "https://another.example", "content-length": "100", "content-type": "multipart/form-data; boundary=test" },
-      body: "wrong origin",
-    }));
-    assert.equal(response.status, 403);
-  } finally {
-    globalThis.fetch = previousFetch;
-  }
-});
-
-test("gallery stores processed WebP and credits, then lists only real submissions", async () => {
-  setGalleryEnvironment();
-  const gallery = await loadGallery();
-  const original = await sharp({ create: { width: 160, height: 120, channels: 3, background: "#aabbcc" } }).webp().toBuffer();
+async function uploadRequest({ anonymous = false, mime = "image/webp", length, consent = true } = {}) {
+  const image = sharp({ create: { width: 160, height: 120, channels: 3, background: "#aabbcc" } });
+  const original = await (mime === "image/jpeg" ? image.jpeg() : image.webp()).toBuffer();
   const form = new FormData();
-  form.append("photo", new File([original], "photo.webp", { type: "image/webp" }));
-  form.append("author", "Pessoa Teste");
-  form.append("instagram", "https://www.instagram.com/pessoa.teste/");
-  form.append("anonymous", "false");
-  form.append("consent", "true");
-  const requests = [];
-  let credit;
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = async (url, init) => {
-    requests.push({ url: String(url), init });
-    if (String(url).includes("/object/list/")) return Response.json([{ name: `${credit.id}.json` }]);
-    if (String(url).includes("/entries/") && init.method === "GET") return Response.json(credit);
-    if (String(url).includes("/entries/") && init.method === "POST") credit = JSON.parse(init.body);
-    return Response.json({ Key: "ok" });
-  };
-  try {
-    const response = await gallery.uploadCommunityPhoto(new Request("https://makeitfly.vercel.app/api/gallery", {
-      method: "POST",
-      headers: { origin: "https://makeitfly.vercel.app", "content-length": "1000" },
-      body: form,
-    }));
-    assert.equal(response.status, 201);
-    const uploaded = (await response.json()).photo;
-    assert.equal(uploaded.author, "Pessoa Teste");
-    assert.equal(uploaded.instagram, "pessoa.teste");
-    assert.equal(uploaded.anonymous, false);
-    assert.match(uploaded.src, /\/photos\/.*\.webp$/);
-    assert.equal(requests[0].init.headers["Content-Type"], "image/webp");
-    const publicImage = Buffer.from(requests[0].init.body);
-    const info = await sharp(publicImage).metadata();
-    assert.equal(info.format, "webp");
-    assert.equal(info.exif, undefined);
-    assert.equal(info.width, 160);
-    const listed = await gallery.listCommunityPhotos();
-    assert.equal(listed.status, 200);
-    const page = await listed.json();
-    assert.deepEqual(page.photos, [uploaded]);
-    assert.equal(page.nextOffset, null);
-  } finally {
-    globalThis.fetch = previousFetch;
-  }
+  form.append("photo", new File([original], "photo", { type: mime }));
+  form.append("author", "Pessoa Teste"); form.append("instagram", "https://www.instagram.com/pessoa.teste/");
+  form.append("anonymous", String(anonymous)); form.append("consent", String(consent));
+  return new Request(`${origin}/api/gallery`, { method: "POST", headers: { origin, ...(length ? { "content-length": length } : {}) }, body: form });
+}
+function deleteRequest(photoId = id, token) {
+  return new Request(`${origin}/api/gallery/admin`, { method: "DELETE", headers: { origin, "content-type": "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ id: photoId }) });
+}
+test("Instagram credit accepts handles/profile links and rejects other destinations", async () => {
+  const { normalizeInstagram } = await load("instagram");
+  for (const value of [" @pessoa.teste ", "https://www.instagram.com/pessoa.teste/?igsh=abc", "instagram.com/pessoa.teste/"]) assert.equal(normalizeInstagram(value), "pessoa.teste");
+  for (const value of ["https://www.instagram.com/p/abc/", "https://instagram.com.evil.test/pessoa"]) assert.equal(normalizeInstagram(value), null);
 });
-
-test("anonymous publishing discards submitted name and Instagram", async () => {
-  setGalleryEnvironment();
-  const gallery = await loadGallery();
-  const original = await sharp({ create: { width: 160, height: 120, channels: 3, background: "#aabbcc" } }).webp().toBuffer();
-  const form = new FormData();
-  form.append("photo", new File([original], "photo.webp", { type: "image/webp" }));
-  form.append("author", "Não guardar este nome");
-  form.append("instagram", "@nao.guardar");
-  form.append("anonymous", "true");
-  form.append("consent", "true");
-  let storedCredit;
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = async (url, init) => {
-    if (String(url).includes("/entries/") && init.method === "POST") storedCredit = JSON.parse(init.body);
-    return Response.json({ Key: "ok" });
-  };
+test("cross-origin uploads fail before PostgreSQL access or signing configuration", async () => {
+  const { gallery, calls } = await fixture(); delete process.env.BETTER_AUTH_SECRET;
+  const response = await gallery.uploadCommunityPhoto(new Request(`${origin}/api/gallery`, { method: "POST", headers: { origin: "https://other.example" }, body: "bad" }));
+  assert.equal(response.status, 403); assert.equal(calls.length, 0);
+});
+test("PostgreSQL upload saves processed WebP and credits atomically, with no Supabase requests", async () => {
+  const { gallery, calls } = await fixture();
+  const previous = globalThis.fetch; globalThis.fetch = () => { throw new Error("External storage must not be contacted"); };
   try {
-    const response = await gallery.uploadCommunityPhoto(new Request("https://makeitfly.vercel.app/api/gallery", {
-      method: "POST",
-      headers: { origin: "https://makeitfly.vercel.app", "content-length": "1000" },
-      body: form,
-    }));
-    assert.equal(response.status, 201);
+    const response = await gallery.uploadCommunityPhoto(await uploadRequest()); assert.equal(response.status, 201);
     const photo = (await response.json()).photo;
-    assert.equal(photo.author, "Anônimo");
-    assert.equal(photo.instagram, "");
-    assert.equal(photo.anonymous, true);
-    assert.equal(storedCredit.author, "Anônimo");
-    assert.equal(storedCredit.instagram, "");
-    assert.doesNotMatch(JSON.stringify(storedCredit), /Não guardar|nao\.guardar/);
-  } finally {
-    globalThis.fetch = previousFetch;
-  }
+    assert.equal(photo.author, "Pessoa Teste"); assert.equal(photo.instagram, "pessoa.teste");
+    assert.equal(photo.anonymous, false); assert.equal(photo.src, `/galeria/fotos/${photo.id}.webp`);
+    assert.deepEqual(calls.map(call => call.method), ["save"]);
+    const info = await sharp(calls[0].image).metadata();
+    assert.equal(info.format, "webp"); assert.equal(info.exif, undefined); assert.equal(info.width, 160);
+    assert.ok(calls[0].photo.consentVersion); assert.ok(calls[0].photo.consentedAt);
+    const page = await (await gallery.listCommunityPhotos()).json(); assert.deepEqual(page, { photos: [photo], nextOffset: null });
+  } finally { globalThis.fetch = previous; }
 });
-
-test("gallery management requires the existing admin token and deletes only the selected pair", async () => {
-  setGalleryEnvironment();
+test("anonymous publication discards entered identity from both saved and public data", async () => {
+  const { gallery, calls } = await fixture();
+  const response = await gallery.uploadCommunityPhoto(await uploadRequest({ anonymous: true })); assert.equal(response.status, 201);
+  const photo = (await response.json()).photo;
+  assert.equal(photo.author, "Anônimo"); assert.equal(photo.instagram, ""); assert.equal(photo.anonymous, true);
+  assert.doesNotMatch(JSON.stringify(calls[0].photo), /Pessoa Teste|pessoa\.teste/);
+});
+test("failed atomic storage reports 503 without a successful public photo", async () => {
+  const { gallery } = await fixture({ saveStoredPhoto: async () => { throw new Error("private database details"); } });
+  const response = await gallery.uploadCommunityPhoto(await uploadRequest()); assert.equal(response.status, 503);
+  assert.doesNotMatch(await response.text(), /private database/);
+});
+test("public reads whitelist credits, paginate and never delete retired data", async () => {
+  const raw = { id, author: "Anônimo", instagram: "", anonymous: true, width: 900, height: 1600, createdAt: "2026-09-23T10:57:15.503Z", consentVersion: "private", image: "private", secret: "private" };
+  const { gallery, calls } = await fixture({ listStoredPhotos: async (offset, limit) => { calls.push({ method: "list", offset, limit }); return Array.from({ length: 25 }, () => raw); } });
+  const body = await (await gallery.listCommunityPhotos(new Request(`${origin}/api/gallery?offset=24`))).json();
+  assert.equal(body.photos.length, 24); assert.equal(body.nextOffset, 48);
+  assert.deepEqual(Object.keys(body.photos[0]).sort(), ["id", "src", "author", "instagram", "anonymous", "width", "height", "createdAt"].sort());
+  assert.deepEqual(calls, [{ method: "list", offset: 24, limit: 25 }]);
+  assert.equal((await gallery.listCommunityPhotos(new Request(`${origin}/api/gallery?offset=-1`))).status, 400);
+  assert.equal(calls.length, 1);
+});
+test("retired photos are excluded without deleting them during reads", async () => {
+  const { gallery, calls, rows } = await fixture();
+  rows.set(retiredId, { photo: { id: retiredId } });
+  assert.deepEqual(await (await gallery.listCommunityPhotos()).json(), { photos: [], nextOffset: null });
+  assert.equal(rows.size, 1); assert.deepEqual(calls.map(call => call.method), ["list"]);
+});
+test("management authorizes admin role and rejects members before touching PostgreSQL", async () => {
+  const { gallery, calls } = await fixture();
+  assert.equal((await gallery.manageCommunityPhotos(deleteRequest(), { memberRole: "member" })).status, 404); assert.equal(calls.length, 0);
+  const response = await gallery.manageCommunityPhotos(deleteRequest(), { memberRole: "admin" });
+  assert.equal(response.status, 200); assert.deepEqual(calls, [{ method: "delete", id }]); assert.match(response.headers.get("cache-control"), /private/);
+});
+test("management preserves the authorized operational token and deletes only the selected record", async () => {
   process.env.APPLICATION_EXPORT_TOKEN = "a".repeat(64);
-  const gallery = await loadGallery();
-  const id = "2026-09-23T01-38-36-784Z-450e2012-5e58-49c6-b59e-cc431e29b073";
-  const requests = [];
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = async (url, init) => {
-    requests.push({ url: String(url), method: init.method });
-    return Response.json({});
-  };
   try {
-    const denied = await gallery.manageCommunityPhotos(new Request("https://makeitfly.vercel.app/api/gallery/admin", {
-      method: "DELETE",
-      headers: { origin: "https://makeitfly.vercel.app", authorization: `Bearer ${"b".repeat(64)}`, "content-type": "application/json" },
-      body: JSON.stringify({ id }),
-    }));
-    assert.equal(denied.status, 404);
-    assert.equal(requests.length, 0);
-
-    const deleted = await gallery.manageCommunityPhotos(new Request("https://makeitfly.vercel.app/api/gallery/admin", {
-      method: "DELETE",
-      headers: { origin: "https://makeitfly.vercel.app", authorization: `Bearer ${"a".repeat(64)}`, "content-type": "application/json" },
-      body: JSON.stringify({ id }),
-    }));
-    assert.equal(deleted.status, 200);
-    assert.deepEqual(requests, [
-      { url: `https://test.supabase.co/storage/v1/object/apogee-community-photos/photos/${id}.webp`, method: "DELETE" },
-      { url: `https://test.supabase.co/storage/v1/object/apogee-community-photos/entries/${id}.json`, method: "DELETE" },
-    ]);
-  } finally {
-    globalThis.fetch = previousFetch;
-    delete process.env.APPLICATION_EXPORT_TOKEN;
-  }
+    const { gallery, calls } = await fixture();
+    assert.equal((await gallery.manageCommunityPhotos(deleteRequest(id, "b".repeat(64)))).status, 404); assert.equal(calls.length, 0);
+    assert.equal((await gallery.manageCommunityPhotos(deleteRequest(id, "a".repeat(64)))).status, 200);
+    assert.deepEqual(calls, [{ method: "delete", id }]);
+  } finally { delete process.env.APPLICATION_EXPORT_TOKEN; }
 });
-
-test("gallery management accepts an authenticated admin role and rejects a member role", async () => {
-  setGalleryEnvironment();
-  const gallery = await loadGallery();
-  const id = "2026-09-23T01-38-36-784Z-450e2012-5e58-49c6-b59e-cc431e29b073";
-  const requests = [];
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = async (url, init) => {
-    requests.push({ url: String(url), method: init.method });
-    return Response.json({});
-  };
-  try {
-    const member = await gallery.manageCommunityPhotos(new Request("https://www.apogee.community/api/gallery/admin", {
-      method: "DELETE",
-      headers: { origin: "https://www.apogee.community", "content-type": "application/json" },
-      body: JSON.stringify({ id }),
-    }), { memberRole: "member" });
-    assert.equal(member.status, 404);
-    assert.equal(requests.length, 0);
-
-    const admin = await gallery.manageCommunityPhotos(new Request("https://www.apogee.community/api/gallery/admin", {
-      method: "DELETE",
-      headers: { origin: "https://www.apogee.community", "content-type": "application/json" },
-      body: JSON.stringify({ id }),
-    }), { memberRole: "admin" });
-    assert.equal(admin.status, 200);
-    assert.deepEqual(requests, [
-      { url: `https://test.supabase.co/storage/v1/object/apogee-community-photos/photos/${id}.webp`, method: "DELETE" },
-      { url: `https://test.supabase.co/storage/v1/object/apogee-community-photos/entries/${id}.json`, method: "DELETE" },
-    ]);
-  } finally {
-    globalThis.fetch = previousFetch;
-  }
+test("oversized streamed deletion is cancelled before PostgreSQL access", async () => {
+  const { gallery, calls } = await fixture(); let pulls = 0; let cancelled = false;
+  const body = new ReadableStream({ pull(controller) { pulls++; controller.enqueue(new Uint8Array(700)); }, cancel() { cancelled = true; } }, { highWaterMark: 0 });
+  const request = new Request(`${origin}/api/gallery/admin`, { method: "DELETE", headers: { origin, "content-type": "application/json" }, body, duplex: "half" });
+  assert.equal((await gallery.manageCommunityPhotos(request, { memberRole: "admin" })).status, 413);
+  assert.equal(pulls, 2); assert.equal(cancelled, true); assert.equal(calls.length, 0);
 });
-
-test("gallery management rejects an oversized streamed delete body before storage access", async () => {
-  setGalleryEnvironment();
-  process.env.APPLICATION_EXPORT_TOKEN = "a".repeat(64);
-  const gallery = await loadGallery();
-  let pulls = 0;
-  let cancelled = false;
-  const body = new ReadableStream({
-    pull(controller) {
-      pulls += 1;
-      if (pulls <= 2) controller.enqueue(new Uint8Array(700));
-      else controller.error(new Error("body was read past the configured limit"));
-    },
-    cancel() {
-      cancelled = true;
-    },
-  }, { highWaterMark: 0 });
-  let storageCalls = 0;
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = async () => {
-    storageCalls += 1;
-    return Response.json({});
-  };
-  try {
-    const response = await gallery.manageCommunityPhotos(new Request("https://makeitfly.vercel.app/api/gallery/admin", {
-      method: "DELETE",
-      headers: {
-        origin: "https://makeitfly.vercel.app",
-        authorization: `Bearer ${"a".repeat(64)}`,
-        "content-type": "application/json",
-      },
-      body,
-      duplex: "half",
-    }));
-    assert.equal(response.status, 413);
-    assert.equal(pulls, 2);
-    assert.equal(cancelled, true);
-    assert.equal(storageCalls, 0);
-  } finally {
-    globalThis.fetch = previousFetch;
-    delete process.env.APPLICATION_EXPORT_TOKEN;
-  }
+test("authenticated administration keeps GET responses private", async () => {
+  const { gallery } = await fixture();
+  const response = await gallery.manageCommunityPhotos(new Request(`${origin}/api/gallery/admin`), { memberRole: "admin" });
+  assert.equal(response.status, 200); assert.match(response.headers.get("cache-control"), /private, no-store/); assert.match(response.headers.get("x-robots-tag"), /noindex/);
 });
-
-test("server gallery rendering reads only public DTOs and never performs cleanup", async () => {
-  setGalleryEnvironment();
-  const gallery = await loadGallery();
-  const id = "2026-09-23T10-57-15-503Z-3033bf41-154b-4294-8a89-5c32c8e423df";
-  const retiredId = "2026-09-23T01-38-36-784Z-450e2012-5e58-49c6-b59e-cc431e29b073";
-  const photo = { id, author: "Anônimo", instagram: "", anonymous: true, width: 900, height: 1600, createdAt: "2026-09-23T10:57:15.503Z", secret: "must-not-leak" };
-  const requests = [];
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = async (url, init) => {
-    requests.push({ url: String(url), method: init.method, body: init.body });
-    if (String(url).includes("/object/list/")) return Response.json([{ name: `${id}.json` }, { name: `${retiredId}.json` }]);
-    return Response.json(photo);
-  };
-  try {
-    const response = await gallery.listCommunityPhotos(new Request("https://www.apogee.community/api/gallery?offset=24"), { cleanupRetired: false });
-    assert.equal(response.status, 200);
-    const body = await response.json();
-    assert.deepEqual(body.photos.map(item => item.id), [id]);
-    assert.equal(body.photos[0].secret, undefined);
-    assert.equal(body.photos[0].width, 900);
-    assert.equal(requests.some(request => request.method === "DELETE"), false);
-    assert.equal(JSON.parse(requests[0].body).offset, 24);
-  } finally { globalThis.fetch = previousFetch; }
+for (const mime of ["image/jpeg", "image/webp"]) test(`bounded ${mime} mobile upload works without Content-Length`, async () => {
+  const { gallery, calls } = await fixture();
+  assert.equal((await gallery.uploadCommunityPhoto(await uploadRequest({ mime }))).status, 201);
+  assert.equal((await sharp(calls[0].image).metadata()).format, "webp");
 });
-
-test("the retired identified test photo is removed while anonymous gallery entries remain", async () => {
-  setGalleryEnvironment();
-  const gallery = await loadGallery();
-  const retiredId = "2026-09-23T01-38-36-784Z-450e2012-5e58-49c6-b59e-cc431e29b073";
-  const anonymousId = "2026-09-23T10-57-15-503Z-3033bf41-154b-4294-8a89-5c32c8e423df";
-  const anonymous = { id: anonymousId, author: "Anônimo", instagram: "", anonymous: true, width: 900, height: 1600, createdAt: "2026-09-23T10:57:15.503Z" };
-  const requests = [];
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = async (url, init) => {
-    requests.push({ url: String(url), method: init.method });
-    if (String(url).includes("/object/list/")) return Response.json([{ name: `${anonymousId}.json` }, { name: `${retiredId}.json` }]);
-    if (String(url).endsWith(`${anonymousId}.json`) && init.method === "GET") return Response.json(anonymous);
-    return Response.json({});
-  };
-  try {
-    const response = await gallery.listCommunityPhotos();
-    assert.equal(response.status, 200);
-    const body = await response.json();
-    assert.deepEqual(body.photos.map((photo) => photo.id), [anonymousId]);
-    assert.ok(requests.some((request) => request.url.endsWith(`/photos/${retiredId}.webp`) && request.method === "DELETE"));
-    assert.ok(requests.some((request) => request.url.endsWith(`/entries/${retiredId}.json`) && request.method === "DELETE"));
-    assert.equal(requests.some((request) => request.url.includes(anonymousId) && request.method === "DELETE"), false);
-  } finally {
-    globalThis.fetch = previousFetch;
-  }
-});
-
-test("gallery accepts browser-prepared JPEG fallback and still stores WebP", async () => {
-  setGalleryEnvironment();
-  const gallery = await loadGallery();
-  const jpeg = await sharp({ create: { width: 128, height: 96, channels: 3, background: "#abcdef" } }).jpeg().toBuffer();
-  const form = new FormData();
-  form.append("photo", new File([jpeg], "mobile.jpg", { type: "image/jpeg" }));
-  form.append("author", "Pessoa Teste");
-  form.append("instagram", "@pessoa.teste");
-  form.append("anonymous", "false");
-  form.append("consent", "true");
-  let publicImage;
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = async (url, init) => {
-    if (String(url).includes("/photos/") && init.method === "POST") publicImage = Buffer.from(init.body);
-    return Response.json({ Key: "ok" });
-  };
-  try {
-    const response = await gallery.uploadCommunityPhoto(new Request("https://makeitfly.vercel.app/api/gallery", {
-      method: "POST",
-      headers: { origin: "https://makeitfly.vercel.app", "content-length": "1000" },
-      body: form,
-    }));
-    assert.equal(response.status, 201);
-    assert.equal((await sharp(publicImage).metadata()).format, "webp");
-  } finally {
-    globalThis.fetch = previousFetch;
-  }
-});
-
-test("gallery accepts a bounded mobile upload without Content-Length", async () => {
-  setGalleryEnvironment();
-  const gallery = await loadGallery();
-  const jpeg = await sharp({ create: { width: 128, height: 96, channels: 3, background: "#abcdef" } }).jpeg().toBuffer();
-  const form = new FormData();
-  form.append("photo", new File([jpeg], "mobile.jpg", { type: "image/jpeg" }));
-  form.append("author", "Pessoa Teste");
-  form.append("instagram", "@pessoa.teste");
-  form.append("anonymous", "false");
-  form.append("consent", "true");
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = async () => Response.json({ Key: "ok" });
-  try {
-    const response = await gallery.uploadCommunityPhoto(new Request("https://makeitfly.vercel.app/api/gallery", {
-      method: "POST",
-      headers: { origin: "https://makeitfly.vercel.app" },
-      body: form,
-    }));
-    assert.equal(response.status, 201);
-  } finally {
-    globalThis.fetch = previousFetch;
-  }
+test("image route returns only processed bytes and makes removed/invalid images noindex", async () => {
+  const { gallery, rows, calls } = await fixture();
+  const image = await sharp({ create: { width: 10, height: 10, channels: 3, background: "#abc" } }).webp().toBuffer();
+  rows.set(id, { image });
+  const response = await gallery.communityPhotoImage(`${id}.webp`);
+  assert.equal(response.status, 200); assert.equal(response.headers.get("content-type"), "image/webp");
+  assert.equal(response.headers.get("x-robots-tag"), null); assert.equal(response.headers.get("content-length"), String(image.length));
+  assert.deepEqual(Buffer.from(await response.arrayBuffer()), image);
+  const count = calls.length;
+  for (const value of ["../private", `${retiredId}.webp`, `${id}.jpg`]) { const missing = await gallery.communityPhotoImage(value); assert.equal(missing.status, 404); assert.equal(missing.headers.get("x-robots-tag"), "noindex"); }
+  assert.equal(calls.length, count);
+  rows.clear(); assert.equal((await gallery.communityPhotoImage(`${id}.webp`)).status, 404);
 });

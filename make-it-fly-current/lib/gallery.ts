@@ -6,8 +6,8 @@ import { adminAuthorized } from "./admin-auth";
 import type { CommunityPhoto } from "./gallery-types";
 import { normalizeInstagram } from "./instagram";
 import { GALLERY_PAGE_SIZE } from "./gallery-pagination";
+import { deleteStoredPhoto, listStoredPhotos, readStoredImage, saveStoredPhoto } from "./gallery-repository";
 
-const BUCKET = "apogee-community-photos";
 const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
 const MAX_PUBLIC_BYTES = 3 * 1024 * 1024;
 const MAX_ADMIN_BODY_BYTES = 1024;
@@ -22,51 +22,23 @@ const RESPONSE_HEADERS = {
   "Referrer-Policy": "no-referrer",
 };
 
-type GalleryConfig = { url: string; key: string; signingSecret: string };
-
 class GalleryError extends Error {
   constructor(readonly status: number, message: string) {
     super(message);
   }
 }
 
-function config(): GalleryConfig {
-  const url = process.env.SUPABASE_URL || "";
-  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-  const signingSecret = process.env.APPLICATION_SIGNING_SECRET || "";
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== "https:" || !/^[a-z0-9-]+\.supabase\.co$/.test(parsed.hostname) || parsed.pathname !== "/" || parsed.search || parsed.hash || parsed.port) throw new Error();
-    if (!key || signingSecret.length < 32) throw new Error();
-    return { url: parsed.origin, key, signingSecret };
-  } catch {
-    throw new GalleryError(503, "A galeria está indisponível no momento. Tente novamente mais tarde.");
-  }
+function uploadSigningSecret(): string {
+  const secret = process.env.BETTER_AUTH_SECRET || "";
+  if (secret.length < 32) throw new GalleryError(503, "O envio de fotos está indisponível no momento.");
+  return secret;
 }
 
 function json(value: unknown, status = 200): Response {
   return Response.json(value, { status, headers: RESPONSE_HEADERS });
 }
 
-function storageHeaders(key: string, contentType?: string): HeadersInit {
-  return {
-    apikey: key,
-    Authorization: `Bearer ${key}`,
-    ...(contentType ? { "Content-Type": contentType } : {}),
-  };
-}
-
-async function storageRequest(settings: GalleryConfig, path: string, init: RequestInit): Promise<Response> {
-  const response = await fetch(`${settings.url}/storage/v1/${path}`, {
-    ...init,
-    headers: { ...storageHeaders(settings.key), ...init.headers },
-    cache: "no-store",
-    signal: AbortSignal.timeout(12_000),
-  });
-  return response;
-}
-
-function validatePhoto(value: unknown, settings: GalleryConfig): CommunityPhoto | null {
+function validatePhoto(value: unknown): CommunityPhoto | null {
   if (!value || typeof value !== "object") return null;
   const photo = value as Record<string, unknown>;
   if (typeof photo.id !== "string" || !PHOTO_ID_PATTERN.test(photo.id)) return null;
@@ -81,7 +53,7 @@ function validatePhoto(value: unknown, settings: GalleryConfig): CommunityPhoto 
   if (typeof photo.createdAt !== "string" || Number.isNaN(Date.parse(photo.createdAt))) return null;
   return {
     id: photo.id,
-    src: `${settings.url}/storage/v1/object/public/${BUCKET}/photos/${photo.id}.webp`,
+    src: `/galeria/fotos/${photo.id}.webp`,
     author: photo.author,
     instagram: photo.instagram,
     anonymous,
@@ -91,55 +63,47 @@ function validatePhoto(value: unknown, settings: GalleryConfig): CommunityPhoto 
   };
 }
 
-// Rendering a page only reads public data; cleanup belongs to the existing API.
-export async function listCommunityPhotos(request?: Request, { cleanupRetired = true } = {}): Promise<Response> {
+// Todas as leituras são livres de alterações, inclusive o endpoint público.
+export async function listCommunityPhotos(request?: Request): Promise<Response> {
   try {
-    const settings = config();
     const rawOffset = request ? new URL(request.url).searchParams.get("offset") || "0" : "0";
     const offset = Number(rawOffset);
     if (!/^\d{1,5}$/.test(rawOffset) || !Number.isInteger(offset) || offset > 10_000) throw new GalleryError(400, "Página da galeria inválida.");
-    const listed = await storageRequest(settings, `object/list/${BUCKET}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prefix: "entries", limit: MAX_PHOTOS + 1, offset, sortBy: { column: "name", order: "desc" } }),
-    });
-    if (!listed.ok) throw new GalleryError(503, "Não foi possível carregar as fotos agora.");
-    const entries = await listed.json();
-    if (!Array.isArray(entries)) throw new GalleryError(503, "Não foi possível carregar as fotos agora.");
-    const retiredEntries = entries.filter((entry): entry is { name: string } => {
-      if (typeof entry?.name !== "string" || !entry.name.endsWith(".json")) return false;
-      return RETIRED_PHOTO_IDS.has(entry.name.slice(0, -5));
-    });
-    if (cleanupRetired) await Promise.all(retiredEntries.flatMap(({ name }) => {
-      const id = name.slice(0, -5);
-      return [
-        storageRequest(settings, `object/${BUCKET}/photos/${id}.webp`, { method: "DELETE" }).catch(() => undefined),
-        storageRequest(settings, `object/${BUCKET}/entries/${id}.json`, { method: "DELETE" }).catch(() => undefined),
-      ];
-    }));
-    const photos = await Promise.all(entries.slice(0, MAX_PHOTOS)
-      .filter((entry): entry is { name: string } => typeof entry?.name === "string" && /^[0-9T-Z-]{19,28}-[a-f0-9-]{36}\.json$/.test(entry.name))
-      .filter((entry) => !RETIRED_PHOTO_IDS.has(entry.name.slice(0, -5)))
-      .map(async (entry) => {
-        try {
-          const response = await storageRequest(settings, `object/${BUCKET}/entries/${entry.name}`, { method: "GET" });
-          if (!response.ok) return null;
-          return validatePhoto(await response.json(), settings);
-        } catch { return null; }
-      }));
-    return json({ photos: photos.filter(Boolean), nextOffset: entries.length > MAX_PHOTOS ? offset + MAX_PHOTOS : null });
+    const entries = await listStoredPhotos(offset, MAX_PHOTOS + 1);
+    const photos = entries.slice(0, MAX_PHOTOS).map(validatePhoto)
+      .filter((photo): photo is CommunityPhoto => photo !== null && !RETIRED_PHOTO_IDS.has(photo.id));
+    return json({ photos, nextOffset: entries.length > MAX_PHOTOS ? offset + MAX_PHOTOS : null });
   } catch (error) {
     return galleryErrorResponse(error);
   }
 }
 
+export async function communityPhotoImage(filename: string): Promise<Response> {
+  const id = filename.endsWith(".webp") ? filename.slice(0, -5) : "";
+  const missing = () => new Response(null, { status: 404, headers: { ...RESPONSE_HEADERS, "X-Robots-Tag": "noindex" } });
+  if (!PHOTO_ID_PATTERN.test(id) || RETIRED_PHOTO_IDS.has(id)) return missing();
+  try {
+    const image = await readStoredImage(id);
+    if (!image) return missing();
+    return new Response(new Uint8Array(image), {
+      headers: {
+        "Content-Type": "image/webp", "Content-Length": String(image.byteLength),
+        "Cache-Control": "public, max-age=0, must-revalidate",
+        "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer",
+      },
+    });
+  } catch {
+    return new Response(null, { status: 503, headers: { ...RESPONSE_HEADERS, "X-Robots-Tag": "noindex", "Retry-After": "60" } });
+  }
+}
+
 const attempts = new Map<string, { count: number; expires: number }>();
-function allowUpload(request: Request, settings: GalleryConfig): boolean {
+function allowUpload(request: Request, signingSecret: string): boolean {
   const provider = process.env.APPLICATION_HOSTING_PROVIDER || (process.env.VERCEL === "1" ? "vercel" : "unknown");
   const header = provider === "vercel" ? "x-vercel-forwarded-for" : provider === "caddy" ? "x-forwarded-for" : null;
   const source = header ? request.headers.get(header) : "local";
   const ip = (source || "unknown").split(",")[0].trim().slice(0, 200);
-  const key = createHmac("sha256", settings.signingSecret).update(`gallery:${ip}`).digest("hex");
+  const key = createHmac("sha256", signingSecret).update(`gallery:${ip}`).digest("hex");
   const now = Date.now();
   for (const [id, value] of attempts) if (value.expires < now) attempts.delete(id);
   const current = attempts.get(key);
@@ -176,14 +140,13 @@ async function boundedFormData(request: Request): Promise<FormData> {
 
 export async function uploadCommunityPhoto(request: Request): Promise<Response> {
   try {
-    const settings = config();
     const origin = request.headers.get("origin");
     if (!origin || origin !== new URL(request.url).origin) throw new GalleryError(403, "Origem do envio não autorizada.");
     const lengthHeader = request.headers.get("content-length");
     const length = lengthHeader === null ? null : Number(lengthHeader);
     if (length !== null && (!Number.isFinite(length) || length < 1 || length > MAX_UPLOAD_BYTES)) throw new GalleryError(413, "A foto preparada excede o limite de 3 MB.");
     if (!request.headers.get("content-type")?.startsWith("multipart/form-data;")) throw new GalleryError(415, "Formato de envio inválido.");
-    if (!allowUpload(request, settings)) throw new GalleryError(429, "Muitas fotos enviadas em sequência. Tente novamente em alguns minutos.");
+    if (!allowUpload(request, uploadSigningSecret())) throw new GalleryError(429, "Muitas fotos enviadas em sequência. Tente novamente em alguns minutos.");
     const form = await boundedFormData(request);
     const file = form.get("photo");
     const rawAuthor = form.get("author");
@@ -220,17 +183,10 @@ export async function uploadCommunityPhoto(request: Request): Promise<Response> 
     if (!converted) throw new GalleryError(413, "A foto ainda está grande demais. Tente outra imagem.");
     const { data: output, info: { width, height } } = converted;
     const id = `${new Date().toISOString().replace(/[:.]/g, "-")}-${randomUUID()}`;
-    const photoPath = `object/${BUCKET}/photos/${id}.webp`;
     const createdAt = new Date().toISOString();
     const photo = { id, author, instagram, anonymous, width, height, createdAt, consentVersion: "2026-09-22", consentedAt: createdAt };
-    const uploaded = await storageRequest(settings, photoPath, { method: "POST", headers: { "Content-Type": "image/webp", "x-upsert": "false" }, body: new Uint8Array(output) });
-    if (!uploaded.ok) throw new GalleryError(503, "Não foi possível salvar a foto agora. Tente novamente.");
-    const savedCredit = await storageRequest(settings, `object/${BUCKET}/entries/${id}.json`, { method: "POST", headers: { "Content-Type": "application/json", "x-upsert": "false" }, body: JSON.stringify(photo) });
-    if (!savedCredit.ok) {
-      await storageRequest(settings, photoPath, { method: "DELETE" }).catch(() => undefined);
-      throw new GalleryError(503, "Não foi possível salvar os créditos. Tente novamente.");
-    }
-    return json({ photo: validatePhoto(photo, settings) }, 201);
+    await saveStoredPhoto(photo, output);
+    return json({ photo: validatePhoto(photo) }, 201);
   } catch (error) {
     return galleryErrorResponse(error);
   }
@@ -295,7 +251,10 @@ export async function manageCommunityPhotos(
   try {
     if (!galleryAdminAuthorized(request, context)) return privateJson({ error: "Não encontrado." }, 404);
 
-    if (request.method === "GET") return listCommunityPhotos(request);
+    if (request.method === "GET") {
+      const response = await listCommunityPhotos(request);
+      return privateJson(await response.json(), response.status);
+    }
     if (request.method !== "DELETE") return privateJson({ error: "Método não permitido." }, 405);
 
     const origin = request.headers.get("origin");
@@ -306,15 +265,7 @@ export async function manageCommunityPhotos(
     const id = validShape && typeof (body as { id?: unknown }).id === "string" ? (body as { id: string }).id : "";
     if (!PHOTO_ID_PATTERN.test(id)) return privateJson({ error: "Foto inválida." }, 400);
 
-    const settings = config();
-    const [photoDeleted, entryDeleted] = await Promise.all([
-      storageRequest(settings, `object/${BUCKET}/photos/${id}.webp`, { method: "DELETE" }),
-      storageRequest(settings, `object/${BUCKET}/entries/${id}.json`, { method: "DELETE" }),
-    ]);
-    const accepted = (response: Response) => response.ok || response.status === 404;
-    if (!accepted(photoDeleted) || !accepted(entryDeleted)) {
-      return privateJson({ error: "Não foi possível excluir a foto agora. Tente novamente." }, 503);
-    }
+    await deleteStoredPhoto(id);
     return privateJson({ deleted: id });
   } catch (error) {
     if (error instanceof GalleryError) return privateJson({ error: error.message }, error.status);
