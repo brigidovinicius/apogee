@@ -620,6 +620,113 @@
   border-radius: 999px;
 }
 
+.radarSourceList {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.radarSourceCard {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--apogee-border-subtle);
+  border-radius: var(--apogee-group-radius);
+  background: var(--apogee-surface-raised);
+}
+
+.radarSourceHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.radarSourceHeader h2,
+.radarSourceHeader p,
+.radarAuditForm p,
+.radarHint {
+  margin: 0;
+}
+
+.radarSourceHeader h2 {
+  font-family: var(--apogee-font-heading);
+  font-size: 1.8rem;
+  font-weight: 400;
+}
+
+.radarSourceHeader > div > p:last-child,
+.radarAuditForm p,
+.radarHint {
+  color: rgb(255 255 255 / 62%);
+  font-size: 0.84rem;
+}
+
+.radarSourceDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.radarSourceDetails div {
+  min-width: 0;
+  padding: 0.75rem;
+  background: var(--apogee-surface-subtle);
+  border-radius: var(--apogee-radius-soft);
+}
+
+.radarSourceDetails dt {
+  color: rgb(255 255 255 / 52%);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.radarSourceDetails dd {
+  margin: 0.3rem 0 0;
+  overflow-wrap: anywhere;
+  font-size: 0.84rem;
+}
+
+.radarAuditForm,
+.radarIngestionForm {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgb(245 223 162 / 35%);
+  border-radius: var(--apogee-radius-soft);
+  background: rgb(162 127 32 / 12%);
+}
+
+.radarAuditForm label {
+  display: flex;
+  gap: 0.55rem;
+  align-items: start;
+  font-size: 0.84rem;
+}
+
+.radarAuditForm input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.1rem;
+  accent-color: var(--apogee-sky);
+}
+
+.radarAction {
+  display: flex;
+  justify-content: start;
+}
+
+.radarIngestionForm {
+  grid-template-columns: minmax(7rem, 9rem) minmax(7rem, 9rem) auto;
+  align-items: end;
+  border-color: var(--apogee-border-subtle);
+  background: transparent;
+}
+
 .editorGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.36fr);
@@ -703,6 +810,10 @@
 
   .catalogueGrid {
     grid-template-columns: 1fr;
+  }
+
+  .radarIngestionForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -795,6 +906,16 @@
   }
 
   .userDetails {
+    grid-template-columns: 1fr;
+  }
+
+  .radarSourceHeader {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .radarSourceDetails,
+  .radarIngestionForm {
     grid-template-columns: 1fr;
   }
 }
