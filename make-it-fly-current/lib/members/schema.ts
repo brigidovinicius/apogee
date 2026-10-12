@@ -151,6 +151,10 @@ export const blogPost = pgTable(
     featured: boolean("featured").notNull().default(false),
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
+    focusKeyword: text("focus_keyword"),
+    seoNoIndex: boolean("seo_noindex").notNull().default(false),
+    coverMediaId: text("cover_media_id"),
+    videoUrl: text("video_url"),
     authorId: text("author_id").references(() => user.id, { onDelete: "set null" }),
     authorName: text("author_name").notNull(),
     publishedAt: timestamp("published_at", { withTimezone: true }),
@@ -181,4 +185,19 @@ export const blogPostEvent = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("blog_post_event_post_idx").on(table.postId, table.createdAt.desc())],
+);
+
+export const blogMedia = pgTable(
+  "blog_media",
+  {
+    id: text("id").primaryKey(),
+    postId: integer("post_id").notNull().references(() => blogPost.id, { onDelete: "cascade" }),
+    storagePath: text("storage_path").notNull().unique(),
+    alt: text("alt").notNull(),
+    caption: text("caption"),
+    width: integer("width").notNull(),
+    height: integer("height").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("blog_media_post_idx").on(table.postId, table.createdAt.desc())],
 );

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
-import { listPublicPosts } from "@/lib/blog/data";
+import { getCoverMedia, listPublicPosts } from "@/lib/blog/data";
+import { blogMediaUrl } from "@/lib/blog/media";
 import { BLOG_CATEGORIES, categoryLabel, postDate } from "@/lib/blog/shared";
 import styles from "./blog.module.css";
 
@@ -23,6 +24,8 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   const requestedPage = Number(query.pagina);
   const page = Number.isInteger(requestedPage) && requestedPage >= 1 && requestedPage <= 10_000 ? requestedPage : 1;
   const { posts, total, pages } = await listPublicPosts(category, page);
+  const coverRows = await getCoverMedia(posts.flatMap((post) => post.coverMediaId ? [post.coverMediaId] : []));
+  const covers = new Map(coverRows.map((media) => [media.id, media]));
   const pageUrl = (next: number) => `/blog?${new URLSearchParams({ ...(category ? { tema: category } : {}), pagina: String(next) })}`;
 
   return <div className={styles.page}>
@@ -42,9 +45,13 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
       {posts.length ? <div className={styles.grid}>
         {posts.map((post, index) => {
           const date = postDate(post);
+          const cover = post.coverMediaId ? covers.get(post.coverMediaId) : null;
           return <article className={styles.card} key={post.id}>
             <Link href={`/blog/${post.slug}`} className={styles.cardLink} aria-label={`Ler ${post.title}`}>
-              <div className={styles.cardArt} data-category={post.category}><span>{String((page - 1) * 12 + index + 1).padStart(2, "0")}</span><span aria-hidden>✳</span></div>
+              <div className={styles.cardArt} data-category={post.category}>{cover && cover.postId === post.id ? <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className={styles.coverImage} src={blogMediaUrl(cover.storagePath)} alt={cover.alt} width={cover.width} height={cover.height} loading="lazy" />
+              </> : <><span>{String((page - 1) * 12 + index + 1).padStart(2, "0")}</span><span aria-hidden>✳</span></>}</div>
               <div className={styles.cardText}><div className={styles.cardMeta}><span>{categoryLabel(post.category)}</span>{date ? <time dateTime={date.toISOString()}>{dateFormat.format(date)}</time> : null}</div><h3>{post.title}</h3><p>{post.excerpt}</p><span className={styles.readMore}>Ler artigo <span aria-hidden>↗</span></span></div>
             </Link>
           </article>;

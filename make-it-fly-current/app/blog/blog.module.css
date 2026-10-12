@@ -25,6 +25,7 @@
 .cardArt[data-category="geral"], .articleArt[data-category="geral"] { background: radial-gradient(circle at 73% 22%, #a9c8de, transparent 35%), linear-gradient(135deg, #37566c, #12253e); }
 .cardArt[data-category="atualidades"], .articleArt[data-category="atualidades"] { background: radial-gradient(circle at 73% 22%, #c4d782, transparent 35%), linear-gradient(135deg, #506349, #12253e); }
 .cardArt { height: 12rem; padding: 1.1rem; }
+.coverImage { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; }
 .cardArt::after, .articleArt::after { position: absolute; width: 18rem; height: 18rem; right: -3rem; top: -4rem; border: 1px solid rgb(255 255 255 / 25%); border-radius: 50%; box-shadow: 0 0 0 2.5rem rgb(255 255 255 / 5%), 0 0 0 5rem rgb(255 255 255 / 4%); content: ""; }
 .cardArt span, .articleArt span { z-index: 1; font-family: var(--font-dm-mono), monospace; font-size: .7rem; letter-spacing: .14em; }
 .cardArt span:last-child { align-self: end; font-size: 3.3rem; line-height: 1; }
@@ -51,6 +52,11 @@
 .articleBody { width: min(100% - 1rem, 43rem); margin: clamp(3rem, 6vw, 5rem) auto; font-size: clamp(1.05rem, 1.5vw, 1.2rem); line-height: 1.9; color: rgb(255 255 255 / 84%); }
 .articleBody p { margin: 0 0 1.6em; white-space: pre-wrap; overflow-wrap: anywhere; }
 .articleBody p:first-child::first-letter { float: left; margin: .05em .12em 0 0; color: var(--apogee-sky); font-family: var(--apogee-font-heading); font-size: 3.5em; line-height: .8; }
+.inlineFigure { margin: 2.5rem 0; }
+.inlineFigure img { display: block; width: 100%; height: auto; border-radius: .3rem; }
+.inlineFigure figcaption { margin-top: .7rem; color: rgb(255 255 255 / 60%); font-size: .78rem; line-height: 1.5; }
+.videoFrame { position: relative; width: 100%; aspect-ratio: 16 / 9; margin: 2.5rem 0; }
+.videoFrame iframe { width: 100%; height: 100%; border: 0; border-radius: .3rem; }
 .articleEnd { display: grid; justify-items: center; gap: .8rem; padding: 2.5rem 0; border-top: 1px solid var(--apogee-border-subtle); text-align: center; }
 .articleEnd span { color: var(--apogee-sky); font-size: 2rem; }
 .articleEnd p { margin: 0; font-family: var(--apogee-font-heading); font-size: 1.7rem; }

@@ -68,5 +68,5 @@ test("inventory records prototype gaps instead of inventing product rules", asyn
   assert.match(inventory, /A4.*Curadoria/s);
   assert.match(inventory, /não foram tratados como dados ou regras\s+aprovadas/);
   assert.match(inventory, /Não foram criadas ações de exportar, suspender ou atribuir papel a usuários/);
-  assert.match(inventory, /blog não inclui upload de capa nem fluxo de revisão/);
+  assert.match(inventory, /blog não inclui fluxo de revisão por um papel editorial/);
 });

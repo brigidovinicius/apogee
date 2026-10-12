@@ -6,8 +6,9 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/access";
 import { getAdminPost, savePost } from "@/lib/blog/data";
 import { BLOG_CATEGORIES, blogSlug, parseBrasiliaTime } from "@/lib/blog/shared";
+import { parseVideoUrl } from "@/lib/blog/video";
 
-export type EditorState = { message?: string; errors?: Record<string, string>; values?: Record<string, string>; attempt?: number };
+export type EditorState = { message?: string; errors?: Record<string, string>; values?: Record<string, string> };
 
 const categoryValues = BLOG_CATEGORIES.map((category) => category.value);
 const postSchema = z.object({
@@ -17,6 +18,8 @@ const postSchema = z.object({
   category: z.string().refine((value) => categoryValues.includes(value as typeof categoryValues[number]), "Selecione um tema válido."),
   seoTitle: z.string().trim().max(70, "O título SEO pode ter até 70 caracteres."),
   seoDescription: z.string().trim().max(160, "A descrição SEO pode ter até 160 caracteres."),
+  focusKeyword: z.string().trim().max(80, "A palavra-chave foco pode ter até 80 caracteres."),
+  videoUrl: z.string().trim().max(300, "O link do vídeo pode ter até 300 caracteres."),
 });
 
 function read(form: FormData, key: string): string {
@@ -43,10 +46,10 @@ function isUniqueViolation(error: unknown): boolean {
 export async function saveBlogPost(id: number | null, _state: EditorState, form: FormData): Promise<EditorState> {
   const admin = await requireAdmin(id === null ? "/admin/posts/novo" : `/admin/posts/${id}`);
   const values = Object.fromEntries(
-    ["title", "slug", "excerpt", "body", "category", "seoTitle", "seoDescription", "scheduledAt", "featured"]
+    ["title", "slug", "excerpt", "body", "category", "seoTitle", "seoDescription", "focusKeyword", "seoNoIndex", "coverMediaId", "videoUrl", "scheduledAt", "featured"]
       .map((key) => [key, read(form, key)]),
   );
-  const fail = (state: EditorState): EditorState => ({ ...state, values, attempt: Date.now() });
+  const fail = (state: EditorState): EditorState => ({ ...state, values });
   const intent = read(form, "intent");
   if (!["save", "publish", "schedule", "unpublish", "archive"].includes(intent)) {
     return fail({ message: "Ação inválida." });
@@ -54,9 +57,13 @@ export async function saveBlogPost(id: number | null, _state: EditorState, form:
   const parsed = postSchema.safeParse({
     title: read(form, "title"), excerpt: read(form, "excerpt"), body: read(form, "body"),
     category: read(form, "category"), seoTitle: read(form, "seoTitle"),
-    seoDescription: read(form, "seoDescription"),
+    seoDescription: read(form, "seoDescription"), focusKeyword: read(form, "focusKeyword"),
+    videoUrl: read(form, "videoUrl"),
   });
   if (!parsed.success) return fail({ errors: fieldErrors(parsed.error), message: "Revise os campos indicados." });
+  if (parsed.data.videoUrl && !parseVideoUrl(parsed.data.videoUrl)) {
+    return fail({ errors: { videoUrl: "Use um link HTTPS válido do YouTube ou Vimeo." } });
+  }
 
   const slug = blogSlug(read(form, "slug") || parsed.data.title);
   if (slug.length < 3) return fail({ errors: { slug: "Defina um endereço com ao menos 3 caracteres." } });
@@ -83,6 +90,10 @@ export async function saveBlogPost(id: number | null, _state: EditorState, form:
       category: parsed.data.category as (typeof BLOG_CATEGORIES)[number]["value"],
       featured: read(form, "featured") === "on",
       seoTitle: parsed.data.seoTitle || null, seoDescription: parsed.data.seoDescription || null,
+      focusKeyword: parsed.data.focusKeyword || null,
+      seoNoIndex: read(form, "seoNoIndex") === "on",
+      coverMediaId: read(form, "coverMediaId") || null,
+      videoUrl: parsed.data.videoUrl || null,
       intent: intent as "save" | "publish" | "schedule" | "unpublish" | "archive",
       scheduledAt, actorId: admin.id, actorName: admin.name,
     });

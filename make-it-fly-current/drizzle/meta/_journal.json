@@ -15,6 +15,13 @@
       "when": 1791757142655,
       "tag": "0001_shallow_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791810977654,
+      "tag": "0002_perfect_namor",
+      "breakpoints": true
     }
   ]
 }

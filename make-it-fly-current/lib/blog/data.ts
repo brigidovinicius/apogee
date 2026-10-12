@@ -1,8 +1,8 @@
 import "server-only";
 
-import { and, count, desc, eq, lte, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, lte, or, sql } from "drizzle-orm";
 import { getDb } from "@/lib/members/db";
-import { blogPost, blogPostEvent } from "@/lib/members/schema";
+import { blogMedia, blogPost, blogPostEvent } from "@/lib/members/schema";
 import type { BlogCategory, BlogStatus } from "./shared";
 
 const PAGE_SIZE = 12;
@@ -36,7 +36,7 @@ export async function getPublicPost(slug: string) {
 
 export async function listPublicPostUrls() {
   return getDb().select({ slug: blogPost.slug, updatedAt: blogPost.updatedAt })
-    .from(blogPost).where(publicCondition(new Date())).orderBy(desc(blogPost.updatedAt));
+    .from(blogPost).where(and(publicCondition(new Date()), eq(blogPost.seoNoIndex, false))).orderBy(desc(blogPost.updatedAt));
 }
 
 export async function listAdminPosts(page: number) {
@@ -59,6 +59,32 @@ export async function listPostEvents(id: number) {
     .orderBy(desc(blogPostEvent.createdAt), desc(blogPostEvent.id)).limit(15);
 }
 
+export async function listPostMedia(postId: number) {
+  return getDb().select().from(blogMedia).where(eq(blogMedia.postId, postId))
+    .orderBy(desc(blogMedia.createdAt));
+}
+
+export async function getCoverMedia(ids: string[]) {
+  if (!ids.length) return [];
+  return getDb().select().from(blogMedia).where(inArray(blogMedia.id, ids));
+}
+
+export async function createPostMedia(input: typeof blogMedia.$inferInsert) {
+  const [media] = await getDb().insert(blogMedia).values(input).returning();
+  return media;
+}
+
+export async function removePostMedia(postId: number, mediaId: string) {
+  return getDb().transaction(async (tx) => {
+    const [post] = await tx.select().from(blogPost).where(eq(blogPost.id, postId)).limit(1);
+    const [media] = await tx.select().from(blogMedia).where(and(eq(blogMedia.postId, postId), eq(blogMedia.id, mediaId))).limit(1);
+    if (!post || !media) return "missing" as const;
+    if (post.coverMediaId === mediaId || post.body.includes(`[[media:${mediaId}]]`)) return "used" as const;
+    await tx.delete(blogMedia).where(eq(blogMedia.id, mediaId));
+    return media;
+  });
+}
+
 export type BlogPostRow = typeof blogPost.$inferSelect;
 
 export async function savePost(input: {
@@ -72,6 +98,10 @@ export async function savePost(input: {
   featured: boolean;
   seoTitle: string | null;
   seoDescription: string | null;
+  focusKeyword: string | null;
+  seoNoIndex: boolean;
+  coverMediaId: string | null;
+  videoUrl: string | null;
   intent: "save" | "publish" | "schedule" | "unpublish" | "archive";
   scheduledAt: Date | null;
   actorId: string;
@@ -81,6 +111,8 @@ export async function savePost(input: {
     const now = new Date();
     const current = input.id === null ? null : (await tx.select().from(blogPost).where(eq(blogPost.id, input.id)).limit(1))[0];
     if (input.id !== null && (!current || current.revision !== input.revision)) return "conflict";
+    if (input.coverMediaId && (!current || !(await tx.select({ id: blogMedia.id }).from(blogMedia)
+      .where(and(eq(blogMedia.postId, current.id), eq(blogMedia.id, input.coverMediaId))).limit(1)).length)) return "conflict";
 
     let status: BlogStatus = current?.status ?? "draft";
     let publishedAt = current?.publishedAt ?? null;
@@ -94,7 +126,9 @@ export async function savePost(input: {
     const fields = {
       slug: input.slug, title: input.title, excerpt: input.excerpt, body: input.body,
       category: input.category, featured: input.featured, seoTitle: input.seoTitle,
-      seoDescription: input.seoDescription, status, publishedAt, scheduledAt, updatedAt: now,
+      seoDescription: input.seoDescription, focusKeyword: input.focusKeyword,
+      seoNoIndex: input.seoNoIndex, coverMediaId: input.coverMediaId, videoUrl: input.videoUrl,
+      status, publishedAt, scheduledAt, updatedAt: now,
     };
     const [post] = current
       ? await tx.update(blogPost).set({ ...fields, revision: current.revision + 1 })
