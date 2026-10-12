@@ -22,3 +22,9 @@
 - `npm test`: 233 testes passaram na revisão integrada.
 - `npm run build`: compilou e incluiu as rotas do blog, editor e mídia como rotas dinâmicas.
 - `tests/gallery-postgres.integration.mjs` agora valida as duas migrações em sequência, bytes de imagem, limite de 2 MB, reaplicação idempotente e recusa de histórico divergente em PostgreSQL descartável no CI. A execução desse teste e a validação remota devem ser registradas separadamente.
+
+## Publicação verificada em 12/10/2026
+
+- O [PR #22](https://github.com/brigidovinicius/apogee/pull/22) foi integrado; o [CI 38257384912](https://github.com/brigidovinicius/apogee/actions/runs/38257384912) passou, inclusive o teste PostgreSQL.
+- A migração 0002 foi aplicada na VPS após backup verificado. O container web está saudável no SHA `4d17ae6f74e5439d2ad23ca3c9ac4f67a2bdc7b9`.
+- `/blog` e `/sitemap.xml` respondem `200` publicamente; `/admin/posts/novo` redireciona visitantes sem sessão ao login. Com a sessão administrativa já aberta no Safari, o editor carregou e a prévia SEO reagiu a texto temporário, descartado sem salvar. Não foi feito teste positivo de criação/publicação nem envio de mídia em produção.
