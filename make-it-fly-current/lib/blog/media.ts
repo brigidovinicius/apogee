@@ -4,7 +4,6 @@ import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { createPostMedia, getAdminPost, removePostMedia } from "./data";
 
-const BUCKET = "apogee-community-photos";
 const MAX_REQUEST = 6 * 1024 * 1024;
 const MAX_FILE = 5 * 1024 * 1024;
 const MAX_OUTPUT = 2 * 1024 * 1024;
@@ -13,32 +12,9 @@ class MediaError extends Error {
   constructor(readonly status: number, message: string) { super(message); }
 }
 
-function settings() {
-  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-  if (!key) throw new MediaError(503, "O armazenamento de imagens está indisponível.");
-  return { origin: publicOrigin(), key };
-}
-
-function publicOrigin() {
-  const rawUrl = process.env.SUPABASE_URL || "";
-  try {
-    const url = new URL(rawUrl);
-    if (url.protocol !== "https:" || !/^[a-z0-9-]+\.supabase\.co$/.test(url.hostname) || url.pathname !== "/" || url.search || url.hash || url.port) throw new Error();
-    return url.origin;
-  } catch { throw new MediaError(503, "O armazenamento de imagens está indisponível."); }
-}
-
-export function blogMediaUrl(path: string): string {
-  if (!/^blog\/\d+\/[a-f0-9-]{36}\.webp$/.test(path)) throw new Error("Caminho de mídia inválido.");
-  return `${publicOrigin()}/storage/v1/object/public/${BUCKET}/${path}`;
-}
-
-async function storageRequest(path: string, method: "POST" | "DELETE", body?: Uint8Array) {
-  const { origin, key } = settings();
-  return fetch(`${origin}/storage/v1/object/${BUCKET}/${path}`, {
-    method, headers: { apikey: key, Authorization: `Bearer ${key}`, ...(body ? { "Content-Type": "image/webp", "x-upsert": "false" } : {}) },
-    body: body as BodyInit | undefined, cache: "no-store", signal: AbortSignal.timeout(15_000),
-  });
+export function blogMediaUrl(id: string): string {
+  if (!/^[a-f0-9-]{36}$/.test(id)) throw new Error("Imagem inválida.");
+  return `/blog/media/${id}.webp`;
 }
 
 function sameOrigin(request: Request) {
@@ -98,16 +74,9 @@ export async function uploadBlogMedia(request: Request, postId: number): Promise
     } catch { throw new MediaError(400, "Não foi possível processar esta imagem."); }
     if (!converted) throw new MediaError(413, "A imagem processada ainda excede 2 MB.");
     const id = randomUUID();
-    const storagePath = `blog/${postId}/${id}.webp`;
-    const uploaded = await storageRequest(storagePath, "POST", new Uint8Array(converted.data));
-    if (!uploaded.ok) throw new MediaError(503, "Não foi possível salvar a imagem agora.");
-    try {
-      const media = await createPostMedia({ id, postId, storagePath, alt, caption: caption || null, width: converted.info.width, height: converted.info.height });
-      return Response.json({ media: { ...media, url: blogMediaUrl(storagePath) } }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
-    } catch (error) {
-      await storageRequest(storagePath, "DELETE").catch(() => undefined);
-      throw error;
-    }
+    const media = await createPostMedia({ id, postId, image: converted.data, alt, caption: caption || null,
+      width: converted.info.width, height: converted.info.height });
+    return Response.json({ media: { ...media, url: blogMediaUrl(id) } }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
   } catch (error) { return mediaErrorResponse(error); }
 }
 
@@ -118,8 +87,6 @@ export async function deleteBlogMedia(request: Request, postId: number, mediaId:
     const result = await removePostMedia(postId, mediaId);
     if (result === "missing") throw new MediaError(404, "Imagem não encontrada.");
     if (result === "used") throw new MediaError(409, "Remova a imagem da capa e do texto e salve o artigo antes de excluí-la.");
-    const removed = await storageRequest(result.storagePath, "DELETE");
-    if (!removed.ok) console.error("Blog media cleanup failed", { postId, mediaId, status: removed.status });
     return Response.json({ ok: true }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) { return mediaErrorResponse(error); }
 }

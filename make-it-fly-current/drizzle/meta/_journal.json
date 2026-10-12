@@ -12,15 +12,15 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1791757142655,
-      "tag": "0001_shallow_spectrum",
+      "when": 1791745679932,
+      "tag": "0001_gallery_postgres",
       "breakpoints": true
     },
     {
       "idx": 2,
       "version": "7",
-      "when": 1791810977654,
-      "tag": "0002_perfect_namor",
+      "when": 1791812167981,
+      "tag": "0002_rapid_queen_noir",
       "breakpoints": true
     }
   ]

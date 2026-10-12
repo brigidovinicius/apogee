@@ -40,3 +40,34 @@ jobs:
       - name: Standalone smoke with synthetic configuration only
         run: node "$GITHUB_WORKSPACE/scripts/security-smoke.mjs" "${{ matrix.app }}"
       - run: git diff --check
+  gallery-postgres:
+    needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: gallery_test
+          POSTGRES_PASSWORD: synthetic_ci_only
+          POSTGRES_DB: apogee_gallery_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U gallery_test -d apogee_gallery_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: make-it-fly-current
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: make-it-fly-current/package-lock.json
+      - run: npm ci --no-fund --no-audit
+      - name: Gallery migration and storage on disposable PostgreSQL
+        run: node --test tests/gallery-postgres.integration.mjs
+        env:
+          GALLERY_TEST_DATABASE_URL: postgres://gallery_test:synthetic_ci_only@127.0.0.1:5432/apogee_gallery_ci

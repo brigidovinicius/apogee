@@ -3,6 +3,7 @@ import {
   bigint,
   boolean,
   check,
+  customType,
   index,
   integer,
   pgTable,
@@ -10,6 +11,8 @@ import {
   timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+
+const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
 
 // Tabelas exigidas pelo Better Auth (core + plugin username + rate limit em banco).
 // As chaves TS precisam bater com os nomes de campo do Better Auth.
@@ -192,12 +195,17 @@ export const blogMedia = pgTable(
   {
     id: text("id").primaryKey(),
     postId: integer("post_id").notNull().references(() => blogPost.id, { onDelete: "cascade" }),
-    storagePath: text("storage_path").notNull().unique(),
     alt: text("alt").notNull(),
     caption: text("caption"),
     width: integer("width").notNull(),
     height: integer("height").notNull(),
+    image: bytea("image").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("blog_media_post_idx").on(table.postId, table.createdAt.desc())],
+  (table) => [
+    index("blog_media_post_idx").on(table.postId, table.createdAt.desc()),
+    check("blog_media_size_check", sql`octet_length(${table.image}) between 1 and 2097152`),
+    check("blog_media_dimensions_check", sql`${table.width} between 1 and 2000 and ${table.height} between 1 and 2000`),
+    check("blog_media_alt_check", sql`length(${table.alt}) between 3 and 160`),
+  ],
 );

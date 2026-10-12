@@ -50,7 +50,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
             <Link href={`/blog/${post.slug}`} className={styles.cardLink} aria-label={`Ler ${post.title}`}>
               <div className={styles.cardArt} data-category={post.category}>{cover && cover.postId === post.id ? <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={styles.coverImage} src={blogMediaUrl(cover.storagePath)} alt={cover.alt} width={cover.width} height={cover.height} loading="lazy" />
+                <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={cover.alt} width={cover.width} height={cover.height} loading="lazy" />
               </> : <><span>{String((page - 1) * 12 + index + 1).padStart(2, "0")}</span><span aria-hidden>✳</span></>}</div>
               <div className={styles.cardText}><div className={styles.cardMeta}><span>{categoryLabel(post.category)}</span>{date ? <time dateTime={date.toISOString()}>{dateFormat.format(date)}</time> : null}</div><h3>{post.title}</h3><p>{post.excerpt}</p><span className={styles.readMore}>Ler artigo <span aria-hidden>↗</span></span></div>
             </Link>

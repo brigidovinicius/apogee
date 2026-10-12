@@ -17,10 +17,11 @@
 
 ## Migração e publicação
 
-`drizzle/0001_shallow_spectrum.sql` cria as tabelas e índices. O código depende
-dessa migração antes de ser servido em produção. Migração, push, deploy e
-publicação são gates separados e não foram executados neste trabalho local.
-Nenhum artigo foi criado ou publicado.
+Esta etapa gerou originalmente `drizzle/0001_shallow_spectrum.sql` no ramo local.
+Após a integração da migração da galeria já presente na linha principal, as
+tabelas do blog passaram para `drizzle/0002_rapid_queen_noir.sql`. O código
+depende da aplicação dessa migração antes de ser servido em produção. Nenhum
+artigo foi criado ou publicado nesta etapa inicial.
 
 ## Validação local
 

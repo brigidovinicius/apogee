@@ -40,3 +40,9 @@ export function getDb(): MembersDb {
   globalForDb.__apogeeMembersDb = { client, db };
   return db;
 }
+
+// Galeria e membros usam o mesmo cliente privado, com a mesma validação TLS.
+export function getSql(): postgres.Sql {
+  getDb();
+  return globalForDb.__apogeeMembersDb!.client;
+}

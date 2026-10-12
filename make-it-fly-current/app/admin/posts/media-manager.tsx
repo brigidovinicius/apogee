@@ -55,7 +55,7 @@ export function MediaManager({ postId, initialMedia, coverId, onCover, onInsert 
     <button className={styles.mediaButton} type="button" onClick={upload} disabled={busy}>Enviar imagem</button>
     {message ? <p className={styles.mediaMessage} role="status">{message}</p> : null}
     {media.length ? <ul className={styles.mediaList}>{media.map((item) => <li key={item.id}>
-      {/* The image source is constructed server-side from this article's storage path. */}
+      {/* The image URL points to this site's authenticated/public image route. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={item.url} alt={item.alt} width={item.width} height={item.height} loading="lazy" />
       <div><strong>{item.alt}</strong>{item.caption ? <small>{item.caption}</small> : null}<span>
@@ -64,6 +64,6 @@ export function MediaManager({ postId, initialMedia, coverId, onCover, onInsert 
         <button type="button" onClick={() => remove(item)} disabled={busy || coverId === item.id} title={coverId === item.id ? "Remova da capa e salve antes de excluir" : undefined}>Excluir</button>
       </span></div>
     </li>)}</ul> : <p className={styles.help}>Nenhuma imagem enviada para este artigo.</p>}
-    <p className={styles.help}>Imagens de rascunhos usam o armazenamento público: quem tiver o link direto pode vê-las.</p>
+    <p className={styles.help}>Imagens de rascunhos só abrem para administradores. Após a publicação, as imagens do artigo ficam públicas.</p>
   </div>;
 }

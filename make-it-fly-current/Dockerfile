@@ -29,6 +29,8 @@ COPY --from=builder --chown=nextjs:nextjs /app/.next/static ./.next/static
 # concessão e o driver necessário, sem levar as demais dependências de build.
 COPY --from=builder --chown=nextjs:nextjs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-grant-admin.mjs ./scripts/members-grant-admin.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/gallery-migrate.mjs ./scripts/gallery-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/drizzle ./drizzle
 COPY --from=dependencies --chown=nextjs:nextjs /app/node_modules/postgres ./node_modules/postgres
 USER nextjs
 EXPOSE 3000

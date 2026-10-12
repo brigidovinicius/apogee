@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const description = post.seoDescription || post.excerpt;
   const media = post.coverMediaId ? await listPostMedia(post.id) : [];
   const cover = media.find((item) => item.id === post.coverMediaId);
-  const image = cover ? { url: blogMediaUrl(cover.storagePath), alt: cover.alt, width: cover.width, height: cover.height } : null;
+  const image = cover ? { url: blogMediaUrl(cover.id), alt: cover.alt, width: cover.width, height: cover.height } : null;
   return {
     title: `${title} | Apogee`, description,
     robots: post.seoNoIndex ? { index: false, follow: true } : undefined,
@@ -47,7 +47,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
     author: { "@type": "Person", name: post.authorName },
     publisher: { "@type": "Organization", name: "Apogee", url: "https://www.apogee.community" },
     mainEntityOfPage: `https://www.apogee.community/blog/${post.slug}`,
-    image: cover ? blogMediaUrl(cover.storagePath) : undefined,
+    image: cover ? `https://www.apogee.community${blogMediaUrl(cover.id)}` : undefined,
   };
 
   return <div className={styles.page}>
@@ -57,14 +57,14 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
       <header className={styles.articleHeader}><p className={styles.eyebrow}>{categoryLabel(post.category)} / Apogee</p><h1>{post.title}</h1><p className={styles.articleLead}>{post.excerpt}</p><div className={styles.articleByline}><span>Por {post.authorName}</span>{date ? <time dateTime={date.toISOString()}>{dateFormat.format(date)}</time> : null}</div></header>
       <div className={styles.articleArt} data-category={post.category}>{cover ? <>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className={styles.coverImage} src={blogMediaUrl(cover.storagePath)} alt={cover.alt} width={cover.width} height={cover.height} />
+        <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={cover.alt} width={cover.width} height={cover.height} />
       </> : <><span>APOGEE / IDEIAS</span><span aria-hidden>✳</span></>}</div>
       <article className={styles.articleBody}>{paragraphs.map((paragraph, index) => {
         const marker = /^\[\[media:([a-f0-9-]{36})\]\]$/.exec(paragraph.trim());
         const image = marker ? mediaById.get(marker[1]) : null;
         return image ? <figure className={styles.inlineFigure} key={index}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={blogMediaUrl(image.storagePath)} alt={image.alt} width={image.width} height={image.height} loading="lazy" />
+          <img src={blogMediaUrl(image.id)} alt={image.alt} width={image.width} height={image.height} loading="lazy" />
           {image.caption ? <figcaption>{image.caption}</figcaption> : null}
         </figure> : <p key={index}>{paragraph}</p>;
       })}{video ? <div className={styles.videoFrame}><iframe src={video.src} title={`Vídeo do artigo no ${video.provider}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div> : null}</article>

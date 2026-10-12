@@ -1,6 +1,6 @@
 {
-  "id": "3f6ba304-0c6b-4ba5-b8c6-01b9f4405402",
-  "prevId": "c30e3b2a-e232-4931-b836-fd16fd9aab34",
+  "id": "8f827066-9114-4e0c-a654-d852d32d15fa",
+  "prevId": "bed1a067-3df2-46ff-91b7-4b9c70f547b5",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -143,12 +143,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "storage_path": {
-          "name": "storage_path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "alt": {
           "name": "alt",
           "type": "text",
@@ -170,6 +164,12 @@
         "height": {
           "name": "height",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image": {
+          "name": "image",
+          "type": "bytea",
           "primaryKey": false,
           "notNull": true
         },
@@ -220,17 +220,22 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "blog_media_storage_path_unique": {
-          "name": "blog_media_storage_path_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "storage_path"
-          ]
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "blog_media_size_check": {
+          "name": "blog_media_size_check",
+          "value": "octet_length(\"blog_media\".\"image\") between 1 and 2097152"
+        },
+        "blog_media_dimensions_check": {
+          "name": "blog_media_dimensions_check",
+          "value": "\"blog_media\".\"width\" between 1 and 2000 and \"blog_media\".\"height\" between 1 and 2000"
+        },
+        "blog_media_alt_check": {
+          "name": "blog_media_alt_check",
+          "value": "length(\"blog_media\".\"alt\") between 3 and 160"
         }
       },
-      "policies": {},
-      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.blog_post": {
@@ -1269,6 +1274,96 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.gallery_photo": {
+      "name": "gallery_photo",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "author": {
+          "name": "author",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "instagram": {
+          "name": "instagram",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "anonymous": {
+          "name": "anonymous",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consent_version": {
+          "name": "consent_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consented_at": {
+          "name": "consented_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image": {
+          "name": "image",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "gallery_photo_id_valid": {
+          "name": "gallery_photo_id_valid",
+          "value": "\"gallery_photo\".\"id\" ~ '^[0-9T-Z-]{19,28}-[a-f0-9-]{36}$'"
+        },
+        "gallery_photo_dimensions_valid": {
+          "name": "gallery_photo_dimensions_valid",
+          "value": "\"gallery_photo\".\"width\" BETWEEN 1 AND 2400 AND \"gallery_photo\".\"height\" BETWEEN 1 AND 2400"
+        },
+        "gallery_photo_size_valid": {
+          "name": "gallery_photo_size_valid",
+          "value": "octet_length(\"gallery_photo\".\"image\") BETWEEN 1 AND 3145728"
+        },
+        "gallery_photo_credit_valid": {
+          "name": "gallery_photo_credit_valid",
+          "value": "(\"gallery_photo\".\"anonymous\" AND \"gallery_photo\".\"author\" = 'Anônimo' AND \"gallery_photo\".\"instagram\" = '') OR (NOT \"gallery_photo\".\"anonymous\" AND length(\"gallery_photo\".\"author\") BETWEEN 2 AND 80 AND (\"gallery_photo\".\"instagram\" = '' OR \"gallery_photo\".\"instagram\" ~ '^[A-Za-z0-9._]{1,30}$'))"
+        }
+      },
       "isRLSEnabled": false
     }
   },

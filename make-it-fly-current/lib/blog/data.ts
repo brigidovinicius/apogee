@@ -60,24 +60,35 @@ export async function listPostEvents(id: number) {
 }
 
 export async function listPostMedia(postId: number) {
-  return getDb().select().from(blogMedia).where(eq(blogMedia.postId, postId))
+  return getDb().select({ id: blogMedia.id, postId: blogMedia.postId, alt: blogMedia.alt, caption: blogMedia.caption,
+    width: blogMedia.width, height: blogMedia.height, createdAt: blogMedia.createdAt })
+    .from(blogMedia).where(eq(blogMedia.postId, postId))
     .orderBy(desc(blogMedia.createdAt));
 }
 
 export async function getCoverMedia(ids: string[]) {
   if (!ids.length) return [];
-  return getDb().select().from(blogMedia).where(inArray(blogMedia.id, ids));
+  return getDb().select({ id: blogMedia.id, postId: blogMedia.postId, alt: blogMedia.alt,
+    width: blogMedia.width, height: blogMedia.height }).from(blogMedia).where(inArray(blogMedia.id, ids));
 }
 
 export async function createPostMedia(input: typeof blogMedia.$inferInsert) {
-  const [media] = await getDb().insert(blogMedia).values(input).returning();
+  const [media] = await getDb().insert(blogMedia).values(input).returning({ id: blogMedia.id, postId: blogMedia.postId,
+    alt: blogMedia.alt, caption: blogMedia.caption, width: blogMedia.width, height: blogMedia.height });
   return media;
+}
+
+export async function getPostMediaImage(mediaId: string, includePrivate: boolean) {
+  const where = includePrivate ? eq(blogMedia.id, mediaId) : and(eq(blogMedia.id, mediaId), publicCondition(new Date()));
+  const [media] = await getDb().select({ image: blogMedia.image }).from(blogMedia)
+    .innerJoin(blogPost, eq(blogMedia.postId, blogPost.id)).where(where).limit(1);
+  return media?.image ?? null;
 }
 
 export async function removePostMedia(postId: number, mediaId: string) {
   return getDb().transaction(async (tx) => {
     const [post] = await tx.select().from(blogPost).where(eq(blogPost.id, postId)).limit(1);
-    const [media] = await tx.select().from(blogMedia).where(and(eq(blogMedia.postId, postId), eq(blogMedia.id, mediaId))).limit(1);
+    const [media] = await tx.select({ id: blogMedia.id }).from(blogMedia).where(and(eq(blogMedia.postId, postId), eq(blogMedia.id, mediaId))).limit(1);
     if (!post || !media) return "missing" as const;
     if (post.coverMediaId === mediaId || post.body.includes(`[[media:${mediaId}]]`)) return "used" as const;
     await tx.delete(blogMedia).where(eq(blogMedia.id, mediaId));

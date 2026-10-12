@@ -31,7 +31,7 @@ export default async function AdminEditPostPage({ params, searchParams }: {
     <AdminPageHeader title="Editar artigo" description="Altere o conteúdo e escolha como ele deve aparecer no blog." aside={<Link className={styles.secondaryButton} href="/admin/posts">Todos os artigos</Link>} />
     {query.salvo === "1" ? <p className={editorStyles.success} role="status">Alterações salvas.</p> : null}
     {isPublicPost(post) ? <p className={editorStyles.publicLink}><Link href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">Ver artigo publicado ↗</Link></p> : null}
-    <PostEditor post={post} media={images.map((image) => ({ id: image.id, url: blogMediaUrl(image.storagePath), alt: image.alt, caption: image.caption, width: image.width, height: image.height }))} />
+    <PostEditor post={post} media={images.map((image) => ({ id: image.id, url: blogMediaUrl(image.id), alt: image.alt, caption: image.caption, width: image.width, height: image.height }))} />
     <section className={editorStyles.history} aria-labelledby="history-title">
       <h2 id="history-title">Histórico recente</h2>
       <ol>{events.map((event) => <li key={event.id}><span>{actionLabel[event.action] ?? event.action} · {event.actorName}</span><time dateTime={event.createdAt.toISOString()}>{dateFormat.format(event.createdAt)}</time></li>)}</ol>
