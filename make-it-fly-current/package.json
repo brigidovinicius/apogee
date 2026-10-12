@@ -15,7 +15,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "node scripts/members-seed.mjs",
     "members:grant-admin": "node scripts/members-grant-admin.mjs",
-    "gallery:migrate": "node scripts/gallery-migrate.mjs"
+    "gallery:migrate": "node scripts/gallery-migrate.mjs",
+    "blog:migrate": "node scripts/blog-migrate.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

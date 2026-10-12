@@ -15,6 +15,13 @@
       "when": 1791745679932,
       "tag": "0001_gallery_postgres",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791812167981,
+      "tag": "0002_rapid_queen_noir",
+      "breakpoints": true
     }
   ]
 }

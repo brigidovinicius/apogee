@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "./site-shell.module.css";
 
-type SiteSection = "home" | "opportunities" | "members";
+type SiteSection = "home" | "opportunities" | "members" | "blog";
 
 type SiteHeaderProps = {
   current?: SiteSection;
@@ -14,6 +14,7 @@ type SiteHeaderProps = {
 const navigation: ReadonlyArray<{ href: string; label: string; section?: SiteSection }> = [
   { href: "/", label: "Início", section: "home" },
   { href: "/oportunidades", label: "Oportunidades", section: "opportunities" },
+  { href: "/blog", label: "Blog", section: "blog" },
   { href: "/galeria", label: "Galeria" },
   { href: "/loja", label: "Loja" },
   { href: "/makeitfly", label: "Make It Fly" },

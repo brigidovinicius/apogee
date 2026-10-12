@@ -8,7 +8,7 @@ const liveItems = [
   { href: "/admin", label: "Painel", exact: true },
   { href: "/admin/curadoria", label: "Curadoria", exact: false },
   { href: "/admin/radar", label: "Radar", exact: false },
-  { href: "/admin/posts/novo", label: "Posts", exact: false },
+  { href: "/admin/posts", label: "Blog", exact: false },
   { href: "/admin/usuarios", label: "Usuários", exact: false },
 ] as const;
 

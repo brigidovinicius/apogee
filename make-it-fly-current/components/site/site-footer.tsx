@@ -19,6 +19,7 @@ export function SiteFooter() {
         <nav aria-label="Navegação do rodapé">
           <Link href="/">Início</Link>
           <Link href="/oportunidades">Oportunidades</Link>
+          <Link href="/blog">Blog</Link>
           <Link href="/makeitfly">Make It Fly</Link>
           <Link href="/membros">Membros</Link>
         </nav>

@@ -6,6 +6,7 @@ import test from "node:test";
 import postgres from "postgres";
 import ts from "typescript";
 import { migrateGallery } from "../scripts/gallery-migrate.mjs";
+import { migrateBlog } from "../scripts/blog-migrate.mjs";
 const initial = await readFile(new URL("../drizzle/0000_init.sql", import.meta.url), "utf8");
 const source = await readFile(new URL("../lib/gallery-repository.ts", import.meta.url), "utf8");
 const id = "2026-10-11T19-00-00-000Z-3033bf41-154b-4294-8a89-5c32c8e423df";
@@ -47,8 +48,24 @@ test("reviewed migration, atomic image storage, pagination and deletion work on 
     await repo.deleteStoredPhoto(id);
     assert.equal(await repo.readStoredImage(id), null); assert.equal((await repo.listStoredPhotos(0, 25)).length, 0);
     assert.equal(Number((await sql`SELECT count(*) AS count FROM public."user" WHERE id = 'ci-existing-user'`)[0].count), 1);
+
+    assert.deepEqual(await migrateBlog(sql), { changed: true, migration: "0002_rapid_queen_noir" });
+    assert.deepEqual(await migrateBlog(sql), { changed: false, migration: "0002_rapid_queen_noir" });
+    const [post] = await sql`INSERT INTO public.blog_post (slug, title, excerpt, body, category, author_id, author_name)
+      VALUES ('ci-post', 'Synthetic post', 'Synthetic excerpt for CI', 'Synthetic body for CI', 'estudos', 'ci-existing-user', 'Synthetic CI') RETURNING id`;
+    const mediaId = "3033bf41-154b-4294-8a89-5c32c8e423df";
+    await sql`INSERT INTO public.blog_media (id, post_id, alt, width, height, image)
+      VALUES (${mediaId}, ${post.id}, 'Synthetic image', 10, 10, ${image})`;
+    assert.deepEqual((await sql`SELECT image FROM public.blog_media WHERE id = ${mediaId}`)[0].image, image);
+    await assert.rejects(sql`INSERT INTO public.blog_media (id, post_id, alt, width, height, image)
+      VALUES ('3033bf41-154b-4294-8a89-5c32c8e423de', ${post.id}, 'Synthetic image', 10, 10, ${Buffer.alloc(2097153)})`);
+    assert.equal(Number((await sql`SELECT count(*) AS count FROM public.blog_media`)[0].count), 1);
+    await sql`UPDATE drizzle.__drizzle_migrations SET hash = 'divergent' WHERE id = 3`;
+    await assert.rejects(migrateBlog(sql), /divergente/);
+    await sql`UPDATE drizzle.__drizzle_migrations SET hash = ${createHash("sha256").update(await readFile(new URL("../drizzle/0002_rapid_queen_noir.sql", import.meta.url), "utf8")).digest("hex")} WHERE id = 3`;
     await sql`UPDATE drizzle.__drizzle_migrations SET hash = 'divergent' WHERE id = 2`;
     await assert.rejects(migrateGallery(sql), /divergente/);
+    await assert.rejects(migrateBlog(sql), /divergente/);
     assert.equal(Number((await sql`SELECT count(*) AS count FROM public.gallery_photo`)[0].count), 1);
   } finally { await sql.end(); }
 });
