@@ -22,7 +22,7 @@ export function MemberBar({ member, current }: { member: CurrentMember; current?
         </Link>
       </nav>
       <div className={styles.memberIdentity}>
-        <AvatarInitials name={member.name} size="small" />
+        <AvatarInitials name={member.name} userId={member.id} image={member.image} size="small" />
         <span>@{member.username}</span>
         <form action={signOut}>
           <button className={styles.linkButton} type="submit">

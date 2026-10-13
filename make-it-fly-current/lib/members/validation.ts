@@ -6,6 +6,12 @@ import { z } from "zod";
 export const USERNAME_PATTERN = /^[a-z0-9_.]+$/;
 const RESERVED_USERNAMES = new Set(["admin", "apogee", "membros", "moderador", "suporte", "editar", "root"]);
 
+// Contas criadas com Google recebem este identificador provisório até a
+// pessoa escolher um nome público na etapa final do cadastro.
+export function isGeneratedGoogleUsername(value: string): boolean {
+  return /^google_[a-f0-9]{20}$/.test(value);
+}
+
 export const usernameSchema = z
   .string()
   .trim()
@@ -14,6 +20,11 @@ export const usernameSchema = z
   .max(30, "O usuário pode ter no máximo 30 caracteres.")
   .regex(USERNAME_PATTERN, "Use só letras minúsculas, números, ponto e sublinhado.")
   .refine((value) => !RESERVED_USERNAMES.has(value), "Esse nome de usuário é reservado.");
+
+export const publicUsernameSchema = usernameSchema.refine(
+  (value) => !isGeneratedGoogleUsername(value),
+  "Escolha outro nome de usuário.",
+);
 
 export const nameSchema = z
   .string()
@@ -30,7 +41,7 @@ export const passwordSchema = z
 
 export const signUpSchema = z.object({
   name: nameSchema,
-  username: usernameSchema,
+  username: publicUsernameSchema,
   email: emailSchema,
   password: passwordSchema,
 });

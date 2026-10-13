@@ -29,7 +29,7 @@ function GoogleAuth({ next, errorMessage, requestSignUp = false }: GoogleAuthPro
       const result = await authClient.signIn.social({
         provider: "google",
         callbackURL: next,
-        newUserCallbackURL: requestSignUp ? next : undefined,
+        newUserCallbackURL: requestSignUp ? `/membros/perfil/configurar?next=${encodeURIComponent(next)}` : undefined,
         errorCallbackURL,
         requestSignUp,
       });
@@ -91,6 +91,7 @@ export function SignUpForm({ next, googleError }: { next: string; googleError?: 
   return (
     <form className={styles.form} action={action} noValidate>
       <FormMessage message={state.message} />
+      <input type="hidden" name="next" value={next} />
       <Field name="name" label="Nome" error={state.errors?.name}>
         {(props) => <input {...props} name="name" autoComplete="name" required maxLength={60} defaultValue={state.values?.name} />}
       </Field>
@@ -129,6 +130,7 @@ export function SignUpForm({ next, googleError }: { next: string; googleError?: 
           {pending ? "Criando conta…" : "Criar conta"} <span aria-hidden>→</span>
         </button>
       </div>
+      <p className={styles.hint}>Ao criar conta com Google, você escolhe seu nome de usuário na próxima etapa.</p>
       <GoogleAuth next={next} errorMessage={googleError} requestSignUp />
     </form>
   );

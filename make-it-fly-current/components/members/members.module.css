@@ -604,9 +604,50 @@
   color: var(--ink);
   background: var(--sky);
   border-radius: 50%;
+  overflow: hidden;
   font-size: 0.85rem;
   font-weight: 650;
   letter-spacing: 0.02em;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarEditor {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 1.1rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgb(7 24 45 / 14%);
+}
+
+.avatarEditorTitle {
+  margin: 0 0 0.3rem;
+  font-weight: 650;
+}
+
+.avatarUploadForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0.9rem 0 0.5rem;
+}
+
+.avatarUploadForm label {
+  font-size: 0.82rem;
+  font-weight: 550;
+}
+
+.avatarUploadForm input {
+  max-width: 100%;
+  font: inherit;
+  font-size: 0.8rem;
 }
 
 .avatarLarge {

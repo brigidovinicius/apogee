@@ -1,3 +1,5 @@
+import Image from "next/image";
+import { memberAvatarUrl } from "@/lib/members/avatar-url";
 import styles from "./members.module.css";
 
 type Size = "small" | "normal" | "large";
@@ -14,10 +16,11 @@ export function initials(name: string): string {
   return letters.toUpperCase();
 }
 
-export function AvatarInitials({ name, size = "normal" }: { name: string; size?: Size }) {
+export function AvatarInitials({ name, userId, image, size = "normal" }: { name: string; userId: string; image?: string | null; size?: Size }) {
+  const avatar = memberAvatarUrl(image, userId);
   return (
     <span className={sizeClass[size]} aria-hidden>
-      {initials(name)}
+      {avatar ? <Image src={avatar} alt="" width={72} height={72} unoptimized /> : initials(name)}
     </span>
   );
 }
