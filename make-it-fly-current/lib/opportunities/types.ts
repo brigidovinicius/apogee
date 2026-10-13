@@ -5,7 +5,7 @@ import {
   type BrazilianStateCode,
 } from "@/lib/opportunities/location";
 
-export const OPPORTUNITY_KINDS = ["Bolsa", "Programa", "Intercâmbio", "Curso"] as const;
+export const OPPORTUNITY_KINDS = ["Bolsa", "Auxílio", "Estágio", "Intercâmbio", "Curso", "Prêmio", "Fomento", "Programa"] as const;
 export const EDUCATION_LEVELS = ["Ensino médio", "Graduação", "Pós-graduação", "Público diverso"] as const;
 
 export type OpportunityKind = (typeof OPPORTUNITY_KINDS)[number];
@@ -52,6 +52,7 @@ export type OpportunityFilters = {
   level: EducationLevel | null;
   stateCode: BrazilianStateCode | null;
   cityName: string | null;
+  query?: string | null;
 };
 
 export const EMPTY_OPPORTUNITY_FILTERS: OpportunityFilters = {
@@ -59,6 +60,7 @@ export const EMPTY_OPPORTUNITY_FILTERS: OpportunityFilters = {
   level: null,
   stateCode: null,
   cityName: null,
+  query: null,
 };
 
 export type OpportunityFilterOptions = {
@@ -150,12 +152,14 @@ export function opportunityFiltersFromSearchParams(searchParams: URLSearchParams
     stateCode: searchParams.get("uf"),
     cityName: searchParams.get("cidade"),
   });
+  const query = searchParams.get("busca")?.trim().slice(0, 100);
 
   return {
     kind: OPPORTUNITY_KINDS.find((kind) => kind === kindValue) ?? null,
     level: EDUCATION_LEVELS.find((level) => level === levelValue) ?? null,
     stateCode: location.status === "valid" ? location.location.stateCode : null,
     cityName: location.status === "valid" ? location.location.cityName : null,
+    ...(query ? { query } : {}),
   };
 }
 
@@ -168,6 +172,7 @@ export function setOpportunityFilterSearchParams(
     formacao: filters.level,
     uf: filters.stateCode,
     cidade: filters.stateCode ? filters.cityName : null,
+    busca: filters.query?.trim().slice(0, 100) || null,
   };
 
   for (const [key, value] of Object.entries(values)) {
@@ -182,6 +187,7 @@ export function filterOpportunities(
   filters: OpportunityFilters,
   today = dateInBrazil(),
 ) {
+  const query = filters.query?.trim().toLocaleLowerCase("pt-BR") ?? "";
   return sortByDeadline(opportunities)
     .filter((opportunity) => isOpportunityOpen(opportunity, today))
     .filter((opportunity) => filters.kind === null || opportunity.kind === filters.kind)
@@ -190,10 +196,13 @@ export function filterOpportunities(
     .filter((opportunity) => filters.cityName === null || (
       opportunity.nationallyEligible === true ||
       opportunity.stateCode === filters.stateCode && opportunity.cityName === filters.cityName
-    ));
+    ))
+    .filter((opportunity) => !query || [opportunity.title, opportunity.organization,
+      opportunity.eligibility, opportunity.benefit, opportunity.summary]
+      .some((value) => value.toLocaleLowerCase("pt-BR").includes(query)));
 }
 
 export function countActiveOpportunityFilters(filters: OpportunityFilters) {
   return Number(filters.kind !== null) + Number(filters.level !== null) +
-    Number(filters.stateCode !== null) + Number(filters.cityName !== null);
+    Number(filters.stateCode !== null) + Number(filters.cityName !== null) + Number(Boolean(filters.query?.trim()));
 }

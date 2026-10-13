@@ -8,11 +8,13 @@ import { generateEvidence } from "./generate-evidence";
 import type { BenefitType, OfficialSource, OpportunityCandidate } from "./types";
 import { normalizeBrazilianLocation } from "@/lib/location";
 
-const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|seleção de bolsista|oportunidade/i;
+const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|seleção|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|pesquisa|extensão|inovação|empreendedorismo/i;
 const excluded = /licitaç|pregão|compra pública|concurso público|processo administrativo/i;
 
 function benefit(text: string): BenefitType {
   const value = text.toLowerCase();
+  if (/premiaç|prêmio|concurso cultural/.test(value)) return "prize";
+  if (/financiamento|fomento|apoio a projeto/.test(value)) return "project_funding";
   if (/moradia/.test(value)) return "housing_aid";
   if (/mobilidade|intercâmbio/.test(value)) return "mobility_aid";
   if (/assistência|permanência|auxílio/.test(value)) return "financial_aid";
@@ -20,6 +22,7 @@ function benefit(text: string): BenefitType {
   if (/extensão/.test(value)) return "extension_scholarship";
   if (/estágio/.test(value)) return "internship";
   if (/pesquisa|pibic|pibiti|iniciação científica/.test(value)) return "research_scholarship";
+  if (/bolsa/.test(value)) return "academic_scholarship";
   return "other";
 }
 
@@ -41,6 +44,10 @@ export function normalizeOpportunity(input: {
 
   const statusSignal = detectSuspension(combined);
   const contentHash = crypto.createHash("sha256").update(combined).digest("hex");
+  const isCourse = /curso|qualificaç|capacitaç|oficina|formação profissional/i.test(input.title);
+  const nationallyEligible = normalizedLocation.location.stateCode === null &&
+    input.source.geographicScope.includes("Brasil") &&
+    /em todo o Brasil|de todo o Brasil|todo o território nacional|de qualquer (?:estado|cidade) do Brasil|de todo o país/i.test(combined);
   return {
     officialSourceId: input.source.id,
     title: input.title.trim(),
@@ -49,6 +56,8 @@ export function normalizeOpportunity(input: {
     applicantType,
     applicationRoute,
     benefitType: benefit(combined),
+    isCourse,
+    nationallyEligible,
     deadlineAt: deadline.deadlineAt,
     deadlinePrecision: deadline.precision,
     requirementsText: "Não informado na fonte oficial. Consulte o edital.",

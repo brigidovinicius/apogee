@@ -25,9 +25,13 @@ Uma oportunidade pública exige fonte oficial, prazo ou fluxo contínuo, públic
 5. Execute `npm run migrate`.
 6. Execute `npm run dev`.
 
-## Cron diário na VPS
+## Coleta automática
 
-A rota `POST /api/cron/ingest-official-sources` exige `Authorization: Bearer $CRON_SECRET`. Configure o agendador da VPS somente depois do deploy isolado. Exemplo conceitual:
+A rota `POST /api/cron/ingest-official-sources` exige `Authorization: Bearer $CRON_SECRET`. Sem `sourceId`, ela seleciona até três fontes **ativas, verificadas e com extração RSS/HTML** cujo intervalo venceu. A seleção usa uma reserva temporária no banco para evitar duas coletas simultâneas da mesma fonte. O serviço `scheduler` do Compose chama a rota a cada cinco minutos por padrão (`INGESTION_INTERVAL_SECONDS`, mínimo de 300). Cada fonte respeita seu próprio `crawl_interval_hours`; falhas tentam novamente após uma hora. A rota com `sourceId`, `maxPages` e `maxCandidates` continua disponível para coleta manual controlada.
+
+O coletor lê uma página de listagem por execução e, dentro do limite de páginas, páginas de detalhe ou PDF oficial. O ponto de avanço por fonte fica salvo em `crawl_listing_index` e `crawl_link_offset`, criados pela migração `0006_crawl_progress.sql`, para percorrer as próximas listagens e links sem voltar sempre aos primeiros. Os candidatos entram em `pending_review`; nenhuma descoberta é publicada automaticamente. Execuções e falhas por fonte ficam em **Admin → Ingestões**. O painel **Fontes** mostra UFs com fontes automáticas ativas e explicita as lacunas. As opções `api`, `sitemap` e `pdf` como modo de listagem ainda não têm adaptador automático; uma página HTML/RSS pode apontar para um PDF de detalhe.
+
+Exemplo conceitual de chamada do agendador:
 
 `curl --fail --request POST --header "Authorization: Bearer $CRON_SECRET" http://127.0.0.1:3100/api/cron/ingest-official-sources`
 
@@ -47,9 +51,11 @@ Antes do deploy, inventarie `docker ps`, portas, redes, volumes, bancos e backup
 
 O `docker-compose.yml` contém apenas o Radar e não cria nem modifica o PostgreSQL da VPS. Migrações não são executadas automaticamente no boot.
 
-## Adicionar uma universidade
+## Ampliar a cobertura
 
-No admin, acesse **Fontes → Nova fonte**. Cadastre somente domínio, subdomínios e URLs oficiais previamente conferidos. A fonte nasce inativa, em `verification_status=pending` e `manual_assisted`. Após validar HTTPS, robots.txt, termos, público, método de extração e contato, altere o status diretamente no banco durante a fase operacional. Crawling amplo de subdomínios não é permitido.
+No admin, acesse **Fontes → Nova fonte**. Cadastre somente domínio, subdomínios e URLs oficiais previamente conferidos. Escolha uma UF ou abrangência Brasil, sem atribuir cidade a oportunidades nacionais. A fonte nasce inativa, em `verification_status=pending` e `manual_assisted`. Depois de validar HTTPS, robots.txt, condições de consulta, público e método de extração, registre a auditoria, selecione RSS/HTML e ative a fonte. Alterações de domínio, listagens ou modo exigem nova auditoria. Crawling amplo de subdomínios não é permitido.
+
+Não há garantia de oportunidades em todos os municípios ou áreas somente por existir um catálogo de cidades. Cada UF, cidade, área e modalidade depende de editais atuais nas fontes oficiais verificadas e de revisão editorial. Os conjuntos de [dados abertos do MEC](https://dadosabertos.mec.gov.br/) incluem indicadores e bolsas concedidas; registros históricos não são tratados como inscrições abertas.
 
 ## Importação CSV
 

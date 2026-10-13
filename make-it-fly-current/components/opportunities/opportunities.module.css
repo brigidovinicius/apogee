@@ -478,7 +478,8 @@
   font-weight: 650;
 }
 
-.locationField select {
+.locationField select,
+.locationField input {
   width: 100%;
   min-width: 0;
   min-height: var(--apogee-control-min-height);
@@ -494,6 +495,19 @@
 .locationField select:disabled {
   cursor: not-allowed;
   opacity: 0.52;
+}
+
+.locationField button {
+  min-height: var(--apogee-control-min-height);
+  padding: 0.55rem 0.8rem;
+  color: var(--opportunity-ink);
+  border: 1px solid var(--opportunity-sky);
+  border-radius: var(--apogee-radius-soft);
+  background: var(--opportunity-sky);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .fieldHint {

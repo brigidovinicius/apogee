@@ -91,6 +91,12 @@ export async function saveReviewItems(source: OfficialSource, result: IngestionR
       );
     }
     await client.query("update ingestion_runs set items_created=$1 where id=$2", [saved, run.rows[0].id]);
+    if (result.nextListingIndex !== undefined && result.nextLinkOffset !== undefined) {
+      await client.query(
+        "update official_sources set crawl_listing_index=$2,crawl_link_offset=$3 where id=$1",
+        [source.id, result.nextListingIndex, result.nextLinkOffset],
+      );
+    }
   });
   return { saved, persistence: "postgres" };
 }

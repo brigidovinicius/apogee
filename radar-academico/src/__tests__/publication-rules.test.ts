@@ -78,6 +78,20 @@ describe("regras de publicação", () => {
     });
   });
 
+  it("não confunde data de publicação com prazo de inscrição", () => {
+    expect(detectDeadline("Publicado em 10/10/2026. Curso gratuito com seleção futura.").precision).toBe("not_informed");
+    expect(detectDeadline("Inscrições de 10/10/2026 a 20/10/2026")).toEqual({ deadlineAt: "2026-10-20", precision: "date_only" });
+  });
+
+  it("identifica cursos de qualquer área para revisão", () => {
+    const item = normalizeOpportunity({
+      title: "Curso gratuito de soldagem",
+      text: "Inscrições até 20/10/2026 pelo formulário de inscrição. Vagas para estudantes.",
+      url: "https://propesq.ufsc.br/curso-soldagem", source,
+    });
+    expect(item).toMatchObject({ isCourse: true, reviewStatus: "pending_review", benefitType: "other" });
+  });
+
   it("importação manual aceita somente data civil válida ou fluxo contínuo", () => {
     const header = "official_source_name,source_page_url,title,institution,applicant_type,application_route,deadline,last_verified_at";
     const row = (deadline: string) => `ufsc-propesq,https://propesq.ufsc.br/edital,Bolsa,UFSC,undergraduate_student,direct_student_application,${deadline},2026-10-01`;

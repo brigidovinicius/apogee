@@ -1,10 +1,10 @@
 const secret = process.env.CRON_SECRET;
 const origin = process.env.RADAR_INTERNAL_ORIGIN ?? "http://web:3000";
-const intervalSeconds = Number(process.env.INGESTION_INTERVAL_SECONDS ?? 86_400);
+const intervalSeconds = Number(process.env.INGESTION_INTERVAL_SECONDS ?? 300);
 
 if (!secret) throw new Error("CRON_SECRET não configurado");
-if (!Number.isFinite(intervalSeconds) || intervalSeconds < 3_600) {
-  throw new Error("INGESTION_INTERVAL_SECONDS deve ser de pelo menos uma hora");
+if (!Number.isInteger(intervalSeconds) || intervalSeconds < 300) {
+  throw new Error("INGESTION_INTERVAL_SECONDS deve ser de pelo menos cinco minutos");
 }
 
 async function run() {
@@ -20,10 +20,12 @@ async function run() {
     console.log(JSON.stringify({
       component: "radar-scheduler",
       startedAt,
-      status: "completed",
+      status: report.failed > 0 ? "completed_with_warnings" : "completed",
+      sourcesChecked: report.sourcesChecked,
       pagesChecked: report.pagesChecked,
       discovered: report.discovered,
       sentToReview: report.sentToReview,
+      failed: report.failed,
       published: report.published,
     }));
   } catch (error) {
@@ -36,5 +38,7 @@ async function run() {
   }
 }
 
-await run();
-setInterval(run, intervalSeconds * 1_000);
+while (true) {
+  await run();
+  await new Promise((resolve) => setTimeout(resolve, intervalSeconds * 1_000));
+}

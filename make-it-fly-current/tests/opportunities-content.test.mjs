@@ -187,3 +187,17 @@ test("a confirmed national opportunity is available in all UFs and search cities
   assert.equal(results[0].stateCode, null);
   assert.equal(results[0].location, "Brasil");
 });
+
+test("area keyword search combines with location and modality without guessing an area", () => {
+  const base = catalogue.STUDENT_OPPORTUNITIES[0];
+  const opportunities = [
+    { ...base, id: "sp-soldagem", title: "Curso de soldagem", kind: "Curso", deadline: "2026-10-20", stateCode: "SP", cityName: "Santos" },
+    { ...base, id: "sp-saude", title: "Curso de saúde", kind: "Curso", deadline: "2026-10-20", stateCode: "SP", cityName: "Santos" },
+  ];
+  const filters = { kind: "Curso", level: null, stateCode: "SP", cityName: "Santos", query: "soldagem" };
+  assert.deepEqual(logic.filterOpportunities(opportunities, filters, "2026-10-08").map((item) => item.id), ["sp-soldagem"]);
+  assert.equal(logic.countActiveOpportunityFilters(filters), 4);
+  const params = logic.setOpportunityFilterSearchParams(new URLSearchParams(), filters);
+  assert.equal(params.get("busca"), "soldagem");
+  assert.equal(logic.opportunityFiltersFromSearchParams(params).query, "soldagem");
+});

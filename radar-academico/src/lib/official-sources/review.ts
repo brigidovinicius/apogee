@@ -92,6 +92,9 @@ export async function decideOpportunity(input: { id: unknown; decision: unknown;
     if (item.nationally_eligible && !officialSource.rows[0].geographic_scope.includes("Brasil")) {
       throw new OpportunityReviewError("Abrangência nacional não confirmada pela fonte");
     }
+    if (item.nationally_eligible && !item.evidence_json?.national_scope && item.extraction_method !== "manual_assisted") {
+      throw new OpportunityReviewError("Evidência de elegibilidade nacional obrigatória");
+    }
     const sources = await client.query<{ source_count: number }>(
       `select count(*)::int as source_count from opportunity_sources
        where opportunity_id=$1 and official_source_id=$2 and active and source_role in

@@ -19,8 +19,6 @@ const scholarshipBenefits = new Set([
   "research_scholarship",
   "extension_scholarship",
   "monitor_scholarship",
-  "financial_aid",
-  "housing_aid",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -71,6 +69,10 @@ function dateOnly(value: string, precision = "exact_datetime") {
 function kindFromRadar(value: string, isCourse: boolean): OpportunityKind {
   if (isCourse) return "Curso";
   if (value === "mobility_aid") return "Intercâmbio";
+  if (value === "financial_aid" || value === "housing_aid") return "Auxílio";
+  if (value === "internship") return "Estágio";
+  if (value === "prize") return "Prêmio";
+  if (value === "project_funding") return "Fomento";
   if (scholarshipBenefits.has(value)) return "Bolsa";
   return "Programa";
 }

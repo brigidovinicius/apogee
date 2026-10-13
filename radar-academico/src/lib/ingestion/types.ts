@@ -53,6 +53,8 @@ export interface OfficialSource {
   priority: number;
   active: boolean;
   notes?: string;
+  crawlListingIndex?: number;
+  crawlLinkOffset?: number;
 }
 
 export interface FieldEvidence {
@@ -98,4 +100,6 @@ export interface IngestionResult {
   failed: number;
   locationRejected: number;
   warnings: string[];
+  nextListingIndex?: number;
+  nextLinkOffset?: number;
 }

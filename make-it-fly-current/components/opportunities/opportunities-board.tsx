@@ -145,6 +145,15 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
         </div>
 
         <div className={styles.filterFields}>
+          <form className={styles.locationField} onSubmit={(event) => {
+            event.preventDefault();
+            const query = new FormData(event.currentTarget).get("busca");
+            updateFilters({ ...filters, query: String(query ?? "").trim().slice(0, 100) || null });
+          }}>
+            <label htmlFor="opportunity-query">Área ou palavra-chave</label>
+            <input key={filters.query ?? ""} id="opportunity-query" name="busca" type="search" maxLength={100} defaultValue={filters.query ?? ""} placeholder="Ex.: engenharia, saúde, soldagem" />
+            <button type="submit">Buscar</button>
+          </form>
           {filterOptions.kinds.length > 0 ? (
             <FilterGroup<OpportunityKind>
               label="Modalidade"
