@@ -16,6 +16,7 @@
     "db:seed": "node scripts/members-seed.mjs",
     "members:grant-admin": "node scripts/members-grant-admin.mjs",
     "gallery:migrate": "node scripts/gallery-migrate.mjs",
+    "members:avatar:migrate": "node scripts/members-avatar-migrate.mjs",
     "blog:migrate": "node scripts/blog-migrate.mjs"
   },
   "dependencies": {

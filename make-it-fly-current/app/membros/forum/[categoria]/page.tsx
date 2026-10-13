@@ -60,7 +60,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                   <Link href={`${basePath}/${topicParam(topic.id, topic.slug)}`}>{topic.title}</Link>
                 </h2>
                 <p className={styles.meta}>
-                  <AvatarInitials name={topic.authorName} size="small" />{" "}
+                  <AvatarInitials name={topic.authorName} userId={topic.authorId} image={topic.authorImage} size="small" />{" "}
                   {topic.authorUsername ? (
                     <Link href={`/membros/perfil/${topic.authorUsername}`}>{topic.authorName}</Link>
                   ) : (

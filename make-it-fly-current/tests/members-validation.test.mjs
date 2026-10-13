@@ -32,6 +32,15 @@ test("reserved usernames cannot be registered, including the profile edit route"
   }
 });
 
+test("Google's provisional username requires a public name before member access", () => {
+  const provisional = "google_0123456789abcdefabcd";
+  assert.equal(v.isGeneratedGoogleUsername(provisional), true);
+  assert.equal(v.usernameSchema.safeParse(provisional).success, true);
+  assert.equal(v.publicUsernameSchema.safeParse(provisional).success, false);
+  assert.equal(v.signUpSchema.safeParse({ name: "Maria", username: provisional, email: "maria@example.com", password: "12345678" }).success, false);
+  assert.equal(v.publicUsernameSchema.parse("  Maria.Silva_1 "), "maria.silva_1");
+});
+
 test("sign up requires name, valid e-mail and a password of 8 to 128 characters", () => {
   const valid = { name: "Maria", username: "maria", email: " Maria@Example.COM ", password: "12345678" };
   assert.equal(v.signUpSchema.parse(valid).email, "maria@example.com");

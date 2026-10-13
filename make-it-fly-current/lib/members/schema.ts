@@ -30,6 +30,18 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// A foto é armazenada no banco: o container da aplicação não possui volume
+// persistente para uploads. user.image guarda apenas a URL interna versionada.
+export const memberAvatar = pgTable(
+  "member_avatar",
+  {
+    userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+    image: bytea("image").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [check("member_avatar_size_check", sql`octet_length(${table.image}) between 1 and 262144`)],
+);
+
 export const session = pgTable(
   "session",
   {
