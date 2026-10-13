@@ -11,6 +11,7 @@ type PostCardProps = {
     isOpening: boolean;
     createdAt: Date;
     editedAt: Date | null;
+    authorId: string;
     authorName: string;
     authorUsername: string | null;
     authorImage: string | null;
