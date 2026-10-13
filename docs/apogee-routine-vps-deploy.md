@@ -371,3 +371,56 @@ feita por causa deste registro.
 - Não houve alteração em DNS, Caddy, Vercel, segredos, certificados, volumes,
   redes ou serviços vizinhos. Este registro documental é posterior à release
   e não muda o SHA implantado.
+
+## Registro de release — nome de usuário e foto de membros (2026-10-13)
+
+- Autorização do usuário para executar as correções após a revisão local.
+  [PR #24](https://github.com/brigidovinicius/apogee/pull/24) integrado. O
+  head `8b6462b414b63b7bbaaa9445185daf6d5782771e` e o merge implantado
+  `130019c7d4f385e328a8ccc88ca140bf5c73af1f` têm a mesma árvore
+  `2d62cbc977fd47dba74582979713119d292497aa`.
+- [CI do PR 38406180891](https://github.com/brigidovinicius/apogee/actions/runs/38406180891)
+  e [CI de main 38407168247](https://github.com/brigidovinicius/apogee/actions/runs/38407168247):
+  os quatro jobs passaram, incluindo testes, typecheck, lint, build, smoke e
+  PostgreSQL descartável. O workflow de main foi acionado manualmente porque
+  este repositório não o dispara em `push`.
+- Preflight via `ssh apogee-vps`: `root@srv1439756`, checkout limpo no SHA
+  anterior `4d17ae6f74e5439d2ad23ca3c9ac4f67a2bdc7b9`, web saudável,
+  `.env` modo `600`, banco saudável e 71 GiB livres. A imagem anterior
+  `sha256:832f24aa7801273cab697ff38ca5f17713d407ab1d9513227fffe1eb44866f09`
+  permaneceu disponível para rollback. Os três hashes de migração existentes
+  correspondiam aos SQL versionados, e a role `apogee_app` tinha as permissões
+  necessárias.
+- Backup novo antes da migração:
+  `/opt/apogee-membros/backups/apogee_membros-20261013-133627-pre-avatar.sql.gz`,
+  132651 bytes. `gzip -t` passou antes e depois da implantação.
+- Checkout remoto atualizado com `git fetch` de `main` usando refspec explícito,
+  confirmação do SHA, `git switch --detach` e `docker compose config -q`.
+  `docker compose build web` construiu somente a imagem
+  `apogee-site:130019c7d4f385e328a8ccc88ca140bf5c73af1f`.
+- Migração executada em container temporário do Compose com `run --rm --no-deps
+  web node scripts/members-avatar-migrate.mjs`, antes de recriar o web. O
+  resultado foi `{"changed":true,"migration":"0003_bored_logan"}`. O banco
+  passou a quatro migrações; `member_avatar` existe com chave estrangeira e
+  restrição de tamanho. O comando temporário consumiu o restante do stdin do
+  primeiro script remoto; confirmei que o web antigo continuava saudável e
+  executei a troca em uma segunda chamada SSH. Não houve troca parcial do web.
+- `docker compose up -d --no-deps --no-build --force-recreate web` recriou
+  somente `apogee-site-web-1`. O container ficou `healthy`, com zero reinícios,
+  label do SHA implantado e imagem
+  `sha256:0ba9d71a9c4abd27f0dd907f749987814d0b38a22b5fbafada34a01a857e702d`.
+  Checkout remoto limpo, Caddy em execução sem reinícios, Postgres saudável e
+  PgBouncer em execução; 69 GiB livres após o build.
+- HTTPS público: `/`, `/membros/cadastro` e `/membros/entrar` responderam
+  `200`; `/membros/perfil/configurar` e `/membros` sem sessão responderam
+  `307` para login. O formulário `/makeitfly/participar` não foi alterado nem
+  usado no smoke desta release.
+- Limite da verificação: não houve login OAuth real, cadastro de conta de
+  teste nem envio de foto em produção. O fluxo autenticado foi validado por
+  testes e build, e os controles sem sessão por HTTP. O `npm ci` da imagem
+  mostrou 17 alertas na árvore completa; a auditoria de dependências de
+  execução exigida pelo CI passou. Não foi aplicado `audit fix` nesta release.
+- Rollback de código: imagem e SHA anterior acima, mantendo a migração
+  aditiva e os backups. Não houve mudança em DNS, Caddy, Vercel, segredos,
+  certificados, volumes, redes ou outros stacks. Este registro documental é
+  posterior ao deploy e não altera o SHA que está em produção.
