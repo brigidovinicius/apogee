@@ -24,6 +24,10 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
+# The NASA Space Apps origin serves an intermediate cross-signed by a root absent from this image.
+# This alternate intermediate chains to Node's existing SSL.com 2022 root.
+COPY certs/sslcom-tls-issuing-rsa-ca-r1.pem ./certs/sslcom-tls-issuing-rsa-ca-r1.pem
+ENV NODE_EXTRA_CA_CERTS=/app/certs/sslcom-tls-issuing-rsa-ca-r1.pem
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
