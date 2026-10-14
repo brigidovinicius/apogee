@@ -1,0 +1,7 @@
+# Cadeia TLS da fonte NASA Space Apps
+
+Em 14/10/2026, a fonte oficial `www.spaceappschallenge.org` respondeu HTTP 200 fora do contêiner, mas o coletor bloqueou a consulta com `UNABLE_TO_GET_ISSUER_CERT_LOCALLY`. O servidor enviou uma cadeia cujo intermediário `SSL.com TLS Issuing RSA CA R1` era assinado por `AAA Certificate Services`, raiz ausente na imagem Node 22. Não foi desligada a verificação TLS.
+
+O [repositório oficial da SSL.com](https://www.ssl.com/my/repository/) oferece o mesmo intermediário, com a mesma chave pública, assinado pela raiz `SSL.com TLS RSA Root CA 2022` já confiável para o Node. O arquivo versionado tem SHA-256 `BF:BC:39:E9:FA:2B:84:C9:A9:23:37:E2:34:4E:E2:38:1D:8D:3D:3A:E8:EA:75:EF:4E:48:E5:80:7E:D8:0C:69` e veio de `https://repo-certs.ssl.com/repo/certs/SSL.com-TLS-I-RSA-R1.pem`. O contêiner o adiciona a `NODE_EXTRA_CA_CERTS`; a validação de domínio, cadeia e prazo do certificado continua ativa. Um teste confere a assinatura do intermediário contra a raiz 2022 incluída no Node.
+
+Antes do ajuste, a coleta limitada da NASA consultou 0 páginas, registrou 1 falha e publicou 0 fichas. A coleta do CNPq consultou 5 páginas sem falhas e publicou 0: nenhuma das chamadas examinadas passou na comprovação automática de rota de candidatura. Repetir a coleta após o deploy e registrar a contagem real; não declarar ficha publicada com base apenas na correção de TLS. Quando o organizador passar a servir uma cadeia reconhecida pelos clientes atuais, remover o intermediário adicional em release testado.
