@@ -117,12 +117,12 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
   }
   if (links.rows[0] && sameUrl) {
     await client.query(`update opportunity_sources set source_page_url=$2,content_hash=$3,
-      source_excerpt=$4, last_checked_at=case when $5 then now() else last_checked_at end where id=$1`,
-    [links.rows[0].id, candidate.sourcePageUrl, incoming.contentHash, incoming.evidenceJson.opportunity_status?.excerpt ?? "", options.mode === "automatic"]);
+      source_excerpt=$4,application_url=case when $7 then $6 else application_url end, last_checked_at=case when $5 then now() else last_checked_at end where id=$1`,
+    [links.rows[0].id, candidate.sourcePageUrl, incoming.contentHash, incoming.evidenceJson.opportunity_status?.excerpt ?? "", options.mode === "automatic", candidate.applicationUrl ?? null, options.mode === "automatic" || candidate.applicationUrl !== undefined]);
   } else {
-    await client.query(`insert into opportunity_sources (opportunity_id,official_source_id,source_role,source_page_url,retrieved_at,last_checked_at,content_hash,source_excerpt,is_primary,active)
-      values ($1,$2,'primary_application_source',$3,now(),now(),$4,$5,true,true)`,
-    [id, source.id, candidate.sourcePageUrl, incoming.contentHash, incoming.evidenceJson.opportunity_status?.excerpt ?? ""]);
+    await client.query(`insert into opportunity_sources (opportunity_id,official_source_id,source_role,source_page_url,retrieved_at,last_checked_at,content_hash,source_excerpt,application_url,is_primary,active)
+      values ($1,$2,'primary_application_source',$3,now(),now(),$4,$5,$6,true,true)`,
+    [id, source.id, candidate.sourcePageUrl, incoming.contentHash, incoming.evidenceJson.opportunity_status?.excerpt ?? "", candidate.applicationUrl ?? null]);
   }
   if (changed) {
     await client.query(`insert into opportunity_management_events (opportunity_id,actor,action,previous_data,new_data)

@@ -75,3 +75,28 @@ it("rejects invalid source enum, interval, domain and listing origin", () => {
   expect(() => sourceUrls("https://user:pass@example.edu.br/listing", ["example.edu.br"])).toThrow();
   expect(isOfficialSourceUrl("https://example.edu.br:8443/", [source])).toBe(false);
 });
+
+it("EV.G reuses bounded robots briefly, still blocks each disallowed URL and fails closed after expiry", async () => {
+ vi.useFakeTimers();vi.stubEnv("INGESTION_USER_AGENT","RadarRobotsCacheTest");vi.stubEnv("INGESTION_REQUEST_DELAY_MS","100");
+ const evg={...source,id:"evg-enap-open-courses",allowedDomains:["www.escolavirtual.gov.br"]};let robotsCalls=0,resourceCalls=0;
+ vi.mocked(safeRequest).mockImplementation(async url=>{if(url.endsWith("/robots.txt")){robotsCalls++;return new Response("User-agent: *\nDisallow: /admin");}resourceCalls++;return new Response("<html>ok</html>",{headers:{"content-type":"text/html"}});});
+ try {
+  const first=fetchOfficialResource("https://www.escolavirtual.gov.br/curso/1",evg);await vi.runAllTimersAsync();await first;
+  const second=fetchOfficialResource("https://www.escolavirtual.gov.br/curso/2",evg);await vi.runAllTimersAsync();await second;
+  expect(robotsCalls).toBe(1);expect(resourceCalls).toBe(2);
+  await expect(fetchOfficialResource("https://www.escolavirtual.gov.br/admin",evg)).rejects.toThrow("robots");expect(resourceCalls).toBe(2);
+  await vi.advanceTimersByTimeAsync(300_001);vi.mocked(safeRequest).mockResolvedValue(new Response(null,{status:503}));
+  await expect(fetchOfficialResource("https://www.escolavirtual.gov.br/curso/3",evg)).rejects.toThrow("robots");
+ } finally { vi.useRealTimers(); }
+});
+
+it("does not cache EV.G robots when response headers require fresh validation", async () => {
+ vi.useFakeTimers();vi.stubEnv("INGESTION_REQUEST_DELAY_MS","100");
+ const evg={...source,id:"evg-enap-open-courses",allowedDomains:["www.escolavirtual.gov.br"]};
+ try { for(const [index,control] of ["no-store","no-cache","public,max-age=1"].entries()) {
+  vi.stubEnv("INGESTION_USER_AGENT",`RadarRobotsHeaderTest${index}`);let robotsCalls=0;
+  vi.mocked(safeRequest).mockImplementation(async url=>url.endsWith("/robots.txt")?(robotsCalls++,new Response("User-agent: *\nAllow: /",{headers:{"cache-control":control}})):new Response("<html>ok</html>"));
+  for(const id of [1,2]){const run=fetchOfficialResource(`https://www.escolavirtual.gov.br/curso/${id}`,evg);await vi.runAllTimersAsync();await run;}
+  expect(robotsCalls).toBe(2);
+ } } finally { vi.useRealTimers(); }
+});

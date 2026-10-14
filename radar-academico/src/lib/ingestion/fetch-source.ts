@@ -5,6 +5,8 @@ import { isOfficialSourceUrl } from "./validate-url";
 import { safeRequest } from "./safe-request";
 import { BoundedCache } from "./bounded-cache";
 
+// Only the individually audited EV.G host reuses robots for at most five minutes (RFC9309 section2.4).
+const evgRobotsCache = new BoundedCache<ReturnType<typeof robotsParser>>(8, 1024 * 1024, 5 * 60_000);
 const lastRequestByDomain = new BoundedCache<number>(256, 256, 60_000);
 const responseCache = new BoundedCache<{ etag?: string; modified?: string; contentType: string; body: Buffer }>(32, 32 * 1024 * 1024, 15 * 60_000);
 export const MAX_REDIRECTS = 5;
@@ -34,12 +36,22 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     visited.add(url);
     const parsed = new URL(url);
     const seaOfficialHeaderCompatibility = source.id === "sed-novos-valores-2026" && parsed.hostname === "www.sea.sc.gov.br";
-    await rateLimit(parsed.hostname);
     const robotsUrl = `${parsed.origin}/robots.txt`;
-    const robotsResponse = await safeRequest(robotsUrl, { "User-Agent": agent }, 128 * 1024, "GET", seaOfficialHeaderCompatibility);
-    // Only a real 404 permits absence; failures/redirects require human review.
-    if (!robotsResponse.ok && robotsResponse.status !== 404) throw new Error("robots.txt indisponível para revisão");
-    const robots = robotsParser(robotsUrl, robotsResponse.ok ? await robotsResponse.text() : "");
+    const robotsKey = source.id === "evg-enap-open-courses" && parsed.hostname === "www.escolavirtual.gov.br" ? `${robotsUrl}|${agent}` : null;
+    let robots = robotsKey ? evgRobotsCache.get(robotsKey) : undefined;
+    if (!robots) {
+      await rateLimit(parsed.hostname);
+      const robotsResponse = await safeRequest(robotsUrl, { "User-Agent": agent }, 128 * 1024, "GET", seaOfficialHeaderCompatibility);
+      // Only a real 404 permits absence; errors are never cached or reused after expiry.
+      if (!robotsResponse.ok && robotsResponse.status !== 404) throw new Error("robots.txt indisponível para revisão");
+      const body = robotsResponse.ok ? await robotsResponse.text() : "";
+      robots = robotsParser(robotsUrl, body);
+      const control = robotsResponse.headers.get("cache-control") ?? "";
+      const maxAge = /\bmax-age=(\d+)/i.exec(control);
+      if (robotsKey && !robotsResponse.headers.has("expires") && !robotsResponse.headers.has("age") && !/no-store|no-cache|must-revalidate/i.test(control) && (!maxAge || Number(maxAge[1]) >= 300)) {
+        evgRobotsCache.set(robotsKey, robots, Math.max(1, Buffer.byteLength(body)));
+      }
+    }
     if (robots.isAllowed(url, agent) === false) throw new Error("Acesso bloqueado por robots.txt");
 
     await rateLimit(parsed.hostname);

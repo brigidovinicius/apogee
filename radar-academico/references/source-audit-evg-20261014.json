@@ -1,0 +1,986 @@
+{
+  "method": "operator_authorized_agent",
+  "organizer": "Escola Virtual de Governo / Enap",
+  "institutionalEvidenceUrl": "https://www.escolavirtual.gov.br/conheca-a-escola",
+  "termsUrl": "https://www.enap.gov.br/acesso-a-informacao/termo-de-uso-e-aviso-de-privacidade-enap/",
+  "decision": "approved_bounded_collector",
+  "identityEvidence": "EV.G operates enrollment, academic management and certification on its own domain; each accepted course must identify ENAP as certifier and attribute the content provider separately. It is the course provider, not a third-party opportunity listing.",
+  "robotsUrl": "https://www.escolavirtual.gov.br/robots.txt",
+  "robotsStatus": 200,
+  "robotsSha256": "e5fec5f221061d75b7545ac8ec1f68092107ddd98d7dd8669b106220681c5c98",
+  "listings": [
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo",
+      "checkedAt": "2026-10-14T22:05:45.183Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 338659,
+      "sha256": "32723070f967579cd71d1ef01ec5426c60960800278b808befbbc6d8f0d1eae8",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=2",
+      "checkedAt": "2026-10-14T22:05:48.453Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335953,
+      "sha256": "ae5a773a1ea692ddb31702eac3baea02d557944780d4a74f6e85b085778fc8f2",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=3",
+      "checkedAt": "2026-10-14T22:05:51.620Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335910,
+      "sha256": "004a43bd15a9b05f712c470109b8e434faef9048f8bd11d1868c7e8aec27a02a",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=4",
+      "checkedAt": "2026-10-14T22:05:54.951Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336586,
+      "sha256": "f02d4f8e757ea355621d10f71156c3b52e8c50b56cad76314cc73e4ac5febbf2",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=5",
+      "checkedAt": "2026-10-14T22:05:58.079Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336845,
+      "sha256": "555e250278e22dcd3aa9b834780241464a2d93ad12646de77c653086980b9df1",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=6",
+      "checkedAt": "2026-10-14T22:06:01.258Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335768,
+      "sha256": "1b46e1f0949f5c5ab58bdd8a1259984f2d15ae69aebe565df7c8ca5f31ffcb9d",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=7",
+      "checkedAt": "2026-10-14T22:06:04.501Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336551,
+      "sha256": "b7c08b63a3808d7fffd7910a8329d6b74d59ef5f14608591e92d9b85a4944cbe",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=8",
+      "checkedAt": "2026-10-14T22:06:07.771Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336133,
+      "sha256": "e1d0a60a8a606a8a3f31b29322ff40d5a2042c9067d1d8e29e8c8066f3441d5b",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=9",
+      "checkedAt": "2026-10-14T22:06:10.990Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336370,
+      "sha256": "7ae15acbbfc36b595ca89adf3dbab092e988c3543c5b8207aae20676d33901ef",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=10",
+      "checkedAt": "2026-10-14T22:06:14.238Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336686,
+      "sha256": "1121afddc571a6bf13d5c34db8a32e2d98853eac9b8feacfff4c4ef9be3e7637",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=11",
+      "checkedAt": "2026-10-14T22:06:17.388Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336441,
+      "sha256": "ebcd55cf06d598785622d8d6813dcdc1a83845ce409854a955d785d445bb8e8d",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=12",
+      "checkedAt": "2026-10-14T22:06:20.733Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336010,
+      "sha256": "03727ba85eca8825780e13ceb7b85399effe2468fe8d8f893d084e81c57e2258",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=13",
+      "checkedAt": "2026-10-14T22:06:24.571Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336541,
+      "sha256": "be91bf9d5638fd4ebf1e28bc1a21c4caa5d7803b83f715a363da6cfcf51ad9e7",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=14",
+      "checkedAt": "2026-10-14T22:06:27.792Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335852,
+      "sha256": "3f803d5b0a76dbe8cd3ce8023ffe9396ca175c805c215ef382c685f128ade45a",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=15",
+      "checkedAt": "2026-10-14T22:06:30.900Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336201,
+      "sha256": "b8864787c6273c053e5f1356634a8f7caf29e922379551a69a2570be013b1f5b",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=16",
+      "checkedAt": "2026-10-14T22:06:34.016Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336682,
+      "sha256": "21017a93c4d67adedf78eed0c5ba2e6f3d362e874c9c71f5633964264eb2cf82",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=17",
+      "checkedAt": "2026-10-14T22:06:37.354Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336241,
+      "sha256": "d9bcef9ab72ac7b6ec49ad2fdacda0f682b03e85e458e8fe79632252bc0e07ae",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=18",
+      "checkedAt": "2026-10-14T22:06:40.565Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335845,
+      "sha256": "500e96f0093d2254ceb495f5e95f9cc2e5a475d7b07a68df49ad7d6ac0a96891",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=19",
+      "checkedAt": "2026-10-14T22:06:43.678Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336082,
+      "sha256": "568b490e6918a926f63b547a1bc42fa40125dd9b9a3e56ad9b3a407613cc48b9",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=20",
+      "checkedAt": "2026-10-14T22:06:46.951Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335855,
+      "sha256": "15df7a94fccf043655f53cb8f95afe7d677a548f785791010afa66471b56b2f1",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=21",
+      "checkedAt": "2026-10-14T22:06:50.239Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336456,
+      "sha256": "dbc862b428afef37472eb2be63cb33a2ccb2301b96f76210cbf75249505401e2",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=22",
+      "checkedAt": "2026-10-14T22:06:53.409Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336280,
+      "sha256": "4dea95f9d9fe1fa485a4b669dccc427b62991dd7bff51fb7e1cb757b8fee7bf4",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=23",
+      "checkedAt": "2026-10-14T22:06:56.486Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336663,
+      "sha256": "32044ff454b6f3c06ba1d0c933253b227d25dab6ae6d0fc633d004c71311b96f",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=24",
+      "checkedAt": "2026-10-14T22:06:59.703Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336319,
+      "sha256": "481f8cf6e14d8f030b98cf38771e00bf258eb7f92dbdb3b6393fc7b5c04edddd",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=25",
+      "checkedAt": "2026-10-14T22:07:02.915Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335837,
+      "sha256": "d2265ce71b6a681851e3032959fcc7db8bfa2619154c1b32cf2a9aedf352b37c",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=26",
+      "checkedAt": "2026-10-14T22:07:06.057Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335979,
+      "sha256": "97ae851e79efd860703884d887de9d781a9e26ce5157623df52b4f5c1912e1c2",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=27",
+      "checkedAt": "2026-10-14T22:07:09.223Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335952,
+      "sha256": "c3ba87eb31394617c0b361abe45a3a1d4af6226c6bc1999156f170e470b3cdba",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=28",
+      "checkedAt": "2026-10-14T22:07:12.544Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336170,
+      "sha256": "61b7d84fcbd9fa34412c4640690268a7e2f63aa63062cd22323b150106edfafe",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=29",
+      "checkedAt": "2026-10-14T22:07:15.702Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336562,
+      "sha256": "d497f188189b91a2639c2e6d94f45e9b51d31431914013945ef072919f1cfa49",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=30",
+      "checkedAt": "2026-10-14T22:07:18.912Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336644,
+      "sha256": "9d9b5a43756511277f8866f44aeca3573f3e2d05357f5b04908808491652036d",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=31",
+      "checkedAt": "2026-10-14T22:07:22.443Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336326,
+      "sha256": "411f8dd8b8dc3c7dede942a88a29b911244d56f67a6fecb2e9819c3e9a698974",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=32",
+      "checkedAt": "2026-10-14T22:07:25.611Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336343,
+      "sha256": "f9f78311baf9e42b8a412cc708043a291fdc2e1ef7a52298c938635ae5025a8e",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=33",
+      "checkedAt": "2026-10-14T22:07:28.726Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336251,
+      "sha256": "06afec0369ae2bf4c9e92844fce3703ff9679d5292541175a0853471994ad8ae",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=34",
+      "checkedAt": "2026-10-14T22:07:32.079Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336713,
+      "sha256": "c20ec23351f08684203dd987be3b423ff7fe29d36fc0092a41fc8a80540490d8",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=35",
+      "checkedAt": "2026-10-14T22:07:35.437Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336431,
+      "sha256": "1c7bc38b91d61d55196eca3eb52e5d684489edebc6d64da8de98d5568d1aa02c",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=36",
+      "checkedAt": "2026-10-14T22:07:38.930Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336448,
+      "sha256": "9c4467b97006bcd4711b3150d5dfe476a536b289f07839a99d5dd4d829bf972b",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=37",
+      "checkedAt": "2026-10-14T22:07:42.358Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336728,
+      "sha256": "25f205f7a5e7a566f94fd760c51d90a32fa7a1d803fe4d642ebb175686c86d75",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=38",
+      "checkedAt": "2026-10-14T22:07:45.485Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336760,
+      "sha256": "d84749435c9cb563e8fd27c569f95813ea8f30b3612ccfa93c7eb662ee7cb301",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=39",
+      "checkedAt": "2026-10-14T22:07:49.157Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336389,
+      "sha256": "316d3fe5783a3cc68ebeaf2d7a2bab37c9f8e75a2627f38860bb67a57d5b5f04",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=40",
+      "checkedAt": "2026-10-14T22:07:52.789Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336876,
+      "sha256": "1bad82ffaa394bb3e0211ded9927945dd164719860e9b8783bf60352f25df30a",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=41",
+      "checkedAt": "2026-10-14T22:07:56.178Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336193,
+      "sha256": "5766df52dfffa5463f7d39b4920f7fda109939780276d4a8593aedadaf28ff13",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=42",
+      "checkedAt": "2026-10-14T22:07:59.581Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 337201,
+      "sha256": "1e18ab0bc0521deb5137fd901331df371eca1d642d68e88a34882d589c70087d",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=43",
+      "checkedAt": "2026-10-14T22:08:02.834Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336201,
+      "sha256": "3e502ec094201e230854e6eebbdeb28ab75f9d0c6ec22abf4996d04a354cdd20",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=44",
+      "checkedAt": "2026-10-14T22:08:05.977Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336290,
+      "sha256": "42efd315c04f474ea2f5c038b73e10f708c8749a29b872028fc569b953d770e5",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=45",
+      "checkedAt": "2026-10-14T22:08:09.177Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336372,
+      "sha256": "30ab98bb5b8ae114abf73e3d78d12802a07b3c17e052f9bea54bbda1ec9e7807",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=46",
+      "checkedAt": "2026-10-14T22:08:12.283Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336255,
+      "sha256": "89f102a041f960d61328bf7a14d0f8749a33562b1e415cc8a6992092f39b7efa",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=47",
+      "checkedAt": "2026-10-14T22:08:15.408Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335936,
+      "sha256": "ada445e4665582b0e4e63e9c92ff813bebb0f9271e95e1a143c6463b4295a394",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=48",
+      "checkedAt": "2026-10-14T22:08:18.502Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335962,
+      "sha256": "a049a3ff1319cbdca0abe22e491ee7b50cfaf78cbe55c32ae2348f7065bbb16c",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=49",
+      "checkedAt": "2026-10-14T22:08:21.626Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336444,
+      "sha256": "7e66ccb98830e4048d892e72d7a77f5a2acd828e5e26dffd3d84e018cef29501",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=50",
+      "checkedAt": "2026-10-14T22:08:24.895Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336670,
+      "sha256": "02be1fba76ec6b995289565b3b241b7d16fa101d1b37b9de36f6b3bfbd301938",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=51",
+      "checkedAt": "2026-10-14T22:08:27.968Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336682,
+      "sha256": "ddc519f4fcaa4fb1e78f1d2546c7674f82528ea44cfa4987747bb4b48acfc7d2",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=52",
+      "checkedAt": "2026-10-14T22:08:31.117Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336613,
+      "sha256": "fc551f87acd4f4f17acf71d022942649e4e1aa5e9670dcdef2e1eb2ad5890367",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=53",
+      "checkedAt": "2026-10-14T22:08:34.426Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336229,
+      "sha256": "528b63994b6d86bc06e600c425983ed3eafa1d5c91e11f3abff013d346ad47d8",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=54",
+      "checkedAt": "2026-10-14T22:08:37.849Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336549,
+      "sha256": "7691f76a72ed40feb1c5db3be53b6abc6c6950fd018464fefb8ccd7523442097",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=55",
+      "checkedAt": "2026-10-14T22:08:41.101Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336052,
+      "sha256": "b0d5487cf84de70855ab4a2b4dbb3703b1b1d6f607d40d23eb76bc9d01249138",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=56",
+      "checkedAt": "2026-10-14T22:08:44.355Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335789,
+      "sha256": "519c38fd81489ea48aad22a31503ed1276e75dd1de3c393e1f290463b4b29e45",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=57",
+      "checkedAt": "2026-10-14T22:08:47.584Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336199,
+      "sha256": "469752b2e55d522de9afa5e34e9ad68afaab1c55f106276e5e52a241c22d0afa",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=58",
+      "checkedAt": "2026-10-14T22:08:50.878Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336481,
+      "sha256": "6d92c131895a97b5b7b185c67e3def07cc7a25fb0189fe854119c24f18869a3b",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=59",
+      "checkedAt": "2026-10-14T22:08:54.039Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336315,
+      "sha256": "ccb1194ecf6d8a8eb4e8647e833b66aaab288801fc1c979f4070c3a2434740b0",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=60",
+      "checkedAt": "2026-10-14T22:08:57.197Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336641,
+      "sha256": "f473bb7777f083e30313413437bd84e72d064d30ab76b0281d9bfe4c0e2a4f28",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=61",
+      "checkedAt": "2026-10-14T22:09:00.384Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336052,
+      "sha256": "a2cb1ad6cee9601c81459f08692404922055b80de5e2002abac795a92a49ff27",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=62",
+      "checkedAt": "2026-10-14T22:09:03.559Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336456,
+      "sha256": "ef6c40127521b4663b5ffe6efe3b8b34f1c8fdae9d74c787a9f31d1d677af74e",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=63",
+      "checkedAt": "2026-10-14T22:09:06.966Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336566,
+      "sha256": "680cb21814bb53a553e736dc400ffa66ccc289dd93e3c8c0a00240387eabceb5",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=64",
+      "checkedAt": "2026-10-14T22:09:10.239Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336416,
+      "sha256": "ab1fdb567aaec9ddb8afbf500c0cdf0b735687992bbf80971f5b8fd458fa80ae",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=65",
+      "checkedAt": "2026-10-14T22:09:13.625Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336004,
+      "sha256": "0380ffa92b0f1a8699d6d46329dc8dd6a7493d24471e9e77119a06b3bd98d39b",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=66",
+      "checkedAt": "2026-10-14T22:09:16.894Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336004,
+      "sha256": "9fde7f0da56819e3547c2b18a51600668cdbb8b7c760805a3871ad1486dd9773",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=67",
+      "checkedAt": "2026-10-14T22:09:20.076Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336160,
+      "sha256": "92043812cbc4c70953005c4d312f6507bd6dbd0a9d47c4d9c60cc90176b37e66",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=68",
+      "checkedAt": "2026-10-14T22:09:23.189Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336025,
+      "sha256": "e200eaeaafbe2a619558cea56c85e83b8b5d80262d0dbb7d6a498ed2934319a1",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=69",
+      "checkedAt": "2026-10-14T22:09:26.397Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335971,
+      "sha256": "2f43c49c39e331e1ec7a8e4c5832a35f59452a35f43cc86e37fc0a95a40b24da",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=70",
+      "checkedAt": "2026-10-14T22:09:29.569Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335739,
+      "sha256": "1a0460a99c7088d76d852dd47c41710c2534dc328585d2d77efccd343f8b9222",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=71",
+      "checkedAt": "2026-10-14T22:09:32.773Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336453,
+      "sha256": "c1657920eede6436b73331914ece213b6fcb75108736f8defc7cf5ebdf16cf39",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=72",
+      "checkedAt": "2026-10-14T22:09:35.929Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335841,
+      "sha256": "0893826a4e90953c39d9ad2830a4d1a7d205da56400d8d4d4b83d4e88b53f651",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=73",
+      "checkedAt": "2026-10-14T22:09:39.090Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 336120,
+      "sha256": "72e1a2ec4697ece9ddda154a0b0343cf060978112b8968fe5cc0f78224533993",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=74",
+      "checkedAt": "2026-10-14T22:09:42.296Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335822,
+      "sha256": "52130f48bea65d13e05cca6cde2cd1d5fe081c1850fb199d4e66a0af6a57501b",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=75",
+      "checkedAt": "2026-10-14T22:09:45.502Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335880,
+      "sha256": "49c35e5820521039cefac2c5b342a2f0611b9d8c9360bd7be95531821b696da2",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=76",
+      "checkedAt": "2026-10-14T22:09:48.802Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 335767,
+      "sha256": "36ed1c62d80e7628a5abcac5586c83649e9ac94049195b269772308deb86eb7d",
+      "courses": 12
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/catalogo?page=77",
+      "checkedAt": "2026-10-14T22:09:51.900Z",
+      "status": 200,
+      "redirect": null,
+      "robotsAllowed": true,
+      "bytes": 292574,
+      "sha256": "95be38d4b0650519b260ba5202480f3c03aadf2507045c3829e7f3cd7c95ceec",
+      "courses": 3
+    }
+  ],
+  "policy": {
+    "url": "https://www.escolavirtual.gov.br/perguntas-frequentes",
+    "checkedAt": "2026-10-14T22:15:12.624Z",
+    "status": 200,
+    "robotsAllowed": true,
+    "redirect": null,
+    "bytes": 283175,
+    "sha256": "9c9d9a173c2d3449550245f6b62808262786038ea4dd3a92b86e648a4ce54ec7"
+  },
+  "detailSamples": [
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/1598",
+      "checkedAt": "2026-10-14T22:11:43.721Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 156785,
+      "sha256": "e18e4f198a3698933e9e77f6a964f6d26937611ced8440af58897b1186178252",
+      "candidate": {
+        "title": "O Julgamento no CARF: a segunda instância e a instância especial — Conselho Administrativo de Recursos Fiscais - CARF (EV.G)",
+        "status": "open",
+        "deadlinePrecision": "continuous_flow",
+        "publicationIssue": null
+      }
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/1203",
+      "checkedAt": "2026-10-14T22:11:46.081Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 161944,
+      "sha256": "fe479fda37314b0a113cd9af3599118e6f6d72329a2e54402e810c6bf0b1fa44",
+      "candidate": {
+        "title": "Direitos Humanos e Meio Ambiente — Enap - Escola Nacional de Administração Pública (EV.G)",
+        "status": "open",
+        "deadlinePrecision": "continuous_flow",
+        "publicationIssue": null
+      }
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/1374",
+      "checkedAt": "2026-10-14T22:11:48.461Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 166279,
+      "sha256": "d29bc01449b5aa1677cbe8e513a69d7498732b5893b3bcda940788d0643b0947",
+      "candidate": {
+        "title": "Github Copilot — Microsoft (EV.G)",
+        "status": "open",
+        "deadlinePrecision": "continuous_flow",
+        "publicationIssue": null
+      }
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/1260",
+      "checkedAt": "2026-10-14T22:11:50.792Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 160008,
+      "sha256": "ccd59210ffba0c1f4d04dedbb566a99b4704ffe8844a4ee7fd9bb740e6455403",
+      "candidate": {
+        "title": "Avaliação de Simulação Energética — Ministério das Cidades (EV.G)",
+        "status": "open",
+        "deadlinePrecision": "continuous_flow",
+        "publicationIssue": null
+      }
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/1077",
+      "checkedAt": "2026-10-14T22:11:53.168Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 163301,
+      "sha256": "31f1babdae7640cf3d73a5ffe1781048a2754b9cdb13f9fe35e8774628d7f19e",
+      "candidate": {
+        "title": "Prestação de contas, transparência e controle social no âmbito do FNDE — Fundo Nacional de Desenvolvimento da Educação (EV.G)",
+        "status": "open",
+        "deadlinePrecision": "continuous_flow",
+        "publicationIssue": null
+      }
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/920",
+      "checkedAt": "2026-10-14T22:11:55.562Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 160422,
+      "sha256": "c46904e72aaa7ab62c7d84ec0b05ac230a9f079641e20a46987951a8cf923da5",
+      "candidate": {
+        "title": "Escuta qualificada para vulneráveis ao tráfico de pessoas — Organização Internacional para as Migrações - OIM (EV.G)",
+        "status": "open",
+        "deadlinePrecision": "continuous_flow",
+        "publicationIssue": null
+      }
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/824",
+      "checkedAt": "2026-10-14T22:11:57.884Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 191591,
+      "sha256": "fd71d62e0e3cd50a314c930fb0135eeb3dd1eeccbc33db50f9f20007b0bba40e",
+      "candidate": {
+        "title": "Avaliação de Equipamentos de Irrigação — Agência Nacional de Águas e Saneamento Básico (EV.G)",
+        "status": "open",
+        "deadlinePrecision": "continuous_flow",
+        "publicationIssue": null
+      }
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/537",
+      "checkedAt": "2026-10-14T22:12:00.318Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 196868,
+      "sha256": "6cb4636233d7c3c1d8461beb92f1978cb85fb9350a881b490a956041ff718c87",
+      "candidate": {
+        "title": "UX: Como Melhorar a Experiência do Usuário no Serviço Público Digital — Secretaria de Governo Digital (EV.G)",
+        "status": "open",
+        "deadlinePrecision": "continuous_flow",
+        "publicationIssue": null
+      }
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/714",
+      "checkedAt": "2026-10-14T22:12:02.712Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 192113,
+      "sha256": "798d3c3f0181832c430d796869a83a7d43e6e99eb6d93624b9833a243ffcebfc",
+      "candidate": null
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/408",
+      "checkedAt": "2026-10-14T22:12:05.067Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 159250,
+      "sha256": "2e24db931fe033002a1ff51a4a19914c3a9e02251cd8d5766432b3e4ffe92300",
+      "candidate": {
+        "title": "A importância do PNLD — Ministério da Educação (EV.G)",
+        "status": "open",
+        "deadlinePrecision": "continuous_flow",
+        "publicationIssue": null
+      }
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/232",
+      "checkedAt": "2026-10-14T22:12:07.420Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 157756,
+      "sha256": "6c3147091768b06beaf207eed45cae27cbf6e4c0bea0ab2c63105d86809e5afe",
+      "candidate": null
+    },
+    {
+      "url": "https://www.escolavirtual.gov.br/curso/41",
+      "checkedAt": "2026-10-14T22:12:09.766Z",
+      "status": 200,
+      "robotsAllowed": true,
+      "redirect": null,
+      "bytes": 195808,
+      "sha256": "8fb1de1dbe524fad86c422089bdeaf27aff60db4245f62452d4ff4c9d6cb047b",
+      "candidate": {
+        "title": "eMAG Conteudista — Ministério da Fazenda (EV.G)",
+        "status": "open",
+        "deadlinePrecision": "continuous_flow",
+        "publicationIssue": null
+      }
+    }
+  ],
+  "observedListings": 915,
+  "uniqueTitleProviderDuplicateUrls": [
+    "https://www.escolavirtual.gov.br/curso/318",
+    "https://www.escolavirtual.gov.br/curso/627"
+  ],
+  "limitations": [
+    "915 listing results are not eligible-published counts; each course needs its own current enrollment proof",
+    "Only Portuguese courses certified by ENAP, independent courses; exclude component titles, version labels and the unresolved duplicate pair",
+    "Course duration after enrollment never becomes an application deadline; continuous-flow statement must be on each detail",
+    "Free tuition verified from current official universal-course FAQ each bounded run; requirements/público-alvo preserved per course",
+    "No enrollment/login/certificate validation endpoints, third-party content, paid APIs or paid services accessed",
+    "Country/state/city/age/schooling not inferred from institutional headquarters or missing text",
+    "Scheduler source budget remains bounded at ten pages; page cursor continues in five minutes, completed cycle uses24h; failed checks preserve evidence"
+  ],
+  "sampleNormalizationCheckedAt": "2026-10-14T22:18:25.484Z",
+  "transport": {
+    "requestDelayUnchanged": true,
+    "robotsReuseSeconds": 300,
+    "robotsReuseScope": "Only evg-enap-open-courses and exact www.escolavirtual.gov.br; origin+user-agent; bounded1MiB/8entries; no errors or stale-on-failure",
+    "cacheControl": "No reuse for no-store/no-cache/must-revalidate, insufficient max-age, Expires or Age; check rules per URL; refresh after5minutes",
+    "standard": "https://www.rfc-editor.org/rfc/rfc9309.html#section-2.4"
+  }
+}

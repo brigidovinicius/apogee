@@ -72,3 +72,9 @@ URL exata `https://www.ifsc.edu.br/qualifica`, HTTP 200 sem redirect, robots per
 Fonte/evidência: `references/source-audit-ifsc-qualification-20261014.json`; migração aditiva 0025. Falha de estrutura preserva evidência anterior; vagas zeradas, suspensão no bloco Edital e curso/turma cancelados retiram as ofertas afetadas. Avisos condicionais de cancelamento não equivalem a fato ocorrido.
 
 192 testes Radar passaram; typecheck/lint aprovados. Após o ajuste final de avisos condicionais, três regressões do adaptador passaram novamente. Normalização do HTML oficial salvo confirmou oito candidatos com gates aprovados. Revisão independente estática sem bloqueador. CI, backup/recuperação, aplicação e contagem real deste lote ainda pendentes.
+
+### Resultado real do segundo lote
+
+PR53 com quatro checks aprovados; SHA Radar/scheduler `14245bd4f09bb4aabc4bcf699b18f07f147f145d`, migração0025, serviços saudáveis e checkout limpo. Apogee continua em `b8731c4e845d4a292b4f0b8ad03b49680506ce9c`, sem reconstrução neste lote. Backup protegido `/opt/apogee-backups/radar-lote-2-20261014T220321Z`, checksums e recuperação das13tabelasRadar/14Apogee sem diferença. Imagem anterior preservada; rollback pausa só a nova fonte e usa a imagem anterior, sem remover dados/volumes.
+
+Produção14/10/2026,19h11: **359IDs únicos públicos/admin, campos iguais, oito novas fichas IFSC e zero retiradas;351 anteriores preservadas. Faltam641.** Formação265; bolsas85; intercâmbios3; competições2; pesquisa82; carreira4; eventos5. Categorias se sobrepõem. Fonte IFSC qualificação8; demais fontes mantêm contagens do primeiro lote. Ponte real do contêiner Apogee HTTP200,total359 e os oito novos IDs confirmados. Nenhum e-mail enviado. O fluxo com assinante real continua sem comprovação e a inspeção visual posterior segue indisponível por bloqueio do navegador.

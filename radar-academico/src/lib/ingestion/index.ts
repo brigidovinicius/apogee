@@ -14,6 +14,8 @@ import * as cheerio from "cheerio";
 import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupplementUrl } from "./programme-catalogue";
 import { isAuditedAcateEventUrl, normalizeAcateEvent } from "./normalize-acate-events";
 
+import { EVG_SOURCE_ID, EVG_POLICY_URL, normalizeEvgPolicy, normalizeEvgCourse, isEvgCourseUrl, parseEvgListing, type EvgPolicy } from "./normalize-evg-courses";
+
 const promisingLink = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|edital|seleção|inscriç/i;
 
 async function detailText(body: Buffer, contentType: string) {
@@ -35,6 +37,7 @@ async function ingestSource(
   source: OfficialSource,
   budget: { remaining: number },
   maxCandidates?: number,
+  evgPolicy?: EvgPolicy,
 ): Promise<IngestionResult> {
   const result: IngestionResult = { sourceId: source.id, pagesChecked: 0, discovered: [], ignored: 0, failed: 0, locationRejected: 0, warnings: [] };
   if (normalizeBrazilianLocation(source.location ?? {}).status === "invalid") {
@@ -98,7 +101,7 @@ async function ingestSource(
       return result;
     }
     const body = resource.body.toString("utf8");
-    const items = /rss|xml/.test(resource.contentType)
+    const items = source.id === EVG_SOURCE_ID ? parseEvgListing(body) : /rss|xml/.test(resource.contentType)
       ? await parseRss(body)
       : parseHtml(body, listingUrl);
     const visited = new Set<string>();
@@ -108,6 +111,7 @@ async function ingestSource(
         return false;
       }
       visited.add(item.url);
+      if (source.id === EVG_SOURCE_ID) return isEvgCourseUrl(item.url);
       if (source.id === "acate-audited-events") return isAuditedAcateEventUrl(item.url);
       if (source.id === "fapesp-open-fellowships" && !/^https:\/\/(?:www\.)?fapesp\.br\/oportunidades\/[^/]+\/\d+\/$/.test(item.url)) {
         result.ignored += 1;
@@ -130,7 +134,7 @@ async function ingestSource(
           result.ignored += 1;
           continue;
         }
-        const candidate = source.id === "acate-audited-events"
+        const candidate = source.id === EVG_SOURCE_ID ? normalizeEvgCourse(detail.body.toString("utf8"), item.url, source, evgPolicy) : source.id === "acate-audited-events"
           ? normalizeAcateEvent(detail.body.toString("utf8"), item.url, source)
           : normalizeOpportunity({ title: item.title, text, url: item.url, source });
         if (candidate) result.discovered.push(candidate);
@@ -186,16 +190,24 @@ async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
   if (!source) throw new Error("Fonte oficial inválida, não verificada ou inativa");
   const activeSources: OfficialSource[] = [source];
   for (const source of activeSources.sort((a, b) => b.priority - a.priority)) {
+    let evgPolicy: EvgPolicy | undefined;
+    let contextPages = 0;
+    if (source.id === EVG_SOURCE_ID) {
+      if (budget.remaining < 3) throw new Error("Orçamento EV.G insuficiente para confirmar política e oferta");
+      const policy = await fetchOfficialResource(EVG_POLICY_URL, source);
+      evgPolicy = normalizeEvgPolicy(policy.body.toString("utf8"));
+      budget.remaining -= 1; contextPages = 1;
+    }
     const cataloguePages = programmeCataloguePageCount(source.id);
     // Catalogue records share evidence pages. Recheck the complete edition using
     // one page budget, rather than repeating its URLs for a few records per cycle.
     const recheckLimit = cataloguePages
       ? budget.remaining >= cataloguePages * 2 ? 200 : 0
-      : Math.min(2, Math.max(0, budget.remaining - 2));
-    const rechecked = await recheckKnownOpportunities(source, recheckLimit, detailText);
+      : Math.min(source.id === EVG_SOURCE_ID ? 6 : 2, Math.max(0, budget.remaining - 2));
+    const rechecked = await recheckKnownOpportunities(source, recheckLimit, detailText, evgPolicy);
     budget.remaining -= rechecked.pagesChecked + rechecked.failed;
-    const result = await ingestSource(source, budget, maxCandidates);
-    result.pagesChecked += rechecked.pagesChecked;
+    const result = await ingestSource(source, budget, maxCandidates, evgPolicy);
+    result.pagesChecked += rechecked.pagesChecked + contextPages;
     result.failed += rechecked.failed;
     if (rechecked.failed) result.warnings.push("Falha ao reconsultar ficha existente; verificação anterior preservada.");
     const persistence = await saveReviewItems(source, result);
@@ -228,7 +240,7 @@ export async function runScheduledOfficialSourceIngestion() {
   for (const source of sources) {
     let failed = true;
     try {
-      const report = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 5,
+      const report = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: source.id === EVG_SOURCE_ID ? 10 : 5,
         maxCandidates: programmeCataloguePageCount(source.id) ? undefined : 10 });
       const sourceReport = report.sources[0];
       failed = sourceReport.failed > 0;

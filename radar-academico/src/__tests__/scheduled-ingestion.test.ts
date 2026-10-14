@@ -40,7 +40,7 @@ it("reconsulta catálogos compartilhados dentro do orçamento de páginas e não
   }));
   vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, published: 1, blocked: 0, created: 1, updated: 0, persistence: "postgres" });
   expect(await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 5, maxCandidates: 10 })).toMatchObject({ pagesChecked: 4, discovered: 1 });
-  expect(recheckKnownOpportunities).toHaveBeenCalledWith(source, 200, expect.any(Function));
+  expect(recheckKnownOpportunities).toHaveBeenCalledWith(source, 200, expect.any(Function), undefined);
   expect(fetchOfficialResource).toHaveBeenCalledTimes(2);
   const bounded = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 1, maxCandidates: 10 });
   expect(bounded).toMatchObject({ pagesChecked: 0, discovered: 0 });

@@ -472,3 +472,37 @@ it("não duplica nem ressuscita uma edição encontrada por outra fonte oficial 
  await manageCatalogue("DELETE",{id:first.id,version:first.version,actor:"test-admin"});
  expect(await ingest()).toMatchObject({created:0,published:0});expect(await listLiveCatalogue()).toHaveLength(0);
 });
+
+it("continues listing-page progress in five minutes and returns to daily cadence after the complete cycle", async () => {
+ await state.db!.exec("update official_sources set crawl_listing_index=1,crawl_link_offset=0");
+ await completeScheduledSource(source.id, false);
+ expect((await state.db!.query("select next_crawl_at < now()+interval '6 minutes' as continuing from official_sources where id=$1",[source.id])).rows[0]).toEqual({continuing:true});
+ await state.db!.exec("update official_sources set crawl_listing_index=0,crawl_link_offset=0");
+ await completeScheduledSource(source.id, false);
+ expect((await state.db!.query("select next_crawl_at >= now()+interval '23 hours' as daily from official_sources where id=$1",[source.id])).rows[0]).toEqual({daily:true});
+});
+
+it("rechecks an actual EV.G course through RLS, preserving edits and withdrawing missing enrollment", async () => {
+ const { normalizeEvgCourse, normalizeEvgPolicy } = await import("@/lib/ingestion/normalize-evg-courses");
+ const evg: OfficialSource = { ...source,id:"evg-enap-open-courses",name:"EV.G",baseUrl:"https://www.escolavirtual.gov.br/catalogo",allowedDomains:["www.escolavirtual.gov.br"],allowedPathPrefixes:["/catalogo","/curso/","/perguntas-frequentes"],listingUrls:["https://www.escolavirtual.gov.br/catalogo"] };
+ await state.db!.query(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,active,verification_status) values ($1,'EV.G','Enap','Enap','government_foundation',$2,$3,$4,$5,'html',true,'verified')`,[evg.id,evg.baseUrl,evg.allowedDomains,evg.allowedPathPrefixes,evg.listingUrls]);
+ const html=await readFile(new URL("./fixtures/evg-course-1604.html",import.meta.url),"utf8");
+ const policy=normalizeEvgPolicy("<body>Todos os cursos da Escola Virtual de Governo (EV.G) são de autoinstrução, sem tutoria, com certificado e gratuitos.</body>");
+ const item=normalizeEvgCourse(html,"https://www.escolavirtual.gov.br/curso/1604",evg,policy)!;
+ const ingest=(candidate:OpportunityCandidate)=>saveReviewItems(evg,{sourceId:evg.id,pagesChecked:3,discovered:[candidate],ignored:0,failed:0,locationRejected:0,warnings:[]});
+ expect(await ingest(item)).toMatchObject({created:1,published:1});
+ const [original]=await listLiveCatalogue(true);
+ expect(original.applicationUrl).toBe(item.applicationUrl);
+ await manageCatalogue("PATCH",form(original,{title:"Ativos Virtuais — edição administrativa",deadlineAt:null,evidenceExcerpt:item.evidenceJson.opportunity_status.excerpt}));
+ expect((await listLiveCatalogue())[0].applicationUrl).toBe(item.applicationUrl);
+ const alias={...item,sourcePageUrl:"https://www.escolavirtual.gov.br/curso/9999",contentHash:"same-programme-other-url"};
+ expect(await ingest(alias)).toMatchObject({created:0});expect(await listLiveCatalogue()).toHaveLength(1);
+ expect((await listLiveCatalogue())[0].title).toBe("Ativos Virtuais — edição administrativa");
+ await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+ vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from(html.replace(/>\s*Inscreva-se\s*</g,">Matrícula indisponível<")),contentType:"text/html",hash:"no-enrollment",cached:false});
+ expect(await recheckKnownOpportunities(evg,6,async()=>"",policy)).toMatchObject({pagesChecked:1,failed:0});
+ expect(await listLiveCatalogue()).toHaveLength(0);
+ expect(await ingest(item)).toMatchObject({created:0,published:1});
+ await state.db!.query("update opportunities set deleted_at=now() where id=$1",[original.id]);
+ expect(await ingest(alias)).toMatchObject({created:0,published:0});expect(await listLiveCatalogue()).toHaveLength(0);
+});
