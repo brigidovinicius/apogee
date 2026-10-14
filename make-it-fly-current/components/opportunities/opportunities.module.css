@@ -192,6 +192,62 @@
   white-space: nowrap;
 }
 
+.categoryNavigation {
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  margin-top: 2rem;
+  padding-bottom: 0.65rem;
+  scrollbar-width: thin;
+}
+
+.coverageProgress {
+  margin: 1.5rem 0 0;
+  color: #b9d3ee;
+  font-size: 0.84rem;
+}
+
+.categoryNavigation button {
+  flex: 0 0 auto;
+  min-height: var(--apogee-control-min-height);
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgb(185 211 238 / 35%);
+  border-radius: var(--apogee-radius-soft);
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.categoryNavigation button:hover,
+.categoryNavigation .activeCategory {
+  border-color: var(--opportunity-sky);
+  background: var(--opportunity-sky);
+  color: var(--opportunity-ink);
+}
+
+.cardCategories {
+  margin: 0 0 0.85rem;
+  color: #b9d3ee;
+  font-size: 0.72rem;
+}
+
+.loadMore {
+  display: block;
+  min-height: var(--apogee-control-min-height);
+  margin: 2rem auto 0;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--opportunity-sky);
+  border-radius: var(--apogee-radius-soft);
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.loadMore:hover { background: var(--opportunity-sky); color: var(--opportunity-ink); }
+
 .filterToolbar {
   display: flex;
   justify-content: space-between;

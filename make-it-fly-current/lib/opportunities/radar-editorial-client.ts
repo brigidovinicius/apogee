@@ -1,4 +1,5 @@
 import "server-only";
+import { isOpportunityCategory, type OpportunityCategory } from "./types";
 
 export type RadarEditorialSource = {
   id: string;
@@ -20,6 +21,7 @@ export type RadarEditorialSource = {
 type EditorialConfiguration = { url: string; token: string };
 
 export type RadarManagedOpportunity = {
+  categories: OpportunityCategory[];
   version: number;
   officialSourceId: string;
   benefitType: string;
@@ -139,9 +141,11 @@ function managedOpportunityFrom(value: unknown): RadarManagedOpportunity | null 
   const applicationRoute = stringValue(item.applicationRoute);
   const deadlinePrecision = stringValue(item.deadlinePrecision);
   const officialUrl = httpsUrl(item.officialUrl);
+  const categories = Array.isArray(item.categories) && item.categories.every(isOpportunityCategory)
+    ? [...new Set(item.categories)] : null;
   if (!Number.isInteger(item.version) || !stringValue(item.officialSourceId) || !stringValue(item.benefitType) ||
       !["open", "upcoming"].includes(String(item.opportunityStatus)) || !stringValue(item.lastCheckedAt) ||
-      !id || !title || !institution || !applicantType || !applicationRoute || !deadlinePrecision ||
+      !id || !title || !institution || !applicantType || !applicationRoute || !deadlinePrecision || !categories ||
       typeof item.isCourse !== "boolean" || typeof item.nationallyEligible !== "boolean" ||
       (item.officialUrl !== null && !officialUrl) ||
       !item.evidence || typeof item.evidence !== "object" || Array.isArray(item.evidence)) return null;
@@ -157,6 +161,7 @@ function managedOpportunityFrom(value: unknown): RadarManagedOpportunity | null 
   }
   return {
     id, title, institution, applicantType, applicationRoute, deadlinePrecision, officialUrl, evidence,
+    categories,
     version: Number(item.version), officialSourceId: String(item.officialSourceId), benefitType: String(item.benefitType),
     opportunityStatus: item.opportunityStatus as "open" | "upcoming",
     requirementsText: String(item.requirementsText ?? ""), amountText: String(item.amountText ?? ""),

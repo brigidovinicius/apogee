@@ -4,11 +4,13 @@ import test from "node:test";
 import ts from "typescript";
 
 const locationSource = await readFile(new URL("../lib/opportunities/location.ts", import.meta.url), "utf8");
+const logicSource = (await readFile(new URL("../lib/opportunities/types.ts", import.meta.url), "utf8"))
+  .replace(/^import \{[\s\S]*?\} from "@\/lib\/opportunities\/location";\s*/m, "");
 const clientSource = (await readFile(new URL("../lib/opportunities/radar-client.ts", import.meta.url), "utf8"))
   .replace(/^import "server-only";\s*/m, "")
   .replace(/^import \{[\s\S]*?\} from "@\/lib\/opportunities\/types";\s*/m, "")
   .replace(/^import \{ normalizeBrazilianLocation \} from "@\/lib\/opportunities\/location";\s*/m, "");
-const output = ts.transpileModule(`${locationSource}\n${clientSource}`, {
+const output = ts.transpileModule(`${locationSource}\n${logicSource}\n${clientSource}`, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 
@@ -24,6 +26,7 @@ test("Radar preserves the Brazilian calendar day for date-only and exact deadlin
     const base = {
       title: "Bolsa verificada", institution: "Universidade",
       benefitType: "research_scholarship", applicantType: "undergraduate_student",
+      categories: ["bolsas", "pesquisa"],
       officialUrl: "https://universidade.example/edital", lastCheckedAt: "2026-10-10T12:00:00Z",
       stateCode: null, cityName: null, requirementsText: "Confira o edital", amountText: "Bolsa",
     };
@@ -38,6 +41,7 @@ test("Radar preserves the Brazilian calendar day for date-only and exact deadlin
     assert.deepEqual(items.map((item) => item.id), ["radar-date-only", "radar-exact"]);
     assert.deepEqual(items.map((item) => item.deadline), ["2026-10-10", "2026-10-10"]);
     assert.deepEqual(items.map((item) => item.deadlineLabel), ["Inscrições até 10 de outubro", "Inscrições até 10 de outubro"]);
+    assert.deepEqual(items[0].categories, ["bolsas", "pesquisa"]);
     globalThis.fetch = async () => new Response(JSON.stringify({ version: 3, opportunities: [{ ...base, id: "missing", deadlineAt: null, deadlinePrecision: "date_only" }] }));
     await assert.rejects(client.listRadarOpportunities(), /Catálogo indisponível/);
     globalThis.fetch = async () => new Response("unavailable", { status: 503 });

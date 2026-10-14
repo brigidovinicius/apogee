@@ -3,6 +3,7 @@ import {
   type EducationLevel,
   type OpportunityKind,
   type StudentOpportunity,
+  isOpportunityCategory,
 } from "@/lib/opportunities/types";
 import { normalizeBrazilianLocation } from "@/lib/opportunities/location";
 
@@ -93,6 +94,8 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
   const lastCheckedAt = stringValue(value.lastCheckedAt);
   const benefitType = stringValue(value.benefitType);
   const isCourse = value.isCourse === true;
+  const categories = Array.isArray(value.categories) && value.categories.every(isOpportunityCategory)
+    ? [...new Set(value.categories)] : null;
   const nationallyEligible = value.nationallyEligible === true;
   const applicantType = stringValue(value.applicantType);
   const deadlineAt = value.deadlineAt === null ? null : stringValue(value.deadlineAt);
@@ -102,7 +105,7 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     cityName: value.cityName,
   });
 
-  if (!id || !title || !organization || !officialUrl || !lastCheckedAt || !benefitType || !applicantType || !isHttpsUrl(officialUrl)) {
+  if (!id || !title || !organization || !officialUrl || !lastCheckedAt || !benefitType || !applicantType || !categories || !isHttpsUrl(officialUrl)) {
     return null;
   }
 
@@ -116,6 +119,7 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     title,
     organization,
     kind: kindFromRadar(benefitType, isCourse),
+    categories,
     level: levelFromRadar(applicantType),
     location: normalizedLocation.location.cityName
       ? `${normalizedLocation.location.cityName} · ${normalizedLocation.location.stateCode}`

@@ -1,4 +1,5 @@
 import type { BrazilianStateCode } from "@/lib/location";
+import type { OpportunityCategory } from "./categories";
 
 export type SourceType =
   | "federal_government" | "state_government" | "government_foundation"
@@ -74,6 +75,7 @@ export interface OpportunityCandidate {
   applicantType: ApplicantType;
   applicationRoute: ApplicationRoute;
   benefitType: BenefitType;
+  categories?: OpportunityCategory[];
   isCourse?: boolean;
   nationallyEligible?: boolean;
   deadlineAt?: string;

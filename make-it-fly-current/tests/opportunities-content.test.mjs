@@ -201,3 +201,21 @@ test("area keyword search combines with location and modality without guessing a
   assert.equal(params.get("busca"), "soldagem");
   assert.equal(logic.opportunityFiltersFromSearchParams(params).query, "soldagem");
 });
+
+test("seven categories filter the same unique cards and round-trip in the URL", () => {
+  assert.equal(logic.OPPORTUNITY_CATEGORIES.length, 7);
+  const base = catalogue.STUDENT_OPPORTUNITIES[0];
+  const opportunities = [
+    { ...base, id: "course-with-aid", categories: ["formacao", "bolsas"], deadline: "2026-10-20" },
+    { ...base, id: "event", categories: ["eventos"], deadline: "2026-10-20" },
+    { ...base, id: "unclassified", categories: [], deadline: "2026-10-20" },
+  ];
+  const filters = { ...logic.EMPTY_OPPORTUNITY_FILTERS, category: "bolsas" };
+  assert.deepEqual(logic.filterOpportunities(opportunities, filters, "2026-10-08").map((item) => item.id), ["course-with-aid"]);
+  assert.deepEqual(logic.filterOpportunities(opportunities, { ...filters, category: "formacao" }, "2026-10-08").map((item) => item.id), ["course-with-aid"]);
+  assert.equal(logic.filterOpportunities(opportunities, logic.EMPTY_OPPORTUNITY_FILTERS, "2026-10-08").length, 3);
+  const params = logic.setOpportunityFilterSearchParams(new URLSearchParams(), filters);
+  assert.equal(params.get("categoria"), "bolsas");
+  assert.equal(logic.opportunityFiltersFromSearchParams(params).category, "bolsas");
+  assert.equal(logic.countActiveOpportunityFilters(filters), 1);
+});

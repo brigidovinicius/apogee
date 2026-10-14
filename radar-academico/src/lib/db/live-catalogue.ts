@@ -9,6 +9,7 @@ const liveQuery = `select
          o.title,
          o.institution,
          o.benefit_type as "benefitType",
+         o.categories,
          o.is_course as "isCourse",
          o.nationally_eligible as "nationallyEligible",
          o.applicant_type as "applicantType",

@@ -7,10 +7,12 @@ import { ArrowUpRight, CalendarDays, Compass, MapPin, SlidersHorizontal, X } fro
 import { useMemo, useRef, useState } from "react";
 import {
   EMPTY_OPPORTUNITY_FILTERS,
+  OPPORTUNITY_CATEGORIES,
   countActiveOpportunityFilters,
   type EducationLevel,
   filterOpportunities,
   getOpportunityFilterOptions,
+  isOpportunityOpen,
   type OpportunityKind,
   type OpportunityFilters,
   type StudentOpportunity,
@@ -41,6 +43,7 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [visibleLimit, setVisibleLimit] = useState(24);
   const [today] = useState(() => dateInBrazil());
   const filterButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -60,11 +63,18 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
     [filters, opportunities, today],
   );
   const activeFilterCount = countActiveOpportunityFilters(filters);
+  const coverage = useMemo(() => {
+    const open = opportunities.filter((item) => isOpportunityOpen(item, today));
+    return { total: open.length, byCategory: Object.fromEntries(
+      OPPORTUNITY_CATEGORIES.map(({ id }) => [id, open.filter((item) => item.categories?.includes(id)).length]),
+    ) };
+  }, [opportunities, today]);
   const cityOptions = filters.stateCode
     ? filterOptions.citiesByState[filters.stateCode] ?? []
     : [];
 
   const updateFilters = (nextFilters: OpportunityFilters) => {
+    setVisibleLimit(24);
     const params = setOpportunityFilterSearchParams(
       new URLSearchParams(searchParams.toString()),
       nextFilters,
@@ -90,6 +100,22 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
           {visible.length} {visible.length === 1 ? "oportunidade" : "oportunidades"} visíveis
         </p>
       </div>
+      {management ? <p className={styles.coverageProgress}>
+        Cobertura do Radar: {coverage.total.toLocaleString("pt-BR")} de 1.000 oportunidades vigentes verificadas.
+      </p> : null}
+
+      <nav className={styles.categoryNavigation} aria-label="Categorias de oportunidades">
+        <button type="button" aria-current={!filters.category ? "page" : undefined}
+          className={!filters.category ? styles.activeCategory : undefined}
+          onClick={() => updateFilters({ ...filters, category: null })}>Todas</button>
+        {OPPORTUNITY_CATEGORIES.map(({ id, label }) => (
+          <button key={id} type="button" aria-current={filters.category === id ? "page" : undefined}
+            className={filters.category === id ? styles.activeCategory : undefined}
+            onClick={() => updateFilters({ ...filters, category: id })}>
+            {label} <span>({coverage.byCategory[id]})</span>
+          </button>
+        ))}
+      </nav>
 
       <div className={styles.filterToolbar}>
         <button
@@ -237,12 +263,15 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
 
       {visible.length > 0 ? (
         <div id="opportunity-results" className={styles.grid}>
-          {visible.map((opportunity) => (
+          {visible.slice(0, visibleLimit).map((opportunity) => (
             <article className={styles.card} key={opportunity.id}>
               <div className={styles.cardTopline}>
                 <span className={styles.kind}>{opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
                 <span>{opportunity.level}</span>
               </div>
+              {opportunity.categories?.length ? <p className={styles.cardCategories}>
+                {OPPORTUNITY_CATEGORIES.filter(({ id }) => opportunity.categories?.includes(id)).map(({ label }) => label).join(" · ")}
+              </p> : null}
               <div className={styles.cardMain}>
                 <p className={styles.organization}>{opportunity.organization}</p>
                 <h3>{opportunity.title}</h3>
@@ -305,6 +334,10 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
           ) : null}
         </div>
       )}
+      {visible.length > visibleLimit ? <button type="button" className={styles.loadMore}
+        onClick={() => setVisibleLimit((limit) => limit + 24)}>
+        Mostrar mais oportunidades ({Math.min(visible.length - visibleLimit, 24)} próximas)
+      </button> : null}
     </section>
   );
 }

@@ -2,6 +2,7 @@
 import { useActionState, useState } from "react";
 import { adminStyles as styles } from "@/components/admin/admin-ui";
 import type { RadarManagedOpportunity, RadarEditorialSource } from "@/lib/opportunities/radar-editorial-client";
+import { OPPORTUNITY_CATEGORIES } from "@/lib/opportunities/types";
 import { saveRadarOpportunity, deleteRadarOpportunity } from "./actions";
 const benefits = { academic_scholarship: "Bolsa acadêmica", research_scholarship: "Bolsa de pesquisa", extension_scholarship: "Bolsa de extensão", monitor_scholarship: "Monitoria", internship: "Estágio", financial_aid: "Auxílio financeiro", housing_aid: "Moradia", mobility_aid: "Mobilidade", prize: "Prêmio", project_funding: "Fomento", unpaid_opportunity: "Oportunidade não remunerada", other: "Outro" };
 const applicants = { undergraduate_student: "Graduação", postgraduate_student: "Pós-graduação", high_school_student: "Ensino médio", graduate_professional: "Profissional formado", professor: "Professor", researcher: "Pesquisador", company: "Empresa", institution: "Instituição", mixed: "Público diverso" };
@@ -10,6 +11,7 @@ function options(values: Record<string, string>) { return Object.entries(values)
 export function CatalogueForm({ item, sources }: { item?: RadarManagedOpportunity; sources: RadarEditorialSource[] }) {
   const [state, saveAction, saving] = useActionState(saveRadarOpportunity, { error: "" });
   const [deletion, deleteAction, deleting] = useActionState(deleteRadarOpportunity, { error: "" });
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(item?.categories ?? []);
   const deadline = item?.deadlineAt ? item.deadlinePrecision === "date_only" ? item.deadlineAt.slice(0,10) : new Date(item.deadlineAt).toISOString() : "";
   const [values, setValues] = useState<Record<string, string | boolean>>(() => ({
     title: item?.title ?? "", institution: item?.institution ?? "", officialSourceId: item?.officialSourceId ?? "",
@@ -35,6 +37,13 @@ export function CatalogueForm({ item, sources }: { item?: RadarManagedOpportunit
       <label className={styles.field}><span>Instituição</span><input name="institution" required maxLength={500} {...bind("institution")} /></label>
       <label className={styles.field}><span>Link oficial</span><input name="officialUrl" type="url" required maxLength={2000} {...bind("officialUrl")} /></label>
       <label className={styles.field}><span>Tipo de oportunidade</span><select name="benefitType" required {...bind("benefitType")}><option value="">Selecione</option>{options(benefits)}</select></label>
+      <fieldset className={styles.categoryFieldset}><legend>Categorias de navegação</legend>
+        <p>Selecione todas as áreas comprovadas pela fonte. A mesma ficha pode aparecer em mais de uma categoria.</p>
+        {OPPORTUNITY_CATEGORIES.map(({ id, label }) => <label key={id} className={styles.categoryOption}>
+          <input type="checkbox" name="categories" value={id} checked={selectedCategories.includes(id)}
+            onChange={(event) => setSelectedCategories((previous) => event.target.checked ? [...previous, id] : previous.filter((value) => value !== id))} /> {label}
+        </label>)}
+      </fieldset>
       <label className={styles.field}><span>Público</span><select name="applicantType" required {...bind("applicantType")}><option value="">Selecione</option>{options(applicants)}</select></label>
       <label className={styles.field}><span>Como se inscrever</span><select name="applicationRoute" required {...bind("applicationRoute")}><option value="">Selecione</option>{options(routes)}</select></label>
       <label className={styles.field}><span>Estado das inscrições</span><select name="opportunityStatus" required {...bind("opportunityStatus")}><option value="">Selecione</option><option value="open">Abertas</option><option value="upcoming">Abertura futura confirmada</option></select></label>
@@ -49,7 +58,7 @@ export function CatalogueForm({ item, sources }: { item?: RadarManagedOpportunit
       <label className={styles.field}><span>Requisitos, quando informados</span><textarea name="requirementsText" maxLength={6000} {...bind("requirementsText")} /></label>
       <label className={styles.field}><span>Apoio ou benefício, quando informado</span><textarea name="amountText" maxLength={2000} {...bind("amountText")} /></label>
       <label className={styles.field}><span>Trecho da fonte que confirma inscrições, prazo e abrangência</span><textarea name="evidenceExcerpt" required maxLength={4000} {...bind("evidenceExcerpt")} /></label>
-      {state.error ? <p role="alert">{state.error}</p> : null}<button className={styles.button} disabled={saving || deleting || !sources.length}>{saving ? "Salvando…" : "Salvar no catálogo ao vivo"}</button>
+      {state.error ? <p role="alert">{state.error}</p> : null}<button className={styles.button} disabled={saving || deleting || !sources.length || !selectedCategories.length}>{saving ? "Salvando…" : "Salvar no catálogo ao vivo"}</button>
     </form>
     {item ? <form action={deleteAction} className={styles.catalogueForm}><input type="hidden" name="id" value={item.id} /><input type="hidden" name="version" value={item.version} />
       <label><input type="checkbox" name="confirmDelete" required /> Excluir esta oportunidade do catálogo público</label>

@@ -2,10 +2,11 @@ import type { PoolClient } from "pg";
 import type { OfficialSource, OpportunityCandidate } from "./types";
 import { canonicalOpportunityKey } from "./revision-key";
 import { publicationIssue } from "./publication";
+import { categoriesFromEvidence } from "./categories";
 
 export const candidateColumns = {
   title: "title", institution: "institution", applicantType: "applicant_type", applicationRoute: "application_route",
-  benefitType: "benefit_type", isCourse: "is_course", nationallyEligible: "nationally_eligible",
+  benefitType: "benefit_type", categories: "categories", isCourse: "is_course", nationallyEligible: "nationally_eligible",
   deadlineAt: "deadline_at", deadlinePrecision: "deadline_precision", stateCode: "state_code", cityName: "city_name",
   requirementsText: "requirements_text", amountText: "amount_text", opportunityStatus: "opportunity_status",
 } as const;
@@ -45,7 +46,7 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
   if (existing?.deleted_at) return { id: existing.id, saved: 0, published: 0, blocked: 0, created: 0, updated: 0 };
   const overrides = options.overrides ?? existing?.management_overrides ?? {};
   if (options.mode === "automatic" && overrides.sourcePageUrl && overrides.sourcePageUrl !== incoming.sourcePageUrl) return { id: existing?.id, saved: 0, published: 0, blocked: 0, created: 0, updated: 0 };
-  const candidate = { ...incoming, ...overrides };
+  const candidate = { ...incoming, categories: incoming.categories ?? categoriesFromEvidence(incoming.benefitType, incoming.isCourse === true), ...overrides };
   // A source that closed or became ambiguous cannot be kept live by a stale manual override.
   const issue = publicationIssue(incoming, source) ?? publicationIssue(candidate, source);
   const values: Record<string, unknown> = {};
