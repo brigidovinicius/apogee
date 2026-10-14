@@ -1,5 +1,6 @@
 import { runOfficialSourceIngestion, runScheduledOfficialSourceIngestion } from "@/lib/ingestion";
 import { loadOfficialSource } from "@/lib/ingestion/official-source-registry";
+import { runScheduledDiscovery } from "@/lib/discovery/daily-discovery";
 import { secretMatches } from "@/lib/security";
 
 export const runtime = "nodejs";
@@ -19,7 +20,11 @@ export async function POST(request: Request) {
     if (search.has("maxPages") || search.has("maxCandidates")) {
       return Response.json({ error: "Parâmetros de ingestão inválidos" }, { status: 400 });
     }
-    try { return Response.json(await runScheduledOfficialSourceIngestion()); }
+    try {
+      const ingestion = await runScheduledOfficialSourceIngestion();
+      try { return Response.json({ ...ingestion, discovery: await runScheduledDiscovery() }); }
+      catch { return Response.json({ ...ingestion, discovery: { targetsChecked: 0, newLeads: 0, failed: true } }); }
+    }
     catch { return Response.json({ error: "Falha na ingestão" }, { status: 500 }); }
   }
   if (!/^[a-z0-9][a-z0-9-]{0,79}$/.test(sourceId) || !(await loadOfficialSource(sourceId)) ||

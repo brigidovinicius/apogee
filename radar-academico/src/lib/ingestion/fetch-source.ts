@@ -22,8 +22,9 @@ async function rateLimit(host: string) {
   lastRequestByDomain.set(host, Date.now(), 1);
 }
 
-export async function fetchOfficialResource(initialUrl: string, source: OfficialSource) {
-  const maxBytes = boundedInteger(process.env.INGESTION_MAX_FILE_SIZE_MB, 15, 1, 15) * 1024 * 1024;
+export async function fetchOfficialResource(initialUrl: string, source: OfficialSource, maxBytesCap?: number) {
+  const configuredMaxBytes = boundedInteger(process.env.INGESTION_MAX_FILE_SIZE_MB, 15, 1, 15) * 1024 * 1024;
+  const maxBytes = maxBytesCap ? Math.min(configuredMaxBytes, maxBytesCap) : configuredMaxBytes;
   const agent = process.env.INGESTION_USER_AGENT ?? `RadarAcademicoBot/1.0 (+${process.env.INGESTION_CONTACT_EMAIL ?? "contato@radar-academico.local"})`;
   let url = initialUrl;
   const visited = new Set<string>();
