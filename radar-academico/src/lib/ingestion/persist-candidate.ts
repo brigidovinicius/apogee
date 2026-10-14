@@ -26,7 +26,7 @@ export async function lockSource(client: PoolClient, source: OfficialSource) {
 export async function findCandidate(client: PoolClient, candidate: OpportunityCandidate) {
   const result = await client.query<StoredOpportunity>(
     `select * from opportunities where official_source_id=$1 and canonical_key=$2 order by created_at limit 2 for update`,
-    [candidate.officialSourceId, canonicalOpportunityKey(candidate.officialSourceId, candidate.title)],
+    [candidate.officialSourceId, canonicalOpportunityKey(candidate.officialSourceId, candidate.title, candidate.sourcePageUrl)],
   );
   if (result.rows.length > 1) throw new Error("Identidade ambígua; coleta não aplicada");
   if (result.rows[0]) return result.rows[0];
@@ -80,7 +80,7 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
       where id=$${args.length}`, args);
     id = existing.id;
   } else {
-    Object.assign(values, { ingestion_origin: incoming.extractionMethod === "manual_assisted" ? "manual" : "automatic", official_source_id: source.id, canonical_key: canonicalOpportunityKey(source.id, incoming.title),
+    Object.assign(values, { ingestion_origin: incoming.extractionMethod === "manual_assisted" ? "manual" : "automatic", official_source_id: source.id, canonical_key: canonicalOpportunityKey(source.id, incoming.title, incoming.sourcePageUrl),
       target_academic_levels: [candidate.applicantType], verified_at: now, verification_method: options.mode,
       next_source_check_at: now, last_source_check_at: options.mode === "automatic" ? now : null, published_at: issue ? null : now, extracted_at: now });
     const cols = Object.keys(values);

@@ -23,7 +23,7 @@ export type ApplicantType =
   | "institution" | "mixed";
 
 export type ApplicationRoute =
-  | "direct_student_application" | "application_via_university"
+  | "direct_student_application" | "direct_application" | "application_via_university"
   | "application_via_department" | "application_via_professor"
   | "application_via_project_coordinator" | "institutional_call"
   | "invitation_only" | "unclear";

@@ -20,7 +20,7 @@ function parseLine(line: string) {
 }
 
 const applicants = new Set(["undergraduate_student","postgraduate_student","high_school_student","graduate_professional","professor","researcher","company","institution","mixed"]);
-const routes = new Set(["direct_student_application","application_via_university","application_via_department","application_via_professor","application_via_project_coordinator","institutional_call","invitation_only","unclear"]);
+const routes = new Set(["direct_student_application","direct_application","application_via_university","application_via_department","application_via_professor","application_via_project_coordinator","institutional_call","invitation_only","unclear"]);
 
 function validDateOnly(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;

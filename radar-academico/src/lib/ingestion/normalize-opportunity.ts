@@ -10,6 +10,7 @@ import type { BenefitType, OfficialSource, OpportunityCandidate } from "./types"
 import { normalizeBrazilianLocation } from "@/lib/location";
 import { normalizeSpaceApps } from "./normalize-space-apps";
 import { normalizeMinCIntercambio } from "./normalize-minc-intercambio";
+import { normalizeFapesp } from "./normalize-fapesp";
 
 const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|seleção|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|pesquisa|extensão|inovação|empreendedorismo/i;
 const excluded = /licitaç|pregão|compra pública|concurso público|processo administrativo/i;
@@ -37,6 +38,7 @@ export function normalizeOpportunity(input: {
 }): OpportunityCandidate | null {
   if (input.source.id === "nasa-space-apps-2026") return normalizeSpaceApps(input);
   if (input.source.id === "minc-intercambio-audiovisual-2026") return normalizeMinCIntercambio(input);
+  if (input.source.id === "fapesp-open-fellowships") return normalizeFapesp(input);
   const combined = `${input.title}\n${input.text}`.replace(/\s+/g, " ").trim();
   const normalizedLocation = normalizeBrazilianLocation(input.source.location ?? {});
   if (normalizedLocation.status === "invalid") return null;

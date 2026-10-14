@@ -192,6 +192,70 @@ it("rechecks existing pages, withdraws unconfirmed items and never refreshes ver
  expect(await listLiveCatalogue()).toEqual([]);
 });
 
+it("withdraws the MinC exchange call when it leaves the official open-call index", async () => {
+ const url = "https://www.gov.br/cultura/pt-br/assuntos/editais/inscricoes-em-andamento/edital-de-intercambio-cultural-circulacao-e-participacao-audiovisual-no-exterior";
+ const listingUrl = "https://www.gov.br/cultura/pt-br/assuntos/editais/inscricoes-em-andamento";
+ const minc: OfficialSource = {
+  ...source, id: "minc-intercambio-audiovisual-2026", institutionName: "Ministério da Cultura",
+  baseUrl: listingUrl, allowedDomains: ["www.gov.br"], allowedPathPrefixes: ["/cultura/pt-br/assuntos/editais/inscricoes-em-andamento"],
+  listingUrls: [listingUrl], geographicScope: ["Brasil"],
+ };
+ await state.db!.query(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,audience_scope,geographic_scope,categories,priority,active,verification_status)
+ values ($1,$2,$3,'MinC','federal_government',$4,$5,$6,$7,'html',$8,$9,$10,80,true,'verified')`,
+ [minc.id, minc.name, minc.institutionName, minc.baseUrl, minc.allowedDomains, minc.allowedPathPrefixes, minc.listingUrls, minc.audienceScope, minc.geographicScope, minc.categories]);
+ const proof = { source_url: url, excerpt: "Inscrições abertas até 20/10/2099." };
+ const item = candidate({ officialSourceId: minc.id, sourcePageUrl: url, evidenceJson: { deadline_at: proof, opportunity_status: proof } });
+ await saveReviewItems(minc, { sourceId: minc.id, pagesChecked: 1, discovered: [item], ignored: 0, failed: 0, locationRejected: 0, warnings: [] });
+ expect(await listLiveCatalogue()).toHaveLength(1);
+ await state.db!.exec("update opportunities set next_source_check_at=now()-interval '1 day'");
+ vi.mocked(fetchOfficialResource).mockRejectedValueOnce(new Error("timeout"));
+ expect(await recheckKnownOpportunities(minc, 1, async () => "")).toMatchObject({ failed: 1 });
+ expect(await listLiveCatalogue()).toHaveLength(1);
+ await state.db!.exec("update opportunities set next_source_check_at=now()-interval '1 day'");
+ vi.mocked(fetchOfficialResource).mockResolvedValueOnce({ body: Buffer.from("<h1>Editais em andamento</h1>"), contentType: "text/html", hash: "incomplete", cached: false });
+ expect(await recheckKnownOpportunities(minc, 1, async () => "")).toMatchObject({ failed: 1 });
+ expect(await listLiveCatalogue()).toHaveLength(1);
+ await state.db!.exec("update opportunities set next_source_check_at=now()-interval '1 day'");
+ vi.mocked(fetchOfficialResource).mockResolvedValueOnce({ body: Buffer.from("<h1>Editais em andamento</h1><a href='/cultura/pt-br/assuntos/editais/inscricoes-em-andamento/outra-chamada'>Outra chamada</a>"), contentType: "text/html", hash: "listing", cached: false });
+ expect(await recheckKnownOpportunities(minc, 1, async () => "")).toMatchObject({ pagesChecked: 1, failed: 0 });
+ expect(vi.mocked(fetchOfficialResource).mock.calls.at(-1)?.[0]).toBe(listingUrl);
+ expect(await listLiveCatalogue()).toEqual([]);
+});
+
+it("publishes a FAPESP direct application and withdraws it when the official open list removes it", async () => {
+ const listingUrl = "https://fapesp.br/oportunidades/";
+ const url = "https://fapesp.br/oportunidades/projeto-de-logica/9715/";
+ const fapesp: OfficialSource = {
+  ...source, id: "fapesp-open-fellowships", institutionName: "FAPESP", sourceType: "government_foundation",
+  baseUrl: listingUrl, allowedDomains: ["fapesp.br", "www.fapesp.br"],
+  allowedPathPrefixes: ["/oportunidades/"], listingUrls: [listingUrl], geographicScope: [],
+ };
+ await state.db!.query(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,audience_scope,geographic_scope,categories,priority,active,verification_status)
+ values ($1,$2,$3,'FAPESP','government_foundation',$4,$5,$6,$7,'html',$8,$9,$10,95,true,'verified')`,
+ [fapesp.id, fapesp.name, fapesp.institutionName, fapesp.baseUrl, fapesp.allowedDomains, fapesp.allowedPathPrefixes, fapesp.listingUrls, fapesp.audienceScope, fapesp.geographicScope, ["bolsas", "pesquisa"]]);
+ const proof = { source_url: url, excerpt: "Data limite para inscrições: 20/10/2099" };
+ const item = candidate({ officialSourceId: fapesp.id, sourcePageUrl: url, applicationRoute: "direct_application",
+  categories: ["bolsas", "pesquisa"], benefitType: "research_scholarship", isCourse: false,
+  evidenceJson: { deadline_at: proof, opportunity_status: proof, application_route: proof } });
+ await saveReviewItems(fapesp, { sourceId: fapesp.id, pagesChecked: 1, discovered: [item], ignored: 0, failed: 0, locationRejected: 0, warnings: [] });
+ expect((await listLiveCatalogue())[0]).toMatchObject({ categories: ["bolsas", "pesquisa"] });
+ expect((await state.db!.query("select application_route from opportunities where official_source_id=$1", [fapesp.id])).rows[0]).toEqual({ application_route: "direct_application" });
+ const secondUrl = "https://fapesp.br/oportunidades/outro-projeto/9716/";
+ await saveReviewItems(fapesp, { sourceId: fapesp.id, pagesChecked: 1,
+  discovered: [{ ...item, sourcePageUrl: secondUrl, contentHash: "different-project",
+   evidenceJson: { deadline_at: { source_url: secondUrl, excerpt: proof.excerpt },
+    opportunity_status: { source_url: secondUrl, excerpt: proof.excerpt } } }],
+  ignored: 0, failed: 0, locationRejected: 0, warnings: [] });
+ expect((await listLiveCatalogue())).toHaveLength(2); // Same short title, distinct FAPESP posting IDs.
+ expect((await state.db!.query("select distinct canonical_key from opportunities where official_source_id=$1", [fapesp.id])).rows).toHaveLength(2);
+ await state.db!.query("update opportunities set deleted_at=now(),published_at=null where content_hash='different-project'");
+ expect(await listLiveCatalogue(true)).toHaveLength(1);
+ await state.db!.exec("update opportunities set next_source_check_at=now()-interval '1 day'");
+ vi.mocked(fetchOfficialResource).mockResolvedValueOnce({ body: Buffer.from("<h1>Oportunidades de Bolsas</h1><a href='/oportunidades/outro-projeto/9999/'>Outra bolsa aberta</a>"), contentType: "text/html", hash: "listing", cached: false });
+ expect(await recheckKnownOpportunities(fapesp, 1, async () => "")).toMatchObject({ pagesChecked: 1, failed: 0 });
+ expect(await listLiveCatalogue()).toEqual([]);
+});
+
 it("migration retains verified publications and does not promote legacy pending records", () => {
  expect(migrationSnapshot).toEqual([
   { review_status: "approved", verification_method: "admin", verified: true, published: true },
