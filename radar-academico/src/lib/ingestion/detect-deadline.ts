@@ -6,15 +6,19 @@ function validDate(day: string, month: string, year: string) {
     value.getUTCMonth() + 1 === Number(month) && value.getUTCDate() === Number(day);
 }
 
-export function detectDeadline(text: string): { deadlineAt?: string; precision: DeadlinePrecision } {
-  if (/inscriç(?:ão|ões).{0,50}(?:fluxo contínuo|demanda contínua)/i.test(text)) return { precision: "continuous_flow" };
+export function detectDeadline(text: string): { deadlineAt?: string; precision: DeadlinePrecision; stated?: boolean } {
   // Look near an explicit application deadline. An arbitrary date on an
   // official page may be the publication date or the start of a course.
-  const deadlineContexts = [...text.matchAll(/(?:inscriç(?:ão|ões)|candidaturas|submissões|prazo(?: de inscrição)?).{0,140}/gi)]
-    .map(match=>match[0].split(/[.;]\s|(?:data (?:do evento|de realização)|início (?:do evento|do curso)|(?:o )?evento (?:acontece|ocorre|será realizado))/i)[0]);
+  const deadlineContexts = [...text.matchAll(/(?=((?:inscriç(?:ão|ões)|candidaturas|submissões|prazo(?: de inscrição)?).{0,140}))/gi)]
+    .map(match=>match[1].split(/[.;]\s|(?:data (?:do evento|de realização)|início (?:do evento|do curso)|(?:o )?evento (?:acontece|ocorre|será realizado))/i)[0]);
   const deadlineContext = deadlineContexts.find(context=> /\d{1,2}\/\d{1,2}\/\d{4}/.test(context) &&
     (/até|prazo|encerr|termin|limite/i.test(context) || /\d{1,2}\/\d{1,2}\/\d{4}\s+(?:a|até|e)\s+\d{1,2}\/\d{1,2}\/\d{4}/i.test(context)));
-  if (!deadlineContext) return { precision: "not_informed" };
+  const stated = deadlineContexts.some(context => /até|encerr|termin|limite|prazo/i.test(context));
+  if (!deadlineContext) {
+    if (stated) return { precision: "not_informed", stated: true };
+    if (/inscriç(?:ão|ões).{0,50}(?:fluxo contínuo|demanda contínua)/i.test(text)) return { precision: "continuous_flow" };
+    return { precision: "not_informed" };
+  }
   const dates = [...deadlineContext.matchAll(/(\d{1,2})\/(\d{1,2})\/(\d{4})/g)];
   const finalDate = dates.at(-1);
   if (!finalDate) return { precision: "not_informed" };
@@ -23,13 +27,13 @@ export function detectDeadline(text: string): { deadlineAt?: string; precision: 
   if (dateTime) {
     const [, day, month, year, hour, minute = "00"] = dateTime;
     if (!validDate(day, month, year) || Number(hour) > 23 || Number(minute) > 59) {
-      return { precision: "not_informed" };
+      return { precision: "not_informed", stated: true };
     }
     return { deadlineAt: `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T${hour.padStart(2, "0")}:${minute}:00-03:00`, precision: "exact_datetime" };
   }
   if (finalDate) {
     const [, day, month, year] = finalDate;
-    if (!validDate(day, month, year)) return { precision: "not_informed" };
+    if (!validDate(day, month, year)) return { precision: "not_informed", stated: true };
     return { deadlineAt: `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`, precision: "date_only" };
   }
   if (/entre|período|de \d{1,2}\/\d{1,2}/i.test(text)) return { precision: "period_only" };

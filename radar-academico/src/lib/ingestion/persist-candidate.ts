@@ -26,6 +26,16 @@ export async function lockSource(client: PoolClient, source: OfficialSource) {
 }
 
 export async function findCandidate(client: PoolClient, candidate: OpportunityCandidate) {
+  // Sources can overlap. Serialize a shared page before checking aliases/tombstones.
+  await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [`radar:page:${candidate.sourcePageUrl}`]);
+  const foreign = await client.query<StoredOpportunity>(`select o.* from opportunities o
+    where o.official_source_id<>$1 and exists (select 1 from opportunity_sources os
+      where os.opportunity_id=o.id and os.source_page_url=$2)
+      and ($3::boolean=false or lower(btrim(o.title))=lower(btrim($4)))
+    order by o.created_at limit 2 for update`,
+  [candidate.officialSourceId, candidate.sourcePageUrl, Boolean(programmeCataloguePageCount(candidate.officialSourceId)), candidate.title]);
+  if (foreign.rows.length>1) throw new Error("Página já pertence a outro catálogo; identidade ambígua");
+  if (foreign.rows[0]) return foreign.rows[0];
   const result = await client.query<StoredOpportunity>(
     `select * from opportunities where official_source_id=$1 and canonical_key=$2 order by created_at limit 2 for update`,
     [candidate.officialSourceId, canonicalOpportunityKey(candidate.officialSourceId, candidate.title, candidate.sourcePageUrl)],
@@ -48,10 +58,15 @@ export async function findCandidate(client: PoolClient, candidate: OpportunityCa
 export async function persistCandidate(client: PoolClient, source: OfficialSource, incoming: OpportunityCandidate,
   options: { mode: "automatic" | "admin"; actor?: string; existing?: StoredOpportunity; overrides?: Partial<OpportunityCandidate> }) {
   const existing = options.existing ?? await findCandidate(client, incoming);
+  if (existing && existing.official_source_id!==source.id) {
+    if (options.mode==="admin") throw new Error("Esta página já possui ficha em outra fonte oficial");
+    return { id: existing.id, saved: 0, published: 0, blocked: 1, created: 0, updated: 0 };
+  }
   if (existing?.deleted_at) return { id: existing.id, saved: 0, published: 0, blocked: 0, created: 0, updated: 0 };
   const overrides = options.overrides ?? existing?.management_overrides ?? {};
   if (options.mode === "automatic" && overrides.sourcePageUrl && overrides.sourcePageUrl !== incoming.sourcePageUrl) return { id: existing?.id, saved: 0, published: 0, blocked: 0, created: 0, updated: 0 };
   const candidate = { ...incoming, categories: incoming.categories ?? categoriesFromEvidence(incoming.benefitType, incoming.isCourse === true), ...overrides };
+  if (["closed", "cancelled", "suspended", "result_published"].includes(incoming.opportunityStatus)) candidate.opportunityStatus = incoming.opportunityStatus;
   // A source that closed or became ambiguous cannot be kept live by a stale manual override.
   const issue = publicationIssue(incoming, source) ?? publicationIssue(candidate, source);
   const values: Record<string, unknown> = {};

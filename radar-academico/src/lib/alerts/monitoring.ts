@@ -93,6 +93,12 @@ const labels: Record<string,string> = { title:"título",state:"situação das in
 export function changedFields(before: Snapshot, after: Snapshot) {
   return Object.keys(labels).filter(key=>JSON.stringify(before[key])!==JSON.stringify(after[key])).map(key=>labels[key]);
 }
+export async function pruneAlertData() {
+  await withAdminTransaction(async (client) => {
+    await client.query("delete from opportunity_alert_subscriptions where status='pending' and confirm_expires_at<now()-interval '7 days' or status in ('completed','unsubscribed') and updated_at<now()-interval '30 days'");
+    await client.query("delete from opportunity_alert_limits where resets_at<now()-interval '1 day'");
+  });
+}
 export async function queueOpportunityChanges() {
   return withAdminTransaction(async (client) => {
     const subs = (await client.query(`select * from opportunity_alert_subscriptions where status='active' order by checked_at nulls first limit 100 for update skip locked`)).rows;
@@ -103,23 +109,27 @@ export async function queueOpportunityChanges() {
       const snapshot=monitoringSnapshot(row), fields=changedFields(sub.last_snapshot,snapshot);
       if (fields.length) {
         const urls=links("",sub.unsubscribe_token);
-        const state = snapshot.state === "event_started" ? "O evento começou e saiu do catálogo de inscrições." : snapshot.state === "withdrawn" ? "A oportunidade saiu do catálogo. Confira a fonte oficial para saber a situação atual." : "A fonte oficial ou a equipe atualizou a oportunidade.";
+        const notices: Record<string,string> = { event_started:"O evento começou e saiu do catálogo de inscrições.",
+          closed:"As inscrições foram encerradas e a oportunidade saiu do catálogo.",
+          cancelled:"A oportunidade foi cancelada e saiu do catálogo.",
+          suspended:"As inscrições foram suspensas. Consulte a fonte oficial para acompanhar eventual retomada.",
+          withdrawn:"A oportunidade saiu do catálogo. Confira a fonte oficial para saber a situação atual." };
+        const state = notices[snapshot.state] ?? "A fonte oficial ou a equipe atualizou a oportunidade.";
         await client.query(`insert into opportunity_alert_outbox (subscription_id,fingerprint,kind,payload) values ($1,$2,'change',$3) on conflict do nothing`,
           [sub.id,fingerprint([row.version,snapshot]),{subject:`Radar Apogee: atualização de ${snapshot.title.replace(/[\r\n]/g," ").slice(0,150)}`,text:`${snapshot.title}\n\n${state}\nMudanças: ${fields.join(", ")}.\nPrazo registrado: ${snapshot.deadline ?? "não informado"}.\nInício do evento: ${snapshot.eventStartsAt ?? "não informado"}.\n\nConsulte os dados atuais e a página oficial:\nhttps://www.apogee.community/oportunidades\n${snapshot.officialUrl ?? ""}\n\nCancelar avisos:\n${urls.unsubscribe}` }]);
         queued++;
       }
       await client.query("update opportunity_alert_subscriptions set last_snapshot=$2,checked_at=now(),status=case when $3 then 'completed' else status end,updated_at=case when $3 then now() else updated_at end where id=$1",[sub.id,snapshot,["closed","cancelled","event_started","result_published"].includes(snapshot.state)]);
     }
-    // Keep private data only while useful; cascading deletion removes message tokens too.
-    await client.query("delete from opportunity_alert_subscriptions where status='pending' and confirm_expires_at<now()-interval '7 days' or status in ('completed','unsubscribed') and updated_at<now()-interval '30 days'");
-    await client.query("delete from opportunity_alert_limits where resets_at<now()-interval '1 day'");
     return queued;
   });
 }
 export async function runOpportunityAlerts() {
-  const config=alertMailConfiguration();
-  if (!config) return {enabled:false,queued:0,sent:0,failed:0};
+  // Retention continues during mail outages or a rollback that disables sending.
+  await pruneAlertData();
   const queued=await queueOpportunityChanges();
+  const config=alertMailConfiguration();
+  if (!config) return {enabled:false,queued,sent:0,failed:0};
   let sent=0,failed=0;
   for(let i=0;i<5;i++) {
     const job=await withAdminTransaction(async(client)=>{

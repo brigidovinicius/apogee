@@ -59,3 +59,16 @@ export function detectOpportunityStatus(text: string, now = new Date()): Opportu
   if (/inscriç(?:ão|ões)\s+(?:(?:estão|seguem|continuam|permanecem)\s+)?abertas|inscriç(?:ão|ões).{0,30}fluxo contínuo/i.test(text)) return "open";
   return "unknown";
 }
+
+/** Explicit notices about the opportunity, excluding cancellation/refund policies. */
+export function confirmedTerminalStatus(text: string, title = ""): OpportunityCandidate["opportunityStatus"] | null {
+  const subject = "(?:evento|encontro|palestra|seminário|hackathon|summit|inscriç(?:ão|ões)|edital|chamada)";
+  const verbs = "(?:\\s+(?:foi|está|estão|foram|temporariamente|definitivamente)){0,3}\\s+";
+  const name = title.replace(/\s*\d{4}.*$/, "").trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (new RegExp(`${subject}${verbs}(?:cancelad[oa]s?|revogad[oa]s?)`, "i").test(text) ||
+    /cancelamento (?:do|da|deste|desta) (?:evento|encontro|palestra|seminário|hackathon)/i.test(text) ||
+    name && new RegExp(`cancelamento (?:do|da) ${name}(?:\\s|[.,]|$)`, "i").test(text)) return "cancelled";
+  if (new RegExp(`${subject}${verbs}(?:suspens[oa]s?|suspendid[oa]s?)`, "i").test(text)) return "suspended";
+  if (detectOpportunityStatus(text) === "closed" || /inscriç(?:ão|ões)\s+esgotadas|vagas\s+esgotadas/i.test(text)) return "closed";
+  return null;
+}

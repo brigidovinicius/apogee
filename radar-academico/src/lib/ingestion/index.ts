@@ -12,6 +12,7 @@ import { isOfficialSourceUrl } from "./validate-url";
 import { normalizeBrazilianLocation } from "@/lib/location";
 import * as cheerio from "cheerio";
 import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupplementUrl } from "./programme-catalogue";
+import { isAuditedAcateEventUrl, normalizeAcateEvent } from "./normalize-acate-events";
 
 const promisingLink = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|edital|seleção|inscriç/i;
 
@@ -107,6 +108,7 @@ async function ingestSource(
         return false;
       }
       visited.add(item.url);
+      if (source.id === "acate-audited-events") return isAuditedAcateEventUrl(item.url);
       if (source.id === "fapesp-open-fellowships" && !/^https:\/\/(?:www\.)?fapesp\.br\/oportunidades\/[^/]+\/\d+\/$/.test(item.url)) {
         result.ignored += 1;
         return false;
@@ -128,7 +130,9 @@ async function ingestSource(
           result.ignored += 1;
           continue;
         }
-        const candidate = normalizeOpportunity({ title: item.title, text, url: item.url, source });
+        const candidate = source.id === "acate-audited-events"
+          ? normalizeAcateEvent(detail.body.toString("utf8"), item.url, source)
+          : normalizeOpportunity({ title: item.title, text, url: item.url, source });
         if (candidate) result.discovered.push(candidate);
         else result.ignored += 1;
       } catch {
