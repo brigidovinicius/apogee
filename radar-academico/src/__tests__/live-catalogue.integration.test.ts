@@ -16,6 +16,9 @@ vi.mock("@/lib/db/client", () => ({
   }),
 }));
 vi.mock("@/lib/ingestion/fetch-source", () => ({ fetchOfficialResource: vi.fn() }));
+vi.mock("@/lib/alerts/mail", () => ({ alertsAvailable:()=>true, alertMailConfiguration:vi.fn(()=>({dailyLimit:50})), sendAlertMail:vi.fn() }));
+import { alertMailConfiguration, sendAlertMail } from "@/lib/alerts/mail";
+import { subscribeToOpportunity, updateAlertSubscription, queueOpportunityChanges, runOpportunityAlerts } from "@/lib/alerts/monitoring";
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { recheckKnownOpportunities } from "@/lib/ingestion/recheck";
 import { saveReviewItems } from "@/lib/ingestion/save-review-item";
@@ -65,7 +68,8 @@ beforeAll(async () => {
 afterAll(async () => { await state.db?.close(); vi.unstubAllEnvs(); });
 beforeEach(async () => {
  vi.clearAllMocks();
- await state.db!.exec("truncate official_sources,opportunities,opportunity_sources,opportunity_revisions,ingestion_runs,opportunity_management_events cascade");
+ await state.db!.exec("truncate official_sources,opportunities,opportunity_sources,opportunity_revisions,ingestion_runs,opportunity_management_events,opportunity_alert_limits cascade");
+ vi.mocked(alertMailConfiguration).mockReturnValue({dailyLimit:50} as ReturnType<typeof alertMailConfiguration>);
  await state.db!.query(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,audience_scope,geographic_scope,categories,priority,active,verification_status)
  values ($1,$2,$2,'IF','federal_institute',$3,$4,$5,$6,'html',$7,$8,$9,1,true,'verified')`,
  [source.id, source.name, source.baseUrl, source.allowedDomains, source.allowedPathPrefixes, source.listingUrls, source.audienceScope, source.geographicScope, []]);
@@ -349,4 +353,73 @@ it("persists event start precision through admin edits, the bridge and subsequen
  await manageCatalogue("PATCH", form(item, { eventStartsAt: "" }));
  await save(candidate({ contentHash: "recrawl-cleared-event" }));
  expect((await listLiveCatalogue())[0].eventStartsAt).toBeNull();
+});
+
+function openEvent(patch:Partial<OpportunityCandidate>={}) {
+ return candidate({isCourse:false,categories:["eventos"],deadlineAt:undefined,deadlinePrecision:"not_informed",eventStartsAt:"2099-10-20T19:00:00-03:00",
+  evidenceJson:{opportunity_status:evidence,event_start:evidence,registration_availability:evidence},...patch});
+}
+async function eventSubscription() {
+ await save(openEvent()); const item=(await listLiveCatalogue())[0];
+ await subscribeToOpportunity({opportunityId:item.id,email:"Student@Example.test",consent:true});
+ const job=(await state.db!.query<{payload:{text:string}}>("select payload from opportunity_alert_outbox")).rows[0];
+ const confirm=/acao=confirmar&token=([a-f0-9]{64})/.exec(job.payload.text)![1];
+ const unsubscribe=/acao=cancelar&token=([a-f0-9]{64})/.exec(job.payload.text)![1];
+ return {item,confirm,unsubscribe};
+}
+it("publica somente eventos abertos sem prazo com evidência e os retira no início",async()=>{
+ expect(await save(openEvent())).toMatchObject({published:1});
+ expect((await listLiveCatalogue())[0]).toMatchObject({deadlineAt:null,deadlinePrecision:"not_informed",eventStartsAt:"2099-10-20T19:00:00-03:00"});
+ expect((await listLiveCatalogue(true))[0]).toMatchObject((await listLiveCatalogue())[0]);
+ await state.db!.query("update opportunities set event_starts_at='2000-01-01T09:00:00-03:00'");
+ expect(await listLiveCatalogue()).toEqual([]);expect(await listLiveCatalogue(true)).toEqual([]);
+ await state.db!.query("update opportunities set event_starts_at='2099-10-20',evidence_json='{}'");
+ expect(await listLiveCatalogue()).toEqual([]);
+});
+it("não libera programas sem prazo, evento sem início, inscrições futuras ou prova ausente",async()=>{
+ for(const patch of [{categories:["carreira"]},{eventStartsAt:null},{opportunityStatus:"upcoming"},{evidenceJson:{event_start:evidence,opportunity_status:evidence}}] as Partial<OpportunityCandidate>[]) {
+  expect(await save(openEvent(patch))).toMatchObject({published:0});
+ }
+ expect(await listLiveCatalogue()).toEqual([]);
+});
+it("exige consentimento e confirmação, não envia ao público e respeita cancelamento",async()=>{
+ await save(openEvent());const id=(await listLiveCatalogue())[0].id;
+ await expect(subscribeToOpportunity({opportunityId:id,email:"bad\r\nBcc: other@example.test",consent:true})).rejects.toThrow("válido");
+ await expect(subscribeToOpportunity({opportunityId:id,email:"student@example.test",consent:false})).rejects.toThrow("Confirme");
+ const {confirm,unsubscribe}=await eventSubscription();
+ expect(await queueOpportunityChanges()).toBe(0);
+ const hidden=await withAdminTransaction(async(client)=>{
+  await client.query("select set_config('app.is_admin','false',true)");
+  return Promise.all([client.query("select * from opportunity_alert_subscriptions"),client.query("select * from opportunity_alert_outbox"),client.query("select * from opportunity_alert_limits")]);
+ });expect(hidden.every(result=>result.rows.length===0)).toBe(true);
+ await updateAlertSubscription("confirm",confirm);
+ await updateAlertSubscription("confirm",confirm);
+ await save(openEvent({deadlineAt:"2099-10-18",deadlinePrecision:"date_only",contentHash:"new-deadline",evidenceJson:{deadline_at:evidence,opportunity_status:evidence,event_start:evidence,registration_availability:evidence}}));
+ expect(await queueOpportunityChanges()).toBe(1);expect(await queueOpportunityChanges()).toBe(0);
+ await updateAlertSubscription("unsubscribe",unsubscribe);
+ expect(await runOpportunityAlerts()).toMatchObject({sent:0});expect(sendAlertMail).not.toHaveBeenCalled();
+});
+it("avisa alterações e início uma vez, mas não a repetição da consulta diária",async()=>{
+ const {confirm}=await eventSubscription();await updateAlertSubscription("confirm",confirm);
+ await save(openEvent({contentHash:"daily-recheck"}));expect(await queueOpportunityChanges()).toBe(0);
+ await save(openEvent({amountText:"Participação gratuita",contentHash:"updated"}));
+ expect(await runOpportunityAlerts()).toMatchObject({queued:1,sent:1,failed:0});
+ expect(await runOpportunityAlerts()).toMatchObject({queued:0,sent:0});expect(sendAlertMail).toHaveBeenCalledTimes(1);
+ await state.db!.query("update opportunities set event_starts_at='2000-01-01T09:00:00-03:00'");
+ expect(await runOpportunityAlerts()).toMatchObject({queued:1,sent:1});
+ expect(await runOpportunityAlerts()).toMatchObject({queued:0,sent:0});
+ expect((await state.db!.query("select status from opportunity_alert_subscriptions")).rows[0]).toMatchObject({status:"completed"});
+});
+it("limita tentativas de Resend por dia, persiste falhas e expira confirmação",async()=>{
+ const {confirm}=await eventSubscription();
+ await state.db!.query("update opportunity_alert_subscriptions set confirm_expires_at=now()-interval '1 second'");
+ await expect(updateAlertSubscription("confirm",confirm)).rejects.toThrow("expirado");
+ expect(await runOpportunityAlerts()).toMatchObject({sent:0});
+ await state.db!.query("update opportunity_alert_subscriptions set confirm_expires_at=now()+interval '24 hours'");
+ vi.mocked(alertMailConfiguration).mockReturnValue({dailyLimit:1} as ReturnType<typeof alertMailConfiguration>);
+ vi.mocked(sendAlertMail).mockRejectedValueOnce(new Error("Resend temporary failure"));
+ expect(await runOpportunityAlerts()).toMatchObject({sent:0,failed:1});
+ await state.db!.query("update opportunity_alert_outbox set next_attempt_at=now()-interval '1 second'");
+ expect(await runOpportunityAlerts()).toMatchObject({sent:0,failed:0});
+ expect((await state.db!.query("select status,attempts from opportunity_alert_outbox")).rows[0]).toMatchObject({status:"pending",attempts:1});
 });

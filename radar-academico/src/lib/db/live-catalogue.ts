@@ -1,5 +1,6 @@
 import { queryPublic, withAdminTransaction } from "./client";
 import { publishedOpportunityPredicate } from "./publication-filter";
+import { alertsAvailable } from "@/lib/alerts/mail";
 
 const liveQuery = `select
          o.id,
@@ -37,8 +38,8 @@ const liveQuery = `select
        where ${publishedOpportunityPredicate}
        order by o.deadline_at nulls last`;
 export async function listLiveCatalogue(management = false) {
-  if (management) return withAdminTransaction(async (client) => (await client.query(
+  const rows = management ? await withAdminTransaction(async (client) => (await client.query(
     liveQuery.replace('o.id,', `o.id, o.version, o.official_source_id as "officialSourceId", o.application_route as "applicationRoute", o.evidence_json as evidence,`)
-  )).rows);
-  return (await queryPublic(liveQuery)).rows;
+  )).rows) : (await queryPublic(liveQuery)).rows;
+  return rows.map(item=>({...item, alertsAvailable: alertsAvailable()}));
 }

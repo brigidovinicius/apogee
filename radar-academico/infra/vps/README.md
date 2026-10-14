@@ -81,3 +81,15 @@ público com criar, editar e excluir; a configuração de fontes fica na vista
 Não execute comandos em `/opt/sistema-de-locacao`, não publique a porta 3000 e
 não crie exceções no firewall. Antes da primeira migração, faça um backup do
 volume `radar_academico_pgdata` assim que ele existir.
+
+## Avisos optativos do Radar
+
+A migração `0022_event_monitoring.sql` amplia somente a exceção de eventos sem prazo: inscrição aberta, evidências oficiais e início confirmado. A política pública retira o evento no início (ou no começo do dia em Brasília quando não houver hora confirmada), mantendo a ficha armazenada.
+
+Inscrições de acompanhamento e mensagens ficam em tabelas privadas com RLS. A mesma rotina protegida de ingestão processa mudanças e envia até cinco mensagens por ciclo. A Apogee expõe somente um formulário com consentimento, confirmação e cancelamento; não encaminha chave, servidor interno, email de outro assinante ou callback arbitrário ao navegador.
+
+Para ativar, confirmar a conta **Free** do Resend e o domínio remetente, manter overages desativados e registrar a chave de envio restrita a `apogee.community` somente no `.env` protegido da VPS. Preencher `RADAR_RESEND_API_KEY`, `RADAR_RESEND_FROM=contato@apogee.community`, `RADAR_RESEND_DOMAIN_VERIFIED=true` e `RADAR_ALERTS_ENABLED=true`. O servidor impõe no máximo 50 tentativas/dia; não elevar sem autorização. Não precisa de senha da caixa Hostinger. Preservar os MX de recebimento da Hostinger ao adicionar os registros de autenticação indicados pelo Resend.
+
+Antes de cada implantação: backup com checksum e restauração isolada; deploy da Apogee compatível antes de liberar eventos sem prazo no Radar; migração aditiva e imagem no mesmo SHA. Validar o catálogo comum e o ciclo subscribe → confirmação → mudança → cancelamento. Se envio estiver desativado, a API rejeita novos cadastros e a UI informa que os avisos estão em preparação, sem prometer envio.
+
+Rollback: desativar `RADAR_ALERTS_ENABLED`, pausar scheduler e voltar à imagem anterior. Preservar as novas tabelas/fila e a migração aditiva. A versão antiga da Apogee não aceita `not_informed`; desativar fontes novas com essa modalidade antes de reverter o consumidor. Não restaurar um dump sobre inscrições ou oportunidades novas sem reconciliação.

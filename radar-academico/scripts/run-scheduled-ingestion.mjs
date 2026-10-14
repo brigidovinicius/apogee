@@ -30,6 +30,9 @@ async function run() {
       discoveryTargetsChecked: report.discovery?.targetsChecked ?? 0,
       discoveryNewLeads: report.discovery?.newLeads ?? 0,
       discoveryFailed: report.discovery?.failed === true,
+      alertsEnabled: report.alerts?.enabled === true,
+      alertsSent: report.alerts?.sent ?? 0,
+      alertsFailed: report.alerts?.failed ?? 0,
     }));
   } catch (error) {
     console.error(JSON.stringify({

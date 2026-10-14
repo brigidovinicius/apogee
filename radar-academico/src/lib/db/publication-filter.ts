@@ -1,4 +1,12 @@
 export const openDeadlinePredicate = `((o.deadline_precision='continuous_flow' and o.deadline_at is null)
+  or (o.deadline_precision='not_informed' and o.deadline_at is null and 'eventos'=any(o.categories)
+    and o.opportunity_status='open'
+    and coalesce(o.evidence_json->'event_start'->>'excerpt','')<>''
+    and coalesce(o.evidence_json->'registration_availability'->>'excerpt','')<>''
+    and case when o.event_starts_at ~ '^\\d{4}-\\d{2}-\\d{2}$'
+      then (o.event_starts_at || 'T00:00:00-03:00')::timestamptz > now()
+      when o.event_starts_at ~ '^\\d{4}-\\d{2}-\\d{2}T' then o.event_starts_at::timestamptz > now()
+      else false end)
   or (o.deadline_precision='date_only' and (o.deadline_at at time zone 'UTC')::date >= (now() at time zone 'America/Sao_Paulo')::date)
   or (o.deadline_precision='exact_datetime' and o.deadline_at >= now()))`;
 

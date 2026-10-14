@@ -1,7 +1,10 @@
 import type { OpportunityCandidate, OfficialSource } from "./types";
 import { isOfficialSourceUrl } from "./validate-url";
+import { eventHasNotStarted } from "./event-start";
 
-export function deadlineIsCurrent(candidate: Pick<OpportunityCandidate, "deadlineAt" | "deadlinePrecision">, now = new Date()) {
+export function deadlineIsCurrent(candidate: Pick<OpportunityCandidate, "deadlineAt" | "deadlinePrecision"> & Partial<OpportunityCandidate>, now = new Date()) {
+  if (candidate.deadlinePrecision === "not_informed") return !candidate.deadlineAt && candidate.categories?.includes("eventos") === true &&
+    candidate.opportunityStatus === "open" && eventHasNotStarted(candidate.eventStartsAt, now);
   if (candidate.deadlinePrecision === "continuous_flow") return !candidate.deadlineAt;
   if (!candidate.deadlineAt) return false;
   const time = Date.parse(candidate.deadlineAt);
@@ -21,7 +24,8 @@ export function publicationIssue(candidate: OpportunityCandidate, source: Offici
   if (!["open", "upcoming"].includes(candidate.opportunityStatus)) return "status_unconfirmed";
   if (!deadlineIsCurrent(candidate, now)) return "invalid_deadline";
   if (candidate.applicationRoute === "unclear") return "application_route_unconfirmed";
-  for (const field of ["deadline_at", "opportunity_status"]) {
+  const fields = candidate.deadlinePrecision === "not_informed" ? ["event_start", "registration_availability", "opportunity_status"] : ["deadline_at", "opportunity_status"];
+  for (const field of fields) {
     const evidence = candidate.evidenceJson[field];
     if (!evidence?.excerpt.trim() || !isOfficialSourceUrl(evidence.source_url, [source])) return "missing_evidence";
   }

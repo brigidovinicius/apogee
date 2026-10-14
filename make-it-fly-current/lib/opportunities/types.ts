@@ -46,6 +46,8 @@ export type StudentOpportunity = OpportunityPreview & {
   deadlineAt?: string | null;
   /** Confirmed event start: YYYY-MM-DD or ISO timestamp with timezone. */
   eventStartsAt?: string | null;
+  deadlineUnknown?: boolean;
+  alertsAvailable?: boolean;
   deadline: string | null;
   deadlineLabel: string;
   officialUrl: string;
