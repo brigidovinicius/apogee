@@ -1,0 +1,28 @@
+{
+  "id": "ifsc-qualifica-exact",
+  "name": "IFSC",
+  "url": "https://www.ifsc.edu.br/qualifica",
+  "checkedAt": "2026-10-14T21:24:52.747Z",
+  "domains": [
+    "www.ifsc.edu.br"
+  ],
+  "robotsStatus": 200,
+  "initialStatus": 200,
+  "redirect": null,
+  "fetcherCompatible": true,
+  "contentType": "text/html;charset=UTF-8",
+  "bytes": 135293,
+  "sha256": "18e7182e6b22224d74b3d6cfe12a19b4d595bc404d02eb0a2ed03363829fc799",
+  "method": "operator_authorized_agent",
+  "organizer": "Instituto Federal de Santa Catarina",
+  "officialIdentityEvidence": "Official IFSC professional-qualification page links directly to this exact open-selection catalogue.",
+  "decision": "approved_bounded_collector",
+  "registrationWindow": "7 a 27/10/2026 - Período de inscrições",
+  "programmeCount": 8,
+  "qualityRules": [
+    "One card per course/campus/edition; shifts and places consolidated",
+    "Unknown prerequisites stay explicit; consult edicts 24 to 27/2026/2",
+    "No campus-headquarters geography inference; no remuneration/aid assertion",
+    "Current programme listing and official enrollment link required; maintenance preserves previous evidence and retries"
+  ]
+}
