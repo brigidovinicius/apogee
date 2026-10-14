@@ -33,9 +33,10 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     if (visited.has(url)) throw new Error("Ciclo de redirecionamento");
     visited.add(url);
     const parsed = new URL(url);
+    const seaOfficialHeaderCompatibility = source.id === "sed-novos-valores-2026" && parsed.hostname === "www.sea.sc.gov.br";
     await rateLimit(parsed.hostname);
     const robotsUrl = `${parsed.origin}/robots.txt`;
-    const robotsResponse = await safeRequest(robotsUrl, { "User-Agent": agent }, 128 * 1024);
+    const robotsResponse = await safeRequest(robotsUrl, { "User-Agent": agent }, 128 * 1024, "GET", seaOfficialHeaderCompatibility);
     // Only a real 404 permits absence; failures/redirects require human review.
     if (!robotsResponse.ok && robotsResponse.status !== 404) throw new Error("robots.txt indisponível para revisão");
     const robots = robotsParser(robotsUrl, robotsResponse.ok ? await robotsResponse.text() : "");
@@ -46,7 +47,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     const headers: Record<string, string> = { "User-Agent": agent, Accept: "text/html,application/rss+xml,application/pdf;q=0.9" };
     if (cached?.etag) headers["If-None-Match"] = cached.etag;
     if (cached?.modified) headers["If-Modified-Since"] = cached.modified;
-    const response = await safeRequest(url, headers, maxBytes);
+    const response = await safeRequest(url, headers, maxBytes, "GET", seaOfficialHeaderCompatibility);
     // 304 is a cache response, not a redirect.
     if (response.status === 304 && cached) {
       return { body: cached.body, contentType: cached.contentType, hash: crypto.createHash("sha256").update(cached.body).digest("hex"), cached: true };

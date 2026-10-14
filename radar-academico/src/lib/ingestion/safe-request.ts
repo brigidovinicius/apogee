@@ -49,7 +49,7 @@ export async function collectBounded(stream: AsyncIterable<Uint8Array>, maxBytes
 
 // No proxy environment, redirects, connection reuse, cookies or decompression.
 // A single deadline covers DNS, TLS, headers and streaming body consumption.
-export function safeRequest(url: string, headers: Record<string, string>, maxBytes: number, method = "GET"): Promise<Response> {
+export function safeRequest(url: string, headers: Record<string, string>, maxBytes: number, method = "GET", allowMalformedResponseHeaders = false): Promise<Response> {
   const target = new URL(url);
   if (target.protocol !== "https:" || target.port && target.port !== "443" || target.username || target.password || isIP(target.hostname.replace(/^\[|\]$/g, ""))) {
     return Promise.reject(new Error("URL de rede não permitida"));
@@ -58,6 +58,9 @@ export function safeRequest(url: string, headers: Record<string, string>, maxByt
     const req = request(target, {
       method, headers: { ...headers, "Accept-Encoding": "identity" },
       agent: false, lookup: publicLookup, signal: AbortSignal.timeout(15_000),
+      // The official SEA host sends a multiline CSP header. This opt-in only
+      // changes response-header parsing; DNS, TLS, body and redirect limits remain.
+      insecureHTTPParser: allowMalformedResponseHeaders,
     }, (response) => {
       void (async () => {
         const status = response.statusCode ?? 502;
