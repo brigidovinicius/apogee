@@ -80,7 +80,7 @@ async function ingestSource(
       const candidates = normalizeProgrammeCatalogue(resource.body.toString("utf8"), applicationHtml, source);
       if (!candidates.length) throw new Error("Oferta ou inscrição não confirmada");
       const start = source.crawlLinkOffset ?? 0;
-      const selected = candidates.slice(start, start + (maxCandidates ?? 10));
+      const selected = candidates.slice(start, start + (maxCandidates ?? 200));
       result.discovered = selected;
       result.nextListingIndex = 0;
       result.nextLinkOffset = start + selected.length >= candidates.length ? 0 : start + selected.length;
@@ -224,7 +224,8 @@ export async function runScheduledOfficialSourceIngestion() {
   for (const source of sources) {
     let failed = true;
     try {
-      const report = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 5, maxCandidates: 10 });
+      const report = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 5,
+        maxCandidates: programmeCataloguePageCount(source.id) ? undefined : 10 });
       const sourceReport = report.sources[0];
       failed = sourceReport.failed > 0;
       reports.push({ sourceId: source.id, pagesChecked: report.pagesChecked,

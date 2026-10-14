@@ -48,6 +48,28 @@ it("reconsulta catálogos compartilhados dentro do orçamento de páginas e não
   expect(bounded.sources[0].warnings).toContain("Orçamento de páginas insuficiente para confirmar a fonte.");
 });
 
+it("coleta a edição compartilhada em um ciclo, mantendo o limite manual de fichas", async () => {
+  vi.stubEnv("DATABASE_URL", "fixture");
+  const source: OfficialSource = { ...makeSource("ifsc-technical-courses-2027"),
+    listingUrls: ["https://www.ifsc.edu.br/tecnicos"], allowedDomains: ["www.ifsc.edu.br"],
+    location: { stateCode: null, cityName: null } };
+  vi.mocked(claimDueOfficialSources).mockResolvedValue([source]);
+  vi.mocked(loadOfficialSource).mockResolvedValue(source);
+  const offers = Array.from({ length: 21 }, (_, index) => `<a href="https://www.ifsc.edu.br/curso/${index}">Médio Técnico em Curso ${index}</a> - 20 vagas (integral)<br>`).join("");
+  const html = `<body>Edital 05/Deing/2027-1 <a href="https://sistemadeingresso.ifsc.edu.br/inicio.php">Inscreva-se</a>
+    28/09 a 22/10/2026 - Período de inscrições para cursos com seleção por prova
+    28/09 a 06/11/2026 - Período de inscrições para cursos com seleção por sorteio e ordem de inscrição
+    <section><h2>Cursos</h2><h4>Câmpus Blumenau</h4><p>Seleção por prova:</p><p>${offers}</p></section></body>`;
+  vi.mocked(fetchOfficialResource).mockResolvedValue({ body: Buffer.from(html), contentType: "text/html", hash: "fixture", cached: false });
+  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 21, published: 21, blocked: 0, created: 21, updated: 0, persistence: "postgres" });
+  const scheduled = await runScheduledOfficialSourceIngestion();
+  expect(scheduled).toMatchObject({ pagesChecked: 1, discovered: 21 });
+  expect(vi.mocked(saveReviewItems).mock.calls[0][1]).toMatchObject({ nextLinkOffset: 0 });
+  const manual = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 1, maxCandidates: 2 });
+  expect(manual).toMatchObject({ pagesChecked: 1, discovered: 2 });
+  expect(manual.sources[0]).toMatchObject({ nextLinkOffset: 2 });
+});
+
 afterEach(() => { vi.clearAllMocks(); vi.unstubAllEnvs(); });
 
 it("varre várias fontes vencidas, lê páginas de detalhe e publica resultados válidos automaticamente", async () => {
