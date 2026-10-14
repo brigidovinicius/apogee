@@ -1,4 +1,4 @@
-import { detectOpportunityStatus } from "./publication";
+import { confirmedTerminalStatus, detectOpportunityStatus } from "./publication";
 import crypto from "node:crypto";
 import { classifyAudience } from "./classify-audience";
 import { classifyApplicationRoute } from "./classify-application-route";
@@ -61,12 +61,12 @@ export function normalizeOpportunity(input: {
   const status = detectOpportunityStatus(combined);
   // Missing is distinct from a malformed/ambiguous deadline stated by the organizer.
   const unknownEventDeadline = deadline.precision === "not_informed" && event && eventStartsAt && status === "open" &&
-    !/inscriç(?:ão|ões).{0,60}(?:até|prazo final)|prazo (?:final|de inscriç)/i.test(combined);
+    !deadline.stated;
   if (applicationRoute === "unclear" || deadline.precision === "not_informed" && !unknownEventDeadline) return null;
 
-  const statusSignal = detectSuspension(combined);
+  const statusSignal = confirmedTerminalStatus(combined, input.title) ?? detectSuspension(combined);
   // Include normalization revision so corrected extraction receives a new audit event.
-  const contentHash = crypto.createHash("sha256").update(`v3\n${combined}`).digest("hex");
+  const contentHash = crypto.createHash("sha256").update(`v4\n${combined}`).digest("hex");
   const isCourse = /curso|qualificaç|capacitaç|oficina|formação profissional/i.test(input.title);
   const nationallyEligible = normalizedLocation.location.stateCode === null &&
     input.source.geographicScope.includes("Brasil") &&

@@ -1,0 +1,218 @@
+{
+  "auditedAt": "2026-10-14",
+  "temporaryOperationalPreference": "SC until 2026-10-18 only",
+  "sources": [
+    {
+      "id": "xlsx-20261014-001-ufsc",
+      "url": "https://noticias.ufsc.br",
+      "name": "UFSC",
+      "checkedAt": "2026-10-14T20:41:46.810Z",
+      "domains": [
+        "noticias.ufsc.br"
+      ],
+      "robotsStatus": 404,
+      "initialStatus": 200,
+      "redirect": null,
+      "fetcherCompatible": true,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 361679,
+      "sha256": "f1e4dd7fb4a193c3232a7aa8157e8a371b55b03a877e6bbd9621c5ead407f4e8",
+      "method": "operator_authorized_agent",
+      "access": "Public GET only; no login, cookies, form submission or paid API.",
+      "automatedHumanAudit": false,
+      "decision": "approved_private_discovery",
+      "reason": "Official institutional news/call hub; discovered links stay private until individual organizer/programme audit.",
+      "locationPolicy": "No institution-headquarters inference; programme location requires its own evidence."
+    },
+    {
+      "id": "xlsx-20261014-004-ifsc",
+      "url": "https://www.ifsc.edu.br/editais",
+      "name": "IFSC",
+      "checkedAt": "2026-10-14T20:41:51.534Z",
+      "domains": [
+        "www.ifsc.edu.br"
+      ],
+      "robotsStatus": 200,
+      "initialStatus": 200,
+      "redirect": null,
+      "fetcherCompatible": true,
+      "contentType": "text/html;charset=UTF-8",
+      "bytes": 99128,
+      "sha256": "8d49dd94857c388232ab357d6cdaffdf910c8d5f518f0b9b2faffa3511b2d36b",
+      "method": "operator_authorized_agent",
+      "access": "Public GET only; no login, cookies, form submission or paid API.",
+      "automatedHumanAudit": false,
+      "decision": "approved_private_discovery",
+      "reason": "Official institutional news/call hub; discovered links stay private until individual organizer/programme audit.",
+      "locationPolicy": "No institution-headquarters inference; programme location requires its own evidence."
+    },
+    {
+      "id": "xlsx-20261014-020-ifc",
+      "url": "https://ifc.edu.br",
+      "name": "IFC",
+      "checkedAt": "2026-10-14T20:41:56.101Z",
+      "domains": [
+        "ifc.edu.br"
+      ],
+      "robotsStatus": 200,
+      "initialStatus": 200,
+      "redirect": null,
+      "fetcherCompatible": true,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 118350,
+      "sha256": "0cc4e95892fb30eaf4c490924fb69ccb62c7ea776719e46c506501a070171396",
+      "method": "operator_authorized_agent",
+      "access": "Public GET only; no login, cookies, form submission or paid API.",
+      "automatedHumanAudit": false,
+      "decision": "paused",
+      "reason": "Institutional homepage too broad; prefer an exact open-programme listing and avoid overlap with current IFC catalogue.",
+      "locationPolicy": "No institution-headquarters inference; programme location requires its own evidence."
+    },
+    {
+      "id": "xlsx-20261014-024-fapesc",
+      "url": "https://fapesc.sc.gov.br",
+      "name": "FAPESC",
+      "checkedAt": "2026-10-14T20:42:00.877Z",
+      "domains": [
+        "fapesc.sc.gov.br"
+      ],
+      "robotsStatus": 200,
+      "initialStatus": 200,
+      "redirect": null,
+      "fetcherCompatible": true,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 155611,
+      "sha256": "e7eb2eef4e531dd77076030e8f2562a3152ab91888523f299e9478981932ca64",
+      "method": "operator_authorized_agent",
+      "access": "Public GET only; no login, cookies, form submission or paid API.",
+      "automatedHumanAudit": false,
+      "decision": "approved_private_discovery",
+      "reason": "Official institutional news/call hub; discovered links stay private until individual organizer/programme audit.",
+      "locationPolicy": "No institution-headquarters inference; programme location requires its own evidence."
+    },
+    {
+      "id": "xlsx-20261014-088-ciee-sc",
+      "url": "https://www.cieesc.org.br",
+      "name": "CIEE SC",
+      "checkedAt": "2026-10-14T20:42:08.366Z",
+      "domains": [
+        "www.cieesc.org.br",
+        "cieesc.org.br"
+      ],
+      "robotsStatus": 301,
+      "initialStatus": 301,
+      "redirect": "https://cieesc.org.br/",
+      "fetcherCompatible": false,
+      "limitation": "robots.txt indisponível para revisão",
+      "method": "operator_authorized_agent",
+      "access": "Public GET only; no login, cookies, form submission or paid API.",
+      "automatedHumanAudit": false,
+      "decision": "paused",
+      "reason": "Exact www URL redirects and robots redirects. Canonical site/programme needs separate exact-URL audit; employer lists are outside organizer scope.",
+      "locationPolicy": "No institution-headquarters inference; programme location requires its own evidence."
+    },
+    {
+      "id": "acate-official-events",
+      "name": "ACATE",
+      "url": "https://www.acate.com.br/agenda-de-eventos/",
+      "checkedAt": "2026-10-14T20:42:10.831Z",
+      "domains": [
+        "www.acate.com.br"
+      ],
+      "robotsStatus": 200,
+      "initialStatus": 200,
+      "redirect": null,
+      "fetcherCompatible": true,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 173890,
+      "sha256": "3ae354214a70072ab9687286b077eb57f9dd961f009f6809e5d5725c425c3205",
+      "method": "operator_authorized_agent",
+      "access": "Public GET only; no login, cookies, form submission or paid API.",
+      "automatedHumanAudit": false,
+      "decision": "approved_bounded_collector",
+      "reason": "Exact audited editions only; organizer registration CTA, future start; no third-party monitoring.",
+      "locationPolicy": "No institution-headquarters inference; programme location requires its own evidence."
+    }
+  ],
+  "exactAcateEditions": [
+    {
+      "id": "acate-rio-do-sul",
+      "name": "ACATE",
+      "url": "https://www.acate.com.br/agenda-de-eventos/decola-acate-startups-rio-do-sul-2026/",
+      "checkedAt": "2026-10-14T20:45:16.865Z",
+      "domains": [
+        "www.acate.com.br"
+      ],
+      "robotsStatus": 200,
+      "initialStatus": 200,
+      "redirect": null,
+      "fetcherCompatible": true,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 130542,
+      "sha256": "8b86a317054713dc62daf0a86db6d3711f8e9eef1b25ec3ce0e42640fae9ac80",
+      "method": "operator_authorized_agent",
+      "decision": "approved_edition",
+      "registrationEvidence": "Inscreva-se CTA within the official edition article",
+      "deadline": "not_informed",
+      "startPrecision": "date_only",
+      "limitations": [
+        "No external registration-site fetch",
+        "No available-seat quantity or free-entry assertion",
+        "No timezone claimed from visible local hour"
+      ]
+    },
+    {
+      "id": "acate-lages",
+      "name": "ACATE",
+      "url": "https://www.acate.com.br/agenda-de-eventos/decola-acate-startups-lages-2026/",
+      "checkedAt": "2026-10-14T20:45:21.601Z",
+      "domains": [
+        "www.acate.com.br"
+      ],
+      "robotsStatus": 200,
+      "initialStatus": 200,
+      "redirect": null,
+      "fetcherCompatible": true,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 129452,
+      "sha256": "f87c45f2cf6d5515197eafaa1a97f8769dcca2eb0b7fe6bdee8555a4f357d915",
+      "method": "operator_authorized_agent",
+      "decision": "approved_edition",
+      "registrationEvidence": "Inscreva-se CTA within the official edition article",
+      "deadline": "not_informed",
+      "startPrecision": "date_only",
+      "limitations": [
+        "No external registration-site fetch",
+        "No available-seat quantity or free-entry assertion",
+        "No timezone claimed from visible local hour"
+      ]
+    },
+    {
+      "id": "acate-peopletech",
+      "name": "ACATE",
+      "url": "https://www.acate.com.br/agenda-de-eventos/peopletech-summit-2026/",
+      "checkedAt": "2026-10-14T20:45:27.818Z",
+      "domains": [
+        "www.acate.com.br"
+      ],
+      "robotsStatus": 200,
+      "initialStatus": 200,
+      "redirect": null,
+      "fetcherCompatible": true,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 130290,
+      "sha256": "b16f057652adc4a6234e78bf3738465f3fffc51e11174c495c1775bf9da8834f",
+      "method": "operator_authorized_agent",
+      "decision": "approved_edition",
+      "registrationEvidence": "Inscreva-se CTA within the official edition article",
+      "deadline": "not_informed",
+      "startPrecision": "date_only",
+      "limitations": [
+        "No external registration-site fetch",
+        "No available-seat quantity or free-entry assertion",
+        "No timezone claimed from visible local hour"
+      ]
+    }
+  ],
+  "rules": "Robots and all HTTPS redirects checked with bounded production transport. Technical failures stay paused; individual cards still pass publication gates. Human audit fields stay empty."
+}

@@ -6,6 +6,8 @@ import { persistCandidate, lockSource, type StoredOpportunity } from "./persist-
 import type { OfficialSource, OpportunityCandidate } from "./types";
 import { canonicalOpportunityKey } from "./revision-key";
 import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupplementUrl } from "./programme-catalogue";
+import { confirmedTerminalStatus } from "./publication";
+import { normalizeAcateEvent } from "./normalize-acate-events";
 
 function fapespPostingId(url: string) {
   return /^https:\/\/(?:www\.)?fapesp\.br\/oportunidades\/[^/]+\/(\d+)\/$/.exec(url)?.[1] ?? null;
@@ -74,12 +76,24 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
         stillListed = postingId ? verifiedListingLinks.some((url) => fapespPostingId(url) === postingId) : verifiedListingLinks.includes(row.source_page_url);
       }
       let candidate: OpportunityCandidate | null = null;
+      let terminalStatus: OpportunityCandidate["opportunityStatus"] | null = null;
+      let statusEvidence = "";
       if (catalogueCandidates) candidate = catalogueCandidates.get(String(row.canonical_key)) ?? null;
       else if (stillListed) {
         const response = await fetchOfficialResource(row.source_page_url, source);
         pagesChecked += 1;
         const text = await readText(response.body, response.contentType);
-        candidate = text ? normalizeOpportunity({ title: String(row.title), text, url: row.source_page_url, source }) : null;
+        terminalStatus = confirmedTerminalStatus(text, String(row.title));
+        if (terminalStatus) {
+          const start = Math.max(0, text.search(/inscriç(?:ão|ões)|prazo/i));
+          statusEvidence = text.slice(start, start + 1000);
+        }
+        if (source.id === "acate-audited-events") {
+          try { candidate = normalizeAcateEvent(response.body.toString("utf8"), row.source_page_url, source); }
+          catch (error) { if (!terminalStatus) throw error; }
+        } else candidate = text ? normalizeOpportunity({ title: String(row.title), text, url: row.source_page_url, source }) : null;
+        if (candidate && terminalStatus) candidate = { ...candidate, opportunityStatus: terminalStatus,
+          evidenceJson: { ...candidate.evidenceJson, opportunity_status: { source_url: row.source_page_url, excerpt: statusEvidence } } };
       }
       await withAdminTransaction(async (client) => {
         await lockSource(client, source);
@@ -90,8 +104,13 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
         if (link?.source_page_url !== row.source_page_url) return;
         if (candidate) published += (await persistCandidate(client, source, candidate, { mode: "automatic", existing: current })).published;
         else {
-          await client.query("update opportunities set publication_issue='unconfirmed_on_recheck',published_at=null,last_source_check_at=now(),version=version+1 where id=$1", [row.id]);
-          await client.query("insert into opportunity_management_events (opportunity_id,actor,action,previous_data,new_data) values ($1,'radar:automatic','withdraw',$2,$3)", [row.id, current, { publicationIssue: "unconfirmed_on_recheck" }]);
+          const issue = terminalStatus ? "status_unconfirmed" : "unconfirmed_on_recheck";
+          await client.query(`update opportunities set publication_issue=$2,published_at=null,
+            opportunity_status=coalesce($3::text,opportunity_status),
+            evidence_json=case when $3::text is not null then evidence_json || $4::jsonb else evidence_json end,
+            last_source_check_at=now(),version=version+1 where id=$1`,
+          [row.id, issue, terminalStatus, { opportunity_status: { source_url: row.source_page_url, excerpt: statusEvidence } }]);
+          await client.query("insert into opportunity_management_events (opportunity_id,actor,action,previous_data,new_data) values ($1,'radar:automatic','withdraw',$2,$3)", [row.id, current, { publicationIssue: issue, ...(terminalStatus ? { opportunityStatus: terminalStatus, evidence: statusEvidence } : {}) }]);
         }
         await client.query("update opportunities set next_source_check_at=now()+interval '24 hours' where id=$1", [row.id]);
       });

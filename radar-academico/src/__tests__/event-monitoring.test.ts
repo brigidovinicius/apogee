@@ -37,9 +37,14 @@ import {eventStartFromText} from '@/lib/ingestion/event-start';
 it('extrai um evento sem prazo somente de fonte auditada para eventos e início explícito',()=>{
  const eventSource:OfficialSource={...source,name:'Organizador',institutionName:'Organizador',institutionAcronym:'ORG',sourceType:'official_reference',baseUrl:'https://event.example/',listingUrls:[],extractionMode:'html',audienceScope:['mixed'],geographicScope:[],categories:['eventos'],priority:1};
  const input={title:'Encontro de empreendedorismo',url:proof.source_url,source:eventSource,text:'Inscrições abertas pelo formulário de inscrição. O evento acontece em 21/10/2026 às 09h30. Participação gratuita.'};
- expect(normalizeOpportunity(input)).toMatchObject({deadlinePrecision:'not_informed',eventStartsAt:'2026-10-21T09:30:00-03:00',categories:['eventos'],opportunityStatus:'open'});
+ expect(normalizeOpportunity(input)).toMatchObject({deadlinePrecision:'not_informed',eventStartsAt:'2026-10-21',categories:['eventos'],opportunityStatus:'open'});
+ expect(normalizeOpportunity({...input,text:input.text.replace('09h30','09h30 (Horário de Brasília)')})).toMatchObject({eventStartsAt:'2026-10-21T09:30:00-03:00'});
+ expect(normalizeOpportunity({...input,text:input.text+' Inscrições pelo formulário em horário de Brasília.'})).toMatchObject({eventStartsAt:'2026-10-21'});
  expect(normalizeOpportunity({...input,source:{...eventSource,categories:['formacao']}})).toBeNull();
  expect(normalizeOpportunity({...input,text:input.text+' Inscrições até 31/02/2026.'})).toBeNull();
+ for(const deadline of ['Inscrições encerram em 31/02/2027.','Candidaturas até 31/02/2027.','Prazo de inscrição: a confirmar.','Prazo: a confirmar.','Inscrições terminam em novembro.']) {
+  expect(normalizeOpportunity({...input,text:input.text+' '+deadline})).toBeNull();
+ }
  expect(normalizeOpportunity({...input,text:'Inscrições abertas pelo formulário de inscrição. Publicado em 21/10/2026.'})).toBeNull();
  expect(eventStartFromText('Data do evento: 21/10/2026. Início do evento: 22/10/2026.')).toBeNull();
 });

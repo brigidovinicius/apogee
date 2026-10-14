@@ -423,3 +423,52 @@ it("limita tentativas de Resend por dia, persiste falhas e expira confirmação"
  expect(await runOpportunityAlerts()).toMatchObject({sent:0,failed:0});
  expect((await state.db!.query("select status,attempts from opportunity_alert_outbox")).rows[0]).toMatchObject({status:"pending",attempts:1});
 });
+it("encerra o acompanhamento após encerramento confirmado, sem enviar novamente na rechecagem",async()=>{
+ const {confirm}=await eventSubscription();await updateAlertSubscription("confirm",confirm);
+ await state.db!.exec("update opportunities set next_source_check_at=null");
+ vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from("official"),contentType:"text/html",hash:"closed",cached:false});
+ await recheckKnownOpportunities(source,1,async()=>"Inscrições encerradas para o evento.");
+ expect((await state.db!.query("select opportunity_status from opportunities")).rows[0]).toEqual({opportunity_status:"closed"});
+ expect(await queueOpportunityChanges()).toBe(1);
+ expect((await state.db!.query("select status from opportunity_alert_subscriptions")).rows[0]).toEqual({status:"completed"});
+ expect(await queueOpportunityChanges()).toBe(0);expect(sendAlertMail).not.toHaveBeenCalled();
+});
+it("aplica retenção dos dados pessoais quando o envio está desativado",async()=>{
+ await eventSubscription();
+ await state.db!.exec("update opportunity_alert_subscriptions set confirm_expires_at=now()-interval '8 days'");
+ vi.mocked(alertMailConfiguration).mockReturnValue(null);
+ expect(await runOpportunityAlerts()).toMatchObject({enabled:false,sent:0});
+ expect((await state.db!.query("select count(*)::int as total from opportunity_alert_subscriptions")).rows[0]).toEqual({total:0});
+ expect((await state.db!.query("select count(*)::int as total from opportunity_alert_outbox")).rows[0]).toEqual({total:0});
+ expect(sendAlertMail).not.toHaveBeenCalled();
+});
+it("finaliza assinante ativo quando o evento começa com envio desativado, e depois aplica retenção",async()=>{
+ const {confirm}=await eventSubscription();await updateAlertSubscription("confirm",confirm);
+ await state.db!.exec("update opportunities set event_starts_at='2000-01-01'");
+ vi.mocked(alertMailConfiguration).mockReturnValue(null);
+ expect(await runOpportunityAlerts()).toMatchObject({enabled:false,sent:0,queued:1});
+ expect((await state.db!.query("select status from opportunity_alert_subscriptions")).rows[0]).toEqual({status:"completed"});
+ await state.db!.exec("update opportunity_alert_subscriptions set updated_at=now()-interval '31 days'");
+ await runOpportunityAlerts();
+ expect((await state.db!.query("select count(*)::int as total from opportunity_alert_subscriptions")).rows[0]).toEqual({total:0});
+ expect(sendAlertMail).not.toHaveBeenCalled();
+});
+it("persiste cancelamento explícito mesmo se o texto mantém a chamada anterior e edição administrativa",async()=>{
+ const {confirm}=await eventSubscription();await updateAlertSubscription("confirm",confirm);
+ await state.db!.exec("update opportunities set next_source_check_at=null,management_overrides='{\"opportunityStatus\":\"open\"}'");
+ vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from("official"),contentType:"text/html",hash:"cancelled",cached:false});
+ await recheckKnownOpportunities(source,1,async()=>"Inscrições abertas em fluxo contínuo pelo formulário de inscrição. As inscrições foram canceladas.");
+ expect((await state.db!.query("select opportunity_status from opportunities")).rows[0]).toEqual({opportunity_status:"cancelled"});
+ expect(await queueOpportunityChanges()).toBe(1);
+ expect((await state.db!.query("select status from opportunity_alert_subscriptions")).rows[0]).toEqual({status:"completed"});
+ expect(sendAlertMail).not.toHaveBeenCalled();
+});
+it("não duplica nem ressuscita uma edição encontrada por outra fonte oficial na mesma página",async()=>{
+ await save();const first=(await listLiveCatalogue(true))[0];
+ const other={...source,id:"overlapping-source"};
+ await state.db!.exec("insert into official_sources select (jsonb_populate_record(null::official_sources,to_jsonb(s)||'{\"id\":\"overlapping-source\"}'::jsonb)).* from official_sources s where id='test-source'");
+ const ingest=()=>saveReviewItems(other,{sourceId:other.id,pagesChecked:1,discovered:[candidate({officialSourceId:other.id,contentHash:"overlap"})],ignored:0,failed:0,locationRejected:0,warnings:[]});
+ expect(await ingest()).toMatchObject({created:0,published:0});expect(await listLiveCatalogue()).toHaveLength(1);
+ await manageCatalogue("DELETE",{id:first.id,version:first.version,actor:"test-admin"});
+ expect(await ingest()).toMatchObject({created:0,published:0});expect(await listLiveCatalogue()).toHaveLength(0);
+});

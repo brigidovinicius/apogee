@@ -23,6 +23,9 @@ export function eventStartFromText(text: string): string | null {
   if (starts.length !== 1) return null;
   const [, day,month,year,hour,minute]=starts[0];
   const date=`${year}-${month.padStart(2,"0")}-${day.padStart(2,"0")}`;
-  try { return parseEventStart(hour ? `${date}T${hour.padStart(2,"0")}:${(minute ?? "00").padStart(2,"0")}:00-03:00` : date); }
+  const match = starts[0];
+  const startContext = text.slice(match.index, (match.index ?? 0) + match[0].length + 80).split(/[.;]\s/)[0];
+  const brazilTime = /hor[aá]rio (?:oficial )?de Bras[ií]lia|(?:UTC|GMT)\s*-0?3(?::?00)?/i.test(startContext);
+  try { return parseEventStart(hour && brazilTime ? `${date}T${hour.padStart(2,"0")}:${(minute ?? "00").padStart(2,"0")}:00-03:00` : date); }
   catch { return null; }
 }

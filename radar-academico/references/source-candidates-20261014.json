@@ -518,10 +518,7 @@
       "importRow": 25,
       "status": "pending_official_audit",
       "targetId": "xlsx-20261014-024-fapesc",
-      "relatedSourceIds": [
-        "cnpq-chamadas-abertas-2026",
-        "minc-intercambio-audiovisual-2026"
-      ]
+      "relatedSourceIds": []
     },
     {
       "inputId": 25,
@@ -543,10 +540,7 @@
       "targetId": null,
       "existingKind": "discovery_target",
       "existingId": "finep-chamadas",
-      "relatedSourceIds": [
-        "cnpq-chamadas-abertas-2026",
-        "minc-intercambio-audiovisual-2026"
-      ]
+      "relatedSourceIds": []
     },
     {
       "inputId": 26,
@@ -626,10 +620,7 @@
       "importRow": 30,
       "status": "pending_official_audit",
       "targetId": "xlsx-20261014-029-fapesb",
-      "relatedSourceIds": [
-        "cnpq-chamadas-abertas-2026",
-        "minc-intercambio-audiovisual-2026"
-      ]
+      "relatedSourceIds": []
     },
     {
       "inputId": 30,
@@ -649,10 +640,7 @@
       "importRow": 31,
       "status": "pending_official_audit",
       "targetId": "xlsx-20261014-030-fapdf",
-      "relatedSourceIds": [
-        "cnpq-chamadas-abertas-2026",
-        "minc-intercambio-audiovisual-2026"
-      ]
+      "relatedSourceIds": []
     },
     {
       "inputId": 31,
@@ -672,10 +660,7 @@
       "importRow": 32,
       "status": "pending_official_audit",
       "targetId": "xlsx-20261014-031-fapes",
-      "relatedSourceIds": [
-        "cnpq-chamadas-abertas-2026",
-        "minc-intercambio-audiovisual-2026"
-      ]
+      "relatedSourceIds": []
     },
     {
       "inputId": 32,
@@ -715,10 +700,7 @@
       "importRow": 34,
       "status": "pending_official_audit",
       "targetId": "xlsx-20261014-033-fapeg",
-      "relatedSourceIds": [
-        "cnpq-chamadas-abertas-2026",
-        "minc-intercambio-audiovisual-2026"
-      ]
+      "relatedSourceIds": []
     },
     {
       "inputId": 34,
@@ -738,10 +720,7 @@
       "importRow": 35,
       "status": "pending_official_audit",
       "targetId": "xlsx-20261014-034-fapeam",
-      "relatedSourceIds": [
-        "cnpq-chamadas-abertas-2026",
-        "minc-intercambio-audiovisual-2026"
-      ]
+      "relatedSourceIds": []
     },
     {
       "inputId": 35,
@@ -861,10 +840,7 @@
       "status": "pending_official_audit",
       "targetId": "xlsx-20261014-040-escola-virtual-de-governo-enap",
       "restriction": "Cursos permanentes e módulos sem inscrição ou vagas não contam na meta; validar turma ou programa elegível.",
-      "relatedSourceIds": [
-        "cnpq-chamadas-abertas-2026",
-        "minc-intercambio-audiovisual-2026"
-      ]
+      "relatedSourceIds": []
     },
     {
       "inputId": 41,
@@ -1444,10 +1420,7 @@
       "importRow": 70,
       "status": "pending_official_audit",
       "targetId": "xlsx-20261014-069-finep-startup",
-      "relatedSourceIds": [
-        "cnpq-chamadas-abertas-2026",
-        "minc-intercambio-audiovisual-2026"
-      ]
+      "relatedSourceIds": []
     },
     {
       "inputId": 70,
