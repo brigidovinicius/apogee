@@ -61,6 +61,16 @@ async function ingestSource(
   try {
     const resource = await fetchOfficialResource(listingUrl, source);
     result.pagesChecked += 1;
+    // An organizer's edition-specific announcement is itself the evidence page.
+    if (source.id === "braskem-internship-programme") {
+      const text = await detailText(resource.body, resource.contentType);
+      const candidate = text ? normalizeOpportunity({ title: source.name, text, url: listingUrl, source }) : null;
+      if (candidate) result.discovered.push(candidate);
+      else result.ignored += 1;
+      result.nextListingIndex = 0;
+      result.nextLinkOffset = 0;
+      return result;
+    }
     const body = resource.body.toString("utf8");
     const items = /rss|xml/.test(resource.contentType)
       ? await parseRss(body)
@@ -72,6 +82,10 @@ async function ingestSource(
         return false;
       }
       visited.add(item.url);
+      if (source.id === "fapesp-open-fellowships" && !/^https:\/\/(?:www\.)?fapesp\.br\/oportunidades\/[^/]+\/\d+\/$/.test(item.url)) {
+        result.ignored += 1;
+        return false;
+      }
       return promisingLink.test(`${item.title} ${item.excerpt}`) ||
         source.id === "cnpq-chamadas-abertas-2026" && /chamada/i.test(item.title);
     });

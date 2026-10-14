@@ -19,27 +19,31 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
       and (o.next_source_check_at is null or o.next_source_check_at<=now())
     order by o.last_source_check_at nulls first,o.id limit $2`, [source.id, limit])).rows);
   let pagesChecked = 0, failed = 0, published = 0;
+  let verifiedListingLinks: string[] | null = null;
   for (const row of rows) {
     try {
       // These sources can remove a call from the open index before its detail
       // page changes. The current official listing is additional evidence.
       let stillListed = true;
       if (source.id === "minc-intercambio-audiovisual-2026" || source.id === "fapesp-open-fellowships") {
-        const listingUrl = source.listingUrls[0];
-        const listing = await fetchOfficialResource(listingUrl, source);
-        pagesChecked += 1;
-        const html = listing.body.toString("utf8");
-        const expectedHeading = source.id === "fapesp-open-fellowships" ? /Oportunidades de Bolsas/i : /Editais em andamento/i;
-        if (!/text\/html/i.test(listing.contentType) || !expectedHeading.test(html)) {
-          throw new Error("Lista oficial indisponível para confirmação");
+        if (!verifiedListingLinks) {
+          const listingUrl = source.listingUrls[0];
+          const listing = await fetchOfficialResource(listingUrl, source);
+          pagesChecked += 1;
+          const html = listing.body.toString("utf8");
+          const expectedHeading = source.id === "fapesp-open-fellowships" ? /Oportunidades de Bolsas/i : /Editais em andamento/i;
+          if (!/text\/html/i.test(listing.contentType) || !expectedHeading.test(html)) {
+            throw new Error("Lista oficial indisponível para confirmação");
+          }
+          const links = parseHtml(html, listingUrl).map((link) => link.url);
+          const peer = source.id === "fapesp-open-fellowships"
+            ? links.some((url) => fapespPostingId(url))
+            : links.some((url) => url.startsWith(`${listingUrl}/`));
+          if (!peer) throw new Error("Lista oficial sem fichas verificáveis");
+          verifiedListingLinks = links;
         }
-        const links = parseHtml(html, listingUrl).map((link) => link.url);
-        const peer = source.id === "fapesp-open-fellowships"
-          ? links.some((url) => fapespPostingId(url))
-          : links.some((url) => url.startsWith(`${listingUrl}/`));
-        if (!peer) throw new Error("Lista oficial sem fichas verificáveis");
         const postingId = source.id === "fapesp-open-fellowships" ? fapespPostingId(row.source_page_url) : null;
-        stillListed = postingId ? links.some((url) => fapespPostingId(url) === postingId) : links.includes(row.source_page_url);
+        stillListed = postingId ? verifiedListingLinks.some((url) => fapespPostingId(url) === postingId) : verifiedListingLinks.includes(row.source_page_url);
       }
       let candidate: OpportunityCandidate | null = null;
       if (stillListed) {

@@ -172,3 +172,48 @@ it("extrai bolsas de pesquisa da listagem oficial FAPESP sem duplicar os links e
     geographicScopeKind: "unknown", countryCode: null, stateCode: null, cityName: null,
   });
 });
+
+it("coleta um edital municipal e um programa empresarial nas páginas dos próprios organizadores", async () => {
+  vi.stubEnv("DATABASE_URL", "fixture");
+  const sjcUrl = "https://servicos.sjc.sp.gov.br/concurso/concurso_detalhe.aspx?codigo=192";
+  const braskemUrl = "https://www.braskem.com.br/bahia-release/braskem-abre-inscricoes-para-programa-de-estagio-2027-com-mais-de-100-vagas-em-cinco-estados";
+  const sources: OfficialSource[] = [{
+    ...makeSource("sjc-open-internships"), institutionName: "Prefeitura de São José dos Campos",
+    sourceType: "municipal_government", baseUrl: "https://servicos.sjc.sp.gov.br/concurso/",
+    allowedDomains: ["servicos.sjc.sp.gov.br"], allowedPathPrefixes: ["/concurso/"],
+    listingUrls: ["https://servicos.sjc.sp.gov.br/concurso/abertos.aspx"], location: {},
+  }, {
+    ...makeSource("braskem-internship-programme"), institutionName: "Braskem",
+    sourceType: "corporate_organizer", baseUrl: "https://www.braskem.com.br/",
+    allowedDomains: ["www.braskem.com.br"], allowedPathPrefixes: ["/bahia-release/"],
+    listingUrls: [braskemUrl], location: {},
+  }];
+  vi.mocked(loadOfficialSource).mockImplementation(async (id) => sources.find((source) => source.id === id) ?? null);
+  vi.mocked(fetchOfficialResource).mockImplementation(async (url) => {
+    const body = url === sources[0].listingUrls[0]
+      ? `<main><a href="${sjcUrl}">Processo seletivo para estágio — inscrições abertas</a></main>`
+      : url === sjcUrl
+        ? `<body>PROCESSO SELETIVO PARA ESTÁGIO - ANEXO OUTUBRO Inscrições Abertas RESUMO DO CONCURSO 10/2026 - OUTUBRO
+          De: De 01/10/2026 00:00 a 15/10/2026 23:59
+          O processo seletivo destina-se ao preenchimento de vagas e cadastro reserva para estagiários, para alunos regularmente matriculados.
+          Escolaridade exigida: Ensino técnico e superior. STATUS DO CONCURSO Inscrições Abertas
+          As inscrições e provas on-line serão realizadas pelo site do CIEE. Remuneração: De R$506,19 a R$1.093,37</body>`
+        : `<body>6 de Outubro de 2026 Braskem abre as inscrições para a edição 2027 do seu Programa de Estágio, com a oferta de 120 vagas para estudantes universitários.
+          Período de inscrições: 1º a 30 de outubro. As inscrições ficam abertas até 30 de outubro.
+          As inscrições são destinadas a estudantes que tenham previsão de conclusão da graduação entre junho de 2028 e dezembro de 2029.
+          As oportunidades estão distribuídas pelas unidades da companhia nos estados de Alagoas, Bahia, Rio de Janeiro, Rio Grande do Sul e São Paulo.
+          A bolsa-auxílio entre R$ 2.200 e R$ 2.800 é oferecida conforme a vaga.
+          Os interessados têm até o dia 30 de outubro para realizar a candidatura por meio da página da iniciativa.</body>`;
+    return { body: Buffer.from(body), contentType: "text/html", hash: "fixture", cached: false };
+  });
+  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, published: 1, blocked: 0, created: 1, updated: 0, persistence: "postgres" });
+
+  const municipal = await runOfficialSourceIngestion({ sourceId: sources[0].id, maxPages: 3 });
+  const company = await runOfficialSourceIngestion({ sourceId: sources[1].id, maxPages: 3 });
+  expect(municipal).toMatchObject({ pagesChecked: 2, discovered: 1, published: 1 });
+  expect(company).toMatchObject({ pagesChecked: 1, discovered: 1, published: 1 });
+  expect(vi.mocked(saveReviewItems).mock.calls.map(([, result]) => result.discovered[0]?.title)).toEqual([
+    "Estágio da Prefeitura de São José dos Campos — OUTUBRO 2026", "Programa de Estágio Braskem 2027",
+  ]);
+  expect(vi.mocked(fetchOfficialResource).mock.calls.map(([url]) => url)).toEqual([sources[0].listingUrls[0], sjcUrl, braskemUrl]);
+});
