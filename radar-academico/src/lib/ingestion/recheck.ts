@@ -4,9 +4,8 @@ import { normalizeOpportunity } from "./normalize-opportunity";
 import { parseHtml } from "./parse-html";
 import { persistCandidate, lockSource, type StoredOpportunity } from "./persist-candidate";
 import type { OfficialSource, OpportunityCandidate } from "./types";
-import { IFC_APPLICATION_URL } from "./normalize-ifc-integrated";
 import { canonicalOpportunityKey } from "./revision-key";
-import { normalizeProgrammeCatalogue, programmeCataloguePageCount } from "./programme-catalogue";
+import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupplementUrl } from "./programme-catalogue";
 
 function fapespPostingId(url: string) {
   return /^https:\/\/(?:www\.)?fapesp\.br\/oportunidades\/[^/]+\/(\d+)\/$/.exec(url)?.[1] ?? null;
@@ -31,7 +30,7 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
       pagesChecked += 1;
       let applicationHtml = "";
       if (cataloguePages === 2) {
-        const application = await fetchOfficialResource(IFC_APPLICATION_URL, source);
+        const application = await fetchOfficialResource(programmeSupplementUrl(source.id), source);
         pagesChecked += 1;
         applicationHtml = application.body.toString("utf8");
       }

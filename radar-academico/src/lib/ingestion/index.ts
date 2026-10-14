@@ -11,8 +11,7 @@ import type { IngestionResult, OfficialSource } from "./types";
 import { isOfficialSourceUrl } from "./validate-url";
 import { normalizeBrazilianLocation } from "@/lib/location";
 import * as cheerio from "cheerio";
-import { IFC_APPLICATION_URL } from "./normalize-ifc-integrated";
-import { normalizeProgrammeCatalogue, programmeCataloguePageCount } from "./programme-catalogue";
+import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupplementUrl } from "./programme-catalogue";
 
 const promisingLink = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|edital|seleção|inscriç/i;
 
@@ -73,7 +72,7 @@ async function ingestSource(
       let applicationHtml = "";
       if (cataloguePages === 2) {
         budget.remaining -= 1;
-        const application = await fetchOfficialResource(IFC_APPLICATION_URL, source);
+        const application = await fetchOfficialResource(programmeSupplementUrl(source.id), source);
         result.pagesChecked += 1;
         applicationHtml = application.body.toString("utf8");
       }
@@ -88,7 +87,7 @@ async function ingestSource(
       return result;
     }
     // An organizer's edition-specific announcement is itself the evidence page.
-    if (source.id === "braskem-internship-programme" || source.id === "sed-novos-valores-2026") {
+    if (["braskem-internship-programme", "sed-novos-valores-2026", "ufsc-augm-grado-2027-1", "ufsc-outgoing-2027-1"].includes(source.id)) {
       const text = await detailText(resource.body, resource.contentType);
       const candidate = text ? normalizeOpportunity({ title: source.name, text, url: listingUrl, source }) : null;
       if (candidate) result.discovered.push(candidate);
