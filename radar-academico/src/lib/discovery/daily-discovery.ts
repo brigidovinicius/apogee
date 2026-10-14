@@ -24,8 +24,10 @@ export function discoveryLinks(html: string, target: DiscoveryTarget, mappedSour
   const seen = new Set<string>();
   return parseHtml(html, target.official_url).flatMap((item) => {
     const url = candidateUrl(item.url);
-    if (!url || url === target.official_url || seen.has(url) ||
-      isOfficialSourceUrl(url, mappedSources) || !relevant.test(`${item.title} ${item.excerpt}`)) return [];
+    if (!url || url === target.official_url || seen.has(url)) return [];
+    const path = new URL(url).pathname;
+    if (path.includes("@@search") || isOfficialSourceUrl(url, mappedSources) ||
+      !relevant.test(`${item.title} ${path}`)) return [];
     seen.add(url);
     return [{ url, title: item.title.slice(0, 240), excerpt: item.excerpt.slice(0, 500) }];
   }).slice(0, 30);

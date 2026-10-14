@@ -35,6 +35,8 @@ it("collects bounded unmapped leads without fetching their destinations or publi
       <a href="https://mapped.example.org/bolsa">Edital de bolsa</a>
       <a href="http://unsafe.example.org/edital">Edital de pesquisa</a>
       <a href="https://new.example.org/hackathon?utm_source=other">Inscrições hackathon 2026</a>
+      <a href="https://events.example.org/@@search?SearchableText=abertas">#abertas</a>
+      <a href="https://new.example.org/about">Saiba mais</a><p>Inscrições em programas</p>
     </main>`), contentType: "text/html", hash: "fixture", cached: false,
   });
   vi.mocked(saveDiscoveryLeads).mockResolvedValue(1);
@@ -51,6 +53,7 @@ it("blocks unsafe URLs and leaves failed pages unpublished", async () => {
   expect(candidateUrl("http://events.example.org/edital")).toBeNull();
   expect(candidateUrl("https://127.0.0.1/edital")).toBeNull();
   expect(discoveryLinks('<a href="https://new.example.org/curso">Curso gratuito de tecnologia</a>', target, [])).toHaveLength(1);
+  expect(discoveryLinks('<a href="https://new.example.org/about">Saiba mais</a><p>Inscrições abertas para programa</p>', target, [])).toHaveLength(0);
   vi.mocked(claimDueDiscoveryTargets).mockResolvedValue([target]);
   vi.mocked(loadActiveOfficialSources).mockResolvedValue([]);
   vi.mocked(fetchOfficialResource).mockRejectedValue(new Error("robots.txt bloqueou"));
