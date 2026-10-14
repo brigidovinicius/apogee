@@ -14,6 +14,7 @@ import { candidateUrl, discoveryLinks, runScheduledDiscovery } from "@/lib/disco
 const target: DiscoveryTarget = {
   id: "official-events", name: "Official events", organizer: "Institution", kind: "event_series",
   official_url: "https://events.example.org/", topics: ["tecnologia"], priority: 1, enabled: true,
+  official_verified_at: new Date(), official_verified_url: "https://events.example.org/", official_review_note: "Official organizer page checked.",
   last_checked_at: null, next_check_at: null, last_status: "not_checked", evidence_url: "https://events.example.org/",
 };
 const mapped: OfficialSource = {

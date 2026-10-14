@@ -9,6 +9,9 @@ export type DiscoveryTarget = {
   topics: string[];
   priority: number;
   enabled: boolean;
+  official_verified_at: Date | null;
+  official_verified_url: string | null;
+  official_review_note: string | null;
   last_checked_at: Date | null;
   next_check_at: Date | null;
   last_status: "not_checked" | "checked" | "blocked" | "failed";
@@ -38,7 +41,7 @@ export type EventEdition = {
 
 export async function listDiscoveryWatchlist() {
   return withAdminTransaction(async (client) => {
-    const targets = await client.query<DiscoveryTarget>("select id,name,organizer,kind,official_url,topics,priority,enabled,last_checked_at,next_check_at,last_status,evidence_url from discovery_targets order by priority desc,name");
+    const targets = await client.query<DiscoveryTarget>("select id,name,organizer,kind,official_url,topics,priority,enabled,official_verified_at,official_verified_url,official_review_note,last_checked_at,next_check_at,last_status,evidence_url from discovery_targets order by priority desc,name");
     const leads = await client.query<DiscoveryLead>("select id,target_id,url,title,status,first_seen_at,last_seen_at from discovery_leads where status in ('new','reviewing') order by last_seen_at desc limit 100");
     const events = await client.query<EventEdition>("select id,target_id,edition_name,starts_on::text,ends_on::text,location_text,status,evidence_url from annual_event_editions order by starts_on nulls last,edition_name");
     return { targets: targets.rows, leads: leads.rows, events: events.rows };
@@ -48,7 +51,8 @@ export async function listDiscoveryWatchlist() {
 export async function claimDueDiscoveryTargets(limit: number): Promise<DiscoveryTarget[]> {
   return withAdminTransaction(async (client) => (await client.query<DiscoveryTarget>(
     `with due as (
-       select id from discovery_targets where enabled and (next_check_at is null or next_check_at <= now())
+       select id from discovery_targets where enabled and official_verified_at is not null
+         and official_verified_url = official_url and (next_check_at is null or next_check_at <= now())
        order by next_check_at nulls first, priority desc, id limit $1 for update skip locked
      )
      update discovery_targets target set next_check_at=now() + interval '10 minutes',updated_at=now()
