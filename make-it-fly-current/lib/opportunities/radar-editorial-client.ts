@@ -40,6 +40,7 @@ export type RadarManagedOpportunity = {
   nationallyEligible: boolean;
   stateCode: string | null;
   cityName: string | null;
+  eventStartsAt?: string | null;
   deadlineAt: string | null;
   deadlinePrecision: string;
   evidence: Record<string, { source_url: string; excerpt: string; page?: number }>;
@@ -169,6 +170,7 @@ function managedOpportunityFrom(value: unknown): RadarManagedOpportunity | null 
     isCourse: item.isCourse, nationallyEligible: item.nationallyEligible,
     stateCode: item.stateCode === null ? null : stringValue(item.stateCode),
     cityName: item.cityName === null ? null : stringValue(item.cityName),
+    eventStartsAt: stringValue(item.eventStartsAt),
     deadlineAt: item.deadlineAt === null ? null : stringValue(item.deadlineAt),
   };
 }

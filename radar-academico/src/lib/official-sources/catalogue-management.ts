@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { parseEventStart } from "@/lib/ingestion/event-start";
 import { withAdminTransaction } from "@/lib/db/client";
 import { loadOfficialSource } from "@/lib/ingestion/official-source-registry";
 import { candidateColumns, findCandidate, lockSource, persistCandidate, type CandidateField, type StoredOpportunity } from "@/lib/ingestion/persist-candidate";
@@ -30,6 +31,8 @@ export function parseCatalogueCandidate(input: Record<string, unknown>): Opportu
   const sourcePageUrl = text(input, "officialUrl", 2000);
   const excerpt = text(input, "evidenceExcerpt", 4000);
   const evidence = { source_url: sourcePageUrl, excerpt };
+  let eventStartsAt: string | null;
+  try { eventStartsAt = parseEventStart(input.eventStartsAt); } catch (error) { throw new CatalogueError(error instanceof Error ? error.message : "Início do evento inválido"); }
   const candidate: OpportunityCandidate = {
     officialSourceId: text(input, "officialSourceId", 80), title: text(input, "title"), institution: text(input, "institution"), sourcePageUrl,
     applicantType: choice(input, "applicantType", applicants) as OpportunityCandidate["applicantType"],
@@ -37,6 +40,7 @@ export function parseCatalogueCandidate(input: Record<string, unknown>): Opportu
     benefitType: choice(input, "benefitType", benefits) as OpportunityCandidate["benefitType"],
     categories: input.categories,
     opportunityStatus: choice(input, "opportunityStatus", ["open", "upcoming"]) as OpportunityCandidate["opportunityStatus"],
+    eventStartsAt,
     deadlinePrecision: choice(input, "deadlinePrecision", ["date_only", "exact_datetime", "continuous_flow"]) as OpportunityCandidate["deadlinePrecision"],
     deadlineAt: input.deadlineAt === null || input.deadlineAt === "" ? undefined : text(input, "deadlineAt", 50),
     requirementsText: typeof input.requirementsText === "string" && !input.requirementsText.trim() ? "Não informado na fonte oficial." : text(input, "requirementsText", 6000),
@@ -47,6 +51,8 @@ export function parseCatalogueCandidate(input: Record<string, unknown>): Opportu
     evidenceJson: { deadline_at: evidence, opportunity_status: evidence, requirements: evidence, ...(input.nationallyEligible ? { national_scope: evidence } : {}) },
     contentHash: "",
   };
+  if (candidate.eventStartsAt && !candidate.categories?.includes("eventos")) throw new CatalogueError("Início do evento exige a categoria Eventos e comunidades");
+  if (candidate.eventStartsAt) candidate.evidenceJson.event_start = evidence;
   if (candidate.deadlinePrecision === "date_only" && !/^\d{4}-\d{2}-\d{2}$/.test(candidate.deadlineAt ?? "")) throw new CatalogueError("Informe a data no formato AAAA-MM-DD");
   if (candidate.deadlinePrecision === "exact_datetime" && !/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(candidate.deadlineAt ?? "")) throw new CatalogueError("Horário precisa incluir fuso");
   candidate.contentHash = crypto.createHash("sha256").update(JSON.stringify(candidate)).digest("hex");

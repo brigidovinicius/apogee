@@ -133,6 +133,8 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     opportunityStatus: value.opportunityStatus === "upcoming" ? "upcoming" : "open",
     verificationMethod: value.verificationMethod === "admin" ? "admin" : "automatic",
     deadline,
+    deadlineAt: deadlinePrecision === "exact_datetime" && deadlineAt ? new Date(deadlineAt).toISOString() : null,
+    eventStartsAt: stringValue(value.eventStartsAt),
     deadlineLabel: deadlineLabel(deadlineAt, deadlinePrecision),
     officialUrl,
     verifiedAt,

@@ -1,5 +1,6 @@
 "use client";
 
+import { OpportunityCountdown } from "./opportunity-countdown";
 import { LiveCatalogueRefresh } from "./live-refresh";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -298,6 +299,7 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
                   <strong>{opportunity.deadlineLabel}</strong>
                 </div>
               </div>
+              <OpportunityCountdown opportunity={opportunity} />
               <div className={styles.cardFooter}>
                 <span>{opportunity.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={opportunity.verificationTimestamp ?? opportunity.verifiedAt} title="Horário de Brasília">{formatDate(opportunity.verificationTimestamp ?? opportunity.verifiedAt)}</time></span>
                 <Link
