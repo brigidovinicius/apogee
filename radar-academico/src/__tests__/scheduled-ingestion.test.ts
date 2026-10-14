@@ -14,6 +14,7 @@ import { claimDueOfficialSources, completeScheduledSource, loadOfficialSource } 
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { saveReviewItems } from "@/lib/ingestion/save-review-item";
 import { runOfficialSourceIngestion, runScheduledOfficialSourceIngestion } from "@/lib/ingestion";
+import { recheckKnownOpportunities } from "@/lib/ingestion/recheck";
 
 const makeSource = (id: string): OfficialSource => ({
   id, name: id, institutionName: "Instituto Federal", institutionAcronym: "IF",
@@ -22,6 +23,51 @@ const makeSource = (id: string): OfficialSource => ({
   listingUrls: [`https://example.edu.br/${id}/editais`], extractionMode: "html",
   audienceScope: ["mixed"], geographicScope: [], location: { stateCode: "SP", cityName: null },
   categories: [], priority: 1, active: true,
+});
+
+it("reconsulta catálogos compartilhados dentro do orçamento de páginas e não excede maxPages", async () => {
+  vi.stubEnv("DATABASE_URL", "fixture");
+  const source: OfficialSource = { ...makeSource("ifc-integrated-technical-2027"),
+    listingUrls: ["https://ingresso.ifc.edu.br/seletivos/processo-seletivo-2027/integrados/cursos/"],
+    allowedDomains: ["ingresso.ifc.edu.br"], location: { stateCode: null, cityName: null } };
+  vi.mocked(loadOfficialSource).mockResolvedValue(source);
+  vi.mocked(recheckKnownOpportunities).mockResolvedValueOnce({ pagesChecked: 2, failed: 0, published: 0 });
+  vi.mocked(fetchOfficialResource).mockImplementation(async (url) => ({
+    body: Buffer.from(url.includes("inscricoes")
+      ? '<div class="entry-content">Acesse candidato.ifc.edu.br para fazer sua inscrição. Inscrições até 26 de outubro de 2026. Valor da Taxa de Inscrição*R$ 50,00</div>'
+      : '<div class="entry-content"><h2 class="cursos-campus-title">Blumenau</h2><div class="cursos-cards-grid"><div class="curso-card"><button class="curso-card-header"><span>Informática</span></button>Vagas: 70 Forma de seleção: Exame de Classificação</div></div></div>'),
+    contentType: "text/html", hash: "fixture", cached: false,
+  }));
+  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, published: 1, blocked: 0, created: 1, updated: 0, persistence: "postgres" });
+  expect(await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 5, maxCandidates: 10 })).toMatchObject({ pagesChecked: 4, discovered: 1 });
+  expect(recheckKnownOpportunities).toHaveBeenCalledWith(source, 200, expect.any(Function));
+  expect(fetchOfficialResource).toHaveBeenCalledTimes(2);
+  const bounded = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 1, maxCandidates: 10 });
+  expect(bounded).toMatchObject({ pagesChecked: 0, discovered: 0 });
+  expect(fetchOfficialResource).toHaveBeenCalledTimes(2);
+  expect(bounded.sources[0].warnings).toContain("Orçamento de páginas insuficiente para confirmar a fonte.");
+});
+
+it("coleta a edição compartilhada em um ciclo, mantendo o limite manual de fichas", async () => {
+  vi.stubEnv("DATABASE_URL", "fixture");
+  const source: OfficialSource = { ...makeSource("ifsc-technical-courses-2027"),
+    listingUrls: ["https://www.ifsc.edu.br/tecnicos"], allowedDomains: ["www.ifsc.edu.br"],
+    location: { stateCode: null, cityName: null } };
+  vi.mocked(claimDueOfficialSources).mockResolvedValue([source]);
+  vi.mocked(loadOfficialSource).mockResolvedValue(source);
+  const offers = Array.from({ length: 21 }, (_, index) => `<a href="https://www.ifsc.edu.br/curso/${index}">Médio Técnico em Curso ${index}</a> - 20 vagas (integral)<br>`).join("");
+  const html = `<body>Edital 05/Deing/2027-1 <a href="https://sistemadeingresso.ifsc.edu.br/inicio.php">Inscreva-se</a>
+    28/09 a 22/10/2026 - Período de inscrições para cursos com seleção por prova
+    28/09 a 06/11/2026 - Período de inscrições para cursos com seleção por sorteio e ordem de inscrição
+    <section><h2>Cursos</h2><h4>Câmpus Blumenau</h4><p>Seleção por prova:</p><p>${offers}</p></section></body>`;
+  vi.mocked(fetchOfficialResource).mockResolvedValue({ body: Buffer.from(html), contentType: "text/html", hash: "fixture", cached: false });
+  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 21, published: 21, blocked: 0, created: 21, updated: 0, persistence: "postgres" });
+  const scheduled = await runScheduledOfficialSourceIngestion();
+  expect(scheduled).toMatchObject({ pagesChecked: 1, discovered: 21 });
+  expect(vi.mocked(saveReviewItems).mock.calls[0][1]).toMatchObject({ nextLinkOffset: 0 });
+  const manual = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 1, maxCandidates: 2 });
+  expect(manual).toMatchObject({ pagesChecked: 1, discovered: 2 });
+  expect(manual.sources[0]).toMatchObject({ nextLinkOffset: 2 });
 });
 
 afterEach(() => { vi.clearAllMocks(); vi.unstubAllEnvs(); });

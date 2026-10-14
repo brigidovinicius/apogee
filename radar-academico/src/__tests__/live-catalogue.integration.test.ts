@@ -80,8 +80,8 @@ it("publishes automatically with real RLS and the same public/admin catalogue", 
  const row = (await state.db!.query("select human_verified_at,verification_method,next_source_check_at >= now() + interval '23 hours' as recheck_tomorrow from opportunities")).rows[0];
  expect(row).toEqual({ human_verified_at: null, verification_method: "automatic", recheck_tomorrow: true });
 });
-it("mantém cursos IFC distintos na mesma página oficial e respeita exclusões", async () => {
- const ifcSource: OfficialSource = { ...source, id: "ifc-integrated-technical-2027", name: "IFC",
+it.each(["ifc-integrated-technical-2027", "ifsc-technical-courses-2027"])("mantém cursos distintos na mesma página oficial e respeita exclusões: %s", async (sourceId) => {
+ const ifcSource: OfficialSource = { ...source, id: sourceId, name: "IFC",
   baseUrl: "https://ingresso.ifc.edu.br/", allowedDomains: ["ingresso.ifc.edu.br"],
   allowedPathPrefixes: ["/seletivos/"], listingUrls: ["https://ingresso.ifc.edu.br/seletivos/cursos/"] };
  await state.db!.query(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,audience_scope,geographic_scope,categories,priority,active,verification_status)
