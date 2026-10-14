@@ -65,7 +65,9 @@ export function safeRequest(url: string, headers: Record<string, string>, maxByt
         for (const [key, value] of Object.entries(response.headers)) {
           if (value !== undefined) responseHeaders.set(key, Array.isArray(value) ? value.join(", ") : value);
         }
-        if (method === "HEAD" || status === 204 || status === 304 || status >= 300 && status < 400) {
+        // A missing robots.txt is allowed by the caller. Its error body is never
+        // needed, and some servers gzip it despite Accept-Encoding: identity.
+        if (method === "HEAD" || status === 204 || status === 304 || status === 404 || status >= 300 && status < 400) {
           response.destroy();
           resolve(new Response(null, { status, headers: responseHeaders }));
           return;
