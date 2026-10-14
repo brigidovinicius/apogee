@@ -23,6 +23,8 @@ RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# PDF.js loads its worker dynamically at runtime; Next's standalone trace does not include it.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/pdfjs-dist ./node_modules/pdfjs-dist
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 # The NASA Space Apps origin serves an intermediate cross-signed by a root absent from this image.
 # This alternate intermediate chains to Node's existing SSL.com 2022 root.
