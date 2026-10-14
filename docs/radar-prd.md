@@ -4,6 +4,8 @@ Revisão: 14/10/2026. Decisões vigentes do proprietário: publicação automát
 
 O [brief integral](radar-product-brief.md) preserva os requisitos, exemplos e referências recebidos. Este PRD registra as decisões vigentes e o recorte inicial, sem descartar as demais capacidades. O andamento e os limites estão no [registro de execução](radar-live-execution.md).
 
+**Estado verificado em 14/10/2026:** as sete categorias, o catálogo comum e o gerenciamento administrativo estão publicados; o fluxo automático e criar/editar/excluir já foram exercitados em produção. A [medição de cobertura](radar-coverage-20261014.md) encontrou **1 de 1.000** oportunidades únicas, publicadas e vigentes. A expansão de fontes e fichas continua pendente; esta medição não constitui aceite da meta quantitativa.
+
 ## Resultado esperado
 
 Descobrir oportunidades úteis a brasileiros, no Brasil e no exterior, com prioridade para tecnologia, ciência, empreendedorismo e aeroespacial. Apogee apresenta e gerencia; Radar Acadêmico é o serviço separado de descoberta, extração, persistência e atualização. O banco do Radar é a fonte única do catálogo. Uma oportunidade publicada aparece para o usuário e para o administrador; o administrador ganha criar, editar e excluir. Não existe fila de aprovação de fichas.

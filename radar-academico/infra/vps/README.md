@@ -14,11 +14,12 @@ fontes oficiais -> scheduler -> Radar web -> Radar Postgres
                                 Apogee web -> navegador
 ```
 
-O scheduler só aciona a ingestão. Descobertas entram como `pending_review`; a
-API que a Apogee consome fica submetida a RLS e só retorna itens aprovados,
-verificados, abertos e publicados na revisão humana. Portanto, o mural se
-atualiza automaticamente **após** a aprovação editorial, nunca diretamente a
-partir de um crawler.
+O scheduler aciona a ingestão. Descobertas e mudanças válidas entram
+automaticamente no catálogo quando a fonte, as evidências, o estado das inscrições
+e o prazo passam nas validações do servidor. A API que a Apogee consome fica
+submetida a RLS e só retorna itens publicados e vigentes; o painel gerencia as
+mesmas fichas ao vivo, sem fila de aprovação. A ativação de uma fonte continua
+dependendo de auditoria separada.
 
 ## Primeiro deploy autorizado
 
@@ -55,9 +56,10 @@ partir de um crawler.
 
 ## Cursos e publicação automática
 
-As migrações `0005_courses_national_scope.sql`, `0006_crawl_progress.sql`
-e `0007_automatic_live_catalogue.sql` adicionam cursos, execução da coleta e
-catálogo ao vivo. As novas fontes começam pendentes e inativas. Autorizar uma
+As migrações `0005_courses_national_scope.sql`, `0006_crawl_progress.sql`,
+`0007_automatic_live_catalogue.sql` e `0008_opportunity_categories.sql` adicionam
+cursos, execução da coleta, catálogo ao vivo e as sete categorias de navegação.
+As novas fontes começam pendentes e inativas. Autorizar uma
 fonte exige conferir domínio, localização e condições de consulta; fichas válidas
 publicam automaticamente, sem revisão humana intermediária.
 
