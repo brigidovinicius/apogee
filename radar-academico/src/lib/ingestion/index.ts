@@ -11,6 +11,7 @@ import type { IngestionResult, OfficialSource } from "./types";
 import { isOfficialSourceUrl } from "./validate-url";
 import { normalizeBrazilianLocation } from "@/lib/location";
 import * as cheerio from "cheerio";
+import { IFC_APPLICATION_URL, normalizeIfcIntegratedCourses } from "./normalize-ifc-integrated";
 
 const promisingLink = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|edital|seleção|inscriç/i;
 
@@ -61,8 +62,21 @@ async function ingestSource(
   try {
     const resource = await fetchOfficialResource(listingUrl, source);
     result.pagesChecked += 1;
+    if (source.id === "ifc-integrated-technical-2027") {
+      budget.remaining -= 1;
+      const application = await fetchOfficialResource(IFC_APPLICATION_URL, source);
+      result.pagesChecked += 1;
+      const candidates = normalizeIfcIntegratedCourses(resource.body.toString("utf8"), application.body.toString("utf8"), source);
+      if (!candidates.length) throw new Error("Oferta ou inscrição IFC não confirmada");
+      const start = source.crawlLinkOffset ?? 0;
+      const selected = candidates.slice(start, start + (maxCandidates ?? 10));
+      result.discovered = selected;
+      result.nextListingIndex = 0;
+      result.nextLinkOffset = start + selected.length >= candidates.length ? 0 : start + selected.length;
+      return result;
+    }
     // An organizer's edition-specific announcement is itself the evidence page.
-    if (source.id === "braskem-internship-programme") {
+    if (source.id === "braskem-internship-programme" || source.id === "sed-novos-valores-2026") {
       const text = await detailText(resource.body, resource.contentType);
       const candidate = text ? normalizeOpportunity({ title: source.name, text, url: listingUrl, source }) : null;
       if (candidate) result.discovered.push(candidate);
@@ -157,7 +171,8 @@ async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
   if (!source) throw new Error("Fonte oficial inválida, não verificada ou inativa");
   const activeSources: OfficialSource[] = [source];
   for (const source of activeSources.sort((a, b) => b.priority - a.priority)) {
-    const rechecked = await recheckKnownOpportunities(source, Math.min(2, Math.max(0, budget.remaining - 2)), detailText);
+    const recheckLimit = source.id === "ifc-integrated-technical-2027" ? 100 : 2;
+    const rechecked = await recheckKnownOpportunities(source, Math.min(recheckLimit, Math.max(0, budget.remaining - 2)), detailText);
     budget.remaining -= rechecked.pagesChecked + rechecked.failed;
     const result = await ingestSource(source, budget, maxCandidates);
     result.pagesChecked += rechecked.pagesChecked;
