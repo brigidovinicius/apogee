@@ -59,6 +59,11 @@ dependendo de auditoria separada.
 As migrações `0005_courses_national_scope.sql`, `0006_crawl_progress.sql`,
 `0007_automatic_live_catalogue.sql` e `0008_opportunity_categories.sql` adicionam
 cursos, execução da coleta, catálogo ao vivo e as sete categorias de navegação.
+`0009_discovery_watchlist.sql` adiciona um banco privado de páginas observadas,
+links candidatos e edições anuais. O scheduler existente na VPS os consulta
+diariamente sem GitHub Actions agendado, serviço externo pago ou publicação
+automática dos candidatos. O painel `/admin/descoberta` permite cadastrar novas
+páginas e acompanhar a agenda; novas páginas começam pausadas.
 As novas fontes começam pendentes e inativas. Autorizar uma
 fonte exige conferir domínio, localização e condições de consulta; fichas válidas
 publicam automaticamente, sem revisão humana intermediária.

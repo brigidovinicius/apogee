@@ -20,13 +20,16 @@ async function run() {
     console.log(JSON.stringify({
       component: "radar-scheduler",
       startedAt,
-      status: report.failed > 0 ? "completed_with_warnings" : "completed",
+      status: report.failed > 0 || report.discovery?.failed ? "completed_with_warnings" : "completed",
       sourcesChecked: report.sourcesChecked,
       pagesChecked: report.pagesChecked,
       discovered: report.discovered,
       sentToReview: report.sentToReview,
       failed: report.failed,
       published: report.published,
+      discoveryTargetsChecked: report.discovery?.targetsChecked ?? 0,
+      discoveryNewLeads: report.discovery?.newLeads ?? 0,
+      discoveryFailed: report.discovery?.failed === true,
     }));
   } catch (error) {
     console.error(JSON.stringify({

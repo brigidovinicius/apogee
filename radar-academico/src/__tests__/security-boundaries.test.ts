@@ -1,6 +1,7 @@
 import { beforeEach, expect, it, vi } from "vitest";
 vi.mock("@/lib/db/client", () => ({ queryPublic: vi.fn(async () => ({ rows: [] })), withAdminTransaction: vi.fn() }));
 vi.mock("@/lib/ingestion", () => ({ runOfficialSourceIngestion: vi.fn(), runScheduledOfficialSourceIngestion: vi.fn() }));
+vi.mock("@/lib/discovery/daily-discovery", () => ({ runScheduledDiscovery: vi.fn(async () => ({ targetsChecked: 0, newLeads: 0, targets: [] })) }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn((url: string) => { throw new Error(url); }) }));
 vi.mock("@/lib/auth/admin", () => ({ isAdmin: vi.fn() }));
 vi.mock("@/lib/ingestion/import-csv", () => ({ parseManualCsv: vi.fn(() => { throw new Error("secret DB connection"); }) }));

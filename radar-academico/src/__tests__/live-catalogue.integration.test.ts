@@ -22,6 +22,8 @@ import { saveReviewItems } from "@/lib/ingestion/save-review-item";
 import { listLiveCatalogue } from "@/lib/db/live-catalogue";
 import { manageCatalogue } from "@/lib/official-sources/catalogue-management";
 import { claimDueOfficialSources, completeScheduledSource } from "@/lib/ingestion/official-source-registry";
+import { claimDueDiscoveryTargets, completeDiscoveryTarget } from "@/lib/discovery/watchlist";
+import { withAdminTransaction } from "@/lib/db/client";
 
 const source: OfficialSource = { id: "test-source", name: "Instituto", institutionName: "Instituto", institutionAcronym: "IF",
  sourceType: "federal_institute", baseUrl: "https://example.edu.br/", allowedDomains: ["example.edu.br"], allowedPathPrefixes: ["/"],
@@ -97,6 +99,19 @@ it("schedules rechecks of assisted imports without crawling empty manual sources
  expect(await claimDueOfficialSources(3)).toEqual([]);
  await state.db!.exec("update opportunities set next_source_check_at=null,deleted_at=now()");
  expect(await claimDueOfficialSources(3)).toEqual([]);
+});
+it("leases daily discovery targets and does not claim them again before the next day", async () => {
+ await withAdminTransaction((client) => client.query(
+  `insert into discovery_targets(id,name,organizer,kind,official_url,evidence_url)
+   values ('cnpq-chamadas-abertas','CNPq','CNPq','site','https://www.gov.br/cnpq/pt-br/chamadas/Busca_abertas','https://www.gov.br/cnpq/pt-br/chamadas/Busca_abertas')`,
+ ));
+ expect((await claimDueDiscoveryTargets(2)).map((item) => item.id)).toEqual(["cnpq-chamadas-abertas"]);
+ expect(await claimDueDiscoveryTargets(2)).toEqual([]);
+ await completeDiscoveryTarget("cnpq-chamadas-abertas", "checked");
+ const row = (await state.db!.query<{ next_day: boolean }>(
+  "select next_check_at >= now() + interval '23 hours' as next_day from discovery_targets where id='cnpq-chamadas-abertas'",
+ )).rows[0];
+ expect(row.next_day).toBe(true);
 });
 it("refreshes unchanged content without duplicating and applies a retification with history", async () => {
  await save(); const [first] = await listLiveCatalogue(true);

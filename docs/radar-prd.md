@@ -6,6 +6,8 @@ O [brief integral](radar-product-brief.md) preserva os requisitos, exemplos e re
 
 **Estado verificado em 14/10/2026:** as sete categorias, o catálogo comum e o gerenciamento administrativo estão publicados; o fluxo automático e criar/editar/excluir já foram exercitados em produção. A [medição de cobertura](radar-coverage-20261014.md) encontrou **1 de 1.000** oportunidades únicas, publicadas e vigentes. A expansão de fontes e fichas continua pendente; esta medição não constitui aceite da meta quantitativa.
 
+**Escopo da próxima expansão:** alterar somente o Radar Webscraper. A Apogee continua lendo automaticamente sua API de oportunidades publicadas; fontes observadas, candidatos de descoberta e eventos anuais permanecem privados no Radar e não entram na contagem de mil.
+
 ## Resultado esperado
 
 Descobrir oportunidades úteis a brasileiros, no Brasil e no exterior, com prioridade para tecnologia, ciência, empreendedorismo e aeroespacial. Apogee apresenta e gerencia; Radar Acadêmico é o serviço separado de descoberta, extração, persistência e atualização. O banco do Radar é a fonte única do catálogo. Uma oportunidade publicada aparece para o usuário e para o administrador; o administrador ganha criar, editar e excluir. Não existe fila de aprovação de fichas.
@@ -36,6 +38,14 @@ Formação e aprendizagem; Bolsas e apoios financeiros; Intercâmbios; Competiç
 A meta é **1.000 fichas únicas publicadas no catálogo ao vivo**, com inscrição aberta ou abertura futura confirmada, fonte oficial autorizada e ativa, evidência, prazo vigente ou fluxo contínuo explícito e última verificação registrada. Contar IDs únicos, sem somar aparições em várias categorias, registros encerrados, pendentes, históricos ou links de agregadores não confirmados. Medir diariamente o total e a distribuição por categoria e fonte. A meta não autoriza fabricar dados, repetir fichas ou enfraquecer critérios de publicação.
 
 Ampliar e auditar fontes em lotes, priorizando páginas oficiais com listagens e detalhes estruturados; desenvolver adaptadores de extração em português e outros idiomas; confirmar a elegibilidade de brasileiros nos programas internacionais; preservar a identidade de programa e edição; medir o rendimento real de cada fonte. Listas de terceiros servem à descoberta, com confirmação na página oficial antes de publicar. A capacidade atual ainda não sustenta mil fichas; o marco de 1.000 só pode ser declarado após medição do catálogo publicado.
+
+## Banco de descoberta e agenda anual
+
+O Radar mantém três camadas distintas: `official_sources` para fontes auditadas que podem alimentar o catálogo; `discovery_targets` para páginas oficiais de sites, programas e séries de eventos a observar; `discovery_leads` para links encontrados que ainda não foram convertidos em fonte ou ficha. `annual_event_editions` registra cada edição com data, situação e URL de evidência, inclusive edições passadas ou canceladas. Uma série anual não autoriza inferir data ou inscrição da próxima edição.
+
+O agendador da VPS consulta até duas páginas de descoberta vencidas por ciclo, respeita `robots.txt`, DNS público, domínio de origem, limite de 2 MiB por página e até 30 links candidatos por página. Cada alvo bem-sucedido volta a vencer após 24 horas; páginas bloqueadas ou indisponíveis também aguardam 24 horas. Links externos são registrados, não acessados automaticamente. Ao confirmar uma nova fonte, o administrador a cadastra e audita em `official_sources`; apenas fichas com inscrição e evidência válidas podem ser publicadas. A rotina não usa GitHub Actions agendado nem API paga de busca ou IA. Consome apenas capacidade da VPS já existente; tráfego e armazenamento precisam ser monitorados.
+
+A primeira agenda acompanha Startup Summit, The Developer’s Conference, NASA Space Apps Challenge, Startup Day, Semana Nacional de Ciência e Tecnologia, Feira do Empreendedor Sebrae-SP, Web Summit Rio, Rio Innovation Week e Campus Party Brasil. O cadastro também observa chamadas CNPq e Finep, programas Sebrae, eventos Sebrae e o Prêmio Sebrae Startups. Nomes e URLs foram checados em páginas oficiais ou de órgãos participantes em 14/10/2026. O cancelamento da CPBR18 em 2026 está registrado como cancelamento, não como oportunidade. Somente edições com datas explicitamente publicadas entram na agenda; o estado de inscrição de cada edição exige verificação separada. A prioridade editorial é ampliar fontes de alto rendimento e medir diariamente publicação real por fonte, sem transformar metas em fichas fictícias.
 
 ## Evolução de produto
 
