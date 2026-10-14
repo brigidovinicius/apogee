@@ -4,6 +4,8 @@ import { normalizeOpportunity } from "./normalize-opportunity";
 import { parseHtml } from "./parse-html";
 import { persistCandidate, lockSource, type StoredOpportunity } from "./persist-candidate";
 import type { OfficialSource, OpportunityCandidate } from "./types";
+import { IFC_APPLICATION_URL, normalizeIfcIntegratedCourses } from "./normalize-ifc-integrated";
+import { canonicalOpportunityKey } from "./revision-key";
 
 function fapespPostingId(url: string) {
   return /^https:\/\/(?:www\.)?fapesp\.br\/oportunidades\/[^/]+\/(\d+)\/$/.exec(url)?.[1] ?? null;
@@ -20,6 +22,25 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
     order by o.last_source_check_at nulls first,o.id limit $2`, [source.id, limit])).rows);
   let pagesChecked = 0, failed = 0, published = 0;
   let verifiedListingLinks: string[] | null = null;
+  let ifcCandidates: Map<string, OpportunityCandidate> | null = null;
+  if (source.id === "ifc-integrated-technical-2027" && rows.length) {
+    try {
+      const courses = await fetchOfficialResource(source.listingUrls[0], source);
+      pagesChecked += 1;
+      const application = await fetchOfficialResource(IFC_APPLICATION_URL, source);
+      pagesChecked += 1;
+      const candidates = normalizeIfcIntegratedCourses(courses.body.toString("utf8"), application.body.toString("utf8"), source);
+      if (!candidates.length) throw new Error("Oferta IFC não confirmada");
+      ifcCandidates = new Map(candidates.map((candidate) => [canonicalOpportunityKey(source.id, candidate.title, candidate.sourcePageUrl), candidate]));
+    } catch {
+      // A source failure is one failed check, even when many records share its URL.
+      await withAdminTransaction((client) => client.query(
+        "update opportunities set next_source_check_at=now()+interval '1 hour' where id=any($1::uuid[])",
+        [rows.map((row) => row.id)],
+      ));
+      return { pagesChecked, failed: 1, published: 0 };
+    }
+  }
   for (const row of rows) {
     try {
       // These sources can remove a call from the open index before its detail
@@ -46,7 +67,8 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
         stillListed = postingId ? verifiedListingLinks.some((url) => fapespPostingId(url) === postingId) : verifiedListingLinks.includes(row.source_page_url);
       }
       let candidate: OpportunityCandidate | null = null;
-      if (stillListed) {
+      if (ifcCandidates) candidate = ifcCandidates.get(String(row.canonical_key)) ?? null;
+      else if (stillListed) {
         const response = await fetchOfficialResource(row.source_page_url, source);
         pagesChecked += 1;
         const text = await readText(response.body, response.contentType);

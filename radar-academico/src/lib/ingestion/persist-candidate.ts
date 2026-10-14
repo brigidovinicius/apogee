@@ -31,6 +31,9 @@ export async function findCandidate(client: PoolClient, candidate: OpportunityCa
   if (result.rows.length > 1) throw new Error("Identidade ambígua; coleta não aplicada");
   if (result.rows[0]) return result.rows[0];
   if (candidate.extractionMethod === "manual_assisted") return undefined;
+  // The IFC catalogue is one official page with a distinct selection per course/campus.
+  // URL-only matching would collapse all 41 programmes into the first record.
+  if (candidate.officialSourceId === "ifc-integrated-technical-2027") return undefined;
   // A changed headline on the same detail page retains its identity, including tombstones.
   const byUrl = await client.query<StoredOpportunity>(`select o.* from opportunities o
     where o.official_source_id=$1 and exists (select 1 from opportunity_sources os

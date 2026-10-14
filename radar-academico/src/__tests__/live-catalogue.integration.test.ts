@@ -80,6 +80,28 @@ it("publishes automatically with real RLS and the same public/admin catalogue", 
  const row = (await state.db!.query("select human_verified_at,verification_method,next_source_check_at >= now() + interval '23 hours' as recheck_tomorrow from opportunities")).rows[0];
  expect(row).toEqual({ human_verified_at: null, verification_method: "automatic", recheck_tomorrow: true });
 });
+it("mantém cursos IFC distintos na mesma página oficial e respeita exclusões", async () => {
+ const ifcSource: OfficialSource = { ...source, id: "ifc-integrated-technical-2027", name: "IFC",
+  baseUrl: "https://ingresso.ifc.edu.br/", allowedDomains: ["ingresso.ifc.edu.br"],
+  allowedPathPrefixes: ["/seletivos/"], listingUrls: ["https://ingresso.ifc.edu.br/seletivos/cursos/"] };
+ await state.db!.query(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,audience_scope,geographic_scope,categories,priority,active,verification_status)
+ values ($1,$2,$2,'IFC','federal_institute',$3,$4,$5,$6,'html',$7,$8,$9,1,true,'verified')`,
+ [ifcSource.id, ifcSource.name, ifcSource.baseUrl, ifcSource.allowedDomains, ifcSource.allowedPathPrefixes, ifcSource.listingUrls, ifcSource.audienceScope, ifcSource.geographicScope, ["formacao"]]);
+ const url = ifcSource.listingUrls[0];
+ const proof = { source_url: url, excerpt: "Inscrições até 20/10/2099" };
+ const make = (title: string, contentHash: string) => candidate({ officialSourceId: ifcSource.id,
+  title, sourcePageUrl: url, contentHash, evidenceJson: { deadline_at: proof, opportunity_status: proof } });
+ const ingest = (items: OpportunityCandidate[]) => saveReviewItems(ifcSource, {
+  sourceId: ifcSource.id, pagesChecked: 1, discovered: items, ignored: 0, failed: 0, locationRejected: 0, warnings: [],
+ });
+ expect(await ingest([make("Informática — Blumenau", "one"), make("Mecatrônica — Blumenau", "two")])).toMatchObject({ created: 2, published: 2 });
+ expect((await listLiveCatalogue()).map((item) => item.title).sort()).toEqual(["Informática — Blumenau", "Mecatrônica — Blumenau"]);
+ expect(await ingest([make("Mecatrônica — Blumenau", "updated")])).toMatchObject({ created: 0, updated: 1 });
+ const id = (await state.db!.query<{id:string}>("select id from opportunities where title='Informática — Blumenau'")).rows[0].id;
+ await state.db!.query("update opportunities set deleted_at=now() where id=$1", [id]);
+ expect(await ingest([make("Informática — Blumenau", "later")])).toMatchObject({ created: 0, published: 0 });
+ expect((await listLiveCatalogue()).map((item) => item.title)).toEqual(["Mecatrônica — Blumenau"]);
+});
 it("preserves global eligibility without inventing country, state or city", async () => {
  await save(candidate({ geographicScopeKind: "global", countryCode: null }));
  expect((await listLiveCatalogue())[0]).toMatchObject({ geographicScopeKind: "global", countryCode: null, stateCode: null, cityName: null });
