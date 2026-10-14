@@ -1,0 +1,2072 @@
+{
+  "origin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+  "sha256": "738e45214594c2f393a9b6b105e9e94e55a39d914f7b7ee9faa39352f9523675",
+  "importedAt": "2026-10-14",
+  "sheet": "Fontes - 100",
+  "entries": [
+    {
+      "inputId": 1,
+      "name": "UFSC",
+      "candidateOfficialSite": "https://ufsc.br",
+      "candidateListingUrl": "https://noticias.ufsc.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "SC",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco SC: primeira onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 2,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-001-ufsc",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 2,
+      "name": "USP",
+      "candidateOfficialSite": "https://usp.br",
+      "candidateListingUrl": "https://jornal.usp.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "SP",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco SP: terceira onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 3,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-002-usp",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 3,
+      "name": "Unicamp",
+      "candidateOfficialSite": "https://unicamp.br",
+      "candidateListingUrl": "https://www.unicamp.br/unicamp/noticias",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "SP",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco SP: terceira onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 4,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-003-unicamp",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 4,
+      "name": "IFSC",
+      "candidateOfficialSite": "https://ifsc.edu.br",
+      "candidateListingUrl": "https://www.ifsc.edu.br/editais",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "SC",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco SC: primeira onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 5,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-004-ifsc",
+      "relatedSourceIds": [
+        "ifsc-technical-courses-2027"
+      ]
+    },
+    {
+      "inputId": 5,
+      "name": "UTFPR",
+      "candidateOfficialSite": "https://utfpr.edu.br",
+      "candidateListingUrl": "https://www.utfpr.edu.br/editais",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "PR",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco PR: segunda onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 6,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-005-utfpr",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 6,
+      "name": "UFRJ",
+      "candidateOfficialSite": "https://ufrj.br",
+      "candidateListingUrl": "https://ufrj.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 7,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-006-ufrj",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 7,
+      "name": "UFMG",
+      "candidateOfficialSite": "https://ufmg.br",
+      "candidateListingUrl": "https://www.ufmg.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 8,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-007-ufmg",
+      "relatedSourceIds": [
+        "ufmg-prpq-editais"
+      ]
+    },
+    {
+      "inputId": 8,
+      "name": "UFRGS",
+      "candidateOfficialSite": "https://ufrgs.br",
+      "candidateListingUrl": "https://www.ufrgs.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 9,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-008-ufrgs",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 9,
+      "name": "UFPR",
+      "candidateOfficialSite": "https://ufpr.br",
+      "candidateListingUrl": "https://www.ufpr.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "PR",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco PR: segunda onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 10,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-009-ufpr",
+      "relatedSourceIds": [
+        "ufpr-prpi-editais"
+      ]
+    },
+    {
+      "inputId": 10,
+      "name": "UFBA",
+      "candidateOfficialSite": "https://ufba.br",
+      "candidateListingUrl": "https://www.ufba.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 11,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-010-ufba",
+      "relatedSourceIds": [
+        "ufba-editais"
+      ]
+    },
+    {
+      "inputId": 11,
+      "name": "UnB",
+      "candidateOfficialSite": "https://unb.br",
+      "candidateListingUrl": "https://noticias.unb.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 12,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-011-unb",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 12,
+      "name": "UFPE",
+      "candidateOfficialSite": "https://ufpe.br",
+      "candidateListingUrl": "https://www.ufpe.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 13,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-012-ufpe",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 13,
+      "name": "UFC",
+      "candidateOfficialSite": "https://ufc.br",
+      "candidateListingUrl": "https://www.ufc.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 14,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-013-ufc",
+      "relatedSourceIds": [
+        "ufc-desporto-bolsas"
+      ]
+    },
+    {
+      "inputId": 14,
+      "name": "UFSCAR",
+      "candidateOfficialSite": "https://ufscar.br",
+      "candidateListingUrl": "https://www.ufscar.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "SP",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco SP: terceira onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 15,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-014-ufscar",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 15,
+      "name": "UNESP",
+      "candidateOfficialSite": "https://unesp.br",
+      "candidateListingUrl": "https://www.unesp.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "SP",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco SP: terceira onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 16,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-015-unesp",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 16,
+      "name": "UFSM",
+      "candidateOfficialSite": "https://ufsm.br",
+      "candidateListingUrl": "https://www.ufsm.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 17,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-016-ufsm",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 17,
+      "name": "UFPA",
+      "candidateOfficialSite": "https://ufpa.br",
+      "candidateListingUrl": "https://www.ufpa.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 18,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-017-ufpa",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 18,
+      "name": "IFRS",
+      "candidateOfficialSite": "https://ifrs.edu.br",
+      "candidateListingUrl": "https://ifrs.edu.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 19,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-018-ifrs",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 19,
+      "name": "IFSP",
+      "candidateOfficialSite": "https://ifsp.edu.br",
+      "candidateListingUrl": "https://www.ifsp.edu.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "SP",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco SP: terceira onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 20,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-019-ifsp",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 20,
+      "name": "IFC",
+      "candidateOfficialSite": "https://ifc.edu.br",
+      "candidateListingUrl": "https://ifc.edu.br",
+      "candidateCategories": [
+        "Formação e aprendizagem",
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "SC",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco SC: primeira onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 21,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-020-ifc",
+      "relatedSourceIds": [
+        "ifc-integrated-technical-2027"
+      ]
+    },
+    {
+      "inputId": 21,
+      "name": "CAPES",
+      "candidateOfficialSite": "https://gov.br/capes",
+      "candidateListingUrl": "https://www.gov.br/capes/pt-br/assuntos/editais-e-resultados",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 22,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-021-capes",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 22,
+      "name": "CNPq",
+      "candidateOfficialSite": "https://gov.br/cnpq",
+      "candidateListingUrl": "https://www.gov.br/cnpq/pt-br/assuntos/chamadas-publicas",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 23,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-022-cnpq",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 23,
+      "name": "FAPESP",
+      "candidateOfficialSite": "https://fapesp.br",
+      "candidateListingUrl": "https://fapesp.br/oportunidades",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "SP",
+      "inputPriority": "P0",
+      "inputValidation": "Evidência no Radar Apogee; URL específica não testada",
+      "inputNotes": "Exemplo confirmado no catálogo Apogee; validar a URL de coleta e a oportunidade na origem. | Foco SP: terceira onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 24,
+      "status": "already_registered",
+      "targetId": null,
+      "existingKind": "official_source",
+      "existingId": "fapesp-open-fellowships",
+      "relatedSourceIds": [
+        "fapesp-open-fellowships"
+      ]
+    },
+    {
+      "inputId": 24,
+      "name": "FAPESC",
+      "candidateOfficialSite": "https://fapesc.sc.gov.br",
+      "candidateListingUrl": "https://fapesc.sc.gov.br",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "SC",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco SC: primeira onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 25,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-024-fapesc",
+      "relatedSourceIds": [
+        "cnpq-chamadas-abertas-2026",
+        "minc-intercambio-audiovisual-2026"
+      ]
+    },
+    {
+      "inputId": 25,
+      "name": "FINEP",
+      "candidateOfficialSite": "https://finep.gov.br",
+      "candidateListingUrl": "https://www.finep.gov.br/chamadas-publicas",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 26,
+      "status": "already_registered",
+      "targetId": null,
+      "existingKind": "discovery_target",
+      "existingId": "finep-chamadas",
+      "relatedSourceIds": [
+        "cnpq-chamadas-abertas-2026",
+        "minc-intercambio-audiovisual-2026"
+      ]
+    },
+    {
+      "inputId": 26,
+      "name": "FAPERJ",
+      "candidateOfficialSite": "https://faperj.br",
+      "candidateListingUrl": "https://www.faperj.br",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 27,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-026-faperj",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 27,
+      "name": "FAPEMIG",
+      "candidateOfficialSite": "https://fapemig.br",
+      "candidateListingUrl": "https://fapemig.br",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 28,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-027-fapemig",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 28,
+      "name": "FACEPE",
+      "candidateOfficialSite": "https://facepe.br",
+      "candidateListingUrl": "https://www.facepe.br",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 29,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-028-facepe",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 29,
+      "name": "FAPESB",
+      "candidateOfficialSite": "https://fapesb.ba.gov.br",
+      "candidateListingUrl": "https://www.fapesb.ba.gov.br",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 30,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-029-fapesb",
+      "relatedSourceIds": [
+        "cnpq-chamadas-abertas-2026",
+        "minc-intercambio-audiovisual-2026"
+      ]
+    },
+    {
+      "inputId": 30,
+      "name": "FAPDF",
+      "candidateOfficialSite": "https://fap.df.gov.br",
+      "candidateListingUrl": "https://www.fap.df.gov.br",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 31,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-030-fapdf",
+      "relatedSourceIds": [
+        "cnpq-chamadas-abertas-2026",
+        "minc-intercambio-audiovisual-2026"
+      ]
+    },
+    {
+      "inputId": 31,
+      "name": "FAPES",
+      "candidateOfficialSite": "https://fapes.es.gov.br",
+      "candidateListingUrl": "https://fapes.es.gov.br",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 32,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-031-fapes",
+      "relatedSourceIds": [
+        "cnpq-chamadas-abertas-2026",
+        "minc-intercambio-audiovisual-2026"
+      ]
+    },
+    {
+      "inputId": 32,
+      "name": "Fundação Araucária",
+      "candidateOfficialSite": "https://fundacaoaraucaria.org.br",
+      "candidateListingUrl": "https://www.fundacaoaraucaria.org.br",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "PR",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco PR: segunda onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 33,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-032-fundacao-araucaria",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 33,
+      "name": "FAPEG",
+      "candidateOfficialSite": "https://goias.gov.br/fapeg",
+      "candidateListingUrl": "https://goias.gov.br/fapeg",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 34,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-033-fapeg",
+      "relatedSourceIds": [
+        "cnpq-chamadas-abertas-2026",
+        "minc-intercambio-audiovisual-2026"
+      ]
+    },
+    {
+      "inputId": 34,
+      "name": "FAPEAM",
+      "candidateOfficialSite": "https://fapeam.am.gov.br",
+      "candidateListingUrl": "https://www.fapeam.am.gov.br",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 35,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-034-fapeam",
+      "relatedSourceIds": [
+        "cnpq-chamadas-abertas-2026",
+        "minc-intercambio-audiovisual-2026"
+      ]
+    },
+    {
+      "inputId": 35,
+      "name": "CONFAP",
+      "candidateOfficialSite": "https://confap.org.br",
+      "candidateListingUrl": "https://confap.org.br",
+      "candidateCategories": [
+        "Bolsas e apoios financeiros",
+        "Pesquisa e inovação"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 36,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-035-confap",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 36,
+      "name": "Sebrae",
+      "candidateOfficialSite": "https://sebrae.com.br",
+      "candidateListingUrl": "https://sebrae.com.br/sites/PortalSebrae/cursosonline",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 37,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-036-sebrae",
+      "restriction": "Cursos permanentes e módulos sem inscrição ou vagas não contam na meta; validar turma ou programa elegível.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 37,
+      "name": "SENAI",
+      "candidateOfficialSite": "https://senai.br",
+      "candidateListingUrl": "https://www.senai.br",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 38,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-037-senai",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 38,
+      "name": "SENAC",
+      "candidateOfficialSite": "https://senac.br",
+      "candidateListingUrl": "https://www.senac.br",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Evidência no Radar Apogee; URL específica não testada",
+      "inputNotes": "Exemplo confirmado no catálogo Apogee; validar a URL de coleta e a oportunidade na origem. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 39,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-038-senac",
+      "relatedSourceIds": [
+        "senac-sc-psg-open-cohorts"
+      ]
+    },
+    {
+      "inputId": 39,
+      "name": "Fundação Bradesco Escola Virtual",
+      "candidateOfficialSite": "https://ev.org.br",
+      "candidateListingUrl": "https://www.ev.org.br/cursos",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 40,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-039-fundacao-bradesco-escola-virtual",
+      "restriction": "Cursos permanentes e módulos sem inscrição ou vagas não contam na meta; validar turma ou programa elegível.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 40,
+      "name": "Escola Virtual de Governo ENAP",
+      "candidateOfficialSite": "https://escolavirtual.gov.br",
+      "candidateListingUrl": "https://www.escolavirtual.gov.br/catalogo",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 41,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-040-escola-virtual-de-governo-enap",
+      "restriction": "Cursos permanentes e módulos sem inscrição ou vagas não contam na meta; validar turma ou programa elegível.",
+      "relatedSourceIds": [
+        "cnpq-chamadas-abertas-2026",
+        "minc-intercambio-audiovisual-2026"
+      ]
+    },
+    {
+      "inputId": 41,
+      "name": "Instituto Federal Virtual IFSC",
+      "candidateOfficialSite": "https://ifsc.edu.br",
+      "candidateListingUrl": "https://www.ifsc.edu.br",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 42,
+      "status": "duplicate_institution",
+      "targetId": null,
+      "duplicateOfInputId": 4,
+      "relatedSourceIds": [
+        "ifsc-technical-courses-2027"
+      ]
+    },
+    {
+      "inputId": 42,
+      "name": "SENAR",
+      "candidateOfficialSite": "https://senar.org.br",
+      "candidateListingUrl": "https://ead.senar.org.br",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 43,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-042-senar",
+      "restriction": "Cursos permanentes e módulos sem inscrição ou vagas não contam na meta; validar turma ou programa elegível.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 43,
+      "name": "SEST SENAT",
+      "candidateOfficialSite": "https://sestsenat.org.br",
+      "candidateListingUrl": "https://digital.sestsenat.org.br",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 44,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-043-sest-senat",
+      "restriction": "Cursos permanentes e módulos sem inscrição ou vagas não contam na meta; validar turma ou programa elegível.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 44,
+      "name": "Escola do Trabalhador 4.0",
+      "candidateOfficialSite": "https://gov.br",
+      "candidateListingUrl": "https://www.gov.br/trabalho-e-emprego",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 45,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-044-escola-do-trabalhador-4-0",
+      "restriction": "Cursos permanentes e módulos sem inscrição ou vagas não contam na meta; validar turma ou programa elegível.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 45,
+      "name": "Escola Virtual Fundação Getulio Vargas",
+      "candidateOfficialSite": "https://fgv.br",
+      "candidateListingUrl": "https://educacao-executiva.fgv.br/cursos/gratuitos",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 46,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-045-escola-virtual-fundacao-getulio-vargas",
+      "restriction": "Cursos permanentes e módulos sem inscrição ou vagas não contam na meta; validar turma ou programa elegível.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 46,
+      "name": "IFMG",
+      "candidateOfficialSite": "https://ifmg.edu.br",
+      "candidateListingUrl": "https://www.ifmg.edu.br",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 47,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-046-ifmg",
+      "relatedSourceIds": [
+        "ifmg-formiga-energife-2026"
+      ]
+    },
+    {
+      "inputId": 47,
+      "name": "IFES",
+      "candidateOfficialSite": "https://ifes.edu.br",
+      "candidateListingUrl": "https://www.ifes.edu.br",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 48,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-047-ifes",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 48,
+      "name": "IFRN",
+      "candidateOfficialSite": "https://ifrn.edu.br",
+      "candidateListingUrl": "https://portal.ifrn.edu.br",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 49,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-048-ifrn",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 49,
+      "name": "IFBA",
+      "candidateOfficialSite": "https://ifba.edu.br",
+      "candidateListingUrl": "https://portal.ifba.edu.br",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 50,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-049-ifba",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 50,
+      "name": "IFSUL",
+      "candidateOfficialSite": "https://ifsul.edu.br",
+      "candidateListingUrl": "https://www.ifsul.edu.br",
+      "candidateCategories": [
+        "Formação e aprendizagem"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 51,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-050-ifsul",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 51,
+      "name": "Erasmus+",
+      "candidateOfficialSite": "https://erasmus-plus.ec.europa.eu",
+      "candidateListingUrl": "https://erasmus-plus.ec.europa.eu/opportunities",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 52,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-051-erasmus",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 52,
+      "name": "DAAD",
+      "candidateOfficialSite": "https://daad.de",
+      "candidateListingUrl": "https://www.daad.de/en/studying-in-germany/scholarships/daad-scholarship-database/",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 53,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-052-daad",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 53,
+      "name": "Fulbright Brasil",
+      "candidateOfficialSite": "https://fulbright.org.br",
+      "candidateListingUrl": "https://fulbright.org.br/bolsas/",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 54,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-053-fulbright-brasil",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 54,
+      "name": "Campus France",
+      "candidateOfficialSite": "https://campusfrance.org",
+      "candidateListingUrl": "https://www.campusfrance.org/en/bursaries-foreign-students",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 55,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-054-campus-france",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 55,
+      "name": "Chevening",
+      "candidateOfficialSite": "https://chevening.org",
+      "candidateListingUrl": "https://www.chevening.org/scholarships/",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 56,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-055-chevening",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 56,
+      "name": "British Council",
+      "candidateOfficialSite": "https://britishcouncil.org",
+      "candidateListingUrl": "https://www.britishcouncil.org/study-work-abroad",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 57,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-056-british-council",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 57,
+      "name": "EducationUSA",
+      "candidateOfficialSite": "https://educationusa.state.gov",
+      "candidateListingUrl": "https://educationusa.state.gov",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 58,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-057-educationusa",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 58,
+      "name": "MEXT Japão",
+      "candidateOfficialSite": "https://studyinjapan.go.jp",
+      "candidateListingUrl": "https://www.studyinjapan.go.jp/en/planning/scholarships/",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 59,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-058-mext-japao",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 59,
+      "name": "OEA Bolsas",
+      "candidateOfficialSite": "https://oas.org",
+      "candidateListingUrl": "https://www.oas.org/en/scholarships/",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 60,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-059-oea-bolsas",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 60,
+      "name": "Swiss Government Excellence Scholarships",
+      "candidateOfficialSite": "https://sbfi.admin.ch",
+      "candidateListingUrl": "https://www.sbfi.admin.ch",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 61,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-060-swiss-government-excellence-scholarships",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 61,
+      "name": "EURAXESS",
+      "candidateOfficialSite": "https://euraxess.ec.europa.eu",
+      "candidateListingUrl": "https://euraxess.ec.europa.eu/jobs",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 62,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-061-euraxess",
+      "restriction": "Verificar apenas programas próprios ou coorganizados; listagens de vagas de outros empregadores não são fonte oficial desses empregadores.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 62,
+      "name": "Marie Skłodowska-Curie Actions",
+      "candidateOfficialSite": "https://marie-sklodowska-curie-actions.ec.europa.eu",
+      "candidateListingUrl": "https://marie-sklodowska-curie-actions.ec.europa.eu/actions",
+      "candidateCategories": [
+        "Intercâmbios",
+        "Bolsas e apoios financeiros"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 63,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-062-marie-skodowska-curie-actions",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 63,
+      "name": "Sebrae Startups",
+      "candidateOfficialSite": "https://sebrae.com.br",
+      "candidateListingUrl": "https://sebrae.com.br/sites/PortalSebrae/startups",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 64,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-063-sebrae-startups",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 64,
+      "name": "Startup Weekend Techstars",
+      "candidateOfficialSite": "https://techstars.com",
+      "candidateListingUrl": "https://www.techstars.com/communities/startup-weekend",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 65,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-064-startup-weekend-techstars",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 65,
+      "name": "Techstars Accelerator",
+      "candidateOfficialSite": "https://techstars.com",
+      "candidateListingUrl": "https://www.techstars.com/accelerators",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 66,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-065-techstars-accelerator",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 66,
+      "name": "Y Combinator",
+      "candidateOfficialSite": "https://ycombinator.com",
+      "candidateListingUrl": "https://www.ycombinator.com/apply",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 67,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-066-y-combinator",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 67,
+      "name": "Startup Chile",
+      "candidateOfficialSite": "https://startupchile.org",
+      "candidateListingUrl": "https://startupchile.org",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 68,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-067-startup-chile",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 68,
+      "name": "InovAtiva Brasil",
+      "candidateOfficialSite": "https://inovativa.online",
+      "candidateListingUrl": "https://www.inovativa.online",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 69,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-068-inovativa-brasil",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 69,
+      "name": "FINEP Startup",
+      "candidateOfficialSite": "https://finep.gov.br",
+      "candidateListingUrl": "https://www.finep.gov.br",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 70,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-069-finep-startup",
+      "relatedSourceIds": [
+        "cnpq-chamadas-abertas-2026",
+        "minc-intercambio-audiovisual-2026"
+      ]
+    },
+    {
+      "inputId": 70,
+      "name": "Centelha",
+      "candidateOfficialSite": "https://programacentelha.com.br",
+      "candidateListingUrl": "https://programacentelha.com.br",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 71,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-070-centelha",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 71,
+      "name": "Inovabra",
+      "candidateOfficialSite": "https://inovabra.com.br",
+      "candidateListingUrl": "https://inovabra.com.br",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 72,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-071-inovabra",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 72,
+      "name": "Google for Startups",
+      "candidateOfficialSite": "https://startup.google.com",
+      "candidateListingUrl": "https://startup.google.com/programs/",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 73,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-072-google-for-startups",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 73,
+      "name": "Microsoft for Startups",
+      "candidateOfficialSite": "https://microsoft.com",
+      "candidateListingUrl": "https://www.microsoft.com/en-us/startups",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 74,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-073-microsoft-for-startups",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 74,
+      "name": "Endeavor Brasil",
+      "candidateOfficialSite": "https://endeavor.org.br",
+      "candidateListingUrl": "https://endeavor.org.br",
+      "candidateCategories": [
+        "Pesquisa e inovação",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 75,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-074-endeavor-brasil",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 75,
+      "name": "TDC The Developers Conference",
+      "candidateOfficialSite": "https://thedevconf.com",
+      "candidateListingUrl": "https://thedevconf.com",
+      "candidateCategories": [
+        "Competições e hackathons",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 76,
+      "status": "already_registered",
+      "targetId": null,
+      "existingKind": "discovery_target",
+      "existingId": "tdc",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 76,
+      "name": "Campus Party Brasil",
+      "candidateOfficialSite": "https://brasil.campus-party.org",
+      "candidateListingUrl": "https://brasil.campus-party.org",
+      "candidateCategories": [
+        "Competições e hackathons",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 77,
+      "status": "already_registered",
+      "targetId": null,
+      "existingKind": "discovery_target",
+      "existingId": "campus-party-brasil",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 77,
+      "name": "NASA Space Apps Challenge",
+      "candidateOfficialSite": "https://spaceappschallenge.org",
+      "candidateListingUrl": "https://www.spaceappschallenge.org",
+      "candidateCategories": [
+        "Competições e hackathons",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 78,
+      "status": "already_registered",
+      "targetId": null,
+      "existingKind": "discovery_target",
+      "existingId": "nasa-space-apps",
+      "relatedSourceIds": [
+        "nasa-space-apps-2026"
+      ]
+    },
+    {
+      "inputId": 78,
+      "name": "HackMIT",
+      "candidateOfficialSite": "https://hackmit.org",
+      "candidateListingUrl": "https://hackmit.org",
+      "candidateCategories": [
+        "Competições e hackathons",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 79,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-078-hackmit",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 79,
+      "name": "HackHarvard",
+      "candidateOfficialSite": "https://hackharvard.io",
+      "candidateListingUrl": "https://hackharvard.io",
+      "candidateCategories": [
+        "Competições e hackathons",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 80,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-079-hackharvard",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 80,
+      "name": "ETHGlobal",
+      "candidateOfficialSite": "https://ethglobal.com",
+      "candidateListingUrl": "https://ethglobal.com/events",
+      "candidateCategories": [
+        "Competições e hackathons",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 81,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-080-ethglobal",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 81,
+      "name": "Devpost",
+      "candidateOfficialSite": "https://devpost.com",
+      "candidateListingUrl": "https://devpost.com/hackathons",
+      "candidateCategories": [
+        "Competições e hackathons",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 82,
+      "status": "excluded_aggregator",
+      "targetId": null,
+      "reason": "Devpost reúne hackathons de terceiros; procurar diretamente as páginas oficiais de cada organizador.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 82,
+      "name": "Google Summer of Code",
+      "candidateOfficialSite": "https://summerofcode.withgoogle.com",
+      "candidateListingUrl": "https://summerofcode.withgoogle.com",
+      "candidateCategories": [
+        "Competições e hackathons",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 83,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-082-google-summer-of-code",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 83,
+      "name": "Google Developer Groups",
+      "candidateOfficialSite": "https://developers.google.com",
+      "candidateListingUrl": "https://developers.google.com/community/gdg",
+      "candidateCategories": [
+        "Competições e hackathons",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 84,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-083-google-developer-groups",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 84,
+      "name": "Microsoft Imagine Cup",
+      "candidateOfficialSite": "https://imaginecup.microsoft.com",
+      "candidateListingUrl": "https://imaginecup.microsoft.com",
+      "candidateCategories": [
+        "Competições e hackathons",
+        "Eventos e comunidades"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 85,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-084-microsoft-imagine-cup",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 85,
+      "name": "CIEE",
+      "candidateOfficialSite": "https://ciee.org.br",
+      "candidateListingUrl": "https://portal.ciee.org.br",
+      "candidateCategories": [
+        "Carreira e experiência"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 86,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-085-ciee",
+      "restriction": "Verificar apenas programas próprios ou coorganizados; listagens de vagas de outros empregadores não são fonte oficial desses empregadores.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 86,
+      "name": "IEL",
+      "candidateOfficialSite": "https://iel.org.br",
+      "candidateListingUrl": "https://iel.org.br",
+      "candidateCategories": [
+        "Carreira e experiência"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 87,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-086-iel",
+      "restriction": "Verificar apenas programas próprios ou coorganizados; listagens de vagas de outros empregadores não são fonte oficial desses empregadores.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 87,
+      "name": "Nube",
+      "candidateOfficialSite": "https://nube.com.br",
+      "candidateListingUrl": "https://www.nube.com.br",
+      "candidateCategories": [
+        "Carreira e experiência"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Nacional / não aplicável",
+      "inputPriority": "P1",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Fonte nacional: elevar a P0 se oportunidade acessível em SC, PR ou SP.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 88,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-087-nube",
+      "restriction": "Verificar apenas programas próprios ou coorganizados; listagens de vagas de outros empregadores não são fonte oficial desses empregadores.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 88,
+      "name": "CIEE SC",
+      "candidateOfficialSite": "https://cieesc.org.br",
+      "candidateListingUrl": "https://www.cieesc.org.br",
+      "candidateCategories": [
+        "Carreira e experiência"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "SC",
+      "inputPriority": "P0",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Foco SC: primeira onda de integração.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 89,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-088-ciee-sc",
+      "restriction": "Verificar apenas programas próprios ou coorganizados; listagens de vagas de outros empregadores não são fonte oficial desses empregadores.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 89,
+      "name": "Fundação Mudes",
+      "candidateOfficialSite": "https://mudes.org.br",
+      "candidateListingUrl": "https://www.mudes.org.br",
+      "candidateCategories": [
+        "Carreira e experiência"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 90,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-089-fundacao-mudes",
+      "restriction": "Verificar apenas programas próprios ou coorganizados; listagens de vagas de outros empregadores não são fonte oficial desses empregadores.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 90,
+      "name": "ESPRO",
+      "candidateOfficialSite": "https://espro.org.br",
+      "candidateListingUrl": "https://www.espro.org.br",
+      "candidateCategories": [
+        "Carreira e experiência"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 91,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-090-espro",
+      "restriction": "Verificar apenas programas próprios ou coorganizados; listagens de vagas de outros empregadores não são fonte oficial desses empregadores.",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 91,
+      "name": "EJUD TST Estágio",
+      "candidateOfficialSite": "https://tst.jus.br",
+      "candidateListingUrl": "https://www.tst.jus.br",
+      "candidateCategories": [
+        "Carreira e experiência"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 92,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-091-ejud-tst-estagio",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 92,
+      "name": "ONU Careers",
+      "candidateOfficialSite": "https://careers.un.org",
+      "candidateListingUrl": "https://careers.un.org",
+      "candidateCategories": [
+        "Carreira e experiência"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 93,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-092-onu-careers",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 93,
+      "name": "UNICEF Careers",
+      "candidateOfficialSite": "https://jobs.unicef.org",
+      "candidateListingUrl": "https://jobs.unicef.org",
+      "candidateCategories": [
+        "Carreira e experiência"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 94,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-093-unicef-careers",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 94,
+      "name": "World Bank Jobs",
+      "candidateOfficialSite": "https://worldbank.org",
+      "candidateListingUrl": "https://www.worldbank.org/en/about/careers",
+      "candidateCategories": [
+        "Carreira e experiência"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 95,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-094-world-bank-jobs",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 95,
+      "name": "Prêmio Jovem Cientista CNPq",
+      "candidateOfficialSite": "https://jovemcientista.cnpq.br",
+      "candidateListingUrl": "https://jovemcientista.cnpq.br",
+      "candidateCategories": [
+        "Competições e hackathons"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 96,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-095-premio-jovem-cientista-cnpq",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 96,
+      "name": "Olimpíada Brasileira de Matemática OBMEP",
+      "candidateOfficialSite": "https://obmep.org.br",
+      "candidateListingUrl": "https://www.obmep.org.br",
+      "candidateCategories": [
+        "Competições e hackathons"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 97,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-096-olimpiada-brasileira-de-matematica-obmep",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 97,
+      "name": "Olimpíada Brasileira de Informática OBI",
+      "candidateOfficialSite": "https://olimpiada.ic.unicamp.br",
+      "candidateListingUrl": "https://olimpiada.ic.unicamp.br",
+      "candidateCategories": [
+        "Competições e hackathons"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 98,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-097-olimpiada-brasileira-de-informatica-obi",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 98,
+      "name": "Prêmio Fundação Banco do Brasil de Tecnologia Social",
+      "candidateOfficialSite": "https://fbb.org.br",
+      "candidateListingUrl": "https://fbb.org.br",
+      "candidateCategories": [
+        "Competições e hackathons"
+      ],
+      "reportedCountry": "Brasil",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 99,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-098-premio-fundacao-banco-do-brasil-de-tecnologia-social",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 99,
+      "name": "Hult Prize",
+      "candidateOfficialSite": "https://hultprize.org",
+      "candidateListingUrl": "https://www.hultprize.org",
+      "candidateCategories": [
+        "Competições e hackathons"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 100,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-099-hult-prize",
+      "relatedSourceIds": []
+    },
+    {
+      "inputId": 100,
+      "name": "James Dyson Award",
+      "candidateOfficialSite": "https://jamesdysonaward.org",
+      "candidateListingUrl": "https://www.jamesdysonaward.org",
+      "candidateCategories": [
+        "Competições e hackathons"
+      ],
+      "reportedCountry": "Internacional / exterior",
+      "reportedState": "Não determinado",
+      "inputPriority": "P2",
+      "inputValidation": "Candidata — URL não verificada individualmente",
+      "inputNotes": "URL candidata baseada em rota conhecida; não houve teste HTTP individual, inspeção de edital, robots.txt ou API. Não integrar sem validação. | Prioridade geográfica depende da elegibilidade de cada oportunidade.",
+      "importOrigin": "radar_apogee_100_fontes_prioridade_SC_PR_SP.xlsx",
+      "importRow": 101,
+      "status": "pending_official_audit",
+      "targetId": "xlsx-20261014-100-james-dyson-award",
+      "relatedSourceIds": []
+    }
+  ]
+}
