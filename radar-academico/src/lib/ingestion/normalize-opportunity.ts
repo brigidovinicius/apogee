@@ -14,8 +14,10 @@ import { normalizeFapesp } from "./normalize-fapesp";
 import { normalizeBraskemInternship, normalizeSjcInternship } from "./normalize-internships";
 import { normalizeNovosValores } from "./normalize-novos-valores";
 import { normalizeUfscExchange } from "./normalize-sc-priority";
+import { eventStartFromText } from "./event-start";
+import { categoriesFromEvidence } from "./categories";
 
-const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|seleção|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|pesquisa|extensão|inovação|empreendedorismo/i;
+const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|seleção|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|pesquisa|extensão|inovação|empreendedorismo|evento|palestra|seminário|encontro/i;
 const excluded = /licitaç|pregão|compra pública|concurso público|processo administrativo/i;
 
 function benefit(text: string): BenefitType {
@@ -54,11 +56,17 @@ export function normalizeOpportunity(input: {
   const applicationRoute = classifyApplicationRoute(combined);
   const deadline = detectDeadline(combined);
 
-  if (applicationRoute === "unclear" || deadline.precision === "not_informed") return null;
+  const event = input.source.categories.includes("eventos") && /evento|palestra|seminário|encontro|workshop|hackathon|feira/i.test(input.title);
+  const eventStartsAt = event ? eventStartFromText(combined) : null;
+  const status = detectOpportunityStatus(combined);
+  // Missing is distinct from a malformed/ambiguous deadline stated by the organizer.
+  const unknownEventDeadline = deadline.precision === "not_informed" && event && eventStartsAt && status === "open" &&
+    !/inscriç(?:ão|ões).{0,60}(?:até|prazo final)|prazo (?:final|de inscriç)/i.test(combined);
+  if (applicationRoute === "unclear" || deadline.precision === "not_informed" && !unknownEventDeadline) return null;
 
   const statusSignal = detectSuspension(combined);
   // Include normalization revision so corrected extraction receives a new audit event.
-  const contentHash = crypto.createHash("sha256").update(`v2\n${combined}`).digest("hex");
+  const contentHash = crypto.createHash("sha256").update(`v3\n${combined}`).digest("hex");
   const isCourse = /curso|qualificaç|capacitaç|oficina|formação profissional/i.test(input.title);
   const nationallyEligible = normalizedLocation.location.stateCode === null &&
     input.source.geographicScope.includes("Brasil") &&
@@ -71,6 +79,7 @@ export function normalizeOpportunity(input: {
     applicantType,
     applicationRoute,
     benefitType: benefit(combined),
+    ...(event ? { categories:[...new Set([...categoriesFromEvidence(benefit(combined),isCourse),"eventos" as const])], eventStartsAt } : {}),
     isCourse,
     nationallyEligible,
     deadlineAt: deadline.deadlineAt,
@@ -80,8 +89,9 @@ export function normalizeOpportunity(input: {
     stateCode: normalizedLocation.location.stateCode,
     cityName: normalizedLocation.location.cityName,
     reviewStatus: "needs_information",
-    opportunityStatus: statusSignal ?? detectOpportunityStatus(combined),
-    evidenceJson: { ...generateEvidence(input.url, combined), opportunity_status: { source_url: input.url, excerpt: combined.slice(Math.max(0, combined.search(/inscriç(?:ão|ões)|suspens|cancelad/i)), Math.max(0, combined.search(/inscriç(?:ão|ões)|suspens|cancelad/i)) + 1000) } },
+    opportunityStatus: statusSignal ?? status,
+    evidenceJson: { ...generateEvidence(input.url, combined), opportunity_status: { source_url: input.url, excerpt: combined.slice(Math.max(0, combined.search(/inscriç(?:ão|ões)|suspens|cancelad/i)), Math.max(0, combined.search(/inscriç(?:ão|ões)|suspens|cancelad/i)) + 1000) },
+      ...(eventStartsAt ? { event_start:{source_url:input.url,excerpt:combined.slice(0,1000)},registration_availability:{source_url:input.url,excerpt:combined.slice(Math.max(0,combined.search(/inscriç(?:ão|ões)/i)),Math.max(0,combined.search(/inscriç(?:ão|ões)/i))+1000)} } : {}) },
     extractionMethod: input.source.extractionMode,
     contentHash,
     hasRetification: Boolean(detectRetification(combined)),

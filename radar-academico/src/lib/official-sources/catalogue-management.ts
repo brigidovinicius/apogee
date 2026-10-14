@@ -41,7 +41,7 @@ export function parseCatalogueCandidate(input: Record<string, unknown>): Opportu
     categories: input.categories,
     opportunityStatus: choice(input, "opportunityStatus", ["open", "upcoming"]) as OpportunityCandidate["opportunityStatus"],
     eventStartsAt,
-    deadlinePrecision: choice(input, "deadlinePrecision", ["date_only", "exact_datetime", "continuous_flow"]) as OpportunityCandidate["deadlinePrecision"],
+    deadlinePrecision: choice(input, "deadlinePrecision", ["date_only", "exact_datetime", "continuous_flow", "not_informed"]) as OpportunityCandidate["deadlinePrecision"],
     deadlineAt: input.deadlineAt === null || input.deadlineAt === "" ? undefined : text(input, "deadlineAt", 50),
     requirementsText: typeof input.requirementsText === "string" && !input.requirementsText.trim() ? "Não informado na fonte oficial." : text(input, "requirementsText", 6000),
     amountText: typeof input.amountText === "string" && !input.amountText.trim() ? "Não informado na fonte oficial." : text(input, "amountText", 2000),
@@ -53,6 +53,7 @@ export function parseCatalogueCandidate(input: Record<string, unknown>): Opportu
   };
   if (candidate.eventStartsAt && !candidate.categories?.includes("eventos")) throw new CatalogueError("Início do evento exige a categoria Eventos e comunidades");
   if (candidate.eventStartsAt) candidate.evidenceJson.event_start = evidence;
+  if (candidate.deadlinePrecision === "not_informed") candidate.evidenceJson.registration_availability = evidence;
   if (candidate.deadlinePrecision === "date_only" && !/^\d{4}-\d{2}-\d{2}$/.test(candidate.deadlineAt ?? "")) throw new CatalogueError("Informe a data no formato AAAA-MM-DD");
   if (candidate.deadlinePrecision === "exact_datetime" && !/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(candidate.deadlineAt ?? "")) throw new CatalogueError("Horário precisa incluir fuso");
   candidate.contentHash = crypto.createHash("sha256").update(JSON.stringify(candidate)).digest("hex");

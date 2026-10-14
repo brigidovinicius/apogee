@@ -39,6 +39,7 @@ function isHttpsUrl(value: string) {
 }
 
 function deadlineLabel(deadline: string | null, precision: string) {
+  if (precision === "not_informed") return "Prazo não informado";
   if (precision === "continuous_flow") return "Inscrições em fluxo contínuo";
   if (!deadline) return "Prazo no edital oficial";
   const dateOnlyValue = dateOnly(deadline, precision);
@@ -112,7 +113,10 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
   const verifiedAt = dateOnly(value.verificationMethod === "admin" ? stringValue(value.verifiedAt) ?? lastCheckedAt : lastCheckedAt);
   if (!verifiedAt) return null;
   const deadline = deadlineAt ? dateOnly(deadlineAt, deadlinePrecision) : null;
-  if (deadlinePrecision !== "continuous_flow" && !deadline) return null;
+  const eventStartsAt = stringValue(value.eventStartsAt);
+  const deadlineUnknown = deadlinePrecision === "not_informed";
+  if (deadlineUnknown && (deadlineAt || !categories.includes("eventos") || value.opportunityStatus !== "open" || !eventStartsAt || !Number.isFinite(Date.parse(eventStartsAt)))) return null;
+  if (deadlinePrecision !== "continuous_flow" && !deadlineUnknown && !deadline) return null;
 
   return {
     id: `radar-${id}`,
@@ -134,7 +138,9 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     verificationMethod: value.verificationMethod === "admin" ? "admin" : "automatic",
     deadline,
     deadlineAt: deadlinePrecision === "exact_datetime" && deadlineAt ? new Date(deadlineAt).toISOString() : null,
-    eventStartsAt: stringValue(value.eventStartsAt),
+    eventStartsAt,
+    deadlineUnknown,
+    alertsAvailable: value.alertsAvailable === true,
     deadlineLabel: deadlineLabel(deadlineAt, deadlinePrecision),
     officialUrl,
     verifiedAt,

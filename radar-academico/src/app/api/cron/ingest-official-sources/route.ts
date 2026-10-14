@@ -2,6 +2,7 @@ import { runOfficialSourceIngestion, runScheduledOfficialSourceIngestion } from 
 import { loadOfficialSource } from "@/lib/ingestion/official-source-registry";
 import { runScheduledDiscovery } from "@/lib/discovery/daily-discovery";
 import { secretMatches } from "@/lib/security";
+import { runOpportunityAlerts } from "@/lib/alerts/monitoring";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -22,8 +23,13 @@ export async function POST(request: Request) {
     }
     try {
       const ingestion = await runScheduledOfficialSourceIngestion();
-      try { return Response.json({ ...ingestion, discovery: await runScheduledDiscovery() }); }
-      catch { return Response.json({ ...ingestion, discovery: { targetsChecked: 0, newLeads: 0, failed: true } }); }
+      let discovery;
+      try { discovery=await runScheduledDiscovery(); }
+      catch { discovery={targetsChecked:0,newLeads:0,failed:true}; }
+      let alerts;
+      try { alerts=await runOpportunityAlerts(); }
+      catch { alerts={enabled:true,queued:0,sent:0,failed:1}; }
+      return Response.json({ ...ingestion, discovery, alerts });
     }
     catch { return Response.json({ error: "Falha na ingestão" }, { status: 500 }); }
   }

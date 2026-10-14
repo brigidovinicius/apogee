@@ -8,3 +8,21 @@ export function parseEventStart(value: unknown): string | null {
   if (!Number.isFinite(day.getTime()) || day.toISOString().slice(0, 10) !== date.slice(0, 10) || !Number.isFinite(Date.parse(date))) throw new Error("Data de início do evento inválida");
   return date;
 }
+
+/** With no hour, withdraw conservatively at the start of the confirmed day in Brazil. */
+export function eventHasNotStarted(value: unknown, now = new Date()): boolean {
+  try {
+    const start = parseEventStart(value);
+    return Boolean(start && Date.parse(start.length === 10 ? `${start}T00:00:00-03:00` : start) > now.getTime());
+  } catch { return false; }
+}
+
+/** Only an explicitly labelled event start; never a registration or publication date. */
+export function eventStartFromText(text: string): string | null {
+  const starts = [...text.matchAll(/(?:data (?:do evento|de realização)|início do evento|(?:o )?evento (?:acontece|ocorre|será realizado) (?:em|no dia))\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(?:às|a partir das)\s*(\d{1,2})(?:h|:)(\d{2})?)?/gi)];
+  if (starts.length !== 1) return null;
+  const [, day,month,year,hour,minute]=starts[0];
+  const date=`${year}-${month.padStart(2,"0")}-${day.padStart(2,"0")}`;
+  try { return parseEventStart(hour ? `${date}T${hour.padStart(2,"0")}:${(minute ?? "00").padStart(2,"0")}:00-03:00` : date); }
+  catch { return null; }
+}
