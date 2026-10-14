@@ -85,6 +85,16 @@ export async function manageCatalogue(method: "POST" | "PATCH" | "DELETE", input
     }
     if (!candidate || !source) throw new CatalogueError("Fonte inválida");
     if (existing && existing.official_source_id !== source.id) throw new CatalogueError("A fonte da ficha não pode ser trocada");
+    // The current editor only exposes Brazilian location fields. Preserve an
+    // audited international country and its provenance on unrelated edits.
+    if (existing && candidate.stateCode === (existing.state_code ?? null) &&
+        candidate.cityName === (existing.city_name ?? null) &&
+        candidate.nationallyEligible === existing.nationally_eligible) {
+      candidate.geographicScopeKind = existing.geographic_scope_kind as OpportunityCandidate["geographicScopeKind"];
+      candidate.countryCode = existing.country_code as string | null;
+      const evidence = existing.evidence_json as OpportunityCandidate["evidenceJson"] | null;
+      if (evidence?.location) candidate.evidenceJson.location = evidence.location;
+    }
     await lockSource(client, source);
     if (!existing && await findCandidate(client, candidate)) throw new CatalogueError("Essa ficha já existe, inclusive no histórico de exclusões", 409);
     const overrides: Partial<OpportunityCandidate> = { ...existing?.management_overrides };

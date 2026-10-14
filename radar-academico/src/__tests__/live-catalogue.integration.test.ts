@@ -506,3 +506,35 @@ it("rechecks an actual EV.G course through RLS, preserving edits and withdrawing
  await state.db!.query("update opportunities set deleted_at=now() where id=$1",[original.id]);
  expect(await ingest(alias)).toMatchObject({created:0,published:0});expect(await listLiveCatalogue()).toHaveLength(0);
 });
+
+it("rechecks the Fulbright selection through RLS, preserves edits and withdraws missing application", async () => {
+ const { normalizeFulbright, FULBRIGHT_URL } = await import("@/lib/ingestion/normalize-fulbright");
+ const { fulbrightSource: fb, fulbrightHtml: html } = await import("./fixtures/fulbright");
+ vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-14T23:35:00Z"));
+ try {
+  await state.db!.query(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,active,verification_status) values ($1,'Fulbright','Fulbright','FB','official_reference',$2,$3,$4,$5,'html',true,'verified')`,[fb.id,fb.baseUrl,fb.allowedDomains,fb.allowedPathPrefixes,fb.listingUrls]);
+  const item=normalizeFulbright(html,FULBRIGHT_URL,fb)!;
+  const ingest=()=>saveReviewItems(fb,{sourceId:fb.id,pagesChecked:1,discovered:[item],ignored:0,failed:0,locationRejected:0,warnings:[]});
+  expect(await ingest()).toMatchObject({created:1,published:1});
+  const [original]=await listLiveCatalogue(true);
+  await manageCatalogue("PATCH",form(original,{title:"Cátedra — título administrativo",evidenceExcerpt:item.evidenceJson.opportunity_status.excerpt}));
+  expect((await listLiveCatalogue())[0]).toMatchObject({countryCode:"US",geographicScopeKind:"country"});
+  await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+  vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from(html),contentType:"text/html",hash:"same",cached:false});
+  expect(await recheckKnownOpportunities(fb,1,async()=>"")).toMatchObject({pagesChecked:1,failed:0});
+  expect((await listLiveCatalogue())[0]).toMatchObject({id:original.id,title:"Cátedra — título administrativo",categories:["bolsas","intercambios","pesquisa"],countryCode:"US",geographicScopeKind:"country"});
+  expect((await listLiveCatalogue(true)).map(o=>o.id)).toEqual((await listLiveCatalogue()).map(o=>o.id));
+  await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+  vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from("<body>Manutenção</body>"),contentType:"text/html",hash:"unavailable",cached:false});
+  expect(await recheckKnownOpportunities(fb,1,async()=>"")).toMatchObject({failed:1});
+  expect(await listLiveCatalogue()).toHaveLength(1);
+  await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+  vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from(html.replace("Inscreva-se","Inscrições indisponíveis")),contentType:"text/html",hash:"no-cta",cached:false});
+  expect(await recheckKnownOpportunities(fb,1,async()=>"")).toMatchObject({pagesChecked:1,failed:0});
+  expect(await listLiveCatalogue()).toHaveLength(0);
+  expect(await ingest()).toMatchObject({created:0,published:1});
+  await state.db!.query("update opportunities set deleted_at=now() where id=$1",[original.id]);
+  expect(await ingest()).toMatchObject({created:0,published:0});
+  expect(await listLiveCatalogue()).toHaveLength(0);
+ } finally {vi.useRealTimers();}
+});

@@ -13,6 +13,7 @@ import { normalizeBrazilianLocation } from "@/lib/location";
 import * as cheerio from "cheerio";
 import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupplementUrl } from "./programme-catalogue";
 import { isAuditedAcateEventUrl, normalizeAcateEvent } from "./normalize-acate-events";
+import { FULBRIGHT_SOURCE_ID, normalizeFulbright } from "./normalize-fulbright";
 
 import { EVG_SOURCE_ID, EVG_POLICY_URL, normalizeEvgPolicy, normalizeEvgCourse, isEvgCourseUrl, parseEvgListing, type EvgPolicy } from "./normalize-evg-courses";
 
@@ -91,9 +92,11 @@ async function ingestSource(
       return result;
     }
     // An organizer's edition-specific announcement is itself the evidence page.
-    if (["braskem-internship-programme", "sed-novos-valores-2026", "ufsc-augm-grado-2027-1", "ufsc-outgoing-2027-1"].includes(source.id)) {
+    if (["braskem-internship-programme", "sed-novos-valores-2026", "ufsc-augm-grado-2027-1", "ufsc-outgoing-2027-1", FULBRIGHT_SOURCE_ID].includes(source.id)) {
       const text = await detailText(resource.body, resource.contentType);
-      const candidate = text ? normalizeOpportunity({ title: source.name, text, url: listingUrl, source }) : null;
+      const candidate = source.id === FULBRIGHT_SOURCE_ID
+        ? normalizeFulbright(resource.body.toString("utf8"), listingUrl, source)
+        : text ? normalizeOpportunity({ title: source.name, text, url: listingUrl, source }) : null;
       if (candidate) result.discovered.push(candidate);
       else result.ignored += 1;
       result.nextListingIndex = 0;
