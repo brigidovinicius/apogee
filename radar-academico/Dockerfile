@@ -25,6 +25,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # PDF.js loads its worker dynamically at runtime; Next's standalone trace does not include it.
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/pdfjs-dist ./node_modules/pdfjs-dist
+# The legacy PDF parser needs DOMMatrix from this optional Alpine-native package.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@napi-rs ./node_modules/@napi-rs
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 # The NASA Space Apps origin serves an intermediate cross-signed by a root absent from this image.
 # This alternate intermediate chains to Node's existing SSL.com 2022 root.
