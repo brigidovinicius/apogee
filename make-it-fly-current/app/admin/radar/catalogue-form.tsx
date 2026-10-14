@@ -19,13 +19,16 @@ export function CatalogueForm({ item, sources }: { item?: RadarManagedOpportunit
     applicationRoute: item?.applicationRoute ?? "", opportunityStatus: item?.opportunityStatus ?? "", deadlinePrecision: item?.deadlinePrecision ?? "",
     deadlineInput: item?.deadlinePrecision === "exact_datetime" ? deadline.slice(0,19) : deadline,
     deadlineTimezone: item?.deadlinePrecision === "exact_datetime" ? "Z" : "",
+    eventStartPrecision: item?.eventStartsAt ? item.eventStartsAt.length === 10 ? "date_only" : "exact_datetime" : "",
+    eventStartInput: item?.eventStartsAt ? item.eventStartsAt.length === 10 ? item.eventStartsAt : new Date(item.eventStartsAt).toISOString().slice(0,19) : "",
+    eventStartTimezone: item?.eventStartsAt && item.eventStartsAt.length > 10 ? "Z" : "",
     stateCode: item?.stateCode ?? "", cityName: item?.cityName ?? "", isCourse: item?.isCourse ?? false,
     nationallyEligible: item?.nationallyEligible ?? false, requirementsText: item?.requirementsText ?? "", amountText: item?.amountText ?? "",
     evidenceExcerpt: item?.evidence.opportunity_status?.excerpt ?? item?.evidence.deadline_at?.excerpt ?? "",
   }));
   const bind = (field: string) => ({ value: String(values[field] ?? ""), onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const value = event.target.value;
-    setValues((previous) => ({ ...previous, [field]: value, ...(field === "deadlinePrecision" ? { deadlineInput: "" } : {}) }));
+    setValues((previous) => ({ ...previous, [field]: value, ...(field === "deadlinePrecision" ? { deadlineInput: "" } : {}), ...(field === "eventStartPrecision" ? { eventStartInput: "" } : {}) }));
   } });
   const check = (field: string) => ({ checked: values[field] === true, onChange: (event: React.ChangeEvent<HTMLInputElement>) => { const checked = event.target.checked; setValues((previous) => ({ ...previous, [field]: checked })); } });
   return <section className={styles.surface}>
@@ -51,13 +54,19 @@ export function CatalogueForm({ item, sources }: { item?: RadarManagedOpportunit
       <input type="hidden" name="deadlineAt" value={values.deadlinePrecision === "continuous_flow" ? "" : values.deadlinePrecision === "exact_datetime" ? `${values.deadlineInput}${values.deadlineTimezone}` : String(values.deadlineInput)} />
       {values.deadlinePrecision && values.deadlinePrecision !== "continuous_flow" ? <label className={styles.field}><span>Encerramento das inscrições</span><input name="deadlineInput" step={1} required type={values.deadlinePrecision === "exact_datetime" ? "datetime-local" : "date"} {...bind("deadlineInput")} /></label> : null}
       {values.deadlinePrecision === "exact_datetime" ? <label className={styles.field}><span>Fuso do horário informado</span><select name="deadlineTimezone" required {...bind("deadlineTimezone")}><option value="">Selecione</option><option value="-03:00">Brasília (UTC−3)</option><option value="Z">UTC</option></select></label> : null}
+      <input type="hidden" name="eventStartsAt" value={!selectedCategories.includes("eventos") || !values.eventStartPrecision ? "" : values.eventStartPrecision === "exact_datetime" ? `${values.eventStartInput}${values.eventStartTimezone}` : String(values.eventStartInput)} />
+      {selectedCategories.includes("eventos") ? <>
+        <label className={styles.field}><span>Início do evento confirmado na fonte</span><select aria-describedby="event-start-help" {...bind("eventStartPrecision")}><option value="">Não informado</option><option value="date_only">Data, sem horário</option><option value="exact_datetime">Data e horário com fuso</option></select><small id="event-start-help">Confirme o início no trecho da fonte abaixo. Sem horário confirmado, o contador mostra apenas os dias restantes.</small></label>
+        {values.eventStartPrecision ? <label className={styles.field}><span>Data de início do evento</span><input step={1} required type={values.eventStartPrecision === "exact_datetime" ? "datetime-local" : "date"} {...bind("eventStartInput")} /></label> : null}
+        {values.eventStartPrecision === "exact_datetime" ? <label className={styles.field}><span>Fuso do início do evento</span><select required {...bind("eventStartTimezone")}><option value="">Selecione</option><option value="-03:00">Brasília (UTC−3)</option><option value="Z">UTC</option></select></label> : null}
+      </> : null}
       <label><input name="isCourse" type="checkbox" {...check("isCourse")} /> É um curso</label>
       <label><input name="nationallyEligible" type="checkbox" {...check("nationallyEligible")} /> Elegibilidade em todo o Brasil confirmada na fonte (deixe UF e cidade vazias)</label>
       <label className={styles.field}><span>UF, quando informada</span><input name="stateCode" maxLength={2} {...bind("stateCode")} /></label>
       <label className={styles.field}><span>Cidade, quando informada</span><input name="cityName" maxLength={120} {...bind("cityName")} /></label>
       <label className={styles.field}><span>Requisitos, quando informados</span><textarea name="requirementsText" maxLength={6000} {...bind("requirementsText")} /></label>
       <label className={styles.field}><span>Apoio ou benefício, quando informado</span><textarea name="amountText" maxLength={2000} {...bind("amountText")} /></label>
-      <label className={styles.field}><span>Trecho da fonte que confirma inscrições, prazo e abrangência</span><textarea name="evidenceExcerpt" required maxLength={4000} {...bind("evidenceExcerpt")} /></label>
+      <label className={styles.field}><span>Trecho da fonte que confirma inscrições, prazo, início do evento e abrangência</span><textarea name="evidenceExcerpt" required maxLength={4000} {...bind("evidenceExcerpt")} /></label>
       {state.error ? <p role="alert">{state.error}</p> : null}<button className={styles.button} disabled={saving || deleting || !sources.length || !selectedCategories.length}>{saving ? "Salvando…" : "Salvar no catálogo ao vivo"}</button>
     </form>
     {item ? <form action={deleteAction} className={styles.catalogueForm}><input type="hidden" name="id" value={item.id} /><input type="hidden" name="version" value={item.version} />

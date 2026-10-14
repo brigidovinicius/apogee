@@ -33,7 +33,7 @@ test("Radar preserves the Brazilian calendar day for date-only and exact deadlin
     globalThis.fetch = async () => new Response(JSON.stringify({
       version: 3, opportunities: [
         { ...base, id: "date-only", deadlineAt: "2026-10-10 00:00:00+00", deadlinePrecision: "date_only" },
-        { ...base, id: "exact", deadlineAt: "2026-10-11T02:30:00Z", deadlinePrecision: "exact_datetime" },
+        { ...base, id: "exact", eventStartsAt: "2026-10-14T09:00:00-03:00", deadlineAt: "2026-10-11 02:30:00+00", deadlinePrecision: "exact_datetime" },
       ],
     }), { status: 200 });
 
@@ -41,6 +41,9 @@ test("Radar preserves the Brazilian calendar day for date-only and exact deadlin
     assert.deepEqual(items.map((item) => item.id), ["radar-date-only", "radar-exact"]);
     assert.deepEqual(items.map((item) => item.deadline), ["2026-10-10", "2026-10-10"]);
     assert.deepEqual(items.map((item) => item.deadlineLabel), ["Inscrições até 10 de outubro", "Inscrições até 10 de outubro"]);
+    assert.equal(items[0].deadlineAt, null);
+    assert.equal(items[1].deadlineAt, "2026-10-11T02:30:00.000Z");
+    assert.equal(items[1].eventStartsAt, "2026-10-14T09:00:00-03:00");
     assert.deepEqual(items[0].categories, ["bolsas", "pesquisa"]);
     globalThis.fetch = async () => new Response(JSON.stringify({ version: 3, opportunities: [{ ...base, id: "missing", deadlineAt: null, deadlinePrecision: "date_only" }] }));
     await assert.rejects(client.listRadarOpportunities(), /Catálogo indisponível/);

@@ -56,7 +56,7 @@ export type CatalogueFormState = { error: string };
 export async function saveRadarOpportunity(_state: CatalogueFormState, formData: FormData): Promise<CatalogueFormState> {
   const admin = await requireAdmin("/admin/radar");
   const id = String(formData.get("id") ?? "");
-  const fields = ["title", "institution", "officialSourceId", "officialUrl", "benefitType", "applicantType", "applicationRoute", "opportunityStatus", "deadlineAt", "deadlinePrecision", "stateCode", "cityName", "requirementsText", "amountText", "evidenceExcerpt"];
+  const fields = ["title", "institution", "officialSourceId", "officialUrl", "benefitType", "applicantType", "applicationRoute", "opportunityStatus", "deadlineAt", "deadlinePrecision", "eventStartsAt", "stateCode", "cityName", "requirementsText", "amountText", "evidenceExcerpt"];
   const input: Record<string, unknown> = Object.fromEntries(fields.map((field) => [field, String(formData.get(field) ?? "")]));
   input.isCourse = formData.get("isCourse") === "on";
   input.categories = formData.getAll("categories").map(String);

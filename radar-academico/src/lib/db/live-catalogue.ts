@@ -13,6 +13,7 @@ const liveQuery = `select
          o.is_course as "isCourse",
          o.nationally_eligible as "nationallyEligible",
          o.applicant_type as "applicantType",
+         o.event_starts_at as "eventStartsAt",
          o.deadline_at::text as "deadlineAt",
          o.deadline_precision as "deadlinePrecision",
          o.requirements_text as "requirementsText",

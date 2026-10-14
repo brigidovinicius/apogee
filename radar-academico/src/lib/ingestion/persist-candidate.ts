@@ -7,6 +7,7 @@ import { categoriesFromEvidence } from "./categories";
 export const candidateColumns = {
   title: "title", institution: "institution", applicantType: "applicant_type", applicationRoute: "application_route",
   benefitType: "benefit_type", categories: "categories", isCourse: "is_course", nationallyEligible: "nationally_eligible",
+  eventStartsAt: "event_starts_at",
   deadlineAt: "deadline_at", deadlinePrecision: "deadline_precision", stateCode: "state_code", cityName: "city_name",
   requirementsText: "requirements_text", amountText: "amount_text", opportunityStatus: "opportunity_status",
 } as const;

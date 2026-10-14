@@ -976,3 +976,20 @@
     transition: none;
   }
 }
+
+.countdown {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  border: 1px solid rgb(185 211 238 / 18%);
+  border-radius: 0.8rem;
+  background: rgb(185 211 238 / 5%);
+  color: #b9d3ee;
+}
+.countdown > svg { flex-shrink: 0; margin-top: 0.15rem; }
+.countdown > div { display: grid; gap: 0.35rem; min-width: 0; }
+.countdown span, .countdown time { font-size: 0.75rem; color: rgb(255 255 255 / 65%); }
+.countdown strong { font-size: 0.95rem; line-height: 1.45; font-variant-numeric: tabular-nums; }
+.countdown[data-urgent] { border-color: rgb(255 198 112 / 45%); color: #ffd69b; }

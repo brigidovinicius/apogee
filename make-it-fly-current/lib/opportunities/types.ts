@@ -42,6 +42,10 @@ export type StudentOpportunity = OpportunityPreview & {
   eligibility: string;
   benefit: string;
   summary: string;
+  /** Original timestamp retained when the source specifies a time. */
+  deadlineAt?: string | null;
+  /** Confirmed event start: YYYY-MM-DD or ISO timestamp with timezone. */
+  eventStartsAt?: string | null;
   deadline: string | null;
   deadlineLabel: string;
   officialUrl: string;

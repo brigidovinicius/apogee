@@ -289,3 +289,21 @@ it("preserves former URLs as aliases and does not recertify an administrator URL
  expect(await listLiveCatalogue()).toEqual([]);
  expect((await state.db!.query("select * from opportunities")).rows).toHaveLength(1);
 });
+
+it("persists event start precision through admin edits, the bridge and subsequent crawls", async () => {
+ await save();
+ let [item] = await listLiveCatalogue(true);
+ await manageCatalogue("PATCH", form(item, { categories: ["eventos"], eventStartsAt: "2099-10-14" }));
+ expect((await listLiveCatalogue())[0].eventStartsAt).toBe("2099-10-14");
+ await save(candidate({ contentHash: "recrawl-event" }));
+ [item] = await listLiveCatalogue(true);
+ expect(item.eventStartsAt).toBe("2099-10-14");
+ await manageCatalogue("PATCH", form(item, { eventStartsAt: "2099-10-14T09:00:00-03:00" }));
+ [item] = await listLiveCatalogue(true);
+ expect(item.eventStartsAt).toBe("2099-10-14T09:00:00-03:00");
+ await expect(manageCatalogue("PATCH", form(item, { eventStartsAt: "2099-02-30" }))).rejects.toThrow("inválida");
+ await expect(manageCatalogue("PATCH", form(item, { categories: ["bolsas"] }))).rejects.toThrow("categoria Eventos");
+ await manageCatalogue("PATCH", form(item, { eventStartsAt: "" }));
+ await save(candidate({ contentHash: "recrawl-cleared-event" }));
+ expect((await listLiveCatalogue())[0].eventStartsAt).toBeNull();
+});

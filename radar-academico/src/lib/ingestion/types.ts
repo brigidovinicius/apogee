@@ -80,6 +80,7 @@ export interface OpportunityCandidate {
   nationallyEligible?: boolean;
   geographicScopeKind?: "unknown" | "global" | "country" | "state" | "city";
   countryCode?: string | null;
+  eventStartsAt?: string | null;
   deadlineAt?: string;
   deadlinePrecision: DeadlinePrecision;
   requirementsText: string;
