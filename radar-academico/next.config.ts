@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   experimental: { cpus: 1, serverActions: { bodySizeLimit: "64kb" } },
+  // PDF.js resolves its worker beside its package at runtime.
+  serverExternalPackages: ["pdfjs-dist"],
   poweredByHeader: false,
   async headers() {
     return [{ source: "/:path*", headers: [
