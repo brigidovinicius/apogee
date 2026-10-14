@@ -1,8 +1,13 @@
 import { withAdminTransaction } from "@/lib/db/client";
 import { fetchOfficialResource } from "./fetch-source";
 import { normalizeOpportunity } from "./normalize-opportunity";
+import { parseHtml } from "./parse-html";
 import { persistCandidate, lockSource, type StoredOpportunity } from "./persist-candidate";
-import type { OfficialSource } from "./types";
+import type { OfficialSource, OpportunityCandidate } from "./types";
+
+function fapespPostingId(url: string) {
+  return /^https:\/\/(?:www\.)?fapesp\.br\/oportunidades\/[^/]+\/(\d+)\/$/.exec(url)?.[1] ?? null;
+}
 
 export async function recheckKnownOpportunities(source: OfficialSource, limit: number,
   readText: (body: Buffer, contentType: string) => Promise<string>) {
@@ -16,10 +21,33 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
   let pagesChecked = 0, failed = 0, published = 0;
   for (const row of rows) {
     try {
-      const response = await fetchOfficialResource(row.source_page_url, source);
-      pagesChecked += 1;
-      const text = await readText(response.body, response.contentType);
-      const candidate = text ? normalizeOpportunity({ title: String(row.title), text, url: row.source_page_url, source }) : null;
+      // These sources can remove a call from the open index before its detail
+      // page changes. The current official listing is additional evidence.
+      let stillListed = true;
+      if (source.id === "minc-intercambio-audiovisual-2026" || source.id === "fapesp-open-fellowships") {
+        const listingUrl = source.listingUrls[0];
+        const listing = await fetchOfficialResource(listingUrl, source);
+        pagesChecked += 1;
+        const html = listing.body.toString("utf8");
+        const expectedHeading = source.id === "fapesp-open-fellowships" ? /Oportunidades de Bolsas/i : /Editais em andamento/i;
+        if (!/text\/html/i.test(listing.contentType) || !expectedHeading.test(html)) {
+          throw new Error("Lista oficial indisponível para confirmação");
+        }
+        const links = parseHtml(html, listingUrl).map((link) => link.url);
+        const peer = source.id === "fapesp-open-fellowships"
+          ? links.some((url) => fapespPostingId(url))
+          : links.some((url) => url.startsWith(`${listingUrl}/`));
+        if (!peer) throw new Error("Lista oficial sem fichas verificáveis");
+        const postingId = source.id === "fapesp-open-fellowships" ? fapespPostingId(row.source_page_url) : null;
+        stillListed = postingId ? links.some((url) => fapespPostingId(url) === postingId) : links.includes(row.source_page_url);
+      }
+      let candidate: OpportunityCandidate | null = null;
+      if (stillListed) {
+        const response = await fetchOfficialResource(row.source_page_url, source);
+        pagesChecked += 1;
+        const text = await readText(response.body, response.contentType);
+        candidate = text ? normalizeOpportunity({ title: String(row.title), text, url: row.source_page_url, source }) : null;
+      }
       await withAdminTransaction(async (client) => {
         await lockSource(client, source);
         const current = (await client.query<StoredOpportunity>("select * from opportunities where id=$1 for update", [row.id])).rows[0];

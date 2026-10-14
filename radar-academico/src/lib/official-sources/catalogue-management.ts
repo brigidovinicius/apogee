@@ -10,7 +10,7 @@ import { validCategories } from "@/lib/ingestion/categories";
 export class CatalogueError extends Error { constructor(message: string, public status = 400) { super(message); } }
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const applicants = ["undergraduate_student","postgraduate_student","high_school_student","graduate_professional","professor","researcher","company","institution","mixed"];
-const routes = ["direct_student_application","application_via_university","application_via_department","application_via_professor","application_via_project_coordinator","institutional_call","invitation_only"];
+const routes = ["direct_student_application","direct_application","application_via_university","application_via_department","application_via_professor","application_via_project_coordinator","institutional_call","invitation_only"];
 const benefits = ["academic_scholarship","research_scholarship","extension_scholarship","monitor_scholarship","internship","financial_aid","housing_aid","mobility_aid","prize","project_funding","unpaid_opportunity","other"];
 function text(input: Record<string, unknown>, key: string, max = 500) {
   const value = input[key];

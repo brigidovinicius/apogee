@@ -136,3 +136,39 @@ it("publica o edital de intercâmbio do MinC com país e prazo exato, sem invent
     geographicScopeKind: "country", countryCode: "BR", stateCode: null, cityName: null,
   });
 });
+
+it("extrai bolsas de pesquisa da listagem oficial FAPESP sem duplicar os links em inglês", async () => {
+  vi.stubEnv("DATABASE_URL", "fixture");
+  const url = "https://fapesp.br/oportunidades/projeto-de-logica/9715/";
+  const source: OfficialSource = {
+    ...makeSource("fapesp-open-fellowships"),
+    institutionName: "Fundação de Amparo à Pesquisa do Estado de São Paulo",
+    baseUrl: "https://fapesp.br/oportunidades/",
+    allowedDomains: ["fapesp.br", "www.fapesp.br"], allowedPathPrefixes: ["/oportunidades/"],
+    listingUrls: ["https://fapesp.br/oportunidades/"],
+    location: { stateCode: null, cityName: null },
+  };
+  vi.mocked(loadOfficialSource).mockResolvedValue(source);
+  vi.mocked(fetchOfficialResource).mockImplementation(async (requestedUrl) => {
+    const body = requestedUrl === source.listingUrls[0]
+      ? `<h1>Oportunidades de Bolsas</h1><a href="${url}">Bolsa de PD em Lógica Instituição: Universidade Estadual de Campinas Cidade: Campinas Inscrições até: 15/10/2099</a><a href="${url}">Post-Doctoral Fellowship in Logic Institution: Universidade Estadual de Campinas</a>`
+      : `<body>FAPESP | Fundo de Amparo à Pesquisa do Estado de São Paulo Bolsa de PD em Lógica
+         Título do projeto: Racionalidade, Lógica e Probabilidade Project title: Rationality, Logic and Probability
+         Valor da bolsa: R$ 12.570,00 Value: R$ 12,570.00
+         Unidade/Instituição: Universidade Estadual de Campinas Unit/Instituition: Universidade Estadual de Campinas
+         Data limite para inscrições: 15/10/2099 Deadline for submissions: 2099-10-15
+         Localização: Campinas Locale: Campinas
+         E-mail para inscrições: bolsas@unicamp.br E-mail for proposal submission: bolsas@unicamp.br</body>`;
+    return { body: Buffer.from(body), contentType: "text/html", hash: "fixture", cached: false };
+  });
+  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, published: 1, blocked: 0, created: 1, updated: 0, persistence: "postgres" });
+
+  const report = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 5, maxCandidates: 10 });
+  expect(report).toMatchObject({ pagesChecked: 2, discovered: 1, published: 1 });
+  expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({
+    title: "Bolsa de PD em Lógica", institution: "Universidade Estadual de Campinas",
+    categories: ["bolsas", "pesquisa"], applicationRoute: "direct_application",
+    deadlineAt: "2099-10-15", deadlinePrecision: "date_only", opportunityStatus: "open",
+    geographicScopeKind: "unknown", countryCode: null, stateCode: null, cityName: null,
+  });
+});
