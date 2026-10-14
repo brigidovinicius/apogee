@@ -11,6 +11,7 @@ import {
   countActiveOpportunityFilters,
   type EducationLevel,
   filterOpportunities,
+  initialRadarOpportunities,
   getOpportunityFilterOptions,
   isOpportunityOpen,
   type OpportunityKind,
@@ -58,11 +59,11 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
     ),
     [filterOptions, searchParams],
   );
-  const visible = useMemo(
-    () => filterOpportunities(opportunities, filters, today),
-    [filters, opportunities, today],
-  );
   const activeFilterCount = countActiveOpportunityFilters(filters);
+  const visible = useMemo(() => {
+    const matching = filterOpportunities(opportunities, filters, today);
+    return management || activeFilterCount > 0 ? matching : initialRadarOpportunities(matching);
+  }, [activeFilterCount, filters, management, opportunities, today]);
   const coverage = useMemo(() => {
     const open = opportunities.filter((item) => isOpportunityOpen(item, today));
     return { total: open.length, byCategory: Object.fromEntries(
@@ -141,7 +142,7 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
         </button>
         <p className={styles.filterSummary}>
           {activeFilterCount === 0
-            ? "Mostrando todas as classificações disponíveis"
+            ? management ? "Mostrando todas as classificações disponíveis" : "Vitrine de público amplo; use os filtros para ver todas as oportunidades"
             : `${activeFilterCount} ${activeFilterCount === 1 ? "filtro ativo" : "filtros ativos"}`}
         </p>
       </div>

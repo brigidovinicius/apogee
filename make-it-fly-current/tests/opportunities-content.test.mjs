@@ -55,6 +55,19 @@ test("catalogue is ordered by deadline with continuous opportunities last", () =
   }
 });
 
+test("initial Radar view keeps broad opportunities, closest deadlines and confirmed paid ties first", () => {
+  const base = catalogue.STUDENT_OPPORTUNITIES[0];
+  const items = [
+    { ...base, id: "postdoc", title: "Bolsa de PD em Física", level: "Público diverso", deadline: "2026-10-15", benefit: "R$ 10.000" },
+    { ...base, id: "later-paid", title: "Estágio de tecnologia", level: "Graduação", deadline: "2026-10-30", benefit: "Bolsa de R$ 2.500" },
+    { ...base, id: "urgent-unpaid", title: "Hackathon aberto", level: "Público diverso", deadline: "2026-10-16", benefit: "Sem remuneração" },
+    { ...base, id: "urgent-paid", title: "Estágio municipal", level: "Graduação", deadline: "2026-10-16", benefit: "Bolsa de R$ 1.000" },
+    { ...base, id: "masters", title: "Bolsa de Mestrado", level: "Pós-graduação", deadline: "2026-10-17", benefit: "R$ 3.000" },
+  ];
+  assert.deepEqual(logic.initialRadarOpportunities(items).map((item) => item.id), ["urgent-paid", "urgent-unpaid", "later-paid"]);
+  assert.equal(logic.filterOpportunities(items, logic.EMPTY_OPPORTUNITY_FILTERS, "2026-10-14").length, 5);
+});
+
 test("filter options come only from structured fields on open opportunities", () => {
   const opportunities = [
     {

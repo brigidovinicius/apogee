@@ -4,6 +4,7 @@ import {
   type OpportunityKind,
   type StudentOpportunity,
   isOpportunityCategory,
+  isAdvancedAcademicTitle,
 } from "@/lib/opportunities/types";
 import { normalizeBrazilianLocation } from "@/lib/opportunities/location";
 
@@ -78,10 +79,10 @@ function kindFromRadar(value: string, isCourse: boolean): OpportunityKind {
   return "Programa";
 }
 
-function levelFromRadar(value: string): EducationLevel {
+function levelFromRadar(value: string, title: string): EducationLevel {
   if (value === "high_school_student") return "Ensino médio";
   if (value === "undergraduate_student") return "Graduação";
-  if (value === "postgraduate_student") return "Pós-graduação";
+  if (value === "postgraduate_student" || isAdvancedAcademicTitle(title)) return "Pós-graduação";
   return "Público diverso";
 }
 
@@ -120,7 +121,7 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     organization,
     kind: kindFromRadar(benefitType, isCourse),
     categories,
-    level: levelFromRadar(applicantType),
+    level: levelFromRadar(applicantType, title),
     location: normalizedLocation.location.cityName
       ? `${normalizedLocation.location.cityName} · ${normalizedLocation.location.stateCode}`
       : normalizedLocation.location.stateCode ?? (nationallyEligible ? "Brasil" : "Não informado na fonte pública"),

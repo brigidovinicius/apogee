@@ -54,3 +54,15 @@ test("Radar preserves the Brazilian calendar day for date-only and exact deadlin
     else process.env.RADAR_ACADEMICO_API_TOKEN = previousToken;
   }
 });
+
+test("FAPESP postdoctoral titles are labelled as postgraduate rather than broad audience", async () => {
+  const client = await import(`data:text/javascript;base64,${Buffer.from(output).toString("base64")}`);
+  const item = client.toOpportunity({
+    id: "postdoc", title: "Bolsa de PD em Física", institution: "Universidade",
+    benefitType: "research_scholarship", applicantType: "graduate_professional", categories: ["bolsas", "pesquisa"],
+    officialUrl: "https://fapesp.br/oportunidades/fisica/9999/", lastCheckedAt: "2026-10-14T12:00:00Z",
+    stateCode: null, cityName: null, requirementsText: "Consulte o edital", amountText: "Bolsa de R$ 12.000",
+    deadlineAt: "2026-10-20", deadlinePrecision: "date_only", opportunityStatus: "open",
+  });
+  assert.equal(item?.level, "Pós-graduação");
+});

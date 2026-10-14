@@ -113,6 +113,22 @@ export function sortByDeadline(opportunities: readonly StudentOpportunity[]) {
   });
 }
 
+export function isAdvancedAcademicTitle(title: string) {
+  return /\b(?:PD|mestrad[oa]s?|doutorad[oa]s?|p[oó]s[- ]?(?:doutorad[oa]|graduaç(?:ão|ões)))\b/i.test(title);
+}
+
+/** The initial public view favors broad programmes; specialized calls remain searchable. */
+export function initialRadarOpportunities(opportunities: readonly StudentOpportunity[]) {
+  return opportunities.filter((item) =>
+    item.level !== "Pós-graduação" && !isAdvancedAcademicTitle(item.title),
+  ).sort((left, right) => {
+    // Keep the nearest closing date first. Confirmed remuneration breaks same-day ties.
+    if (left.deadline !== right.deadline) return left.deadline === null ? 1 : right.deadline === null ? -1 : left.deadline.localeCompare(right.deadline);
+    const paid = (item: StudentOpportunity) => /R\$\s*[\d.,]+/.test(item.benefit);
+    return Number(paid(right)) - Number(paid(left));
+  });
+}
+
 export function getOpportunityFilterOptions(
   opportunities: readonly StudentOpportunity[],
   today = dateInBrazil(),

@@ -4,7 +4,7 @@ Revisão: 14/10/2026. Decisões vigentes do proprietário: publicação automát
 
 O [brief integral](radar-product-brief.md) preserva os requisitos, exemplos e referências recebidos. Este PRD registra as decisões vigentes e o recorte inicial, sem descartar as demais capacidades. O andamento e os limites estão no [registro de execução](radar-live-execution.md).
 
-**Estado verificado em 14/10/2026, após a coleta FAPESP:** as sete categorias, o catálogo comum e o gerenciamento administrativo estão publicados; o fluxo automático e criar/editar/excluir já foram exercitados em produção. A [medição de cobertura](radar-coverage-20261014.md) registra **81 de 1.000** oportunidades únicas, publicadas e vigentes. A expansão de fontes e fichas continua pendente; esta medição não constitui aceite da meta quantitativa.
+**Estado verificado em 14/10/2026, após as fontes de estágio:** as sete categorias, o catálogo comum e o gerenciamento administrativo estão publicados; o fluxo automático e criar/editar/excluir já foram exercitados em produção. A [medição de cobertura](radar-coverage-20261014.md) registra **83 de 1.000** oportunidades únicas, publicadas e vigentes. A expansão de fontes e fichas continua pendente; esta medição não constitui aceite da meta quantitativa.
 
 **Escopo da próxima expansão:** alterar somente o Radar Webscraper. A Apogee continua lendo automaticamente sua API de oportunidades publicadas; fontes observadas, candidatos de descoberta e eventos anuais permanecem privados no Radar e não entram na contagem de mil.
 
@@ -25,6 +25,8 @@ Descobrir oportunidades úteis a brasileiros, no Brasil e no exterior, com prior
 ## Gerenciamento
 
 Catálogo principal idêntico ao publicado, com busca e filtros comuns. Criar, editar e excluir exigem sessão administrativa no servidor e credencial própria na ponte Apogee–Radar. Salvar publica imediatamente quando válido; nenhum botão Aprovar/Rejeitar. Conflitos entre duas edições são rejeitados por versão. Registrar autor, antes/depois e data. Configuração de fontes e diagnóstico operacional ficam separados da lista de oportunidades.
+
+Na vista inicial pública, priorizar programas e vagas de público mais amplo. Chamadas explicitamente voltadas a mestrado, doutorado e pós-doutorado ficam acessíveis por filtros e busca, mas não ocupam a vitrine inicial; o gerenciamento continua mostrando o catálogo inteiro. Ordenar a vitrine por encerramento mais próximo, com oportunidades de remuneração comprovada primeiro quando o prazo coincidir. Na expansão de fontes, preferir programas remunerados com requisitos amplos, sem ocultar ou inventar o valor de uma ficha. Essa priorização editorial é permanente; a preferência por fontes de Santa Catarina até 18/10/2026 é apenas uma instrução operacional desta semana, não uma regra da plataforma.
 
 ## Atualização
 
