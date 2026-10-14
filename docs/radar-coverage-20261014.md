@@ -1,5 +1,15 @@
 # Cobertura do Radar — medição de 14/10/2026
 
+## Atualização após IFSC — 14/10/2026, 14h15 de São Paulo
+
+O [PR #47](https://github.com/brigidovinicius/apogee/pull/47) foi implantado somente no Webscraper na revisão `45b7eb1ccc2dea36c3ebdbc754e8c09fb3e7e3a5`, com migração `0019_ifsc_technical_courses_2027.sql`. O primeiro ciclo do scheduler publicou automaticamente 103 programas por curso/campus/modalidade do IFSC em uma leitura da listagem. Produção retornou **227 IDs únicos** nas APIs pública e administrativa, com os mesmos campos públicos, e **773 fichas faltantes**. Nenhum dos 124 IDs vigentes guardados antes da troca foi perdido. A contagem anterior de 125 ocorreu em outro horário; a vigência não é congelada por este relatório.
+
+Por categoria, com repetição entre categorias: formação 145, bolsas 79, intercâmbios 1, competições 1, pesquisa 77, carreira 3 e eventos 1. Por fonte: IFSC 103, FAPESP 77, IFC 41; IFPE, MinC, NASA Space Apps, Braskem, São José dos Campos e SED Novos Valores têm 1 ficha cada. As oportunidades acadêmicas permanecem no catálogo e na vitrine. As interfaces pública e administrativa da Apogee mostraram os programas técnicos e a mesma distribuição.
+
+Backup anterior `/opt/apogee-backups/radar-ifsc-20261014T170556Z`: dump com hash conferido e restauração em banco temporário com contagens coincidentes `130|18|96`. Web saudável e scheduler ativo na revisão acima. Catálogo anterior, catálogo posterior e comparação dos IDs/campos estão guardados no diretório do backup.
+
+A leitura local da listagem oficial Senac SC identificou **112 edições elegíveis em 20 cidades**, incluindo 5 edições de cursos técnicos. Esse lote ainda depende de migração, deploy e coleta real e **não está somado aos 227 IDs**. São contados apenas cursos com turma, matrícula liberada, prazo atual e vagas PSG gratuitas; ofertas paralelas não multiplicam fichas. A meta de 1.000 permanece não atingida.
+
 ## Atualização após IFC e Novos Valores — 14/10/2026, 13h49 de São Paulo
 
 Produção retornou **125 fichas, 125 IDs únicos**, nas APIs de usuário e administrador, com os mesmos IDs e campos públicos. Nenhum dos 124 IDs guardados antes da última troca foi perdido. A distância até 1.000 é **875**. O catálogo administrativo e a página pública da Apogee mostraram a nova ficha Novos Valores; oportunidades de mestrado, doutorado e pós-doutorado continuam presentes na vitrine. O PR #41 foi fechado sem implantação.
