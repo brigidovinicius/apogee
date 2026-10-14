@@ -9,12 +9,14 @@ import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupp
 import { confirmedTerminalStatus } from "./publication";
 import { normalizeAcateEvent } from "./normalize-acate-events";
 
+import { EVG_SOURCE_ID, normalizeEvgCourse, type EvgPolicy } from "./normalize-evg-courses";
+
 function fapespPostingId(url: string) {
   return /^https:\/\/(?:www\.)?fapesp\.br\/oportunidades\/[^/]+\/(\d+)\/$/.exec(url)?.[1] ?? null;
 }
 
 export async function recheckKnownOpportunities(source: OfficialSource, limit: number,
-  readText: (body: Buffer, contentType: string) => Promise<string>) {
+  readText: (body: Buffer, contentType: string) => Promise<string>, evgPolicy?: EvgPolicy) {
   if (limit < 1) return { pagesChecked: 0, failed: 0, published: 0 };
   const rows = await withAdminTransaction(async (client) => (await client.query<StoredOpportunity & { source_page_url: string }>(
     `select o.*,os.source_page_url from opportunities o join lateral (
@@ -83,12 +85,13 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
         const response = await fetchOfficialResource(row.source_page_url, source);
         pagesChecked += 1;
         const text = await readText(response.body, response.contentType);
-        terminalStatus = confirmedTerminalStatus(text, String(row.title));
+        terminalStatus = source.id === EVG_SOURCE_ID ? null : confirmedTerminalStatus(text, String(row.title));
         if (terminalStatus) {
           const start = Math.max(0, text.search(/inscriç(?:ão|ões)|prazo/i));
           statusEvidence = text.slice(start, start + 1000);
         }
-        if (source.id === "acate-audited-events") {
+        if (source.id === EVG_SOURCE_ID) candidate = normalizeEvgCourse(response.body.toString("utf8"), row.source_page_url, source, evgPolicy);
+        else if (source.id === "acate-audited-events") {
           try { candidate = normalizeAcateEvent(response.body.toString("utf8"), row.source_page_url, source); }
           catch (error) { if (!terminalStatus) throw error; }
         } else candidate = text ? normalizeOpportunity({ title: String(row.title), text, url: row.source_page_url, source }) : null;

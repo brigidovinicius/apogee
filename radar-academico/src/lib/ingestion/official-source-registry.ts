@@ -91,7 +91,7 @@ export async function completeScheduledSource(id: string, failed: boolean) {
     `update official_sources
      set last_crawled_at=now(),
          next_crawl_at=now() + case when $2 then interval '1 hour'
-           when crawl_link_offset>0 or exists (select 1 from opportunities o where o.official_source_id=official_sources.id and o.deleted_at is null and (o.next_source_check_at is null or o.next_source_check_at<=now())) then interval '5 minutes'
+           when crawl_listing_index>0 or crawl_link_offset>0 or exists (select 1 from opportunities o where o.official_source_id=official_sources.id and o.deleted_at is null and (o.next_source_check_at is null or o.next_source_check_at<=now())) then interval '5 minutes'
            else make_interval(hours => crawl_interval_hours) end,
          updated_at=now()
      where id=$1`,
