@@ -1,12 +1,10 @@
-// A date-only deadline is open through that calendar day in Brazil. The value
-// was stored as timestamptz, so comparing it with now() would close it at midnight.
-export const openDeadlinePredicate = `(o.deadline_at is null
-  or (o.deadline_precision='date_only'
-    and o.deadline_at::date >= (now() at time zone 'America/Sao_Paulo')::date)
-  or (o.deadline_precision<>'date_only' and o.deadline_at >= now()))`;
+export const openDeadlinePredicate = `((o.deadline_precision='continuous_flow' and o.deadline_at is null)
+  or (o.deadline_precision='date_only' and (o.deadline_at at time zone 'UTC')::date >= (now() at time zone 'America/Sao_Paulo')::date)
+  or (o.deadline_precision='exact_datetime' and o.deadline_at >= now()))`;
 
-// Defence in depth even if the configured DB role accidentally bypasses RLS.
-// Keep in sync with opportunities_public; never weaken the human review gate.
 export const publishedOpportunityPredicate = `o.review_status='approved'
-  and o.human_verified_at is not null and o.opportunity_status='open'
-  and o.published_at is not null and ${openDeadlinePredicate}`;
+  and o.verified_at is not null and o.verification_method in ('automatic','admin')
+  and o.opportunity_status in ('open','upcoming') and not o.source_conflict
+  and o.deleted_at is null and o.publication_issue is null
+  and o.published_at is not null and ${openDeadlinePredicate}
+  and exists (select 1 from official_sources s where s.id=o.official_source_id and s.active and s.verification_status='verified')`;

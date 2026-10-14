@@ -79,7 +79,7 @@ export function parseManualCsv(csv: string) {
       requirementsText: "Não informado na fonte oficial. Consulte o edital.",
       amountText: "Não informado na fonte oficial. Consulte o edital.",
       stateCode: location.location.stateCode, cityName: location.location.cityName,
-      reviewStatus: "pending_review", opportunityStatus: "unknown", extractionMethod: "manual_assisted",
+      reviewStatus: "needs_information", opportunityStatus: "unknown", extractionMethod: "manual_assisted",
       evidenceJson: {
         deadline_at: { source_url: row.source_page_url, excerpt: row.deadline },
         ...(row.evidence_excerpt ? { requirements: { source_url: row.source_page_url, excerpt: row.evidence_excerpt } } : {}),

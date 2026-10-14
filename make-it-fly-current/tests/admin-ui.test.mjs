@@ -30,7 +30,7 @@ test("admin UI includes accessible loading, error, empty and denied states", asy
     source("app/admin/loading.tsx"),
     source("app/admin/error.tsx"),
     source("app/admin/usuarios/page.tsx"),
-    source("app/admin/curadoria/page.tsx"),
+    source("components/opportunities/opportunities-board.tsx"),
     source("app/admin/acesso-negado/page.tsx"),
   ]);
 

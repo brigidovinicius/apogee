@@ -20,7 +20,7 @@ export type OpportunityPreview = {
   level: EducationLevel;
 };
 
-/** Dados editoriais completos: só podem cruzar a fronteira para membros autenticados. */
+/** Dados públicos do catálogo; controles administrativos permanecem no servidor. */
 export type StudentOpportunity = OpportunityPreview & {
   location: string;
   stateCode: BrazilianStateCode | null;
@@ -33,6 +33,9 @@ export type StudentOpportunity = OpportunityPreview & {
   deadlineLabel: string;
   officialUrl: string;
   verifiedAt: string;
+  verificationTimestamp?: string;
+  opportunityStatus?: "open" | "upcoming";
+  verificationMethod?: "automatic" | "admin";
 };
 
 export function mergeOpportunities(

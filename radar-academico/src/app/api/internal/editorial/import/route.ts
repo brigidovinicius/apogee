@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       discovered: rows.map((row) => row.candidate),
       ignored: 0, failed: 0, locationRejected: 0, warnings: ["Importação manual assistida"],
     });
-    return Response.json({ received: rows.length, sentToReview: result.saved, published: 0 }, { headers });
+    return Response.json({ received: rows.length, saved: result.saved, blocked: result.blocked, published: result.published }, { headers });
   } catch {
     return Response.json({ error: "Importação não concluída; revise os dados oficiais" }, { status: 400, headers });
   }

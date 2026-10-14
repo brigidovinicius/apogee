@@ -84,7 +84,7 @@ function levelFromRadar(value: string): EducationLevel {
   return "Público diverso";
 }
 
-function toOpportunity(value: unknown): StudentOpportunity | null {
+export function toOpportunity(value: unknown): StudentOpportunity | null {
   if (!isRecord(value)) return null;
   const id = stringValue(value.id);
   const title = stringValue(value.title);
@@ -106,7 +106,7 @@ function toOpportunity(value: unknown): StudentOpportunity | null {
     return null;
   }
 
-  const verifiedAt = dateOnly(lastCheckedAt);
+  const verifiedAt = dateOnly(value.verificationMethod === "admin" ? stringValue(value.verifiedAt) ?? lastCheckedAt : lastCheckedAt);
   if (!verifiedAt) return null;
   const deadline = deadlineAt ? dateOnly(deadlineAt, deadlinePrecision) : null;
   if (deadlinePrecision !== "continuous_flow" && !deadline) return null;
@@ -125,21 +125,23 @@ function toOpportunity(value: unknown): StudentOpportunity | null {
     nationallyEligible: nationallyEligible && normalizedLocation.location.stateCode === null,
     eligibility: stringValue(value.requirementsText) ?? "Consulte o edital oficial para os critérios de elegibilidade.",
     benefit: stringValue(value.amountText) ?? "Consulte o edital oficial para o apoio previsto.",
-    summary: "Oportunidade identificada pelo Radar Acadêmico em fonte oficial e aprovada em revisão editorial.",
+    summary: value.opportunityStatus === "upcoming" ? "Inscrições futuras confirmadas na fonte oficial." : "Oportunidade com inscrições abertas na fonte oficial.",
+    opportunityStatus: value.opportunityStatus === "upcoming" ? "upcoming" : "open",
+    verificationMethod: value.verificationMethod === "admin" ? "admin" : "automatic",
     deadline,
     deadlineLabel: deadlineLabel(deadlineAt, deadlinePrecision),
     officialUrl,
     verifiedAt,
+    verificationTimestamp: new Date(value.verificationMethod === "admin" ? stringValue(value.verifiedAt) ?? lastCheckedAt : lastCheckedAt).toISOString(),
   };
 }
 
 /**
  * Reads the separate Radar service only from the Apogee server. No Radar URL
- * or credentials are exposed to browsers; a failure keeps the curated local
- * catalogue available instead of breaking the public mural.
+ * or credentials are exposed to browsers. Failures remain explicit.
  */
 export async function listRadarOpportunities(): Promise<StudentOpportunity[]> {
-  if (!radarApiUrl || !radarApiToken) return [];
+  if (!radarApiUrl || !radarApiToken) throw new Error("Catálogo indisponível");
 
   try {
     const response = await fetch(radarApiUrl, {
@@ -147,15 +149,15 @@ export async function listRadarOpportunities(): Promise<StudentOpportunity[]> {
       headers: { Accept: "application/json", Authorization: `Bearer ${radarApiToken}` },
       signal: AbortSignal.timeout(2_000),
     });
-    if (!response.ok) return [];
+    if (!response.ok) throw new Error("Catálogo indisponível");
 
     const payload = await response.json() as RadarResponse;
-    if (![1, 2].includes(payload.version) || !Array.isArray(payload.opportunities)) return [];
+    if (payload.version !== 3 || !Array.isArray(payload.opportunities)) throw new Error("Catálogo incompatível");
 
-    return payload.opportunities
-      .map(toOpportunity)
-      .filter((opportunity): opportunity is StudentOpportunity => opportunity !== null);
+    const items = payload.opportunities.map(toOpportunity);
+    if (items.some((item) => item === null)) throw new Error("Catálogo inválido");
+    return items as StudentOpportunity[];
   } catch {
-    return [];
+    throw new Error("Catálogo indisponível");
   }
 }

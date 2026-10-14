@@ -19,7 +19,16 @@ export type RadarEditorialSource = {
 
 type EditorialConfiguration = { url: string; token: string };
 
-export type RadarReviewOpportunity = {
+export type RadarManagedOpportunity = {
+  version: number;
+  officialSourceId: string;
+  benefitType: string;
+  opportunityStatus: "open" | "upcoming";
+  requirementsText: string;
+  amountText: string;
+  lastCheckedAt: string;
+  verifiedAt: string;
+  verificationMethod: "automatic" | "admin";
   id: string;
   title: string;
   institution: string;
@@ -120,7 +129,7 @@ async function requestEditorialApi(init: RequestInit, resource: "sources" | "opp
   }
 }
 
-function reviewOpportunityFrom(value: unknown): RadarReviewOpportunity | null {
+function managedOpportunityFrom(value: unknown): RadarManagedOpportunity | null {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
   const item = value as Record<string, unknown>;
   const id = stringValue(item.id);
@@ -130,11 +139,13 @@ function reviewOpportunityFrom(value: unknown): RadarReviewOpportunity | null {
   const applicationRoute = stringValue(item.applicationRoute);
   const deadlinePrecision = stringValue(item.deadlinePrecision);
   const officialUrl = httpsUrl(item.officialUrl);
-  if (!id || !title || !institution || !applicantType || !applicationRoute || !deadlinePrecision ||
+  if (!Number.isInteger(item.version) || !stringValue(item.officialSourceId) || !stringValue(item.benefitType) ||
+      !["open", "upcoming"].includes(String(item.opportunityStatus)) || !stringValue(item.lastCheckedAt) ||
+      !id || !title || !institution || !applicantType || !applicationRoute || !deadlinePrecision ||
       typeof item.isCourse !== "boolean" || typeof item.nationallyEligible !== "boolean" ||
       (item.officialUrl !== null && !officialUrl) ||
       !item.evidence || typeof item.evidence !== "object" || Array.isArray(item.evidence)) return null;
-  const evidence: RadarReviewOpportunity["evidence"] = {};
+  const evidence: RadarManagedOpportunity["evidence"] = {};
   for (const [field, raw] of Object.entries(item.evidence)) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
     const entry = raw as Record<string, unknown>;
@@ -146,6 +157,10 @@ function reviewOpportunityFrom(value: unknown): RadarReviewOpportunity | null {
   }
   return {
     id, title, institution, applicantType, applicationRoute, deadlinePrecision, officialUrl, evidence,
+    version: Number(item.version), officialSourceId: String(item.officialSourceId), benefitType: String(item.benefitType),
+    opportunityStatus: item.opportunityStatus as "open" | "upcoming",
+    requirementsText: String(item.requirementsText ?? ""), amountText: String(item.amountText ?? ""),
+    lastCheckedAt: String(item.lastCheckedAt), verifiedAt: String(item.verifiedAt ?? item.lastCheckedAt), verificationMethod: item.verificationMethod === "admin" ? "admin" : "automatic",
     isCourse: item.isCourse, nationallyEligible: item.nationallyEligible,
     stateCode: item.stateCode === null ? null : stringValue(item.stateCode),
     cityName: item.cityName === null ? null : stringValue(item.cityName),
@@ -153,7 +168,7 @@ function reviewOpportunityFrom(value: unknown): RadarReviewOpportunity | null {
   };
 }
 
-export async function listRadarReviewOpportunities(): Promise<{ available: boolean; opportunities: RadarReviewOpportunity[] }> {
+export async function listRadarManagedOpportunities(): Promise<{ available: boolean; opportunities: RadarManagedOpportunity[] }> {
   const response = await requestEditorialApi({ method: "GET" }, "opportunities");
   if (!response?.ok) return { available: false, opportunities: [] };
   try {
@@ -161,23 +176,20 @@ export async function listRadarReviewOpportunities(): Promise<{ available: boole
     if (typeof payload !== "object" || payload === null || !Array.isArray((payload as { opportunities?: unknown }).opportunities)) {
       return { available: false, opportunities: [] };
     }
-    const opportunities = (payload as { opportunities: unknown[] }).opportunities.map(reviewOpportunityFrom);
+    const opportunities = (payload as { opportunities: unknown[] }).opportunities.map(managedOpportunityFrom);
     if (opportunities.some((item) => item === null)) return { available: false, opportunities: [] };
-    return { available: true, opportunities: opportunities as RadarReviewOpportunity[] };
+    return { available: true, opportunities: opportunities as RadarManagedOpportunity[] };
   } catch {
     return { available: false, opportunities: [] };
   }
 }
 
-export async function decideRadarReviewOpportunity(input: {
-  id: string; decision: "approve" | "reject"; reviewer: string;
-}): Promise<boolean> {
-  const response = await requestEditorialApi({
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  }, "opportunities");
-  return response?.ok === true;
+export async function mutateRadarCatalogue(method: "POST" | "PATCH" | "DELETE", input: Record<string, unknown>) {
+  const response = await requestEditorialApi({ method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) }, "opportunities");
+  if (response?.ok) return { ok: true, error: "" };
+  if (response?.status === 409) return { ok: false, error: "A ficha mudou ou já existe. Recarregue o catálogo antes de continuar." };
+  if (response?.status === 400) return { ok: false, error: "Confira os campos, a fonte oficial, as evidências e o prazo vigente." };
+  return { ok: false, error: "Não foi possível salvar. Seus dados permanecem no formulário; tente novamente." };
 }
 
 export async function importRadarReviewCsv(csv: string): Promise<boolean> {

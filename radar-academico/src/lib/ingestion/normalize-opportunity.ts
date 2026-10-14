@@ -1,3 +1,4 @@
+import { detectOpportunityStatus } from "./publication";
 import crypto from "node:crypto";
 import { classifyAudience } from "./classify-audience";
 import { classifyApplicationRoute } from "./classify-application-route";
@@ -39,7 +40,7 @@ export function normalizeOpportunity(input: {
   const applicantType = classifyAudience(combined);
   const applicationRoute = classifyApplicationRoute(combined);
   const deadline = detectDeadline(combined);
-  if (["institution", "company", "professor", "researcher"].includes(applicantType)) return null;
+
   if (applicationRoute === "unclear" || deadline.precision === "not_informed") return null;
 
   const statusSignal = detectSuspension(combined);
@@ -64,9 +65,9 @@ export function normalizeOpportunity(input: {
     amountText: "Não informado na fonte oficial. Consulte o edital.",
     stateCode: normalizedLocation.location.stateCode,
     cityName: normalizedLocation.location.cityName,
-    reviewStatus: "pending_review",
-    opportunityStatus: statusSignal ?? "unknown",
-    evidenceJson: generateEvidence(input.url, combined),
+    reviewStatus: "needs_information",
+    opportunityStatus: statusSignal ?? detectOpportunityStatus(combined),
+    evidenceJson: { ...generateEvidence(input.url, combined), opportunity_status: { source_url: input.url, excerpt: combined.slice(Math.max(0, combined.search(/inscriç(?:ão|ões)|suspens|cancelad/i)), Math.max(0, combined.search(/inscriç(?:ão|ões)|suspens|cancelad/i)) + 1000) } },
     extractionMethod: input.source.extractionMode,
     contentHash,
     hasRetification: Boolean(detectRetification(combined)),

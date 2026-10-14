@@ -1,3 +1,4 @@
+import { recheckKnownOpportunities } from "./recheck";
 import { claimDueOfficialSources, completeScheduledSource, loadOfficialSource } from "./official-source-registry";
 import { deduplicateCandidates } from "./detect-duplicates";
 import { fetchOfficialResource, boundedInteger } from "./fetch-source";
@@ -138,18 +139,24 @@ async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
   if (!source) throw new Error("Fonte oficial inválida, não verificada ou inativa");
   const activeSources: OfficialSource[] = [source];
   for (const source of activeSources.sort((a, b) => b.priority - a.priority)) {
+    const rechecked = await recheckKnownOpportunities(source, Math.min(2, Math.max(0, budget.remaining - 2)), detailText);
+    budget.remaining -= rechecked.pagesChecked + rechecked.failed;
     const result = await ingestSource(source, budget, maxCandidates);
+    result.pagesChecked += rechecked.pagesChecked;
+    result.failed += rechecked.failed;
+    if (rechecked.failed) result.warnings.push("Falha ao reconsultar ficha existente; verificação anterior preservada.");
     const persistence = await saveReviewItems(source, result);
-    report.push({ ...result, ...persistence });
+    report.push({ ...result, ...persistence, published: persistence.published + rechecked.published });
     if (budget.remaining <= 0) break;
   }
   return {
     startedAt: new Date().toISOString(),
-    automaticPublish: false,
+    automaticPublish: true,
     pagesChecked: report.reduce((sum, item) => sum + item.pagesChecked, 0),
     discovered: report.reduce((sum, item) => sum + item.discovered.length, 0),
-    sentToReview: report.reduce((sum, item) => sum + item.saved, 0),
-    published: 0,
+    sentToReview: 0,
+    published: report.reduce((sum, item) => sum + item.published, 0),
+    blocked: report.reduce((sum, item) => sum + item.blocked, 0),
     sources: report,
   };
 }
@@ -164,7 +171,7 @@ export async function runOfficialSourceIngestion(options?: OfficialSourceIngesti
 
 export async function runScheduledOfficialSourceIngestion() {
   const sources = await claimDueOfficialSources(3);
-  const reports: Array<{ sourceId: string; pagesChecked: number; discovered: number; sentToReview: number; failed: number }> = [];
+  const reports: Array<{ sourceId: string; pagesChecked: number; discovered: number; sentToReview: number; published: number; failed: number }> = [];
   for (const source of sources) {
     let failed = true;
     try {
@@ -172,19 +179,19 @@ export async function runScheduledOfficialSourceIngestion() {
       const sourceReport = report.sources[0];
       failed = sourceReport.failed > 0;
       reports.push({ sourceId: source.id, pagesChecked: report.pagesChecked,
-        discovered: report.discovered, sentToReview: report.sentToReview, failed: sourceReport.failed });
+        discovered: report.discovered, sentToReview: 0, published: report.published, failed: sourceReport.failed });
     } catch {
-      reports.push({ sourceId: source.id, pagesChecked: 0, discovered: 0, sentToReview: 0, failed: 1 });
+      reports.push({ sourceId: source.id, pagesChecked: 0, discovered: 0, sentToReview: 0, published: 0, failed: 1 });
     } finally {
       await completeScheduledSource(source.id, failed);
     }
   }
   return {
-    automaticPublish: false, sourcesChecked: reports.length,
+    automaticPublish: true, sourcesChecked: reports.length,
     pagesChecked: reports.reduce((sum, item) => sum + item.pagesChecked, 0),
     discovered: reports.reduce((sum, item) => sum + item.discovered, 0),
     sentToReview: reports.reduce((sum, item) => sum + item.sentToReview, 0),
     failed: reports.reduce((sum, item) => sum + item.failed, 0),
-    published: 0, sources: reports,
+    published: reports.reduce((sum, item) => sum + item.published, 0), sources: reports,
   };
 }

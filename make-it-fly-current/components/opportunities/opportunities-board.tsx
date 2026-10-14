@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveCatalogueRefresh } from "./live-refresh";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, CalendarDays, Compass, MapPin, SlidersHorizontal, X } from "lucide-react";
@@ -23,6 +24,7 @@ import styles from "./opportunities.module.css";
 
 type OpportunityBoardProps = {
   opportunities: readonly StudentOpportunity[];
+  management?: boolean;
 };
 
 const formatDate = (date: string) =>
@@ -30,10 +32,11 @@ const formatDate = (date: string) =>
     day: "2-digit",
     month: "short",
     year: "numeric",
+    ...(date.length > 10 ? { hour: "2-digit" as const, minute: "2-digit" as const } : {}),
     timeZone: "America/Sao_Paulo",
-  }).format(new Date(`${date}T12:00:00Z`));
+  }).format(new Date(date.length > 10 ? date : `${date}T12:00:00Z`));
 
-export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
+export function OpportunitiesBoard({ opportunities, management = false }: OpportunityBoardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -77,6 +80,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
 
   return (
     <section className={styles.board} aria-labelledby="mural-title">
+      <LiveCatalogueRefresh />
       <div className={styles.boardHeading}>
         <div>
           <p className={styles.kicker}>Mural em atualização</p>
@@ -236,7 +240,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
           {visible.map((opportunity) => (
             <article className={styles.card} key={opportunity.id}>
               <div className={styles.cardTopline}>
-                <span className={styles.kind}>{opportunity.kind}</span>
+                <span className={styles.kind}>{opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
                 <span>{opportunity.level}</span>
               </div>
               <div className={styles.cardMain}>
@@ -266,7 +270,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
                 </div>
               </div>
               <div className={styles.cardFooter}>
-                <span>Verificado em {formatDate(opportunity.verifiedAt)}</span>
+                <span>{opportunity.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={opportunity.verificationTimestamp ?? opportunity.verifiedAt} title="Horário de Brasília">{formatDate(opportunity.verificationTimestamp ?? opportunity.verifiedAt)}</time></span>
                 <Link
                   href={opportunity.officialUrl}
                   className={styles.externalLink}
@@ -277,6 +281,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
                   Ver oportunidade <ArrowUpRight size={16} aria-hidden />
                 </Link>
               </div>
+              {management ? <Link className={styles.externalLink} href={`/admin/radar?editar=${encodeURIComponent(opportunity.id.replace(/^radar-/, ""))}`}>Editar ou excluir</Link> : null}
             </article>
           ))}
         </div>

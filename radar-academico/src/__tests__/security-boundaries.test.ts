@@ -25,8 +25,8 @@ it("every outward SQL query includes editorial and publication constraints", asy
   expect(queryPublic).toHaveBeenCalledTimes(3);
   for (const [sql] of vi.mocked(queryPublic).mock.calls) {
     expect(sql).toContain("where"); expect(sql).toContain("o.review_status='approved'");
-    expect(sql).toContain("o.published_at is not null"); expect(sql).toContain("o.human_verified_at is not null");
-    expect(sql).toContain("o.opportunity_status='open'"); expect(sql).toContain("o.deadline_at >= now()");
+    expect(sql).toContain("o.published_at is not null"); expect(sql).toContain("o.verified_at is not null");
+    expect(sql).toContain("o.opportunity_status in ('open','upcoming')"); expect(sql).toContain("o.deadline_at >= now()");
     expect(sql).toContain("o.deadline_precision='date_only'");
     expect(sql).toContain("America/Sao_Paulo");
   }
@@ -39,7 +39,7 @@ it("standalone pages redirect before reading full data", () => {
 it("cron fails closed and does not disclose internal failures", async () => {
   expect((await cron(new Request("https://radar.example/cron"))).status).toBe(401);
   vi.stubEnv("CRON_SECRET", "fixture");
-  vi.mocked(runScheduledOfficialSourceIngestion).mockResolvedValue({ automaticPublish: false, sourcesChecked: 0, pagesChecked: 0, discovered: 0, sentToReview: 0, failed: 0, published: 0, sources: [] });
+  vi.mocked(runScheduledOfficialSourceIngestion).mockResolvedValue({ automaticPublish: true, sourcesChecked: 0, pagesChecked: 0, discovered: 0, sentToReview: 0, failed: 0, published: 0, sources: [] });
   vi.mocked(runOfficialSourceIngestion).mockRejectedValue(new Error("postgres://secret"));
   expect((await cron(new Request("https://radar.example/cron", { headers: { authorization: "Bearer fixture" } }))).status).toBe(200);
   expect(runScheduledOfficialSourceIngestion).toHaveBeenCalledOnce();

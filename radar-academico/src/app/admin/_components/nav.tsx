@@ -7,7 +7,7 @@ export function AdminNav() {
         <Link href="/" className="mr-auto text-lg text-slate-950">Radar Acadêmico</Link>
         <Link href="/admin/fontes" className="text-slate-600 hover:text-blue-700">Fontes</Link>
         <Link href="/admin/ingestoes" className="text-slate-600 hover:text-blue-700">Ingestões</Link>
-        <Link href="/admin/revisao" className="text-slate-600 hover:text-blue-700">Revisão</Link>
+        <Link href="/admin/revisao" className="text-slate-600 hover:text-blue-700">Catálogo</Link>
       </div>
     </nav>
   );

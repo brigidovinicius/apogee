@@ -1,3 +1,7 @@
+# Plano vigente
+
+A execução atual segue o [PRD](../../docs/radar-prd.md) e o [registro de implementação](../../docs/radar-live-execution.md). O plano abaixo é histórico e sua aprovação humana foi substituída em 13/10/2026.
+
 # Plano executado
 
 1. Criar aplicação Next.js/TypeScript e dependências de ingestão.

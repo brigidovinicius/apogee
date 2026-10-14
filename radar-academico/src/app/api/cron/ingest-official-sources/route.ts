@@ -37,5 +37,5 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  return Response.json({ ok: true, protected: true, automaticPublish: false });
+  return Response.json({ ok: true, protected: true, automaticPublish: true });
 }

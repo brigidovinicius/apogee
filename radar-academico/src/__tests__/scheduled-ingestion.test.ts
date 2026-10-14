@@ -7,6 +7,7 @@ vi.mock("@/lib/ingestion/official-source-registry", () => ({
 vi.mock("@/lib/ingestion/fetch-source", () => ({
   fetchOfficialResource: vi.fn(), boundedInteger: (value: string | undefined, fallback: number) => value === undefined ? fallback : Number(value),
 }));
+vi.mock("@/lib/ingestion/recheck", () => ({ recheckKnownOpportunities: vi.fn(async () => ({ pagesChecked: 0, failed: 0, published: 0 })) }));
 vi.mock("@/lib/ingestion/save-review-item", () => ({ saveReviewItems: vi.fn() }));
 
 import { claimDueOfficialSources, completeScheduledSource, loadOfficialSource } from "@/lib/ingestion/official-source-registry";
@@ -25,7 +26,7 @@ const makeSource = (id: string): OfficialSource => ({
 
 afterEach(() => { vi.clearAllMocks(); vi.unstubAllEnvs(); });
 
-it("varre várias fontes vencidas, lê páginas de detalhe e mantém publicação manual", async () => {
+it("varre várias fontes vencidas, lê páginas de detalhe e publica resultados válidos automaticamente", async () => {
   vi.stubEnv("DATABASE_URL", "fixture");
   const sources = [makeSource("source-a"), makeSource("source-b")];
   vi.mocked(claimDueOfficialSources).mockResolvedValue(sources);
@@ -36,12 +37,12 @@ it("varre várias fontes vencidas, lê páginas de detalhe e mantém publicaçã
       : "<article><h1>Curso gratuito de soldagem</h1><p>Inscrições até 20/10/2026 pelo formulário de inscrição para estudantes.</p></article>";
     return { body: Buffer.from(body), contentType: "text/html", hash: "fixture", cached: false };
   });
-  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, persistence: "postgres" });
+  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, published: 1, blocked: 0, created: 1, updated: 0, persistence: "postgres" });
 
   const report = await runScheduledOfficialSourceIngestion();
   expect(claimDueOfficialSources).toHaveBeenCalledWith(3);
-  expect(report).toMatchObject({ sourcesChecked: 2, pagesChecked: 4, discovered: 2, sentToReview: 2, failed: 0, published: 0, automaticPublish: false });
-  expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({ isCourse: true, reviewStatus: "pending_review" });
+  expect(report).toMatchObject({ sourcesChecked: 2, pagesChecked: 4, discovered: 2, sentToReview: 0, failed: 0, published: 2, automaticPublish: true });
+  expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({ isCourse: true, reviewStatus: "needs_information" });
   expect(completeScheduledSource).toHaveBeenCalledWith("source-a", false);
   expect(completeScheduledSource).toHaveBeenCalledWith("source-b", false);
 });
@@ -56,7 +57,7 @@ it("avança pelos links sem repetir sempre os primeiros", async () => {
       : "<article>Inscrições até 20/10/2026 pelo formulário de inscrição para estudantes.</article>";
     return { body: Buffer.from(body), contentType: "text/html", hash: "fixture", cached: false };
   });
-  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, persistence: "postgres" });
+  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, published: 1, blocked: 0, created: 1, updated: 0, persistence: "postgres" });
 
   const first = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 3, maxCandidates: 10 });
   expect(first.sources[0]).toMatchObject({ pagesChecked: 3, nextListingIndex: 0, nextLinkOffset: 2 });

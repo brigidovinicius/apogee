@@ -149,7 +149,6 @@ export async function runEditorialSourceIngestion(input: {
   return {
     pagesChecked: report.pagesChecked,
     discovered: report.discovered,
-    sentToReview: report.sentToReview,
-    published: report.published,
+    published: report.published, blocked: report.blocked,
   };
 }
