@@ -31,3 +31,28 @@ it("rejects literal private targets and non-HTTPS before creating a socket", asy
   }
   expect(request).not.toHaveBeenCalled();
 });
+
+it("accepts a compressed 404 without reading its body, but rejects compressed success", async () => {
+  let status = 404;
+  let response: Readable;
+  vi.mocked(request).mockImplementation(((_url: URL, _options: unknown, callback: (res: Readable) => void) => {
+    const req = new EventEmitter() as EventEmitter & { end: () => void };
+    req.end = () => {
+      response = Object.assign(Readable.from([Buffer.alloc(100)]), {
+        statusCode: status,
+        headers: { "content-encoding": "gzip" },
+      });
+      callback(response);
+    };
+    return req;
+  }) as never);
+
+  const missing = await safeRequest("https://example.edu.br/robots.txt", {}, 5);
+  expect(missing.status).toBe(404);
+  expect(await missing.text()).toBe("");
+  expect(response!.destroyed).toBe(true);
+
+  status = 200;
+  await expect(safeRequest("https://example.edu.br/page", {}, 5)).rejects.toThrow("fora dos limites");
+  expect(response!.destroyed).toBe(true);
+});
