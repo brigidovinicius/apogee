@@ -70,3 +70,36 @@ it("avança pelos links sem repetir sempre os primeiros", async () => {
     source.listingUrls[0], "https://example.edu.br/source-c/curso-3",
   ]);
 });
+
+it("extrai o hackathon global da página oficial mesmo quando o primeiro main é um modal", async () => {
+  vi.stubEnv("DATABASE_URL", "fixture");
+  const source: OfficialSource = {
+    ...makeSource("nasa-space-apps-2026"),
+    institutionName: "NASA Space Apps Challenge",
+    baseUrl: "https://www.spaceappschallenge.org/2026/",
+    allowedDomains: ["www.spaceappschallenge.org"],
+    allowedPathPrefixes: ["/blog/", "/2026/"],
+    listingUrls: ["https://www.spaceappschallenge.org/blog/explore-the-next-frontier-at-the-2026-nasa-space-apps-challenge/"],
+    geographicScope: ["Global"],
+    location: { stateCode: null, cityName: null },
+  };
+  vi.mocked(loadOfficialSource).mockResolvedValue(source);
+  vi.mocked(fetchOfficialResource).mockImplementation(async (url) => {
+    const body = url.includes("/blog/")
+      ? '<a href="/2026/">2026 Hackathon</a>'
+      : `<body><main>Third-Party Link</main><section>Welcome to the 2026 NASA Space Apps Challenge! Register to join us on November 14-15.
+         REGISTER FOR THE HACKATHON August 26, 2026 To participate, you must first register for the 2026 NASA Space Apps Challenge.
+         You can register up until the hackathon closes on November 15.
+         Choose the virtual Universal Event if you cannot attend locally.</section></body>`;
+    return { body: Buffer.from(body), contentType: "text/html", hash: "fixture", cached: false };
+  });
+  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, published: 1, blocked: 0, created: 1, updated: 0, persistence: "postgres" });
+
+  const report = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 5, maxCandidates: 10 });
+  expect(report).toMatchObject({ pagesChecked: 2, discovered: 1, published: 1 });
+  expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({
+    title: "NASA Space Apps Challenge 2026", categories: ["competicoes", "eventos"],
+    deadlineAt: "2026-11-15", opportunityStatus: "open",
+    geographicScopeKind: "global", countryCode: null, stateCode: null, cityName: null,
+  });
+});

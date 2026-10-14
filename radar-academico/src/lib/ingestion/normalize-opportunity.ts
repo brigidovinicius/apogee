@@ -8,6 +8,7 @@ import { detectSuspension } from "./detect-suspension";
 import { generateEvidence } from "./generate-evidence";
 import type { BenefitType, OfficialSource, OpportunityCandidate } from "./types";
 import { normalizeBrazilianLocation } from "@/lib/location";
+import { normalizeSpaceApps } from "./normalize-space-apps";
 
 const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|seleção|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|pesquisa|extensão|inovação|empreendedorismo/i;
 const excluded = /licitaç|pregão|compra pública|concurso público|processo administrativo/i;
@@ -33,6 +34,7 @@ export function normalizeOpportunity(input: {
   url: string;
   source: OfficialSource;
 }): OpportunityCandidate | null {
+  if (input.source.id === "nasa-space-apps-2026") return normalizeSpaceApps(input);
   const combined = `${input.title}\n${input.text}`.replace(/\s+/g, " ").trim();
   const normalizedLocation = normalizeBrazilianLocation(input.source.location ?? {});
   if (normalizedLocation.status === "invalid") return null;

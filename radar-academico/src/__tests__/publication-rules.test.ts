@@ -108,6 +108,10 @@ it("requires explicit open or confirmed future opening and never promotes an arb
   expect(detectOpportunityStatus("Inscrições abertas até 20/10/2026", now)).toBe("open");
   expect(detectOpportunityStatus("Inscrições de 15/10/2026 a 20/10/2026", now)).toBe("upcoming");
   expect(detectOpportunityStatus("Inscrições de 10/10/2026 a 20/10/2026", now)).toBe("open");
+  expect(detectOpportunityStatus("Inscrições: 10/10/2026 a 20/10/2026", now)).toBe("open");
+  expect(detectOpportunityStatus("Inscrições: 15/10/2026 a 20/10/2026", now)).toBe("upcoming");
+  expect(detectOpportunityStatus("Inscrições: 10/09/2026 a 20/09/2026", now)).toBe("closed");
+  expect(detectOpportunityStatus("Inscrições: 31/02/2026 a 20/10/2026", now)).toBe("unknown");
   expect(detectOpportunityStatus("Inscrições a partir de 31/02/2026", now)).toBe("unknown");
   expect(detectOpportunityStatus("Inscrições encerradas. Nova turma em 2027.", now)).toBe("closed");
   expect(detectOpportunityStatus("Curso publicado em 12/10/2026", now)).toBe("unknown");

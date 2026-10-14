@@ -22,7 +22,10 @@ async function detailText(body: Buffer, contentType: string) {
   if (!/text\/html|application\/xhtml/i.test(contentType)) return "";
   const $ = cheerio.load(body.toString("utf8"));
   $("script,style,noscript,nav,footer,header").remove();
-  return ($("article").first().text() || $("main").first().text() || $("body").text())
+  const article = $("article").first().text();
+  const main = $("main").first().text();
+  // Some official sites put a short accessibility/modal <main> before the actual page.
+  return (article || (main.replace(/\s+/g, " ").trim().length >= 500 ? main : $("body").text()))
     .replace(/\s+/g, " ").trim().slice(0, 30_000);
 }
 
@@ -69,7 +72,8 @@ async function ingestSource(
         return false;
       }
       visited.add(item.url);
-      return promisingLink.test(`${item.title} ${item.excerpt}`);
+      return promisingLink.test(`${item.title} ${item.excerpt}`) ||
+        source.id === "cnpq-chamadas-abertas-2026" && /chamada/i.test(item.title);
     });
     const start = source.crawlLinkOffset ?? 0;
     let processed = 0;
