@@ -97,7 +97,7 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
           <h2 id="mural-title">Encontre a sua próxima janela de lançamento.</h2>
         </div>
         <p className={styles.count} aria-live="polite">
-          {visible.length} {visible.length === 1 ? "oportunidade" : "oportunidades"} visíveis
+          {visible.length} {visible.length === 1 ? "oportunidade visível" : "oportunidades visíveis"}
         </p>
       </div>
       {management ? <p className={styles.coverageProgress}>
