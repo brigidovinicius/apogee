@@ -2,6 +2,8 @@
 
 Status: primeira etapa implementada localmente em `fix/APG-82-radar-admin-bridge`, a partir de `b4ee859919fb73a437c8fee4a2373f74bfa1e2e4`. Nenhuma coleta real, migração remota, publicação, push ou deploy foi executado nesta etapa.
 
+Atualização de 14/10: o proprietário autorizou e foi executada a implantação posterior. Este documento preserva a evidência local original; consulte o [registro de produção](radar-production-20261014.md) para backup, migração, release e validações reais.
+
 ## Implementado
 
 - Publicação automática de fichas abertas ou futuras confirmadas, com fonte ativa/verificada, URL permitida, evidência e prazo. Fonte incerta, vencida, suspensa, cancelada ou contraditória fica fora do catálogo. Aprovação humana de fichas e retificações foi retirada.

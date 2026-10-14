@@ -1,6 +1,6 @@
 # Radar Apogee — PRD
 
-Revisão: 13/10/2026. Decisão vigente do proprietário: publicação automática; painel de gerenciamento do catálogo ao vivo. Substitui a proposta anterior de revisão humana e o fluxo editorial da especificação legada.
+Revisão: 14/10/2026. Decisão vigente do proprietário: publicação automática; painel de gerenciamento do catálogo ao vivo. Substitui a proposta anterior de revisão humana e o fluxo editorial da especificação legada. Migração e deploy autorizados posteriormente pelo proprietário; evidências no [registro de produção](radar-production-20261014.md).
 
 O [brief integral](radar-product-brief.md) preserva os requisitos, exemplos e referências recebidos. Este PRD registra as decisões vigentes e o recorte inicial, sem descartar as demais capacidades. O andamento e os limites estão no [registro de execução](radar-live-execution.md).
 
@@ -23,7 +23,7 @@ Catálogo principal idêntico ao publicado, com busca e filtros comuns. Criar, e
 
 ## Atualização
 
-Apogee lê a API sem cache persistente e renova a lista em abas visíveis a cada 60 segundos. Salvar/excluir invalida as páginas afetadas. O agendador existente consulta fontes em lotes limitados, respeitando robots, domínio, tamanho, tempo e frequência. Cada fonte mantém seu intervalo; a execução não garante que toda a Web foi varrida. Rechecagem de fichas existentes ocorre dentro do limite de páginas e distingue falhas de consulta de mudanças confirmadas. Não confundir consulta da API com nova consulta à fonte oficial.
+Apogee lê a API sem cache persistente e renova a lista em abas visíveis a cada 60 segundos. Salvar/excluir invalida as páginas afetadas. O agendador verifica trabalho vencido a cada cinco minutos por padrão, em lotes limitados, respeitando robots, domínio, tamanho, tempo e frequência. Cada fonte mantém seu intervalo; a execução não garante que toda a Web foi varrida. Rechecagem de fichas existentes inclui importações assistidas, dentro do limite de páginas, e distingue falhas de consulta de mudanças confirmadas. Importação assistida não implica descoberta automática de novas URLs. Não confundir consulta da API com nova consulta à fonte oficial.
 
 ## Navegação: duas opções em avaliação
 
@@ -46,7 +46,7 @@ Identidade por programa/edição, deduplicação entre fontes e ligação ao org
 2. Radar: validação automática, atualização idempotente, proteção de alterações/exclusões e API de gerenciamento.
 3. Apogee: catálogo único, CRUD administrativo, retirada da aprovação e atualização de leitura.
 4. Verificar regras, autorização, persistência, paridade e ausência de regressões; documentar limites.
-5. Preparar migração e implantação conjunta como etapa separada, sem executar banco remoto ou publicar neste trabalho.
+5. Executar a migração e a implantação conjunta autorizadas, com backup anterior e restauração de teste; validar publicação automática, paridade e CRUD em produção e registrar limitações.
 
 As demais capacidades de evolução não devem ser apresentadas como implementadas nesta primeira execução.
 
