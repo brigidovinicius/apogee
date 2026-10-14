@@ -11,7 +11,7 @@ import type { IngestionResult, OfficialSource } from "./types";
 import { isOfficialSourceUrl } from "./validate-url";
 import { normalizeBrazilianLocation } from "@/lib/location";
 import * as cheerio from "cheerio";
-import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupplementUrl } from "./programme-catalogue";
+import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupplementUrl, programmeCatalogueCanBeEmpty } from "./programme-catalogue";
 import { isAuditedAcateEventUrl, normalizeAcateEvent } from "./normalize-acate-events";
 import { FULBRIGHT_SOURCE_ID, normalizeFulbright } from "./normalize-fulbright";
 
@@ -83,7 +83,7 @@ async function ingestSource(
       }
       const candidates = normalizeProgrammeCatalogue(resource.body.toString("utf8"), applicationHtml, source);
       // Senac validates the catalogue envelope even when all PSG places are full.
-      if (!candidates.length && source.id !== "senac-sc-psg-open-cohorts") throw new Error("Oferta ou inscrição não confirmada");
+      if (!candidates.length && !programmeCatalogueCanBeEmpty(source.id)) throw new Error("Oferta ou inscrição não confirmada");
       const start = source.crawlLinkOffset ?? 0;
       const selected = candidates.slice(start, start + (maxCandidates ?? 200));
       result.discovered = selected;

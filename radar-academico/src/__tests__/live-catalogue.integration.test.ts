@@ -538,3 +538,42 @@ it("rechecks the Fulbright selection through RLS, preserves edits and withdraws 
   expect(await listLiveCatalogue()).toHaveLength(0);
  } finally {vi.useRealTimers();}
 });
+
+it("rechecks both PDAI pages through RLS and withdraws a valid empty/conflicting selection", async () => {
+ const {normalizeCapesPdai}=await import("@/lib/ingestion/normalize-capes-pdai");
+ const {pdaiSource:pdai,pdaiProgramme:programme,pdaiNews:news}=await import("./fixtures/capes-pdai");
+ vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-14T23:55:00Z"));
+ try {
+  await state.db!.query(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,active,verification_status) values ($1,'PDAI','CAPES','CAPES','government_foundation',$2,$3,$4,$5,'html',true,'verified')`,[pdai.id,pdai.baseUrl,pdai.allowedDomains,pdai.allowedPathPrefixes,pdai.listingUrls]);
+  const item=normalizeCapesPdai(programme,news,pdai)[0];
+  const ingest=()=>saveReviewItems(pdai,{sourceId:pdai.id,pagesChecked:2,discovered:[item],ignored:0,failed:0,locationRejected:0,warnings:[]});
+  expect(await ingest()).toMatchObject({created:1,published:1});expect(await ingest()).toMatchObject({created:0});
+  const [original]=await listLiveCatalogue();expect(original.deadlinePrecision).toBe("exact_datetime");
+  await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+  vi.mocked(fetchOfficialResource).mockImplementation(async url=>({body:Buffer.from(url===pdai.baseUrl?programme:news),contentType:"text/html",hash:"ok",cached:false}));
+  expect(await recheckKnownOpportunities(pdai,1,async()=>"")).toMatchObject({pagesChecked:2,failed:0});
+  expect(await listLiveCatalogue()).toHaveLength(1);
+  await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+  vi.mocked(fetchOfficialResource).mockRejectedValue(new Error("official page unavailable"));
+  expect(await recheckKnownOpportunities(pdai,1,async()=>"")).toMatchObject({failed:1});
+  expect(await listLiveCatalogue()).toHaveLength(1);
+  await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+  vi.mocked(fetchOfficialResource).mockImplementation(async url=>({body:Buffer.from(url===pdai.baseUrl?programme:'<div id="page-document"><h1>Prazo de inscrição no PDAI é prorrogado até 26 de outubro</h1></div>'),contentType:"text/html",hash:"partial",cached:false}));
+  expect(await recheckKnownOpportunities(pdai,1,async()=>"")).toMatchObject({failed:1});
+  expect(await listLiveCatalogue()).toHaveLength(1);
+  await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+  vi.mocked(fetchOfficialResource).mockImplementation(async url=>({body:Buffer.from(url===pdai.baseUrl?programme.replace("26 de outubro","25 de outubro"):news),contentType:"text/html",hash:"conflict",cached:false}));
+  expect(await recheckKnownOpportunities(pdai,1,async()=>"")).toMatchObject({pagesChecked:2,failed:0});
+  expect(await listLiveCatalogue()).toHaveLength(0);
+  expect(await ingest()).toMatchObject({created:0,published:1});
+  await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+  vi.mocked(fetchOfficialResource).mockImplementation(async url=>({body:Buffer.from(url===pdai.baseUrl?programme:news.replace("</div>","<p>Inscrições suspensas.</p></div>")),contentType:"text/html",hash:"suspended",cached:false}));
+  expect(await recheckKnownOpportunities(pdai,1,async()=>"")).toMatchObject({pagesChecked:2,failed:0});
+  expect(await listLiveCatalogue()).toHaveLength(0);
+  const terminal=(await state.db!.query<{opportunity_status:string;evidence_json:OpportunityCandidate["evidenceJson"]}>("select opportunity_status,evidence_json from opportunities where id=$1",[original.id])).rows[0];
+  expect(terminal.opportunity_status).toBe("suspended");
+  expect(terminal.evidence_json.opportunity_status).toMatchObject({source_url:pdai.allowedPathPrefixes[1] ? "https://www.gov.br"+pdai.allowedPathPrefixes[1] : "",excerpt:expect.stringContaining("Inscrições suspensas")});
+  await state.db!.query("update opportunities set deleted_at=now() where id=$1",[original.id]);
+  expect(await ingest()).toMatchObject({created:0,published:0});
+ }finally{vi.useRealTimers();}
+});
