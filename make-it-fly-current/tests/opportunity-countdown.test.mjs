@@ -43,3 +43,23 @@ test("time remaining handles rounding, zero, multi-day durations and tab-resume 
   assert.equal(countdown(item, Date.parse(item.deadlineAt) + 1).value, "Inscrições encerradas");
   assert.equal(countdown(item, now + 10_000).value, "1d 23h 59min 50s");
 });
+
+
+test("countdown colors switch at seven days for exact times, including sub-second boundaries", () => {
+  const deadlineAt = new Date(now + 7 * 86_400_000).toISOString();
+  const item = { ...base, deadlineAt };
+  assert.equal(countdown(item, now - 1).tone, "safe");
+  assert.equal(countdown(item, now).tone, "urgent");
+  assert.equal(countdown(item, now + 1).tone, "urgent");
+  assert.equal(countdown(item, Date.parse(deadlineAt)).tone, null);
+});
+test("calendar-day colors and event colors use the correct target; unknown dates stay neutral", () => {
+  assert.equal(countdown({ ...base, deadline: "2026-10-21" }, now).tone, "safe");
+  assert.equal(countdown({ ...base, deadline: "2026-10-20" }, now).tone, "urgent");
+  assert.equal(countdown({ ...base, deadline: "2026-10-19" }, now).tone, "urgent");
+  assert.equal(countdown({ ...base, deadline: null }, now).tone, null);
+  assert.equal(countdown(base, null).tone, null);
+  const event = { ...base, categories: ["eventos"], deadlineAt: new Date(now + 1000).toISOString(), eventStartsAt: new Date(now + 10 * 86_400_000).toISOString() };
+  assert.equal(countdown(event, now).tone, "safe");
+  assert.equal(countdown({ ...event, eventStartsAt: null }, now).tone, null);
+});

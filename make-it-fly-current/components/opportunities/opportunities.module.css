@@ -992,4 +992,13 @@
 .countdown > div { display: grid; gap: 0.35rem; min-width: 0; }
 .countdown span, .countdown time { font-size: 0.75rem; color: rgb(255 255 255 / 65%); }
 .countdown strong { font-size: 0.95rem; line-height: 1.45; font-variant-numeric: tabular-nums; }
-.countdown[data-urgent] { border-color: rgb(255 198 112 / 45%); color: #ffd69b; }
+.countdown[data-tone="safe"] {
+  border-color: rgb(74 222 128 / 45%);
+  background: rgb(74 222 128 / 7%);
+  color: #86efac;
+}
+.countdown[data-tone="urgent"] {
+  border-color: rgb(248 113 113 / 55%);
+  background: rgb(248 113 113 / 8%);
+  color: #fca5a5;
+}

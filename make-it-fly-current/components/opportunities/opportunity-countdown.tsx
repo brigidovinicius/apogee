@@ -34,7 +34,7 @@ const serverSnapshot = () => null;
 export function OpportunityCountdown({ opportunity }: { opportunity: StudentOpportunity }) {
   const now = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
   const countdown = opportunityCountdown(opportunity, now);
-  return <div className={styles.countdown} data-urgent={countdown.urgent || undefined}>
+  return <div className={styles.countdown} data-tone={countdown.tone ?? undefined}>
     <Clock3 size={17} aria-hidden />
     <div>
       <span>{countdown.label}</span>
