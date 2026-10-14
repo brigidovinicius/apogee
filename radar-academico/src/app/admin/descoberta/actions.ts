@@ -48,10 +48,30 @@ export async function toggleDiscoveryTarget(form: FormData) {
   const id = field(form, "id", 80);
   const enabled = field(form, "enabled", 5);
   if (!slug.test(id) || !["true", "false"].includes(enabled)) throw new Error("Fonte inválida");
-  await withAdminTransaction((client) => client.query(
-    "update discovery_targets set enabled=$2,next_check_at=null,updated_at=now() where id=$1",
+  const result = await withAdminTransaction((client) => client.query(
+    `update discovery_targets set enabled=$2,next_check_at=null,updated_at=now()
+     where id=$1 and ($2=false or (official_verified_at is not null and official_verified_url=official_url))
+     returning id`,
     [id, enabled === "true"],
   ));
+  if (!result.rows[0]) throw new Error("Página não verificada como oficial");
+  revalidatePath("/admin/descoberta");
+}
+
+export async function verifyDiscoveryTarget(form: FormData) {
+  await requireAdmin();
+  const id = field(form, "id", 80);
+  const note = field(form, "official_review_note", 500);
+  if (!slug.test(id) || note.length < 20 || form.get("official_owner_confirmed") !== "on" ||
+    form.get("collection_allowed") !== "on") throw new Error("Confirme a autoria oficial e as condições de consulta");
+  const result = await withAdminTransaction((client) => client.query(
+    `update discovery_targets set official_verified_at=now(),official_verified_url=official_url,
+       official_verified_by='admin-session',official_review_note=$2,updated_at=now()
+     where id=$1 and enabled=false and (official_verified_at is null or official_verified_url is distinct from official_url)
+     returning id`,
+    [id, note],
+  ));
+  if (!result.rows[0]) throw new Error("Página não encontrada ou já verificada para esta URL");
   revalidatePath("/admin/descoberta");
 }
 

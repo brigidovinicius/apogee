@@ -64,6 +64,11 @@ links candidatos e edições anuais. O scheduler existente na VPS os consulta
 diariamente sem GitHub Actions agendado, serviço externo pago ou publicação
 automática dos candidatos. O painel `/admin/descoberta` permite cadastrar novas
 páginas e acompanhar a agenda; novas páginas começam pausadas.
+`0010_discovery_official_audit.sql` registra a conferência das páginas oficiais
+da curadoria inicial e pausa qualquer alvo sem revisão. O banco rejeita ativar
+uma página não verificada ou mudar sua URL mantendo a revisão antiga. No painel,
+uma nova página só pode ser ativada após registrar a evidência de autoria oficial
+e as condições de consulta. Sites de terceiros não são monitorados.
 As novas fontes começam pendentes e inativas. Autorizar uma
 fonte exige conferir domínio, localização e condições de consulta; fichas válidas
 publicam automaticamente, sem revisão humana intermediária.

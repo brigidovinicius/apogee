@@ -100,10 +100,20 @@ it("schedules rechecks of assisted imports without crawling empty manual sources
  await state.db!.exec("update opportunities set next_source_check_at=null,deleted_at=now()");
  expect(await claimDueOfficialSources(3)).toEqual([]);
 });
-it("leases daily discovery targets and does not claim them again before the next day", async () => {
+it("requires a recorded official review before leasing a discovery page", async () => {
  await withAdminTransaction((client) => client.query(
   `insert into discovery_targets(id,name,organizer,kind,official_url,evidence_url)
    values ('cnpq-chamadas-abertas','CNPq','CNPq','site','https://www.gov.br/cnpq/pt-br/chamadas/Busca_abertas','https://www.gov.br/cnpq/pt-br/chamadas/Busca_abertas')`,
+ ));
+ expect(await claimDueDiscoveryTargets(2)).toEqual([]);
+ await expect(state.db!.exec("update discovery_targets set enabled=true where id='cnpq-chamadas-abertas'")).rejects.toThrow();
+ await expect(state.db!.exec(`update discovery_targets set official_verified_at=now(),
+   official_verified_by='test-admin',official_review_note='Official CNPq page reviewed',enabled=true
+   where id='cnpq-chamadas-abertas'`)).rejects.toThrow();
+ await withAdminTransaction((client) => client.query(
+  `update discovery_targets set official_verified_at=now(),official_verified_url=official_url,
+    official_verified_by='test-admin',official_review_note='Official CNPq page reviewed',enabled=true
+   where id='cnpq-chamadas-abertas'`,
  ));
  expect((await claimDueDiscoveryTargets(2)).map((item) => item.id)).toEqual(["cnpq-chamadas-abertas"]);
  expect(await claimDueDiscoveryTargets(2)).toEqual([]);
@@ -112,6 +122,7 @@ it("leases daily discovery targets and does not claim them again before the next
   "select next_check_at >= now() + interval '23 hours' as next_day from discovery_targets where id='cnpq-chamadas-abertas'",
  )).rows[0];
  expect(row.next_day).toBe(true);
+ await expect(state.db!.exec("update discovery_targets set official_url='https://other.example.org/' where id='cnpq-chamadas-abertas'")).rejects.toThrow();
 });
 it("refreshes unchanged content without duplicating and applies a retification with history", async () => {
  await save(); const [first] = await listLiveCatalogue(true);
