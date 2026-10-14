@@ -47,7 +47,9 @@ export function normalizeEvgCourse(html: string, url: string, source: OfficialSo
   if (!available && !terminal) return null;
   const title = `${rawTitle} — ${provider} (EV.G)`;
   const proof = { source_url: url, excerpt: terminal ? terminalText : `${other}; ${publicAudience}; Inscreva-se — matrícula na própria EV.G.` };
-  const programme = fields.get("Conteúdo Programático") ?? "";
+  const programmeField = offer.find("dt").filter((_, node) => clean($(node).text()).replace(/:$/, "") === "Conteúdo Programático").next("dd");
+  const programmeItems = programmeField.find("li").toArray().map(node => clean($(node).text()));
+  const programme = programmeItems.length ? programmeItems.join("; ") : fields.get("Conteúdo Programático") ?? "";
   const requirementsText = `Oferta e certificação: EV.G/Enap. Conteúdo: ${provider}. ${publicAudience} Idioma: ${language}. Carga horária: ${fields.get("Carga Horária") || "não informada"}. Disponibilidade para realização após a inscrição: ${fields.get("Disponibilidade") || "não informada"}; essa duração não é prazo de matrícula. ${programme.slice(0, 1800)} Consulte a oferta oficial para condições de conclusão e emissão do certificado.`;
   return { officialSourceId: source.id, title, institution: `Escola Virtual de Governo / Enap; conteúdo: ${provider}`,
     sourcePageUrl: url, applicationUrl: applicationUrl ?? url, applicantType: "mixed", applicationRoute: "direct_student_application",
