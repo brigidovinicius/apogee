@@ -25,3 +25,9 @@ A migração está preparada e foi exercitada apenas no banco isolado PGlite. N�
 - `npm run typecheck` em ambas as aplicações; ESLint direcionado aos arquivos alterados; `git diff --check`.
 - Navegador local, com dados demonstrativos e conexão de banco apontada para endereço local inválido: segundos diminuindo; distinção entre início e encerramento; ausência de data; sem transbordamento horizontal em largura de 390 px. A rota temporária e seu tipo gerado foram removidos e o servidor foi encerrado.
 - Não foi exercitado um cadastro real nem alterada uma oportunidade em produção.
+
+## Teste manual local
+
+Rota de demonstração: `http://127.0.0.1:3178/dev/oportunidades`. Disponível apenas com `NODE_ENV=development`; em produção responde 404. Usa somente dados fictícios e os componentes reais do mural. O botão “Reiniciar contadores” reinicia os exemplos, inclusive o encerramento em 15 segundos. O navegador confirmou a transição para “Inscrições encerradas”.
+
+Servidor de demonstração restrito a `127.0.0.1`, com a conexão de banco sobrescrita para um endereço local inválido e as credenciais do Radar desabilitadas no processo. Sem migração ou escrita em dados reais.
