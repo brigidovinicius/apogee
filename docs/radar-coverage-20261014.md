@@ -1,5 +1,15 @@
 # Cobertura do Radar — medição de 14/10/2026
 
+## Atualização após IFC e Novos Valores — 14/10/2026, 13h49 de São Paulo
+
+Produção retornou **125 fichas, 125 IDs únicos**, nas APIs de usuário e administrador, com os mesmos IDs e campos públicos. Nenhum dos 124 IDs guardados antes da última troca foi perdido. A distância até 1.000 é **875**. O catálogo administrativo e a página pública da Apogee mostraram a nova ficha Novos Valores; oportunidades de mestrado, doutorado e pós-doutorado continuam presentes na vitrine. O PR #41 foi fechado sem implantação.
+
+Distribuição por categoria (um ID pode aparecer em várias): formação 42, bolsas 80, intercâmbios 1, competições 1, pesquisa 78, carreira 3, eventos 1. Por fonte: FAPESP 78, IFC técnicos integrados 41, IFPE 1, MinC 1, NASA Space Apps 1, Braskem 1, São José dos Campos 1, SED Novos Valores 1.
+
+O [PR #43](https://github.com/brigidovinicius/apogee/pull/43) implantou as fontes IFC e SED. Os [PR #44](https://github.com/brigidovinicius/apogee/pull/44), [#45](https://github.com/brigidovinicius/apogee/pull/45) e [#46](https://github.com/brigidovinicius/apogee/pull/46) corrigiram a compatibilidade do cabeçalho oficial SEA e o empacotamento do leitor PDF. A revisão Radar em execução é `4b00723da17ca1dce3eef3b39d044034c7a7beab`; web saudável e scheduler ativo. Backup anterior em `/opt/apogee-backups/radar-pdf-runtime-20261014T164756Z`, restaurado em banco temporário com contagens coincidentes; as medições completas estão no mesmo diretório. A Apogee recebeu os resultados automaticamente.
+
+A leitura local da página oficial IFSC identificou 103 ofertas distintas por curso/campus/modalidade com inscrição vigente. Esse lote ainda depende de migração, deploy e coleta real; **não está somado aos 125 IDs** desta medição. A meta de 1.000 permanece não atingida.
+
 ## Atualização após FAPESP — 14/10/2026, 15:16 UTC
 
 O [PR #39](https://github.com/brigidovinicius/apogee/pull/39) foi implantado no Radar após backup e restauração de teste. A listagem oficial da [FAPESP Oportunidades](https://fapesp.br/oportunidades/) mostrou 78 páginas individuais de bolsas abertas; a coleta limitada percorreu todas e publicou 78 fichas distintas, sem falhas nem bloqueios nessa fonte. As APIs pública e administrativa mostraram os mesmos **81 IDs** vigentes e os mesmos campos públicos. Distribuição por categoria, com IDs repetidos entre categorias: formação 1, bolsas 80, intercâmbios 1, competições 1, pesquisa 78, carreira 0, eventos 1. O alcance estruturado era global 1, país 1, estado 1, cidade 0 e desconhecido 78; não inferir UF/cidade a partir do nome da instituição ou de cidade sem estado. A lacuna para 1.000 era **919** fichas únicas. A página pública da Apogee mostrou as novas bolsas.

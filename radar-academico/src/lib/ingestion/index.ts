@@ -11,7 +11,8 @@ import type { IngestionResult, OfficialSource } from "./types";
 import { isOfficialSourceUrl } from "./validate-url";
 import { normalizeBrazilianLocation } from "@/lib/location";
 import * as cheerio from "cheerio";
-import { IFC_APPLICATION_URL, normalizeIfcIntegratedCourses } from "./normalize-ifc-integrated";
+import { IFC_APPLICATION_URL } from "./normalize-ifc-integrated";
+import { normalizeProgrammeCatalogue, programmeCataloguePageCount } from "./programme-catalogue";
 
 const promisingLink = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|edital|seleção|inscriç/i;
 
@@ -56,18 +57,28 @@ async function ingestSource(
     result.warnings.push("Fonte sem URL de listagem.");
     return result;
   }
+  const cataloguePages = programmeCataloguePageCount(source.id);
+  if (budget.remaining < (cataloguePages ?? 1)) {
+    result.failed = 1;
+    result.warnings.push("Orçamento de páginas insuficiente para confirmar a fonte.");
+    return result;
+  }
   const listingIndex = (source.crawlListingIndex ?? 0) % source.listingUrls.length;
   const listingUrl = source.listingUrls[listingIndex];
   budget.remaining -= 1;
   try {
     const resource = await fetchOfficialResource(listingUrl, source);
     result.pagesChecked += 1;
-    if (source.id === "ifc-integrated-technical-2027") {
-      budget.remaining -= 1;
-      const application = await fetchOfficialResource(IFC_APPLICATION_URL, source);
-      result.pagesChecked += 1;
-      const candidates = normalizeIfcIntegratedCourses(resource.body.toString("utf8"), application.body.toString("utf8"), source);
-      if (!candidates.length) throw new Error("Oferta ou inscrição IFC não confirmada");
+    if (cataloguePages) {
+      let applicationHtml = "";
+      if (cataloguePages === 2) {
+        budget.remaining -= 1;
+        const application = await fetchOfficialResource(IFC_APPLICATION_URL, source);
+        result.pagesChecked += 1;
+        applicationHtml = application.body.toString("utf8");
+      }
+      const candidates = normalizeProgrammeCatalogue(resource.body.toString("utf8"), applicationHtml, source);
+      if (!candidates.length) throw new Error("Oferta ou inscrição não confirmada");
       const start = source.crawlLinkOffset ?? 0;
       const selected = candidates.slice(start, start + (maxCandidates ?? 10));
       result.discovered = selected;
@@ -171,8 +182,13 @@ async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
   if (!source) throw new Error("Fonte oficial inválida, não verificada ou inativa");
   const activeSources: OfficialSource[] = [source];
   for (const source of activeSources.sort((a, b) => b.priority - a.priority)) {
-    const recheckLimit = source.id === "ifc-integrated-technical-2027" ? 100 : 2;
-    const rechecked = await recheckKnownOpportunities(source, Math.min(recheckLimit, Math.max(0, budget.remaining - 2)), detailText);
+    const cataloguePages = programmeCataloguePageCount(source.id);
+    // Catalogue records share evidence pages. Recheck the complete edition using
+    // one page budget, rather than repeating its URLs for a few records per cycle.
+    const recheckLimit = cataloguePages
+      ? budget.remaining >= cataloguePages * 2 ? 200 : 0
+      : Math.min(2, Math.max(0, budget.remaining - 2));
+    const rechecked = await recheckKnownOpportunities(source, recheckLimit, detailText);
     budget.remaining -= rechecked.pagesChecked + rechecked.failed;
     const result = await ingestSource(source, budget, maxCandidates);
     result.pagesChecked += rechecked.pagesChecked;
