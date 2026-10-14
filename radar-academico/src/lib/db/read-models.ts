@@ -12,7 +12,7 @@ export interface PublicOpportunity {
   application_route: string;
   state_code: BrazilianStateCode | null;
   city_name: string | null;
-  human_verified_at: string;
+  verified_at: string;
   has_retification: boolean;
   source_page_url: string;
   official_document_url: string | null;
@@ -24,7 +24,7 @@ export async function listPublicOpportunities(): Promise<PublicOpportunity[]> {
   if (!process.env.DATABASE_URL) return [];
   const result = await queryPublic<PublicOpportunity>(
     `select o.id,o.title,o.institution,o.benefit_type,o.deadline_at,o.deadline_precision,
-      o.application_route,o.state_code,o.city_name,o.human_verified_at,o.has_retification,
+      o.application_route,o.state_code,o.city_name,o.verified_at,o.has_retification,
       os.source_page_url,os.official_document_url,os.application_url,os.last_checked_at
      from opportunities o join lateral (
        select * from opportunity_sources where opportunity_id=o.id and active order by is_primary desc, created_at desc limit 1
@@ -37,7 +37,7 @@ export async function getPublicOpportunity(id: string): Promise<PublicOpportunit
   if (!process.env.DATABASE_URL) return null;
   const result = await queryPublic<PublicOpportunity>(
     `select o.id,o.title,o.institution,o.benefit_type,o.deadline_at,o.deadline_precision,
-      o.application_route,o.state_code,o.city_name,o.human_verified_at,o.has_retification,
+      o.application_route,o.state_code,o.city_name,o.verified_at,o.has_retification,
       os.source_page_url,os.official_document_url,os.application_url,os.last_checked_at
      from opportunities o join lateral (
        select * from opportunity_sources where opportunity_id=o.id and active order by is_primary desc, created_at desc limit 1

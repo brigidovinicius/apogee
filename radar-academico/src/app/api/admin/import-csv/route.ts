@@ -12,15 +12,15 @@ export async function POST(request: Request) {
   catch { return Response.json({ error: "CSV inválido ou excede o limite" }, { status: 413 }); }
   try {
     const rows = parseManualCsv(body);
-    let saved = 0;
+    let saved = 0, published = 0, blocked = 0;
     for (const row of rows) {
       const result = await saveReviewItems(row.source, {
         sourceId: row.source.id, pagesChecked: 0, discovered: [row.candidate],
         ignored: 0, failed: 0, locationRejected: 0, warnings: ["Importação manual assistida"],
       });
-      saved += result.saved;
+      saved += result.saved; published += result.published; blocked += result.blocked;
     }
-    return Response.json({ received: rows.length, sentToReview: saved, published: 0 });
+    return Response.json({ received: rows.length, saved, published, blocked });
   } catch {
     return Response.json({ error: "Não foi possível importar o CSV" }, { status: 400 });
   }

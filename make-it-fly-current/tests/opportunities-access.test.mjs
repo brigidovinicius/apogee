@@ -18,33 +18,19 @@ async function loadRadarConsumer() {
   return loaded.exports;
 }
 
-test("a prévia pública recebe apenas a DTO controlada e não importa fontes completas", async () => {
-  const [access, page, preview, publicPreview, board, catalogue, radar] = await Promise.all([
-    source("lib/opportunities/access.ts"),
-    source("app/oportunidades/page.tsx"),
-    source("components/opportunities/opportunities-preview.tsx"),
-    source("components/opportunities/public-opportunities-preview.tsx"),
-    source("components/opportunities/opportunities-board.tsx"),
-    source("content/opportunities.ts"),
-    source("lib/opportunities/radar-client.ts"),
+test("public and member access share the live source without static fallback", async () => {
+  const [access, page, board, radar] = await Promise.all([
+    source("lib/opportunities/access.ts"), source("app/oportunidades/page.tsx"),
+    source("components/opportunities/opportunities-board.tsx"), source("lib/opportunities/radar-client.ts"),
   ]);
-
   assert.match(access, /^import "server-only";/m);
-  assert.match(catalogue, /^import "server-only";/m);
-  assert.match(radar, /^import "server-only";/m);
-  assert.match(access, /PUBLIC_OPPORTUNITY_SAMPLE_SIZE = 3/);
-  assert.match(access, /return \{\s*id: opportunity\.id,\s*title: opportunity\.title,\s*organization: opportunity\.organization,\s*kind: opportunity\.kind,\s*level: opportunity\.level,\s*\};/s);
-  assert.match(page, /listPublicOpportunityPreviews/);
-  assert.match(page, /OpportunitiesPreview/);
-  assert.doesNotMatch(page, /STUDENT_OPPORTUNITIES|listRadarOpportunities|OpportunitiesBoard/);
+  assert.doesNotMatch(access, /STUDENT_OPPORTUNITIES|mergeOpportunities|SAMPLE_SIZE/);
+  assert.match(page, /listPublicOpportunities/);
+  assert.match(page, /OpportunitiesBoard/);
+  assert.match(page, /Catálogo temporariamente indisponível/);
   assert.doesNotMatch(board, /@\/content\/opportunities|@\/lib\/opportunities\/(access|radar-client)/);
-  assert.match(preview, /<PublicOpportunitiesPreview opportunities=\{opportunities\} memberNext=\{memberNext\} \/>/);
-
-  for (const privateField of ["summary", "eligibility", "benefit", "deadline", "officialUrl", "verifiedAt", "location", "stateCode", "cityName"]) {
-    assert.doesNotMatch(publicPreview, new RegExp(`opportunity\\.${privateField}`), privateField);
-  }
-  assert.match(publicPreview, /aria-hidden="true"/);
-  assert.match(publicPreview, /Os detalhes desta oportunidade ficam disponíveis somente para membros autenticados\./);
+  assert.match(radar, /cache: "no-store"/);
+  assert.doesNotMatch(radar, /aprovada em revisão/);
 });
 
 test("o Radar completo exige sessão tanto na rota quanto na camada de acesso", async () => {

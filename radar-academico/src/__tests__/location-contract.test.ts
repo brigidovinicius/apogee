@@ -5,7 +5,7 @@ import {
   normalizeBrazilianLocation,
 } from "@/lib/location";
 import { normalizeOpportunity } from "@/lib/ingestion/normalize-opportunity";
-import { sourceEvidenceUrl, sourceLocation } from "@/lib/ingestion/source-settings";
+import { sourceCoverage, sourceEvidenceUrl, sourceLocation } from "@/lib/ingestion/source-settings";
 import type { OfficialSource } from "@/lib/ingestion/types";
 
 const source: OfficialSource = {
@@ -52,6 +52,17 @@ describe("contrato canônico de localização", () => {
     expect(candidate).toMatchObject({ stateCode: "SC", cityName: "Praia Grande" });
   });
 
+  it("marca elegibilidade nacional só com escopo oficial e texto explícito", () => {
+    const nationalSource = { ...source, geographicScope: ["Brasil"], location: { stateCode: null, cityName: null } };
+    const input = {
+      title: "Curso gratuito de tecnologia",
+      text: "Inscrições até 20/10/2026 pelo formulário de inscrição para estudantes de todo o Brasil.",
+      url: "https://example.edu.br/curso", source: nationalSource,
+    };
+    expect(normalizeOpportunity(input)).toMatchObject({ nationallyEligible: true, stateCode: null, cityName: null });
+    expect(normalizeOpportunity({ ...input, text: input.text.replace("de todo o Brasil", "da cidade") })?.nationallyEligible).toBe(false);
+  });
+
   it("exige UF e evidência oficial para uma fonte em auditoria", () => {
     const form = new FormData();
     form.set("state_code", "pr"); form.set("city_name", "Curitiba");
@@ -60,6 +71,16 @@ describe("contrato canônico de localização", () => {
     expect(() => sourceLocation(form)).toThrow("UF");
     expect(sourceEvidenceUrl("https://www.ufpr.br/auditoria", ["www.ufpr.br"])).toBe("https://www.ufpr.br/auditoria");
     expect(() => sourceEvidenceUrl("https://externo.example/evidencia", ["www.ufpr.br"])).toThrow();
+  });
+
+  it("permite fonte nacional somente com abrangência explícita e sem cidade inventada", () => {
+    const form = new FormData();
+    form.set("scope", "national"); form.set("state_code", ""); form.set("city_name", "");
+    expect(sourceCoverage(form)).toEqual({ location: { stateCode: null, cityName: null }, geographicScope: ["Brasil"] });
+    form.set("city_name", "Brasília");
+    expect(() => sourceCoverage(form)).toThrow();
+    form.set("scope", "state"); form.set("state_code", "DF");
+    expect(sourceCoverage(form).location).toEqual({ stateCode: "DF", cityName: "Brasília" });
   });
 
   it("mantém o monitor sanitizado, dependente e sem consulta por texto livre", async () => {

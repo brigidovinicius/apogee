@@ -29,6 +29,16 @@ test("the public catalogue contains only unique official HTTPS links", () => {
   }
 });
 
+test("distinct courses from one official notice remain separate in the catalogue", () => {
+  const base = catalogue.STUDENT_OPPORTUNITIES[0];
+  const notice = "https://portal.ifpe.edu.br/noticias/cursos/";
+  const electrician = { ...base, id: "course-electrician", title: "Eletricista Industrial", officialUrl: notice, kind: "Curso" };
+  const welder = { ...base, id: "course-welder", title: "Soldador", officialUrl: notice, kind: "Curso" };
+  assert.deepEqual(logic.mergeOpportunities([electrician], [welder, { ...electrician }]).map((item) => item.id), [
+    "course-electrician", "course-welder",
+  ]);
+});
+
 test("expired fixed-date opportunities are not rendered and continuous flows remain visible", () => {
   const today = "2026-10-02";
   const expired = catalogue.STUDENT_OPPORTUNITIES.find((item) => item.id === "ufcspa-proext-2026");
@@ -161,4 +171,33 @@ test("URL filters round-trip and incompatible cities are cleared with the UF", (
     { kinds: ["Bolsa"], levels: ["Graduação"], states: ["SC"], citiesByState: { SC: ["Florianópolis"] } },
   );
   assert.deepEqual(sanitized, { ...parsed, stateCode: "SC", cityName: null });
+});
+
+test("a confirmed national opportunity is available in all UFs and search cities without acquiring a false local address", () => {
+  const national = catalogue.STUDENT_OPPORTUNITIES.find((item) => item.id === "pe-de-meia-licenciaturas-2026");
+  const unknown = { ...national, id: "unknown-scope", nationallyEligible: false };
+  const options = logic.getOpportunityFilterOptions([national, unknown], "2026-10-11");
+  assert.equal(options.states.length, 27);
+  assert.ok(options.citiesByState.SP.includes("Campinas"));
+  assert.ok(options.citiesByState.AM.includes("Manaus"));
+  const results = logic.filterOpportunities([national, unknown], {
+    kind: null, level: null, stateCode: "AM", cityName: "Manaus",
+  }, "2026-10-11");
+  assert.deepEqual(results.map((item) => item.id), [national.id]);
+  assert.equal(results[0].stateCode, null);
+  assert.equal(results[0].location, "Brasil");
+});
+
+test("area keyword search combines with location and modality without guessing an area", () => {
+  const base = catalogue.STUDENT_OPPORTUNITIES[0];
+  const opportunities = [
+    { ...base, id: "sp-soldagem", title: "Curso de soldagem", kind: "Curso", deadline: "2026-10-20", stateCode: "SP", cityName: "Santos" },
+    { ...base, id: "sp-saude", title: "Curso de saúde", kind: "Curso", deadline: "2026-10-20", stateCode: "SP", cityName: "Santos" },
+  ];
+  const filters = { kind: "Curso", level: null, stateCode: "SP", cityName: "Santos", query: "soldagem" };
+  assert.deepEqual(logic.filterOpportunities(opportunities, filters, "2026-10-08").map((item) => item.id), ["sp-soldagem"]);
+  assert.equal(logic.countActiveOpportunityFilters(filters), 4);
+  const params = logic.setOpportunityFilterSearchParams(new URLSearchParams(), filters);
+  assert.equal(params.get("busca"), "soldagem");
+  assert.equal(logic.opportunityFiltersFromSearchParams(params).query, "soldagem");
 });

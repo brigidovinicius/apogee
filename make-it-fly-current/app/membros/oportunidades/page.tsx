@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default async function MemberOpportunitiesPage() {
   // Proteção da rota. A DAL repete a autorização antes de ler os detalhes.
   const member = await requireMember("/membros/oportunidades");
-  const opportunities = await listMemberOpportunities();
+  const opportunities = await listMemberOpportunities().catch(() => null);
 
   return (
     <div className={styles.container}>
@@ -29,7 +29,7 @@ export default async function MemberOpportunitiesPage() {
           </p>
         </div>
       </header>
-      <OpportunitiesBoard opportunities={opportunities} />
+      {opportunities ? <OpportunitiesBoard opportunities={opportunities} /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
     </div>
   );
 }

@@ -1,3 +1,9 @@
+# Especificação vigente
+
+Ver [PRD Radar Apogee](../../docs/radar-prd.md). A decisão de 13/10/2026 substitui a revisão humana por publicação automática validada e gerenciamento do catálogo ao vivo.
+
+## Registro histórico (superado quanto à aprovação)
+
 # Especificação do MVP
 
 ## Objetivo

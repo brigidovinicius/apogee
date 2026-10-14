@@ -28,10 +28,9 @@ test("Radar preserves the Brazilian calendar day for date-only and exact deadlin
       stateCode: null, cityName: null, requirementsText: "Confira o edital", amountText: "Bolsa",
     };
     globalThis.fetch = async () => new Response(JSON.stringify({
-      version: 2, opportunities: [
+      version: 3, opportunities: [
         { ...base, id: "date-only", deadlineAt: "2026-10-10 00:00:00+00", deadlinePrecision: "date_only" },
         { ...base, id: "exact", deadlineAt: "2026-10-11T02:30:00Z", deadlinePrecision: "exact_datetime" },
-        { ...base, id: "missing", deadlineAt: null, deadlinePrecision: "date_only" },
       ],
     }), { status: 200 });
 
@@ -39,6 +38,10 @@ test("Radar preserves the Brazilian calendar day for date-only and exact deadlin
     assert.deepEqual(items.map((item) => item.id), ["radar-date-only", "radar-exact"]);
     assert.deepEqual(items.map((item) => item.deadline), ["2026-10-10", "2026-10-10"]);
     assert.deepEqual(items.map((item) => item.deadlineLabel), ["Inscrições até 10 de outubro", "Inscrições até 10 de outubro"]);
+    globalThis.fetch = async () => new Response(JSON.stringify({ version: 3, opportunities: [{ ...base, id: "missing", deadlineAt: null, deadlinePrecision: "date_only" }] }));
+    await assert.rejects(client.listRadarOpportunities(), /Catálogo indisponível/);
+    globalThis.fetch = async () => new Response("unavailable", { status: 503 });
+    await assert.rejects(client.listRadarOpportunities(), /Catálogo indisponível/);
   } finally {
     globalThis.fetch = previousFetch;
     if (previousUrl === undefined) delete process.env.RADAR_ACADEMICO_API_URL;

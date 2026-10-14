@@ -39,6 +39,15 @@ export function sourceLocation(form: FormData) {
   if (normalized.status !== "valid" || !normalized.location.stateCode) throw new Error("UF da fonte é obrigatória");
   return normalized.location;
 }
+export function sourceCoverage(form: FormData) {
+  const scope = form.get("scope");
+  if (scope === "national") {
+    if (form.get("state_code") || form.get("city_name")) throw new Error("Fonte nacional não deve ter UF ou cidade");
+    return { location: { stateCode: null, cityName: null }, geographicScope: ["Brasil"] };
+  }
+  if (scope !== "state") throw new Error("Abrangência da fonte inválida");
+  return { location: sourceLocation(form), geographicScope: [] as string[] };
+}
 export function sourceType(value: FormDataEntryValue | null) {
   const type = String(value ?? "");
   if (!sourceTypes.includes(type as SourceType)) throw new Error("Tipo de fonte inválido");
@@ -47,9 +56,10 @@ export function sourceType(value: FormDataEntryValue | null) {
 export function sourceSettings(form: FormData) {
   const id = sourceId(form.get("id"));
   const domains = sourceDomains(form.get("domains"));
+  const listingUrls = sourceUrls(form.get("listing_urls"), domains);
   const evidenceUrl = sourceEvidenceUrl(form.get("audit_evidence_url"), domains);
   const interval = Number(form.get("interval"));
   const mode = String(form.get("mode")) as ExtractionMode;
   if (!Number.isInteger(interval) || interval < 2 || interval > 720 || !modes.includes(mode)) throw new Error("Configurações inválidas");
-  return { id, domains, evidenceUrl, interval, mode };
+  return { id, domains, listingUrls, evidenceUrl, interval, mode };
 }

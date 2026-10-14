@@ -1,120 +1,30 @@
+import Link from "next/link";
 import { AdminNotice, AdminPageHeader, adminStyles as styles } from "@/components/admin/admin-ui";
+import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
 import { requireAdmin } from "@/lib/admin/access";
-import { listRadarEditorialSources, type RadarEditorialSource } from "@/lib/opportunities/radar-editorial-client";
-import { ingestRadarSource, setRadarSourceActive, verifyRadarSource } from "./actions";
-
+import { listRadarEditorialSources, listRadarManagedOpportunities } from "@/lib/opportunities/radar-editorial-client";
+import { toOpportunity } from "@/lib/opportunities/radar-client";
+import { CatalogueForm } from "./catalogue-form";
+import { SourceCard } from "./source-card";
 export const dynamic = "force-dynamic";
-
-const automaticModes = new Set(["rss", "html", "pdf", "api", "sitemap"]);
-
-function location(source: RadarEditorialSource) {
-  return source.cityName ? `${source.cityName} · ${source.stateCode}` : source.stateCode ?? "UF não informada";
-}
-
-function statusLabel(result: string | undefined) {
-  if (result === "verificada") return "Fonte marcada como verificada. A ativação continua sendo uma ação separada.";
-  if (result === "ativada") return "Fonte ativada. A coleta continua limitada e exige uma ação explícita.";
-  if (result === "desativada") return "Fonte desativada. Nenhuma nova coleta será iniciada por ela.";
-  if (result === "coleta-iniciada") return "Coleta controlada concluída. Candidatos, se houver, seguem para revisão humana antes de publicar.";
-  if (result === "confirmacao") return "Confirme os três itens de auditoria antes de verificar a fonte.";
-  if (result === "erro") return "A operação não foi concluída. Confirme o estado atual da fonte e tente novamente.";
-  return null;
-}
-
-function SourceCard({ source }: { source: RadarEditorialSource }) {
-  const pending = source.verificationStatus === "pending" && !source.active;
-  const collectable = source.active && source.verificationStatus === "verified" && automaticModes.has(source.extractionMode);
-  return (
-    <li className={styles.radarSourceCard}>
-      <div className={styles.radarSourceHeader}>
-        <div>
-          <p className={styles.sectionEyebrow}>{source.institutionAcronym || "Fonte oficial"}</p>
-          <h2>{source.name}</h2>
-          <p>{source.institutionName} · {location(source)}</p>
-        </div>
-        <div className={styles.catalogueMeta} aria-label="Estado da fonte">
-          <span>{source.verificationStatus === "verified" ? "Verificada" : source.verificationStatus === "rejected" ? "Rejeitada" : "Pendente"}</span>
-          <span>{source.active ? "Ativa" : "Inativa"}</span>
-          <span>{source.extractionMode}</span>
-        </div>
-      </div>
-
-      <dl className={styles.radarSourceDetails}>
-        <div><dt>Domínios</dt><dd>{source.allowedDomains.join(", ")}</dd></div>
-        <div><dt>Páginas de listagem</dt><dd>{source.listingUrls.length}</dd></div>
-      </dl>
-      {source.auditEvidenceUrl ? <a className={styles.textLink} href={source.auditEvidenceUrl} target="_blank" rel="noopener noreferrer">Abrir evidência oficial</a> : null}
-
-      {pending ? (
-        <form action={verifyRadarSource} className={styles.radarAuditForm}>
-          <input type="hidden" name="source_id" value={source.id} />
-          <p>Confirme a auditoria antes de ativar esta fonte.</p>
-          <label><input name="official_source" type="checkbox" value="confirmed" required /> O domínio e a evidência pertencem à instituição indicada.</label>
-          <label><input name="location_confirmed" type="checkbox" value="confirmed" required /> A UF e a cidade foram confirmadas sem inferência por texto livre.</label>
-          <label><input name="collection_allowed" type="checkbox" value="confirmed" required /> Robots e condições de consulta permitem a coleta controlada.</label>
-          <button className={styles.button}>Marcar como verificada</button>
-        </form>
-      ) : null}
-
-      {source.verificationStatus === "verified" ? (
-        <form action={setRadarSourceActive} className={styles.radarAction}>
-          <input type="hidden" name="source_id" value={source.id} />
-          <input type="hidden" name="active" value={String(!source.active)} />
-          <button className={source.active ? styles.secondaryButton : styles.button}>{source.active ? "Desativar fonte" : "Ativar fonte"}</button>
-        </form>
-      ) : null}
-
-      {collectable ? (
-        <form action={ingestRadarSource} className={styles.radarIngestionForm}>
-          <input type="hidden" name="source_id" value={source.id} />
-          <label className={styles.field}><span>Páginas</span><input name="max_pages" type="number" min="1" max="10" defaultValue="1" required /></label>
-          <label className={styles.field}><span>Candidatos</span><input name="max_candidates" type="number" min="1" max="10" defaultValue="10" required /></label>
-          <button className={styles.button}>Coletar para revisão</button>
-        </form>
-      ) : source.active && source.verificationStatus === "verified" ? <p className={styles.radarHint}>Esta fonte usa revisão manual assistida; a coleta automática não está habilitada.</p> : null}
-    </li>
-  );
-}
-
-export default async function AdminRadarPage({ searchParams }: { searchParams: Promise<{ resultado?: string }> }) {
+export default async function AdminRadarPage({ searchParams }: { searchParams: Promise<{ editar?: string; criar?: string; vista?: string; resultado?: string }> }) {
   await requireAdmin("/admin/radar");
-  const [params, radar] = await Promise.all([searchParams, listRadarEditorialSources()]);
-  const message = statusLabel(params.resultado);
-  const pending = radar.sources.filter((source) => source.verificationStatus === "pending").length;
-
-  return (
-    <div className={styles.content}>
-      <AdminPageHeader
-        title="Radar editorial"
-        description="Audite a evidência oficial, confirme a localização estruturada e controle cada coleta. Nenhum candidato é publicado automaticamente."
-        aside={<span className={styles.dataBadge}>{radar.available ? `${pending} pendentes` : "Ponte indisponível"}</span>}
-      />
-
-      {message ? <AdminNotice tone={params.resultado === "erro" || params.resultado === "confirmacao" ? "attention" : "success"} title="Auditoria editorial" description={message} /> : null}
-      {!radar.available ? <AdminNotice tone="attention" title="Ponte interna indisponível" description="A fonte editorial não pôde ser consultada. Nenhuma alteração foi enviada ao Radar." /> : null}
-
-      {radar.available && radar.sources.length > 0 ? (
-        <section aria-labelledby="radar-sources-title">
-          <div className={styles.surfaceHeader}>
-            <div>
-              <p className={styles.sectionEyebrow}>Fontes nacionais</p>
-              <h2 id="radar-sources-title">Auditoria e coleta controlada</h2>
-              <p>Verifique primeiro a origem, a localização e as condições de coleta. Ative somente depois da confirmação.</p>
-            </div>
-          </div>
-          <ul className={styles.radarSourceList}>{radar.sources.map((source) => <SourceCard key={source.id} source={source} />)}</ul>
-        </section>
-      ) : null}
-
-      {radar.available && radar.sources.length === 0 ? (
-        <section className={styles.emptyState} role="status">
-          <div className={styles.stateCard}>
-            <p className={styles.eyebrow}>Sem fontes</p>
-            <h2>Nenhuma fonte editorial foi cadastrada.</h2>
-            <p>Cadastre uma fonte oficial no Radar antes de iniciar a auditoria.</p>
-          </div>
-        </section>
-      ) : null}
-    </div>
-  );
+  const params = await searchParams;
+  const radar = await listRadarManagedOpportunities();
+  const editing = params.editar ? radar.opportunities.find((item) => item.id === params.editar) : undefined;
+  const showForm = params.criar === "1" || Boolean(editing);
+  const sources = showForm || params.vista === "fontes" ? await listRadarEditorialSources() : null;
+  const mapped = radar.opportunities.map(toOpportunity);
+  const available = radar.available && mapped.every((item) => item !== null);
+  const opportunities = mapped.filter((item) => item !== null);
+  return <div className={styles.content}>
+    <AdminPageHeader title="Radar · catálogo ao vivo" description="As mesmas oportunidades disponíveis para o público, com controles de criação, edição e exclusão." />
+    <nav aria-label="Gerenciamento do Radar" className={styles.radarAction}><Link href="/admin/radar">Catálogo</Link><Link href="/admin/radar?criar=1">Criar oportunidade</Link><Link href="/admin/radar?vista=fontes">Configurar fontes</Link><Link href="/oportunidades">Ver página pública</Link></nav>
+    {params.resultado ? <AdminNotice tone={params.resultado.startsWith("erro") ? "attention" : "success"} title="Gerenciamento" description={params.resultado === "salva" ? "Oportunidade salva no catálogo ao vivo." : params.resultado === "excluida" ? "Oportunidade excluída do catálogo." : params.resultado.startsWith("erro") ? "A operação não foi concluída. Confira os dados e tente novamente." : "Operação de fonte concluída. Fichas válidas entram automaticamente."} /> : null}
+    {!available ? <AdminNotice tone="attention" title="Catálogo indisponível" description="Não foi possível consultar o Radar. Tente novamente em instantes." /> : null}
+    {params.editar && available && !editing ? <p role="alert">Esta ficha não está mais no catálogo ao vivo. Recarregue a lista.</p> : null}
+    {showForm && sources?.available ? <CatalogueForm key={editing?.id ?? "create"} item={editing} sources={sources.sources.filter((source) => source.active && source.verificationStatus === "verified")} /> : null}
+    {showForm && !sources?.available ? <p role="alert">Fontes indisponíveis. O formulário estará disponível quando a conexão voltar.</p> : null}
+    {params.vista === "fontes" ? <section><h2>Fontes e coleta</h2><p>A autorização de fontes controla onde o coletor pode consultar. Cada ficha válida é publicada automaticamente.</p><ul className={styles.radarSourceList}>{sources?.sources.map((source) => <SourceCard key={source.id} source={source} />)}</ul></section> : !showForm && available ? <OpportunitiesBoard opportunities={opportunities} management /> : null}
+  </div>;
 }

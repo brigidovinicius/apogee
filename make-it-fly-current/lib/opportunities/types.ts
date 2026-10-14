@@ -1,10 +1,11 @@
 import {
   BRAZILIAN_STATE_CODES,
+  SEARCH_CITIES_BY_STATE,
   normalizeBrazilianLocation,
   type BrazilianStateCode,
 } from "@/lib/opportunities/location";
 
-export const OPPORTUNITY_KINDS = ["Bolsa", "Programa", "Intercâmbio"] as const;
+export const OPPORTUNITY_KINDS = ["Bolsa", "Auxílio", "Estágio", "Intercâmbio", "Curso", "Prêmio", "Fomento", "Programa"] as const;
 export const EDUCATION_LEVELS = ["Ensino médio", "Graduação", "Pós-graduação", "Público diverso"] as const;
 
 export type OpportunityKind = (typeof OPPORTUNITY_KINDS)[number];
@@ -19,11 +20,12 @@ export type OpportunityPreview = {
   level: EducationLevel;
 };
 
-/** Dados editoriais completos: só podem cruzar a fronteira para membros autenticados. */
+/** Dados públicos do catálogo; controles administrativos permanecem no servidor. */
 export type StudentOpportunity = OpportunityPreview & {
   location: string;
   stateCode: BrazilianStateCode | null;
   cityName: string | null;
+  nationallyEligible?: boolean;
   eligibility: string;
   benefit: string;
   summary: string;
@@ -31,13 +33,29 @@ export type StudentOpportunity = OpportunityPreview & {
   deadlineLabel: string;
   officialUrl: string;
   verifiedAt: string;
+  verificationTimestamp?: string;
+  opportunityStatus?: "open" | "upcoming";
+  verificationMethod?: "automatic" | "admin";
 };
+
+export function mergeOpportunities(
+  curated: readonly StudentOpportunity[],
+  radar: readonly StudentOpportunity[],
+): StudentOpportunity[] {
+  const results = new Map<string, StudentOpportunity>();
+  for (const opportunity of [...curated, ...radar]) {
+    const key = `${opportunity.officialUrl.toLowerCase()}\u0000${opportunity.title.toLocaleLowerCase("pt-BR")}`;
+    results.set(key, opportunity);
+  }
+  return [...results.values()];
+}
 
 export type OpportunityFilters = {
   kind: OpportunityKind | null;
   level: EducationLevel | null;
   stateCode: BrazilianStateCode | null;
   cityName: string | null;
+  query?: string | null;
 };
 
 export const EMPTY_OPPORTUNITY_FILTERS: OpportunityFilters = {
@@ -45,6 +63,7 @@ export const EMPTY_OPPORTUNITY_FILTERS: OpportunityFilters = {
   level: null,
   stateCode: null,
   cityName: null,
+  query: null,
 };
 
 export type OpportunityFilterOptions = {
@@ -86,6 +105,7 @@ export function getOpportunityFilterOptions(
   const openOpportunities = opportunities.filter((opportunity) =>
     isOpportunityOpen(opportunity, today),
   );
+  const hasNational = openOpportunities.some((opportunity) => opportunity.nationallyEligible === true);
 
   return {
     kinds: OPPORTUNITY_KINDS.filter((kind) =>
@@ -95,17 +115,20 @@ export function getOpportunityFilterOptions(
       openOpportunities.some((opportunity) => opportunity.level === level),
     ),
     states: BRAZILIAN_STATE_CODES.filter((stateCode) =>
-      openOpportunities.some((opportunity) => opportunity.stateCode === stateCode),
+      openOpportunities.some((opportunity) => opportunity.stateCode === stateCode || opportunity.nationallyEligible === true),
     ),
     citiesByState: Object.fromEntries(
       BRAZILIAN_STATE_CODES.map((stateCode) => [
         stateCode,
-        [...new Set(
+        [...new Set([
+          ...(hasNational ? SEARCH_CITIES_BY_STATE[stateCode] : []),
+          ...(
           openOpportunities
             .filter((opportunity) => opportunity.stateCode === stateCode)
             .map((opportunity) => opportunity.cityName)
-            .filter((cityName): cityName is string => cityName !== null),
-        )].sort((left, right) => left.localeCompare(right, "pt-BR")),
+            .filter((cityName): cityName is string => cityName !== null)
+          ),
+        ])].sort((left, right) => left.localeCompare(right, "pt-BR")),
       ]).filter(([, cities]) => cities.length > 0),
     ) as Partial<Record<BrazilianStateCode, string[]>>,
   };
@@ -132,12 +155,14 @@ export function opportunityFiltersFromSearchParams(searchParams: URLSearchParams
     stateCode: searchParams.get("uf"),
     cityName: searchParams.get("cidade"),
   });
+  const query = searchParams.get("busca")?.trim().slice(0, 100);
 
   return {
     kind: OPPORTUNITY_KINDS.find((kind) => kind === kindValue) ?? null,
     level: EDUCATION_LEVELS.find((level) => level === levelValue) ?? null,
     stateCode: location.status === "valid" ? location.location.stateCode : null,
     cityName: location.status === "valid" ? location.location.cityName : null,
+    ...(query ? { query } : {}),
   };
 }
 
@@ -150,6 +175,7 @@ export function setOpportunityFilterSearchParams(
     formacao: filters.level,
     uf: filters.stateCode,
     cidade: filters.stateCode ? filters.cityName : null,
+    busca: filters.query?.trim().slice(0, 100) || null,
   };
 
   for (const [key, value] of Object.entries(values)) {
@@ -164,17 +190,22 @@ export function filterOpportunities(
   filters: OpportunityFilters,
   today = dateInBrazil(),
 ) {
+  const query = filters.query?.trim().toLocaleLowerCase("pt-BR") ?? "";
   return sortByDeadline(opportunities)
     .filter((opportunity) => isOpportunityOpen(opportunity, today))
     .filter((opportunity) => filters.kind === null || opportunity.kind === filters.kind)
     .filter((opportunity) => filters.level === null || opportunity.level === filters.level)
-    .filter((opportunity) => filters.stateCode === null || opportunity.stateCode === filters.stateCode)
+    .filter((opportunity) => filters.stateCode === null || opportunity.stateCode === filters.stateCode || opportunity.nationallyEligible === true)
     .filter((opportunity) => filters.cityName === null || (
+      opportunity.nationallyEligible === true ||
       opportunity.stateCode === filters.stateCode && opportunity.cityName === filters.cityName
-    ));
+    ))
+    .filter((opportunity) => !query || [opportunity.title, opportunity.organization,
+      opportunity.eligibility, opportunity.benefit, opportunity.summary]
+      .some((value) => value.toLocaleLowerCase("pt-BR").includes(query)));
 }
 
 export function countActiveOpportunityFilters(filters: OpportunityFilters) {
   return Number(filters.kind !== null) + Number(filters.level !== null) +
-    Number(filters.stateCode !== null) + Number(filters.cityName !== null);
+    Number(filters.stateCode !== null) + Number(filters.cityName !== null) + Number(Boolean(filters.query?.trim()));
 }

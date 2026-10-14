@@ -19,8 +19,6 @@ const scholarshipBenefits = new Set([
   "research_scholarship",
   "extension_scholarship",
   "monitor_scholarship",
-  "financial_aid",
-  "housing_aid",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -68,8 +66,13 @@ function dateOnly(value: string, precision = "exact_datetime") {
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
-function kindFromRadar(value: string): OpportunityKind {
+function kindFromRadar(value: string, isCourse: boolean): OpportunityKind {
+  if (isCourse) return "Curso";
   if (value === "mobility_aid") return "Intercâmbio";
+  if (value === "financial_aid" || value === "housing_aid") return "Auxílio";
+  if (value === "internship") return "Estágio";
+  if (value === "prize") return "Prêmio";
+  if (value === "project_funding") return "Fomento";
   if (scholarshipBenefits.has(value)) return "Bolsa";
   return "Programa";
 }
@@ -81,7 +84,7 @@ function levelFromRadar(value: string): EducationLevel {
   return "Público diverso";
 }
 
-function toOpportunity(value: unknown): StudentOpportunity | null {
+export function toOpportunity(value: unknown): StudentOpportunity | null {
   if (!isRecord(value)) return null;
   const id = stringValue(value.id);
   const title = stringValue(value.title);
@@ -89,6 +92,8 @@ function toOpportunity(value: unknown): StudentOpportunity | null {
   const officialUrl = stringValue(value.officialUrl);
   const lastCheckedAt = stringValue(value.lastCheckedAt);
   const benefitType = stringValue(value.benefitType);
+  const isCourse = value.isCourse === true;
+  const nationallyEligible = value.nationallyEligible === true;
   const applicantType = stringValue(value.applicantType);
   const deadlineAt = value.deadlineAt === null ? null : stringValue(value.deadlineAt);
   const deadlinePrecision = stringValue(value.deadlinePrecision) ?? "date_only";
@@ -101,7 +106,7 @@ function toOpportunity(value: unknown): StudentOpportunity | null {
     return null;
   }
 
-  const verifiedAt = dateOnly(lastCheckedAt);
+  const verifiedAt = dateOnly(value.verificationMethod === "admin" ? stringValue(value.verifiedAt) ?? lastCheckedAt : lastCheckedAt);
   if (!verifiedAt) return null;
   const deadline = deadlineAt ? dateOnly(deadlineAt, deadlinePrecision) : null;
   if (deadlinePrecision !== "continuous_flow" && !deadline) return null;
@@ -110,30 +115,33 @@ function toOpportunity(value: unknown): StudentOpportunity | null {
     id: `radar-${id}`,
     title,
     organization,
-    kind: kindFromRadar(benefitType),
+    kind: kindFromRadar(benefitType, isCourse),
     level: levelFromRadar(applicantType),
     location: normalizedLocation.location.cityName
       ? `${normalizedLocation.location.cityName} · ${normalizedLocation.location.stateCode}`
-      : normalizedLocation.location.stateCode ?? "Não informado na fonte pública",
+      : normalizedLocation.location.stateCode ?? (nationallyEligible ? "Brasil" : "Não informado na fonte pública"),
     stateCode: normalizedLocation.location.stateCode,
     cityName: normalizedLocation.location.cityName,
+    nationallyEligible: nationallyEligible && normalizedLocation.location.stateCode === null,
     eligibility: stringValue(value.requirementsText) ?? "Consulte o edital oficial para os critérios de elegibilidade.",
     benefit: stringValue(value.amountText) ?? "Consulte o edital oficial para o apoio previsto.",
-    summary: "Oportunidade identificada pelo Radar Acadêmico em fonte oficial e aprovada em revisão editorial.",
+    summary: value.opportunityStatus === "upcoming" ? "Inscrições futuras confirmadas na fonte oficial." : "Oportunidade com inscrições abertas na fonte oficial.",
+    opportunityStatus: value.opportunityStatus === "upcoming" ? "upcoming" : "open",
+    verificationMethod: value.verificationMethod === "admin" ? "admin" : "automatic",
     deadline,
     deadlineLabel: deadlineLabel(deadlineAt, deadlinePrecision),
     officialUrl,
     verifiedAt,
+    verificationTimestamp: new Date(value.verificationMethod === "admin" ? stringValue(value.verifiedAt) ?? lastCheckedAt : lastCheckedAt).toISOString(),
   };
 }
 
 /**
  * Reads the separate Radar service only from the Apogee server. No Radar URL
- * or credentials are exposed to browsers; a failure keeps the curated local
- * catalogue available instead of breaking the public mural.
+ * or credentials are exposed to browsers. Failures remain explicit.
  */
 export async function listRadarOpportunities(): Promise<StudentOpportunity[]> {
-  if (!radarApiUrl || !radarApiToken) return [];
+  if (!radarApiUrl || !radarApiToken) throw new Error("Catálogo indisponível");
 
   try {
     const response = await fetch(radarApiUrl, {
@@ -141,29 +149,15 @@ export async function listRadarOpportunities(): Promise<StudentOpportunity[]> {
       headers: { Accept: "application/json", Authorization: `Bearer ${radarApiToken}` },
       signal: AbortSignal.timeout(2_000),
     });
-    if (!response.ok) return [];
+    if (!response.ok) throw new Error("Catálogo indisponível");
 
     const payload = await response.json() as RadarResponse;
-    if (![1, 2].includes(payload.version) || !Array.isArray(payload.opportunities)) return [];
+    if (payload.version !== 3 || !Array.isArray(payload.opportunities)) throw new Error("Catálogo incompatível");
 
-    return payload.opportunities
-      .map(toOpportunity)
-      .filter((opportunity): opportunity is StudentOpportunity => opportunity !== null);
+    const items = payload.opportunities.map(toOpportunity);
+    if (items.some((item) => item === null)) throw new Error("Catálogo inválido");
+    return items as StudentOpportunity[];
   } catch {
-    return [];
+    throw new Error("Catálogo indisponível");
   }
-}
-
-export function mergeOpportunities(
-  curated: readonly StudentOpportunity[],
-  radar: readonly StudentOpportunity[],
-): StudentOpportunity[] {
-  const results = new Map<string, StudentOpportunity>();
-
-  for (const opportunity of [...curated, ...radar]) {
-    const key = opportunity.officialUrl.toLowerCase();
-    results.set(key, opportunity);
-  }
-
-  return [...results.values()];
 }

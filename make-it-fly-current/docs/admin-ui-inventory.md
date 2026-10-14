@@ -38,8 +38,8 @@ controles e alvos mínimos foram reutilizados da UI consolidada.
 | --- | --- | --- |
 | Painel | Schema atual contém usuários, sessões e fórum; não contém billing, alertas, analytics, fontes ou jobs | `/admin` usa apenas contagens reais de contas e fórum e separa lacunas conhecidas como pendências, sem reproduzir números demonstrativos |
 | Usuários | Better Auth persiste nome, e-mail, usuário, verificação, papel e data; `role` aceita somente `member` ou `admin` | `/admin/usuarios` oferece leitura filtrada e limitada. Não existem mutações de papel, suspensão, entitlement ou exportação |
-| Curadoria | O catálogo vigente é lido de conteúdo local e, quando configurado, do Radar remoto já autenticado; não há revisão/evidência persistida | `/admin/curadoria` é somente leitura e mantém a fonte oficial. Publicar, rejeitar e reprocessar não são simulados |
-| Radar editorial | O Radar mantém fontes, evidência, UF/cidade estruturadas, estado de auditoria e fila de candidatos em banco próprio | `/admin/radar` permite confirmar os três itens de auditoria, ativar uma fonte já verificada e iniciar uma coleta limitada. A ponte usa token privado entre os dois serviços e nunca entrega a credencial ao navegador |
+| Curadoria | Catálogo único do Radar | `/admin/curadoria` redireciona para `/admin/radar` |
+| Radar | Fichas validadas automaticamente e eventos de gerenciamento no banco próprio | `/admin/radar` apresenta o mesmo catálogo público com criação, edição e exclusão; fontes são configuradas em vista separada |
 | Blog | Tabelas `blog_post`, `blog_post_event` e `blog_media`, DAL editorial, slug, categoria, visibilidade por data e autorização de admin | `/admin/posts` lista e edita; `/admin/posts/novo` cria rascunhos, publica e agenda. O editor aceita capa, imagens no texto, link de vídeo e revisão SEO. A revisão por papel separado ainda não existe |
 | Galeria | `/gerenciar-galeria` e `/api/gallery/admin` aceitam uma sessão de membro com papel `admin`; a credencial operacional legada permanece como fallback server-side | A página e a API refazem a autorização no servidor. A interface não coleta nem serializa a credencial operacional |
 
@@ -97,13 +97,12 @@ controles e alvos mínimos foram reutilizados da UI consolidada.
 - Não há métricas de atividade útil, conversão, MRR, churn, fontes, custos de
   IA ou operação. Esses indicadores do protótipo não são exibidos como reais.
 - Não foram criadas ações de exportar, suspender ou atribuir papel a usuários,
-  nem de publicar, rejeitar ou reprocessar candidatos da curadoria/Radar.
+  nem um fluxo de revisão humana de fichas do Radar.
 - O blog não inclui fluxo de revisão por um papel editorial
   distinto. Seu editor aceita texto simples com marcadores de imagens e o registro de eventos identifica
   as ações administrativas, sem armazenar versões integrais do conteúdo.
-- A ponte do Radar limita esta tela à auditoria de fonte, ativação e coleta
-  controlada. Candidatos ainda exigem a revisão humana própria do Radar antes
-  de qualquer publicação.
+- A ponte do Radar permite gerenciar fichas válidas e configurar fontes. A
+  publicação automática depende de evidência, estado, prazo e fonte autorizada.
 - A galeria continua sendo um sistema adjacente. A sessão administrativa pode
   abrir sua superfície, sem alterar armazenamento, credencial legada ou APIs
   públicas da galeria.

@@ -50,7 +50,21 @@ partir de um crawler.
    `RADAR_ACADEMICO_ADMIN_API_URL=http://radar-academico:3000/api/internal/editorial/sources`
    e um `RADAR_ACADEMICO_ADMIN_API_TOKEN` dedicado, igual nos dois serviços.
    Esse token serve apenas à ponte server-to-server de `/admin/radar` e não é
-   encaminhado ao navegador.
+   encaminhado ao navegador. A mesma ponte alcança `/api/internal/editorial/opportunities`
+   e `/api/internal/editorial/import` sem criar uma segunda credencial.
+
+## Cursos e publicação automática
+
+As migrações `0005_courses_national_scope.sql`, `0006_crawl_progress.sql`
+e `0007_automatic_live_catalogue.sql` adicionam cursos, execução da coleta e
+catálogo ao vivo. As novas fontes começam pendentes e inativas. Autorizar uma
+fonte exige conferir domínio, localização e condições de consulta; fichas válidas
+publicam automaticamente, sem revisão humana intermediária.
+
+Os CSVs históricos não comprovam inscrições atuais. Reconsulte a fonte e o prazo
+antes de importar ou cadastrar. Na Apogee, `/admin/radar` gerencia o mesmo catálogo
+público com criar, editar e excluir; a configuração de fontes fica na vista
+`?vista=fontes`. Veja `docs/radar-prd.md` na raiz do repositório.
 
 Não execute comandos em `/opt/sistema-de-locacao`, não publique a porta 3000 e
 não crie exceções no firewall. Antes da primeira migração, faça um backup do

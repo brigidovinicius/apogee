@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveCatalogueRefresh } from "./live-refresh";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, CalendarDays, Compass, MapPin, SlidersHorizontal, X } from "lucide-react";
@@ -23,6 +24,7 @@ import styles from "./opportunities.module.css";
 
 type OpportunityBoardProps = {
   opportunities: readonly StudentOpportunity[];
+  management?: boolean;
 };
 
 const formatDate = (date: string) =>
@@ -30,10 +32,11 @@ const formatDate = (date: string) =>
     day: "2-digit",
     month: "short",
     year: "numeric",
+    ...(date.length > 10 ? { hour: "2-digit" as const, minute: "2-digit" as const } : {}),
     timeZone: "America/Sao_Paulo",
-  }).format(new Date(`${date}T12:00:00Z`));
+  }).format(new Date(date.length > 10 ? date : `${date}T12:00:00Z`));
 
-export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
+export function OpportunitiesBoard({ opportunities, management = false }: OpportunityBoardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -77,6 +80,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
 
   return (
     <section className={styles.board} aria-labelledby="mural-title">
+      <LiveCatalogueRefresh />
       <div className={styles.boardHeading}>
         <div>
           <p className={styles.kicker}>Mural em atualização</p>
@@ -131,7 +135,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
             <p className={styles.filterPanelEyebrow}>Refine o radar</p>
             <h3 id="opportunity-filter-title">Filtrar oportunidades</h3>
             <p className={styles.filterPanelDescription}>
-              Só aparecem opções presentes nos dados estruturados das chamadas abertas.
+              UFs e cidades mostram oportunidades locais e programas nacionais elegíveis no Brasil.
             </p>
           </div>
           <button
@@ -145,6 +149,15 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
         </div>
 
         <div className={styles.filterFields}>
+          <form className={styles.locationField} onSubmit={(event) => {
+            event.preventDefault();
+            const query = new FormData(event.currentTarget).get("busca");
+            updateFilters({ ...filters, query: String(query ?? "").trim().slice(0, 100) || null });
+          }}>
+            <label htmlFor="opportunity-query">Área ou palavra-chave</label>
+            <input key={filters.query ?? ""} id="opportunity-query" name="busca" type="search" maxLength={100} defaultValue={filters.query ?? ""} placeholder="Ex.: engenharia, saúde, soldagem" />
+            <button type="submit">Buscar</button>
+          </form>
           {filterOptions.kinds.length > 0 ? (
             <FilterGroup<OpportunityKind>
               label="Modalidade"
@@ -202,7 +215,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
             <span id="opportunity-city-hint" className={styles.fieldHint}>
               {filters.stateCode
                 ? cityOptions.length > 0
-                  ? `Cidades disponíveis em ${filters.stateCode}.`
+                  ? `Cidades para buscar resultados locais e nacionais em ${filters.stateCode}.`
                   : `Nenhuma cidade estruturada disponível em ${filters.stateCode}.`
                 : "Selecione uma UF para escolher a cidade."}
             </span>
@@ -218,7 +231,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
           >
             Limpar filtros
           </button>
-          <p>Registros sem UF ou cidade permanecem em Todos e não recebem localização inferida.</p>
+          <p>Programas nacionais podem aparecer em qualquer UF; a localização exibida continua sendo Brasil.</p>
         </div>
       </div>
 
@@ -227,7 +240,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
           {visible.map((opportunity) => (
             <article className={styles.card} key={opportunity.id}>
               <div className={styles.cardTopline}>
-                <span className={styles.kind}>{opportunity.kind}</span>
+                <span className={styles.kind}>{opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
                 <span>{opportunity.level}</span>
               </div>
               <div className={styles.cardMain}>
@@ -257,7 +270,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
                 </div>
               </div>
               <div className={styles.cardFooter}>
-                <span>Verificado em {formatDate(opportunity.verifiedAt)}</span>
+                <span>{opportunity.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={opportunity.verificationTimestamp ?? opportunity.verifiedAt} title="Horário de Brasília">{formatDate(opportunity.verificationTimestamp ?? opportunity.verifiedAt)}</time></span>
                 <Link
                   href={opportunity.officialUrl}
                   className={styles.externalLink}
@@ -268,6 +281,7 @@ export function OpportunitiesBoard({ opportunities }: OpportunityBoardProps) {
                   Ver oportunidade <ArrowUpRight size={16} aria-hidden />
                 </Link>
               </div>
+              {management ? <Link className={styles.externalLink} href={`/admin/radar?editar=${encodeURIComponent(opportunity.id.replace(/^radar-/, ""))}`}>Editar ou excluir</Link> : null}
             </article>
           ))}
         </div>

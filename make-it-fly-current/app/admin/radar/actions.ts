@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/access";
-import { mutateRadarEditorialSource } from "@/lib/opportunities/radar-editorial-client";
+import { mutateRadarCatalogue, importRadarReviewCsv, mutateRadarEditorialSource } from "@/lib/opportunities/radar-editorial-client";
 
 const SOURCE_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,79}$/;
 
@@ -50,4 +50,37 @@ export async function ingestRadarSource(formData: FormData) {
     action: "ingest", sourceId: id,
     maxPages: limit(formData, "max_pages"), maxCandidates: limit(formData, "max_candidates"),
   }, "coleta-iniciada");
+}
+
+export type CatalogueFormState = { error: string };
+export async function saveRadarOpportunity(_state: CatalogueFormState, formData: FormData): Promise<CatalogueFormState> {
+  const admin = await requireAdmin("/admin/radar");
+  const id = String(formData.get("id") ?? "");
+  const fields = ["title", "institution", "officialSourceId", "officialUrl", "benefitType", "applicantType", "applicationRoute", "opportunityStatus", "deadlineAt", "deadlinePrecision", "stateCode", "cityName", "requirementsText", "amountText", "evidenceExcerpt"];
+  const input: Record<string, unknown> = Object.fromEntries(fields.map((field) => [field, String(formData.get(field) ?? "")]));
+  input.isCourse = formData.get("isCourse") === "on";
+  input.nationallyEligible = formData.get("nationallyEligible") === "on";
+  const result = await mutateRadarCatalogue(id ? "PATCH" : "POST", { ...input, id, version: Number(formData.get("version")), actor: `apogee:${admin.id}` });
+  if (!result.ok) return { error: result.error };
+  for (const path of ["/admin/radar", "/admin/curadoria", "/membros/oportunidades", "/oportunidades"]) revalidatePath(path);
+  redirect("/admin/radar?resultado=salva");
+}
+export async function deleteRadarOpportunity(_state: CatalogueFormState, formData: FormData): Promise<CatalogueFormState> {
+  const admin = await requireAdmin("/admin/radar");
+  if (formData.get("confirmDelete") !== "on") return { error: "Marque a confirmação de exclusão." };
+  const result = await mutateRadarCatalogue("DELETE", { id: String(formData.get("id") ?? ""), version: Number(formData.get("version")), actor: `apogee:${admin.id}` });
+  if (!result.ok) return { error: result.error };
+  for (const path of ["/admin/radar", "/admin/curadoria", "/membros/oportunidades", "/oportunidades"]) revalidatePath(path);
+  redirect("/admin/radar?resultado=excluida");
+}
+
+export async function importRadarCsv(formData: FormData) {
+  await requireAdmin("/admin/radar");
+  const csv = formData.get("csv");
+  if (typeof csv !== "string" || csv.length < 20 || csv.length > 20_000) {
+    redirect("/admin/radar?resultado=erro-importacao");
+  }
+  if (!(await importRadarReviewCsv(csv))) redirect("/admin/radar?resultado=erro-importacao");
+  revalidatePath("/admin/radar");
+  redirect("/admin/radar?resultado=importada");
 }

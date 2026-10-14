@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
 vi.mock("@/lib/db/client", () => ({ queryPublic: vi.fn(async () => ({ rows: [] })), withAdminTransaction: vi.fn() }));
-vi.mock("@/lib/ingestion", () => ({ runOfficialSourceIngestion: vi.fn() }));
+vi.mock("@/lib/ingestion", () => ({ runOfficialSourceIngestion: vi.fn(), runScheduledOfficialSourceIngestion: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn((url: string) => { throw new Error(url); }) }));
 vi.mock("@/lib/auth/admin", () => ({ isAdmin: vi.fn() }));
 vi.mock("@/lib/ingestion/import-csv", () => ({ parseManualCsv: vi.fn(() => { throw new Error("secret DB connection"); }) }));
@@ -9,7 +9,7 @@ import { listPublicOpportunities, getPublicOpportunity } from "@/lib/db/read-mod
 import { GET } from "@/app/api/public/opportunities/route";
 import { POST as cron } from "@/app/api/cron/ingest-official-sources/route";
 import { POST as csv } from "@/app/api/admin/import-csv/route";
-import { runOfficialSourceIngestion } from "@/lib/ingestion";
+import { runOfficialSourceIngestion, runScheduledOfficialSourceIngestion } from "@/lib/ingestion";
 import { isAdmin } from "@/lib/auth/admin";
 import Home from "@/app/page";
 import Detail from "@/app/oportunidades/[id]/page";
@@ -25,8 +25,8 @@ it("every outward SQL query includes editorial and publication constraints", asy
   expect(queryPublic).toHaveBeenCalledTimes(3);
   for (const [sql] of vi.mocked(queryPublic).mock.calls) {
     expect(sql).toContain("where"); expect(sql).toContain("o.review_status='approved'");
-    expect(sql).toContain("o.published_at is not null"); expect(sql).toContain("o.human_verified_at is not null");
-    expect(sql).toContain("o.opportunity_status='open'"); expect(sql).toContain("o.deadline_at >= now()");
+    expect(sql).toContain("o.published_at is not null"); expect(sql).toContain("o.verified_at is not null");
+    expect(sql).toContain("o.opportunity_status in ('open','upcoming')"); expect(sql).toContain("o.deadline_at >= now()");
     expect(sql).toContain("o.deadline_precision='date_only'");
     expect(sql).toContain("America/Sao_Paulo");
   }
@@ -39,8 +39,10 @@ it("standalone pages redirect before reading full data", () => {
 it("cron fails closed and does not disclose internal failures", async () => {
   expect((await cron(new Request("https://radar.example/cron"))).status).toBe(401);
   vi.stubEnv("CRON_SECRET", "fixture");
+  vi.mocked(runScheduledOfficialSourceIngestion).mockResolvedValue({ automaticPublish: true, sourcesChecked: 0, pagesChecked: 0, discovered: 0, sentToReview: 0, failed: 0, published: 0, sources: [] });
   vi.mocked(runOfficialSourceIngestion).mockRejectedValue(new Error("postgres://secret"));
-  expect((await cron(new Request("https://radar.example/cron", { headers: { authorization: "Bearer fixture" } }))).status).toBe(400);
+  expect((await cron(new Request("https://radar.example/cron", { headers: { authorization: "Bearer fixture" } }))).status).toBe(200);
+  expect(runScheduledOfficialSourceIngestion).toHaveBeenCalledOnce();
   expect((await cron(new Request("https://radar.example/cron?sourceId=ufsc-propesq&maxPages=0", { headers: { authorization: "Bearer fixture" } }))).status).toBe(400);
   const response = await cron(new Request("https://radar.example/cron?sourceId=ufsc-propesq&maxPages=1&maxCandidates=10", { headers: { authorization: "Bearer fixture" } }));
   expect(response.status).toBe(500); expect(await response.text()).not.toMatch(/postgres|secret/);

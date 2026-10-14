@@ -1,4 +1,4 @@
-import { runOfficialSourceIngestion } from "@/lib/ingestion";
+import { runOfficialSourceIngestion, runScheduledOfficialSourceIngestion } from "@/lib/ingestion";
 import { loadOfficialSource } from "@/lib/ingestion/official-source-registry";
 import { secretMatches } from "@/lib/security";
 
@@ -15,7 +15,14 @@ export async function POST(request: Request) {
   const sourceId = search.get("sourceId");
   const maxPages = Number(search.get("maxPages") ?? "1");
   const maxCandidates = Number(search.get("maxCandidates") ?? "10");
-  if (!sourceId || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(sourceId) || !(await loadOfficialSource(sourceId)) ||
+  if (!sourceId) {
+    if (search.has("maxPages") || search.has("maxCandidates")) {
+      return Response.json({ error: "Parâmetros de ingestão inválidos" }, { status: 400 });
+    }
+    try { return Response.json(await runScheduledOfficialSourceIngestion()); }
+    catch { return Response.json({ error: "Falha na ingestão" }, { status: 500 }); }
+  }
+  if (!/^[a-z0-9][a-z0-9-]{0,79}$/.test(sourceId) || !(await loadOfficialSource(sourceId)) ||
     !Number.isInteger(maxPages) || maxPages < 1 || maxPages > 10 ||
     !Number.isInteger(maxCandidates) || maxCandidates < 1 || maxCandidates > 10) {
     return Response.json({ error: "Parâmetros de ingestão inválidos" }, { status: 400 });
@@ -30,5 +37,5 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  return Response.json({ ok: true, protected: true, automaticPublish: false });
+  return Response.json({ ok: true, protected: true, automaticPublish: true });
 }

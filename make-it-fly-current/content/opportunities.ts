@@ -133,6 +133,7 @@ export const STUDENT_OPPORTUNITIES: readonly StudentOpportunity[] = [
     location: "Brasil",
     stateCode: null,
     cityName: null,
+    nationallyEligible: true,
     eligibility:
       "Estudantes de licenciaturas presenciais com alto desempenho no Enem, ingressantes por SiSU, Prouni ou Fies, conforme edital.",
     benefit: "R$ 700 mensais e R$ 350 mensais como incentivo à docência em poupança.",
@@ -153,6 +154,7 @@ export const STUDENT_OPPORTUNITIES: readonly StudentOpportunity[] = [
     location: "Brasil",
     stateCode: null,
     cityName: null,
+    nationallyEligible: true,
     eligibility: "Estudantes indígenas e quilombolas, conforme regras e documentação do programa.",
     benefit: "Bolsa mensal de R$ 1.400, após homologação e autorização do programa.",
     summary:

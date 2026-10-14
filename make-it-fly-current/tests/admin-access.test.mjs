@@ -28,10 +28,10 @@ test("admin authorization is enforced on the server and repeated in the data lay
   assert.match(data, /await requireAdmin\("\/admin\/usuarios"\)/);
   assert.doesNotMatch(data, /account\.password|session\.token|accessToken|refreshToken|idToken/);
 
-  assert.match(opportunities, /await requireAdmin\("\/admin\/curadoria"\)/);
+  assert.match(opportunities, /await requireAdmin\("\/admin\/radar"\)/);
   assert.match(dashboard, /getAdminOverview\(\)/);
   assert.match(users, /listAdminUsers\(search, filter\)/);
-  assert.match(curation, /listAdminOpportunityCatalogue\(\)/);
+  assert.match(curation, /redirect\("\/admin\/radar"\)/);
   assert.match(posts, /await requireAdmin\("\/admin\/posts\/novo"\)/);
 
   assert.match(proxy, /"\/admin", "\/admin\/:path\*"/);
@@ -45,7 +45,7 @@ test("non-admin members receive an explicit denied state without operational rea
   assert.doesNotMatch(denied, /getAdminOverview|listAdminUsers|listAdminOpportunityCatalogue|getDb/);
 });
 
-test("curation remains read-only while blog mutations require admin authorization", async () => {
+test("curation redirects to the authorized live catalogue management", async () => {
   const [curation, editor, blogActions, navigation, radarPage, radarActions, radarClient] = await Promise.all([
     source("app/admin/curadoria/page.tsx"),
     source("app/admin/posts/novo/page.tsx"),
@@ -56,8 +56,9 @@ test("curation remains read-only while blog mutations require admin authorizatio
     source("lib/opportunities/radar-editorial-client.ts"),
   ]);
 
-  assert.match(curation, /Somente leitura/);
-  assert.doesNotMatch(curation, /<form|action=|Publicar|Rejeitar|Reprocessar/);
+  assert.match(curation, /requireAdmin/);
+  assert.doesNotMatch(curation, /<form|<button[^>]*name="decision"/);
+  assert.match(curation, /redirect\("\/admin\/radar"\)/);
   assert.match(editor, /<PostEditor post=\{null\}/);
   assert.match(blogActions, /await requireAdmin\(/);
   assert.match(blogActions, /revalidatePath\("\/blog"\)/);
@@ -68,9 +69,11 @@ test("curation remains read-only while blog mutations require admin authorizatio
   assert.match(navigation, /href: "\/admin\/radar"/);
 
   assert.match(radarPage, /await requireAdmin\("\/admin\/radar"\)/);
-  assert.match(radarPage, /Nenhum candidato é publicado automaticamente/);
-  assert.match(radarPage, /max="10"/);
+  assert.match(radarPage, /catálogo ao vivo/);
+  assert.match(radarPage, /CatalogueForm/);
   assert.match(radarActions, /await requireAdmin\("\/admin\/radar"\)/);
+  assert.doesNotMatch(radarPage, /Aprovar e publicar/);
+  assert.match(radarActions, /mutateRadarCatalogue/);
   assert.match(radarActions, /maxPages: limit\(formData, "max_pages"\)/);
   assert.match(radarActions, /maxCandidates: limit\(formData, "max_candidates"\)/);
   assert.match(radarClient, /^import "server-only";/m);

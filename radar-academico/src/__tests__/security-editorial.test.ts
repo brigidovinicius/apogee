@@ -6,7 +6,7 @@ import { withAdminTransaction } from "@/lib/db/client";
 import { reviewOpportunity, reviewRevision } from "@/app/admin/revisao/actions";
 it("unknown editorial decisions never fall through to approval", async () => {
   const form = new FormData(); form.set("id", "fixture"); form.set("decision", "unexpected");
-  await expect(reviewOpportunity(form)).rejects.toThrow("Decisão inválida");
-  await expect(reviewRevision(form)).rejects.toThrow("Decisão inválida");
+  await expect(reviewOpportunity(form)).rejects.toThrow(/gerenciamento|automática/);
+  await expect(reviewRevision(form)).rejects.toThrow(/gerenciamento|automática/);
   expect(withAdminTransaction).not.toHaveBeenCalled();
 });

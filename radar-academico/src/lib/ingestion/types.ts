@@ -53,6 +53,8 @@ export interface OfficialSource {
   priority: number;
   active: boolean;
   notes?: string;
+  crawlListingIndex?: number;
+  crawlLinkOffset?: number;
 }
 
 export interface FieldEvidence {
@@ -72,6 +74,8 @@ export interface OpportunityCandidate {
   applicantType: ApplicantType;
   applicationRoute: ApplicationRoute;
   benefitType: BenefitType;
+  isCourse?: boolean;
+  nationallyEligible?: boolean;
   deadlineAt?: string;
   deadlinePrecision: DeadlinePrecision;
   requirementsText: string;
@@ -96,4 +100,6 @@ export interface IngestionResult {
   failed: number;
   locationRejected: number;
   warnings: string[];
+  nextListingIndex?: number;
+  nextLinkOffset?: number;
 }

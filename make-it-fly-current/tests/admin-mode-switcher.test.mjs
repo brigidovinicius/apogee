@@ -54,7 +54,7 @@ test("direct pages, data access, API, and proxy retain server-side authorization
   assert.match(access, /member\.role !== "admin"/);
   assert.match(data, /await requireAdmin\("\/admin"\)/);
   assert.match(data, /await requireAdmin\("\/admin\/usuarios"\)/);
-  assert.match(opportunities, /await requireAdmin\("\/admin\/curadoria"\)/);
+  assert.match(opportunities, /await requireAdmin\("\/admin\/radar"\)/);
   assert.match(page, /await requireAdmin\("\/admin\/posts\/novo"\)/);
   assert.match(galleryPage, /await requireAdmin\("\/gerenciar-galeria"\)/);
   assert.match(galleryRoute, /getMemberFromHeaders\(request\.headers\)/);

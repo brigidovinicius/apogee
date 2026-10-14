@@ -7,6 +7,6 @@ export function classifyApplicationRoute(text: string): ApplicationRoute {
   if (/coordenador do projeto|coordenação do projeto/.test(value)) return "application_via_project_coordinator";
   if (/por meio da universidade|pró-reitoria|instituição de ensino/.test(value)) return "application_via_university";
   if (/departamento|secretaria acadêmica/.test(value)) return "application_via_department";
-  if (/inscreva-se|formulário de inscrição|candidatura online/.test(value)) return "direct_student_application";
+  if (/inscreva-se|formulário de inscrição|candidatura online|inscrições (?:abertas|até|de|pelo|no)|inscrição (?:até|pelo|no)|participe do processo seletivo/.test(value)) return "direct_student_application";
   return "unclear";
 }
