@@ -103,3 +103,36 @@ it("extrai o hackathon global da página oficial mesmo quando o primeiro main é
     geographicScopeKind: "global", countryCode: null, stateCode: null, cityName: null,
   });
 });
+
+it("publica o edital de intercâmbio do MinC com país e prazo exato, sem inventar UF ou cidade", async () => {
+  vi.stubEnv("DATABASE_URL", "fixture");
+  const url = "https://www.gov.br/cultura/pt-br/assuntos/editais/inscricoes-em-andamento/edital-de-intercambio-cultural-circulacao-e-participacao-audiovisual-no-exterior";
+  const source: OfficialSource = {
+    ...makeSource("minc-intercambio-audiovisual-2026"),
+    institutionName: "Ministério da Cultura", baseUrl: "https://www.gov.br/cultura/pt-br/assuntos/editais/inscricoes-em-andamento",
+    allowedDomains: ["www.gov.br"], allowedPathPrefixes: ["/cultura/pt-br/assuntos/editais/inscricoes-em-andamento"],
+    listingUrls: ["https://www.gov.br/cultura/pt-br/assuntos/editais/inscricoes-em-andamento"],
+    geographicScope: ["Brasil"], location: { stateCode: null, cityName: null },
+  };
+  vi.mocked(loadOfficialSource).mockResolvedValue(source);
+  vi.mocked(fetchOfficialResource).mockImplementation(async (requestedUrl) => {
+    const body = requestedUrl === source.listingUrls[0]
+      ? `<main><a href="${url}">Edital de Intercâmbio Cultural - Circulação e Participação Audiovisual no Exterior</a></main>`
+      : `<main><h1>Edital de Intercâmbio Cultural - Circulação e Participação Audiovisual no Exterior</h1>
+         Poderão ser beneficiados(as) Pessoas Físicas, estudantes ou profissionais, do segmento audiovisual.
+         Os recursos serão distribuídos nacionalmente, sendo vedado exceder o limite de 40% por região brasileira.
+         As inscrições são gratuitas e estarão abertas, em regime de fluxo contínuo, iniciando-se em 15 de junho de 2026 e permanecendo disponíveis até as 18h (dezoito horas) do dia 6 de novembro de 2026, ou até o esgotamento dos recursos disponibilizados, ocasião em que as inscrições serão suspensas.
+         O Sistema Mapa da Cultura é o sistema a ser, obrigatoriamente, utilizado para inscrição da proposta.</main>`;
+    return { body: Buffer.from(body), contentType: "text/html", hash: "fixture", cached: false };
+  });
+  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, published: 1, blocked: 0, created: 1, updated: 0, persistence: "postgres" });
+
+  const report = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: 3, maxCandidates: 10 });
+  expect(report).toMatchObject({ pagesChecked: 2, discovered: 1, published: 1 });
+  expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({
+    title: "Edital de Intercâmbio Cultural MinC 2026 — Audiovisual no Exterior",
+    categories: ["intercambios", "bolsas"], deadlineAt: "2026-11-06T18:00:00-03:00",
+    deadlinePrecision: "exact_datetime", opportunityStatus: "open", nationallyEligible: true,
+    geographicScopeKind: "country", countryCode: "BR", stateCode: null, cityName: null,
+  });
+});
