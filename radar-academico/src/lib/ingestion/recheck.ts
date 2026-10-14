@@ -36,7 +36,9 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
         applicationHtml = application.body.toString("utf8");
       }
       const candidates = normalizeProgrammeCatalogue(courses.body.toString("utf8"), applicationHtml, source);
-      if (!candidates.length) throw new Error("Oferta não confirmada");
+      // A valid PSG catalogue with no eligible places confirms withdrawal;
+      // missing/invalid embedded JSON throws and preserves the previous evidence.
+      if (!candidates.length && source.id !== "senac-sc-psg-open-cohorts") throw new Error("Oferta não confirmada");
       catalogueCandidates = new Map(candidates.map((candidate) => [canonicalOpportunityKey(source.id, candidate.title, candidate.sourcePageUrl), candidate]));
     } catch {
       // A source failure is one failed check, even when many records share its URL.

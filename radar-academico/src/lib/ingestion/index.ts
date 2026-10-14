@@ -78,7 +78,8 @@ async function ingestSource(
         applicationHtml = application.body.toString("utf8");
       }
       const candidates = normalizeProgrammeCatalogue(resource.body.toString("utf8"), applicationHtml, source);
-      if (!candidates.length) throw new Error("Oferta ou inscrição não confirmada");
+      // Senac validates the catalogue envelope even when all PSG places are full.
+      if (!candidates.length && source.id !== "senac-sc-psg-open-cohorts") throw new Error("Oferta ou inscrição não confirmada");
       const start = source.crawlLinkOffset ?? 0;
       const selected = candidates.slice(start, start + (maxCandidates ?? 200));
       result.discovered = selected;

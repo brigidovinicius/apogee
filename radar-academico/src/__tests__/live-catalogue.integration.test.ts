@@ -80,7 +80,7 @@ it("publishes automatically with real RLS and the same public/admin catalogue", 
  const row = (await state.db!.query("select human_verified_at,verification_method,next_source_check_at >= now() + interval '23 hours' as recheck_tomorrow from opportunities")).rows[0];
  expect(row).toEqual({ human_verified_at: null, verification_method: "automatic", recheck_tomorrow: true });
 });
-it.each(["ifc-integrated-technical-2027", "ifsc-technical-courses-2027"])("mantém cursos distintos na mesma página oficial e respeita exclusões: %s", async (sourceId) => {
+it.each(["ifc-integrated-technical-2027", "ifsc-technical-courses-2027", "senac-sc-psg-open-cohorts"])("mantém cursos distintos na mesma página oficial e respeita exclusões: %s", async (sourceId) => {
  const ifcSource: OfficialSource = { ...source, id: sourceId, name: "IFC",
   baseUrl: "https://ingresso.ifc.edu.br/", allowedDomains: ["ingresso.ifc.edu.br"],
   allowedPathPrefixes: ["/seletivos/"], listingUrls: ["https://ingresso.ifc.edu.br/seletivos/cursos/"] };
@@ -101,6 +101,27 @@ it.each(["ifc-integrated-technical-2027", "ifsc-technical-courses-2027"])("mant�
  await state.db!.query("update opportunities set deleted_at=now() where id=$1", [id]);
  expect(await ingest([make("Informática — Blumenau", "later")])).toMatchObject({ created: 0, published: 0 });
  expect((await listLiveCatalogue()).map((item) => item.title)).toEqual(["Mecatrônica — Blumenau"]);
+});
+it("retira PSG sem vagas em catálogo válido e preserva a ficha quando o site falha", async () => {
+ const url = "https://portal.sc.senac.br/cursos-gratuitos";
+ const psgSource: OfficialSource = { ...source, id: "senac-sc-psg-open-cohorts", baseUrl: url,
+  allowedDomains: ["portal.sc.senac.br"], allowedPathPrefixes: ["/cursos-gratuitos"], listingUrls: [url] };
+ await state.db!.query(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,audience_scope,geographic_scope,categories,priority,active,verification_status)
+ values ($1,'PSG','Senac SC','Senac','official_reference',$2,$3,$4,$5,'html',$6,$7,$8,1,true,'verified')`,
+ [psgSource.id, url, psgSource.allowedDomains, psgSource.allowedPathPrefixes, psgSource.listingUrls, ["mixed"], ["SC"], ["formacao"]]);
+ const item = candidate({ officialSourceId: psgSource.id, sourcePageUrl: url,
+  evidenceJson: { deadline_at: { source_url: url, excerpt: "Matrícula até 20/10/2099" }, opportunity_status: { source_url: url, excerpt: "Vagas PSG disponíveis" } } });
+ const ingest = () => saveReviewItems(psgSource, { sourceId: psgSource.id, pagesChecked: 1, discovered: [item], ignored: 0, failed: 0, locationRejected: 0, warnings: [] });
+ await ingest();
+ await state.db!.query("update opportunities set next_source_check_at=null where official_source_id=$1", [psgSource.id]);
+ vi.mocked(fetchOfficialResource).mockResolvedValue({ body: Buffer.from('<body>Programa Senac de Gratuidade 100% GRATUITO PSG renda familiar mensal per capita de até 2 salários mínimos<script>window.cursosData = [];</script></body>'), contentType: "text/html", hash: "valid-empty", cached: false });
+ expect(await recheckKnownOpportunities(psgSource, 200, async () => "")).toMatchObject({ pagesChecked: 1, failed: 0 });
+ expect(await listLiveCatalogue()).toHaveLength(0);
+ await ingest();
+ await state.db!.query("update opportunities set next_source_check_at=null where official_source_id=$1", [psgSource.id]);
+ vi.mocked(fetchOfficialResource).mockResolvedValue({ body: Buffer.from('<body>Manutenção</body>'), contentType: "text/html", hash: "unavailable", cached: false });
+ expect(await recheckKnownOpportunities(psgSource, 200, async () => "")).toMatchObject({ pagesChecked: 1, failed: 1 });
+ expect(await listLiveCatalogue()).toHaveLength(1);
 });
 it("preserves global eligibility without inventing country, state or city", async () => {
  await save(candidate({ geographicScopeKind: "global", countryCode: null }));
