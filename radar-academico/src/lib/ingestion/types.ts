@@ -78,6 +78,8 @@ export interface OpportunityCandidate {
   categories?: OpportunityCategory[];
   isCourse?: boolean;
   nationallyEligible?: boolean;
+  geographicScopeKind?: "unknown" | "global" | "country" | "state" | "city";
+  countryCode?: string | null;
   deadlineAt?: string;
   deadlinePrecision: DeadlinePrecision;
   requirementsText: string;

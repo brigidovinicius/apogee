@@ -53,6 +53,9 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
   for (const [field, column] of Object.entries(candidateColumns)) values[column] = candidate[field as CandidateField] ?? null;
   values.is_course = candidate.isCourse === true;
   values.nationally_eligible = candidate.nationallyEligible === true;
+  const scope = candidate.cityName ? "city" : candidate.stateCode ? "state" : candidate.nationallyEligible ? "country" : candidate.geographicScopeKind ?? "unknown";
+  values.geographic_scope_kind = scope;
+  values.country_code = candidate.countryCode ?? (scope === "state" || scope === "city" || candidate.nationallyEligible ? "BR" : null);
   Object.assign(values, {
     review_status: issue ? "needs_information" : "approved", publication_issue: issue,
     source_conflict: incoming.sourceConflict === true,

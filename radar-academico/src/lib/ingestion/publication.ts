@@ -31,6 +31,19 @@ export function publicationIssue(candidate: OpportunityCandidate, source: Offici
 
 export function detectOpportunityStatus(text: string, now = new Date()): OpportunityCandidate["opportunityStatus"] {
   if (/inscriç(?:ão|ões).{0,35}(?:encerrad|finalizad)|prazo.{0,15}encerrad/i.test(text)) return "closed";
+  const range = /inscriç(?:ão|ões)\s*:\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s+a\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(text);
+  if (range) {
+    const date = (day: string, month: string, year: string) => {
+      const iso = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+      const parsed = new Date(`${iso}T00:00:00Z`);
+      return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === iso ? iso : null;
+    };
+    const start = date(range[1], range[2], range[3]);
+    const end = date(range[4], range[5], range[6]);
+    if (!start || !end || end < start) return "unknown";
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+    return end < today ? "closed" : start > today ? "upcoming" : "open";
+  }
   // An explicit start date takes precedence over generic promotional copy.
   const starts = /inscriç(?:ão|ões)\s+(?:de|a partir de|a partir do dia|abrem em|iniciam em)\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(text);
   if (starts) {

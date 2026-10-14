@@ -19,6 +19,8 @@ const liveQuery = `select
          o.amount_text as "amountText",
          o.state_code as "stateCode",
          o.city_name as "cityName",
+         o.geographic_scope_kind as "geographicScopeKind",
+         o.country_code as "countryCode",
          os.source_page_url as "officialUrl",
          os.application_url as "applicationUrl",
          coalesce(o.last_source_check_at,o.verified_at)::text as "lastCheckedAt"

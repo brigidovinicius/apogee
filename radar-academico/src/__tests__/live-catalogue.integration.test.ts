@@ -43,6 +43,7 @@ function form(item: Record<string, unknown>, patch: Record<string, unknown> = {}
  return { ...item, categories: item.categories ?? ["formacao"], deadlineAt: String(item.deadlineAt).slice(0,10), actor: "apogee:test-admin", evidenceExcerpt: evidence.excerpt, ...patch };
 }
 let migrationSnapshot: unknown[] = [];
+let pilotSourcesSnapshot: unknown[] = [];
 beforeAll(async () => {
  state.db = new PGlite({ extensions: { pgcrypto } });
  const dir = new URL("../../db/migrations/", import.meta.url);
@@ -57,6 +58,7 @@ beforeAll(async () => {
   await state.db.exec(await readFile(new URL(name, dir), "utf8"));
  }
  migrationSnapshot = (await state.db.query("select review_status,verification_method,verified_at is not null as verified,published_at is not null as published from opportunities order by title")).rows;
+ pilotSourcesSnapshot = (await state.db.query("select id,verification_status,verification_method,verification_evidence_url,audited_by from official_sources where id in ('cnpq-chamadas-abertas-2026','nasa-space-apps-2026') order by id")).rows;
  await state.db.exec("create role radar_test; grant usage on schema public to radar_test; grant select,insert,update,delete on all tables in schema public to radar_test");
  vi.stubEnv("DATABASE_URL", "isolated-test-only");
 }, 30_000);
@@ -74,8 +76,14 @@ it("publishes automatically with real RLS and the same public/admin catalogue", 
  expect(publicItems).toHaveLength(1); expect(adminItems).toHaveLength(1);
  expect(adminItems[0]).toMatchObject(publicItems[0]);
  expect(publicItems[0]).not.toHaveProperty("evidence"); expect(publicItems[0]).not.toHaveProperty("version");
+ expect(publicItems[0]).toMatchObject({ geographicScopeKind: "unknown", countryCode: null });
  const row = (await state.db!.query("select human_verified_at,verification_method from opportunities")).rows[0];
  expect(row).toEqual({ human_verified_at: null, verification_method: "automatic" });
+});
+it("preserves global eligibility without inventing country, state or city", async () => {
+ await save(candidate({ geographicScopeKind: "global", countryCode: null }));
+ expect((await listLiveCatalogue())[0]).toMatchObject({ geographicScopeKind: "global", countryCode: null, stateCode: null, cityName: null });
+ await expect(state.db!.exec("update opportunities set country_code='BR' where geographic_scope_kind='global'")).rejects.toThrow();
 });
 it("classifies structured evidence in several categories and preserves an administrator edit on recrawl", async () => {
  await save(candidate({ benefitType: "research_scholarship", isCourse: true }));
@@ -188,6 +196,12 @@ it("migration retains verified publications and does not promote legacy pending 
  expect(migrationSnapshot).toEqual([
   { review_status: "approved", verification_method: "admin", verified: true, published: true },
   { review_status: "pending_review", verification_method: null, verified: false, published: false },
+ ]);
+});
+it("records agent source verification separately from human audit", () => {
+ expect(pilotSourcesSnapshot).toEqual([
+  { id: "cnpq-chamadas-abertas-2026", verification_status: "verified", verification_method: "operator_authorized_agent", verification_evidence_url: "https://www.gov.br/cnpq/pt-br/chamadas/Busca_abertas", audited_by: null },
+  { id: "nasa-space-apps-2026", verification_status: "verified", verification_method: "operator_authorized_agent", verification_evidence_url: "https://www.spaceappschallenge.org/2026/", audited_by: null },
  ]);
 });
 
