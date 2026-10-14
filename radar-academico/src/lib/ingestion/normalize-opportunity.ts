@@ -44,7 +44,8 @@ export function normalizeOpportunity(input: {
   if (applicationRoute === "unclear" || deadline.precision === "not_informed") return null;
 
   const statusSignal = detectSuspension(combined);
-  const contentHash = crypto.createHash("sha256").update(combined).digest("hex");
+  // Include normalization revision so corrected extraction receives a new audit event.
+  const contentHash = crypto.createHash("sha256").update(`v2\n${combined}`).digest("hex");
   const isCourse = /curso|qualificaç|capacitaç|oficina|formação profissional/i.test(input.title);
   const nationallyEligible = normalizedLocation.location.stateCode === null &&
     input.source.geographicScope.includes("Brasil") &&
@@ -61,8 +62,8 @@ export function normalizeOpportunity(input: {
     nationallyEligible,
     deadlineAt: deadline.deadlineAt,
     deadlinePrecision: deadline.precision,
-    requirementsText: "Não informado na fonte oficial. Consulte o edital.",
-    amountText: "Não informado na fonte oficial. Consulte o edital.",
+    requirementsText: "Consulte a fonte oficial para os requisitos de participação.",
+    amountText: "Consulte a fonte oficial para os valores e condições do benefício.",
     stateCode: normalizedLocation.location.stateCode,
     cityName: normalizedLocation.location.cityName,
     reviewStatus: "needs_information",

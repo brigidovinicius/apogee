@@ -58,6 +58,9 @@ services:
     env_file: ${RADAR_ENV_FILE:-.env}
     environment:
       RADAR_INTERNAL_ORIGIN: http://web:3000
+      # Poll for due work every five minutes; per-source schedules remain in PostgreSQL.
+      # Override the legacy daily loop setting without changing the shared secrets file.
+      INGESTION_INTERVAL_SECONDS: ${RADAR_SCHEDULER_INTERVAL_SECONDS:-300}
     command: ["node", "scripts/run-scheduled-ingestion.mjs"]
     depends_on:
       web:

@@ -67,7 +67,12 @@ export async function claimDueOfficialSources(limit: number): Promise<OfficialSo
       `with due as (
          select id from official_sources
          where active=true and verification_status='verified'
-           and extraction_mode in ('rss','html')
+           and (extraction_mode in ('rss','html') or (
+             extraction_mode='manual_assisted' and exists (
+               select 1 from opportunities o where o.official_source_id=official_sources.id
+                 and o.deleted_at is null and (o.next_source_check_at is null or o.next_source_check_at<=now())
+             )
+           ))
            and (next_crawl_at is null or next_crawl_at <= now())
          order by next_crawl_at nulls first, priority desc, id
          limit $1 for update skip locked
