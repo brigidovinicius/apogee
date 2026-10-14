@@ -21,6 +21,7 @@ import { recheckKnownOpportunities } from "@/lib/ingestion/recheck";
 import { saveReviewItems } from "@/lib/ingestion/save-review-item";
 import { listLiveCatalogue } from "@/lib/db/live-catalogue";
 import { manageCatalogue } from "@/lib/official-sources/catalogue-management";
+import { claimDueOfficialSources, completeScheduledSource } from "@/lib/ingestion/official-source-registry";
 
 const source: OfficialSource = { id: "test-source", name: "Instituto", institutionName: "Instituto", institutionAcronym: "IF",
  sourceType: "federal_institute", baseUrl: "https://example.edu.br/", allowedDomains: ["example.edu.br"], allowedPathPrefixes: ["/"],
@@ -73,6 +74,19 @@ it("publishes automatically with real RLS and the same public/admin catalogue", 
  expect(publicItems[0]).not.toHaveProperty("evidence"); expect(publicItems[0]).not.toHaveProperty("version");
  const row = (await state.db!.query("select human_verified_at,verification_method from opportunities")).rows[0];
  expect(row).toEqual({ human_verified_at: null, verification_method: "automatic" });
+});
+it("schedules rechecks of assisted imports without crawling empty manual sources or deleted records", async () => {
+ await state.db!.exec("update official_sources set extraction_mode='manual_assisted'");
+ expect(await claimDueOfficialSources(3)).toEqual([]);
+ await save(candidate({ opportunityStatus: "unknown", extractionMethod: "manual_assisted" }));
+ expect(await listLiveCatalogue()).toEqual([]);
+ expect((await claimDueOfficialSources(3)).map((item) => item.id)).toEqual([source.id]);
+ expect(await claimDueOfficialSources(3)).toEqual([]); // lease prevents concurrent work
+ await completeScheduledSource(source.id, false);
+ await state.db!.exec("update official_sources set next_crawl_at=null; update opportunities set next_source_check_at=now()+interval '1 day'");
+ expect(await claimDueOfficialSources(3)).toEqual([]);
+ await state.db!.exec("update opportunities set next_source_check_at=null,deleted_at=now()");
+ expect(await claimDueOfficialSources(3)).toEqual([]);
 });
 it("refreshes unchanged content without duplicating and applies a retification with history", async () => {
  await save(); const [first] = await listLiveCatalogue(true);
