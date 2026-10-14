@@ -35,3 +35,7 @@ Servidor de demonstração restrito a `127.0.0.1`, com a conexão de banco sobre
 ## Ajuste de cores em 14/10/2026
 
 Verde acima de 7 dias; vermelho em 7 dias ou menos (limite inclusivo adotado). No navegador local foram confirmados os valores de CSS vermelho `rgb(252, 165, 165)` e verde `rgb(134, 239, 172)`, com estados sem prazo neutros. Os 7 testes direcionados do contador passaram, incluindo limites de 7 dias em milissegundos e datas sem horário; typecheck e ESLint direcionado passaram. A demonstração inclui um prazo de 10 dias. Produção permanece sem atualização.
+
+## Preparação para publicação
+
+A rota `/dev/oportunidades` fica apenas no checkout usado na demonstração local. Foi removida da branch de release para preservar a lista de rotas aprovada pelo teste de isolamento. A produção recebe os componentes reais e não inclui páginas com dados fictícios.
