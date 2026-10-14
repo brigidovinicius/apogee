@@ -38,7 +38,7 @@ async function save(item = candidate()) {
  return saveReviewItems(source, { sourceId: source.id, pagesChecked: 1, discovered: [item], ignored: 0, failed: 0, locationRejected: 0, warnings: [] });
 }
 function form(item: Record<string, unknown>, patch: Record<string, unknown> = {}) {
- return { ...item, deadlineAt: String(item.deadlineAt).slice(0,10), actor: "apogee:test-admin", evidenceExcerpt: evidence.excerpt, ...patch };
+ return { ...item, categories: item.categories ?? ["formacao"], deadlineAt: String(item.deadlineAt).slice(0,10), actor: "apogee:test-admin", evidenceExcerpt: evidence.excerpt, ...patch };
 }
 let migrationSnapshot: unknown[] = [];
 beforeAll(async () => {
@@ -74,6 +74,16 @@ it("publishes automatically with real RLS and the same public/admin catalogue", 
  expect(publicItems[0]).not.toHaveProperty("evidence"); expect(publicItems[0]).not.toHaveProperty("version");
  const row = (await state.db!.query("select human_verified_at,verification_method from opportunities")).rows[0];
  expect(row).toEqual({ human_verified_at: null, verification_method: "automatic" });
+});
+it("classifies structured evidence in several categories and preserves an administrator edit on recrawl", async () => {
+ await save(candidate({ benefitType: "research_scholarship", isCourse: true }));
+ const [item] = await listLiveCatalogue(true);
+ expect(item.categories).toEqual(["formacao", "bolsas", "pesquisa"]);
+ await manageCatalogue("PATCH", form(item, { categories: ["pesquisa", "eventos"] }));
+ await save(candidate({ benefitType: "research_scholarship", isCourse: true, contentHash: "recrawl" }));
+ expect((await listLiveCatalogue())[0].categories).toEqual(["pesquisa", "eventos"]);
+ expect((await listLiveCatalogue(true))[0].categories).toEqual(["pesquisa", "eventos"]);
+ await expect(manageCatalogue("PATCH", form((await listLiveCatalogue(true))[0], { categories: ["invented"] }))).rejects.toThrow("categoria válida");
 });
 it("schedules rechecks of assisted imports without crawling empty manual sources or deleted records", async () => {
  await state.db!.exec("update official_sources set extraction_mode='manual_assisted'");
@@ -115,7 +125,7 @@ it("deletion survives a later crawl and cannot be recreated by the create endpoi
  expect((await state.db!.query("select * from opportunities")).rows).toHaveLength(1);
 });
 it("rejects stale versions atomically and creates valid manual records immediately", async () => {
- const input = { ...candidate(), officialUrl: evidence.source_url, actor: "apogee:admin", evidenceExcerpt: evidence.excerpt };
+ const input = { ...candidate(), categories: ["formacao"], officialUrl: evidence.source_url, actor: "apogee:admin", evidenceExcerpt: evidence.excerpt };
  await manageCatalogue("POST", input);
  const [item] = await listLiveCatalogue(true); expect(item.verificationMethod).toBe("admin");
  await manageCatalogue("PATCH", form(item, { title: "Primeira edição" }));
@@ -132,7 +142,7 @@ it("automatically withdraws invalid status, conflict, expired deadline or missin
  expect(await listLiveCatalogue()).toEqual([]); expect(await listLiveCatalogue(true)).toEqual([]);
 });
 it("source closure overrides an earlier manual open status", async () => {
- await manageCatalogue("POST", { ...candidate(), officialUrl: evidence.source_url, actor: "apogee:admin", evidenceExcerpt: evidence.excerpt });
+ await manageCatalogue("POST", { ...candidate(), categories: ["formacao"], officialUrl: evidence.source_url, actor: "apogee:admin", evidenceExcerpt: evidence.excerpt });
  await save(candidate({ opportunityStatus: "closed", contentHash: "closed" }));
  expect(await listLiveCatalogue()).toEqual([]);
 });
@@ -156,7 +166,7 @@ it("migration retains verified publications and does not promote legacy pending 
 });
 
 it("keeps distinct manually entered programmes on one page separate", async () => {
- const input = { ...candidate(), officialUrl: evidence.source_url, actor: "apogee:admin", evidenceExcerpt: evidence.excerpt };
+ const input = { ...candidate(), categories: ["formacao"], officialUrl: evidence.source_url, actor: "apogee:admin", evidenceExcerpt: evidence.excerpt };
  await manageCatalogue("POST", input);
  await manageCatalogue("POST", { ...input, title: "Outro programa na mesma página" });
  expect(await listLiveCatalogue()).toHaveLength(2);

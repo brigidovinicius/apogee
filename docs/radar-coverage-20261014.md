@@ -1,0 +1,13 @@
+# Cobertura do Radar — medição de 14/10/2026
+
+Meta aprovada: pelo menos 1.000 fichas únicas e vigentes no catálogo ao vivo. Esta é uma meta de dados verificados, não uma meta de linhas armazenadas ou cartões repetidos por categoria.
+
+Consulta somente leitura no banco de produção em 14/10/2026: 2 registros em `opportunities`, dos quais 1 com publicação ativa e sem exclusão; 10 fontes cadastradas, 4 ativas e verificadas. A leitura pública feita na implantação anterior também mostrou 1 ficha. Portanto, faltam pelo menos 999 fichas elegíveis. A contagem precisa ser repetida após cada implantação e coleta porque estado e prazo mudam.
+
+As quatro fontes ativas eram IFPE cursos 2026 (importação assistida), UFBA editais (HTML), UFSC Propesq (RSS) e USP PRG programas e bolsas (HTML). Seus registros de execução agregados mostravam, respectivamente, 1, 0, 0 e 0 fichas criadas. UFSC e USP registraram falhas de consulta; UFBA não gerou candidatos. Isso não prova ausência de oportunidades nas instituições, apenas que os adaptadores e a cobertura atuais não as transformaram em fichas válidas. As demais seis fontes não estavam ativas, embora algumas estivessem verificadas, e não foram ativadas por esta medição.
+
+O [catálogo de cursos do MEC](https://aprendamais.mec.gov.br/course/index.php?categoryid=22&lang=pt_br) mostra muitas páginas de cursos. Seus [termos oficiais](https://aprendamais.mec.gov.br/pluginfile.php/57/mod_folder/content/0/Termos%20de%20Uso%20Plataforma%20Aprenda%20Mais.pdf) permitem matrícula gratuita quando as inscrições de cada curso estão abertas. Porém, uma [ficha de curso consultada](https://aprendamais.mec.gov.br/course/view.php?id=3110) redirecionou para login; a listagem pública não comprova que aquela turma aceita matrículas agora. Não contornar esse acesso nem contar cursos listados como inscrições abertas. A [busca de chamadas abertas do CNPq](https://www.gov.br/cnpq/pt-br/chamadas/Busca_abertas) é outra fonte oficial a examinar, mas seu volume isolado não é suficiente para a meta.
+
+Próximos lotes de execução: (1) corrigir as falhas de coleta das fontes ativas e medir páginas, candidatos, publicações e bloqueios por fonte; (2) auditar e habilitar gradualmente novas fontes oficiais; (3) criar adaptadores de paginação, cursos, editais e idiomas conforme a evidência das fontes, mantendo robots, frequência e limite de requisições; (4) medir IDs únicos publicados, frescor de verificação e distribuição pelas sete categorias. Cada lote deve registrar URL oficial, elegibilidade e estado da inscrição. Agregadores podem sugerir links, mas não confirmam sozinhos a publicação.
+
+O marco de 1.000 permanece **não atingido** nesta medição. Não promover registros antigos ou fabricar fichas para fechar a diferença.

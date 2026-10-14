@@ -5,6 +5,7 @@ import { candidateColumns, findCandidate, lockSource, persistCandidate, type Can
 import { publicationIssue } from "@/lib/ingestion/publication";
 import { normalizeBrazilianLocation } from "@/lib/location";
 import type { OpportunityCandidate } from "@/lib/ingestion/types";
+import { validCategories } from "@/lib/ingestion/categories";
 
 export class CatalogueError extends Error { constructor(message: string, public status = 400) { super(message); } }
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -25,6 +26,7 @@ export function parseCatalogueCandidate(input: Record<string, unknown>): Opportu
   const location = normalizeBrazilianLocation({ stateCode: input.stateCode || null, cityName: input.cityName || null });
   if (location.status === "invalid") throw new CatalogueError("Localização inválida");
   if (typeof input.isCourse !== "boolean" || typeof input.nationallyEligible !== "boolean") throw new CatalogueError("Classificação inválida");
+  if (!validCategories(input.categories)) throw new CatalogueError("Selecione ao menos uma categoria válida, sem repetições");
   const sourcePageUrl = text(input, "officialUrl", 2000);
   const excerpt = text(input, "evidenceExcerpt", 4000);
   const evidence = { source_url: sourcePageUrl, excerpt };
@@ -33,6 +35,7 @@ export function parseCatalogueCandidate(input: Record<string, unknown>): Opportu
     applicantType: choice(input, "applicantType", applicants) as OpportunityCandidate["applicantType"],
     applicationRoute: choice(input, "applicationRoute", routes) as OpportunityCandidate["applicationRoute"],
     benefitType: choice(input, "benefitType", benefits) as OpportunityCandidate["benefitType"],
+    categories: input.categories,
     opportunityStatus: choice(input, "opportunityStatus", ["open", "upcoming"]) as OpportunityCandidate["opportunityStatus"],
     deadlinePrecision: choice(input, "deadlinePrecision", ["date_only", "exact_datetime", "continuous_flow"]) as OpportunityCandidate["deadlinePrecision"],
     deadlineAt: input.deadlineAt === null || input.deadlineAt === "" ? undefined : text(input, "deadlineAt", 50),
@@ -82,7 +85,8 @@ export async function manageCatalogue(method: "POST" | "PATCH" | "DELETE", input
       const value = candidate[field as CandidateField] ?? null;
       let prior = existing?.[column] ?? null;
       if (prior instanceof Date) prior = candidate.deadlinePrecision === "date_only" ? prior.toISOString().slice(0,10) : prior.toISOString();
-      const same = field === "deadlineAt" && value && prior ? Date.parse(String(value)) === Date.parse(String(prior)) : value === prior;
+      const same = field === "categories" ? JSON.stringify(value) === JSON.stringify(prior) :
+        field === "deadlineAt" && value && prior ? Date.parse(String(value)) === Date.parse(String(prior)) : value === prior;
       if (!same) Object.assign(overrides, { [field]: value });
     }
     // An edited title keeps its original ingestion identity. URL changes are explicit overrides too.

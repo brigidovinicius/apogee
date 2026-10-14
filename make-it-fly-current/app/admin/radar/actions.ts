@@ -59,6 +59,7 @@ export async function saveRadarOpportunity(_state: CatalogueFormState, formData:
   const fields = ["title", "institution", "officialSourceId", "officialUrl", "benefitType", "applicantType", "applicationRoute", "opportunityStatus", "deadlineAt", "deadlinePrecision", "stateCode", "cityName", "requirementsText", "amountText", "evidenceExcerpt"];
   const input: Record<string, unknown> = Object.fromEntries(fields.map((field) => [field, String(formData.get(field) ?? "")]));
   input.isCourse = formData.get("isCourse") === "on";
+  input.categories = formData.getAll("categories").map(String);
   input.nationallyEligible = formData.get("nationallyEligible") === "on";
   const result = await mutateRadarCatalogue(id ? "PATCH" : "POST", { ...input, id, version: Number(formData.get("version")), actor: `apogee:${admin.id}` });
   if (!result.ok) return { error: result.error };

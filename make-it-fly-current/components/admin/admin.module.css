@@ -1027,3 +1027,7 @@
 .catalogueForm > label:not(.field) { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; }
 .catalogueForm input[type="checkbox"] { flex: 0 0 auto; margin-top: 4px; }
 .catalogueForm button { justify-self: start; }
+.categoryFieldset { display: grid; gap: 9px; margin: 0; padding: 16px; border: 1px solid currentColor; border-radius: 8px; }
+.categoryFieldset legend { padding: 0 6px; font-weight: 700; }
+.categoryFieldset p { margin: 0 0 5px; font-size: 13px; line-height: 1.5; }
+.categoryOption { display: flex; align-items: flex-start; gap: 9px; font-size: 14px; line-height: 1.5; }

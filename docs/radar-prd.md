@@ -1,6 +1,6 @@
 # Radar Apogee — PRD
 
-Revisão: 14/10/2026. Decisão vigente do proprietário: publicação automática; painel de gerenciamento do catálogo ao vivo. Substitui a proposta anterior de revisão humana e o fluxo editorial da especificação legada. Migração e deploy autorizados posteriormente pelo proprietário; evidências no [registro de produção](radar-production-20261014.md).
+Revisão: 14/10/2026. Decisões vigentes do proprietário: publicação automática, painel de gerenciamento do catálogo ao vivo, sete categorias principais e meta mínima de mil oportunidades. Substitui a proposta anterior de revisão humana e a divisão em seis categorias da especificação legada. A migração e o deploy da primeira versão foram autorizados e executados; evidências no [registro de produção](radar-production-20261014.md).
 
 O [brief integral](radar-product-brief.md) preserva os requisitos, exemplos e referências recebidos. Este PRD registra as decisões vigentes e o recorte inicial, sem descartar as demais capacidades. O andamento e os limites estão no [registro de execução](radar-live-execution.md).
 
@@ -23,18 +23,17 @@ Catálogo principal idêntico ao publicado, com busca e filtros comuns. Criar, e
 
 ## Atualização
 
-Apogee lê a API sem cache persistente e renova a lista em abas visíveis a cada 60 segundos. Salvar/excluir invalida as páginas afetadas. O agendador verifica trabalho vencido a cada cinco minutos por padrão, em lotes limitados, respeitando robots, domínio, tamanho, tempo e frequência. Cada fonte mantém seu intervalo; a execução não garante que toda a Web foi varrida. Rechecagem de fichas existentes inclui importações assistidas, dentro do limite de páginas, e distingue falhas de consulta de mudanças confirmadas. Importação assistida não implica descoberta automática de novas URLs. Não confundir consulta da API com nova consulta à fonte oficial.
+Apogee lê a API interna do serviço Radar Acadêmico (Webscraper), sem cache persistente e renova a lista em abas visíveis a cada 60 segundos. Salvar/excluir invalida as páginas afetadas. O agendador verifica trabalho vencido a cada cinco minutos por padrão, em lotes limitados, respeitando robots, domínio, tamanho, tempo e frequência. Cada fonte mantém seu intervalo; a execução não garante que toda a Web foi varrida. Rechecagem de fichas existentes inclui importações assistidas, dentro do limite de páginas, e distingue falhas de consulta de mudanças confirmadas. Importação assistida não implica descoberta automática de novas URLs. Não confundir consulta da API com nova consulta à fonte oficial.
 
-## Navegação: duas opções em avaliação
+## Navegação: sete categorias aprovadas
 
-| Critério | Seis categorias | Sete categorias |
-|---|---|---|
-| Estrutura | Formação e aprendizagem; Bolsas e intercâmbios; Competições e hackathons; Pesquisa e inovação; Carreira e experiência; Eventos e comunidades | Mesmas áreas, separando Bolsas e apoios financeiros de Intercâmbios |
-| Benefício | Navegação mais curta, útil em telas pequenas | Intenção de busca mais explícita entre financiamento e mobilidade |
-| Custo | Mistura objetivos distintos e exige filtros claros | Mais itens e maior necessidade de conteúdo por área |
-| Sobreposição | Intercâmbio com bolsa dentro da mesma área | Precisa permitir classificação múltipla sem duplicar ficha |
+Formação e aprendizagem; Bolsas e apoios financeiros; Intercâmbios; Competições e hackathons; Pesquisa e inovação; Carreira e experiência; Eventos e comunidades. Cada categoria usa identificador estável. Uma ficha pode constar em várias, sem ser duplicada. A navegação é igual para usuário e administrador e combina com os filtros atuais. Benefícios genéricos, prêmios e fomento não determinam sozinhos o formato da oportunidade; competições e eventos exigem classificação explícita enquanto a extração não tiver evidência estruturada específica. Itens legados sem classificação comprovada continuam acessíveis em Todas e na busca. Escolaridade, perfil, país, idioma, custo e modalidade permanecem filtros.
 
-Decisão pendente conforme pedido do usuário: avaliar ambas antes de escolher. Comparar distribuição real do catálogo e tarefas de busca com usuários; manter filtros atuais durante a primeira execução. Escolaridade, perfil, país, idioma, custo e modalidade são filtros, não categorias principais.
+## Cobertura mínima: mil oportunidades
+
+A meta é **1.000 fichas únicas publicadas no catálogo ao vivo**, com inscrição aberta ou abertura futura confirmada, fonte oficial autorizada e ativa, evidência, prazo vigente ou fluxo contínuo explícito e última verificação registrada. Contar IDs únicos, sem somar aparições em várias categorias, registros encerrados, pendentes, históricos ou links de agregadores não confirmados. Medir diariamente o total e a distribuição por categoria e fonte. A meta não autoriza fabricar dados, repetir fichas ou enfraquecer critérios de publicação.
+
+Ampliar e auditar fontes em lotes, priorizando páginas oficiais com listagens e detalhes estruturados; desenvolver adaptadores de extração em português e outros idiomas; confirmar a elegibilidade de brasileiros nos programas internacionais; preservar a identidade de programa e edição; medir o rendimento real de cada fonte. Listas de terceiros servem à descoberta, com confirmação na página oficial antes de publicar. A capacidade atual ainda não sustenta mil fichas; o marco de 1.000 só pode ser declarado após medição do catálogo publicado.
 
 ## Evolução de produto
 
@@ -53,3 +52,5 @@ As demais capacidades de evolução não devem ser apresentadas como implementad
 ## Aceite
 
 Uma ficha válida recém-coletada aparece sem aprovação; atualização válida preserva ID e gera histórico; excluída não retorna; uma edição concorrente falha sem perda de dados; usuário e admin recebem os mesmos IDs e informações públicas; credencial de leitura não cria/edita/exclui; falha da ponte exibe indisponibilidade em vez de catálogo estático; campos privados de auditoria não chegam à API pública.
+
+As sete categorias ficam visíveis e combináveis com busca e filtros nos três catálogos. Criar e editar permite selecionar várias categorias; a seleção persiste no Radar, chega à API comum e sobrevive à próxima coleta. O total exibido no gerenciamento conta fichas únicas, não somas por categoria. A meta quantitativa só é aceita quando houver pelo menos 1.000 fichas publicadas e vigentes medidas na produção, sem duplicações ou relaxamento da validação de fonte.

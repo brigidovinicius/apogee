@@ -4,6 +4,8 @@ Status: primeira etapa implementada localmente em `fix/APG-82-radar-admin-bridge
 
 Atualização de 14/10: o proprietário autorizou e foi executada a implantação posterior. Este documento preserva a evidência local original; consulte o [registro de produção](radar-production-20261014.md) para backup, migração, release e validações reais.
 
+Atualização de escopo de 14/10: o proprietário escolheu sete categorias e estabeleceu meta de mil oportunidades ativas. A decisão vigente e o critério de contagem estão no [PRD](radar-prd.md). Os números de testes e limites abaixo documentam a execução anterior, não a nova meta.
+
 ## Implementado
 
 - Publicação automática de fichas abertas ou futuras confirmadas, com fonte ativa/verificada, URL permitida, evidência e prazo. Fonte incerta, vencida, suspensa, cancelada ou contraditória fica fora do catálogo. Aprovação humana de fichas e retificações foi retirada.
@@ -41,7 +43,7 @@ PGlite foi adicionado apenas como dependência de desenvolvimento para testar SQ
 
 ## Limites e próximas fases
 
-A extração automática continua baseada nos adaptadores HTML/RSS, com PDF de detalhe e padrões de português/datas brasileiras. Busca Web ampla, adaptadores multilíngues, tradução, identidade completa por programa/edição entre fontes, novas taxonomias/filtros, busca em linguagem natural, ranking, calendário e recursos pagos permanecem na evolução descrita no [PRD](radar-prd.md) e no [brief integral](radar-product-brief.md). Seis versus sete categorias continua em avaliação.
+A extração automática continua baseada nos adaptadores HTML/RSS, com PDF de detalhe e padrões de português/datas brasileiras. Busca Web ampla, adaptadores multilíngues, tradução, identidade completa por programa/edição entre fontes, filtros adicionais, busca em linguagem natural, ranking, calendário e recursos pagos permanecem na evolução descrita no [PRD](radar-prd.md) e no [brief integral](radar-product-brief.md).
 
 Páginas que representam vários programas exigem identidade explícita: cadastro manual pode manter títulos distintos no mesmo URL; coleta automática ambígua não decide qual ficha substituir. A política de envelhecimento máximo de verificações e o SLA de cobertura por fonte ainda precisam ser definidos; falha de rede mantém o último estado conhecido e seu horário, sem inventar encerramento. Limites de lote não equivalem a garantia de checagem diária de todo o catálogo.
 

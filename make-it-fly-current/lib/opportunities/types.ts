@@ -7,9 +7,21 @@ import {
 
 export const OPPORTUNITY_KINDS = ["Bolsa", "Auxílio", "Estágio", "Intercâmbio", "Curso", "Prêmio", "Fomento", "Programa"] as const;
 export const EDUCATION_LEVELS = ["Ensino médio", "Graduação", "Pós-graduação", "Público diverso"] as const;
+export const OPPORTUNITY_CATEGORIES = [
+  { id: "formacao", label: "Formação e aprendizagem" },
+  { id: "bolsas", label: "Bolsas e apoios financeiros" },
+  { id: "intercambios", label: "Intercâmbios" },
+  { id: "competicoes", label: "Competições e hackathons" },
+  { id: "pesquisa", label: "Pesquisa e inovação" },
+  { id: "carreira", label: "Carreira e experiência" },
+  { id: "eventos", label: "Eventos e comunidades" },
+] as const;
 
 export type OpportunityKind = (typeof OPPORTUNITY_KINDS)[number];
 export type EducationLevel = (typeof EDUCATION_LEVELS)[number];
+export type OpportunityCategory = (typeof OPPORTUNITY_CATEGORIES)[number]["id"];
+export const isOpportunityCategory = (value: unknown): value is OpportunityCategory =>
+  typeof value === "string" && OPPORTUNITY_CATEGORIES.some((category) => category.id === value);
 
 /** Campos que podem compor a prévia pública do Radar. */
 export type OpportunityPreview = {
@@ -18,6 +30,7 @@ export type OpportunityPreview = {
   organization: string;
   kind: OpportunityKind;
   level: EducationLevel;
+  categories?: OpportunityCategory[];
 };
 
 /** Dados públicos do catálogo; controles administrativos permanecem no servidor. */
@@ -51,6 +64,7 @@ export function mergeOpportunities(
 }
 
 export type OpportunityFilters = {
+  category?: OpportunityCategory | null;
   kind: OpportunityKind | null;
   level: EducationLevel | null;
   stateCode: BrazilianStateCode | null;
@@ -59,6 +73,7 @@ export type OpportunityFilters = {
 };
 
 export const EMPTY_OPPORTUNITY_FILTERS: OpportunityFilters = {
+  category: null,
   kind: null,
   level: null,
   stateCode: null,
@@ -149,6 +164,7 @@ export function sanitizeOpportunityFilters(
 }
 
 export function opportunityFiltersFromSearchParams(searchParams: URLSearchParams): OpportunityFilters {
+  const categoryValue = searchParams.get("categoria");
   const kindValue = searchParams.get("modalidade");
   const levelValue = searchParams.get("formacao");
   const location = normalizeBrazilianLocation({
@@ -158,6 +174,7 @@ export function opportunityFiltersFromSearchParams(searchParams: URLSearchParams
   const query = searchParams.get("busca")?.trim().slice(0, 100);
 
   return {
+    ...(isOpportunityCategory(categoryValue) ? { category: categoryValue } : {}),
     kind: OPPORTUNITY_KINDS.find((kind) => kind === kindValue) ?? null,
     level: EDUCATION_LEVELS.find((level) => level === levelValue) ?? null,
     stateCode: location.status === "valid" ? location.location.stateCode : null,
@@ -171,6 +188,7 @@ export function setOpportunityFilterSearchParams(
   filters: OpportunityFilters,
 ) {
   const values = {
+    categoria: filters.category,
     modalidade: filters.kind,
     formacao: filters.level,
     uf: filters.stateCode,
@@ -193,6 +211,7 @@ export function filterOpportunities(
   const query = filters.query?.trim().toLocaleLowerCase("pt-BR") ?? "";
   return sortByDeadline(opportunities)
     .filter((opportunity) => isOpportunityOpen(opportunity, today))
+    .filter((opportunity) => !filters.category || opportunity.categories?.includes(filters.category))
     .filter((opportunity) => filters.kind === null || opportunity.kind === filters.kind)
     .filter((opportunity) => filters.level === null || opportunity.level === filters.level)
     .filter((opportunity) => filters.stateCode === null || opportunity.stateCode === filters.stateCode || opportunity.nationallyEligible === true)
@@ -206,6 +225,6 @@ export function filterOpportunities(
 }
 
 export function countActiveOpportunityFilters(filters: OpportunityFilters) {
-  return Number(filters.kind !== null) + Number(filters.level !== null) +
+  return Number(Boolean(filters.category)) + Number(filters.kind !== null) + Number(filters.level !== null) +
     Number(filters.stateCode !== null) + Number(filters.cityName !== null) + Number(Boolean(filters.query?.trim()));
 }

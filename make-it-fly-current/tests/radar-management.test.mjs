@@ -25,8 +25,10 @@ test("create edit and delete enforce admin authorization before any mutation", a
 test("management uses session actor and returns errors without redirecting away from entered data", async () => {
  const mutations = []; const handlers = await actions(true, mutations); const data = new FormData();
  data.set("actor", "forged"); data.set("title", "Entered title");
+ data.append("categories", "formacao"); data.append("categories", "bolsas");
  assert.deepEqual(await handlers.saveRadarOpportunity({ error: "" }, data), { error: "conflict" });
  assert.equal(mutations[0].method, "POST"); assert.equal(mutations[0].input.actor, "apogee:real-admin");
+ assert.deepEqual(mutations[0].input.categories, ["formacao", "bolsas"]);
  data.set("id", "test-id"); data.set("version", "3");
  await handlers.saveRadarOpportunity({ error: "" }, data);
  assert.equal(mutations[1].method, "PATCH"); assert.equal(mutations[1].input.version, 3);
