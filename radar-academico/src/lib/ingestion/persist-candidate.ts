@@ -82,7 +82,9 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
   } else {
     Object.assign(values, { ingestion_origin: incoming.extractionMethod === "manual_assisted" ? "manual" : "automatic", official_source_id: source.id, canonical_key: canonicalOpportunityKey(source.id, incoming.title, incoming.sourcePageUrl),
       target_academic_levels: [candidate.applicantType], verified_at: now, verification_method: options.mode,
-      next_source_check_at: now, last_source_check_at: options.mode === "automatic" ? now : null, published_at: issue ? null : now, extracted_at: now });
+      next_source_check_at: options.mode === "admin" || incoming.extractionMethod === "manual_assisted"
+        ? now : new Date(Date.parse(now) + 24 * 60 * 60 * 1000).toISOString(),
+      last_source_check_at: options.mode === "automatic" ? now : null, published_at: issue ? null : now, extracted_at: now });
     const cols = Object.keys(values);
     const inserted = await client.query<{ id: string }>(`insert into opportunities (${cols.join(",")}) values (${cols.map((_, i) => `$${i+1}`).join(",")}) returning id`, Object.values(values));
     id = inserted.rows[0].id;

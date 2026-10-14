@@ -1,5 +1,13 @@
 # Cobertura do Radar — medição de 14/10/2026
 
+## Atualização após FAPESP — 14/10/2026, 15:16 UTC
+
+O [PR #39](https://github.com/brigidovinicius/apogee/pull/39) foi implantado no Radar após backup e restauração de teste. A listagem oficial da [FAPESP Oportunidades](https://fapesp.br/oportunidades/) mostrou 78 páginas individuais de bolsas abertas; a coleta limitada percorreu todas e publicou 78 fichas distintas, sem falhas nem bloqueios nessa fonte. As APIs pública e administrativa mostraram os mesmos **81 IDs** vigentes e os mesmos campos públicos. Distribuição por categoria, com IDs repetidos entre categorias: formação 1, bolsas 80, intercâmbios 1, competições 1, pesquisa 78, carreira 0, eventos 1. O alcance estruturado era global 1, país 1, estado 1, cidade 0 e desconhecido 78; não inferir UF/cidade a partir do nome da instituição ou de cidade sem estado. A lacuna para 1.000 era **919** fichas únicas. A página pública da Apogee mostrou as novas bolsas.
+
+O próximo lote de carreira verifica o [edital de estágio da Prefeitura de São José dos Campos](https://servicos.sjc.sp.gov.br/concurso/concurso_detalhe.aspx?codigo=192) e o [Programa de Estágio Braskem 2027](https://www.braskem.com.br/bahia-release/braskem-abre-inscricoes-para-programa-de-estagio-2027-com-mais-de-100-vagas-em-cinco-estados), sempre nas páginas dos organizadores. A publicação ainda depende da coleta real em produção. As 120 vagas anunciadas pela Braskem formam um único programa/edição. Cursos permanentes sem turma, programa ou vagas com inscrição comprovada não entram na meta.
+
+## Medição inicial e histórico
+
 Meta aprovada: pelo menos 1.000 fichas únicas e vigentes no catálogo ao vivo. Esta é uma meta de dados verificados, não uma meta de linhas armazenadas ou cartões repetidos por categoria.
 
 Consulta somente leitura no banco de produção em 14/10/2026: 2 registros em `opportunities`, dos quais 1 com publicação ativa e sem exclusão; 10 fontes cadastradas, 4 ativas e verificadas. A leitura pública feita na implantação anterior também mostrou 1 ficha. Portanto, faltam pelo menos 999 fichas elegíveis. A contagem precisa ser repetida após cada implantação e coleta porque estado e prazo mudam.

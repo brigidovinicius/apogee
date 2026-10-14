@@ -77,8 +77,8 @@ it("publishes automatically with real RLS and the same public/admin catalogue", 
  expect(adminItems[0]).toMatchObject(publicItems[0]);
  expect(publicItems[0]).not.toHaveProperty("evidence"); expect(publicItems[0]).not.toHaveProperty("version");
  expect(publicItems[0]).toMatchObject({ geographicScopeKind: "unknown", countryCode: null });
- const row = (await state.db!.query("select human_verified_at,verification_method from opportunities")).rows[0];
- expect(row).toEqual({ human_verified_at: null, verification_method: "automatic" });
+ const row = (await state.db!.query("select human_verified_at,verification_method,next_source_check_at >= now() + interval '23 hours' as recheck_tomorrow from opportunities")).rows[0];
+ expect(row).toEqual({ human_verified_at: null, verification_method: "automatic", recheck_tomorrow: true });
 });
 it("preserves global eligibility without inventing country, state or city", async () => {
  await save(candidate({ geographicScopeKind: "global", countryCode: null }));

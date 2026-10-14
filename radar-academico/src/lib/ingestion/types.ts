@@ -2,7 +2,7 @@ import type { BrazilianStateCode } from "@/lib/location";
 import type { OpportunityCategory } from "./categories";
 
 export type SourceType =
-  | "federal_government" | "state_government" | "government_foundation"
+  | "federal_government" | "state_government" | "municipal_government" | "government_foundation" | "corporate_organizer"
   | "federal_university" | "state_university" | "federal_institute"
   | "public_research_institution" | "official_reference";
 
