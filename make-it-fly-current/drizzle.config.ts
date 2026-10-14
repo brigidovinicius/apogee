@@ -9,7 +9,7 @@ const url = new URL(process.env.DATABASE_URL ?? "postgres://localhost/apogee_mem
 
 export default defineConfig({
   dialect: "postgresql",
-  schema: "./lib/members/schema.ts",
+  schema: ["./lib/members/schema.ts", "./lib/gallery-schema.ts"],
   out: "./drizzle",
   dbCredentials: {
     host: url.hostname,

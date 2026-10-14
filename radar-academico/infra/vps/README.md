@@ -53,24 +53,18 @@ partir de um crawler.
    encaminhado ao navegador. A mesma ponte alcança `/api/internal/editorial/opportunities`
    e `/api/internal/editorial/import` sem criar uma segunda credencial.
 
-## Cursos e fila de publicação
+## Cursos e publicação automática
 
-A migração `0005_courses_national_scope.sql` adiciona a classificação de curso,
-o indicador de elegibilidade nacional e três fontes oficiais inicialmente
-pendentes e inativas. Ela não publica cursos. Na Apogee, um administrador deve
-conferir a página de cada fonte, marcar a auditoria, ativá-la e então importar
-os candidatos pelo formulário de `/admin/radar`. Os seis cursos verificados em
-11/10/2026 estão em `references/cursos-pendentes-ifpe-2026-10-11.csv` e
-`references/cursos-pendentes-ifmg-2026-10-11.csv`; importe um arquivo por vez.
-Seus prazos são 23/10 e 19/10/2026. Não use um lote após seu prazo sem nova
-verificação.
+As migrações `0005_courses_national_scope.sql`, `0006_crawl_progress.sql`
+e `0007_automatic_live_catalogue.sql` adicionam cursos, execução da coleta e
+catálogo ao vivo. As novas fontes começam pendentes e inativas. Autorizar uma
+fonte exige conferir domínio, localização e condições de consulta; fichas válidas
+publicam automaticamente, sem revisão humana intermediária.
 
-Cada candidato permanece em `pending_review`. O botão “Aprovar e publicar”
-exige fonte verificada e ativa, evidência oficial e prazo vigente. A checagem
-humana e a publicação são registradas no Radar, e o catálogo de membros consome
-somente itens aprovados. Cursos da Aprenda Mais exigem prova de que a inscrição
-da turma está aberta; a data de conclusão do curso não serve como prazo de
-inscrição.
+Os CSVs históricos não comprovam inscrições atuais. Reconsulte a fonte e o prazo
+antes de importar ou cadastrar. Na Apogee, `/admin/radar` gerencia o mesmo catálogo
+público com criar, editar e excluir; a configuração de fontes fica na vista
+`?vista=fontes`. Veja `docs/radar-prd.md` na raiz do repositório.
 
 Não execute comandos em `/opt/sistema-de-locacao`, não publique a porta 3000 e
 não crie exceções no firewall. Antes da primeira migração, faça um backup do

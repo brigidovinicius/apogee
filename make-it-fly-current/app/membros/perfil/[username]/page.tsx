@@ -30,7 +30,7 @@ export default async function ProfilePage({ params }: Props) {
       <MemberBar member={member} current={isOwn ? "perfil" : undefined} />
       <header className={styles.pageHead}>
         <div className={styles.profileHead}>
-          <AvatarInitials name={profile.name} size="large" />
+          <AvatarInitials name={profile.name} userId={profile.id} image={profile.image} size="large" />
           <div>
             <h1 className={styles.title}>{profile.name}</h1>
             <p className={styles.eyebrow} style={{ margin: "0.6rem 0 0" }}>

@@ -25,7 +25,7 @@ export default async function EditProfilePage() {
       </ol>
       <h1 className={styles.title}>Editar perfil</h1>
       <div className={styles.panel} style={{ marginTop: "2rem", maxWidth: "40rem" }}>
-        <ProfileForm name={profile.name} bio={profile.bio ?? ""} />
+        <ProfileForm name={profile.name} userId={member.id} bio={profile.bio ?? ""} image={profile.image} />
       </div>
     </div>
   );

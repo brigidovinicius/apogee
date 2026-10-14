@@ -3,11 +3,13 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { getAuth } from "./auth";
+import { isGeneratedGoogleUsername } from "./validation";
 
 export type CurrentMember = {
   id: string;
   name: string;
   username: string;
+  image: string | null;
   role: "member" | "admin";
 };
 
@@ -19,6 +21,7 @@ export async function getMemberFromHeaders(requestHeaders: Headers): Promise<Cur
     id: user.id,
     name: user.name,
     username: user.username ?? "",
+    image: user.image ?? null,
     role: user.role === "admin" ? "admin" : "member",
   };
 }
@@ -33,6 +36,10 @@ export async function requireMember(next?: string): Promise<CurrentMember> {
   const member = await getCurrentMember();
   if (!member) {
     redirect(next ? `/membros/entrar?next=${encodeURIComponent(next)}` : "/membros/entrar");
+  }
+  if (isGeneratedGoogleUsername(member.username)) {
+    const destination = next ?? "/membros";
+    redirect(`/membros/perfil/configurar?next=${encodeURIComponent(destination)}`);
   }
   return member;
 }

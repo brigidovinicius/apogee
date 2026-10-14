@@ -46,9 +46,10 @@ test("non-admin members receive an explicit denied state without operational rea
 });
 
 test("curation redirects to the authorized live catalogue management", async () => {
-  const [curation, editor, navigation, radarPage, radarActions, radarClient] = await Promise.all([
+  const [curation, editor, blogActions, navigation, radarPage, radarActions, radarClient] = await Promise.all([
     source("app/admin/curadoria/page.tsx"),
     source("app/admin/posts/novo/page.tsx"),
+    source("app/admin/posts/actions.ts"),
     source("components/admin/admin-nav.tsx"),
     source("app/admin/radar/page.tsx"),
     source("app/admin/radar/actions.ts"),
@@ -58,8 +59,9 @@ test("curation redirects to the authorized live catalogue management", async () 
   assert.match(curation, /requireAdmin/);
   assert.doesNotMatch(curation, /<form|<button[^>]*name="decision"/);
   assert.match(curation, /redirect\("\/admin\/radar"\)/);
-  assert.match(editor, /disabled/);
-  assert.doesNotMatch(editor, /action=|useActionState|fetch\(/);
+  assert.match(editor, /<PostEditor post=\{null\}/);
+  assert.match(blogActions, /await requireAdmin\(/);
+  assert.match(blogActions, /revalidatePath\("\/blog"\)/);
   for (const label of ["Moderação", "Assinaturas", "Conciliação", "Fila e jobs", "Auditoria"]) {
     assert.match(navigation, new RegExp(`"${label}"`));
   }

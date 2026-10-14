@@ -59,10 +59,10 @@ export default async function AdminDashboardPage() {
               action={<Link href="/admin/curadoria">Ver catálogo</Link>}
             />
             <AdminNotice
-              tone="attention"
-              title="Editor de posts sem CMS"
-              description="Não há schema, armazenamento editorial, revisão, slug ou política de publicação configurados."
-              action={<Link href="/admin/posts/novo">Ver limites</Link>}
+              tone="success"
+              title="Blog editorial"
+              description="Crie rascunhos, publique, agende e administre os artigos do blog."
+              action={<Link href="/admin/posts">Gerenciar blog</Link>}
             />
             <AdminNotice
               title="Galeria mantém acesso administrativo separado"

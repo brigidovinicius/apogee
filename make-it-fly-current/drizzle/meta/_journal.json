@@ -8,6 +8,27 @@
       "when": 1790736196779,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791745679932,
+      "tag": "0001_gallery_postgres",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791812167981,
+      "tag": "0002_rapid_queen_noir",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791894539402,
+      "tag": "0003_bored_logan",
+      "breakpoints": true
     }
   ]
 }

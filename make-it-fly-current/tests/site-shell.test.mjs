@@ -17,7 +17,7 @@ test("institutional shell is reused by the first public and member routes", asyn
 
   for (const route of [home, preview]) {
     assert.match(route, /import \{ ApogeeHome \} from "@\/components\/home\/apogee-home"/);
-    assert.match(route, /return <ApogeeHome \/>/);
+    assert.match(route, /<ApogeeHome \/>/);
   }
 
   for (const route of [homeContent, opportunities, membersLayout]) {

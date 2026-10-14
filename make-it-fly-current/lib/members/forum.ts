@@ -9,6 +9,7 @@ import { POSTS_PAGE_SIZE, TOPICS_PAGE_SIZE, slugify } from "./validation";
 const authorFields = {
   authorName: user.name,
   authorUsername: user.username,
+  authorImage: user.image,
 };
 
 export async function listCategories() {
@@ -50,6 +51,7 @@ export async function listTopics(categoryId: number, page: number) {
     db
       .select({
         id: forumTopic.id,
+        authorId: forumTopic.authorId,
         slug: forumTopic.slug,
         title: forumTopic.title,
         replyCount: forumTopic.replyCount,
@@ -117,7 +119,7 @@ export async function listPosts(topicId: number, page: number) {
 export async function getProfile(username: string) {
   const db = getDb();
   const [profile] = await db
-    .select({ id: user.id, name: user.name, username: user.username, bio: user.bio, createdAt: user.createdAt })
+    .select({ id: user.id, name: user.name, username: user.username, image: user.image, bio: user.bio, createdAt: user.createdAt })
     .from(user)
     .where(eq(user.username, username))
     .limit(1);
@@ -253,9 +255,18 @@ export async function updateProfile(input: { userId: string; name: string; bio: 
     .where(eq(user.id, input.userId));
 }
 
+export async function completeGoogleUsername(userId: string, previousUsername: string, username: string): Promise<boolean> {
+  const rows = await getDb()
+    .update(user)
+    .set({ username, updatedAt: sql`now()` })
+    .where(and(eq(user.id, userId), eq(user.username, previousUsername)))
+    .returning({ id: user.id });
+  return rows.length > 0;
+}
+
 export async function getOwnProfile(userId: string) {
   const [profile] = await getDb()
-    .select({ name: user.name, username: user.username, bio: user.bio })
+    .select({ name: user.name, username: user.username, image: user.image, bio: user.bio })
     .from(user)
     .where(eq(user.id, userId))
     .limit(1);

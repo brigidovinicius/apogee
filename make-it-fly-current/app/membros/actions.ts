@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getAuth } from "@/lib/members/auth";
-import { clientIp, requireMember } from "@/lib/members/dal";
+import { clientIp, getCurrentMember, requireMember } from "@/lib/members/dal";
 import * as forum from "@/lib/members/forum";
 import { consumeRateLimit } from "@/lib/members/rate-limit";
 import {
@@ -13,10 +13,12 @@ import {
   fieldErrors,
   parseTopicParam,
   profileSchema,
+  publicUsernameSchema,
   replySchema,
   safeNextPath,
   signInSchema,
   signUpSchema,
+  isGeneratedGoogleUsername,
   topicParam,
   topicSchema,
 } from "@/lib/members/validation";
@@ -67,7 +69,32 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
   } catch (error) {
     return { message: authErrorMessage(error, "Não foi possível criar sua conta agora."), values };
   }
-  redirect("/membros");
+  redirect(safeNextPath(text(form, "next")));
+}
+
+export async function completeUsername(_: FormState, form: FormData): Promise<FormState> {
+  const member = await getCurrentMember();
+  if (!member) redirect("/membros/entrar");
+  const next = safeNextPath(text(form, "next"));
+  if (!isGeneratedGoogleUsername(member.username)) redirect(next);
+
+  const values = { username: text(form, "username") };
+  const parsed = publicUsernameSchema.safeParse(values.username);
+  if (!parsed.success) return { errors: { username: parsed.error.issues[0]?.message ?? "Escolha um nome de usuário válido." }, values };
+
+  try {
+    const updated = await forum.completeGoogleUsername(member.id, member.username, parsed.data);
+    if (!updated) return { message: "Seu cadastro já foi concluído. Entre novamente para continuar.", values };
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {
+      return { errors: { username: "Esse nome de usuário já está em uso." }, values };
+    }
+    console.error("[membros] erro ao concluir nome de usuário", error);
+    return { message: "Não foi possível salvar o nome de usuário agora.", values };
+  }
+
+  revalidatePath("/membros", "layout");
+  redirect(next);
 }
 
 export async function signIn(_: FormState, form: FormData): Promise<FormState> {

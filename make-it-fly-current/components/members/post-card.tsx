@@ -11,8 +11,10 @@ type PostCardProps = {
     isOpening: boolean;
     createdAt: Date;
     editedAt: Date | null;
+    authorId: string;
     authorName: string;
     authorUsername: string | null;
+    authorImage: string | null;
   };
   canEdit: boolean;
   category: string;
@@ -25,7 +27,7 @@ export function PostCard({ post, canEdit, category, last }: PostCardProps) {
       className={post.isOpening ? `${styles.post} ${styles.postOpening}` : styles.post}
       id={last ? "fim" : `post-${post.id}`}
     >
-      <AvatarInitials name={post.authorName} />
+      <AvatarInitials name={post.authorName} userId={post.authorId} image={post.authorImage} />
       <div className={styles.postContent}>
         <header className={styles.postHead}>
           {post.authorUsername ? (

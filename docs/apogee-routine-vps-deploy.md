@@ -315,3 +315,112 @@ nova publicação. O SHA implantado acima identifica a aplicação publicada.
 Um commit documental posterior não altera esse estado nem implica que este
 acréscimo já esteja presente no checkout da VPS; nenhuma outra publicação foi
 feita por causa deste registro.
+
+## Registro de release — blog editorial (2026-10-12)
+
+- Autorização do usuário: corrigir, implementar e colocar o blog no ar.
+  [PR #22](https://github.com/brigidovinicius/apogee/pull/22) integrado;
+  [CI 38257384912](https://github.com/brigidovinicius/apogee/actions/runs/38257384912)
+  aprovado nos três jobs gerais e no teste com PostgreSQL descartável.
+  O head do PR `efd36b3e372b371e5bdef5e90d8b64a07124522f` e o merge
+  `4d17ae6f74e5439d2ad23ca3c9ac4f67a2bdc7b9` têm a mesma árvore
+  `fb611c1056cd5abbcc4b0d95cb287cad2acfaf84`.
+- Preflight via `ssh apogee-vps`: `root@srv1439756`, checkout limpo em
+  `7741a7199a0780f8850a1cbeb8c3b4b4f638e4c2`, web saudável, `.env`
+  modo `600` e cerca de 73 GiB livres. Banco saudável com duas migrações,
+  galeria presente e tabelas do blog ausentes.
+- Backup antes da migração:
+  `/opt/apogee-membros/backups/blog-20261012T134713Z/apogee_membros.dump`,
+  `149852` bytes, arquivo modo `600` em diretório novo modo `700`.
+  `pg_restore --list` leu o arquivo com sucesso. Nenhum backup anterior foi
+  alterado.
+- Checkout: `git fetch --quiet origin
+  refs/heads/main:refs/remotes/origin/main`, confirmação exata do SHA,
+  `git switch --detach 4d17ae6f74e5439d2ad23ca3c9ac4f67a2bdc7b9` e
+  `docker compose ... config -q` aprovado sem exibir configuração.
+- Migração: imagem temporária `apogee-site-migrator:<SHA>` construída com
+  `docker build --target builder`; execução isolada na rede privada
+  `apogee_membros_edge`, usando o `.env` existente e somente o certificado
+  público montado para leitura: `npm run blog:migrate` devolveu
+  `{"changed":true,"migration":"0002_rapid_queen_noir"}`. Depois,
+  `drizzle.__drizzle_migrations` continha três entradas; `blog_post`,
+  `blog_post_event` e `blog_media` existiam; `blog_post` tinha zero artigos.
+- Deploy: `docker compose ... up -d --no-deps --build --force-recreate web`
+  reconstruiu somente o serviço web. `apogee-site-web-1` ficou `healthy`,
+  com zero reinícios, label de revisão igual a
+  `4d17ae6f74e5439d2ad23ca3c9ac4f67a2bdc7b9` e imagem
+  `sha256:832f24aa7801273cab697ff38ca5f17713d407ab1d9513227fffe1eb44866f09`.
+  Checkout remoto permaneceu limpo.
+- HTTP público via `curl`: `/`, `/blog`, `/galeria` e `/sitemap.xml`
+  responderam `200`; o sitemap contém `/blog` e o HTML do blog contém o
+  título esperado. `/admin/posts/novo` respondeu `307` para login sem sessão;
+  uma imagem inexistente em `/blog/media/` respondeu `404`.
+- Safari com sessão administrativa existente abriu `/admin/posts/novo` e exibiu
+  título, resumo, artigo, mídia, vídeo, palavra-chave, prévia SEO e ações de
+  salvar/publicar/agendar. Texto temporário não salvo atualizou a prévia e as
+  verificações de palavra-chave; a aba foi fechada descartando esse texto.
+- Limite da verificação: não foi criada publicação, rascunho ou mídia de teste
+  no banco de produção. O fluxo autenticado de salvar/publicar no navegador
+  de um administrador ainda não teve confirmação positiva; rotas, banco,
+  migração, build, CI, health e respostas públicas foram confirmados.
+- Rollback de código disponível no SHA anterior
+  `7741a7199a0780f8850a1cbeb8c3b4b4f638e4c2`, imagem
+  `sha256:d45e4e0d9f85c4f7429d4882d0884950ff6e02eb8b2adb28d28aa228713f6066`.
+  A migração aditiva deve permanecer para preservar futuros dados editoriais;
+  não executar `DROP` nem restauração ampla por rollback de código.
+- Não houve alteração em DNS, Caddy, Vercel, segredos, certificados, volumes,
+  redes ou serviços vizinhos. Este registro documental é posterior à release
+  e não muda o SHA implantado.
+
+## Registro de release — nome de usuário e foto de membros (2026-10-13)
+
+- Autorização do usuário para executar as correções após a revisão local.
+  [PR #24](https://github.com/brigidovinicius/apogee/pull/24) integrado. O
+  head `8b6462b414b63b7bbaaa9445185daf6d5782771e` e o merge implantado
+  `130019c7d4f385e328a8ccc88ca140bf5c73af1f` têm a mesma árvore
+  `2d62cbc977fd47dba74582979713119d292497aa`.
+- [CI do PR 38406180891](https://github.com/brigidovinicius/apogee/actions/runs/38406180891)
+  e [CI de main 38407168247](https://github.com/brigidovinicius/apogee/actions/runs/38407168247):
+  os quatro jobs passaram, incluindo testes, typecheck, lint, build, smoke e
+  PostgreSQL descartável. O workflow de main foi acionado manualmente porque
+  este repositório não o dispara em `push`.
+- Preflight via `ssh apogee-vps`: `root@srv1439756`, checkout limpo no SHA
+  anterior `4d17ae6f74e5439d2ad23ca3c9ac4f67a2bdc7b9`, web saudável,
+  `.env` modo `600`, banco saudável e 71 GiB livres. A imagem anterior
+  `sha256:832f24aa7801273cab697ff38ca5f17713d407ab1d9513227fffe1eb44866f09`
+  permaneceu disponível para rollback. Os três hashes de migração existentes
+  correspondiam aos SQL versionados, e a role `apogee_app` tinha as permissões
+  necessárias.
+- Backup novo antes da migração:
+  `/opt/apogee-membros/backups/apogee_membros-20261013-133627-pre-avatar.sql.gz`,
+  132651 bytes. `gzip -t` passou antes e depois da implantação.
+- Checkout remoto atualizado com `git fetch` de `main` usando refspec explícito,
+  confirmação do SHA, `git switch --detach` e `docker compose config -q`.
+  `docker compose build web` construiu somente a imagem
+  `apogee-site:130019c7d4f385e328a8ccc88ca140bf5c73af1f`.
+- Migração executada em container temporário do Compose com `run --rm --no-deps
+  web node scripts/members-avatar-migrate.mjs`, antes de recriar o web. O
+  resultado foi `{"changed":true,"migration":"0003_bored_logan"}`. O banco
+  passou a quatro migrações; `member_avatar` existe com chave estrangeira e
+  restrição de tamanho. O comando temporário consumiu o restante do stdin do
+  primeiro script remoto; confirmei que o web antigo continuava saudável e
+  executei a troca em uma segunda chamada SSH. Não houve troca parcial do web.
+- `docker compose up -d --no-deps --no-build --force-recreate web` recriou
+  somente `apogee-site-web-1`. O container ficou `healthy`, com zero reinícios,
+  label do SHA implantado e imagem
+  `sha256:0ba9d71a9c4abd27f0dd907f749987814d0b38a22b5fbafada34a01a857e702d`.
+  Checkout remoto limpo, Caddy em execução sem reinícios, Postgres saudável e
+  PgBouncer em execução; 69 GiB livres após o build.
+- HTTPS público: `/`, `/membros/cadastro` e `/membros/entrar` responderam
+  `200`; `/membros/perfil/configurar` e `/membros` sem sessão responderam
+  `307` para login. O formulário `/makeitfly/participar` não foi alterado nem
+  usado no smoke desta release.
+- Limite da verificação: não houve login OAuth real, cadastro de conta de
+  teste nem envio de foto em produção. O fluxo autenticado foi validado por
+  testes e build, e os controles sem sessão por HTTP. O `npm ci` da imagem
+  mostrou 17 alertas na árvore completa; a auditoria de dependências de
+  execução exigida pelo CI passou. Não foi aplicado `audit fix` nesta release.
+- Rollback de código: imagem e SHA anterior acima, mantendo a migração
+  aditiva e os backups. Não houve mudança em DNS, Caddy, Vercel, segredos,
+  certificados, volumes, redes ou outros stacks. Este registro documental é
+  posterior ao deploy e não altera o SHA que está em produção.

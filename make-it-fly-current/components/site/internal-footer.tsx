@@ -12,6 +12,7 @@ export function InternalFooter() {
           alt="Make it fly — Building the future"
           width={2097}
           height={523}
+          sizes="(max-width: 512px) 50vw, 256px"
         />
         <p>Um encontro para ideias que precisam ganhar o mundo.</p>
       </div>
@@ -27,6 +28,7 @@ export function InternalFooter() {
         alt="Apogee"
         width={1595}
         height={986}
+        sizes="90px"
       />
     </footer>
   );

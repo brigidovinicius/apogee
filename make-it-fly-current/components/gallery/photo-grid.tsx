@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowDownRight } from "lucide-react";
+import Link from "next/link";
 import type { CommunityPhoto } from "@/lib/gallery-types";
 import styles from "./gallery.module.css";
 
@@ -11,6 +12,8 @@ type PhotoGridProps = {
   hasMore: boolean;
   loadingMore: boolean;
   onLoadMore: () => void;
+  nextPageHref?: string;
+  previousPageHref?: string;
 };
 
 const cardStyles = [
@@ -21,7 +24,7 @@ const cardStyles = [
   styles.photoLandscape,
 ];
 
-export function PhotoGrid({ photos, loading, error, hasMore, loadingMore, onLoadMore }: PhotoGridProps) {
+export function PhotoGrid({ photos, loading, error, hasMore, loadingMore, onLoadMore, nextPageHref, previousPageHref }: PhotoGridProps) {
   return (
     <section
       id="mural-da-comunidade"
@@ -44,7 +47,7 @@ export function PhotoGrid({ photos, loading, error, hasMore, loadingMore, onLoad
               style={{ animationDelay: `${(index % 4) * 80}ms` }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photo.src} alt={photo.anonymous ? "Foto do evento Make It Fly enviada anonimamente" : `Foto do evento Make It Fly enviada por ${photo.author}`} loading="lazy" />
+              <img src={photo.src} alt={photo.anonymous ? "Foto do evento Make It Fly enviada anonimamente" : `Foto do evento Make It Fly enviada por ${photo.author}`} width={photo.width} height={photo.height} loading="lazy" decoding="async" />
               <figcaption>
                 <span>
                   <strong>{photo.author}</strong>
@@ -54,7 +57,11 @@ export function PhotoGrid({ photos, loading, error, hasMore, loadingMore, onLoad
             </figure>
             ))}
           </div>
-          {hasMore && <button className={styles.loadMore} type="button" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? "Carregando…" : "Ver mais fotos"}</button>}
+          {(previousPageHref || nextPageHref) && <nav aria-label="Páginas da galeria" className={styles.pagination}>
+            {previousPageHref && <Link className={styles.loadMore} href={previousPageHref}>Página anterior</Link>}
+            {nextPageHref && <Link className={styles.loadMore} href={nextPageHref}>Ver mais fotos</Link>}
+          </nav>}
+          {hasMore && !nextPageHref && !previousPageHref && <button className={styles.loadMore} type="button" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? "Carregando…" : "Ver mais fotos"}</button>}
           {error && <p className={styles.moreError}>Não foi possível carregar mais fotos. Tente novamente.</p>}
         </>
       ) : (

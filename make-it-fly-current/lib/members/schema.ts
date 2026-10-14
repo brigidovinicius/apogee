@@ -2,6 +2,8 @@ import { sql } from "drizzle-orm";
 import {
   bigint,
   boolean,
+  check,
+  customType,
   index,
   integer,
   pgTable,
@@ -9,6 +11,8 @@ import {
   timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+
+const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
 
 // Tabelas exigidas pelo Better Auth (core + plugin username + rate limit em banco).
 // As chaves TS precisam bater com os nomes de campo do Better Auth.
@@ -25,6 +29,18 @@ export const user = pgTable("user", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// A foto é armazenada no banco: o container da aplicação não possui volume
+// persistente para uploads. user.image guarda apenas a URL interna versionada.
+export const memberAvatar = pgTable(
+  "member_avatar",
+  {
+    userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+    image: bytea("image").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [check("member_avatar_size_check", sql`octet_length(${table.image}) between 1 and 262144`)],
+);
 
 export const session = pgTable(
   "session",
@@ -132,5 +148,76 @@ export const forumPost = pgTable(
     uniqueIndex("forum_post_one_opening_per_topic")
       .on(table.topicId)
       .where(sql`${table.isOpening}`),
+  ],
+);
+
+// Publicações editoriais. A visibilidade pública também depende da data,
+// para que agendamentos entrem no ar sem um job ou atualização manual.
+export const blogPost = pgTable(
+  "blog_post",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    excerpt: text("excerpt").notNull(),
+    body: text("body").notNull(),
+    category: text("category").notNull(),
+    status: text("status", { enum: ["draft", "scheduled", "published", "archived"] }).notNull().default("draft"),
+    featured: boolean("featured").notNull().default(false),
+    seoTitle: text("seo_title"),
+    seoDescription: text("seo_description"),
+    focusKeyword: text("focus_keyword"),
+    seoNoIndex: boolean("seo_noindex").notNull().default(false),
+    coverMediaId: text("cover_media_id"),
+    videoUrl: text("video_url"),
+    authorId: text("author_id").references(() => user.id, { onDelete: "set null" }),
+    authorName: text("author_name").notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+    revision: integer("revision").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("blog_post_status_published_idx").on(table.status, table.publishedAt.desc()),
+    index("blog_post_status_scheduled_idx").on(table.status, table.scheduledAt.desc()),
+    index("blog_post_category_idx").on(table.category),
+    check("blog_post_category_check", sql`${table.category} in ('estudos', 'empreendedorismo', 'tecnologia', 'ciencias', 'geral', 'atualidades')`),
+    check("blog_post_status_check", sql`${table.status} in ('draft', 'scheduled', 'published', 'archived')`),
+    check("blog_post_schedule_check", sql`${table.status} <> 'scheduled' or ${table.scheduledAt} is not null`),
+    check("blog_post_publish_check", sql`${table.status} <> 'published' or ${table.publishedAt} is not null`),
+  ],
+);
+
+export const blogPostEvent = pgTable(
+  "blog_post_event",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    postId: integer("post_id").notNull().references(() => blogPost.id, { onDelete: "cascade" }),
+    actorId: text("actor_id").references(() => user.id, { onDelete: "set null" }),
+    actorName: text("actor_name").notNull(),
+    action: text("action").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("blog_post_event_post_idx").on(table.postId, table.createdAt.desc())],
+);
+
+export const blogMedia = pgTable(
+  "blog_media",
+  {
+    id: text("id").primaryKey(),
+    postId: integer("post_id").notNull().references(() => blogPost.id, { onDelete: "cascade" }),
+    alt: text("alt").notNull(),
+    caption: text("caption"),
+    width: integer("width").notNull(),
+    height: integer("height").notNull(),
+    image: bytea("image").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("blog_media_post_idx").on(table.postId, table.createdAt.desc()),
+    check("blog_media_size_check", sql`octet_length(${table.image}) between 1 and 2097152`),
+    check("blog_media_dimensions_check", sql`${table.width} between 1 and 2000 and ${table.height} between 1 and 2000`),
+    check("blog_media_alt_check", sql`length(${table.alt}) between 3 and 160`),
   ],
 );
