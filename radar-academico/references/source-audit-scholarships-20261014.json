@@ -1,0 +1,97 @@
+{
+  "auditedAt": "2026-10-14",
+  "method": "operator_authorized_agent",
+  "access": "Sequential public GET via existing DNS/TLS pinned safeRequest, robots per URL, 2-second spacing; no cookies, browser challenge bypass, paid API, form submission or application fetch.",
+  "sources": [
+    {
+      "url": "https://ifc.edu.br",
+      "checkedAt": "2026-10-14T23:28:01.916Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 118350,
+      "sha256": "c45d3f6949770d54099ef7976ec19c43e3f630bb1bb61bf9eeeefc7316f0d6db"
+    },
+    {
+      "url": "https://editais.ifc.edu.br/",
+      "checkedAt": "2026-10-14T23:28:06.161Z",
+      "error": "Falha ao consultar fonte oficial",
+      "decision": "paused"
+    },
+    {
+      "url": "https://extensao.ifc.edu.br/oportunidades/",
+      "checkedAt": "2026-10-14T23:28:08.316Z",
+      "error": "Falha ao consultar fonte oficial",
+      "decision": "paused"
+    },
+    {
+      "url": "https://fulbright.org.br/bolsas/",
+      "checkedAt": "2026-10-14T23:28:18.573Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 404,
+      "redirect": null,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "url": "https://fulbright.org.br/bolsas-para-brasileiros/",
+      "checkedAt": "2026-10-14T23:29:07.942Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 63136,
+      "sha256": "7ce9b7172fcdb3c941319c42f8b8edd07e464422b2851ff482c23e3e849904c9"
+    },
+    {
+      "url": "https://fulbright.org.br/quem-somos/",
+      "checkedAt": "2026-10-14T23:29:14.889Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 53573,
+      "sha256": "3d5f741a497d92fa9766b075d4011d6d8318e6ec39ef2e7ad2121e5a4a9fe984"
+    },
+    {
+      "url": "https://fulbright.org.br/bolsas-para-brasileiros/catedra-dra-ruth-cardoso-georgetown/",
+      "checkedAt": "2026-10-14T23:28:51.340Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 61593,
+      "sha256": "d62eda6713be43d09286c3891030b42314e7a8490d9bc437cf2153de3da9f237"
+    }
+  ],
+  "decisions": [
+    {
+      "candidateId": "xlsx-20261014-020-ifc",
+      "decision": "paused",
+      "reason": "Homepage returned browser challenge despite HTTP200; edital/international routes unavailable to production-compatible transport. Do not bypass challenge. Existing ingresso.ifc.edu.br technical source unchanged."
+    },
+    {
+      "candidateId": "xlsx-20261014-053-fulbright-brasil",
+      "originalUrl": "https://fulbright.org.br/bolsas/",
+      "originalStatus": 404,
+      "canonicalListingUrl": "https://fulbright.org.br/bolsas-para-brasileiros/",
+      "decision": "approved_dedicated_collector",
+      "sourceId": "fulbright-ruth-cardoso-selection-2026",
+      "reason": "Commission runs its own bilateral programme with Georgetown; exact own announcement has current deadline2026-11-15, current application CTAfvsp2027, doctorate/nationality/language requirements and explicit support. Other listed calls are future2027 and excluded.",
+      "limitation": "One 2026selection; reused URL/new edition requires new audit. Direct IIE application and PDFs are linked only, never fetched or submitted; scholarship amount is per semester/year as stated, not monthly. No city/state inference.",
+      "terms": "Institutional and programme pages reviewed; no separate collection prohibition found. robots allows programme path; limits and no-login enforced."
+    }
+  ]
+}

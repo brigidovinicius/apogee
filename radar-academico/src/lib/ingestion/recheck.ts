@@ -8,6 +8,7 @@ import { canonicalOpportunityKey } from "./revision-key";
 import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupplementUrl } from "./programme-catalogue";
 import { confirmedTerminalStatus } from "./publication";
 import { normalizeAcateEvent } from "./normalize-acate-events";
+import { FULBRIGHT_SOURCE_ID, normalizeFulbright } from "./normalize-fulbright";
 
 import { EVG_SOURCE_ID, normalizeEvgCourse, type EvgPolicy } from "./normalize-evg-courses";
 
@@ -91,6 +92,7 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
           statusEvidence = text.slice(start, start + 1000);
         }
         if (source.id === EVG_SOURCE_ID) candidate = normalizeEvgCourse(response.body.toString("utf8"), row.source_page_url, source, evgPolicy);
+        else if (source.id === FULBRIGHT_SOURCE_ID) candidate = normalizeFulbright(response.body.toString("utf8"), row.source_page_url, source);
         else if (source.id === "acate-audited-events") {
           try { candidate = normalizeAcateEvent(response.body.toString("utf8"), row.source_page_url, source); }
           catch (error) { if (!terminalStatus) throw error; }

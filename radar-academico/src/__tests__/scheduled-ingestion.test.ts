@@ -1,4 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
+import { fulbrightSource, fulbrightHtml } from "./fixtures/fulbright";
 import type { OfficialSource } from "@/lib/ingestion/types";
 
 vi.mock("@/lib/ingestion/official-source-registry", () => ({
@@ -262,4 +263,18 @@ it("coleta um edital municipal e um programa empresarial nas páginas dos própr
     "Estágio da Prefeitura de São José dos Campos — OUTUBRO 2026", "Programa de Estágio Braskem 2027",
   ]);
   expect(vi.mocked(fetchOfficialResource).mock.calls.map(([url]) => url)).toEqual([sources[0].listingUrls[0], sjcUrl, braskemUrl]);
+});
+
+it("coleta a URL exata Fulbright como ficha e não segue edital ou candidatura externos", async () => {
+  vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-14T23:35:00Z"));
+  try {
+  vi.stubEnv("DATABASE_URL", "fixture");
+  vi.mocked(loadOfficialSource).mockResolvedValue(fulbrightSource);
+  vi.mocked(recheckKnownOpportunities).mockResolvedValueOnce({ pagesChecked: 0, failed: 0, published: 0 });
+  vi.mocked(fetchOfficialResource).mockResolvedValue({ body: Buffer.from(fulbrightHtml), contentType: "text/html", hash: "fixture", cached: false });
+  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, published: 1, blocked: 0, created: 1, updated: 0, persistence: "postgres" });
+  expect(await runOfficialSourceIngestion({ sourceId: fulbrightSource.id, maxPages: 1, maxCandidates: 10 })).toMatchObject({ pagesChecked: 1, discovered: 1 });
+  expect(fetchOfficialResource).toHaveBeenCalledTimes(1);
+  expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({ categories: ["bolsas", "intercambios", "pesquisa"], deadlineAt: "2026-11-15" });
+  } finally {vi.useRealTimers();}
 });
