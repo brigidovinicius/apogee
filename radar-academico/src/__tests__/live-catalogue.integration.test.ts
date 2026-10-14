@@ -492,7 +492,9 @@ it("rechecks an actual EV.G course through RLS, preserving edits and withdrawing
  const ingest=(candidate:OpportunityCandidate)=>saveReviewItems(evg,{sourceId:evg.id,pagesChecked:3,discovered:[candidate],ignored:0,failed:0,locationRejected:0,warnings:[]});
  expect(await ingest(item)).toMatchObject({created:1,published:1});
  const [original]=await listLiveCatalogue(true);
- await state.db!.query("update opportunities set management_overrides=$2::jsonb where id=$1",[original.id,{title:"Ativos Virtuais — edição administrativa"}]);
+ expect(original.applicationUrl).toBe(item.applicationUrl);
+ await manageCatalogue("PATCH",form(original,{title:"Ativos Virtuais — edição administrativa",deadlineAt:null,evidenceExcerpt:item.evidenceJson.opportunity_status.excerpt}));
+ expect((await listLiveCatalogue())[0].applicationUrl).toBe(item.applicationUrl);
  const alias={...item,sourcePageUrl:"https://www.escolavirtual.gov.br/curso/9999",contentHash:"same-programme-other-url"};
  expect(await ingest(alias)).toMatchObject({created:0});expect(await listLiveCatalogue()).toHaveLength(1);
  expect((await listLiveCatalogue())[0].title).toBe("Ativos Virtuais — edição administrativa");

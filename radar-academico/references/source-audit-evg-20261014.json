@@ -975,5 +975,12 @@
     "Country/state/city/age/schooling not inferred from institutional headquarters or missing text",
     "Scheduler source budget remains bounded at ten pages; page cursor continues in five minutes, completed cycle uses24h; failed checks preserve evidence"
   ],
-  "sampleNormalizationCheckedAt": "2026-10-14T22:18:25.484Z"
+  "sampleNormalizationCheckedAt": "2026-10-14T22:18:25.484Z",
+  "transport": {
+    "requestDelayUnchanged": true,
+    "robotsReuseSeconds": 300,
+    "robotsReuseScope": "Only evg-enap-open-courses and exact www.escolavirtual.gov.br; origin+user-agent; bounded1MiB/8entries; no errors or stale-on-failure",
+    "cacheControl": "No reuse for no-store/no-cache/must-revalidate, insufficient max-age, Expires or Age; check rules per URL; refresh after5minutes",
+    "standard": "https://www.rfc-editor.org/rfc/rfc9309.html#section-2.4"
+  }
 }
