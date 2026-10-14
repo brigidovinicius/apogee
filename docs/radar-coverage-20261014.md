@@ -1,5 +1,15 @@
 # Cobertura do Radar — medição de 14/10/2026
 
+## Atualização após Senac PSG — 14/10/2026, 14h36 de São Paulo
+
+O [PR #48](https://github.com/brigidovinicius/apogee/pull/48) implantou somente o Radar na revisão `6020a73efc478d41443c841bea8c76e0463809bc`, com migração `0020_senac_sc_psg_open_cohorts.sql`. A primeira coleta agendada publicou 112 edições Senac PSG em 20 cidades, incluindo 5 edições de cursos técnicos, sem falhas. Produção retornou **339 IDs únicos**, com os mesmos campos públicos para usuário e administrador; nenhum dos 227 IDs vigentes anteriores foi perdido. Faltam **661** para 1.000.
+
+Por categoria, com repetição entre categorias: formação 257, bolsas 79, intercâmbios 1, competições 1, pesquisa 77, carreira 3 e eventos 1. Por fonte: Senac 112, IFSC 103, FAPESP 77, IFC 41; IFPE, MinC, NASA Space Apps, Braskem, São José dos Campos e SED Novos Valores têm 1 ficha cada. A Apogee pública e administrativa confirmaram as fichas; a vitrine principal continua exibindo oportunidades acadêmicas.
+
+Backup anterior `/opt/apogee-backups/radar-senac-20261014T172716Z`: hash conferido e restauração em banco temporário com contagens iguais `233|19|101` (oportunidades, fontes, execuções). Web saudável e scheduler ativo. Senac tem intervalo de 24 horas; próxima consulta em 15/10 às 14h35 de São Paulo, na VPS existente, sem provedor pago novo nem GitHub Actions agendado.
+
+O novo lote local valida quatro programas nas categorias prioritárias: estágio remunerado de Joinville, Hackathon TRT-SC/UDESC, intercâmbio UFSC/AUGM Grado e intercâmbio UFSC Outgoing. **Não estão somados aos 339 IDs:** dependem de migração, deploy e coleta em produção. Vagas, equipes, cursos atendidos e universidades de destino não multiplicam fichas. Eventos Sebrae/ACATE sem prazo final comprovado permanecem fora da publicação pelas regras atuais; TDC Floripa 2026 já terminou e não entra na meta.
+
 ## Atualização após IFSC — 14/10/2026, 14h15 de São Paulo
 
 O [PR #47](https://github.com/brigidovinicius/apogee/pull/47) foi implantado somente no Webscraper na revisão `45b7eb1ccc2dea36c3ebdbc754e8c09fb3e7e3a5`, com migração `0019_ifsc_technical_courses_2027.sql`. O primeiro ciclo do scheduler publicou automaticamente 103 programas por curso/campus/modalidade do IFSC em uma leitura da listagem. Produção retornou **227 IDs únicos** nas APIs pública e administrativa, com os mesmos campos públicos, e **773 fichas faltantes**. Nenhum dos 124 IDs vigentes guardados antes da troca foi perdido. A contagem anterior de 125 ocorreu em outro horário; a vigência não é congelada por este relatório.

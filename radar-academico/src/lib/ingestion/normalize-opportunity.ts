@@ -13,6 +13,7 @@ import { normalizeMinCIntercambio } from "./normalize-minc-intercambio";
 import { normalizeFapesp } from "./normalize-fapesp";
 import { normalizeBraskemInternship, normalizeSjcInternship } from "./normalize-internships";
 import { normalizeNovosValores } from "./normalize-novos-valores";
+import { normalizeUfscExchange } from "./normalize-sc-priority";
 
 const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|seleção|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|pesquisa|extensão|inovação|empreendedorismo/i;
 const excluded = /licitaç|pregão|compra pública|concurso público|processo administrativo/i;
@@ -44,6 +45,7 @@ export function normalizeOpportunity(input: {
   if (input.source.id === "sjc-open-internships") return normalizeSjcInternship(input);
   if (input.source.id === "braskem-internship-programme") return normalizeBraskemInternship(input);
   if (input.source.id === "sed-novos-valores-2026") return normalizeNovosValores(input);
+  if (["ufsc-augm-grado-2027-1", "ufsc-outgoing-2027-1"].includes(input.source.id)) return normalizeUfscExchange(input);
   const combined = `${input.title}\n${input.text}`.replace(/\s+/g, " ").trim();
   const normalizedLocation = normalizeBrazilianLocation(input.source.location ?? {});
   if (normalizedLocation.status === "invalid") return null;
