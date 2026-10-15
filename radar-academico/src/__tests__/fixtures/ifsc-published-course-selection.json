@@ -1,0 +1,620 @@
+[
+  {
+    "title": "Técnico integrado em Lazer — IFSC Garopaba 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Lazer no Câmpus Garopaba; seleção por prova:. Oferta: 36 vagas (integral, com predominância das atividades no período vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Eletroeletrônica — IFSC Joinville 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Eletroeletrônica no Câmpus Joinville; seleção por prova:. Oferta: 35 vagas (vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Têxtil — IFSC Jaraguá do Sul-Centro 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Têxtil no Câmpus Jaraguá do Sul-Centro; seleção por prova:. Oferta: 35 vagas (matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Química — IFSC Jaraguá do Sul-Centro 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Química no Câmpus Jaraguá do Sul-Centro; seleção por prova:. Oferta: 35 vagas (matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Informática — IFSC Gaspar 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Informática no Câmpus Gaspar; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Modelagem do Vestuário — IFSC Jaraguá do Sul-Centro 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Modelagem do Vestuário no Câmpus Jaraguá do Sul-Centro; seleção por prova:. Oferta: 35 vagas (vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Química — IFSC Gaspar 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Química no Câmpus Gaspar; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Recursos Pesqueiros — IFSC Itajaí 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Recursos Pesqueiros no Câmpus Itajaí; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Mecânica — IFSC Itajaí 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Mecânica no Câmpus Itajaí; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Mecatrônica — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Mecatrônica no Câmpus Florianópolis; seleção por prova:. Oferta: 30 vagas (vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Eletrotécnica — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Eletrotécnica no Câmpus Florianópolis; seleção por prova:. Oferta: 36 vagas (matutino) e 18 vagas (vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Eletrônica — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Eletrônica no Câmpus Florianópolis; seleção por prova:. Oferta: 25 vagas (vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Química — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Química no Câmpus Florianópolis; seleção por prova:. Oferta: 32 vagas (matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Saneamento — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Saneamento no Câmpus Florianópolis; seleção por prova:. Oferta: 32 vagas (matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Desenvolvimento de Sistemas — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Desenvolvimento de Sistemas no Câmpus Florianópolis; seleção por prova:. Oferta: 30 vagas (vespertino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Eletrônica — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Eletrônica no Câmpus Florianópolis; seleção por prova:. Oferta: 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Design de Moda — IFSC Araranguá 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Design de Moda no Câmpus Araranguá; seleção por prova:. Oferta: 36 vagas (integral, com predominância das atividades no período vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Eletromecânica — IFSC Araranguá 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Eletromecânica no Câmpus Araranguá; seleção por prova:. Oferta: 36 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Laboratório de Ciências da Natureza — IFSC Araranguá 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Laboratório de Ciências da Natureza no Câmpus Araranguá; seleção por prova:. Oferta: 36 vagas (integral, com predominância das atividades no período vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Têxtil — IFSC Araranguá 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Têxtil no Câmpus Araranguá; seleção por prova:. Oferta: 36 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Alimentos — IFSC Canoinhas 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Alimentos no Câmpus Canoinhas; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Edificações — IFSC Canoinhas 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Edificações no Câmpus Canoinhas; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Informática — IFSC Canoinhas 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Informática no Câmpus Canoinhas; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Desenvolvimento de Sistemas — IFSC Chapecó 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Desenvolvimento de Sistemas no Câmpus Chapecó; seleção por prova:. Oferta: 35 vagas (vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Sistemas de Energia Renovável — IFSC Chapecó 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Sistemas de Energia Renovável no Câmpus Chapecó; seleção por prova:. Oferta: 35 vagas (matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Edificações — IFSC Criciúma 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Edificações no Câmpus Criciúma; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Mecatrônica — IFSC Criciúma 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Mecatrônica no Câmpus Criciúma; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Meio Ambiente — IFSC Criciúma 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Meio Ambiente no Câmpus Criciúma; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Mecânica — IFSC Xanxerê 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Mecânica no Câmpus Xanxerê; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Informática — IFSC Xanxerê 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Informática no Câmpus Xanxerê; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Alimentos — IFSC Xanxerê 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Alimentos no Câmpus Xanxerê; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Administração — IFSC Xanxerê 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Administração no Câmpus Xanxerê; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Informática — IFSC Tubarão 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Informática no Câmpus Tubarão; seleção por prova:. Oferta: 36 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Automação Industrial — IFSC Tubarão 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Automação Industrial no Câmpus Tubarão; seleção por prova:. Oferta: 36 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Administração — IFSC Tubarão 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Administração no Câmpus Tubarão; seleção por prova:. Oferta: 36 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Eletromecânica — IFSC São Miguel do Oeste 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Eletromecânica no Câmpus São Miguel do Oeste; seleção por prova:. Oferta: 40 vagas (vespertino, com atividades 2x por semana no contraturno). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Alimentos — IFSC São Miguel do Oeste 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Alimentos no Câmpus São Miguel do Oeste; seleção por prova:. Oferta: 40 vagas (vespertino, com atividades 2x por semana no contraturno). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Química — IFSC Criciúma 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Química no Câmpus Criciúma; seleção por prova:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Agropecuária — IFSC São Miguel do Oeste 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Agropecuária no Câmpus São Miguel do Oeste; seleção por prova:. Oferta: 40 vagas (matutino, com atividades 2x por semana no contraturno). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Edificações — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Edificações no Câmpus Florianópolis; seleção por prova:. Oferta: 32 vagas (vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Marketing — IFSC São Lourenço do Oeste 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Marketing no Câmpus São Lourenço do Oeste; seleção por prova:. Oferta: 35 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Eletrotécnica — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Eletrotécnica no Câmpus Florianópolis; seleção por prova:. Oferta: 36 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Enfermagem — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Enfermagem no Câmpus Florianópolis; seleção por prova:. Oferta: 30 vagas (vespertino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Manutenção Automotiva — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Manutenção Automotiva no Câmpus Florianópolis; seleção por prova:. Oferta: 36 vagas (matutino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Mecânica — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Mecânica no Câmpus Florianópolis; seleção por prova:. Oferta: 56 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Segurança do Trabalho — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Segurança do Trabalho no Câmpus Florianópolis; seleção por prova:. Oferta: 32 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Refrigeração e Climatização — IFSC São José 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Refrigeração e Climatização no Câmpus São José; seleção por prova:. Oferta: 80 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Telecomunicações — IFSC São José 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Telecomunicações no Câmpus São José; seleção por prova:. Oferta: 36 vagas (vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Refrigeração e Climatização — IFSC São José 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Refrigeração e Climatização no Câmpus São José; seleção por prova:. Oferta: 36 vagas (vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Laboratório de Ciências da Natureza — IFSC São José 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Laboratório de Ciências da Natureza no Câmpus São José; seleção por prova:. Oferta: 36 vagas (matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Tradução e Interpretação de Libras-Português — IFSC Palhoça Bilíngue 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Tradução e Interpretação de Libras-Português no Câmpus Palhoça Bilíngue; seleção por prova:. Oferta: 40 vagas (matutino, com atividade no contraturno duas vezes por semana) e 40 vagas (vespertino, com atividade no contraturno duas vezes por semana). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Informática para Internet — IFSC Palhoça Bilíngue 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Informática para Internet no Câmpus Palhoça Bilíngue; seleção por prova:. Oferta: 36 vagas (matutino, com atividade no contraturno duas vezes por semana). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Design Gráfico — IFSC Palhoça Bilíngue 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Design Gráfico no Câmpus Palhoça Bilíngue; seleção por prova:. Oferta: 40 vagas (matutino, com atividade no contraturno duas vezes por semana) e 40 vagas (vespertino, com atividade no contraturno duas vezes por semana). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Biotecnologia — IFSC Lages 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Biotecnologia no Câmpus Lages; seleção por prova. Oferta: 40 vagas (vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Agricultura — IFSC Lages 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Agricultura no Câmpus Lages; seleção por prova. Oferta: 40 vagas (vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Eletroeletrônica — IFSC Joinville 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Eletroeletrônica no Câmpus Joinville; seleção por prova:. Oferta: 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Mecânica — IFSC Joinville 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Mecânica no Câmpus Joinville; seleção por prova:. Oferta: 35 vagas (matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Administração — IFSC Garopaba 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Administração no Câmpus Garopaba; seleção por prova:. Oferta: 36 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Informática — IFSC Garopaba 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Informática no Câmpus Garopaba; seleção por prova:. Oferta: 36 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Plásticos — IFSC Caçador 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Plásticos no Câmpus Caçador; seleção por sorteio:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Eletrotécnica — IFSC Jaraguá do Sul-Rau 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Eletrotécnica no Câmpus Jaraguá do Sul-Rau; seleção por sorteio:. Oferta: 40 vagas (vespertino) e 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Mecânica — IFSC Jaraguá do Sul-Rau 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Mecânica no Câmpus Jaraguá do Sul-Rau; seleção por sorteio:. Oferta: 40 vagas (matutino) e 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico concomitante em Biotecnologia — IFSC Garopaba 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Concomitante em Biotecnologia no Câmpus Garopaba; seleção por sorteio:. Oferta: 40 vagas (vespertino). Para quem está cursando o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Proeja Técnico em Panificação integrado ao Ensino Médio — IFSC Florianópolis-Continente 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Proeja Técnico em Panificação integrado ao Ensino Médio no Câmpus Florianópolis-Continente; seleção por sorteio:. Oferta: 40 vagas (noturno). Educação de jovens e adultos; confira idade e escolaridade no edital. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Restaurante e bar — IFSC Florianópolis-Continente 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Restaurante e bar no Câmpus Florianópolis-Continente; seleção por sorteio:. Oferta: 40 vagas (matutino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Panificação — IFSC Florianópolis-Continente 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Panificação no Câmpus Florianópolis-Continente; seleção por sorteio:. Oferta: 40 vagas (vespertino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Guia de Turismo Nacional e América do Sul — IFSC Florianópolis-Continente 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Guia de Turismo Nacional e América do Sul no Câmpus Florianópolis-Continente; seleção por sorteio:. Oferta: 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Gastronomia — IFSC Florianópolis-Continente 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Gastronomia no Câmpus Florianópolis-Continente; seleção por sorteio:. Oferta: 40 vagas (vespertino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Saneamento — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Saneamento no Câmpus Florianópolis; seleção por sorteio:. Oferta: 32 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Meteorologia — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Meteorologia no Câmpus Florianópolis; seleção por sorteio:. Oferta: 40 vagas (matutino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Serviços e Produtos Bilíngues (Libras-Português) — IFSC Palhoça Bilíngue 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Serviços e Produtos Bilíngues (Libras-Português) no Câmpus Palhoça Bilíngue; seleção por sorteio:. Oferta: 20 vagas - exclusivo para pessoas surdas usuárias de Libras (vespertino, com atividade no contraturno duas vezes por semana). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Proeja Técnico em Manutenção e Suporte em Informática integrado ao Ensino Médio — IFSC Palhoça Bilíngue 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Proeja Técnico em Manutenção e Suporte em Informática integrado ao Ensino Médio no Câmpus Palhoça Bilíngue; seleção por sorteio:. Oferta: 40 vagas (noturno). Educação de jovens e adultos; confira idade e escolaridade no edital. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Agropecuária — IFSC São Carlos 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Agropecuária no Câmpus São Carlos; seleção por sorteio:. Oferta: 40 vagas (integral, com predominância das atividades no período vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Edificações — IFSC São Carlos 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Edificações no Câmpus São Carlos; seleção por sorteio:. Oferta: 40 vagas (integral, com predominância das atividades no período vespertino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Agropecuária — IFSC São Carlos 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Agropecuária no Câmpus São Carlos; seleção por sorteio:. Oferta: 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Meio Ambiente — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Meio Ambiente no Câmpus Florianópolis; seleção por sorteio:. Oferta: 30 vagas (matutino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Geoprocessamento — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Geoprocessamento no Câmpus Florianópolis; seleção por sorteio:. Oferta: 25 vagas (vespertino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Edificações — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Edificações no Câmpus Florianópolis; seleção por sorteio:. Oferta: 40 vagas (matutino) e 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Agrimensura — IFSC Florianópolis 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Agrimensura no Câmpus Florianópolis; seleção por sorteio:. Oferta: 27 vagas (matutino) e 27 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Proeja Qualificação Profissional em Operador de Computador integrado ao Ensino Médio — IFSC Criciúma 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Proeja Qualificação Profissional em Operador de Computador integrado ao Ensino Médio no Câmpus Criciúma; seleção por ordem de inscrição. Oferta: 40 vagas (noturno). Educação de jovens e adultos; confira idade e escolaridade no edital. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Eletromecânica — IFSC São Miguel do Oeste 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Eletromecânica no Câmpus São Miguel do Oeste; seleção por sorteio:. Oferta: 32 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico concomitante em Agricultura — IFSC Urupema 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Concomitante em Agricultura no Câmpus Urupema; seleção por sorteio:. Oferta: 20 vagas (vespertino). Para quem está cursando o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Agricultura — IFSC Urupema 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Agricultura no Câmpus Urupema; seleção por sorteio:. Oferta: 20 vagas (vespertino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Proeja Qualificação Profissional em Condutor Ambiental Local integrado ao Ensino Médio — IFSC Urupema 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Proeja Qualificação Profissional em Condutor Ambiental Local integrado ao Ensino Médio no Câmpus Urupema; seleção por sorteio:. Oferta: 40 vagas (noturno). Educação de jovens e adultos; confira idade e escolaridade no edital. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Proeja Qualificação Profissional em Produtor de Sucos integrada ao Ensino Fundamental — IFSC Urupema 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Proeja Qualificação Profissional em Produtor de Sucos integrada ao Ensino Fundamental no Câmpus Urupema; seleção por sorteio:. Oferta: Séries Iniciais - 40 vagas (noturno). Educação de jovens e adultos; confira idade e escolaridade no edital. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Proeja Técnico em Agroecologia integrado ao Ensino Médio — IFSC Canoinhas 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Proeja Técnico em Agroecologia integrado ao Ensino Médio no Câmpus Canoinhas; seleção por sorteio:. Oferta: 40 vagas (vespertino). Educação de jovens e adultos; confira idade e escolaridade no edital. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico concomitante em Edificações — IFSC Canoinhas 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Concomitante em Edificações no Câmpus Canoinhas; seleção por sorteio:. Oferta: 40 vagas (vespertino). Para quem está cursando o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Eletromecânica — IFSC Caçador 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Eletromecânica no Câmpus Caçador; seleção por sorteio:. Oferta: 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Desenvolvimento de Sistemas — IFSC Jaraguá do Sul-Rau 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Desenvolvimento de Sistemas no Câmpus Jaraguá do Sul-Rau; seleção por sorteio:. Oferta: 35 vagas (vespertino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Informática — IFSC Caçador 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Informática no Câmpus Caçador; seleção por sorteio:. Oferta: 35 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico integrado em Administração — IFSC Caçador 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Médio Técnico em Administração no Câmpus Caçador; seleção por sorteio:. Oferta: 40 vagas (integral, com predominância das atividades no período matutino). Para cursar ensino médio e técnico juntos. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Produção de Moda — IFSC Araranguá 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Produção de Moda no Câmpus Araranguá; seleção por sorteio:. Oferta: 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Modelagem do Vestuário — IFSC Gaspar 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Modelagem do Vestuário no Câmpus Gaspar; seleção por sorteio:. Oferta: 30 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Meio Ambiente — IFSC Gaspar 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Meio Ambiente no Câmpus Gaspar; seleção por sorteio:. Oferta: 40 vagas (EaD). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Aquicultura — IFSC Itajaí 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Aquicultura no Câmpus Itajaí; seleção por sorteio:. Oferta: 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Eletroeletrônica — IFSC Itajaí 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Eletroeletrônica no Câmpus Itajaí; seleção por sorteio:. Oferta: 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Fabricação Mecânica — IFSC Itajaí 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Fabricação Mecânica no Câmpus Itajaí; seleção por sorteio:. Oferta: 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Administração — IFSC Gaspar 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Administração no Câmpus Gaspar; seleção por sorteio:. Oferta: 40 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Proeja Qualificação Profissional em Assistente Administrativo integrado ao Ensino Médio — IFSC Garopaba 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Proeja Qualificação Profissional em Assistente Administrativo integrado ao Ensino Médio no Câmpus Garopaba; seleção por sorteio:. Oferta: 40 vagas (noturno). Educação de jovens e adultos; confira idade e escolaridade no edital. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Guia de Turismo Regional de Santa Catarina — IFSC Garopaba 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Guia de Turismo Regional de Santa Catarina no Câmpus Garopaba; seleção por sorteio:. Oferta: 25 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Têxtil — IFSC Jaraguá do Sul-Centro 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Têxtil no Câmpus Jaraguá do Sul-Centro; seleção por sorteio:. Oferta: 35 vagas (vespertino) e 35 vagas (noturno). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Técnico subsequente em Vestuário — IFSC Jaraguá do Sul-Centro 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Subsequente em Vestuário no Câmpus Jaraguá do Sul-Centro; seleção por sorteio:. Oferta: 35 vagas (matutino). Para quem concluiu o ensino médio. Consulte o edital oficial para todos os requisitos e documentos."
+  },
+  {
+    "title": "Proeja Técnico em Vestuário integrado ao Ensino Médio — IFSC Jaraguá do Sul-Centro 2027.1",
+    "isCourse": true,
+    "officialUrl": "https://www.ifsc.edu.br/tecnicos",
+    "requirementsText": "Proeja Técnico em Vestuário integrado ao Ensino Médio no Câmpus Jaraguá do Sul-Centro; seleção por sorteio:. Oferta: 35 vagas (matutino). Educação de jovens e adultos; confira idade e escolaridade no edital. Consulte o edital oficial para todos os requisitos e documentos."
+  }
+]
