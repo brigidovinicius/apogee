@@ -278,3 +278,20 @@ it("coleta a URL exata Fulbright como ficha e não segue edital ou candidatura e
   expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({ categories: ["bolsas", "intercambios", "pesquisa"], deadlineAt: "2026-11-15" });
   } finally {vi.useRealTimers();}
 });
+
+it("confirma PDAI em duas páginas oficiais dentro do orçamento e publica zero se calendário conflitar", async () => {
+ const {pdaiSource:pdai,pdaiProgramme:programme,pdaiNews:news}=await import("./fixtures/capes-pdai");
+ vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-14T23:55:00Z"));
+ try {
+  vi.stubEnv("DATABASE_URL","fixture");vi.mocked(loadOfficialSource).mockResolvedValue(pdai);
+  vi.mocked(recheckKnownOpportunities).mockResolvedValue({pagesChecked:0,failed:0,published:0});
+  vi.mocked(fetchOfficialResource).mockImplementation(async url=>({body:Buffer.from(url===pdai.baseUrl?programme:news),contentType:"text/html",hash:"fixture",cached:false}));
+  vi.mocked(saveReviewItems).mockResolvedValue({saved:1,published:1,blocked:0,created:1,updated:0,persistence:"postgres"});
+  expect(await runOfficialSourceIngestion({sourceId:pdai.id,maxPages:2,maxCandidates:3})).toMatchObject({pagesChecked:2,discovered:1});
+  expect(fetchOfficialResource).toHaveBeenCalledTimes(2);
+  expect(await runOfficialSourceIngestion({sourceId:pdai.id,maxPages:1,maxCandidates:3})).toMatchObject({pagesChecked:0,discovered:0});
+  expect(fetchOfficialResource).toHaveBeenCalledTimes(2);
+  vi.mocked(fetchOfficialResource).mockImplementation(async url=>({body:Buffer.from(url===pdai.baseUrl?programme.replace("26 de outubro","25 de outubro"):news),contentType:"text/html",hash:"conflict",cached:false}));
+  expect(await runOfficialSourceIngestion({sourceId:pdai.id,maxPages:2,maxCandidates:3})).toMatchObject({pagesChecked:2,discovered:0});
+ } finally {vi.useRealTimers();}
+});

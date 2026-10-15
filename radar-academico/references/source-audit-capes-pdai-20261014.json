@@ -1,0 +1,95 @@
+{
+  "auditedAt": "2026-10-14",
+  "method": "operator_authorized_agent",
+  "access": "Sequential public GET with existing safeRequest DNS/TLS validation, robots each URL, two-second delay; no login/cookies, PDF/form fetch/submission or paid service.",
+  "candidateId": "xlsx-20261014-021-capes",
+  "sources": [
+    {
+      "url": "https://www.gov.br/capes/pt-br/assuntos/editais-e-resultados",
+      "checkedAt": "2026-10-14T23:47:19.362Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 404,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "title": ""
+    },
+    {
+      "url": "https://www.gov.br/capes/pt-br/acesso-a-informacao/acoes-e-programas/bolsas/programas-estrategicos/desenvolvimento-regional/programa-de-desenvolvimento-academico-indigena-pdai",
+      "checkedAt": "2026-10-14T23:47:36.731Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 327857,
+      "sha256": "ba915585bfddd7e1b55189bd350a945a1039ec11226fb9eb2d8b6ffd6ad680a5",
+      "title": "Programa de Desenvolvimento Acadêmico Indígena (PDAI)"
+    },
+    {
+      "url": "https://www.gov.br/capes/pt-br/acesso-a-informacao/acoes-e-programas/bolsas/bolsas-e-auxilios-internacionais/encontre-aqui/paises/multinacional/programa-climat-amsud",
+      "checkedAt": "2026-10-14T23:47:41.884Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 440844,
+      "sha256": "aac45c45aa044fadb6fda56a891898352151325a20d032c3d06b2e071f313980",
+      "title": "Programa CAPES/CLIMAT-AMSUD"
+    },
+    {
+      "url": "https://www.gov.br/capes/pt-br/acesso-a-informacao/acoes-e-programas/bolsas/bolsas-e-auxilios-internacionais/encontre-aqui/paises/multinacional/programa-de-doutorado-sanduiche-no-exterior-pdse",
+      "checkedAt": "2026-10-14T23:47:46.604Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 582731,
+      "sha256": "e53ab1f8bcff27ecfe6e56719354ba2fa8da3b0eb454447371856e8889f1f173",
+      "title": "Programa de Doutorado-sanduíche no Exterior (PDSE)"
+    },
+    {
+      "url": "https://www.gov.br/capes/pt-br/assuntos/noticias-defeso-eleitoral/prazo-de-inscricao-no-pdai-e-prorrogado-ate-26-de-outubro",
+      "checkedAt": "2026-10-14T23:49:15.644Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 304135,
+      "sha256": "42c55290584ace1e2c632db77a052e832e650e1ef3ff2385b4063ec6b962355c",
+      "title": "Prazo de inscrição no PDAI é prorrogado até 26 de outubro"
+    }
+  ],
+  "decisions": [
+    {
+      "sourceId": "capes-pdai-23-2026",
+      "decision": "approved_dedicated_collector",
+      "programme": "PDAI Edital23/2026, one selection for master/doctorate grants",
+      "proof": "Current programme calendar candidates2026-10-26 and official extension notice23h59Brasilia; same edital in both. Monthly supportmaster2100BRL/up to24months,doctorate3100BRL/up to48months, upon selection.",
+      "location": "unknown; no headquarters inference or national eligibility assumption",
+      "application": "Direct candidate form in CAPES electronic system, explicitly stated in official notice. Manual SICAPES and PPG list linked on programme. No exact application URL present, so do not invent one.",
+      "limitations": "Restricted to indigenous candidates and participatingPPGs; consult official requirements. Two resources must agree; no multiplication by degrees, grants or selection rounds. New edition requires another audit."
+    },
+    {
+      "programme": "CLIMAT-AMSUD26/2026",
+      "decision": "paused",
+      "reason": "CAPES deadline29Oct202617hBrasilia is clear but international Secretariat may impose an earlier deadline; second mandatory calendar not yet audited. Do not infer full registration availability."
+    },
+    {
+      "programme": "PDSE22/2026",
+      "decision": "paused_outside_activation",
+      "reason": "National candidate window20Oct–18Nov2026 and prior internal IES selection by16Oct; future/multistage call requires its own adaptation/audit. No automatic publication from a broad CAPES hub."
+    }
+  ],
+  "terms": "Public agency pages reviewed; official news permits attributionASCOM/CAPES; only factual programme information extracted, official URLs/evidence preserved. robots allows both exact paths. Original candidate hub404; monitor stays paused under dedicated coverage."
+}
