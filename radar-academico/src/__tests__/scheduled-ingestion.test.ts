@@ -295,3 +295,18 @@ it("confirma PDAI em duas páginas oficiais dentro do orçamento e publica zero 
   expect(await runOfficialSourceIngestion({sourceId:pdai.id,maxPages:2,maxCandidates:3})).toMatchObject({pagesChecked:2,discovered:0});
  } finally {vi.useRealTimers();}
 });
+
+it("confirma PDSE em duas páginas oficiais e mantém a etapa nacional futura", async () => {
+ const {pdseSource:pdse,pdseProgramme:programme,pdseNews:news}=await import("./fixtures/capes-pdse");
+ vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-15T00:40:00Z"));
+ try {
+  vi.stubEnv("DATABASE_URL","fixture");vi.mocked(loadOfficialSource).mockResolvedValue(pdse);
+  vi.mocked(recheckKnownOpportunities).mockResolvedValue({pagesChecked:0,failed:0,published:0});
+  vi.mocked(fetchOfficialResource).mockImplementation(async url=>({body:Buffer.from(url===pdse.baseUrl?programme:news),contentType:"text/html",hash:"fixture",cached:false}));
+  vi.mocked(saveReviewItems).mockResolvedValue({saved:1,published:1,blocked:0,created:1,updated:0,persistence:"postgres"});
+  expect(await runOfficialSourceIngestion({sourceId:pdse.id,maxPages:2,maxCandidates:3})).toMatchObject({pagesChecked:2,discovered:1});
+  expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({opportunityStatus:"upcoming",applicationRoute:"application_via_university"});
+  expect(await runOfficialSourceIngestion({sourceId:pdse.id,maxPages:1,maxCandidates:3})).toMatchObject({pagesChecked:0,discovered:0});
+  expect(fetchOfficialResource).toHaveBeenCalledTimes(2);
+ }finally{vi.useRealTimers();}
+});

@@ -577,3 +577,32 @@ it("rechecks both PDAI pages through RLS and withdraws a valid empty/conflicting
   expect(await ingest()).toMatchObject({created:0,published:0});
  }finally{vi.useRealTimers();}
 });
+
+it("preserves PDSE identity and admin edits across upcoming/open stages and terminal withdrawal", async () => {
+ const {normalizeCapesPdse}=await import("@/lib/ingestion/normalize-capes-pdse");
+ const {pdseSource:pdse,pdseProgramme:programme,pdseNews:news}=await import("./fixtures/capes-pdse");
+ vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-15T00:40:00Z"));
+ try {
+  await state.db!.query(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,active,verification_status) values ($1,'PDSE','CAPES','CAPES','government_foundation',$2,$3,$4,$5,'html',true,'verified')`,[pdse.id,pdse.baseUrl,pdse.allowedDomains,pdse.allowedPathPrefixes,pdse.listingUrls]);
+  const item=normalizeCapesPdse(programme,news,pdse)[0];
+  const ingest=()=>saveReviewItems(pdse,{sourceId:pdse.id,pagesChecked:2,discovered:[item],ignored:0,failed:0,locationRejected:0,warnings:[]});
+  expect(await ingest()).toMatchObject({created:1,published:1});expect(await ingest()).toMatchObject({created:0});
+  const [original]=await listLiveCatalogue(true);expect(original.opportunityStatus).toBe("upcoming");
+  await manageCatalogue("PATCH",form(original,{title:"PDSE — título administrativo",deadlineAt:item.deadlineAt,evidenceExcerpt:item.evidenceJson.deadline_at.excerpt}));
+  vi.setSystemTime(new Date("2026-10-20T15:00:00Z"));
+  await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+  vi.mocked(fetchOfficialResource).mockImplementation(async url=>({body:Buffer.from(url===pdse.baseUrl?programme:news),contentType:"text/html",hash:"open",cached:false}));
+  expect(await recheckKnownOpportunities(pdse,1,async()=>"")).toMatchObject({pagesChecked:2,failed:0});
+  expect((await listLiveCatalogue())[0]).toMatchObject({id:original.id,title:"PDSE — título administrativo",opportunityStatus:"open"});
+  expect((await listLiveCatalogue(true)).map(o=>o.id)).toEqual((await listLiveCatalogue()).map(o=>o.id));
+  await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+  vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from('<div id="page-document"><h1>Programa de Doutorado-sanduíche no Exterior (PDSE)</h1></div>'),contentType:"text/html",hash:"partial",cached:false});
+  expect(await recheckKnownOpportunities(pdse,1,async()=>"")).toMatchObject({failed:1});expect(await listLiveCatalogue()).toHaveLength(1);
+  await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);
+  vi.mocked(fetchOfficialResource).mockImplementation(async url=>({body:Buffer.from(url===pdse.baseUrl?programme:news.replace("</div>","<p>Chamada cancelada.</p></div>")),contentType:"text/html",hash:"cancelled",cached:false}));
+  expect(await recheckKnownOpportunities(pdse,1,async()=>"")).toMatchObject({pagesChecked:2,failed:0});expect(await listLiveCatalogue()).toHaveLength(0);
+  const terminal=(await state.db!.query<{opportunity_status:string;evidence_json:OpportunityCandidate["evidenceJson"]}>("select opportunity_status,evidence_json from opportunities where id=$1",[original.id])).rows[0];
+  expect(terminal.opportunity_status).toBe("cancelled");expect(terminal.evidence_json.opportunity_status.excerpt).toContain("Chamada cancelada");
+  await state.db!.query("update opportunities set deleted_at=now() where id=$1",[original.id]);expect(await ingest()).toMatchObject({created:0,published:0});
+ }finally{vi.useRealTimers();}
+});

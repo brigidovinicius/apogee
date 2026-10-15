@@ -10,6 +10,7 @@ import { confirmedTerminalStatus } from "./publication";
 import { normalizeAcateEvent } from "./normalize-acate-events";
 import { FULBRIGHT_SOURCE_ID, normalizeFulbright } from "./normalize-fulbright";
 import { PDAI_SOURCE_ID, capesPdaiTerminalEvidence } from "./normalize-capes-pdai";
+import { PDSE_SOURCE_ID, capesPdseTerminalEvidence } from "./normalize-capes-pdse";
 
 import { EVG_SOURCE_ID, normalizeEvgCourse, type EvgPolicy } from "./normalize-evg-courses";
 
@@ -42,6 +43,7 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
         applicationHtml = application.body.toString("utf8");
       }
       if (source.id === PDAI_SOURCE_ID) catalogueTerminal = capesPdaiTerminalEvidence(courses.body.toString("utf8"), applicationHtml);
+      if (source.id === PDSE_SOURCE_ID) catalogueTerminal = capesPdseTerminalEvidence(courses.body.toString("utf8"), applicationHtml);
       const candidates = catalogueTerminal ? [] : normalizeProgrammeCatalogue(courses.body.toString("utf8"), applicationHtml, source);
       // A valid PSG catalogue with no eligible places confirms withdrawal;
       // missing/invalid embedded JSON throws and preserves the previous evidence.
