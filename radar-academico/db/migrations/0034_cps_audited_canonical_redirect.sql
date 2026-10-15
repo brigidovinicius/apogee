@@ -3,7 +3,7 @@
 -- using the final three-path allowlist, before this correction was implemented.
 update official_sources set
  allowed_path_prefixes=array_append(allowed_path_prefixes,'/intercambio-cultural-cps-2026/'),
- robots_checked_at=now(),updated_at=now(),
+ robots_checked_at=now(),updated_at=now(),next_crawl_at=case when active then now() else next_crawl_at end,
  notes=coalesce(notes,'') || ' URL canônica adicional auditada na VPS: https://arinter.cps.sp.gov.br/intercambio-cultural-cps-2026/; mesmo conteúdo/hash da notícia de origem. Não permitir outros caminhos ou domínios.'
 where id='cps-cultural-15-2026'
  and base_url='https://arinter.cps.sp.gov.br/editais-abertos/'
