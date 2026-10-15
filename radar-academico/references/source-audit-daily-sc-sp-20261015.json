@@ -54,5 +54,23 @@
       "reason": "Current undergraduate calls already catalogued; old UHK and internship closed; no duplicates."
     }
   ],
-  "cost": "Existing VPS only, existing daily scheduler, no new paid services or scheduled GitHub workflows."
+  "cost": "Existing VPS only, existing daily scheduler, no new paid services or scheduled GitHub workflows.",
+  "canonicalRedirectCorrection": {
+    "firstScheduledRun": "15/10/2026 16:38Z: first page fetched, canonical supplement URL blocked by exact allowlist; no item published.",
+    "preflight": [
+      {
+        "url": "https://arinter.cps.sp.gov.br/editais-abertos/",
+        "at": "2026-10-15T16:39:38.631Z",
+        "hash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+        "contentType": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://arinter.cps.sp.gov.br/intercambio-cultural-cps-2026/",
+        "at": "2026-10-15T16:39:42.407Z",
+        "hash": "7c01415d34f182632cb9cc74ae760f0035024fcc8b33ee768c157ce147b34417",
+        "contentType": "text/html; charset=UTF-8"
+      }
+    ],
+    "change": "0034 adds only /intercambio-cultural-cps-2026/ to the exact CPS source. Same content hash as original audited announcement. Final allowlist checked on VPS before correction, not merely host-wide preflight."
+  }
 }

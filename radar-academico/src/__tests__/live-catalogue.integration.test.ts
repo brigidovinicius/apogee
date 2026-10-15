@@ -47,6 +47,7 @@ function form(item: Record<string, unknown>, patch: Record<string, unknown> = {}
 }
 let migrationSnapshot: unknown[] = [];
 let pilotSourcesSnapshot: unknown[] = [];
+let cpsRedirectPaths: string[] = [];
 beforeAll(async () => {
  state.db = new PGlite({ extensions: { pgcrypto } });
  const dir = new URL("../../db/migrations/", import.meta.url);
@@ -60,6 +61,7 @@ beforeAll(async () => {
   }
   await state.db.exec(await readFile(new URL(name, dir), "utf8"));
  }
+ cpsRedirectPaths = (await state.db.query<{allowed_path_prefixes:string[]}>("select allowed_path_prefixes from official_sources where id='cps-cultural-15-2026'")).rows[0].allowed_path_prefixes;
  migrationSnapshot = (await state.db.query("select review_status,verification_method,verified_at is not null as verified,published_at is not null as published from opportunities order by title")).rows;
  pilotSourcesSnapshot = (await state.db.query("select id,verification_status,verification_method,verification_evidence_url,audited_by from official_sources where id in ('cnpq-chamadas-abertas-2026','nasa-space-apps-2026') order by id")).rows;
  await state.db.exec("create role radar_test; grant usage on schema public to radar_test; grant select,insert,update,delete on all tables in schema public to radar_test");
@@ -640,4 +642,12 @@ it("preserves an ACIM edition through RLS, edits, retry, sold-out withdrawal and
   const row=(await state.db!.query<{opportunity_status:string;evidence_json:OpportunityCandidate["evidenceJson"]}>("select opportunity_status,evidence_json from opportunities where id=$1",[original.id])).rows[0];expect(row.opportunity_status).toBe("closed");expect(row.evidence_json.opportunity_status.excerpt).toContain("SoldOut");
   await state.db!.query("update opportunities set deleted_at=now() where id=$1",[original.id]);expect(await ingest()).toMatchObject({created:0,published:0});
  }finally{vi.useRealTimers();}
+});
+
+it("migrates only the audited CPS canonical path and keeps unrelated paths outside the allowlist", async () => {
+ expect(cpsRedirectPaths).toEqual([
+  "/editais-abertos/",
+  "/intercambio-cultural-do-centro-paula-souza-abre-inscricoes-para-mais-de-500-bolsas-internacionais-em-2027/",
+  "/intercambio-cultural-cps-2026/",
+ ]);
 });

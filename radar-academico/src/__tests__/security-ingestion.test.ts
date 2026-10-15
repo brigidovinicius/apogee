@@ -100,3 +100,14 @@ it("does not cache EV.G robots when response headers require fresh validation", 
   expect(robotsCalls).toBe(2);
  } } finally { vi.useRealTimers(); }
 });
+
+it("follows the audited CPS canonical redirect but rejects any other path on the same host", async () => {
+ vi.stubEnv("INGESTION_REQUEST_DELAY_MS", "100");
+ const alias="https://arinter.cps.sp.gov.br/intercambio-cultural-do-centro-paula-souza-abre-inscricoes-para-mais-de-500-bolsas-internacionais-em-2027/";
+ const canonical="https://arinter.cps.sp.gov.br/intercambio-cultural-cps-2026/";
+ const cps={...source,id:"cps-cultural-15-2026",allowedDomains:["arinter.cps.sp.gov.br"],allowedPathPrefixes:[new URL(alias).pathname,new URL(canonical).pathname]};
+ vi.mocked(safeRequest).mockImplementation(async url=>url.endsWith("/robots.txt") ? new Response("") : url===alias ? new Response(null,{status:301,headers:{location:canonical}}) : new Response("Confirmed official programme",{headers:{"content-type":"text/html"}}));
+ expect((await fetchOfficialResource(alias,cps)).body.toString()).toBe("Confirmed official programme");
+ vi.mocked(safeRequest).mockImplementation(async url=>url.endsWith("/robots.txt") ? new Response("") : new Response(null,{status:301,headers:{location:"https://arinter.cps.sp.gov.br/unaudited/"}}));
+ await expect(fetchOfficialResource(alias,cps)).rejects.toThrow("registro oficial");
+});
