@@ -1,0 +1,46 @@
+{
+  "auditedAt": "2026-10-15T12:18:19.782Z",
+  "method": "Protected public GET, robots, limits, organizer identification and own registration/privacy; no form submission or external registration destination fetched.",
+  "sources": [
+    {
+      "url": "https://www.orionparque.com/2026/09/15/inscricoes-abertas-para-o-hackathorion-maratona-de-inovacao-retorna-em-outubro-para-conectar-talentos-e-desafios-reais/",
+      "hash": "0c78d38767467fdde3758d4aed4083cc26c9953c171cd45be6ceed5e84cb1a70",
+      "bytes": 372577,
+      "links": [
+        {
+          "text": "ACESSE O SITE E GARANTA A SUA VAGA",
+          "url": "https://www.sympla.com.br/evento/hackathorion-2026-outubro/3578928"
+        }
+      ]
+    },
+    {
+      "url": "https://www.niavistart.tech/",
+      "hash": "890631444f5d73ab464cd0dd8c2e35abe64abe87f617390b65119feb230f98dc",
+      "bytes": 119843,
+      "links": [
+        {
+          "text": "Inscrever-se",
+          "url": "/inscricao"
+        },
+        {
+          "text": "Quero me inscrever",
+          "url": "/inscricao"
+        },
+        {
+          "text": "Inscrever-se",
+          "url": "/inscricao"
+        }
+      ]
+    },
+    {
+      "url": "https://www.niavistart.tech/privacidade",
+      "hash": "edb4d2a3b02469d33bb29e72ce4b8993df9b1f63e2cb41d56a4f56619f86c70e",
+      "bytes": 44268,
+      "links": []
+    }
+  ],
+  "pending": {
+    "MPSC": "Protected collector cannot retrieve current official pages. Indexed text is insufficient to publish.",
+    "exchanges": "Located IFSC/UDESC calls closed; UFSC active editions already mapped, not duplicated."
+  }
+}
