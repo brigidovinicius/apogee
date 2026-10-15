@@ -622,3 +622,22 @@ it("exports the same admission group for public/admin and retains original edit/
  await state.db!.query('update opportunities set deleted_at=now() where id=$1',[edited.id]);
  expect(await listLiveCatalogue()).toEqual([]); expect(await listLiveCatalogue(true)).toEqual([]);
 });
+
+it("preserves an ACIM edition through RLS, edits, retry, sold-out withdrawal and tombstone", async () => {
+ const {normalizeAcimStartupWeekend}=await import("@/lib/ingestion/normalize-acim-startup-weekend");
+ const {acimSource:acim,acimHtml:html}=await import("./fixtures/acim-startup-weekend");
+ vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-15T01:20:00Z"));
+ try {
+  await state.db!.query(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,active,verification_status) values ($1,'ACIM','ACIM','ACIM','corporate_organizer',$2,$3,$4,$5,'html',true,'verified')`,[acim.id,acim.baseUrl,acim.allowedDomains,acim.allowedPathPrefixes,acim.listingUrls]);
+  const item=normalizeAcimStartupWeekend(html,acim)[0];const ingest=()=>saveReviewItems(acim,{sourceId:acim.id,pagesChecked:1,discovered:[item],ignored:0,failed:0,locationRejected:0,warnings:[]});
+  expect(await ingest()).toMatchObject({created:1,published:1});expect(await ingest()).toMatchObject({created:0});
+  const [original]=await listLiveCatalogue(true);expect(original).toMatchObject((await listLiveCatalogue())[0]);
+  await manageCatalogue("PATCH",form(original,{title:"Startup Weekend — edição administrativa",deadlineAt:"",eventStartsAt:item.eventStartsAt,evidenceExcerpt:item.evidenceJson.event_start.excerpt}));
+  const recheck=async(body:string)=>{await state.db!.query("update opportunities set next_source_check_at=null where id=$1",[original.id]);vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from(body),contentType:"text/html",hash:"check",cached:false});return recheckKnownOpportunities(acim,1,async()=>"");};
+  expect(await recheck(html)).toMatchObject({pagesChecked:1,failed:0});expect((await listLiveCatalogue())[0]).toMatchObject({id:original.id,title:"Startup Weekend — edição administrativa",deadlinePrecision:"not_informed"});
+  expect(await recheck('<h1 data-hook="event-title">Startup Weekend Imbituba</h1>')).toMatchObject({failed:1});expect(await listLiveCatalogue()).toHaveLength(1);
+  expect(await recheck(html.replaceAll('https://schema.org/InStock','https://schema.org/SoldOut'))).toMatchObject({pagesChecked:1,failed:0});expect(await listLiveCatalogue()).toHaveLength(0);
+  const row=(await state.db!.query<{opportunity_status:string;evidence_json:OpportunityCandidate["evidenceJson"]}>("select opportunity_status,evidence_json from opportunities where id=$1",[original.id])).rows[0];expect(row.opportunity_status).toBe("closed");expect(row.evidence_json.opportunity_status.excerpt).toContain("SoldOut");
+  await state.db!.query("update opportunities set deleted_at=now() where id=$1",[original.id]);expect(await ingest()).toMatchObject({created:0,published:0});
+ }finally{vi.useRealTimers();}
+});

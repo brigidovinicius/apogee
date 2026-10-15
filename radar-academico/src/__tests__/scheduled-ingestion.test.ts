@@ -310,3 +310,17 @@ it("confirma PDSE em duas páginas oficiais e mantém a etapa nacional futura", 
   expect(fetchOfficialResource).toHaveBeenCalledTimes(2);
  }finally{vi.useRealTimers();}
 });
+
+it("ingere uma edição Startup Weekend ACIM com uma única página e sem seguir checkout", async () => {
+ const {acimSource:acim,acimHtml:html}=await import("./fixtures/acim-startup-weekend");
+ vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-15T01:20:00Z"));
+ try {
+  vi.stubEnv("DATABASE_URL","fixture");vi.mocked(loadOfficialSource).mockResolvedValue(acim);
+  vi.mocked(recheckKnownOpportunities).mockResolvedValue({pagesChecked:0,failed:0,published:0});
+  vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from(html),contentType:"text/html",hash:"fixture",cached:false});
+  vi.mocked(saveReviewItems).mockResolvedValue({saved:1,published:1,blocked:0,created:1,updated:0,persistence:"postgres"});
+  expect(await runOfficialSourceIngestion({sourceId:acim.id,maxPages:1,maxCandidates:5})).toMatchObject({pagesChecked:1,discovered:1});
+  expect(fetchOfficialResource).toHaveBeenCalledTimes(1);expect(fetchOfficialResource).toHaveBeenCalledWith(acim.baseUrl,acim);
+  expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({opportunityStatus:"open",deadlinePrecision:"not_informed",eventStartsAt:"2026-11-06T18:00:00-03:00"});
+ }finally{vi.useRealTimers();}
+});

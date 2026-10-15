@@ -1,0 +1,170 @@
+{
+  "auditedAt": "2026-10-15T01:29:11+00:00",
+  "method": "Public GET only, production safeRequest, robots per URL, two-second host pacing; no form submission, ticket purchase, private API, paid service or bypass. JSON-LD checked against visible fields.",
+  "decisions": [
+    {
+      "targetId": "xlsx-20261014-064-startup-weekend-techstars",
+      "decision": "broad_monitor_paused",
+      "reason": "Programme HTTP200; events/search and events HTTP200 but fetched HTML has no individual editions/registration evidence. Search-index results not accepted as current availability. One ACIM-owned edition validated separately."
+    },
+    {
+      "targetId": "xlsx-20261014-063-sebrae-startups",
+      "decision": "paused",
+      "reason": "Candidate URL redirects via lowercase route to generic content. SC calendar is client-rendered and describes Sebrae as support/funding, which alone does not establish individual event organization. No broad calendar or backend API activated."
+    },
+    {
+      "sourceId": "acim-startup-weekend-imbituba-2026",
+      "decision": "approved_specific_edition",
+      "officialUrl": "https://www.acimimbituba.org/event-details/startup-weekend-imbituba-1",
+      "owner": "Associação Empresarial de Imbituba (ACIM), CNPJ 80.987.837/0001-05; own homepage lists event and own ticketing.",
+      "start": "2026-11-06T18:00:00-03:00",
+      "end": "2026-11-08T20:00:00-03:00",
+      "deadlinePrecision": "not_informed",
+      "availability": "EventScheduled + InStock + own INGRESSOS/Checkout UI",
+      "priceBRL": {
+        "base": "80.00",
+        "fee": "2.00",
+        "total": "82.00"
+      },
+      "geography": {
+        "country": "BR",
+        "state": "SC",
+        "city": "Imbituba",
+        "venue": "SCPAR Porto de Imbituba"
+      },
+      "limits": "One edition, not tickets/days/teams. No minimum age/education, financial aid, seats count or free admission inferred. Quantity zero is a ticket picker default, not vacancy evidence. Daily one-page bounded collection; source failure retries, conflicts/terminal/start withdraw. Existing admission grouping preserved."
+    }
+  ],
+  "audits": [
+    {
+      "url": "https://www.techstars.com/communities/startup-weekend",
+      "checkedAt": "2026-10-15T01:17:48.902Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 156729,
+      "sha256": "2793b560e77d85c4c3eb3909a2c0292d637b3b50167c10a1621ccd423731fd78",
+      "title": "Techstars Startup Weekend"
+    },
+    {
+      "url": "https://www.techstars.com/events/search",
+      "checkedAt": "2026-10-15T01:18:21.639Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 89291,
+      "sha256": "a1b68184c49bf384d4c9145fb291b2fcd46af49288cbf095b91d26b81b2c6220",
+      "title": "Techstars Events"
+    },
+    {
+      "url": "https://www.techstars.com/events",
+      "checkedAt": "2026-10-15T01:18:27.423Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 135709,
+      "sha256": "91c4fa50b7cc51d87f9d5aa04564d898a7be18159d9d6e92225cb4851419ab19",
+      "title": "Techstars Events"
+    },
+    {
+      "url": "https://sebrae.com.br/sites/PortalSebrae/startups",
+      "checkedAt": "2026-10-15T01:19:05.802Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 301,
+      "redirect": "https://sebrae.com.br/sites/portalsebrae/startups",
+      "contentType": "text/html; charset=iso-8859-1",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "title": ""
+    },
+    {
+      "url": "https://swsc.sebraestartups.com.br/",
+      "checkedAt": "2026-10-15T01:19:11.671Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 2837,
+      "sha256": "4577b927c2731dfce2d417a2fc99954833e604a85c91d23dbbaafdca454f5937",
+      "title": ""
+    },
+    {
+      "url": "https://sebrae.com.br/sites/portalsebrae/startups",
+      "checkedAt": "2026-10-15T01:19:34.930Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 301,
+      "redirect": "https://sebrae.com.br/empreendedores/conteudos",
+      "contentType": "text/html; charset=iso-8859-1",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "title": ""
+    },
+    {
+      "url": "https://swsc.sebraestartups.com.br/assets/index-END887qq.js",
+      "checkedAt": "2026-10-15T01:19:47.980Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/javascript; charset=utf-8",
+      "bytes": 946217,
+      "sha256": "49e053d603c58bc6fc9c2f5d2c1fab3a3931bf01ec367e32eb7c0cb216c585f6",
+      "title": ""
+    },
+    {
+      "url": "https://www.acimimbituba.org/event-details/startup-weekend-imbituba-1",
+      "checkedAt": "2026-10-15T01:21:07.067Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 1457909,
+      "sha256": "162ca6e6e82b344f857333b800b2f28278e2f74b9b828126d7eeeb09a48016d5",
+      "title": "Startup Weekend Imbituba"
+    },
+    {
+      "url": "https://www.acimimbituba.org/",
+      "checkedAt": "2026-10-15T01:21:13.963Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 1285192,
+      "sha256": "7d80a9bd1572ec2beb1df0a6ad61f842ba7b649df6acd3cba10f4757f2ac56ef",
+      "title": ""
+    },
+    {
+      "url": "https://www.acimimbituba.org/c%C3%B3pia-contato",
+      "checkedAt": "2026-10-15T01:25:38.628Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 806493,
+      "sha256": "243b422bcd423b2aef903ee865e2ae8a8c47e5c33a67b99c9cff06b08e618215",
+      "title": ""
+    }
+  ]
+}
