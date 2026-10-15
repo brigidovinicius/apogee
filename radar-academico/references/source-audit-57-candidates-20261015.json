@@ -1,0 +1,1401 @@
+{
+  "scope": "All 57 discovery leads from CPS/SINTER, individually triaged against fresh official indexes. Not all 57 destination URLs were crawled; expired/form/reference links were not fetched or activated. Exact activation URLs tested on VPS with final path allowlists before implementation.",
+  "at": "2026-10-15",
+  "method": "Production fetchOfficialResource streamed inside VPS container; no proxies, disabled TLS or robots bypass.",
+  "preflight": [
+    {
+      "url": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "at": "2026-10-15T16:57:30.737Z",
+      "hash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "at": "2026-10-15T16:57:34.241Z",
+      "hash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://arinter.cps.sp.gov.br/promaips-2027-1/",
+      "at": "2026-10-15T16:57:37.203Z",
+      "hash": "cdbb5c98be5f503270c172163209d10571def544b07afa26fd06693a97f40d4c",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/08/Edital-ARI-31-2026-PROGRAMA-DE-MOBILIDADE-VIRTUAL-UNIFICADO-.pdf",
+      "at": "2026-10-15T16:57:37.869Z",
+      "error": "robots.txt indisponível para revisão"
+    },
+    {
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/09/E-Edital-ARI-039.2026-Expanish-e-Academia-Uruguai_y.pdf",
+      "at": "2026-10-15T16:57:39.762Z",
+      "error": "robots.txt indisponível para revisão"
+    },
+    {
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/10/E-Edital-ARI-41-2026-PROMAIPS-RevLA-13out2026-Retificado-Publicado.pdf",
+      "at": "2026-10-15T16:57:41.770Z",
+      "error": "robots.txt indisponível para revisão"
+    },
+    {
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/10/E-Edital-ARI-42-2026-PROMAIPS-TUL-Retificado-RevLA-14out26.pdf",
+      "at": "2026-10-15T16:57:43.765Z",
+      "error": "robots.txt indisponível para revisão"
+    },
+    {
+      "url": "https://niltsinter.ufsc.br/cursos-chamadas-abertos/",
+      "at": "2026-10-15T16:57:47.017Z",
+      "hash": "4a99e6b1389d3bbd94d1c46680b1406f3731c9254f170d787d31703d89522564",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://sinter.ufsc.br/2026/03/26/chamada-no-12026niltsinter-demandas-de-traducao-portugues%e2%87%94ingles-ate-15112026/",
+      "at": "2026-10-15T16:57:55.933Z",
+      "hash": "fd661436187dc308eedfa4bcba81b88859d91865921c51173e092b525d6b9144",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://idiomassemfronteiras.paginas.ufsc.br/cursos-2/",
+      "at": "2026-10-15T17:00:22.712Z",
+      "hash": "a418a6d03605ef4b90e29f5e54108cd0e59a547e005a7d4cc1bab84acb37bd6b",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://sinter.ufsc.br/bolsas-pec-g/",
+      "at": "2026-10-15T17:00:30.233Z",
+      "hash": "8b2fdf7d70436de5baba7216a36add99b4b192c7c9078cab521e9bc83f8bdb6d",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://sinter.ufsc.br/eventos-e-cursos/?lang=pt",
+      "at": "2026-10-15T17:00:34.288Z",
+      "hash": "69725c9014e7e87c5506760906061fb5a534b220730364c56048cf861d818428",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://sinter.ufsc.br/intercambio-virtual/?lang=pt",
+      "at": "2026-10-15T17:00:38.566Z",
+      "hash": "667c74f27ce69f99424dd0261f346fd2892e25c89620b4d8a29374d7c66fe729",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://sinter.ufsc.br/vigentes/?lang=pt",
+      "at": "2026-10-15T17:00:42.223Z",
+      "hash": "309bcbfa61fa90ed0aee4763d12fe41e1404d9478feee57e7927fc7d4936743a",
+      "contentType": "text/html; charset=UTF-8"
+    }
+  ],
+  "newSources": [
+    {
+      "id": "cps-virtual-mobility-031-2026",
+      "url": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "deadline": "2026-12-08",
+      "proof": "ARI031/2026, eMovies/INILATmov+, Modalidade Virtual, Alunos FATEC, Inscrições ABERTAS até08/12, two application links.",
+      "limits": "Only one selection, no separate modules/partner programmes, no travel, pay, age, fees or geography invented. Detailed PDF is not monitored because robots unavailable; requirements and financial support not detailed on monitored HTML are disclosed as unconfirmed."
+    },
+    {
+      "id": "ufsc-nilt-motivation-letters-2026",
+      "url": "https://niltsinter.ufsc.br/cursos-chamadas-abertos/",
+      "deadline": "2026-10-19",
+      "proof": "Named workshop row under open2026 courses, audience UFSC, registration1-19October, occurrence27October-13November, organizer enrollment email.",
+      "limits": "Training only, not an exchange/internship. No claim of free access, stipend or physical city."
+    }
+  ],
+  "decisionCounts": {
+    "deferred_outside_youth_priority": 6,
+    "already_mapped_same_edition": 7,
+    "conflicting_deadline_pending_rectification": 1,
+    "application_endpoint_only": 5,
+    "closed_or_result": 4,
+    "document_blocked_on_vps": 4,
+    "partner_reference_not_separate_selection": 2,
+    "institutional_news_not_new_call": 1,
+    "expired_in_official_index": 20,
+    "reference_page_without_confirmed_current_application": 5,
+    "activate_bounded_workshop_source": 1,
+    "institutional_service_not_paid_placement": 1
+  },
+  "statusCounts": {
+    "reviewing": 18,
+    "mapped": 8,
+    "dismissed": 31
+  },
+  "leads": [
+    {
+      "id": "0e80f8b9-409b-4d63-81ae-a7b5b3523343",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://arinter.cps.sp.gov.br/8-concurso-cif-2026/",
+      "title": "Inscrições abertas para o 8º Concurso de Gastronomia ICIF 2026",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 0,
+      "context": [
+        {
+          "call": "Ari – 040.2026",
+          "text": ""
+        },
+        {
+          "call": "Ari – 040.2026",
+          "text": "Inscrições abertas para o 8º Concurso de Gastronomia ICIF 2026"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "deferred_outside_youth_priority",
+      "status": "reviewing",
+      "reason": "Chamada restrita a docentes, servidores ou pós-graduação; preservada privada, sem ativação no lote para jovens. Não excluir fichas existentes."
+    },
+    {
+      "id": "31d328cd-27ca-4275-a6c4-a5c82d78dcfd",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://arinter.cps.sp.gov.br/intercambio-cultural-cps-2026/",
+      "title": "Intercâmbio Cultural do Centro Paula Souza abre inscrições para mais de 500 bolsas internacionais em 2027",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 1,
+      "context": [
+        {
+          "call": "Ari – 040.2026",
+          "text": ""
+        },
+        {
+          "call": "Ari – 040.2026",
+          "text": "Intercâmbio Cultural do Centro Paula Souza abre inscrições para mais de 500 bolsas internacionais em 2027"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "already_mapped_same_edition",
+      "status": "mapped",
+      "reason": "Notícia ou documento da 15ª edição CPS já publicada; não duplicar modalidade, vaga, destino ou retificação. PDF é referência, não fonte de coleta ativada."
+    },
+    {
+      "id": "bd01535e-e9b1-45bf-8eaf-11111a70166a",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://arinter.cps.sp.gov.br/promaips-2027-1/",
+      "title": "PROMAIPS 2027: inscrições abertas para intercâmbio internacional de alunos das Fatecs",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 2,
+      "context": [
+        {
+          "call": "Ari – 041.2026",
+          "text": "https://arinter.cps.sp.gov.br/promaips-2027-1/"
+        },
+        {
+          "call": "Ari – 040.2026",
+          "text": ""
+        },
+        {
+          "call": "Ari – 040.2026",
+          "text": "PROMAIPS 2027: inscrições abertas para intercâmbio internacional de alunos das Fatecs"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://arinter.cps.sp.gov.br/promaips-2027-1/",
+        "at": "2026-10-15T16:57:37.203Z",
+        "hash": "cdbb5c98be5f503270c172163209d10571def544b07afa26fd06693a97f40d4c",
+        "contentType": "text/html; charset=UTF-8"
+      },
+      "decision": "conflicting_deadline_pending_rectification",
+      "status": "reviewing",
+      "reason": "Notícia PROMAIPS indica 13/10 e índice retificado 15/10. Retificação em PDF não acessível pelo coletor protegido; não publicar com prazo escolhido arbitrariamente."
+    },
+    {
+      "id": "d9fb5a48-926a-44b6-9715-82d05474fc2d",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://arintersql.azurewebsites.net/form.aspx",
+      "title": "INSCRIÇÕES",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 3,
+      "context": [
+        {
+          "call": "Ari – 033.2026",
+          "text": "INSCRIÇÕES"
+        },
+        {
+          "call": "Ari – 034.2026",
+          "text": "INSCRIÇÕES"
+        },
+        {
+          "call": "Ari – 035.2026",
+          "text": "INSCRIÇÕES"
+        },
+        {
+          "call": "Ari – 036.2026",
+          "text": "INSCRIÇÕES"
+        },
+        {
+          "call": "Ari – 037.2026",
+          "text": "INSCRIÇÕES"
+        },
+        {
+          "call": "Ari – 038.2026",
+          "text": "INSCRIÇÕES"
+        },
+        {
+          "call": "Ari – 039.2026",
+          "text": "INSCRIÇÕES"
+        },
+        {
+          "call": "Ari – 041.2026",
+          "text": "INSCRIÇÕES"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "application_endpoint_only",
+      "status": "dismissed",
+      "reason": "Endpoint de candidatura, não oportunidade independente nem fonte de monitoramento. Não abrir formulário nem coletar dados pessoais."
+    },
+    {
+      "id": "377600cc-bcb6-485b-9dfc-27eb450ffe44",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/07/Edital-SANTANDER-2026-FATEC-ARI-018-2026-Retificado-em-170725.pdf",
+      "title": "EDITAL RETIFICADO",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 4,
+      "context": [
+        {
+          "call": "Ari – 018.2026",
+          "text": "EDITAL RETIFICADO"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "closed_or_result",
+      "status": "dismissed",
+      "reason": "ARI 018 ou 040/2026: inscrição ENCERRADA no índice oficial; resultado/lista não cria nova oportunidade."
+    },
+    {
+      "id": "ac1f6dbd-8218-4ccf-af37-e482b14596b9",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/08/Edital-ARI-31-2026-PROGRAMA-DE-MOBILIDADE-VIRTUAL-UNIFICADO-.pdf",
+      "title": "EDITAL",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 5,
+      "context": [
+        {
+          "call": "Ari – 031.2026",
+          "text": "EDITAL"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/08/Edital-ARI-31-2026-PROGRAMA-DE-MOBILIDADE-VIRTUAL-UNIFICADO-.pdf",
+        "at": "2026-10-15T16:57:37.869Z",
+        "error": "robots.txt indisponível para revisão"
+      },
+      "decision": "document_blocked_on_vps",
+      "status": "reviewing",
+      "reason": "robots.txt do host oficial de documentos indisponível na VPS; não ativar o PDF nem contornar. ARI031 é atendido separadamente pela listagem HTML oficial que comprova inscrição atual, sem inventar detalhes ausentes."
+    },
+    {
+      "id": "0e3bbf0b-b0d8-468c-91fa-febd1156b093",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/09/1-E-Edital-ARI-33-2026-15-Intercambio-Cultural-ETEC-Presencial-RevLAMC-23set26.pdf",
+      "title": "EDITAL",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 6,
+      "context": [
+        {
+          "call": "Ari – 033.2026",
+          "text": "EDITAL"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "already_mapped_same_edition",
+      "status": "mapped",
+      "reason": "Notícia ou documento da 15ª edição CPS já publicada; não duplicar modalidade, vaga, destino ou retificação. PDF é referência, não fonte de coleta ativada."
+    },
+    {
+      "id": "9628d531-c8a0-4f0a-9636-0e7322e7ce54",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/09/2-E-Edital-ARI-34-2026-15-Intercambio-Cultural-ETEC-EaD-RevLAMC-23set26.pdf",
+      "title": "EDITAL",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 7,
+      "context": [
+        {
+          "call": "Ari – 034.2026",
+          "text": "EDITAL"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "already_mapped_same_edition",
+      "status": "mapped",
+      "reason": "Notícia ou documento da 15ª edição CPS já publicada; não duplicar modalidade, vaga, destino ou retificação. PDF é referência, não fonte de coleta ativada."
+    },
+    {
+      "id": "90a52141-90bf-4867-a86d-3dcae409a3cf",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/09/4-E-Edital-ARI-36-2026-15-Intercambio-Cultural-FATEC-EaD-RevLAMC-23set26.pdf",
+      "title": "EDITAL",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 8,
+      "context": [
+        {
+          "call": "Ari – 036.2026",
+          "text": "EDITAL"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "already_mapped_same_edition",
+      "status": "mapped",
+      "reason": "Notícia ou documento da 15ª edição CPS já publicada; não duplicar modalidade, vaga, destino ou retificação. PDF é referência, não fonte de coleta ativada."
+    },
+    {
+      "id": "83a5d57c-40d8-44b3-9ce8-3fda3e5d459a",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/09/5-E-Edital-ARI-37-2026-15-Intercambio-Cultural-FATEC-AMS-RevLAMC-23set26.pdf",
+      "title": "EDITAL",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 9,
+      "context": [
+        {
+          "call": "Ari – 037.2026",
+          "text": "EDITAL"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "already_mapped_same_edition",
+      "status": "mapped",
+      "reason": "Notícia ou documento da 15ª edição CPS já publicada; não duplicar modalidade, vaga, destino ou retificação. PDF é referência, não fonte de coleta ativada."
+    },
+    {
+      "id": "4d874651-4e11-4037-900d-87f8433adcda",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/09/E-Edital-ARI-039.2026-Expanish-e-Academia-Uruguai_y.pdf",
+      "title": "EDITAL",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 10,
+      "context": [
+        {
+          "call": "Ari – 039.2026",
+          "text": "EDITAL"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/09/E-Edital-ARI-039.2026-Expanish-e-Academia-Uruguai_y.pdf",
+        "at": "2026-10-15T16:57:39.762Z",
+        "error": "robots.txt indisponível para revisão"
+      },
+      "decision": "document_blocked_on_vps",
+      "status": "reviewing",
+      "reason": "robots.txt do host oficial de documentos indisponível na VPS; não ativar o PDF nem contornar. ARI031 é atendido separadamente pela listagem HTML oficial que comprova inscrição atual, sem inventar detalhes ausentes."
+    },
+    {
+      "id": "27a85866-7145-4f78-96ec-ef62f785f555",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/09/EDITAL-ARI-040.2026-Aulas-Virtuais-de-Coreano_Ok.pdf",
+      "title": "EDITAL",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 11,
+      "context": [
+        {
+          "call": "Ari – 040.2026",
+          "text": "EDITAL"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "closed_or_result",
+      "status": "dismissed",
+      "reason": "ARI 018 ou 040/2026: inscrição ENCERRADA no índice oficial; resultado/lista não cria nova oportunidade."
+    },
+    {
+      "id": "057f77f9-2b78-4b7a-b082-5838dacdd797",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/09/L-Lista-de-Classificacao-Indicados-Edital-ARI-018-2026-Santander-Apoio.pdf",
+      "title": "LISTA DE INDICADOS",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 12,
+      "context": [
+        {
+          "call": "Ari – 018.2026",
+          "text": "LISTA DE INDICADOS"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "closed_or_result",
+      "status": "dismissed",
+      "reason": "ARI 018 ou 040/2026: inscrição ENCERRADA no índice oficial; resultado/lista não cria nova oportunidade."
+    },
+    {
+      "id": "6cfaecbe-8442-4cbb-b030-b974c286ccbc",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/10/3-E-Edital-ARI-35-2026-15-Intercambio-Cultural-FATEC-Presencial-RevLAMC-Retificado-8out26.pdf",
+      "title": "EDITAL RETIFICADO",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 13,
+      "context": [
+        {
+          "call": "Ari – 035.2026",
+          "text": "EDITAL RETIFICADO"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "already_mapped_same_edition",
+      "status": "mapped",
+      "reason": "Notícia ou documento da 15ª edição CPS já publicada; não duplicar modalidade, vaga, destino ou retificação. PDF é referência, não fonte de coleta ativada."
+    },
+    {
+      "id": "a2ae8d71-69ee-42d9-ace3-ee421447a540",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/10/6-E-Edital-ARI-38-2026-15-Intercambio-Cultural-FATEC-Implantacao-RevLAMC-Retificado-8out26.pdf",
+      "title": "EDITAL RETIFICADO",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 14,
+      "context": [
+        {
+          "call": "Ari – 038.2026",
+          "text": "EDITAL RETIFICADO"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "already_mapped_same_edition",
+      "status": "mapped",
+      "reason": "Notícia ou documento da 15ª edição CPS já publicada; não duplicar modalidade, vaga, destino ou retificação. PDF é referência, não fonte de coleta ativada."
+    },
+    {
+      "id": "472ef74b-8619-40da-a34c-0eab6740383a",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/10/E-Edital-ARI-41-2026-PROMAIPS-RevLA-13out2026-Retificado-Publicado.pdf",
+      "title": "EDITAL RETIFICADO",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 15,
+      "context": [
+        {
+          "call": "Ari – 041.2026",
+          "text": "EDITAL RETIFICADO"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/10/E-Edital-ARI-41-2026-PROMAIPS-RevLA-13out2026-Retificado-Publicado.pdf",
+        "at": "2026-10-15T16:57:41.770Z",
+        "error": "robots.txt indisponível para revisão"
+      },
+      "decision": "document_blocked_on_vps",
+      "status": "reviewing",
+      "reason": "robots.txt do host oficial de documentos indisponível na VPS; não ativar o PDF nem contornar. ARI031 é atendido separadamente pela listagem HTML oficial que comprova inscrição atual, sem inventar detalhes ausentes."
+    },
+    {
+      "id": "1cb4195d-0965-4d0e-9ede-24ff61157a28",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/10/E-Edital-ARI-42-2026-PROMAIPS-TUL-Retificado-RevLA-14out26.pdf",
+      "title": "EDITAL",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 16,
+      "context": [
+        {
+          "call": "Ari – 042.2026",
+          "text": "EDITAL"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/10/E-Edital-ARI-42-2026-PROMAIPS-TUL-Retificado-RevLA-14out26.pdf",
+        "at": "2026-10-15T16:57:43.765Z",
+        "error": "robots.txt indisponível para revisão"
+      },
+      "decision": "document_blocked_on_vps",
+      "status": "reviewing",
+      "reason": "robots.txt do host oficial de documentos indisponível na VPS; não ativar o PDF nem contornar. ARI031 é atendido separadamente pela listagem HTML oficial que comprova inscrição atual, sem inventar detalhes ausentes."
+    },
+    {
+      "id": "a5285cee-ac59-491f-a7c3-1c13a81dc7bc",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/10/E-Edital-ARI-44-2026-8-Concurso-de-Gastronomia-ICIF-2026-1.pdf",
+      "title": "EDITAL",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 17,
+      "context": [
+        {
+          "call": "Ari – 044.2026",
+          "text": "EDITAL"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "deferred_outside_youth_priority",
+      "status": "reviewing",
+      "reason": "Chamada restrita a docentes, servidores ou pós-graduação; preservada privada, sem ativação no lote para jovens. Não excluir fichas existentes."
+    },
+    {
+      "id": "cd9c2957-9b13-49e4-b8c6-727ab901eb1a",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/10/Edital-Disciplinas-Estrangeiras-2027-FATEC-ARI-043-2026.pdf",
+      "title": "EDITAL",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 18,
+      "context": [
+        {
+          "call": "Ari – 043.2026",
+          "text": "EDITAL"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "deferred_outside_youth_priority",
+      "status": "reviewing",
+      "reason": "Chamada restrita a docentes, servidores ou pós-graduação; preservada privada, sem ativação no lote para jovens. Não excluir fichas existentes."
+    },
+    {
+      "id": "803e24cd-79a8-42c1-975a-6b862d36d23b",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/8/2026/10/Lista-de-Classificacao-FINAL-Edital-ARI-040-2026-Coreano-Virtual_FINAL.pdf",
+      "title": "RESULTADO FINAL",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 19,
+      "context": [
+        {
+          "call": "Ari – 040.2026",
+          "text": "RESULTADO FINAL"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "closed_or_result",
+      "status": "dismissed",
+      "reason": "ARI 018 ou 040/2026: inscrição ENCERRADA no índice oficial; resultado/lista não cria nova oportunidade."
+    },
+    {
+      "id": "92f91bc8-c09b-4d16-908e-aeac54620cf5",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://emovies.oui-iohe.org/",
+      "title": "Site do Programa eMovies",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 20,
+      "context": [
+        {
+          "call": "Ari – 031.2026",
+          "text": "https://emovies.oui-iohe.org/"
+        },
+        {
+          "call": "Ari – 031.2026",
+          "text": "Site do Programa eMovies"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "partner_reference_not_separate_selection",
+      "status": "reviewing",
+      "reason": "Referência a parceiro da seleção única ARI031. Não criar fichas para cada parceiro, componente ou destino; não ativar domínio do parceiro por associação automática."
+    },
+    {
+      "id": "d5d1705c-3df6-4427-9c27-0e8e1496e948",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=xWS-6vVodkqDAZV3pnnkSZcj7rZ15w1DllmnA7HdNb5UMjRLNjM0SDVMMVM4T1hFQjREOUI3NVZERi4u",
+      "title": "INSCRIÇÃO InilatMov+",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 21,
+      "context": [
+        {
+          "call": "Ari – 031.2026",
+          "text": "INSCRIÇÃO InilatMov+"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "application_endpoint_only",
+      "status": "dismissed",
+      "reason": "Endpoint de candidatura, não oportunidade independente nem fonte de monitoramento. Não abrir formulário nem coletar dados pessoais."
+    },
+    {
+      "id": "e34bf73f-f013-4299-93c6-3312f3887b61",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=xWS-6vVodkqDAZV3pnnkSZcj7rZ15w1DllmnA7HdNb5UOU8yRDVBTFpaNjlPTzc5UU9HT0xTVk1SUC4u",
+      "title": "INSCRIÇÃO eMovies",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 22,
+      "context": [
+        {
+          "call": "Ari – 031.2026",
+          "text": "INSCRIÇÃO eMovies"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "application_endpoint_only",
+      "status": "dismissed",
+      "reason": "Endpoint de candidatura, não oportunidade independente nem fonte de monitoramento. Não abrir formulário nem coletar dados pessoais."
+    },
+    {
+      "id": "51071bf2-b72c-4c21-a7b7-af320ec6ea47",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://forms.cloud.microsoft/r/2tR2H6kN8H",
+      "title": "INSCRIÇÕES",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 23,
+      "context": [
+        {
+          "call": "Ari – 044.2026",
+          "text": "INSCRIÇÕES"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "application_endpoint_only",
+      "status": "dismissed",
+      "reason": "Endpoint de candidatura, não oportunidade independente nem fonte de monitoramento. Não abrir formulário nem coletar dados pessoais."
+    },
+    {
+      "id": "aeaa0e0e-c9fe-45e2-b0df-d2c9c3eb6776",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://forms.gle/EbT5q4Z4ztuDjcbX6",
+      "title": "INSCRIÇÕES",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 24,
+      "context": [
+        {
+          "call": "Ari – 043.2026",
+          "text": "INSCRIÇÕES"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "application_endpoint_only",
+      "status": "dismissed",
+      "reason": "Endpoint de candidatura, não oportunidade independente nem fonte de monitoramento. Não abrir formulário nem coletar dados pessoais."
+    },
+    {
+      "id": "d8e5c1d2-0c00-42ad-aeae-ea0bc0db3002",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://www.cps.sp.gov.br/fatecs-terao-dez-novas-unidades-e-ampliarao-oferta-em-engenharia-tecnologia-e-saude-em-2027/",
+      "title": "Fatecs terão novas unidades e ampliação na oferta de cursos em 2027",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 25,
+      "context": [
+        {
+          "call": "Ari – 040.2026",
+          "text": "<img width=\"570\" height=\"570\" src=\"https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/1/2026/10/vestibularFatec-1068x710-1-570x570.jpg\" class=\"attachment-imagem-medium size-imagem-medium wp-post-image\" alt=\"\" decoding=\"async\" />"
+        },
+        {
+          "call": "Ari – 040.2026",
+          "text": "Fatecs terão novas unidades e ampliação na oferta de cursos em 2027"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "institutional_news_not_new_call",
+      "status": "dismissed",
+      "reason": "Notícia sobre expansão de unidades/cursos; não é chamada específica de estágio ou intercâmbio. Não ativar como oportunidade independente neste lote."
+    },
+    {
+      "id": "b9adc12e-442e-42b6-af29-20960601a062",
+      "target_id": "cps-arinter-open-calls",
+      "url": "https://www.learnchile.cl/INILATmov/",
+      "title": "Site do Programa InilatMov+",
+      "first_seen_at": "2026-10-15T16:38:27.796908+00:00",
+      "index": 26,
+      "context": [
+        {
+          "call": "Ari – 031.2026",
+          "text": "https://www.learnchile.cl/INILATmov/"
+        },
+        {
+          "call": "Ari – 031.2026",
+          "text": "Site do Programa InilatMov+"
+        }
+      ],
+      "auditEvidenceUrl": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "auditEvidenceHash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "partner_reference_not_separate_selection",
+      "status": "reviewing",
+      "reason": "Referência a parceiro da seleção única ARI031. Não criar fichas para cada parceiro, componente ou destino; não ativar domínio do parceiro por associação automática."
+    },
+    {
+      "id": "56a0ecc9-b0e0-44c6-84b5-29b2f0f4570e",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://drive.google.com/file/d/1RxiRA2WzAfczyLgusmUj2qKIQ2JL4CZx/view?usp=sharing",
+      "title": "Edital n. 3/2025/SINTER",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 27,
+      "context": [
+        "Processo seletivo simplificado para a contratação de bolsistas para o NILT/SINTER – Espanhol Edital n. 3/2025/SINTER. Estudantes de graduação e pós-graduação da UFSC na área de Letras – Espanhol 21/3/2025"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "3e6c38fe-2d31-44ee-9dbe-b5d0379d4da4",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://drive.google.com/file/d/1pUfmlBXVN8QItO6h7yDGVq7-tn9XjJLQ/view?usp=sharing",
+      "title": "EDITAL CONJUNTO Nº 1/2026/SINTER-PROPG-PROEX",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 28,
+      "context": [
+        "33ª Jornadas de Jóvenes Investigadores AUGM EDITAL CONJUNTO Nº 1/2026/SINTER-PROPG-PROEX Estudantes de graduação e pós-graduação da UFSC 29/07/2026"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "c05cf972-8c14-420b-ab46-3b1dab425d7c",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://idiomassemfronteiras.paginas.ufsc.br/cursos-2/",
+      "title": "Página de cursos IsF",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 29,
+      "context": [
+        "Cursos do Idiomas Sem Fronteiras Página de cursos IsF Estudantes de graduação e de pós-graduação, técnico-administrativos e professores da UFSC. De acordo com cada curso."
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://idiomassemfronteiras.paginas.ufsc.br/cursos-2/",
+        "at": "2026-10-15T17:00:22.712Z",
+        "hash": "a418a6d03605ef4b90e29f5e54108cd0e59a547e005a7d4cc1bab84acb37bd6b",
+        "contentType": "text/html; charset=UTF-8"
+      },
+      "decision": "reference_page_without_confirmed_current_application",
+      "status": "reviewing",
+      "reason": "Página geral de programas/cursos/auxílios: não comprova, sozinha, nova inscrição vigente para estágio ou intercâmbio jovem. Manter privada até chamada específica; não assumir abertura por nome do menu."
+    },
+    {
+      "id": "a2bfe2be-7a32-4025-989d-7f9b17b62a20",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://institutoconfucio.unicamp.br/2026/01/19/inscricoes-abertas-para-os-cursos-de-mandarim-do-1o-semestre-de-2026/",
+      "title": "Página de cursos do 1º semestre do Instituto Confúcio na Unicamp",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 30,
+      "context": [
+        "Sala de Aula Confúcio – E 孔子课堂 | Instituto Confúcio na Unicamp https://sinter.ufsc.br/confucius-classroom-unicamp/ Página de cursos do 1º semestre do Instituto Confúcio na Unicamp Estudantes de graduação e de pós-graduação, técnico-administrativos e professores da UFSC. De 19 de janeiro a 5 de fevereiro de 2026."
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "4a27f346-2ca0-4c3b-b543-dc522c4903dc",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://niltsinter.ufsc.br/cursos-chamadas-abertos/",
+      "title": "Página de cursos do NILT/SINTER abertos",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 31,
+      "context": [
+        "Cursos do Núcleo Institucional de Línguas e Tradução (NILT/SINTER) Página de cursos do NILT/SINTER abertos Estudantes de graduação e de pós-graduação, técnico-administrativos e professores da UFSC. Comunidade externa. De acordo com cada curso."
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://niltsinter.ufsc.br/cursos-chamadas-abertos/",
+        "at": "2026-10-15T16:57:47.017Z",
+        "hash": "4a99e6b1389d3bbd94d1c46680b1406f3731c9254f170d787d31703d89522564",
+        "contentType": "text/html; charset=UTF-8"
+      },
+      "decision": "activate_bounded_workshop_source",
+      "status": "mapped",
+      "sourceId": "ufsc-nilt-motivation-letters-2026",
+      "reason": "URL exata, robots e HTML validados na VPS. Somente oficina Cartas de motivação, inscrição 1 a 19/10/2026, UFSC; categoria Formação. Não publicar cursos autoinstrucionais, nem classificá-la como intercâmbio/estágio."
+    },
+    {
+      "id": "f6e186aa-c02b-410e-b229-734cbd5ea6fe",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2025/01/14/inscricoes-abertas-para-os-cursos-de-mandarim-do-1o-semestre-de-2025-sala-de-aula-confucio/",
+      "title": "Cursos ofertados no 1º semestre",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 32,
+      "context": [
+        "Sala de Aula Confúcio – E 孔子课堂 | Instituto Confúcio na Unicamp Cursos ofertados no 1º semestre Estudantes de graduação e de pós-graduação, técnico-administrativos e professores da UFSC. De 13 de janeiro a 13 de fevereiro de 2025."
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "cb6a8193-9a22-409f-b59b-b16f508164e9",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2025/02/06/bolsa-merito-do-mre-para-estudantes-pec-g-primeiro-semestre-de-2025-inscricoes-de-7225-ate-1422025/",
+      "title": "Informações",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 33,
+      "context": [
+        "Bolsa Mérito do MRE para alunos PEC-G primeiro semestre de 2025 Informações Estudantes de graduação do Programa PEC-G 14/02/2025"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "cf9a8988-d19f-49a7-8170-101de445e75b",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2025/03/12/fundacion-botin-lanca-a-xvi-edicao-do-programa-de-fortalecimento-da-funcao-publica-na-america-latina/",
+      "title": "Informações",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 34,
+      "context": [
+        "Intercâmbio da Fundação Botín – XIII edição do Programa de Fortalecimento da Função Pública na América Latina Informações Estudantes de graduação da UFSC 10 de maio de 2025"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "f4a97c9d-2747-41cc-a329-8b5e016ff4d8",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2025/06/30/inscricoes-para-os-cursos-de-mandarim-do-2o-semestre-pelo-instituto-confucio-na-unicamp/",
+      "title": "Cursos ofertados no 2º semestre",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 35,
+      "context": [
+        "Sala de Aula Confúcio – E 孔子课堂 | Instituto Confúcio na Unicamp Cursos ofertados no 2º semestre Estudantes de graduação e de pós-graduação, técnico-administrativos e professores da UFSC. De 1º de julho a 11 de julho de 2025."
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "7a000f14-50e2-4ebb-acdc-d5ff9a346619",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2025/07/18/chamada-32025sinter-convite-a-projetos-de-pesquisa-ou-extensao-que-desejam-apoiar-financeiramente-seus-participantes-estudantes-de-graduacao-na-participacao-nas-xxxii-jornadas-de-jovens-investigad/",
+      "title": "Clique aqui",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 36,
+      "context": [
+        "Chamada 3/2025/SINTER – Convite a projetos de pesquisa ou extensão que desejam apoiar financeiramente seus participantes estudantes de graduação na participação nas XXXII Jornadas de Jovens Investigadores (JJI) da AUGM Clique aqui Estudantes de graduação 28 de agosto de 2025"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "26a176c8-bd30-4e3f-9b37-a8d6e9e367da",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2025/09/02/chamada-no-22025sinterpropesq-credenciamento-de-pesquisadores-da-ufsc-na-blue-zone-da-cop30-prazo-592025/",
+      "title": "Clique aqui",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 37,
+      "context": [
+        "Chamada nº 2/2025/SINTER/PROPESQ – Credenciamento de pesquisadores da UFSC na “Blue Zone” da COP30 Clique aqui Docentes e técnicos da UFSC 5 de setembro de 2025"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "055525c6-7ef1-4936-a0ff-4937b6afdab3",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2025/09/26/chamada-n-12025sinter-cplmunesco-participacao-de-docentes-da-ufsc/",
+      "title": "Clique aqui",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 38,
+      "context": [
+        "Chamada n. 1/2025/SINTER-CPLM/UNESCO – Participação de docentes da UFSC Clique aqui Docentes 3 de outubro de 2025"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "cf17c5f5-3c06-4083-8b5b-d726d2c661fd",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2025/09/29/chamada-42025sinter-oportunidade-de-bolsa-para-alunos-de-graduacao-na-hochschule-ravensburg-weingarten-hrw-alemanha-prazo-23102025/",
+      "title": "Clique aqui",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 39,
+      "context": [
+        "Chamada 4/2025/SINTER – Oportunidade de Bolsa na Ravensburg-Weingarten University of Applied Sciences (RWU) – Alemanha Clique aqui Estudantes de graduação da UFSC 23 de outubro de 2025"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "ebe19922-bc94-4a48-80f8-f4b97d7f90d7",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2025/10/02/homologados-tutores-e-cadastro-de-reserva-2025-para-os-cursos-do-isf-conforme-o-edital-no-92025sinter/",
+      "title": "Homologação",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 40,
+      "context": [
+        "Processo Seletivo Simplificado -contratação de bolsista e CR para atuar como tutor(a) na Rede Andifes – Idiomas sem Fronteiras (IsF) Edital nº 9/2025/SINTER Homologação Estudantes da UFSC matriculados em cursos de Licenciatura/Bacharelado em Letras; Programa de Pós-Graduação em Letras, Linguística, Linguística Aplicada, Tradução ou Educação, desde que apresentem graduação em Letras; outros cursos da UFSC, mas que tenham comprovada formação de nível superior em Letras e, preferencialmente, experiência na área. 30 de setembro de 2025"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "66a0e0ab-1c39-4b32-aa61-cc3edbe3cc2b",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2025/10/10/chamada-52025sinter-oportunidade-de-bolsa-para-alunos-de-graduacao-na-offenburg-university-of-applied-sciences-alemanha-prazo-23102025/",
+      "title": "Clique aqui",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 41,
+      "context": [
+        "Chamada 5/2025/SINTER – Oportunidade de Bolsa na Offenburg University of Applied Sciences / Alemanha Clique aqui Estudantes de graduação da UFSC 23 de outubro de 2025"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "403384a1-fc6e-4007-a28c-8750db18a275",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2026/03/13/chamada-12026sinter-oportunidade-de-bolsa-para-alunos-de-graduacao-na-offenburg-university-of-applied-sciences-alemanha-prazo-26032026/",
+      "title": "Clique aqui",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 42,
+      "context": [
+        "Chamada nº 1/2026/SINTER – Oportunidade de Bolsa na Offenburg University of Applied Sciences / Alemanha Clique aqui Estudantes de graduação da UFSC. 26/3/2026"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "865dcca8-33c2-4225-b073-8c6b82800859",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2026/03/25/chamada-22026sinter-oportunidade-de-bolsa-para-alunos-de-graduacao-na-universidad-militar-nueva-granada-colombia-prazo-17042026/",
+      "title": "Clique aqui",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 43,
+      "context": [
+        "Chamada nº 2/2026/SINTER – Oportunidade de Bolsa na Universidad Militar Nueva Granada / Colômbia Clique aqui Estudantes de graduação da UFSC. 17/4/2026"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "0bfc71fb-4a7d-4c5e-904d-8ad39467e83d",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2026/03/26/chamada-no-12026niltsinter-demandas-de-traducao-portugues%e2%87%94ingles-ate-15112026/",
+      "title": "Clique aqui",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 44,
+      "context": [
+        "Chamada nº 1/2026/NILT/SINTER – Demandas de tradução (Português⇔Inglês) Clique aqui Docentes, técnicos e estudantes regularmente matriculados nos cursos de graduação ou pós-graduação da UFSC 15/11/2026"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://sinter.ufsc.br/2026/03/26/chamada-no-12026niltsinter-demandas-de-traducao-portugues%e2%87%94ingles-ate-15112026/",
+        "at": "2026-10-15T16:57:55.933Z",
+        "hash": "fd661436187dc308eedfa4bcba81b88859d91865921c51173e092b525d6b9144",
+        "contentType": "text/html; charset=UTF-8"
+      },
+      "decision": "institutional_service_not_paid_placement",
+      "status": "dismissed",
+      "reason": "Página atual oferece serviço institucional de tradução sob demanda; não é vaga remunerada, estágio nem intercâmbio para candidato."
+    },
+    {
+      "id": "eeb19edf-2ac1-4e5c-864b-b1e51635682c",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2026/05/12/chamada-no-12026sinter-ichin-selecao-de-estudantes-de-graduacao-e-pos-graduacao-da-ufsc-para-a-2026-shanghai-summer-school-ate-15-de-maio-de-2026/",
+      "title": "Clique aqui",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 45,
+      "context": [
+        "Chamada nº 1/20226/SINTER-ICHIN – Shangai Summer School Clique aqui Estudantes de graduação e pós-graduação dos cursos de engenharia da UFSC. 15/5/2026"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "3a9415a8-9257-47c0-9c92-61b0c3235f78",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/2026/05/12/chamada-no-32026sinter-manifestacao-de-interesse-em-cooperacao-internacional-com-universidades-africanas-prazo-2252026/",
+      "title": "Clique aqui",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 46,
+      "context": [
+        "Chamada nº 3/2026/SINTER – Manifestação de interesse em cooperação internacional com universidades africanas Clique aqui Pesquisadores da UFSC 22/05/2026"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "8dc55b08-d6a7-4b3f-b50c-7fbf8b2e8a91",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/bolsas-pec-g/",
+      "title": "Informações",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 47,
+      "context": [
+        "Auxílio PROMISAES 2025 Informações Estudantes do PEC-G na UFSC Verificar no edital."
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://sinter.ufsc.br/bolsas-pec-g/",
+        "at": "2026-10-15T17:00:30.233Z",
+        "hash": "8b2fdf7d70436de5baba7216a36add99b4b192c7c9078cab521e9bc83f8bdb6d",
+        "contentType": "text/html; charset=UTF-8"
+      },
+      "decision": "reference_page_without_confirmed_current_application",
+      "status": "reviewing",
+      "reason": "Página geral de programas/cursos/auxílios: não comprova, sozinha, nova inscrição vigente para estágio ou intercâmbio jovem. Manter privada até chamada específica; não assumir abertura por nome do menu."
+    },
+    {
+      "id": "7f69630a-c7dd-4b6c-bf92-17aa34a7723e",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/eventos-e-cursos/?lang=pt",
+      "title": "Eventos e cursos",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 48,
+      "context": [
+        ""
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://sinter.ufsc.br/eventos-e-cursos/?lang=pt",
+        "at": "2026-10-15T17:00:34.288Z",
+        "hash": "69725c9014e7e87c5506760906061fb5a534b220730364c56048cf861d818428",
+        "contentType": "text/html; charset=UTF-8"
+      },
+      "decision": "reference_page_without_confirmed_current_application",
+      "status": "reviewing",
+      "reason": "Página geral de programas/cursos/auxílios: não comprova, sozinha, nova inscrição vigente para estágio ou intercâmbio jovem. Manter privada até chamada específica; não assumir abertura por nome do menu."
+    },
+    {
+      "id": "5b558abb-4cd9-4476-9f63-553dfb46fcb7",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/files/2025/04/Edital_6_SINTER_2025_-_Escala_Grado_2025.2.pdf",
+      "title": "Edital nº 6/2025/SINTER",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 49,
+      "context": [
+        "Programa Escala Estudiantes de Grado AUGM Edital nº 6/2025/SINTER Estudantes de graduação da UFSC 26 de maio de 2025"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "901f1798-e087-4cd3-abb3-d98a23620d00",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/files/2025/10/Edital_12_SINTER_2025_-_Escala_Docente.pdf",
+      "title": "Edital Nº 12/SINTER/2025",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 50,
+      "context": [
+        "Programa Escala Docente AUGM 2025 Edital Nº 12/SINTER/2025 Docentes da UFSC 13 de novembro de 2025"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "6b9ea7a5-2f94-454a-b215-330ff3bf2d1c",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/files/2026/04/Edital-7-SINTER-2026-BOLSISTAS-IDIOMAS-ISF_Assinado.pdf",
+      "title": "Edital nº 7/2026/SINTER",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 51,
+      "context": [
+        "Contratação de bolsista tutor(a) na Rede Andifes – Idiomas sem Fronteiras (IsF) – Italiano Edital nº 7/2026/SINTER Estudantes da UFSC matriculados nos cursos de Licenciatura/Bacharelado em Letras; Programa de Pós-Graduação em Letras, Linguística, Linguística Aplicada, Tradução ou Educação, desde que apresentem graduação em Letras; Outros cursos da UFSC, mas que tenham comprovada formação de nível superior em Letras e, preferencialmente, experiência na área. 21/04/2026"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "expired_in_official_index",
+      "status": "dismissed",
+      "reason": "Prazo passado e chamada na seção de encerradas do índice oficial atual; não consultar nem ativar o destino antigo como oportunidade vigente."
+    },
+    {
+      "id": "0122bf8b-9440-41a3-85fc-0a90643b1bc7",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/files/2026/10/Edital_13_SINTER_2026_-_Escala_Gestores_y_Administradores_2027_.pdf",
+      "title": "EDITAL Nº 13/SINTER/2026",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 52,
+      "context": [
+        "Programa Escala Gestores e Administradores AUGM 2027 EDITAL Nº 13/SINTER/2026 Servidores técnico-administrativos em educação (STAE) da UFSC 09 de novembro de 2026"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "deferred_outside_youth_priority",
+      "status": "reviewing",
+      "reason": "Chamada restrita a docentes, servidores ou pós-graduação; preservada privada, sem ativação no lote para jovens. Não excluir fichas existentes."
+    },
+    {
+      "id": "a9c72441-6cef-45bd-8f34-9efc7bc3e911",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/files/2026/10/Edital_1_SINTER_PROPG_2026_-_Escala_Posgrado_2026_.pdf",
+      "title": "EDITAL CONJUNTO Nº 1/SINTER/PROPG/2026",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 53,
+      "context": [
+        "Programa Escala Posgrado AUGM 2027 EDITAL CONJUNTO Nº 1/SINTER/PROPG/2026 Estudantes de mestrado e doutorado da UFSC 05 de novembro de 2026"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "deferred_outside_youth_priority",
+      "status": "reviewing",
+      "reason": "Chamada restrita a docentes, servidores ou pós-graduação; preservada privada, sem ativação no lote para jovens. Não excluir fichas existentes."
+    },
+    {
+      "id": "e3ae81cf-d8dd-4ef8-84fc-f72d481dd208",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/files/2026/10/Retificacao_EDITAL_12_SINTER_2026_Programa_Escala_Docente_2027.pdf",
+      "title": "RETIFICAÇÃO DO EDITAL Nº 12/SINTER/2026",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 54,
+      "context": [
+        "Programa Escala Docente AUGM 2027 EDITAL Nº 12/SINTER/2026 (RETIFICAÇÃO DO EDITAL Nº 12/SINTER/2026 ) Docentes do quadro permanente da UFSC 13 de novembro de 2026"
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": null,
+      "decision": "deferred_outside_youth_priority",
+      "status": "reviewing",
+      "reason": "Chamada restrita a docentes, servidores ou pós-graduação; preservada privada, sem ativação no lote para jovens. Não excluir fichas existentes."
+    },
+    {
+      "id": "32851efe-d21a-44f8-a462-1083789245fc",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/intercambio-virtual/?lang=pt",
+      "title": "Intercâmbio virtual",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 55,
+      "context": [
+        ""
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://sinter.ufsc.br/intercambio-virtual/?lang=pt",
+        "at": "2026-10-15T17:00:38.566Z",
+        "hash": "667c74f27ce69f99424dd0261f346fd2892e25c89620b4d8a29374d7c66fe729",
+        "contentType": "text/html; charset=UTF-8"
+      },
+      "decision": "reference_page_without_confirmed_current_application",
+      "status": "reviewing",
+      "reason": "Página geral de programas/cursos/auxílios: não comprova, sozinha, nova inscrição vigente para estágio ou intercâmbio jovem. Manter privada até chamada específica; não assumir abertura por nome do menu."
+    },
+    {
+      "id": "c90acae6-9a8a-4699-b2ee-3bc5e21946a3",
+      "target_id": "ufsc-sinter-open-calls",
+      "url": "https://sinter.ufsc.br/vigentes/?lang=pt",
+      "title": "Programas internacionais vigentes",
+      "first_seen_at": "2026-10-15T16:41:54.942727+00:00",
+      "index": 56,
+      "context": [
+        ""
+      ],
+      "auditEvidenceUrl": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "auditEvidenceHash": "10a919cc16e205410b1a1a648ec5cea72ae17a75172ab3a905441e87d57c13ae",
+      "auditedAt": "2026-10-15",
+      "statusBefore": "new",
+      "directDestinationFetched": {
+        "url": "https://sinter.ufsc.br/vigentes/?lang=pt",
+        "at": "2026-10-15T17:00:42.223Z",
+        "hash": "309bcbfa61fa90ed0aee4763d12fe41e1404d9478feee57e7927fc7d4936743a",
+        "contentType": "text/html; charset=UTF-8"
+      },
+      "decision": "reference_page_without_confirmed_current_application",
+      "status": "reviewing",
+      "reason": "Página geral de programas/cursos/auxílios: não comprova, sozinha, nova inscrição vigente para estágio ou intercâmbio jovem. Manter privada até chamada específica; não assumir abertura por nome do menu."
+    }
+  ]
+}

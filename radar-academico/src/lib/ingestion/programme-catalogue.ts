@@ -1,3 +1,4 @@
+import { isAuditedYouthCall, normalizeAuditedYouthCall } from "./normalize-audited-youth-calls";
 import { CPS_CULTURAL_ID, CPS_CULTURAL_NEWS, normalizeCpsCultural } from "./normalize-cps-cultural";
 import { ACIM_SW_SOURCE_ID, normalizeAcimStartupWeekend } from "./normalize-acim-startup-weekend";
 import { AXIA_ID, normalizeAxiaInternship } from "./normalize-axia-internship";
@@ -13,6 +14,7 @@ import { PDAI_SOURCE_ID, PDAI_NEWS_URL, normalizeCapesPdai } from "./normalize-c
 import { PDSE_SOURCE_ID, PDSE_NEWS_URL, normalizeCapesPdse } from "./normalize-capes-pdse";
 
 export function programmeCataloguePageCount(id: string) {
+  if (isAuditedYouthCall(id)) return 1;
   if (id === CPS_CULTURAL_ID) return 2;
   if (id === AXIA_ID) return 1;
   if (isScHackathon(id)) return 1;
@@ -32,6 +34,7 @@ export function programmeCatalogueCanBeEmpty(id: string) {
 }
 
 export function normalizeProgrammeCatalogue(listing: string, application: string, source: OfficialSource) {
+  if (isAuditedYouthCall(source.id)) return normalizeAuditedYouthCall(listing, source);
   if (source.id === CPS_CULTURAL_ID) return normalizeCpsCultural(listing, application, source);
   if (source.id === AXIA_ID) return normalizeAxiaInternship(listing, source);
   if (isScHackathon(source.id)) return normalizeScHackathon(listing, source);

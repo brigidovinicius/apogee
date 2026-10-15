@@ -651,3 +651,19 @@ it("migrates only the audited CPS canonical path and keeps unrelated paths outsi
   "/intercambio-cultural-cps-2026/",
  ]);
 });
+
+it("keeps CPS cultural and virtual selections distinct on the same official index and preserves tombstones", async () => {
+ const url="https://arinter.cps.sp.gov.br/editais-abertos/";
+ const definitions=[['cps-cultural-15-2026','Intercâmbio Cultural CPS'],['cps-virtual-mobility-031-2026','Mobilidade virtual CPS ARI031/2026']];
+ const sources:OfficialSource[]=definitions.map(([id,name])=>({...source,id,name,baseUrl:url,allowedDomains:['arinter.cps.sp.gov.br'],allowedPathPrefixes:['/editais-abertos/'],listingUrls:[url]}));
+ for(const s of sources) await state.db!.query(`insert into official_sources(id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,active,verification_status)
+ values($1,$2,'Centro Paula Souza','CPS','official_reference',$3,$4,$5,$6,'html',true,'verified')`,[s.id,s.name,url,s.allowedDomains,s.allowedPathPrefixes,s.listingUrls]);
+ const make=(s:OfficialSource)=>candidate({officialSourceId:s.id,title:s.name,sourcePageUrl:url,categories:['intercambios'],evidenceJson:{deadline_at:{source_url:url,excerpt:'Inscrições até 20/10/2099'},opportunity_status:{source_url:url,excerpt:'Inscrições abertas'}}});
+ const ingest=(s:OfficialSource)=>saveReviewItems(s,{sourceId:s.id,pagesChecked:1,discovered:[make(s)],ignored:0,failed:0,locationRejected:0,warnings:[]});
+ for(const s of sources) expect(await ingest(s)).toMatchObject({created:1,published:1});
+ const original=await listLiveCatalogue(true);expect(original).toHaveLength(2);expect(new Set(original.map(x=>x.id)).size).toBe(2);
+ const virtual=original.find(x=>x.officialSourceId==='cps-virtual-mobility-031-2026')!;
+ await state.db!.query('update opportunities set deleted_at=now() where id=$1',[virtual.id]);
+ expect(await ingest(sources[1])).toMatchObject({created:0,published:0});
+ expect((await listLiveCatalogue()).map(x=>x.title)).toEqual(['Intercâmbio Cultural CPS']);
+});
