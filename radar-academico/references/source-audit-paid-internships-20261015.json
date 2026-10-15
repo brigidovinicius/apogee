@@ -1,0 +1,17 @@
+{
+ "checkedAt":"2026-10-15T13:05:12Z",
+ "method":"Protected production HTTP, robots, allowlist, byte/rate limits; no bypass or paid services",
+ "activate":[{"id":"axia-internship-2027","url":"https://axia.com.br/w/blog/programa-estagio-axia-2027","sha256":"075e9efc0f10f9043e00a21e916e7298bfaff36e8ee0b511a4187fff382229f6","bytes":448612,"registrationThrough":"2026-10-15","audience":"Technical and undergraduate students, per organizer course/graduation constraints","benefits":"Paid stipend, undisclosed amount, transport, meal, health plan, development","geography":"Explicit SC plus other Brazilian states; no exclusive structured state or city","deduplication":"One programme, never seats, courses or states","monitor":"One exact organizer page daily, no Across platform crawling"}],
+ "notActivated":[
+ {"name":"MPSC","url":"https://www.mpsc.mp.br/portal-dos-estagios/inscricoes","result":"robots HTTP200; registrations HTTP403. Indexed FAQ/pay is insufficient current call proof"},
+ {"name":"SINOVA/UFSC","url":"https://sinova.sites.ufsc.br/quem-somos/trabalhe_conosco/vagas_estagiario/","sha256":"1d78dea071372093be97b2aa24137b808100cd118ea38f94833372ec941dedb6","result":"Open positions verified and original bulletin confirms stipend. Linked retification https://arquivos.ufsc.br/f/7f0b3ce3371f42f7bb27/ disallowed by robots; amended conditions not fully audited"},
+ {"name":"Jaragua do Sul CESE003/2026","url":"https://www.jaraguadosul.sc.gov.br/administracao/concursos-processos-seletivos-e-estagios/edital-no-003-2026-cese-ensino-superior","sha256":"2b8c34aa58da65b59677565a09d72fad7fbcee8ba8185f6a0a65433cd5ec0906","result":"Official page confirms Oct2-18 registrations. Embedded exact edital PDF host wordpress.jaraguadosul.sc.gov.br has unavailable robots; pay/conditions not fully audited"},
+ {"name":"ARIS","url":"https://www.aris.sc.gov.br/licitacao/7","result":"Protected fetch failed; current deadline/pay not validated"},
+ {"name":"TJSC","url":"https://www.tjsc.jus.br/web/servidor/estagio-ensino-superior","result":"General stipend page without current edition-specific registration window"},
+ {"name":"IFSC","url":"https://www.ifsc.edu.br/estagios-remunerados-nao-obrigatorios","result":"Open label has older calls with 2026 homologation; not fresh registrations"},
+ {"name":"UWC","url":"https://br.uwc.org/cronograma/","sha256":"22ea16b4824a03abcd32ed57979b2137be7b572614c85e570dcfd14536f16cd0","result":"Official embedded published Google calendar unreadable to web reader; deadline not proved"},
+ {"name":"UDESC","url":"https://www.udesc.br/intercambio/noticias","result":"Located 2027.1 calls closed Aug28/Sep10"},
+ {"name":"Rotary4652","url":"https://rye4652.com.br/pt/formulario-de-demonstracao-de-interesse/","result":"Older2026-27 interest form, no verified new call; host403. District4751 does not prove SC eligibility"},
+ {"name":"UFSC undergraduate exchange","url":"https://sinter.ufsc.br/","result":"Current Grado/Outgoing editions already published. No destination/news duplication"}
+ ]
+}
