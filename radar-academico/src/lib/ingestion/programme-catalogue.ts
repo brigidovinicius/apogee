@@ -1,4 +1,5 @@
 import { ACIM_SW_SOURCE_ID, normalizeAcimStartupWeekend } from "./normalize-acim-startup-weekend";
+import { AXIA_ID, normalizeAxiaInternship } from "./normalize-axia-internship";
 import { isScHackathon, normalizeScHackathon } from "./normalize-sc-hackathons";
 import { normalizeIfcIntegratedCourses } from "./normalize-ifc-integrated";
 import { normalizeIfscTechnicalCourses } from "./normalize-ifsc-technical";
@@ -11,6 +12,7 @@ import { PDAI_SOURCE_ID, PDAI_NEWS_URL, normalizeCapesPdai } from "./normalize-c
 import { PDSE_SOURCE_ID, PDSE_NEWS_URL, normalizeCapesPdse } from "./normalize-capes-pdse";
 
 export function programmeCataloguePageCount(id: string) {
+  if (id === AXIA_ID) return 1;
   if (isScHackathon(id)) return 1;
   return ["ifc-integrated-technical-2027", "joinville-paid-internship-003-2025", PDAI_SOURCE_ID, PDSE_SOURCE_ID].includes(id) ? 2 :
     [ACIM_SW_SOURCE_ID, "ifsc-technical-courses-2027", "ifsc-qualification-courses-2026-2", "senac-sc-psg-open-cohorts", "trt-udesc-hackathon-2026"].includes(id) ? 1 : null;
@@ -27,6 +29,7 @@ export function programmeCatalogueCanBeEmpty(id: string) {
 }
 
 export function normalizeProgrammeCatalogue(listing: string, application: string, source: OfficialSource) {
+  if (source.id === AXIA_ID) return normalizeAxiaInternship(listing, source);
   if (isScHackathon(source.id)) return normalizeScHackathon(listing, source);
   if (source.id === ACIM_SW_SOURCE_ID) return normalizeAcimStartupWeekend(listing, source);
   if (source.id === PDAI_SOURCE_ID) return normalizeCapesPdai(listing, application, source);
