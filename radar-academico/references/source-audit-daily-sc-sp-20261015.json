@@ -1,0 +1,58 @@
+{
+  "at": "2026-10-15",
+  "method": "Existing VPS, exact production fetchOfficialResource including DNS/TLS, robots, allowlist, byte limits and rate limits; no proxy or bypass",
+  "accepted": [
+    {
+      "url": "https://arinter.cps.sp.gov.br/editais-abertos/",
+      "at": "2026-10-15T16:24:39.666Z",
+      "hash": "195d6009e3254b2549877d2c974a3b1d7bdb80f4b6ca8e493d7c5065d50d9672",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://arinter.cps.sp.gov.br/intercambio-cultural-do-centro-paula-souza-abre-inscricoes-para-mais-de-500-bolsas-internacionais-em-2027/",
+      "at": "2026-10-15T16:24:52.540Z",
+      "hash": "7c01415d34f182632cb9cc74ae760f0035024fcc8b33ee768c157ce147b34417",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://sinter.ufsc.br/editais-abertos/?lang=pt",
+      "at": "2026-10-15T16:27:17.355Z",
+      "hash": "38ad22f6f6dc618489e3601529004467dff4e6f7ce24e8f872a4d0d7b7696449",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://www.embraer.com/corporate-careers/estagio/pt/",
+      "at": "2026-10-15T16:23:27.729Z",
+      "hash": "eb9d59775bb63bfc187d04950324617e85f17a02eba4a2330008e6e3f573653d",
+      "use": "Discovery only: registration advertised, paid benefit, but no confirmed deadline or explicit continuous flow; no published opportunity."
+    }
+  ],
+  "publication": "Only 15th CPS Cultural Exchange, one edition grouping six modalities and destinations; application window 23 September to 17 October 2026. General requirements and support on organizer page. No structured destination inferred from institution headquarters.",
+  "not_activated": [
+    {
+      "name": "Pirelli 2027",
+      "reason": "Production fetch failed twice; no bypass."
+    },
+    {
+      "name": "ARIS SC",
+      "reason": "VPS TLS validation failed; no insecure TLS."
+    },
+    {
+      "name": "Jaraguá do Sul CESE 003/2026",
+      "reason": "VPS timed out; compensation document remains unavailable to allowed fetch."
+    },
+    {
+      "name": "Sefaz SP 01/2026",
+      "reason": "VPS HTTP200 returns a client-side shell, with no edital body in collected HTML; indexed text cannot replace executable ingestion proof."
+    },
+    {
+      "name": "Volkswagen 2027.1",
+      "reason": "VPS notice accessible but paid support not confirmed in audited notice; no card in this lot."
+    },
+    {
+      "name": "UFSC exchanges",
+      "reason": "Current undergraduate calls already catalogued; old UHK and internship closed; no duplicates."
+    }
+  ],
+  "cost": "Existing VPS only, existing daily scheduler, no new paid services or scheduled GitHub workflows."
+}
