@@ -1,32 +1,15 @@
 import crypto from "node:crypto";
-import * as cheerio from "cheerio";
+import { readCapesPage, capesDateOnly } from "./capes-page";
 import { confirmedTerminalStatus } from "./publication";
 import type { FieldEvidence, OfficialSource, OpportunityCandidate } from "./types";
 
 export const PDAI_SOURCE_ID = "capes-pdai-23-2026";
 export const PDAI_URL = "https://www.gov.br/capes/pt-br/acesso-a-informacao/acoes-e-programas/bolsas/programas-estrategicos/desenvolvimento-regional/programa-de-desenvolvimento-academico-indigena-pdai";
 export const PDAI_NEWS_URL = "https://www.gov.br/capes/pt-br/assuntos/noticias-defeso-eleitoral/prazo-de-inscricao-no-pdai-e-prorrogado-ate-26-de-outubro";
-const months: Record<string, string> = { janeiro: "01", fevereiro: "02", março: "03", abril: "04", maio: "05", junho: "06", julho: "07", agosto: "08", setembro: "09", outubro: "10", novembro: "11", dezembro: "12" };
-
-function officialPage(html: string, title: RegExp) {
-  const $ = cheerio.load(html);
-  $("script,style,noscript,nav,footer,header").remove();
-  const page = $("#page-document").first();
-  if (!page.length || !title.test(page.find("h1").first().text())) throw new Error("Página CAPES sem identidade verificável");
-  page.find("p,h1,h2,h3,h4,li,div,br,tr,td,th").each((_, node) => { $(node).prepend(" ").append(" "); });
-  return { $, page, text: page.text().replace(/\s+/g, " ").trim() };
-}
-function dateOnly(text: string) {
-  const m = /(\d{1,2}) de (\p{L}+) de (20\d{2})/iu.exec(text);
-  if (!m || !months[m[2].toLowerCase()]) return null;
-  const iso = `${m[3]}-${months[m[2].toLowerCase()]}-${m[1].padStart(2, "0")}`;
-  const date = new Date(`${iso}T00:00:00Z`);
-  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === iso ? iso : null;
-}
 
 export function capesPdaiTerminalEvidence(programmeHtml: string, newsHtml: string): { status: OpportunityCandidate["opportunityStatus"]; evidence: FieldEvidence } | null {
-  const programme = officialPage(programmeHtml, /^Programa de Desenvolvimento Acadêmico Indígena \(PDAI\)$/);
-  const news = officialPage(newsHtml, /^Prazo de inscrição no PDAI é prorrogado até 26 de outubro$/);
+  const programme = readCapesPage(programmeHtml, /^Programa de Desenvolvimento Acadêmico Indígena \(PDAI\)$/);
+  const news = readCapesPage(newsHtml, /^Prazo de inscrição no PDAI é prorrogado até 26 de outubro$/);
   for (const [text, url] of [[programme.text.split("Documentos relacionados")[0], PDAI_URL], [news.text, PDAI_NEWS_URL]]) {
     const status = confirmedTerminalStatus(text);
     if (!status) continue;
@@ -39,8 +22,8 @@ export function capesPdaiTerminalEvidence(programmeHtml: string, newsHtml: strin
 /** Programme calendar plus its exact official extension notice; never a PDF/form crawl. */
 export function normalizeCapesPdai(programmeHtml: string, newsHtml: string, source: OfficialSource, now = new Date()): OpportunityCandidate[] {
   if (source.id !== PDAI_SOURCE_ID) return [];
-  const programme = officialPage(programmeHtml, /^Programa de Desenvolvimento Acadêmico Indígena \(PDAI\)$/);
-  const news = officialPage(newsHtml, /^Prazo de inscrição no PDAI é prorrogado até 26 de outubro$/);
+  const programme = readCapesPage(programmeHtml, /^Programa de Desenvolvimento Acadêmico Indígena \(PDAI\)$/);
+  const news = readCapesPage(newsHtml, /^Prazo de inscrição no PDAI é prorrogado até 26 de outubro$/);
   const current = programme.text.split("Documentos relacionados")[0];
   if (capesPdaiTerminalEvidence(programmeHtml, newsHtml)) return [];
   // A title-only/shell response is unavailable, not proof that a call vanished.
@@ -55,12 +38,12 @@ export function normalizeCapesPdai(programmeHtml: string, newsHtml: string, sour
   const rows = programme.page.find("table tr").toArray().map((row) => programme.$(row).find("td,th").toArray().map((cell) => programme.$(cell).text().replace(/\s+/g, " ").trim()));
   const windows = rows.filter((cells) => /^Inscrições dos candidatos indígenas$/i.test(cells[0] ?? ""));
   if (windows.length !== 1) return [];
-  const day = dateOnly(windows[0][1] ?? "");
+  const day = capesDateOnly(windows[0][1] ?? "");
   // The notice supplies the hour/time zone; the current programme supplies its year.
   const notices = [...news.text.matchAll(/até as (\d{1,2})h(\d{2}) do dia (\d{1,2}) de (\p{L}+), no horário de Brasília/giu)];
   const notice = notices[0];
   if (!day?.startsWith("2026-") || !notice || notices.some((n) => Number(n[1]) > 23 || Number(n[2]) > 59 ||
-      day !== dateOnly(`${n[3]} de ${n[4]} de 2026`)) || new Set(notices.map((n) => `${n[1]}:${n[2]}`)).size !== 1) return [];
+      day !== capesDateOnly(`${n[3]} de ${n[4]} de 2026`)) || new Set(notices.map((n) => `${n[1]}:${n[2]}`)).size !== 1) return [];
   const deadlineAt = `${day}T${notice[1].padStart(2, "0")}:${notice[2]}:00-03:00`;
   if (Date.parse(deadlineAt) < now.getTime()) return [];
   const support = programme.page.find("table").toArray().filter((table) => /Valor mensal/i.test(programme.$(table).text()));

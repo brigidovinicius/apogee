@@ -1,0 +1,104 @@
+{
+  "auditedAt": "2026-10-15T00:37:43Z",
+  "operatorLocalDate": "2026-10-14",
+  "method": "operator_authorized_agent",
+  "access": "Sequential public GET via existing safeRequest DNS/TLS validation, robots per URL and two-second spacing. No login, paid service, form/PDF submission or robots/access bypass.",
+  "urls": [
+    {
+      "url": "https://anid.cl/concursos/programas-regionales-stic-amsud-math-amsud-climat-amsud-2026/",
+      "checkedAt": "2026-10-15T00:36:24.984Z",
+      "robotsStatus": 403,
+      "robotsRedirect": null,
+      "allowed": false
+    },
+    {
+      "url": "https://www.sticmathamsud.org/",
+      "checkedAt": "2026-10-15T00:36:28.308Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 156825,
+      "sha256": "a7d038bcba407eddc234ee964e1693f45f11a97bddca7ae06b254eb37baf3a96",
+      "title": "Casino online Argentina: guía completa para jugar con dinero real en 2026"
+    },
+    {
+      "url": "https://international.cnrs.fr/appel/programmes-regionaux-amsud-2026/",
+      "checkedAt": "2026-10-15T00:36:36.060Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=UTF-8",
+      "bytes": 123555,
+      "sha256": "2e05deaf16029f70b16fc4586ab1fa524056b5ad320093c11e010de8536fca28",
+      "title": "Programmes régionaux AmSud 2026"
+    },
+    {
+      "url": "https://www.gov.br/capes/pt-br/acesso-a-informacao/acoes-e-programas/bolsas/bolsas-e-auxilios-internacionais/encontre-aqui/paises/multinacional/programa-climat-amsud",
+      "checkedAt": "2026-10-15T00:36:43.744Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 440842,
+      "sha256": "e6f05291cea8acc39f876fb87dcab6c0f8dd46f71616e3824bd0b0a8cd7a856b",
+      "title": "Programa CAPES/CLIMAT-AMSUD"
+    },
+    {
+      "url": "https://www.gov.br/capes/pt-br/acesso-a-informacao/acoes-e-programas/bolsas/bolsas-e-auxilios-internacionais/encontre-aqui/paises/multinacional/programa-de-doutorado-sanduiche-no-exterior-pdse",
+      "checkedAt": "2026-10-15T00:37:16.752Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 582732,
+      "sha256": "9e2fab514abcf54b3d6c228c9cd73cef019d44c03cc0f08d29d6837efdee68c0",
+      "title": "Programa de Doutorado-sanduíche no Exterior (PDSE)"
+    },
+    {
+      "url": "https://www.gov.br/capes/pt-br/assuntos/noticias-defeso-eleitoral/doutorado-sanduiche-no-exterior-tem-prazos-e-criterios-de-selecao-alterados",
+      "checkedAt": "2026-10-15T00:37:43.607Z",
+      "robotsStatus": 200,
+      "robotsRedirect": null,
+      "allowed": true,
+      "status": 200,
+      "redirect": null,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 299876,
+      "sha256": "af721c97da8907073d873aadb81d4bc47ad7facab622b8a0dfec5b2c74df745b",
+      "title": "Doutorado Sanduíche no Exterior tem prazos e critérios de seleção alterados"
+    }
+  ],
+  "decisions": [
+    {
+      "programme": "CLIMAT-AMSUD26/2026",
+      "decision": "paused",
+      "reason": "CAPES national deadline29Oct17hBrasilia remains; CNRS partner shows15Octdate-only. Mandatory ANID platform robots403 prevents collector audit. Old secretariat domain returned unrelated gambling content, not programme identity. Neither a search result nor partner date alone validates the mandatory platform or exact earlier international cutoff.",
+      "doNotFollow": [
+        "Blocked ANID programme endpoint",
+        "Unrelated links on former secretariat domain"
+      ],
+      "officialPartnerCalendar": "https://international.cnrs.fr/appel/programmes-regionaux-amsud-2026/",
+      "noClosedInference": true
+    },
+    {
+      "programme": "PDSE22/2026",
+      "sourceId": "capes-pdse-22-2026",
+      "decision": "approved_upcoming_selection",
+      "proof": "Current programme table and own official rectification agree: national window20Oct–18Nov2026,17hBrasilia closing; prior internal selection by16Oct2026, individual IES deadlines may be earlier.",
+      "restrictions": "Doctoral candidates from CAPES-recognized courses, research proposal, prior PPG/IES selection, quota and homologation; network/CAPES-Global.edu rules apply. Future national window is not current open admission at every IES.",
+      "benefits": "Monthly grant and stated displacement, installation, health insurance, locality when applicable;4–9months. No currency amount invented.",
+      "counting": "One selection irrespective of destinations, institutional quotas or research areas.",
+      "location": "Unknown country/state/city, no headquarters inference.",
+      "automation": "Same two exact own pages on ingestion/recheck, limit2pages each; upcoming before20Oct by Brazilian calendar, open afterwards until exact deadline, archive on terminal/contradiction/expiry. Partial shell or transport failure preserves prior evidence with retry."
+    }
+  ]
+}
