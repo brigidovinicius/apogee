@@ -5,37 +5,37 @@
     {
       "check": "tests",
       "exit_code": 0,
-      "seconds": 23.0,
+      "seconds": 26.5,
       "log": "/private/tmp/apogee-radar-feed-tests-20261015.log"
     },
     {
       "check": "lint",
       "exit_code": 0,
-      "seconds": 8.5,
+      "seconds": 23.2,
       "log": "/private/tmp/apogee-radar-feed-lint-20261015.log"
     },
     {
       "check": "typegen",
       "exit_code": 0,
-      "seconds": 0.6,
+      "seconds": 0.9,
       "log": "/private/tmp/apogee-radar-feed-typegen-20261015.log"
     },
     {
       "check": "typecheck",
       "exit_code": 0,
-      "seconds": 7.2,
+      "seconds": 21.1,
       "log": "/private/tmp/apogee-radar-feed-typecheck-20261015.log"
     },
     {
       "check": "build",
       "exit_code": 0,
-      "seconds": 31.9,
+      "seconds": 99.4,
       "log": "/private/tmp/apogee-radar-feed-build-20261015.log"
     }
   ],
   "tests": {
-    "total": 277,
-    "pass": 277,
+    "total": 278,
+    "pass": 278,
     "fail": 0,
     "skipped": 0
   },
@@ -68,5 +68,10 @@
     "Pre-existing gallery img lint warning",
     "CSS preload warnings in catalogue",
     "Playwright screenshot timeout; native Safari pixel inspection succeeded"
+  ],
+  "classificationRegressionCases": [
+    "Degree funding without admission proof remains unclassified",
+    "Research selection requiring a doctorate remains extracurricular research",
+    "Explicit doctorate admission remains formal admission"
   ]
 }

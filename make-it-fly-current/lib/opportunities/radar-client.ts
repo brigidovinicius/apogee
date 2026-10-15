@@ -187,11 +187,14 @@ export function editorialNatureFromRadar(value: Record<string, unknown>): Studen
   const title = stringValue(value.title) ?? "";
   const requirements = stringValue(value.requirementsText) ?? "";
   // Compound admission statements, never an isolated institution, degree or audience word.
-  const admissionTitle = /^(?:seleção|processo seletivo|admissão|ingresso|vagas)\b.*\b(?:mestrado|doutorado)\b/iu.test(title);
+  const admissionTitle = /^(?:seleção|processo seletivo|admissão|ingresso|vagas)\s+(?:(?:para|de|no|na|ao|em)\s+)?(?:(?:o|a|um|uma)\s+)?(?:(?:curso|programa)\s+de\s+)?(?:mestrado|doutorado)\b/iu.test(title);
   const admissionRequirement = value.isCourse === true && /\bingresso (?:no|na|em|ao) (?:curso de |programa de )?(?:mestrado|doutorado|graduação|ensino superior)\b/iu.test(requirements);
   const degreeCourse = value.isCourse === true && /^(?:mestrado|doutorado)\b/iu.test(title) && /\b(?:inscriç|seleç|ingresso|vagas)/iu.test(requirements);
   const entranceExam = value.isCourse === true && /\b(?:seleção por vestibular|ingresso.*vestibular)\b/iu.test(requirements);
   if (admissionTitle || admissionRequirement || degreeCourse || entranceExam) return "formal_admission";
+  // Degree funding alone does not prove admission or a practical extracurricular project.
+  const degreeFunding = ["academic_scholarship", "research_scholarship"].includes(String(value.benefitType)) && /^bolsas?(?: de)? (?:mestrado|doutorado)\b/iu.test(title);
+  if (degreeFunding) return "unclassified";
   if (value.isCourse !== true && categories.some((category) => ["pesquisa", "carreira", "intercambios"].includes(String(category)))) return "extracurricular";
   return "unclassified";
 }

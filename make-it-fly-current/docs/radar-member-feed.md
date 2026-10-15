@@ -13,7 +13,7 @@ A ponte `radar-client.ts`, que é `server-only`, conserva `amountText` em `benef
 Sem filtros ativos:
 
 1. Experiências extracurriculares confirmadas pelas categorias estruturadas `eventos`, `competicoes`, `pesquisa`, `carreira` e `intercambios`, quando não são ingresso em curso.
-2. Natureza ainda não classificada com segurança.
+2. Natureza ainda não classificada com segurança, inclusive financiamento de mestrado/doutorado sem prova de ingresso ou de projeto extracurricular.
 3. Ingresso acadêmico formal: vínculo de vestibular auditado já existente, ou declarações compostas e explícitas de ingresso/seleção em mestrado, doutorado ou graduação. As regras contextuais estão no servidor. Público de pós-graduação e nome de universidade não definem ingresso.
 
 Em cada grupo: benefício financeiro confirmado primeiro; depois o prazo já utilizado; em empate, ID. Não se compara o valor de uma bolsa com o de um prêmio. As comparações não usam pesos de relevância. Não foi encontrado algoritmo comportamental no mural atual e nenhum foi criado.
@@ -46,12 +46,14 @@ Não há campos próprios para modalidade presencial/remota, equipe, duração o
 
 | Verificação | Resultado final |
 | --- | --- |
-| `npm test` | 277 testes passaram; 0 falhas, 0 ignorados |
+| `npm test` | 278 testes passaram; 0 falhas, 0 ignorados |
 | `npm run lint` | 0 erros; 1 aviso preexistente em `components/gallery/gallery-admin.tsx:81` (`no-img-element`) |
 | `npm run typegen` | Passou |
 | `npm run typecheck` | Passou |
 | `npm run build` | Passou; compilação, TypeScript e geração das rotas concluídos |
 | `git diff --check` | Passou |
+
+A revisão final também cobriu bolsas de mestrado/doutorado sem prova de ingresso (natureza incerta, abaixo das atividades confirmadas) e seleções de pesquisadores que exigem doutorado (continuam pesquisa, sem confusão com ingresso no grau).
 
 A primeira rodada identificou uma falha na faixa salarial: vírgula de pontuação após o segundo valor era confundida com parte de um número incompleto. O formatador foi corrigido, com regressões para vírgula de pontuação, segunda moeda omitida na faixa e decimal ambíguo. Toda a suíte e os checks acima foram repetidos após a correção.
 

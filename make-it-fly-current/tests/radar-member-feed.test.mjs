@@ -188,3 +188,18 @@ test("member DAL authorizes and computes the full order without changing the pub
   // An unavailable location is sanitized consistently with the board, preserving default editorial order.
   assert.deepEqual((await access.listMemberOpportunities({ ...logic.EMPTY_OPPORTUNITY_FILTERS, stateCode: "SC" })).map(i => i.id), [event.id, formal.id]);
 });
+
+
+test("ambiguous degree funding stays below activities, while researcher selection is not degree admission", () => {
+  const event = opportunity({ id: "event", title: "Encontro para doutorandos", categories: ["eventos"] });
+  for (const degree of ["Mestrado", "Doutorado"]) {
+    const funding = opportunity({ id: degree, title: `Bolsa de ${degree} em Física`, categories: ["pesquisa", "bolsas"], benefitType: "research_scholarship", amountText: "Bolsa de R$ 10000 / mês." });
+    assert.equal(funding.editorialNature, "unclassified");
+    assert.equal(orderMemberFeed([funding, event], logic.EMPTY_OPPORTUNITY_FILTERS)[0], event);
+  }
+  for (const title of ["Seleção de pesquisadores com doutorado", "Seleção para projeto extracurricular de estudantes de doutorado"]) {
+    const project = opportunity({ title, categories: ["pesquisa"] });
+    assert.equal(project.editorialNature, "extracurricular");
+  }
+  assert.equal(opportunity({ title: "Seleção para o programa de doutorado em Física", categories: ["formacao"], isCourse: true }).editorialNature, "formal_admission");
+});
