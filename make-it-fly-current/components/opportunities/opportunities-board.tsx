@@ -1,5 +1,6 @@
 "use client";
 
+import { OpportunityBenefits, OpportunityCosts } from "./opportunity-financials";
 import { AdmissionProcessCard } from "./admission-process-card";
 import { groupAdmissionProcesses } from "@/lib/opportunities/admission-processes";
 import { OpportunityCountdown } from "./opportunity-countdown";
@@ -31,6 +32,7 @@ import styles from "./opportunities.module.css";
 type OpportunityBoardProps = {
   opportunities: readonly StudentOpportunity[];
   management?: boolean;
+  memberFeed?: boolean;
 };
 
 const formatDate = (date: string) =>
@@ -42,7 +44,7 @@ const formatDate = (date: string) =>
     timeZone: "America/Sao_Paulo",
   }).format(new Date(date.length > 10 ? date : `${date}T12:00:00Z`));
 
-export function OpportunitiesBoard({ opportunities, management = false }: OpportunityBoardProps) {
+export function OpportunitiesBoard({ opportunities, management = false, memberFeed = false }: OpportunityBoardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -63,10 +65,15 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
     [filterOptions, searchParams],
   );
   const visible = useMemo(
-    () => filterOpportunities(opportunities, filters, today),
-    [filters, opportunities, today],
+    () => filterOpportunities(opportunities, filters, today, memberFeed),
+    [filters, opportunities, today, memberFeed],
   );
   const grouped = useMemo(() => groupAdmissionProcesses(visible), [visible]);
+  // The member order is computed on the server over the entire catalogue.
+  // Group before slicing so course options never create duplicates across pages.
+  const entries = memberFeed ? grouped.entries : grouped.standalone.map((opportunity) => ({
+    type: "opportunity" as const, id: `opportunity:${opportunity.id}`, opportunity,
+  }));
   const activeFilterCount = countActiveOpportunityFilters(filters);
   const coverage = useMemo(() => {
     const open = opportunities.filter((item) => isOpportunityOpen(item, today));
@@ -146,7 +153,7 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
         </button>
         <p className={styles.filterSummary}>
           {activeFilterCount === 0
-            ? "Mostrando todas as classificações disponíveis"
+            ? memberFeed ? "Experiências extracurriculares primeiro" : "Mostrando todas as classificações disponíveis"
             : `${activeFilterCount} ${activeFilterCount === 1 ? "filtro ativo" : "filtros ativos"}`}
         </p>
       </div>
@@ -267,66 +274,17 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
       </div>
 
       <div id="opportunity-results">
-      {grouped.groups.length > 0 ? <section className={styles.admissionSection} aria-labelledby="admission-processes-title">
+      {!memberFeed && grouped.groups.length > 0 ? <section className={styles.admissionSection} aria-labelledby="admission-processes-title">
         <h3 id="admission-processes-title">Ingresso por vestibular</h3>
         <p>Seleções por prova ou exame de classificação. Cada processo reúne os cursos disponíveis e conta como uma oportunidade.</p>
         <div className={styles.grid}>{grouped.groups.map((group) => <AdmissionProcessCard key={group.id} group={group} management={management} />)}</div>
       </section> : null}
 
-      {grouped.standalone.length > 0 ? (
+      {entries.length > 0 ? (
         <div className={styles.grid}>
-          {grouped.standalone.slice(0, visibleLimit).map((opportunity) => (
-            <article className={styles.card} key={opportunity.id}>
-              <div className={styles.cardTopline}>
-                <span className={styles.kind}>{opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
-                <span>{opportunity.level}</span>
-              </div>
-              {opportunity.categories?.length ? <p className={styles.cardCategories}>
-                {OPPORTUNITY_CATEGORIES.filter(({ id }) => opportunity.categories?.includes(id)).map(({ label }) => label).join(" · ")}
-              </p> : null}
-              <div className={styles.cardMain}>
-                <p className={styles.organization}>{opportunity.organization}</p>
-                <h3>{opportunity.title}</h3>
-                <p className={styles.summary}>{opportunity.summary}</p>
-              </div>
-              <dl className={styles.details}>
-                <div>
-                  <dt>Localização</dt>
-                  <dd className={styles.locationValue}><MapPin size={15} aria-hidden />{opportunity.location}</dd>
-                </div>
-                <div>
-                  <dt>Para quem</dt>
-                  <dd>{opportunity.eligibility}</dd>
-                </div>
-                <div>
-                  <dt>Apoio</dt>
-                  <dd>{opportunity.benefit}</dd>
-                </div>
-              </dl>
-              <div className={styles.launchWindow}>
-                <CalendarDays size={17} aria-hidden />
-                <div>
-                  <span>Janela de inscrição</span>
-                  <strong>{opportunity.deadlineLabel}</strong>
-                </div>
-              </div>
-              <OpportunityCountdown opportunity={opportunity} />
-              {opportunity.deadline === null ? <OpportunityAlert id={opportunity.id} title={opportunity.title} available={opportunity.alertsAvailable === true}/> : null}
-              <div className={styles.cardFooter}>
-                <span>{opportunity.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={opportunity.verificationTimestamp ?? opportunity.verifiedAt} title="Horário de Brasília">{formatDate(opportunity.verificationTimestamp ?? opportunity.verifiedAt)}</time></span>
-                <Link
-                  href={opportunity.officialUrl}
-                  className={styles.externalLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Ver página oficial de ${opportunity.title}`}
-                >
-                  Ver oportunidade <ArrowUpRight size={16} aria-hidden />
-                </Link>
-              </div>
-              {management ? <Link className={styles.externalLink} href={`/admin/radar?editar=${encodeURIComponent(opportunity.id.replace(/^radar-/, ""))}`}>Editar ou excluir</Link> : null}
-            </article>
-          ))}
+          {entries.slice(0, visibleLimit).map((entry) => entry.type === "admission"
+            ? <AdmissionProcessCard key={entry.id} group={entry.group} management={management} />
+            : <OpportunityCard key={entry.id} opportunity={entry.opportunity} management={management} />)}
         </div>
       ) : grouped.total === 0 ? (
         <div className={styles.empty} role="status">
@@ -349,11 +307,68 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
         </div>
       ) : null}
       </div>
-      {grouped.standalone.length > visibleLimit ? <button type="button" className={styles.loadMore}
+      {entries.length > visibleLimit ? <button type="button" className={styles.loadMore}
         onClick={() => setVisibleLimit((limit) => limit + 24)}>
-        Mostrar mais oportunidades ({Math.min(grouped.standalone.length - visibleLimit, 24)} próximas)
+        Mostrar mais oportunidades ({Math.min(entries.length - visibleLimit, 24)} próximas)
       </button> : null}
     </section>
+  );
+}
+
+function OpportunityCard({ opportunity, management }: { opportunity: StudentOpportunity; management: boolean }) {
+  return (
+    <article className={styles.card}>
+      <div className={styles.cardTopline}>
+        <span className={styles.kind}>{opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
+        <span>{opportunity.level}</span>
+      </div>
+      {opportunity.categories?.length ? <p className={styles.cardCategories}>
+        {OPPORTUNITY_CATEGORIES.filter(({ id }) => opportunity.categories?.includes(id)).map(({ label }) => label).join(" · ")}
+      </p> : null}
+      <div className={styles.cardMain}>
+        <p className={styles.organization}>{opportunity.organization}</p>
+        <h3>{opportunity.title}</h3>
+        <OpportunityBenefits opportunity={opportunity} />
+        <p className={styles.summary}>{opportunity.summary}</p>
+      </div>
+      <dl className={styles.details}>
+        <div>
+          <dt>Localização</dt>
+          <dd className={styles.locationValue}><MapPin size={15} aria-hidden />{opportunity.location}</dd>
+        </div>
+        <div>
+          <dt>Para quem</dt>
+          <dd>{opportunity.eligibility}</dd>
+        </div>
+        {opportunity.eventStartsAt && Number.isFinite(Date.parse(opportunity.eventStartsAt)) ? <div>
+          <dt>Realização</dt>
+          <dd><time dateTime={opportunity.eventStartsAt}>{formatDate(opportunity.eventStartsAt)}</time></dd>
+        </div> : null}
+        <OpportunityCosts opportunity={opportunity} />
+      </dl>
+      <div className={styles.launchWindow}>
+        <CalendarDays size={17} aria-hidden />
+        <div>
+          <span>Janela de inscrição</span>
+          <strong>{opportunity.deadlineLabel}</strong>
+        </div>
+      </div>
+      <OpportunityCountdown opportunity={opportunity} />
+      {opportunity.deadline === null ? <OpportunityAlert id={opportunity.id} title={opportunity.title} available={opportunity.alertsAvailable === true}/> : null}
+      <div className={styles.cardFooter}>
+        <span>{opportunity.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={opportunity.verificationTimestamp ?? opportunity.verifiedAt} title="Horário de Brasília">{formatDate(opportunity.verificationTimestamp ?? opportunity.verifiedAt)}</time></span>
+        <Link
+          href={opportunity.officialUrl}
+          className={styles.externalLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Ver página oficial de ${opportunity.title}`}
+        >
+          Ver oportunidade <ArrowUpRight size={16} aria-hidden />
+        </Link>
+      </div>
+      {management ? <Link className={styles.externalLink} href={`/admin/radar?editar=${encodeURIComponent(opportunity.id.replace(/^radar-/, ""))}`}>Editar ou excluir</Link> : null}
+    </article>
   );
 }
 

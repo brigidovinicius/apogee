@@ -33,8 +33,17 @@ export type OpportunityPreview = {
   categories?: OpportunityCategory[];
 };
 
+export type OpportunityFinancials = {
+  benefits: { label: "REMUNERAÇÃO" | "BOLSA" | "PREMIAÇÃO" | "PREMIAÇÃO TOTAL"; text: string }[];
+  costs: string[];
+  notes: string[];
+};
+
 /** Dados públicos do catálogo; controles administrativos permanecem no servidor. */
 export type StudentOpportunity = OpportunityPreview & {
+  /** Derived conservatively by the server from the verified source fields. */
+  editorialNature?: "extracurricular" | "formal_admission" | "unclassified";
+  financials?: OpportunityFinancials;
   admissionProcess?: { id: string; title: string } | null;
   location: string;
   stateCode: BrazilianStateCode | null;
@@ -108,7 +117,12 @@ export function dateInBrazil(now = new Date()) {
   return `${value("year")}-${value("month")}-${value("day")}`;
 }
 
-export function isOpportunityOpen(opportunity: StudentOpportunity, today = dateInBrazil()) {
+export function isOpportunityOpen(opportunity: StudentOpportunity, today = dateInBrazil(), now = Date.now()) {
+  if (opportunity.deadlineAt && Date.parse(opportunity.deadlineAt) < now) return false;
+  if (opportunity.deadlineUnknown && opportunity.eventStartsAt) {
+    const start = opportunity.eventStartsAt;
+    if (start.length === 10 ? start < today : Date.parse(start) <= now) return false;
+  }
   return opportunity.deadline === null || opportunity.deadline >= today;
 }
 
@@ -214,9 +228,10 @@ export function filterOpportunities(
   opportunities: readonly StudentOpportunity[],
   filters: OpportunityFilters,
   today = dateInBrazil(),
+  preserveOrder = false,
 ) {
   const query = filters.query?.trim().toLocaleLowerCase("pt-BR") ?? "";
-  return sortByDeadline(opportunities)
+  return (preserveOrder ? [...opportunities] : sortByDeadline(opportunities))
     .filter((opportunity) => isOpportunityOpen(opportunity, today))
     .filter((opportunity) => !filters.category || opportunity.categories?.includes(filters.category))
     .filter((opportunity) => filters.kind === null || opportunity.kind === filters.kind)

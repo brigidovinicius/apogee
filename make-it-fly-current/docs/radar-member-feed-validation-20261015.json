@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-15",
+  "scope": "Local production build, synthetic catalogue, no deploy",
+  "checks": [
+    {
+      "check": "tests",
+      "exit_code": 0,
+      "seconds": 23.0,
+      "log": "/private/tmp/apogee-radar-feed-tests-20261015.log"
+    },
+    {
+      "check": "lint",
+      "exit_code": 0,
+      "seconds": 8.5,
+      "log": "/private/tmp/apogee-radar-feed-lint-20261015.log"
+    },
+    {
+      "check": "typegen",
+      "exit_code": 0,
+      "seconds": 0.6,
+      "log": "/private/tmp/apogee-radar-feed-typegen-20261015.log"
+    },
+    {
+      "check": "typecheck",
+      "exit_code": 0,
+      "seconds": 7.2,
+      "log": "/private/tmp/apogee-radar-feed-typecheck-20261015.log"
+    },
+    {
+      "check": "build",
+      "exit_code": 0,
+      "seconds": 31.9,
+      "log": "/private/tmp/apogee-radar-feed-build-20261015.log"
+    }
+  ],
+  "tests": {
+    "total": 277,
+    "pass": 277,
+    "fail": 0,
+    "skipped": 0
+  },
+  "browser": {
+    "publicInitialCards": 25,
+    "publicAfterLoadMore": 34,
+    "uniqueTitles": 34,
+    "prefixPreserved": true,
+    "eventsAfterLoadMore": 27,
+    "academicSearch": "passed",
+    "emptyAndClear": "passed",
+    "viewportsWithoutHorizontalOverflow": [
+      1440,
+      390,
+      320
+    ],
+    "benefitFontWeight": "700",
+    "costFontWeight": "400",
+    "clockAdvanced": true,
+    "memberPreviewAcademicLast": true,
+    "authenticatedMemberEndToEnd": false,
+    "safariVisualInspection": [
+      "desktop",
+      "390x844",
+      "320x800"
+    ]
+  },
+  "limitations": [
+    "Authenticated member E2E unavailable in local auth/database harness",
+    "Pre-existing gallery img lint warning",
+    "CSS preload warnings in catalogue",
+    "Playwright screenshot timeout; native Safari pixel inspection succeeded"
+  ]
+}

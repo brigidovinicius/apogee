@@ -123,6 +123,8 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     admissionProcess: isCourse && isRecord(value.admissionProcess) &&
       stringValue(value.admissionProcess.id) && stringValue(value.admissionProcess.title)
       ? { id: stringValue(value.admissionProcess.id)!, title: stringValue(value.admissionProcess.title)! } : null,
+    editorialNature: editorialNatureFromRadar(value),
+    financials: financialsFromRadar(value),
     title,
     organization,
     kind: kindFromRadar(benefitType, isCourse),
@@ -175,4 +177,57 @@ export async function listRadarOpportunities(): Promise<StudentOpportunity[]> {
   } catch {
     throw new Error("Catálogo indisponível");
   }
+}
+
+/** Nature is distinct from audience: postgraduate students can attend an event. */
+export function editorialNatureFromRadar(value: Record<string, unknown>): StudentOpportunity["editorialNature"] {
+  if (value.isCourse === true && isRecord(value.admissionProcess) && stringValue(value.admissionProcess.id)) return "formal_admission";
+  const categories = Array.isArray(value.categories) ? value.categories : [];
+  if (value.isCourse !== true && categories.some((category) => ["eventos", "competicoes"].includes(String(category)))) return "extracurricular";
+  const title = stringValue(value.title) ?? "";
+  const requirements = stringValue(value.requirementsText) ?? "";
+  // Compound admission statements, never an isolated institution, degree or audience word.
+  const admissionTitle = /^(?:seleção|processo seletivo|admissão|ingresso|vagas)\b.*\b(?:mestrado|doutorado)\b/iu.test(title);
+  const admissionRequirement = value.isCourse === true && /\bingresso (?:no|na|em|ao) (?:curso de |programa de )?(?:mestrado|doutorado|graduação|ensino superior)\b/iu.test(requirements);
+  const degreeCourse = value.isCourse === true && /^(?:mestrado|doutorado)\b/iu.test(title) && /\b(?:inscriç|seleç|ingresso|vagas)/iu.test(requirements);
+  const entranceExam = value.isCourse === true && /\b(?:seleção por vestibular|ingresso.*vestibular)\b/iu.test(requirements);
+  if (admissionTitle || admissionRequirement || degreeCourse || entranceExam) return "formal_admission";
+  if (value.isCourse !== true && categories.some((category) => ["pesquisa", "carreira", "intercambios"].includes(String(category)))) return "extracurricular";
+  return "unclassified";
+}
+
+/** amountText is legacy prose. Ambiguous or mixed statements remain ordinary notes. */
+export function financialsFromRadar(value: Record<string, unknown>): NonNullable<StudentOpportunity["financials"]> {
+  const financials: NonNullable<StudentOpportunity["financials"]> = { benefits: [], costs: [], notes: [] };
+  const text = stringValue(value.amountText) ?? "";
+  const benefitType = stringValue(value.benefitType);
+  const stipend = ["research_scholarship", "extension_scholarship", "monitor_scholarship"].includes(benefitType ?? "");
+  const deniesCash = (statement: string) => /a confirmar|estimad|não (?:há|haverá|tem|terá|oferece|prevê|inclui|existe).*?(?:premia|prêmio|remunera|bolsa|pagamento)|(?:premia|prêmio|remunera|bolsa|pagamento).*?não (?:é oferecid|será oferecid|é em dinheiro)/iu.test(statement);
+  // Split sentences, preserving decimals, ranges, periodicity, recipients and total-prize conditions.
+  const clauses = text.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý])|[;\n]\s*(?=(?:Inscriç|Ingresso|Taxa|Participaç|Premiaç|Remuneraç|Bolsa))|\s+e\s+(?=inscrição|ingresso|taxa de inscrição)|,\s+(?=inscrição|ingresso|taxa de inscrição)/iu).filter(Boolean);
+  for (const clause of clauses) {
+    const cost = /^(?:(?:valor|custo) (?:da inscrição|do ingresso|de participação)|inscriç(?:ão|ões)|ingressos?|taxas?|participação (?:gratuita|paga)|curso gratuito)\b/iu.test(clause);
+    const incomeWords = /\b(?:bolsa(?:-auxílio)?|remunera(?:ção|do|da)|salário|premiação|pagamento)\b/iu;
+    const denied = deniesCash(clause) || /(?:premiação|remuneração|bolsa|pagamento|apoio financeiro).*?(?:não (?:confirmad|comprovad|informad)|sem (?:confirmação|comprovação))|(?:sem|não há) (?:premiação|remuneração|bolsa)/iu.test(clause);
+    const nonCash = /\b(?:desconto|reembolso|isenção|produtos?|equipamentos?|troféu|crédito|custeio|passagens|hospedagem)\b/iu.test(clause);
+    const hasMoney = /(?:R\$|US\$|USD|EUR|BRL|GBP|€|£)\s*\d/u.test(clause);
+    const moneyPrize = /(?:premiação|prêmio) (?:financeir[oa]|em dinheiro)/iu.test(clause) || hasMoney && /^(?:premiação|prêmio)(?: total)?(?: em dinheiro)?(?: de|:)?\s/iu.test(clause) || benefitType === "prize" && hasMoney;
+    const salary = /^(?:remuneração|remunerad[oa]|salário|pagamento)\b/iu.test(clause);
+    const scholarship = (scholarshipBenefits.has(benefitType ?? "") || benefitType === "internship") && /^(?:(?:até|de|entre|a partir de)\s+)?(?:bolsa|R\$|BRL|US\$|USD|EUR|GBP|€|£)/iu.test(clause);
+    const mixedCost = !cost && /\b(?:inscrição|ingresso|taxa)\b/iu.test(clause);
+    if (cost && (!incomeWords.test(clause) || denied)) {
+      financials.costs.push(clause);
+    } else if (!cost && !mixedCost && !denied && !nonCash && (salary || scholarship && hasMoney || moneyPrize)) {
+      const label = moneyPrize || benefitType === "prize" ? /(?:premiação|prêmio) total|total.*(?:premiação|prêmio)/iu.test(clause) ? "PREMIAÇÃO TOTAL" : "PREMIAÇÃO"
+        : scholarship ? "BOLSA" : "REMUNERAÇÃO";
+      const amountUnspecified = !hasMoney && !/\d|valor.*(?:não divulgad|não informad)/iu.test(clause);
+      financials.benefits.push({ label, text: amountUnspecified ? `${clause} · Valor não divulgado` : clause });
+    } else {
+      financials.notes.push(clause);
+    }
+  }
+  if (!financials.benefits.length && stipend && !deniesCash(text) && !/a confirmar|não (?:há|confirmad|comprovad)|sem (?:bolsa|remuneração)|desconto|reembolso|isenção|produtos?/iu.test(text)) {
+    financials.benefits.push({ label: "BOLSA", text: "Bolsa · Valor não divulgado" });
+  }
+  return financials;
 }

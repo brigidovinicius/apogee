@@ -1024,3 +1024,16 @@
 .admissionOptions li { border-top: 1px solid rgb(255 255 255 / 18%); padding: 1rem 0; overflow-wrap: anywhere; }
 .admissionOptions h5 { font-size: 1rem; line-height: 1.5; }
 .admissionOptions li p { margin: .65rem 0; font-size: .88rem; line-height: 1.6; color: rgb(255 255 255 / 75%); }
+
+/* Benefits and participation costs have distinct semantics, beyond color alone. */
+.financialBenefits { margin-top: 1.25rem; display: grid; gap: 1rem; overflow-wrap: anywhere; }
+.financialLabel { display: block; font-size: .7rem; font-weight: 600; letter-spacing: .08em; color: #b9d3ee; }
+.financialBenefits p { margin: .4rem 0 0; font-size: .92rem; line-height: 1.6; }
+.financialBenefits strong { font-size: clamp(1.05rem, 1.5vw, 1.2rem); font-weight: 700; }
+.participationCost, .participationCost p { font-weight: 400; }
+.details dd p { margin: 0; }
+.details dd p + p { margin-top: .6rem; }
+.card, .cardMain, .details dd { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  .details div { grid-template-columns: 1fr; gap: .35rem; }
+}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import type { AdmissionGroup } from "@/lib/opportunities/admission-processes";
+import { OpportunityBenefits, OpportunityCosts } from "./opportunity-financials";
 import { OpportunityCountdown } from "./opportunity-countdown";
 import styles from "./opportunities.module.css";
 
@@ -23,7 +24,8 @@ export function AdmissionProcessCard({ group, management = false }: { group: Adm
         <h5>{course.title}</h5>
         <p>{course.location} · {course.level}</p>
         <p>{course.eligibility}</p>
-        <p>{course.benefit}</p>
+        <OpportunityBenefits opportunity={course} />
+        <dl className={styles.details}><OpportunityCosts opportunity={course} /></dl>
         {!sharedWindow ? <p>{course.deadlineLabel}{course.opportunityStatus === "upcoming" ? " · Inscrições futuras" : ""}</p> : null}
         {!sharedUrl ? <Link className={styles.externalLink} href={course.officialUrl} target="_blank" rel="noopener noreferrer">Ver fonte oficial deste curso</Link> : null}
         <p>{course.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={course.verificationTimestamp ?? course.verifiedAt}>{course.verifiedAt.split("-").reverse().join("/")}</time></p>
