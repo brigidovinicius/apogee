@@ -1011,3 +1011,16 @@
 .alertForm .alertConsent { display: flex; align-items: flex-start; gap: .5rem; }
 .alertForm button { min-height: 2.5rem; border: 1px solid currentColor; border-radius: .5rem; background: transparent; color: inherit; cursor: pointer; }
 .alertForm button:disabled { opacity: .6; cursor: wait; }
+
+.admissionSection { margin-bottom: 2.5rem; }
+.admissionSection > h3 { font-size: clamp(1.25rem, 2vw, 1.75rem); }
+.admissionSection > p { margin: .75rem 0 1.5rem; color: rgb(255 255 255 / 70%); line-height: 1.6; }
+.admissionSection h4 { font-size: 1.4rem; line-height: 1.35; }
+.admissionDeadline { margin-top: 1.5rem; font-weight: 600; }
+.admissionOptions { margin: 1.25rem 0; }
+.admissionOptions summary { cursor: pointer; min-height: 2.75rem; padding: .5rem 0; font-weight: 600; }
+.admissionOptions summary:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.admissionOptions ul { list-style: none; padding: 0; }
+.admissionOptions li { border-top: 1px solid rgb(255 255 255 / 18%); padding: 1rem 0; overflow-wrap: anywhere; }
+.admissionOptions h5 { font-size: 1rem; line-height: 1.5; }
+.admissionOptions li p { margin: .65rem 0; font-size: .88rem; line-height: 1.6; color: rgb(255 255 255 / 75%); }

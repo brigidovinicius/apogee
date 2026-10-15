@@ -606,3 +606,19 @@ it("preserves PDSE identity and admin edits across upcoming/open stages and term
   await state.db!.query("update opportunities set deleted_at=now() where id=$1",[original.id]);expect(await ingest()).toMatchObject({created:0,published:0});
  }finally{vi.useRealTimers();}
 });
+
+it("exports the same admission group for public/admin and retains original edit/delete identities", async () => {
+ await save();
+ await state.db!.exec(`insert into official_sources (id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,active,verification_status)
+ values ('ifsc-technical-courses-2027','IFSC','IFSC','IFSC','federal_institute','https://www.ifsc.edu.br/tecnicos',array['www.ifsc.edu.br'],array['/tecnicos'],array['https://www.ifsc.edu.br/tecnicos'],'html',true,'verified');
+ update opportunities set official_source_id='ifsc-technical-courses-2027',requirements_text='Curso no Câmpus X; seleção por prova. Oferta: 40 vagas.';
+ update opportunity_sources set source_page_url='https://www.ifsc.edu.br/tecnicos';`);
+ const [before] = await listLiveCatalogue();
+ expect(before.admissionProcess).toMatchObject({ id: 'ifsc-technical-exam-2027-1' });
+ expect(before).not.toHaveProperty('_sourceId');
+ const [managed] = await listLiveCatalogue(true); expect(managed).toMatchObject(before);
+ await manageCatalogue('PATCH', form(managed, { title: 'Título editado pelo administrador' }));
+ const [edited] = await listLiveCatalogue(); expect(edited.id).toBe(before.id); expect(edited.admissionProcess).toEqual(before.admissionProcess);
+ await state.db!.query('update opportunities set deleted_at=now() where id=$1',[edited.id]);
+ expect(await listLiveCatalogue()).toEqual([]); expect(await listLiveCatalogue(true)).toEqual([]);
+});

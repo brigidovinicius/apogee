@@ -64,3 +64,11 @@ test("Radar accepts a confirmed open event with an unknown deadline without trea
  const mapped=client.toOpportunity(item);assert.equal(mapped.deadline,null);assert.equal(mapped.deadlineLabel,"Prazo não informado");assert.equal(mapped.deadlineUnknown,true);assert.equal(mapped.alertsAvailable,true);
  for(const patch of [{categories:["formacao"]},{eventStartsAt:null},{deadlineAt:"2026-10-20"},{opportunityStatus:"upcoming"}])assert.equal(client.toOpportunity({...item,...patch}),null);
 });
+
+test("audited admission metadata survives the Radar bridge only for course options",async()=>{
+ const client=await import(`data:text/javascript;base64,${Buffer.from(output).toString("base64")}`);
+ const item={id:"course",title:"Curso",institution:"IFSC",officialUrl:"https://www.ifsc.edu.br/tecnicos",lastCheckedAt:"2026-10-14T15:00:00Z",benefitType:"other",applicantType:"mixed",categories:["formacao"],isCourse:true,deadlineAt:"2099-10-20",deadlinePrecision:"date_only",admissionProcess:{id:"ifsc-technical-exam-2027-1",title:"IFSC 2027.1"}};
+ assert.deepEqual(client.toOpportunity(item).admissionProcess,item.admissionProcess);
+ assert.equal(client.toOpportunity({...item,isCourse:false}).admissionProcess,null);
+ assert.equal(client.toOpportunity({...item,admissionProcess:{id:"",title:"Missing ID"}}).admissionProcess,null);
+});
