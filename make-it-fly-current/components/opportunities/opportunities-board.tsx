@@ -1,5 +1,7 @@
 "use client";
 
+import { AdmissionProcessCard } from "./admission-process-card";
+import { groupAdmissionProcesses } from "@/lib/opportunities/admission-processes";
 import { OpportunityCountdown } from "./opportunity-countdown";
 import { OpportunityAlert } from "./opportunity-alert";
 import { LiveCatalogueRefresh } from "./live-refresh";
@@ -64,11 +66,12 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
     () => filterOpportunities(opportunities, filters, today),
     [filters, opportunities, today],
   );
+  const grouped = useMemo(() => groupAdmissionProcesses(visible), [visible]);
   const activeFilterCount = countActiveOpportunityFilters(filters);
   const coverage = useMemo(() => {
     const open = opportunities.filter((item) => isOpportunityOpen(item, today));
-    return { total: open.length, byCategory: Object.fromEntries(
-      OPPORTUNITY_CATEGORIES.map(({ id }) => [id, open.filter((item) => item.categories?.includes(id)).length]),
+    return { total: groupAdmissionProcesses(open).total, byCategory: Object.fromEntries(
+      OPPORTUNITY_CATEGORIES.map(({ id }) => [id, groupAdmissionProcesses(open.filter((item) => item.categories?.includes(id))).total]),
     ) };
   }, [opportunities, today]);
   const cityOptions = filters.stateCode
@@ -99,7 +102,7 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
           <h2 id="mural-title">Encontre a sua próxima janela de lançamento.</h2>
         </div>
         <p className={styles.count} aria-live="polite">
-          {visible.length} {visible.length === 1 ? "oportunidade visível" : "oportunidades visíveis"}
+          {grouped.total} {grouped.total === 1 ? "oportunidade visível" : "oportunidades visíveis"}
         </p>
       </div>
       {management ? <p className={styles.coverageProgress}>
@@ -263,9 +266,16 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
         </div>
       </div>
 
-      {visible.length > 0 ? (
-        <div id="opportunity-results" className={styles.grid}>
-          {visible.slice(0, visibleLimit).map((opportunity) => (
+      <div id="opportunity-results">
+      {grouped.groups.length > 0 ? <section className={styles.admissionSection} aria-labelledby="admission-processes-title">
+        <h3 id="admission-processes-title">Ingresso por vestibular</h3>
+        <p>Seleções por prova ou exame de classificação. Cada processo reúne os cursos disponíveis e conta como uma oportunidade.</p>
+        <div className={styles.grid}>{grouped.groups.map((group) => <AdmissionProcessCard key={group.id} group={group} management={management} />)}</div>
+      </section> : null}
+
+      {grouped.standalone.length > 0 ? (
+        <div className={styles.grid}>
+          {grouped.standalone.slice(0, visibleLimit).map((opportunity) => (
             <article className={styles.card} key={opportunity.id}>
               <div className={styles.cardTopline}>
                 <span className={styles.kind}>{opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
@@ -318,8 +328,8 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
             </article>
           ))}
         </div>
-      ) : (
-        <div id="opportunity-results" className={styles.empty} role="status">
+      ) : grouped.total === 0 ? (
+        <div className={styles.empty} role="status">
           <Compass size={28} aria-hidden />
           <h3>
             {activeFilterCount > 0
@@ -337,10 +347,11 @@ export function OpportunitiesBoard({ opportunities, management = false }: Opport
             </button>
           ) : null}
         </div>
-      )}
-      {visible.length > visibleLimit ? <button type="button" className={styles.loadMore}
+      ) : null}
+      </div>
+      {grouped.standalone.length > visibleLimit ? <button type="button" className={styles.loadMore}
         onClick={() => setVisibleLimit((limit) => limit + 24)}>
-        Mostrar mais oportunidades ({Math.min(visible.length - visibleLimit, 24)} próximas)
+        Mostrar mais oportunidades ({Math.min(grouped.standalone.length - visibleLimit, 24)} próximas)
       </button> : null}
     </section>
   );

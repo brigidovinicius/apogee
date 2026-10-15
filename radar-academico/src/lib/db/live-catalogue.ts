@@ -1,9 +1,11 @@
 import { queryPublic, withAdminTransaction } from "./client";
 import { publishedOpportunityPredicate } from "./publication-filter";
+import { admissionProcessFor } from "@/lib/ingestion/admission-process";
 import { alertsAvailable } from "@/lib/alerts/mail";
 
 const liveQuery = `select
          o.id,
+         o.official_source_id as "_sourceId",
          o.opportunity_status as "opportunityStatus",
          o.verification_method as "verificationMethod",
          o.verified_at::text as "verifiedAt",
@@ -41,5 +43,7 @@ export async function listLiveCatalogue(management = false) {
   const rows = management ? await withAdminTransaction(async (client) => (await client.query(
     liveQuery.replace('o.id,', `o.id, o.version, o.official_source_id as "officialSourceId", o.application_route as "applicationRoute", o.evidence_json as evidence,`)
   )).rows) : (await queryPublic(liveQuery)).rows;
-  return rows.map(item=>({...item, alertsAvailable: alertsAvailable()}));
+  return rows.map(({ _sourceId, ...item }) => ({ ...item,
+    admissionProcess: admissionProcessFor(_sourceId, item), alertsAvailable: alertsAvailable(),
+  }));
 }

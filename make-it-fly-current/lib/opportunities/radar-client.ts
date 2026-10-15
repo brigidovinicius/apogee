@@ -120,6 +120,9 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
 
   return {
     id: `radar-${id}`,
+    admissionProcess: isCourse && isRecord(value.admissionProcess) &&
+      stringValue(value.admissionProcess.id) && stringValue(value.admissionProcess.title)
+      ? { id: stringValue(value.admissionProcess.id)!, title: stringValue(value.admissionProcess.title)! } : null,
     title,
     organization,
     kind: kindFromRadar(benefitType, isCourse),

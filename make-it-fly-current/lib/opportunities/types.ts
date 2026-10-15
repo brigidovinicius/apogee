@@ -35,6 +35,7 @@ export type OpportunityPreview = {
 
 /** Dados públicos do catálogo; controles administrativos permanecem no servidor. */
 export type StudentOpportunity = OpportunityPreview & {
+  admissionProcess?: { id: string; title: string } | null;
   location: string;
   stateCode: BrazilianStateCode | null;
   cityName: string | null;
