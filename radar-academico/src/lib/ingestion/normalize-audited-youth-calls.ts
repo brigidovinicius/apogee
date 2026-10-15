@@ -36,7 +36,7 @@ export function normalizeAuditedYouthCall(html: string, source: OfficialSource, 
     availability=enrollmentLinks===2;
     if (!confirmedTerminalStatus(block) && !/Inscrições ABERTAS até 08\/12\b/.test(block)) throw new Error("Prazo virtual sem confirmação");
     deadline="2026-12-08";title="Mobilidade virtual CPS — seleção ARI 031/2026 (eMovies e INILATmov+)";
-    requirements="Para alunos de Fatec que atendam ao edital ARI 031/2026. Programa de mobilidade virtual, sem viagem anunciada na listagem. A página monitorada não detalha idade, idiomas ou outros requisitos: consulte o edital e as regras da instituição escolhida antes de se candidatar. Uma ficha para o processo seletivo, sem multiplicar programas parceiros, instituições ou componentes curriculares. A candidatura não garante aceitação.";
+    requirements="Para alunos de Fatec que atendam ao edital ARI 031/2026. Programa de mobilidade virtual, sem viagem anunciada na listagem. A página oficial não detalha idade, idiomas ou outros requisitos: consulte o edital e as regras da instituição escolhida antes de se candidatar. Confira as opções disponíveis para a seleção de mobilidade virtual. A candidatura não garante aceitação.";
   } else {
     if (!/Cursos com inscrições abertas\s*[–-]\s*2026/.test(page)) throw new Error("Índice NILT sem edição atual");
     const rows=$("tr").toArray().filter(n=>clean($(n).find("td").first().text())==="Cartas de motivação para intercâmbios acadêmicos");
@@ -57,7 +57,7 @@ export function normalizeAuditedYouthCall(html: string, source: OfficialSource, 
     categories:virtual?["intercambios"]:["formacao"],isCourse:!virtual,nationallyEligible:false,
     countryCode:null,stateCode:null,cityName:null,geographicScopeKind:"unknown",deadlineAt:deadline,deadlinePrecision:"date_only",
     opportunityStatus:confirmedTerminalStatus(block)??(availability && today<=deadline?"open":"closed"),reviewStatus:"needs_information",
-    requirementsText:requirements,amountText:"Apoio financeiro, gratuidade e remuneração não informados na listagem monitorada. Consulte os termos oficiais antes de se candidatar.",
+    requirementsText:requirements,amountText:"Apoio financeiro, gratuidade e remuneração não informados na página oficial consultada. Consulte os termos oficiais antes de se candidatar.",
     evidenceJson:{deadline_at:proof,opportunity_status:proof,requirements:proof},extractionMethod:source.extractionMode,
     contentHash:crypto.createHash("sha256").update(`audited-youth-v1\n${source.id}\n${block}\n${availability}`).digest("hex")}];
 }
