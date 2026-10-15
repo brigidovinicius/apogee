@@ -23,7 +23,7 @@ it("withdraws full or removed registration and confirmed cancellation",()=>{
 });
 it("preserves previous evidence via error on partial pages, edition changes or contradictory capacity",()=>{
  const s=source(NIAVI_ID,NIAVI_URL);
- for(const html of ["<h1>Manutenção</h1>",niavi.replace("24 de outubro de 2026","24 de outubro de 2027"),niavi.replace("Restam 93","Restam 94"),niavi.replace('</main>','Inscrições até 20/10/2026.</main>')]){
+ for(const html of ["<h1>Manutenção</h1>",niavi.replace("24 de outubro de 2026","24 de outubro de 2027"),niavi.replace("Restam 93","Restam 94"),niavi.replace('</main>','Inscrições até 20/10/2026.</main>'),niavi.replace('</main>','Inscrições encerram em 31/02/2026.</main>')]){
   expect(()=>normalizeScHackathon(html,s,now)).toThrow();
  }
  expect(normalizeScHackathon(niavi,source("other",NIAVI_URL),now)).toEqual([]);

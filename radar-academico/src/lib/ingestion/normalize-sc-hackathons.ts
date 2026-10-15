@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import * as cheerio from "cheerio";
 import { eventHasNotStarted } from "./event-start";
 import { confirmedTerminalStatus } from "./publication";
+import { detectDeadline } from "./detect-deadline";
 import type { OfficialSource, OpportunityCandidate } from "./types";
 
 export const NIAVI_ID = "niavi-starttech-2026";
@@ -42,7 +43,8 @@ export function normalizeScHackathon(html: string, source: OfficialSource, now =
   const status = terminal ?? (eventHasNotStarted(start, now) && open ? "open" : "closed");
   if (!terminal && !/gratuit[ao]/i.test(text)) throw new Error("Condições de participação sem comprovação");
   // A new explicitly stated registration deadline needs a new audit, never overwrite with the event date.
-  if (!terminal && /inscriç(?:ão|ões).{0,40}(?:até|encerram|terminam)\s*(?:dia\s*)?\d/i.test(text)) throw new Error("Prazo de inscrição exige auditoria");
+  const deadline = detectDeadline(text);
+  if (!terminal && (deadline.stated || deadline.precision !== "not_informed")) throw new Error("Prazo de inscrição exige auditoria");
   const proof = (excerpt: string) => ({ source_url: url, excerpt });
   const requirements = niavi
     ? "Hackathon para estudantes do ensino médio; preferência de 15 a 18 anos e prioridade para escolas públicas de Rio do Sul. Não é preciso saber programar. Menores precisam de autorização do responsável; estudantes de escolas particulares entram em lista de espera. Local: ACIRS, Rio do Sul/SC, em 24/10/2026, a partir de 07h30 anunciadas. Deslocamento por conta do participante. Banco de talentos opcional não é vaga de estágio."
