@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import styles from "@/components/opportunities/opportunities.module.css";
 import { listPublicOpportunities } from "@/lib/opportunities/access";
+import { opportunityFiltersFromSearchParams } from "@/lib/opportunities/types";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +24,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function OpportunitiesPage() {
-  const opportunities = await listPublicOpportunities().catch(() => null);
+export default async function OpportunitiesPage({ searchParams }: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(await searchParams)) {
+    if (typeof value === "string") params.set(key, value);
+  }
+  const opportunities = await listPublicOpportunities(opportunityFiltersFromSearchParams(params)).catch(() => null);
 
   return (
     <div className={styles.page}>
@@ -46,7 +53,7 @@ export default async function OpportunitiesPage() {
           </p>
         </section>
 
-        {opportunities ? <OpportunitiesBoard opportunities={opportunities} /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
+        {opportunities ? <OpportunitiesBoard key={params.toString()} opportunities={opportunities} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
       </main>
 
       <SiteFooter />

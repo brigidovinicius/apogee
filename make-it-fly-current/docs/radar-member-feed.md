@@ -1,12 +1,12 @@
 # Radar: prioridade de experiências e apresentação financeira
 
-Implementação local em 15/10/2026, branch `feat/radar-extracurricular-feed-20261015`. Sem migração, dependência nova, push ou deploy.
+Implementação iniciada em 15/10/2026, branch `feat/radar-extracurricular-feed-20261015`. A prioridade de membros foi publicada em 16/10; a extensão ao catálogo público está descrita abaixo. Os registros de produção ficam no runbook `docs/apogee-routine-vps-deploy.md` da raiz do repositório.
 
 ## Caminho dos dados
 
 A API existente do Radar (`version: 3`) devolve o catálogo completo, sem LIMIT/OFFSET. Sua consulta `live-catalogue.ts` usa `publishedOpportunityPredicate`: fonte ativa/verificada, publicação válida, elegibilidade editorial e prazos vigentes. Esses controles não foram alterados.
 
-A ponte `radar-client.ts`, que é `server-only`, conserva `amountText` em `benefit` e deriva campos de apresentação. Não altera o banco nem os coletores. `access.ts` mantém a autorização e computa a ordem do catálogo completo apenas para membros. A página lê os filtros da URL no servidor; o mural filtra esse conjunto, agrupa processos e só então aplica o limite de 24 cards. São operações de comparação independentes da quantidade de resultados, portanto ordenar antes de filtrar mantém a mesma ordem relativa dos itens elegíveis. Não há ordenação apenas da página carregada.
+A ponte `radar-client.ts`, que é `server-only`, conserva `amountText` em `benefit` e deriva campos de apresentação. Não altera o banco nem os coletores. `access.ts` mantém a autorização de membros/admin e computa a mesma ordem do catálogo completo para os feeds público e de membros. As duas páginas leem os filtros da URL no servidor; o mural filtra esse conjunto, agrupa processos e só então aplica o limite de 24 cards. São operações de comparação independentes da quantidade de resultados, portanto ordenar antes de filtrar mantém a mesma ordem relativa dos itens elegíveis. Não há ordenação apenas da página carregada.
 
 ## Regra de prioridade (refinada em 16/10/2026)
 
@@ -21,9 +21,9 @@ Em cada grupo: benefício financeiro confirmado primeiro; depois o prazo já uti
 
 Com categoria, modalidade ou busca explícita, a precedência editorial entre naturezas é desativada. Formação e localização restringem os itens elegíveis, mantendo a preferência por eventos e projetos. O conjunto solicitado continua acessível; benefícios confirmados e prazos ordenam os resultados dentro de cada grupo. A busca e as categorias existentes são mantidas. Nenhum item é excluído do banco.
 
-Processos de vestibular continuam contando como um card e preservam as opções de curso filtradas. Na área de membros, integram a mesma sequência e o mesmo limite de 24 dos demais cards. O botão revela as próximas 24 entradas do mesmo conjunto, sem repetir processos. Mudanças na URL reiniciam o limite. Atualizações reais do catálogo podem mudar os resultados; não foi implementado snapshot persistente de paginação.
+Processos de vestibular continuam contando como um card e preservam as opções de curso filtradas. Nas páginas pública e de membros, integram a mesma sequência e o mesmo limite de 24 dos demais cards. O botão revela as próximas 24 entradas do mesmo conjunto, sem repetir processos. Mudanças na URL reiniciam o limite. Atualizações reais do catálogo podem mudar os resultados; não foi implementado snapshot persistente de paginação.
 
-A rota `/oportunidades` conserva a ordenação anterior e a seção inicial de vestibulares. Compartilha as melhorias dos valores, requisitos e datas dos cards.
+A rota `/oportunidades` usa a mesma prioridade editorial da área de membros. A apresentação administrativa mantém sua ordenação por prazo e seção de processos.
 
 ## Dinheiro e condições
 
@@ -122,3 +122,11 @@ Passaram os 53 testes selecionados, geração e checagem de tipos, build e diff 
 Prévia estática dos componentes atuais gerada em `/private/tmp/apogee-radar-feed-preview-20261016.html`. A inspeção de pixels desta rodada ficou pendente: o Safari retornou timeout e o navegador integrado bloqueou o protocolo `file:`. Não houve teste autenticado ponta a ponta nem validação em produção. Manifesto e logs: `/private/tmp/apogee-radar-focus-results-20261016.json` e `/private/tmp/apogee-radar-focus-{tests,lint,typegen,typecheck,build,preview}-20261016.log`.
 
 Nenhum processo foi encerrado. Sem push ou deploy; o site publicado não recebeu este refinamento.
+
+## Extensão à página pública em 16/10/2026
+
+Após a publicação do feed de membros, o usuário autorizou aplicar a mesma regra em `/oportunidades` e publicar o ajuste. `listPublicOpportunities(filters)` agora normaliza os filtros e usa `orderOpportunityFeed`, compartilhado com a DAL de membros. A página pública passa os parâmetros da URL para a DAL e reinicia o mural quando eles mudam. O prop compartilhado `editorialFeed` conserva a ordem do servidor e inclui os processos na paginação normal. A área administrativa continua com a apresentação anterior; as autorizações não mudaram.
+
+A regressão da página pública executa a página, a DAL e o mural reais com catálogo sintético: um projeto de extensão e um evento vêm antes de 30 bolsas de pesquisa e de um processo de mestrado; só 24 entradas são exibidas inicialmente. UF, cidade e formação preservam a prioridade. Busca por mestrado, categoria de formação e modalidade Curso continuam retornando o processo solicitado. O teste falha caso o catálogo público passe a exigir sessão de membro ou admin.
+
+Passaram os 54 testes selecionados de feed, página, filtros, acesso, conteúdo, localização e datas. `tests/admission-processes.test.mjs` mantém a alteração local preexistente; a suíte completa do commit será validada pelo CI oficial. Lint e tipos são executados sequencialmente pela fila; o build é validado no CI e no deploy da VPS. Evidências locais desta etapa: `/private/tmp/apogee-public-priority-tests-20261016.log` e `/private/tmp/apogee-public-priority-results-20261016.json`. Resultado de CI e validação pública pós-deploy serão registrados no runbook da raiz.

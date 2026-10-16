@@ -2,7 +2,7 @@ import "server-only";
 import type { OpportunityFilters, StudentOpportunity } from "./types";
 
 /** Explicit editorial groups, then confirmed cash, then the existing deadline criterion. */
-export function orderMemberFeed(opportunities: readonly StudentOpportunity[], filters: OpportunityFilters) {
+export function orderOpportunityFeed(opportunities: readonly StudentOpportunity[], filters: OpportunityFilters) {
   // Geography and education narrow eligibility without requesting a different activity.
   const prioritizeActivities = !filters.category && !filters.kind && !filters.query?.trim();
   const group = (item: StudentOpportunity) => {

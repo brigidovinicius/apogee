@@ -36,7 +36,7 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
           </p>
         </div>
       </header>
-      {opportunities ? <OpportunitiesBoard key={params.toString()} opportunities={opportunities} memberFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
+      {opportunities ? <OpportunitiesBoard key={params.toString()} opportunities={opportunities} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
     </div>
   );
 }

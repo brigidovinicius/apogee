@@ -32,7 +32,7 @@ import styles from "./opportunities.module.css";
 type OpportunityBoardProps = {
   opportunities: readonly StudentOpportunity[];
   management?: boolean;
-  memberFeed?: boolean;
+  editorialFeed?: boolean;
 };
 
 const formatDate = (date: string) =>
@@ -44,7 +44,7 @@ const formatDate = (date: string) =>
     timeZone: "America/Sao_Paulo",
   }).format(new Date(date.length > 10 ? date : `${date}T12:00:00Z`));
 
-export function OpportunitiesBoard({ opportunities, management = false, memberFeed = false }: OpportunityBoardProps) {
+export function OpportunitiesBoard({ opportunities, management = false, editorialFeed = false }: OpportunityBoardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -65,13 +65,13 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
     [filterOptions, searchParams],
   );
   const visible = useMemo(
-    () => filterOpportunities(opportunities, filters, today, memberFeed),
-    [filters, opportunities, today, memberFeed],
+    () => filterOpportunities(opportunities, filters, today, editorialFeed),
+    [filters, opportunities, today, editorialFeed],
   );
   const grouped = useMemo(() => groupAdmissionProcesses(visible), [visible]);
-  // The member order is computed on the server over the entire catalogue.
+  // The public and member feed order is computed on the server over the entire catalogue.
   // Group before slicing so course options never create duplicates across pages.
-  const entries = memberFeed ? grouped.entries : grouped.standalone.map((opportunity) => ({
+  const entries = editorialFeed ? grouped.entries : grouped.standalone.map((opportunity) => ({
     type: "opportunity" as const, id: `opportunity:${opportunity.id}`, opportunity,
   }));
   const activeFilterCount = countActiveOpportunityFilters(filters);
@@ -153,7 +153,7 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
         </button>
         <p className={styles.filterSummary}>
           {activeFilterCount === 0
-            ? memberFeed ? "Experiências extracurriculares primeiro" : "Mostrando todas as classificações disponíveis"
+            ? editorialFeed ? "Experiências extracurriculares primeiro" : "Mostrando todas as classificações disponíveis"
             : `${activeFilterCount} ${activeFilterCount === 1 ? "filtro ativo" : "filtros ativos"}`}
         </p>
       </div>
@@ -274,7 +274,7 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
       </div>
 
       <div id="opportunity-results">
-      {!memberFeed && grouped.groups.length > 0 ? <section className={styles.admissionSection} aria-labelledby="admission-processes-title">
+      {!editorialFeed && grouped.groups.length > 0 ? <section className={styles.admissionSection} aria-labelledby="admission-processes-title">
         <h3 id="admission-processes-title">Ingresso por vestibular</h3>
         <p>Seleções por prova ou exame de classificação. Cada processo reúne os cursos disponíveis e conta como uma oportunidade.</p>
         <div className={styles.grid}>{grouped.groups.map((group) => <AdmissionProcessCard key={group.id} group={group} management={management} />)}</div>
