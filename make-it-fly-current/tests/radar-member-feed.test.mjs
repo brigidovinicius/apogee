@@ -203,3 +203,61 @@ test("ambiguous degree funding stays below activities, while researcher selectio
   }
   assert.equal(opportunity({ title: "Seleção para o programa de doutorado em Física", categories: ["formacao"], isCourse: true }).editorialNature, "formal_admission");
 });
+
+test("events and concrete extracurricular projects precede generic paid research before the first page", () => {
+  const research = Array.from({ length: 30 }, (_, i) => opportunity({ id: `research-${i}`, title: "Seleção de pesquisadores", categories: ["pesquisa"], benefitType: "research_scholarship", amountText: "Bolsa de R$ 10000 / mês.", deadlineAt: "2099-01-01" }));
+  const event = opportunity({ id: "event", title: "Encontro da Faculdade de Engenharia", categories: ["eventos"] });
+  const hackathon = opportunity({ id: "hackathon" });
+  const project = opportunity({ id: "project", title: "Projeto extracurricular de robótica", categories: ["formacao"] });
+  const funding = opportunity({ id: "degree", title: "Bolsa de doutorado", categories: ["pesquisa"], benefitType: "research_scholarship" });
+  const admission = opportunity({ id: "admission", title: "Seleção para graduação", categories: ["formacao"], amountText: "Remuneração: R$ 10000." });
+  const ordered = orderMemberFeed([admission, funding, ...research, project, event, hackathon], logic.EMPTY_OPPORTUNITY_FILTERS);
+  assert.deepEqual(new Set(ordered.slice(0, 3).map(i => i.id)), new Set([project.id, event.id, hackathon.id]));
+  assert.equal(ordered[3], research[0]);
+  assert.equal(ordered.at(-2), funding);
+  assert.equal(ordered.at(-1), admission);
+  assert.equal(ordered.length, 35);
+});
+
+test("project focus needs explicit context or structured extension funding, never a university or generic degree", () => {
+  for (const title of ["Projeto extracurricular de robótica", "Projetos extracurriculares", "Projeto de extensão em comunidade", "Projeto de voluntariado", "Programa de voluntariado", "Projeto de iniciação científica"]) {
+    const project = opportunity({ title, categories: ["formacao"] });
+    assert.equal(project.editorialNature, "extracurricular", title);
+    assert.equal(project.editorialFocus, "extracurricular_project", title);
+  }
+  assert.equal(opportunity({ title: "Bolsa de extensão", benefitType: "extension_scholarship", categories: ["bolsas"] }).editorialFocus, "extracurricular_project");
+  for (const patch of [
+    { title: "Projeto de pesquisa em Física", categories: ["pesquisa"] },
+    { title: "Bolsa para doutorandos", categories: ["pesquisa"] },
+    { title: "Faculdade de Engenharia", categories: ["formacao"], isCourse: true },
+    { title: "Bolsa de doutorado", categories: ["pesquisa"], benefitType: "research_scholarship" },
+  ]) assert.equal(opportunity(patch).editorialFocus, null);
+  const universityEvent = opportunity({ title: "Evento para doutorandos na Faculdade", categories: ["eventos"] });
+  assert.equal(universityEvent.editorialFocus, "event_or_competition");
+});
+
+test("explicit entrance requirements override an event tag without penalizing vestibular preparation events", () => {
+  for (const requirementsText of ["Ingresso na graduação por vestibular.", "Exige aprovação no vestibular.", "É necessário ser aprovado no vestibular."]) {
+    const admission = opportunity({ title: "Vagas em Engenharia", categories: ["eventos"], requirementsText });
+    assert.equal(admission.editorialNature, "formal_admission", requirementsText);
+    assert.equal(admission.editorialFocus, null);
+  }
+  for (const requirementsText of ["Não exige aprovação no vestibular.", "Não é necessário ser aprovado no vestibular.", "Orientação sobre ingresso na graduação por vestibular."]) {
+    const event = opportunity({ title: "Evento de preparação para o vestibular", categories: ["eventos"], requirementsText });
+    assert.equal(event.editorialFocus, "event_or_competition", requirementsText);
+  }
+});
+
+test("location and education filters retain activity priority; explicit topics and search override it", () => {
+  const event = opportunity({ id: "event", categories: ["eventos"], stateCode: "SC", cityName: "Florianópolis", applicantType: "undergraduate_student" });
+  const course = opportunity({ id: "course", title: "Seleção de graduação", categories: ["formacao"], stateCode: "SC", cityName: "Florianópolis", applicantType: "undergraduate_student", deadlineAt: "2099-01-01" });
+  for (const patch of [{ stateCode: "SC" }, { stateCode: "SC", cityName: "Florianópolis" }, { level: "Graduação" }, { query: "   " }]) {
+    const filters = { ...logic.EMPTY_OPPORTUNITY_FILTERS, ...patch };
+    const ordered = orderMemberFeed([course, event], filters);
+    assert.equal(ordered[0], event);
+    assert.deepEqual(logic.filterOpportunities(ordered, filters, "2099-01-01", true).map(i => i.id), [event.id, course.id]);
+  }
+  for (const patch of [{ category: "formacao" }, { kind: "Curso" }, { query: "graduação" }]) {
+    assert.equal(orderMemberFeed([event, course], { ...logic.EMPTY_OPPORTUNITY_FILTERS, ...patch })[0], course);
+  }
+});

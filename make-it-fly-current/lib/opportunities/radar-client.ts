@@ -118,12 +118,14 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
   if (deadlineUnknown && (deadlineAt || !categories.includes("eventos") || value.opportunityStatus !== "open" || !eventStartsAt || !Number.isFinite(Date.parse(eventStartsAt)))) return null;
   if (deadlinePrecision !== "continuous_flow" && !deadlineUnknown && !deadline) return null;
 
+  const editorialNature = editorialNatureFromRadar(value);
   return {
     id: `radar-${id}`,
     admissionProcess: isCourse && isRecord(value.admissionProcess) &&
       stringValue(value.admissionProcess.id) && stringValue(value.admissionProcess.title)
       ? { id: stringValue(value.admissionProcess.id)!, title: stringValue(value.admissionProcess.title)! } : null,
-    editorialNature: editorialNatureFromRadar(value),
+    editorialNature,
+    editorialFocus: editorialFocusFromRadar(value, editorialNature),
     financials: financialsFromRadar(value),
     title,
     organization,
@@ -183,20 +185,36 @@ export async function listRadarOpportunities(): Promise<StudentOpportunity[]> {
 export function editorialNatureFromRadar(value: Record<string, unknown>): StudentOpportunity["editorialNature"] {
   if (value.isCourse === true && isRecord(value.admissionProcess) && stringValue(value.admissionProcess.id)) return "formal_admission";
   const categories = Array.isArray(value.categories) ? value.categories : [];
-  if (value.isCourse !== true && categories.some((category) => ["eventos", "competicoes"].includes(String(category)))) return "extracurricular";
   const title = stringValue(value.title) ?? "";
   const requirements = stringValue(value.requirementsText) ?? "";
   // Compound admission statements, never an isolated institution, degree or audience word.
-  const admissionTitle = /^(?:seleção|processo seletivo|admissão|ingresso|vagas)\s+(?:(?:para|de|no|na|ao|em)\s+)?(?:(?:o|a|um|uma)\s+)?(?:(?:curso|programa)\s+de\s+)?(?:mestrado|doutorado)\b/iu.test(title);
+  const admissionTitle = /^(?:seleção|processo seletivo|admissão|ingresso|vagas)\s+(?:(?:para|de|no|na|ao|em)\s+)?(?:(?:o|a|um|uma)\s+)?(?:(?:curso|programa)\s+de\s+)?(?:mestrado|doutorado|graduação|bacharelado|licenciatura|tecnólogo)\b/iu.test(title);
   const admissionRequirement = value.isCourse === true && /\bingresso (?:no|na|em|ao) (?:curso de |programa de )?(?:mestrado|doutorado|graduação|ensino superior)\b/iu.test(requirements);
   const degreeCourse = value.isCourse === true && /^(?:mestrado|doutorado)\b/iu.test(title) && /\b(?:inscriç|seleç|ingresso|vagas)/iu.test(requirements);
-  const entranceExam = value.isCourse === true && /\b(?:seleção por vestibular|ingresso.*vestibular)\b/iu.test(requirements);
+  const entranceExam = requirements.split(/[.;\n]/u).some((statement) => /^(?:seleção por vestibular|ingresso.*vestibular|(?:exige|requer|(?:(?:é|será)\s+)?necessári[oa]).*aprova(?:ção|do|da).*vestibular)\b/iu.test(statement.trim()));
   if (admissionTitle || admissionRequirement || degreeCourse || entranceExam) return "formal_admission";
   // Degree funding alone does not prove admission or a practical extracurricular project.
   const degreeFunding = ["academic_scholarship", "research_scholarship"].includes(String(value.benefitType)) && /^bolsas?(?: de)? (?:mestrado|doutorado)\b/iu.test(title);
   if (degreeFunding) return "unclassified";
+  if (value.isCourse !== true && (categories.some((category) => ["eventos", "competicoes"].includes(String(category))) || isExtracurricularProject(value))) return "extracurricular";
   if (value.isCourse !== true && categories.some((category) => ["pesquisa", "carreira", "intercambios"].includes(String(category)))) return "extracurricular";
   return "unclassified";
+}
+
+function isExtracurricularProject(value: Record<string, unknown>) {
+  if (value.isCourse === true) return false;
+  if (value.benefitType === "extension_scholarship") return true;
+  const context = `${stringValue(value.title) ?? ""}\n${stringValue(value.requirementsText) ?? ""}`;
+  // A generic research project or scholarship does not establish a practical student activity.
+  return /\bprojetos?\s+(?:extracurricular(?:es)?\b|de\s+(?:extensão|voluntariado|iniciação\s+(?:científica|tecnológica))\b)|\bprogramas?\s+de\s+(?:extensão|voluntariado)\b/iu.test(context);
+}
+
+/** Events and concrete projects precede generic research/career funding in the member feed. */
+function editorialFocusFromRadar(value: Record<string, unknown>, nature: StudentOpportunity["editorialNature"]): StudentOpportunity["editorialFocus"] {
+  if (nature !== "extracurricular") return null;
+  const categories = Array.isArray(value.categories) ? value.categories : [];
+  if (categories.some((category) => ["eventos", "competicoes"].includes(String(category)))) return "event_or_competition";
+  return isExtracurricularProject(value) ? "extracurricular_project" : null;
 }
 
 /** amountText is legacy prose. Ambiguous or mixed statements remain ordinary notes. */

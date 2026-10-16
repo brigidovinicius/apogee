@@ -43,6 +43,7 @@ export type OpportunityFinancials = {
 export type StudentOpportunity = OpportunityPreview & {
   /** Derived conservatively by the server from the verified source fields. */
   editorialNature?: "extracurricular" | "formal_admission" | "unclassified";
+  editorialFocus?: "event_or_competition" | "extracurricular_project" | null;
   financials?: OpportunityFinancials;
   admissionProcess?: { id: string; title: string } | null;
   location: string;

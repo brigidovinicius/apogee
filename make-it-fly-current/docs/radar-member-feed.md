@@ -8,17 +8,18 @@ A API existente do Radar (`version: 3`) devolve o catálogo completo, sem LIMIT/
 
 A ponte `radar-client.ts`, que é `server-only`, conserva `amountText` em `benefit` e deriva campos de apresentação. Não altera o banco nem os coletores. `access.ts` mantém a autorização e computa a ordem do catálogo completo apenas para membros. A página lê os filtros da URL no servidor; o mural filtra esse conjunto, agrupa processos e só então aplica o limite de 24 cards. São operações de comparação independentes da quantidade de resultados, portanto ordenar antes de filtrar mantém a mesma ordem relativa dos itens elegíveis. Não há ordenação apenas da página carregada.
 
-## Regra de prioridade
+## Regra de prioridade (refinada em 16/10/2026)
 
-Sem filtros ativos:
+Sem categoria, modalidade ou busca explícita, inclusive ao selecionar formação, UF ou cidade:
 
-1. Experiências extracurriculares confirmadas pelas categorias estruturadas `eventos`, `competicoes`, `pesquisa`, `carreira` e `intercambios`, quando não são ingresso em curso.
-2. Natureza ainda não classificada com segurança, inclusive financiamento de mestrado/doutorado sem prova de ingresso ou de projeto extracurricular.
-3. Ingresso acadêmico formal: vínculo de vestibular auditado já existente, ou declarações compostas e explícitas de ingresso/seleção em mestrado, doutorado ou graduação. As regras contextuais estão no servidor. Público de pós-graduação e nome de universidade não definem ingresso.
+1. Eventos e competições pelas categorias estruturadas; projetos extracurriculares, de extensão, voluntariado e iniciação científica/tecnológica explicitamente identificados no título ou requisitos, ou com bolsa de extensão estruturada.
+2. Outras experiências confirmadas em pesquisa, carreira e intercâmbios. Bolsa genérica de pesquisa não basta para colocar o item no primeiro grupo.
+3. Natureza ainda não classificada com segurança, inclusive financiamento de mestrado/doutorado sem prova de ingresso ou de projeto extracurricular.
+4. Ingresso acadêmico formal: vínculo de vestibular auditado já existente, ou declarações compostas e explícitas de ingresso/seleção em mestrado, doutorado ou graduação. Uma exigência explícita de aprovação no vestibular prevalece sobre uma categoria de evento. As regras contextuais estão no servidor. Público de pós-graduação e nome de universidade não definem ingresso.
 
 Em cada grupo: benefício financeiro confirmado primeiro; depois o prazo já utilizado; em empate, ID. Não se compara o valor de uma bolsa com o de um prêmio. As comparações não usam pesos de relevância. Não foi encontrado algoritmo comportamental no mural atual e nenhum foi criado.
 
-Com categoria, modalidade, formação, localização ou busca explícita, a precedência editorial entre naturezas é desativada. O conjunto solicitado continua acessível; benefícios confirmados e prazos ordenam os resultados. A busca e as categorias existentes são mantidas. Nenhum item é excluído do banco.
+Com categoria, modalidade ou busca explícita, a precedência editorial entre naturezas é desativada. Formação e localização restringem os itens elegíveis, mantendo a preferência por eventos e projetos. O conjunto solicitado continua acessível; benefícios confirmados e prazos ordenam os resultados dentro de cada grupo. A busca e as categorias existentes são mantidas. Nenhum item é excluído do banco.
 
 Processos de vestibular continuam contando como um card e preservam as opções de curso filtradas. Na área de membros, integram a mesma sequência e o mesmo limite de 24 dos demais cards. O botão revela as próximas 24 entradas do mesmo conjunto, sem repetir processos. Mudanças na URL reiniciam o limite. Atualizações reais do catálogo podem mudar os resultados; não foi implementado snapshot persistente de paginação.
 
@@ -98,3 +99,26 @@ Todos abaixo ficam em `make-it-fly-current/`:
 - `docs/radar-member-feed-validation-20261015.json` (novo)
 
 Resultados finais e logs completos estão em `/private/tmp/apogee-radar-feed-results-20261015.json` e `/private/tmp/apogee-radar-feed-{tests,lint,typegen,typecheck,build}-20261015.log`. A prévia estática está em `/private/tmp/apogee-radar-feed-preview-20261015.html`; não contém uma sessão autenticada nem interações ativas. Esses arquivos temporários não fazem parte da aplicação ou do deploy.
+
+## Refinamento e verificação em 16/10/2026
+
+A prioridade foi dividida para evitar que dezenas de bolsas genéricas de pesquisa remuneradas ocupem o lugar de eventos e projetos extracurriculares sem remuneração. `editorialFocus` é derivado exclusivamente no servidor, sem alteração da API de origem ou do banco. A precedência continua sendo calculada no catálogo completo antes da paginação. UF, cidade e formação agora mantêm essa preferência; categoria, modalidade e busca explícitas continuam prevalecendo.
+
+As regressões novas cobrem 30 bolsas de pesquisa à frente de eventos na entrada, projeto de extensão/voluntariado/iniciação, ingresso em graduação e exigência de vestibular mesmo sob uma categoria incorreta de evento. Universidade e público de pós-graduação não rebaixam um evento. Negativas de exigência de vestibular e eventos de orientação/preparação continuam no grupo de eventos.
+
+Checks finais executados sequencialmente pela fila global:
+
+```sh
+node --test --test-concurrency=1 tests/radar-member-feed.test.mjs tests/radar-deadline-mapping.test.mjs tests/opportunity-countdown.test.mjs tests/opportunity-location.test.mjs tests/opportunities-access.test.mjs tests/opportunities-content.test.mjs tests/members-radar-entry.test.mjs
+npm run lint
+npm run typegen
+npm run typecheck
+npm run build
+git diff --check
+```
+
+Passaram os 53 testes selecionados, geração e checagem de tipos, build e diff check. Lint: zero erros e o aviso preexistente de `no-img-element` em `components/gallery/gallery-admin.tsx:81`. A suíte completa `npm test` não foi repetida nesta rodada: `tests/admission-processes.test.mjs` já tinha alteração local fora do escopo, preservada sem mudanças (hash Git `76d3ce84df623fd3b04791ed8d56d2f33a6b1572`). A ordenação, o agrupamento e a renderização de processos foram cobertos também por `radar-member-feed.test.mjs`.
+
+Prévia estática dos componentes atuais gerada em `/private/tmp/apogee-radar-feed-preview-20261016.html`. A inspeção de pixels desta rodada ficou pendente: o Safari retornou timeout e o navegador integrado bloqueou o protocolo `file:`. Não houve teste autenticado ponta a ponta nem validação em produção. Manifesto e logs: `/private/tmp/apogee-radar-focus-results-20261016.json` e `/private/tmp/apogee-radar-focus-{tests,lint,typegen,typecheck,build,preview}-20261016.log`.
+
+Nenhum processo foi encerrado. Sem push ou deploy; o site publicado não recebeu este refinamento.
