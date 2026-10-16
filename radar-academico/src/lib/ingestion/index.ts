@@ -17,7 +17,7 @@ import { FULBRIGHT_SOURCE_ID, normalizeFulbright } from "./normalize-fulbright";
 
 import { EVG_SOURCE_ID, EVG_POLICY_URL, normalizeEvgPolicy, normalizeEvgCourse, isEvgCourseUrl, parseEvgListing, type EvgPolicy } from "./normalize-evg-courses";
 
-const promisingLink = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|edital|seleção|inscriç/i;
+const promisingLink = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|competição|evento|workshop|conferência|congresso|seminário|encontro|feira|palestra|webinar|extensão|empreendedorismo|incuba|acelera|edital|seleção|inscriç/i;
 
 async function detailText(body: Buffer, contentType: string) {
   if (/application\/pdf/i.test(contentType)) {

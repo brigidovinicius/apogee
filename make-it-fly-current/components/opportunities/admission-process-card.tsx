@@ -13,15 +13,17 @@ export function AdmissionProcessCard({ group, management = false }: { group: Adm
     <div className={styles.cardTopline}><span className={styles.kind}>Ingresso por vestibular{sharedWindow && first.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span></div>
     <div className={styles.cardMain}>
       <p className={styles.organization}>{first.organization}</p>
-      <h4>{group.title}</h4>
+      <h3>{group.title}</h3>
       <p className={styles.summary}>Um processo seletivo · {group.courses.length} {group.courses.length === 1 ? "opção de curso corresponde" : "opções de curso correspondem"} aos filtros.</p>
     </div>
+    <p className={styles.coursePreview}>{[...new Set(group.courses.map(course => course.title.split(" — ")[0]))].slice(0, 4).join(" · ")}{group.courses.length > 4 ? " e outros." : ""}</p>
     <p className={styles.admissionDeadline}>{sharedWindow ? first.deadlineLabel : "Consulte o prazo de cada opção de curso."}</p>
+    {sharedWindow && first.deadline && !first.deadlineAt ? <small>Horário de encerramento não informado.</small> : null}
     {sharedWindow ? <OpportunityCountdown opportunity={first} /> : null}
     <details className={styles.admissionOptions}>
-      <summary>Ver cursos, câmpus e requisitos ({group.courses.length})</summary>
-      <ul>{group.courses.map((course) => <li key={course.id}>
-        <h5>{course.title}</h5>
+      <summary>Ver cursos e requisitos ({group.courses.length})</summary>
+      <ul tabIndex={0} aria-label="Cursos, câmpus, vagas e requisitos disponíveis">{group.courses.map((course) => <li key={course.id}>
+        <h4>{course.title}</h4>
         <p>{course.location} · {course.level}</p>
         <p>{course.eligibility}</p>
         <OpportunityBenefits opportunity={course} />

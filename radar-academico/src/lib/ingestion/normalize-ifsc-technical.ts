@@ -34,7 +34,7 @@ export function normalizeIfscTechnicalCourses(html: string, source: OfficialSour
     }
     if (!element.is("p") || !campus) continue;
     if (/^Seleção por (?:prova|sorteio|ordem de inscrição)/i.test(paragraph)) {
-      selection = paragraph;
+      selection = paragraph.replace(/[:;.]+$/u, "").trim();
       continue;
     }
     if (!selection) continue;
@@ -78,7 +78,7 @@ export function normalizeIfscTechnicalCourses(html: string, source: OfficialSour
           location: { source_url: IFSC_TECHNICAL_URL, excerpt: `Câmpus ${campus}: ${course} ${detail}` },
         },
         extractionMethod: source.extractionMode,
-        contentHash: crypto.createHash("sha256").update(`ifsc-technical-v1\n${title}\n${detail}\n${selection}\n${window[0]}`).digest("hex"),
+        contentHash: crypto.createHash("sha256").update(`ifsc-technical-v2\n${title}\n${detail}\n${selection}\n${window[0]}`).digest("hex"),
       });
     }
   }

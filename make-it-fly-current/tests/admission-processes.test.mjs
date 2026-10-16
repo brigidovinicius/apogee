@@ -26,7 +26,7 @@ test("process card exposes course details and original management IDs", async ()
  new Function("require","module","exports",await compile("../components/opportunities/admission-process-card.tsx"))(name=>{if(!(name in mocks))throw Error(name);return mocks[name]},loaded,loaded.exports);
  const group=groupAdmissionProcesses([course("radar-original-id",{organization:"IFSC",verifiedAt:"2026-10-14",deadlineLabel:"Inscrições até 30 de outubro",eligibility:"Prova no câmpus",benefit:"Conferir taxa",location:"SC",level:"Ensino médio"})]).groups[0];
  const html=renderToStaticMarkup(React.createElement(loaded.exports.AdmissionProcessCard,{group,management:true}));
- assert.match(html,/<details/); assert.match(html,/Ver cursos, câmpus e requisitos/); assert.match(html,/editar=original-id/); assert.match(html,/Prova no câmpus/); assert.match(html,/Conferir taxa/); assert.match(html,/Ver processo seletivo/);
+ assert.match(html,/<details/); assert.match(html,/Ver cursos e requisitos/); assert.match(html,/editar=original-id/); assert.match(html,/Prova no câmpus/); assert.match(html,/Conferir taxa/); assert.match(html,/Ver processo seletivo/);
 });
 test("public and management board count processes and filter course options before grouping", async () => {
  const React = await import("react"), jsx=await import("react/jsx-runtime"), {renderToStaticMarkup}=await import("react-dom/server");
@@ -39,7 +39,14 @@ test("public and management board count processes and filter course options befo
  const base={organization:"IFSC",deadline:"2099-10-30",verifiedAt:"2026-10-14",deadlineLabel:"Prazo",eligibility:"Seleção por prova",benefit:"Ver taxa",summary:"Inscrições",location:"SC",stateCode:"SC",level:"Ensino médio",categories:["formacao"]};
  const opportunities=[course("a",{...base,title:"Mecatrônica",cityName:"Blumenau"}),course("b",{...base,title:"Informática",cityName:"Joinville"}),course("c",{...base,title:"Curso por sorteio",admissionProcess:null})];
  const render=management=>renderToStaticMarkup(React.createElement(loaded.exports.OpportunitiesBoard,{opportunities,management})).replace(/<!--.*?-->/g,"");
- for(const management of [false,true]){const html=render(management);assert.match(html,/2 oportunidades visíveis/);assert.equal((html.match(/data-process=/g)||[]).length,1);assert.match(html,/Mecatrônica \| Informática/);if(management)assert.match(html,/Cobertura do Radar: 2 de 1.000/);}
- query="busca=Mecatrônica";let html=render(false);assert.match(html,/1 oportunidade visível/);assert.match(html,/data-process="ifsc-2027">Mecatrônica</);assert.doesNotMatch(html,/data-process="ifsc-2027">.*Informática/);
- query="uf=SC&cidade=Joinville";html=render(false);assert.match(html,/1 oportunidade visível/);assert.match(html,/data-process="ifsc-2027">Informática</);
+ for (const management of [false, true]) {
+   query = management ? "" : "categoria=vestibular";
+   const html = render(management);
+   assert.match(html, management ? /2 oportunidades visíveis/ : /1 oportunidade visível/);
+   assert.equal((html.match(/data-process=/g)||[]).length, 1);
+   assert.match(html, /Mecatrônica \| Informática/);
+   if (management) assert.match(html, /Cobertura do Radar: 2 de 1.000/);
+ }
+ query="categoria=vestibular&busca=Mecatrônica";let html=render(false);assert.match(html,/1 oportunidade visível/);assert.match(html,/data-process="ifsc-2027">Mecatrônica</);assert.doesNotMatch(html,/data-process="ifsc-2027">.*Informática/);
+ query="categoria=vestibular&uf=SC&cidade=Joinville";html=render(false);assert.match(html,/1 oportunidade visível/);assert.match(html,/data-process="ifsc-2027">Informática</);
 });

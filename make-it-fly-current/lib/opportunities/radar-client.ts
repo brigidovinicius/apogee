@@ -124,6 +124,9 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     admissionProcess: isCourse && isRecord(value.admissionProcess) &&
       stringValue(value.admissionProcess.id) && stringValue(value.admissionProcess.title)
       ? { id: stringValue(value.admissionProcess.id)!, title: stringValue(value.admissionProcess.title)! } : null,
+    participationFormat: participationFormatFromRadar(value),
+    explicitlyUnpaid: /^(?:não remunerad[oa]|sem remuneração)\b/iu.test(stringValue(value.amountText) ?? ""),
+    entranceExam: entranceExamFromRadar(value),
     editorialNature,
     editorialFocus: editorialFocusFromRadar(value, editorialNature),
     financials: financialsFromRadar(value),
@@ -138,7 +141,7 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     stateCode: normalizedLocation.location.stateCode,
     cityName: normalizedLocation.location.cityName,
     nationallyEligible: nationallyEligible && normalizedLocation.location.stateCode === null,
-    eligibility: stringValue(value.requirementsText) ?? "Consulte o edital oficial para os critérios de elegibilidade.",
+    eligibility: normalizePublicText(stringValue(value.requirementsText) ?? "") || "Consulte o edital oficial para os critérios de elegibilidade.",
     benefit: stringValue(value.amountText) ?? "Consulte o edital oficial para o apoio previsto.",
     summary: value.opportunityStatus === "upcoming" ? "Inscrições futuras confirmadas na fonte oficial." : "Oportunidade com inscrições abertas na fonte oficial.",
     opportunityStatus: value.opportunityStatus === "upcoming" ? "upcoming" : "open",
@@ -206,7 +209,7 @@ function isExtracurricularProject(value: Record<string, unknown>) {
   if (value.benefitType === "extension_scholarship") return true;
   const context = `${stringValue(value.title) ?? ""}\n${stringValue(value.requirementsText) ?? ""}`;
   // A generic research project or scholarship does not establish a practical student activity.
-  return /\bprojetos?\s+(?:extracurricular(?:es)?\b|de\s+(?:extensão|voluntariado|iniciação\s+(?:científica|tecnológica))\b)|\bprogramas?\s+de\s+(?:extensão|voluntariado)\b/iu.test(context);
+  return /\bprojetos?\s+(?:extracurricular(?:es)?\b|de\s+(?:extensão|voluntariado|iniciação\s+(?:científica|tecnológica))\b)|\bprogramas?\s+de\s+(?:extensão|voluntariado|empreendedorismo|aceleração|incubação|inovação)\b/iu.test(context);
 }
 
 /** Events and concrete projects precede generic research/career funding in the member feed. */
@@ -251,4 +254,27 @@ export function financialsFromRadar(value: Record<string, unknown>): NonNullable
     financials.benefits.push({ label: "BOLSA", text: "Bolsa · Valor não divulgado" });
   }
   return financials;
+}
+
+/** Conservative presentation cleanup; original evidence and stored text remain intact. */
+export function normalizePublicText(text: string) {
+  return text.replace(/\s+/gu, " ").replace(/:\s*\./gu, ".").replace(/([.!?;])\1+/gu, "$1").trim();
+}
+
+export function entranceExamFromRadar(value: Record<string, unknown>) {
+  if (value.isCourse === true && isRecord(value.admissionProcess) && stringValue(value.admissionProcess.id)) return true;
+  const title = stringValue(value.title) ?? "";
+  const requirements = stringValue(value.requirementsText) ?? "";
+  const explicitTitle = /^(?:vestibular|(?:processo seletivo|ingresso)\s+(?:por|via)\s+vestibular)\b/iu.test(title);
+  const explicitRule = requirements.split(/[.;\n]/u).some((statement) => /^(?:seleção por (?:vestibular|prova|exame de classificação)|ingresso.*vestibular|(?:exige|requer|(?:(?:é|será)\s+)?necessári[oa]).*aprova(?:ção|do|da).*vestibular)\b/iu.test(statement.trim()));
+  return explicitTitle || explicitRule;
+}
+
+/** Only an explicit modality statement in verified requirements, never an online application URL. */
+export function participationFormatFromRadar(value: Record<string, unknown>): StudentOpportunity["participationFormat"] {
+  const text = stringValue(value.requirementsText) ?? "";
+  const matches = [...text.matchAll(/\b(?:modalidade|formato|oferta)\s*(?::|é|em)?\s+(online|on-line|a distância|ead|presencial|híbrido|híbrida)\b/giu)]
+    .map(match => /híbr/i.test(match[1]) ? "hibrido" as const : /presencial/i.test(match[1]) ? "presencial" as const : "online" as const);
+  const distinct = [...new Set(matches)];
+  return distinct.length === 1 ? distinct[0] : null;
 }

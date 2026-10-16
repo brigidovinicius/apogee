@@ -13,6 +13,8 @@ import { useMemo, useRef, useState } from "react";
 import {
   EMPTY_OPPORTUNITY_FILTERS,
   OPPORTUNITY_CATEGORIES,
+  OPPORTUNITY_CATEGORY_PRIORITY,
+  primaryOpportunityCategory,
   countActiveOpportunityFilters,
   type EducationLevel,
   filterOpportunities,
@@ -29,7 +31,10 @@ import {
 import type { BrazilianStateCode } from "@/lib/opportunities/location";
 import styles from "./opportunities.module.css";
 
+import type { OpportunityPage } from "@/lib/opportunities/catalogue";
+
 type OpportunityBoardProps = {
+  catalogue?: OpportunityPage;
   opportunities: readonly StudentOpportunity[];
   management?: boolean;
   memberFeed?: boolean;
@@ -44,43 +49,45 @@ const formatDate = (date: string) =>
     timeZone: "America/Sao_Paulo",
   }).format(new Date(date.length > 10 ? date : `${date}T12:00:00Z`));
 
-export function OpportunitiesBoard({ opportunities, management = false, memberFeed = false }: OpportunityBoardProps) {
+export function OpportunitiesBoard({ opportunities, management = false, memberFeed = false, catalogue }: OpportunityBoardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [visibleLimit, setVisibleLimit] = useState(24);
-  const [today] = useState(() => dateInBrazil());
+  const [initialToday] = useState(() => dateInBrazil());
+  const today = catalogue?.today ?? initialToday;
   const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   const filterOptions = useMemo(
-    () => getOpportunityFilterOptions(opportunities, today),
-    [opportunities, today],
+    () => catalogue?.filterOptions ?? getOpportunityFilterOptions(opportunities, today),
+    [catalogue, opportunities, today],
   );
   const filters = useMemo(
-    () => sanitizeOpportunityFilters(
+    () => catalogue?.filters ?? sanitizeOpportunityFilters(
       opportunityFiltersFromSearchParams(new URLSearchParams(searchParams.toString())),
       filterOptions,
     ),
-    [filterOptions, searchParams],
+    [catalogue, filterOptions, searchParams],
   );
   const visible = useMemo(
-    () => filterOpportunities(opportunities, filters, today, memberFeed),
-    [filters, opportunities, today, memberFeed],
+    () => filterOpportunities(opportunities, filters, today, memberFeed, management),
+    [filters, opportunities, today, memberFeed, management],
   );
   const grouped = useMemo(() => groupAdmissionProcesses(visible), [visible]);
-  // The member order is computed on the server over the entire catalogue.
+  // Public/member ranking and pagination are computed on the server.
   // Group before slicing so course options never create duplicates across pages.
-  const entries = memberFeed ? grouped.entries : grouped.standalone.map((opportunity) => ({
-    type: "opportunity" as const, id: `opportunity:${opportunity.id}`, opportunity,
-  }));
+  const entries = grouped.entries;
+  const total = catalogue?.total ?? grouped.total;
   const activeFilterCount = countActiveOpportunityFilters(filters);
   const coverage = useMemo(() => {
+    if (catalogue) return catalogue.coverage;
     const open = opportunities.filter((item) => isOpportunityOpen(item, today));
     return { total: groupAdmissionProcesses(open).total, byCategory: Object.fromEntries(
-      OPPORTUNITY_CATEGORIES.map(({ id }) => [id, groupAdmissionProcesses(open.filter((item) => item.categories?.includes(id))).total]),
-    ) };
-  }, [opportunities, today]);
+      [...OPPORTUNITY_CATEGORIES.map(({ id }) => [id, groupAdmissionProcesses(filterOpportunities(open, { ...filters, category: id }, today, true, management)).total]),
+        ["vestibular", groupAdmissionProcesses(filterOpportunities(open, { ...filters, category: "vestibular" }, today, true)).total]]),
+    };
+  }, [catalogue, opportunities, today, filters, management]);
   const cityOptions = filters.stateCode
     ? filterOptions.citiesByState[filters.stateCode] ?? []
     : [];
@@ -91,6 +98,7 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
       new URLSearchParams(searchParams.toString()),
       nextFilters,
     );
+    params.delete("pagina");
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
@@ -100,33 +108,56 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
     filterButtonRef.current?.focus();
   };
 
+  const pageHref = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (page > 1) params.set("pagina", String(page)); else params.delete("pagina");
+    return `${pathname}${params.size ? `?${params}` : ""}#mural-title`;
+  };
+
   return (
     <section className={styles.board} aria-labelledby="mural-title">
       <LiveCatalogueRefresh />
       <div className={styles.boardHeading}>
         <div>
           <p className={styles.kicker}>Mural em atualização</p>
-          <h2 id="mural-title">Encontre a sua próxima janela de lançamento.</h2>
+          <h2 id="mural-title">Explore o Radar</h2>
         </div>
         <p className={styles.count} aria-live="polite">
-          {grouped.total} {grouped.total === 1 ? "oportunidade visível" : "oportunidades visíveis"}
+          {total} {total === 1 ? "oportunidade visível" : "oportunidades visíveis"}
         </p>
       </div>
       {management ? <p className={styles.coverageProgress}>
         Cobertura do Radar: {coverage.total.toLocaleString("pt-BR")} de 1.000 oportunidades vigentes verificadas.
       </p> : null}
 
+      <div className={styles.searchBar}>
+          <form className={styles.locationField} onSubmit={(event) => {
+            event.preventDefault();
+            const query = new FormData(event.currentTarget).get("busca");
+            updateFilters({ ...filters, query: String(query ?? "").trim().slice(0, 100) || null });
+          }}>
+            <label htmlFor="opportunity-query">Área ou palavra-chave</label>
+            <input key={filters.query ?? ""} id="opportunity-query" name="busca" type="search" maxLength={100} defaultValue={filters.query ?? ""} placeholder="Ex.: engenharia, saúde, soldagem" />
+            <button type="submit">Buscar</button>
+          </form>
+      </div>
+
       <nav className={styles.categoryNavigation} aria-label="Categorias de oportunidades">
         <button type="button" aria-current={!filters.category ? "page" : undefined}
           className={!filters.category ? styles.activeCategory : undefined}
           onClick={() => updateFilters({ ...filters, category: null })}>Todas</button>
-        {OPPORTUNITY_CATEGORIES.map(({ id, label }) => (
+        {[...OPPORTUNITY_CATEGORIES].sort((a, b) => OPPORTUNITY_CATEGORY_PRIORITY.indexOf(a.id) - OPPORTUNITY_CATEGORY_PRIORITY.indexOf(b.id)).map(({ id, label }) => (
           <button key={id} type="button" aria-current={filters.category === id ? "page" : undefined}
             className={filters.category === id ? styles.activeCategory : undefined}
             onClick={() => updateFilters({ ...filters, category: id })}>
             {label} <span>({coverage.byCategory[id]})</span>
           </button>
         ))}
+        <button type="button" aria-current={filters.category === "vestibular" ? "page" : undefined}
+          className={filters.category === "vestibular" ? styles.activeCategory : undefined}
+          onClick={() => updateFilters({ ...filters, category: "vestibular" })}>
+          Ingresso por vestibular <span>({coverage.byCategory.vestibular})</span>
+        </button>
       </nav>
 
       <div className={styles.filterToolbar}>
@@ -153,7 +184,7 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
         </button>
         <p className={styles.filterSummary}>
           {activeFilterCount === 0
-            ? memberFeed ? "Experiências extracurriculares primeiro" : "Mostrando todas as classificações disponíveis"
+            ? memberFeed ? "Experiências extracurriculares primeiro" : "Mostrando oportunidades disponíveis"
             : `${activeFilterCount} ${activeFilterCount === 1 ? "filtro ativo" : "filtros ativos"}`}
         </p>
       </div>
@@ -187,15 +218,31 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
         </div>
 
         <div className={styles.filterFields}>
-          <form className={styles.locationField} onSubmit={(event) => {
-            event.preventDefault();
-            const query = new FormData(event.currentTarget).get("busca");
-            updateFilters({ ...filters, query: String(query ?? "").trim().slice(0, 100) || null });
-          }}>
-            <label htmlFor="opportunity-query">Área ou palavra-chave</label>
-            <input key={filters.query ?? ""} id="opportunity-query" name="busca" type="search" maxLength={100} defaultValue={filters.query ?? ""} placeholder="Ex.: engenharia, saúde, soldagem" />
-            <button type="submit">Buscar</button>
-          </form>
+          <div className={styles.locationField}>
+            <label htmlFor="opportunity-format">Formato confirmado</label>
+            <select id="opportunity-format" value={filters.format ?? ""} onChange={event => updateFilters({ ...filters, format: event.target.value as OpportunityFilters["format"] || null })}>
+              <option value="">Todos os formatos</option><option value="online">Online</option><option value="presencial">Presencial</option><option value="hibrido">Híbrido</option>
+            </select>
+          </div>
+          <div className={styles.locationField}>
+            <label htmlFor="opportunity-scope">Abrangência</label>
+            <select id="opportunity-scope" value={filters.scope ?? ""} onChange={event => updateFilters({ ...filters, scope: event.target.value === "nacional" ? "nacional" : null })}>
+              <option value="">Local e nacional</option><option value="nacional">Nacional</option>
+            </select>
+          </div>
+          <div className={styles.locationField}>
+            <label htmlFor="opportunity-benefit">Benefício ou participação confirmados</label>
+            <select id="opportunity-benefit" value={filters.benefit ?? ""} onChange={event => updateFilters({ ...filters, benefit: event.target.value as OpportunityFilters["benefit"] || null })}>
+              <option value="">Todas as condições</option><option value="remunerado">Com benefício financeiro</option><option value="nao-remunerado">Não remunerado</option><option value="premiacao">Com premiação financeira</option><option value="gratuito">Gratuito</option>
+            </select>
+            <span className={styles.fieldHint}>Condições não informadas ficam fora destes filtros específicos.</span>
+          </div>
+          <div className={styles.locationField}>
+            <label htmlFor="opportunity-deadline">Prazo e inscrições</label>
+            <select id="opportunity-deadline" value={filters.deadlineWindow ?? ""} onChange={event => updateFilters({ ...filters, deadlineWindow: event.target.value as OpportunityFilters["deadlineWindow"] || null })}>
+              <option value="">Todos os prazos vigentes</option><option value="abertas">Inscrições abertas</option><option value="7dias">Encerram em até 7 dias</option><option value="30dias">Encerram em até 30 dias</option><option value="continuo">Fluxo contínuo</option><option value="nao-informado">Prazo não informado</option>
+            </select>
+          </div>
           {filterOptions.kinds.length > 0 ? (
             <FilterGroup<OpportunityKind>
               label="Modalidade"
@@ -273,20 +320,15 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
         </div>
       </div>
 
+      {!management && !memberFeed ? <p className={styles.previewCount}><Link href="/membros/entrar?next=%2Fmembros%2Foportunidades">Entre na comunidade para continuar explorando o Radar.</Link></p> : null}
       <div id="opportunity-results">
-      {!memberFeed && grouped.groups.length > 0 ? <section className={styles.admissionSection} aria-labelledby="admission-processes-title">
-        <h3 id="admission-processes-title">Ingresso por vestibular</h3>
-        <p>Seleções por prova ou exame de classificação. Cada processo reúne os cursos disponíveis e conta como uma oportunidade.</p>
-        <div className={styles.grid}>{grouped.groups.map((group) => <AdmissionProcessCard key={group.id} group={group} management={management} />)}</div>
-      </section> : null}
-
       {entries.length > 0 ? (
         <div className={styles.grid}>
           {entries.slice(0, visibleLimit).map((entry) => entry.type === "admission"
             ? <AdmissionProcessCard key={entry.id} group={entry.group} management={management} />
             : <OpportunityCard key={entry.id} opportunity={entry.opportunity} management={management} />)}
         </div>
-      ) : grouped.total === 0 ? (
+      ) : total === 0 ? (
         <div className={styles.empty} role="status">
           <Compass size={28} aria-hidden />
           <h3>
@@ -307,7 +349,11 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
         </div>
       ) : null}
       </div>
-      {entries.length > visibleLimit ? <button type="button" className={styles.loadMore}
+      {catalogue && catalogue.pageCount > 1 ? <nav className={styles.pagination} aria-label="Páginas do Radar">
+        {catalogue.page > 1 ? <Link className={styles.loadMore} href={pageHref(catalogue.page - 1)}>Página anterior</Link> : null}
+        <span>Página {catalogue.page} de {catalogue.pageCount}</span>
+        {catalogue.page < catalogue.pageCount ? <Link className={styles.loadMore} href={pageHref(catalogue.page + 1)}>Próxima página</Link> : null}
+      </nav> : !catalogue && entries.length > visibleLimit ? <button type="button" className={styles.loadMore}
         onClick={() => setVisibleLimit((limit) => limit + 24)}>
         Mostrar mais oportunidades ({Math.min(entries.length - visibleLimit, 24)} próximas)
       </button> : null}
@@ -319,14 +365,14 @@ function OpportunityCard({ opportunity, management }: { opportunity: StudentOppo
   return (
     <article className={styles.card}>
       <div className={styles.cardTopline}>
-        <span className={styles.kind}>{opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
+        <span className={styles.kind}>{OPPORTUNITY_CATEGORIES.find(category => category.id === primaryOpportunityCategory(opportunity))?.label ?? opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
         <span>{opportunity.level}</span>
       </div>
       {opportunity.categories?.length ? <p className={styles.cardCategories}>
-        {OPPORTUNITY_CATEGORIES.filter(({ id }) => opportunity.categories?.includes(id)).map(({ label }) => label).join(" · ")}
+        {opportunity.kind}{OPPORTUNITY_CATEGORIES.filter(({ id }) => id !== primaryOpportunityCategory(opportunity) && opportunity.categories?.includes(id)).map(({ label }) => ` · ${label}`).join("")}
       </p> : null}
       <div className={styles.cardMain}>
-        <p className={styles.organization}>{opportunity.organization}</p>
+        <p className={styles.organization} title={opportunity.organization}>{opportunity.organization}</p>
         <h3>{opportunity.title}</h3>
         <OpportunityBenefits opportunity={opportunity} />
         <p className={styles.summary}>{opportunity.summary}</p>
@@ -336,21 +382,27 @@ function OpportunityCard({ opportunity, management }: { opportunity: StudentOppo
           <dt>Localização</dt>
           <dd className={styles.locationValue}><MapPin size={15} aria-hidden />{opportunity.location}</dd>
         </div>
-        <div>
-          <dt>Para quem</dt>
-          <dd>{opportunity.eligibility}</dd>
-        </div>
         {opportunity.eventStartsAt && Number.isFinite(Date.parse(opportunity.eventStartsAt)) ? <div>
           <dt>Realização</dt>
           <dd><time dateTime={opportunity.eventStartsAt}>{formatDate(opportunity.eventStartsAt)}</time></dd>
         </div> : null}
-        <OpportunityCosts opportunity={opportunity} />
       </dl>
+      <details className={styles.cardDisclosure}>
+        <summary>Requisitos e condições</summary>
+        <dl className={styles.details}>
+        <div>
+          <dt>Para quem</dt>
+          <dd>{opportunity.eligibility}</dd>
+        </div>
+          <OpportunityCosts opportunity={opportunity} />
+        </dl>
+      </details>
       <div className={styles.launchWindow}>
         <CalendarDays size={17} aria-hidden />
         <div>
           <span>Janela de inscrição</span>
           <strong>{opportunity.deadlineLabel}</strong>
+          {opportunity.deadline && !opportunity.deadlineAt ? <small>Horário de encerramento não informado.</small> : null}
         </div>
       </div>
       <OpportunityCountdown opportunity={opportunity} />

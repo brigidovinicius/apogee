@@ -141,7 +141,8 @@ test("member board renders extracurriculars first, a shared 24-card page, distin
   const event = opportunity({ id: "event", title: "Encontro universitário", categories: ["eventos"], eventStartsAt: "2099-10-28", amountText: "Ingresso: R$ 79,90." });
   const ordered = orderMemberFeed([...exams, event], logic.EMPTY_OPPORTUNITY_FILTERS);
   const html = renderToStaticMarkup(React.createElement(OpportunitiesBoard, { opportunities: ordered, memberFeed: true }));
-  assert.ok(html.indexOf(event.title) < html.indexOf("Vestibular agrupado"));
+  assert.ok(html.includes(event.title));
+  assert.doesNotMatch(html, /Vestibular agrupado/);
   assert.ok(html.includes(event.eligibility));
   assert.match(html, /Realização/); assert.match(html, /Janela de inscrição/); assert.match(html, /Início do evento/);
   assert.match(html, /<time dateTime="2099-10-28"/);
@@ -150,9 +151,11 @@ test("member board renders extracurriculars first, a shared 24-card page, distin
   assert.equal((first.match(/<article /g) ?? []).length, 24);
   assert.doesNotMatch(first, /Vestibular agrupado/);
   assert.match(first, /Mostrar mais oportunidades/);
-  // The shared public route retains its existing admission-first presentation.
+  // Public default excludes vestibular, while management still sees every original record.
   const publicHtml = renderToStaticMarkup(React.createElement(OpportunitiesBoard, { opportunities: ordered }));
-  assert.ok(publicHtml.indexOf("Vestibular agrupado") < publicHtml.indexOf(event.title));
+  assert.doesNotMatch(publicHtml, /Vestibular agrupado/);
+  const adminHtml = renderToStaticMarkup(React.createElement(OpportunitiesBoard, { opportunities: ordered, management: true }));
+  assert.match(adminHtml, /Vestibular agrupado/);
 });
 
 
@@ -170,7 +173,7 @@ test("member board applies explicit search to course options and resets the serv
   } finally { query = ""; }
 });
 
-test("member DAL authorizes and computes the full order without changing the public order", async () => {
+test("member DAL authorizes, shares public priority and applies explicit queries", async () => {
   const calls = [];
   const formal = opportunity({ id: "formal", title: "Seleção de mestrado", isCourse: true, categories: ["formacao"], deadlineAt: "2099-01-01" });
   const event = opportunity({ id: "event", categories: ["eventos"], deadlineAt: "2099-12-01" });
@@ -180,11 +183,11 @@ test("member DAL authorizes and computes the full order without changing the pub
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => [formal, event] },
   });
   const access = isolated("lib/opportunities/access.ts");
-  assert.deepEqual((await access.listPublicOpportunities()).map(i => i.id), [formal.id, event.id]);
+  assert.deepEqual((await access.listPublicOpportunities()).map(i => i.id), [event.id, formal.id]);
   assert.equal(calls.length, 0);
   assert.deepEqual((await access.listMemberOpportunities()).map(i => i.id), [event.id, formal.id]);
   assert.deepEqual(calls, ["/membros/oportunidades"]);
-  assert.deepEqual((await access.listMemberOpportunities({ ...logic.EMPTY_OPPORTUNITY_FILTERS, query: "mestrado" })).map(i => i.id), [formal.id, event.id]);
+  assert.deepEqual((await access.listMemberOpportunities({ ...logic.EMPTY_OPPORTUNITY_FILTERS, query: "mestrado" })).map(i => i.id), [formal.id]);
   // An unavailable location is sanitized consistently with the board, preserving default editorial order.
   assert.deepEqual((await access.listMemberOpportunities({ ...logic.EMPTY_OPPORTUNITY_FILTERS, stateCode: "SC" })).map(i => i.id), [event.id, formal.id]);
 });

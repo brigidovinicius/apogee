@@ -6,7 +6,7 @@ import { isAllowedHostname, isOfficialSourceUrl } from "@/lib/ingestion/validate
 import type { OfficialSource } from "@/lib/ingestion/types";
 import { claimDueDiscoveryTargets, completeDiscoveryTarget, saveDiscoveryLeads, type DiscoveryTarget } from "./watchlist";
 
-const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|oportunidade|curso|oficina|formação|prêmio|premiaç|competição|hackathon|desafio|edital|seleção|inscriç|chamada|programa|evento/i;
+const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|oportunidade|curso|oficina|formação|prêmio|premiaç|competição|hackathon|desafio|edital|seleção|inscriç|chamada|programa|evento|workshop|conferência|congresso|seminário|encontro|feira|palestra|webinar|extensão|empreendedorismo|incuba|acelera/i;
 const tracking = /^(utm_.+|fbclid|gclid)$/i;
 
 export function candidateUrl(input: string): string | null {

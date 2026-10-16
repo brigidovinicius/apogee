@@ -1,0 +1,174 @@
+{
+  "capturedAt": "2026-10-16T23:55:44.167Z",
+  "snapshotInput": "/private/tmp/apogee-radar-live-catalogue-20261016.json",
+  "originalRecords": 1180,
+  "originalGroupedTotal": 1082,
+  "originalJsonBytes": 2102122,
+  "elapsedMs": 85,
+  "cases": [
+    {
+      "query": "",
+      "total": 1080,
+      "serializedRecords": 24,
+      "page": 1,
+      "pageCount": 45,
+      "categories": {
+        "formacao": 982,
+        "bolsas": 87,
+        "intercambios": 7,
+        "competicoes": 3,
+        "pesquisa": 83,
+        "carreira": 3,
+        "eventos": 7,
+        "vestibular": 2
+      },
+      "serializedBytes": 38584,
+      "firstIds": [
+        "radar-814a05f3-5962-4195-9593-ebd6d0493ceb",
+        "radar-4c345e24-9a17-44a3-ae7b-2b823057d301",
+        "radar-ac4f1b35-5c24-407d-927f-23e9ba348bd1",
+        "radar-8c70ca75-6bcf-46ce-9836-d041e37c4e2f",
+        "radar-49c9e2e9-87e1-422e-8cef-c18591a2c94f",
+        "radar-b756f89f-c185-4f17-a17f-673c621896ea",
+        "radar-c5c5b96e-01a3-44f4-8893-120b98ebdf8f",
+        "radar-3c9cde2b-9172-422a-bc94-416cc58f2792"
+      ],
+      "exams": 0
+    },
+    {
+      "query": "categoria=vestibular",
+      "total": 2,
+      "serializedRecords": 100,
+      "page": 1,
+      "pageCount": 1,
+      "categories": {
+        "formacao": 982,
+        "bolsas": 87,
+        "intercambios": 7,
+        "competicoes": 3,
+        "pesquisa": 83,
+        "carreira": 3,
+        "eventos": 7,
+        "vestibular": 2
+      },
+      "serializedBytes": 144674,
+      "firstIds": [
+        "radar-0598590e-47f7-48b9-b17a-e3b7d6ffa42e",
+        "radar-14bb6aeb-c979-41e1-b10d-fe503ec1480d",
+        "radar-20bcc8b7-d994-4ba6-aec9-ebf05915d629",
+        "radar-22a56574-2595-4d67-8b68-78b09f06b513",
+        "radar-23a083e5-9fed-4e93-9cc3-0dc6af82377b",
+        "radar-2485f5a1-15f0-4893-9b51-8035cc04183b",
+        "radar-2646004d-629a-4cd7-b592-c2a776456d44",
+        "radar-284664fa-64ae-4a2b-91f4-40bfec23d756"
+      ],
+      "exams": 100
+    },
+    {
+      "query": "categoria=vestibular&uf=SC&cidade=Gaspar",
+      "total": 1,
+      "serializedRecords": 2,
+      "page": 1,
+      "pageCount": 1,
+      "categories": {
+        "formacao": 2,
+        "bolsas": 1,
+        "intercambios": 1,
+        "competicoes": 0,
+        "pesquisa": 0,
+        "carreira": 0,
+        "eventos": 0,
+        "vestibular": 1
+      },
+      "serializedBytes": 5250,
+      "firstIds": [
+        "radar-0598590e-47f7-48b9-b17a-e3b7d6ffa42e",
+        "radar-71ed2d60-c2b0-4dec-a079-13909387bf3c"
+      ],
+      "exams": 2
+    },
+    {
+      "query": "uf=SC&cidade=Gaspar",
+      "total": 3,
+      "serializedRecords": 3,
+      "page": 1,
+      "pageCount": 1,
+      "categories": {
+        "formacao": 2,
+        "bolsas": 1,
+        "intercambios": 1,
+        "competicoes": 0,
+        "pesquisa": 0,
+        "carreira": 0,
+        "eventos": 0,
+        "vestibular": 1
+      },
+      "serializedBytes": 6503,
+      "firstIds": [
+        "radar-ad7a3cdc-ba61-4502-9e38-0b09c2d3b6dc",
+        "radar-a2a14b82-c825-4d02-832b-0eaceeaafd53",
+        "radar-aaab9f89-b0ee-4f81-aa57-ff75f800ec93"
+      ],
+      "exams": 0
+    },
+    {
+      "query": "categoria=eventos",
+      "total": 7,
+      "serializedRecords": 7,
+      "page": 1,
+      "pageCount": 1,
+      "categories": {
+        "formacao": 982,
+        "bolsas": 87,
+        "intercambios": 7,
+        "competicoes": 3,
+        "pesquisa": 83,
+        "carreira": 3,
+        "eventos": 7,
+        "vestibular": 2
+      },
+      "serializedBytes": 13630,
+      "firstIds": [
+        "radar-814a05f3-5962-4195-9593-ebd6d0493ceb",
+        "radar-4c345e24-9a17-44a3-ae7b-2b823057d301",
+        "radar-ac4f1b35-5c24-407d-927f-23e9ba348bd1",
+        "radar-8c70ca75-6bcf-46ce-9836-d041e37c4e2f",
+        "radar-49c9e2e9-87e1-422e-8cef-c18591a2c94f",
+        "radar-b756f89f-c185-4f17-a17f-673c621896ea",
+        "radar-c5c5b96e-01a3-44f4-8893-120b98ebdf8f"
+      ],
+      "exams": 0
+    },
+    {
+      "query": "pagina=2",
+      "total": 1080,
+      "serializedRecords": 24,
+      "page": 2,
+      "pageCount": 45,
+      "categories": {
+        "formacao": 982,
+        "bolsas": 87,
+        "intercambios": 7,
+        "competicoes": 3,
+        "pesquisa": 83,
+        "carreira": 3,
+        "eventos": 7,
+        "vestibular": 2
+      },
+      "serializedBytes": 35645,
+      "firstIds": [
+        "radar-67c110ca-6157-4c0b-923a-e904ecf96245",
+        "radar-d8dd2321-809c-473d-b0f6-4e51cdeb3c39",
+        "radar-340d7af4-ef6d-4648-964d-b17bb04ca263",
+        "radar-37a90753-f07b-4ce7-9d5f-fd2c0536fb2f",
+        "radar-f4558c95-dfb6-4108-9d30-2a2da9723db0",
+        "radar-3c930081-9a87-40c0-b464-66dd50d01e01",
+        "radar-01c960c4-ae1d-4870-83fa-d13e23f7bc81",
+        "radar-6e145770-1538-40dc-a8af-20ef0b37813c"
+      ],
+      "exams": 0
+    }
+  ],
+  "originalIdsUnchanged": true,
+  "storedFieldsUntouched": true
+}

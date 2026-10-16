@@ -1,0 +1,99 @@
+{
+  "scope": "Local isolated worktree; public snapshot; no deployment",
+  "date": "2026-10-16",
+  "checks": [
+    {
+      "check": "site-tests",
+      "exitCode": 0,
+      "seconds": 49.79,
+      "log": "/private/tmp/radar-opt-site-tests-final-20261016.log"
+    },
+    {
+      "check": "site-lint",
+      "exitCode": 0,
+      "seconds": 20.53,
+      "log": "/private/tmp/radar-opt-site-lint-final-20261016.log"
+    },
+    {
+      "check": "site-types",
+      "exitCode": 0,
+      "seconds": 11.33,
+      "log": "/private/tmp/radar-opt-site-types-final-20261016.log"
+    },
+    {
+      "check": "backend-lint",
+      "exitCode": 0,
+      "seconds": 5.72,
+      "log": "/private/tmp/radar-opt-backend-lint-final-20261016.log"
+    },
+    {
+      "check": "backend-types",
+      "exitCode": 0,
+      "seconds": 4.77,
+      "log": "/private/tmp/radar-opt-backend-types-final-20261016.log"
+    },
+    {
+      "check": "catalogue-audit",
+      "exitCode": 0,
+      "seconds": 0.8,
+      "log": "/private/tmp/radar-opt-catalogue-audit-final-20261016.log"
+    },
+    {
+      "check": "backend-tests",
+      "exitCode": 0,
+      "seconds": 24.54,
+      "log": "/private/tmp/radar-opt-backend-tests-last-20261016.log"
+    },
+    {
+      "check": "site-build",
+      "exitCode": 0,
+      "seconds": 39.84,
+      "log": "/private/tmp/radar-opt-site-build-last-20261016.log"
+    }
+  ],
+  "siteTests": {
+    "passed": 292,
+    "failed": 0
+  },
+  "browser": {
+    "viewports": [
+      1440,
+      390,
+      320
+    ],
+    "horizontalOverflow": false,
+    "initialCards": 24,
+    "initialAdmissions": 0,
+    "explicitAdmissionCards": 2,
+    "courseOptions": [
+      59,
+      41
+    ],
+    "scGasparCards": 1,
+    "scGasparCourses": 2,
+    "paginationDuplicateTitles": 0,
+    "escapeFocusReturn": true,
+    "screenshots": "Timeout; DOM and geometry checks only",
+    "authenticatedMemberE2E": false,
+    "clockAdvanced": true,
+    "finalBuildChecked": true,
+    "initialHttpHtmlBytes": 175464,
+    "originalPublicHttpHtmlBytes": 2539367,
+    "comparison": "Different environments; same public opportunity snapshot. No field Core Web Vitals."
+  },
+  "release": {
+    "push": false,
+    "databaseMutation": false,
+    "sourceActivation": false,
+    "deployment": false
+  },
+  "notes": [
+    "Another active chat changed the original branch; integrate before release.",
+    "The existing private bridge still reads the whole server catalogue."
+  ],
+  "backendTests": {
+    "passed": 244,
+    "failed": 0
+  },
+  "totalTestsPassed": 536
+}

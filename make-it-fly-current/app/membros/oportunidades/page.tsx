@@ -3,8 +3,7 @@ import { MemberBar } from "@/components/members/member-bar";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
 import styles from "@/components/members/members.module.css";
 import { requireMember } from "@/lib/members/dal";
-import { opportunityFiltersFromSearchParams } from "@/lib/opportunities/types";
-import { listMemberOpportunities } from "@/lib/opportunities/access";
+import { listMemberOpportunityPage } from "@/lib/opportunities/access";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +21,7 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
   for (const [key, value] of Object.entries(await searchParams)) {
     if (typeof value === "string") params.set(key, value);
   }
-  const opportunities = await listMemberOpportunities(opportunityFiltersFromSearchParams(params)).catch(() => null);
+  const catalogue = await listMemberOpportunityPage(params).catch(() => null);
 
   return (
     <div className={styles.container}>
@@ -36,7 +35,7 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
           </p>
         </div>
       </header>
-      {opportunities ? <OpportunitiesBoard key={params.toString()} opportunities={opportunities} memberFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
+      {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} memberFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
     </div>
   );
 }
