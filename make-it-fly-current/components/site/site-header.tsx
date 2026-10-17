@@ -9,6 +9,7 @@ type SiteHeaderProps = {
   memberHref?: string;
   memberLabel?: string;
   tone?: "dark" | "light";
+  prefetch?: boolean;
 };
 
 const navigation: ReadonlyArray<{ href: string; label: string; section?: SiteSection }> = [
@@ -25,11 +26,12 @@ export function SiteHeader({
   memberHref = "/membros",
   memberLabel = "Membros",
   tone = "dark",
+  prefetch,
 }: SiteHeaderProps) {
   return (
     <header className={styles.header} data-tone={tone}>
       <div className={styles.headerInner}>
-        <Link className={styles.brand} href="/" aria-label="Apogee — início">
+        <Link className={styles.brand} href="/" aria-label="Apogee — início" prefetch={prefetch}>
           <Image
             src={tone === "light" ? "/brand/apogee-logo-navy.svg" : "/brand/apogee-logo-white.svg"}
             alt=""
@@ -44,6 +46,7 @@ export function SiteHeader({
           {navigation.map((item) => (
             <Link
               href={item.href}
+              prefetch={prefetch}
               key={item.href}
               aria-current={item.section === current ? "page" : undefined}
             >
@@ -55,6 +58,7 @@ export function SiteHeader({
         <Link
           className={styles.memberLink}
           href={memberHref}
+          prefetch={prefetch}
           aria-current={current === "members" ? "page" : undefined}
         >
           {memberLabel}
@@ -66,13 +70,14 @@ export function SiteHeader({
             {navigation.map((item) => (
               <Link
                 href={item.href}
+                prefetch={prefetch}
                 key={item.href}
                 aria-current={item.section === current ? "page" : undefined}
               >
                 {item.label}
               </Link>
             ))}
-            <Link href={memberHref} aria-current={current === "members" ? "page" : undefined}>
+            <Link href={memberHref} prefetch={prefetch} aria-current={current === "members" ? "page" : undefined}>
               {memberLabel}
             </Link>
           </nav>
