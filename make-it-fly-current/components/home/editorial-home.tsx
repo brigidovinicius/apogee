@@ -5,7 +5,6 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { HomeMotion } from "./home-motion";
 import { HomeRadar } from "./home-radar";
-import { HomeGallery } from "./home-gallery";
 import styles from "./editorial-home.module.css";
 
 export function EditorialHome() {
@@ -35,9 +34,6 @@ export function EditorialHome() {
         <div className={styles.communityIntro}>
           <h2 id="community-title" data-home-reveal>Juntos,<br />mais longe.</h2>
           <div data-home-reveal data-home-delay="0.08"><p>Uma ideia pode começar com você. Na Apogee, ela encontra outras perspectivas, conversas e espaço para sair do papel.</p><Link prefetch={false} className={styles.inlineLink} href="/membros/cadastro">Encontrar a comunidade <span aria-hidden="true">↗</span></Link></div>
-        </div>
-        <div className={styles.communityMedia}>
-          <HomeGallery />
         </div>
         <nav className={styles.communityLinks} aria-label="Explore a comunidade">
           <Link prefetch={false} href="/galeria">Os encontros em imagens <span aria-hidden="true">↗</span></Link>
