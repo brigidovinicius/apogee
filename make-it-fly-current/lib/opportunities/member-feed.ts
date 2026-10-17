@@ -3,6 +3,6 @@ import type { OpportunityFilters, StudentOpportunity } from "./types";
 import { rankOpportunities } from "./ranking";
 
 /** Shared public/member ranking; explicit queries keep their requested subject. */
-export function orderMemberFeed(opportunities: readonly StudentOpportunity[], filters: OpportunityFilters) {
+export function orderOpportunityFeed(opportunities: readonly StudentOpportunity[], filters: OpportunityFilters) {
   return rankOpportunities(opportunities, filters);
 }

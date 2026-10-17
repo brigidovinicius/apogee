@@ -53,7 +53,7 @@ export default async function OpportunitiesPage({ searchParams }: {
         </section>
 
         <p className={styles.memberCta}><Link href="/membros/entrar?next=%2Fmembros%2Foportunidades">Entre na comunidade Apogee para explorar o Radar na área de membros →</Link></p>
-        {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} memberFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
+        {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
       </main>
 
       <SiteFooter />

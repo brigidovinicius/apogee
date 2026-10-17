@@ -24,7 +24,7 @@ const dataset = [exam("Química"), exam("Informática"), exam("Administração",
   item("Hackathon"), item("Conferência", { categories: ["eventos", "pesquisa"] }),
   item("Curso livre", { kind: "Curso", categories: ["formacao"], editorialNature: "unclassified", editorialFocus: null })];
 const page = (query = "", data = dataset) => buildOpportunityPage(data, new URLSearchParams(query), now);
-const html = catalogue => renderToStaticMarkup(React.createElement(OpportunitiesBoard, { opportunities: catalogue.opportunities, catalogue, memberFeed: true })).replace(/<!--.*?-->/g, "");
+const html = catalogue => renderToStaticMarkup(React.createElement(OpportunitiesBoard, { opportunities: catalogue.opportunities, catalogue, editorialFeed: true })).replace(/<!--.*?-->/g, "");
 
 test("A/C: default, Todas, search, geography and education never opt into vestibular; removing it restores feed", () => {
   for (const params of ["", "categoria=Todas", "busca=Quimica", "uf=SC&cidade=Gaspar", "formacao=Ensino+médio", "modalidade=Curso", "categoria=formacao"]) {

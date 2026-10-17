@@ -37,7 +37,7 @@ type OpportunityBoardProps = {
   catalogue?: OpportunityPage;
   opportunities: readonly StudentOpportunity[];
   management?: boolean;
-  memberFeed?: boolean;
+  editorialFeed?: boolean;
 };
 
 const formatDate = (date: string) =>
@@ -49,7 +49,7 @@ const formatDate = (date: string) =>
     timeZone: "America/Sao_Paulo",
   }).format(new Date(date.length > 10 ? date : `${date}T12:00:00Z`));
 
-export function OpportunitiesBoard({ opportunities, management = false, memberFeed = false, catalogue }: OpportunityBoardProps) {
+export function OpportunitiesBoard({ opportunities, management = false, editorialFeed = false, catalogue }: OpportunityBoardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -71,8 +71,8 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
     [catalogue, filterOptions, searchParams],
   );
   const visible = useMemo(
-    () => filterOpportunities(opportunities, filters, today, memberFeed, management),
-    [filters, opportunities, today, memberFeed, management],
+    () => filterOpportunities(opportunities, filters, today, editorialFeed, management),
+    [filters, opportunities, today, editorialFeed, management],
   );
   const grouped = useMemo(() => groupAdmissionProcesses(visible), [visible]);
   // Public/member ranking and pagination are computed on the server.
@@ -184,7 +184,7 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
         </button>
         <p className={styles.filterSummary}>
           {activeFilterCount === 0
-            ? memberFeed ? "Experiências extracurriculares primeiro" : "Mostrando oportunidades disponíveis"
+            ? editorialFeed ? "Experiências extracurriculares primeiro" : "Mostrando oportunidades disponíveis"
             : `${activeFilterCount} ${activeFilterCount === 1 ? "filtro ativo" : "filtros ativos"}`}
         </p>
       </div>
@@ -320,7 +320,7 @@ export function OpportunitiesBoard({ opportunities, management = false, memberFe
         </div>
       </div>
 
-      {!management && !memberFeed ? <p className={styles.previewCount}><Link href="/membros/entrar?next=%2Fmembros%2Foportunidades">Entre na comunidade para continuar explorando o Radar.</Link></p> : null}
+      {!management && !editorialFeed ? <p className={styles.previewCount}><Link href="/membros/entrar?next=%2Fmembros%2Foportunidades">Entre na comunidade para continuar explorando o Radar.</Link></p> : null}
       <div id="opportunity-results">
       {entries.length > 0 ? (
         <div className={styles.grid}>
