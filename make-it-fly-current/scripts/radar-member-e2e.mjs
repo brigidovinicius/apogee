@@ -74,7 +74,10 @@ try {
   assert.equal(titles(cleared).length, 24); assert.doesNotMatch(cleared, /CI IFSC Ingresso|CI IFC Ingresso/);
   const deniedAdmin = await get("/admin/radar", cookie);
   const deniedAdminBody = await deniedAdmin.text();
-  assert.ok(deniedAdmin.status === 404 || deniedAdminBody.includes("NEXT_HTTP_ERROR_FALLBACK;404"), "ordinary member does not gain administrative access");
+  const deniedLocation = deniedAdmin.headers.get("location");
+  if (deniedLocation) assert.equal(new URL(deniedLocation, origin).pathname, "/admin/acesso-negado");
+  else assert.match(deniedAdminBody, /NEXT_REDIRECT[\s\S]*\/admin\/acesso-negado/, "ordinary member is redirected to the existing access-denied page");
+  assert.doesNotMatch(deniedAdminBody, /Radar · catálogo ao vivo|Criar oportunidade|CI Evento|CI IFSC Ingresso/);
   const invalid = await get("/membros/oportunidades", "better-auth.session_token=invalid.synthetic");
   const invalidBody = await invalid.text(); assert.doesNotMatch(invalidBody, /CI Evento|CI IFSC Ingresso/);
   console.log("Authenticated Radar E2E OK: real session, pagination, explicit vestibular, SC/Gaspar, search, reset and access controls.");
