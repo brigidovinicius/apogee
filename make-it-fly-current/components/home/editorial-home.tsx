@@ -38,10 +38,6 @@ export function EditorialHome() {
         </div>
         <div className={styles.communityMedia}>
           <HomeGallery />
-          <figure className={styles.portrait} data-home-reveal data-home-delay="0.08">
-            <Image src="/mascot/robonauta-poster.webp" alt="Robonauta, o mascote da Apogee, com olhos humanos na tela de um monitor." width={1374} height={1145} sizes="(max-width: 700px) 90vw, 35vw" />
-            <figcaption>Robonauta. Curiosidade também faz parte.</figcaption>
-          </figure>
         </div>
         <nav className={styles.communityLinks} aria-label="Explore a comunidade">
           <Link prefetch={false} href="/galeria">Os encontros em imagens <span aria-hidden="true">↗</span></Link>

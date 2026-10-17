@@ -26,3 +26,9 @@ Preview: http://127.0.0.1:3109/ — somente local, sem deploy.
 - A correção do menu compartilhado beneficia também as rotas que reutilizam o cabeçalho; não altera autenticação ou os destinos. O gate estético anterior continua com os limites já registrados.
 
 Nenhum push, PR, merge ou deploy realizado. O preview foi mantido ativo para revisão.
+
+## Remoção do Robonauta após revisão
+
+A pedido do usuário, o Robonauta foi removido da nova homepage: imagem, legenda e animação específica saíram. A seção de comunidade passou a usar uma única coluna, com a foto ocupando a largura disponível. A rota histórica /home-robonauta e seus assets não foram alterados. Capturas e validação posteriores da homepage sem o mascote substituem as capturas da versão anterior nos arquivos mobile-*.png.
+
+Validação da remoção: lint e build passaram; 320/390/768/1440 px sem overflow, sem imagem do mascote e com a única foto ocupando a largura da seção.

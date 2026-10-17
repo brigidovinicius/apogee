@@ -74,3 +74,7 @@ O resultado bruto do inspetor e as capturas estão no pacote. A aprovação est�
 ## Revisão mobile complementar
 
 A revisão posterior corrigiu fechamento por Escape/toque externo/foco/seleção, rolagem do menu em paisagem e contraste do hover mobile. A implementação está no componente cliente SiteMobileNavigation, preservando o restante do header no servidor. Veja homepage-mobile-review.md para evidências, validações e limites do preview sem banco.
+
+## Remoção do Robonauta após revisão
+
+A pedido do usuário, o Robonauta foi removido da nova homepage: imagem, legenda e animação específica saíram. A seção de comunidade passou a usar uma única coluna, com a foto ocupando a largura disponível. A rota histórica /home-robonauta e seus assets não foram alterados. Capturas e validação posteriores da homepage sem o mascote substituem as capturas da versão anterior nos arquivos mobile-*.png.
