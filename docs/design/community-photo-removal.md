@@ -8,6 +8,14 @@ A credencial de exportação do endpoint administrativo não estava configurada;
 
 Após COMMIT, uma conexão separada confirmou `target_rows=0` e `gallery_total=0`. A API pública retornou `{"photos":[],"nextOffset":null}`, e a URL da imagem retornou HTTP 404. Nenhum outro registro foi excluído. Não houve deploy, troca de imagem, migração, reinício de serviço remoto, alteração de credencial ou cópia dos bytes da foto. A verificação cobre o banco ativo e o acesso público; backups existentes não foram alterados.
 
-No código local, a seção de comunidade mantém texto e links, sem foto, moldura ou placeholder. O componente exclusivo HomeGallery e seus estilos foram removidos. O preview usa galeria vazia, acompanhando a exclusão real. A compilação está enfileirada após outro trabalho, bloqueado pelos conectores permanentes REA não isentos na fila atual.
+No código local, a seção de comunidade mantém texto e links, sem foto, moldura ou placeholder. O componente exclusivo HomeGallery e seus estilos foram removidos. O preview usa galeria vazia, acompanhando a exclusão real. A compilação e o preview foram concluídos após a exceção estreita do REA MCP e o reenfileiramento autorizado das esperas antigas.
 
 Evidência estruturada: `exclusao-foto-comunidade.json`.
+
+## Validação concluída
+
+ESLint da homepage e build Next.js, incluindo TypeScript, passaram. No navegador local, 320/390/768/1440 px sem overflow horizontal, zero imagens/figures na seção de comunidade, sem mascote e com três links preservados. Menu com Escape e filtro por competições foram retestados; o filtro exibiu três resultados. Preview ativo em http://127.0.0.1:3109/#comunidade. Capturas atuais: comunidade-sem-foto-desktop.png e comunidade-sem-foto-mobile.png.
+
+A fila recebeu somente a exceção exata `npm exec rea-agents@6.5.0 mcp`; setup, outros comandos REA, outros pacotes, builds e testes continuam sujeitos à fila. Foram reenfileirados, com autorização, os supervisores sem filhos 61746 e 65161, mantendo Radar antes da homepage. Os conectores e servidores existentes não foram encerrados. Os 293 testes aprovados pertencem ao trabalho do Radar; não são apresentados como suíte desta alteração da homepage.
+
+Não houve deploy. As verificações de exclusão no banco ativo e HTTP 404 permanecem registradas na evidência da exclusão. Backups existentes e capturas históricas não foram alterados.

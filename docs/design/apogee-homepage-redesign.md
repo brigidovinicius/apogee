@@ -78,3 +78,7 @@ A revisão posterior corrigiu fechamento por Escape/toque externo/foco/seleção
 ## Remoção do Robonauta após revisão
 
 A pedido do usuário, o Robonauta foi removido da nova homepage: imagem, legenda e animação específica saíram. A seção de comunidade passou a usar uma única coluna, com a foto ocupando a largura disponível. A rota histórica /home-robonauta e seus assets não foram alterados. Capturas e validação posteriores da homepage sem o mascote substituem as capturas da versão anterior nos arquivos mobile-*.png.
+
+## Estado final sem foto de usuário
+
+A revisão posterior removeu também a foto da galeria da nova homepage e excluiu, por autorização específica, seu registro no banco ativo. A seção agora contém texto e três links, sem foto, mascote, moldura ou placeholder. Build e verificação visual em quatro larguras passaram; preview local reaberto. Ver community-photo-removal.md. Os resultados/capturas anteriores com imagem são históricos e não descrevem o estado final.
