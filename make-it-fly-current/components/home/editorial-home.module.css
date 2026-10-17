@@ -29,7 +29,7 @@
 }
 .page > header nav a::after { display: none; }
 .page > header nav a { opacity: 1; transition: color 180ms ease; }
-.page > header nav a:hover { color: var(--home-accent); }
+.page > header nav[aria-label="Navegação principal"] a:hover { color: var(--home-accent); }
 .page > header a img { width: 7.5rem; }
 .page > footer { border: 0; }
 .page > footer a { font-size: .9rem; letter-spacing: 0; text-transform: none; }

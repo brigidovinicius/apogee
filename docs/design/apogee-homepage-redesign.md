@@ -70,3 +70,7 @@ O gate genérico foi executado, mas **não passou integralmente**. Seus alertas 
 - `eyebrow`: o texto de endosso “Um encontro da Apogee Builders Club.” foi detectado como rótulo antes do heading no mobile. Sua presença mantém a relação entre marca e evento definida no manual.
 
 O resultado bruto do inspetor e as capturas estão no pacote. A aprovação estética final continua dependendo da revisão humana. Não se declara conformidade WCAG integral ou equivalência estética certificada ao Awwwards.
+
+## Revisão mobile complementar
+
+A revisão posterior corrigiu fechamento por Escape/toque externo/foco/seleção, rolagem do menu em paisagem e contraste do hover mobile. A implementação está no componente cliente SiteMobileNavigation, preservando o restante do header no servidor. Veja homepage-mobile-review.md para evidências, validações e limites do preview sem banco.

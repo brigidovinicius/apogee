@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SiteMobileNavigation } from "./site-mobile-navigation";
 import styles from "./site-shell.module.css";
 
 type SiteSection = "home" | "opportunities" | "members" | "blog";
@@ -64,9 +65,7 @@ export function SiteHeader({
           {memberLabel}
         </Link>
 
-        <details className={styles.mobileNavigation}>
-          <summary aria-label="Abrir navegação">Menu</summary>
-          <nav aria-label="Navegação móvel">
+        <SiteMobileNavigation>
             {navigation.map((item) => (
               <Link
                 href={item.href}
@@ -80,8 +79,7 @@ export function SiteHeader({
             <Link href={memberHref} prefetch={prefetch} aria-current={current === "members" ? "page" : undefined}>
               {memberLabel}
             </Link>
-          </nav>
-        </details>
+        </SiteMobileNavigation>
       </div>
     </header>
   );

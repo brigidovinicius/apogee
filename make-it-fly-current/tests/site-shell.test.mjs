@@ -37,8 +37,7 @@ test("institutional shell is reused by the first public and member routes", asyn
   assert.match(homeContent, /<main id="experiencia" tabIndex=\{-1\}>/);
   assert.doesNotMatch(homeContent, /^["']use client["']/);
 
-  assert.match(header, /<details className=\{styles\.mobileNavigation\}>/);
-  assert.match(header, /aria-label="Abrir navegação"/);
+  assert.match(header, /<SiteMobileNavigation>/);
   assert.match(header, /aria-current=\{item\.section === current \? "page" : undefined\}/);
   assert.match(footer, /aria-label="Navegação do rodapé"/);
   assert.match(opportunities, /memberHref="\/membros\/entrar\?next=%2Fmembros%2Foportunidades"/);
