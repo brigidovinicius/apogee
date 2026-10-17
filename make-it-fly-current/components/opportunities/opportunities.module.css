@@ -85,7 +85,7 @@
 .hero {
   position: relative;
   isolation: isolate;
-  padding: clamp(4.5rem, 9vw, 8.5rem) 0 clamp(3rem, 7vw, 6rem);
+  padding: clamp(2rem, 4vw, 3.5rem) 0 2rem;
 }
 
 .hero::before {
@@ -128,9 +128,9 @@
 }
 
 .hero h1 {
-  max-width: 13ch;
-  font-size: clamp(3.4rem, 8vw, 7.7rem);
-  line-height: 0.86;
+  max-width: 24ch;
+  font-size: clamp(2.4rem, 5vw, 4.5rem);
+  line-height: 1.05;
 }
 
 .hero h1 em {
@@ -141,7 +141,7 @@
 
 .lead {
   max-width: 37rem;
-  margin: 2rem 0 0;
+  margin: 1rem 0 0;
   color: rgb(7 24 45 / 72%);
   font-size: clamp(1rem, 1.8vw, 1.2rem);
   line-height: 1.65;
@@ -150,7 +150,7 @@
 .promise {
   display: block;
   max-width: 40rem;
-  margin: 2rem 0 0;
+  margin: 1rem 0 0;
   padding-top: 1.2rem;
   color: rgb(7 24 45 / 74%);
   border-top: 1px solid rgb(7 24 45 / 28%);
@@ -180,9 +180,9 @@
 }
 
 .boardHeading h2 {
-  max-width: 14ch;
-  font-size: clamp(2.55rem, 5vw, 4.6rem);
-  line-height: 0.93;
+  max-width: 24ch;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.1;
 }
 
 .count {
@@ -639,7 +639,7 @@
 .previewDetails {
   display: grid;
   gap: 0.75rem;
-  margin: 2rem 0 0;
+  margin: 1rem 0 0;
   filter: blur(5px);
   opacity: 0.78;
   user-select: none;
@@ -1022,5 +1022,43 @@
 .admissionOptions summary:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
 .admissionOptions ul { list-style: none; padding: 0; }
 .admissionOptions li { border-top: 1px solid rgb(255 255 255 / 18%); padding: 1rem 0; overflow-wrap: anywhere; }
-.admissionOptions h5 { font-size: 1rem; line-height: 1.5; }
+.admissionOptions h4 { font-size: 1rem; line-height: 1.5; }
 .admissionOptions li p { margin: .65rem 0; font-size: .88rem; line-height: 1.6; color: rgb(255 255 255 / 75%); }
+
+/* Benefits and participation costs have distinct semantics, beyond color alone. */
+.financialBenefits { margin-top: 1.25rem; display: grid; gap: 1rem; overflow-wrap: anywhere; }
+.financialLabel { display: block; font-size: .7rem; font-weight: 600; letter-spacing: .08em; color: #b9d3ee; }
+.financialBenefits p { margin: .4rem 0 0; font-size: .92rem; line-height: 1.6; }
+.financialBenefits strong { font-size: clamp(1.05rem, 1.5vw, 1.2rem); font-weight: 700; }
+.participationCost, .participationCost p { font-weight: 400; }
+.details dd p { margin: 0; }
+.details dd p + p { margin-top: .6rem; }
+.card, .cardMain, .details dd { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  .details div { grid-template-columns: 1fr; gap: .35rem; }
+}
+
+/* Same local families as the home; disclosure bounds keep catalogue cards compact. */
+.page, .board { font-family: var(--font-inter), sans-serif; }
+.searchBar { margin: 1.5rem 0; }
+.searchBar form { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+.searchBar label { grid-column: 1 / -1; }
+.coursePreview, .summary { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; line-height: 1.6; font-size: .88rem; }
+.coursePreview { margin: 1rem 0 0; color: #b9d3ee; }
+.cardMain h3 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.admissionOptions ul { max-height: 22rem; overflow-y: auto; overscroll-behavior: contain; }
+.cardDisclosure summary { cursor: pointer; min-height: 2.75rem; padding-block: .75rem; font-size: .85rem; }
+.cardDisclosure > dl { max-height: 18rem; overflow-y: auto; }
+.board :is(button, a, input, select, summary, [tabindex]):focus-visible { outline: 2px solid #b9d3ee; outline-offset: 4px; }
+.pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; margin-top: 2rem; }
+.pagination .loadMore { margin: 0; text-decoration: none; }
+.pagination span { font-size: .85rem; }
+
+.memberCta { margin: 0 0 1.5rem; color: var(--apogee-text); font-size: .85rem; line-height: 1.6; }
+.memberCta a { display: inline-block; padding-block: .65rem; text-underline-offset: .2em; }
+
+.cardMain { margin-top: 1.5rem; }
+.cardTopline, .details dt, .cardFooter span { color: rgb(255 255 255 / 68%); }
+.cardFooter { flex-wrap: wrap; }
+.launchWindow { padding-top: 1.25rem; }
+.organization { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }

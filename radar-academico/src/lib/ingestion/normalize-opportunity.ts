@@ -15,9 +15,9 @@ import { normalizeBraskemInternship, normalizeSjcInternship } from "./normalize-
 import { normalizeNovosValores } from "./normalize-novos-valores";
 import { normalizeUfscExchange } from "./normalize-sc-priority";
 import { eventStartFromText } from "./event-start";
-import { categoriesFromEvidence } from "./categories";
+import { categoriesFromContext } from "./categories";
 
-const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|seleção|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|pesquisa|extensão|inovação|empreendedorismo|evento|palestra|seminário|encontro/i;
+const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|seleção|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|pesquisa|extensão|inovação|empreendedorismo|evento|palestra|seminário|encontro|workshop|conferência|congresso|feira|webinar|competição|acelera|incuba/i;
 const excluded = /licitaç|pregão|compra pública|concurso público|processo administrativo/i;
 
 function benefit(text: string): BenefitType {
@@ -56,7 +56,10 @@ export function normalizeOpportunity(input: {
   const applicationRoute = classifyApplicationRoute(combined);
   const deadline = detectDeadline(combined);
 
-  const event = input.source.categories.includes("eventos") && /evento|palestra|seminário|encontro|workshop|hackathon|feira/i.test(input.title);
+  const isCourse = /^(?:curso|qualificação|capacitação|oficina|formação profissional)\b/iu.test(input.title.trim());
+  const categories = categoriesFromContext({ title: input.title, text: input.text,
+    sourceCategories: input.source.categories, benefitType: benefit(combined), isCourse });
+  const event = categories.includes("eventos");
   const eventStartsAt = event ? eventStartFromText(combined) : null;
   const status = detectOpportunityStatus(combined);
   // Missing is distinct from a malformed/ambiguous deadline stated by the organizer.
@@ -66,8 +69,7 @@ export function normalizeOpportunity(input: {
 
   const statusSignal = confirmedTerminalStatus(combined, input.title) ?? detectSuspension(combined);
   // Include normalization revision so corrected extraction receives a new audit event.
-  const contentHash = crypto.createHash("sha256").update(`v4\n${combined}`).digest("hex");
-  const isCourse = /curso|qualificaç|capacitaç|oficina|formação profissional/i.test(input.title);
+  const contentHash = crypto.createHash("sha256").update(`v5\n${combined}`).digest("hex");
   const nationallyEligible = normalizedLocation.location.stateCode === null &&
     input.source.geographicScope.includes("Brasil") &&
     /em todo o Brasil|de todo o Brasil|todo o território nacional|de qualquer (?:estado|cidade) do Brasil|de todo o país/i.test(combined);
@@ -79,7 +81,8 @@ export function normalizeOpportunity(input: {
     applicantType,
     applicationRoute,
     benefitType: benefit(combined),
-    ...(event ? { categories:[...new Set([...categoriesFromEvidence(benefit(combined),isCourse),"eventos" as const])], eventStartsAt } : {}),
+    categories,
+    ...(event ? { eventStartsAt } : {}),
     isCourse,
     nationallyEligible,
     deadlineAt: deadline.deadlineAt,

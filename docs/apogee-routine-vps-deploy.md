@@ -424,3 +424,112 @@ feita por causa deste registro.
   aditiva e os backups. Não houve mudança em DNS, Caddy, Vercel, segredos,
   certificados, volumes, redes ou outros stacks. Este registro documental é
   posterior ao deploy e não altera o SHA que está em produção.
+
+## Registro de release — prioridade extracurricular do Radar (2026-10-16)
+
+- Deploy do commit explicitamente autorizado pelo usuário:
+  `1cacd7dbfd0096cc403d4c89d6d89057706afee9`, branch
+  `feat/radar-extracurricular-feed-20261015`. O SHA inclui os commits locais
+  `add7bc8` e `c33c861` da mesma entrega. A branch foi publicada no GitHub;
+  `main` não foi alterada. A base `1336776` tem árvore idêntica à `main`
+  `bb82cafc` consultada nesta execução, e o SHA anterior de produção é ancestral
+  do commit autorizado.
+- [CI oficial 38979387646](https://github.com/brigidovinicius/apogee/actions/runs/38979387646),
+  no SHA exato da release: todos os jobs concluíram com sucesso, incluindo os
+  três projetos e a integração de galeria com PostgreSQL descartável. No site:
+  **282/282 testes**, zero falhas e zero ignorados, tipos, lint, audit de
+  execução, build e smoke standalone aprovados. Nenhum build ou Docker local
+  foi iniciado nesta etapa.
+- Preflight SSH: a primeira conexão expirou antes da autenticação; a segunda,
+  pelo mesmo alias configurado `apogee-vps`, confirmou `root@srv1439756`, checkout
+  limpo e web saudável. Compose válido, `.env` modo `600`, cerca de 50 GiB livres
+  e 5,4 GiB de memória disponível. Nenhum segredo foi exibido ou alterado.
+- SHA anterior e rollback de código:
+  `60ce1024c8bde3a5345051dc36f8540c85afa869`. Imagem anterior preservada:
+  `sha256:69c46b73715b773e0a0c9642231967ecf7a2db58a531c8751f7afd1ddcaa9928`.
+- Publicação: fetch explícito da branch autorizada, verificação do SHA e da
+  ancestralidade, `git switch --detach` para o SHA aprovado, Compose `config -q`,
+  `docker compose build web` e `up -d --no-deps --no-build --force-recreate web`.
+  Apenas `apogee-site-web-1` foi reconstruído e recriado; os IDs de todos os
+  demais containers permaneceram iguais, incluindo Radar, banco, proxy e ALU.
+- Em `2026-10-16T23:14:04Z`, checkout limpo, SHA e label OCI iguais ao SHA
+  publicado, web **healthy**, zero reinícios. Imagem nova:
+  `sha256:cfef26c64b97cc0e1e309fb00b4e8db9cddfd2362237405c44ddfa257c6a14e6`.
+  HTTPS `/` e `/oportunidades`: `200`; `/membros/oportunidades` sem sessão:
+  `307`, preservando a proteção de acesso.
+- **Navegador autenticado real**, na sessão existente da aba dedicada do
+  navegador integrado, em `/membros/oportunidades`: antes do deploy, IFSC e IFC
+  apareciam primeiro. Depois, os sete primeiros cards foram, nesta ordem:
+  Hackathon TRT-SC/UDESC, NASA Space Apps Challenge, StartTech NIAVI,
+  Startup Weekend Imbituba, Decola ACATE Lages, Peopletech Summit e Decola ACATE
+  Rio do Sul. Todos tinham categorias de eventos/competições; bolsas genéricas
+  vieram depois. Não havia card de vestibular entre os 24 iniciais.
+- Interações em produção: mostrar mais passou de 24 para 48 cards, preservando
+  todo o prefixo inicial. Selecionar `uf=SC` manteve os seis eventos locais no
+  início. A busca explícita `Instituto Federal` com SC encontrou os processos
+  IFSC/IFC e as demais opções correspondentes. Ao terminar, a aba foi restaurada
+  à URL de membros sem filtros e aos 24 cards iniciais. Não foram enviados
+  formulários de cadastro, inscrição ou avisos por e-mail.
+- A conferência acima prova a prioridade na **área de membros**. A rota pública
+  `/oportunidades` preserva a seção de vestibulares prevista no escopo aprovado.
+  Esta release não fez auditoria nova das fontes nem acrescentou oportunidades.
+- Captura visual dos primeiros cards:
+  `/Users/viniciusbrigido/.codex/visualizations/2026/10/15/01a14112-6387-7960-acc0-4087d53026c0/radar-deploy-20261016.png`.
+  Logs locais: `/private/tmp/apogee-radar-deploy-1cacd7d-20261016.log` e
+  `/private/tmp/apogee-radar-ci-site-20261016.log`.
+- Sem migração, mudança de banco, DNS, Caddy, credenciais, certificados, volumes,
+  redes ou serviços vizinhos. O arquivo local previamente modificado
+  `make-it-fly-current/tests/admission-processes.test.mjs` foi preservado e não
+  foi enviado no commit publicado. Este registro é posterior à release e não
+  altera o SHA implantado.
+
+## Registro de release — prioridade extracurricular na página pública (2026-10-16)
+
+- Publicação autorizada pelo usuário do commit
+  `a7357bdedb4b95b9a0ded0d7a65ea28ea570ce0a`, na branch
+  `feat/radar-extracurricular-feed-20261015`. A página `/oportunidades` agora
+  compartilha a prioridade editorial e a paginação do feed de membros. A
+  apresentação administrativa e as autorizações foram preservadas.
+- [CI 38982296494](https://github.com/brigidovinicius/apogee/actions/runs/38982296494)
+  aprovado no SHA exato: todos os jobs dos três projetos e integração de galeria
+  com PostgreSQL descartável passaram. Site: **283/283 testes**, zero falhas e
+  ignorados; tipos, lint, auditoria de execução, build e smoke aprovados. Antes
+  do CI, passaram 54 regressões locais, lint e tipos, em sequência pela fila.
+- Preflight renovado após a retomada: `root@srv1439756`, checkout limpo,
+  Compose válido, `.env` modo `600`, web anterior saudável e 50 GiB livres.
+  SHA anterior/rollback: `1cacd7dbfd0096cc403d4c89d6d89057706afee9`.
+  Imagem anterior preservada:
+  `sha256:cfef26c64b97cc0e1e309fb00b4e8db9cddfd2362237405c44ddfa257c6a14e6`.
+- Deploy: fetch da branch com refspec explícito, verificação do SHA e da
+  ancestralidade, `git switch --detach`, Compose `config -q`, `build web` e
+  `up -d --no-deps --no-build --force-recreate web`. Somente
+  `apogee-site-web-1` mudou de ID; os demais containers, incluindo Radar, proxy,
+  bancos e ALU, mantiveram seus IDs.
+- Em `2026-10-16T23:44:32Z`: checkout limpo no SHA publicado, label OCI
+  correspondente, web **healthy**, zero reinícios. Imagem nova:
+  `sha256:4b529b72868a4ae4207dac1ee086480a077ad6c73f91128565d72c1016608593`.
+  `/` retornou `200`; a rota de membros sem sessão continuou retornando `307`.
+- Validação HTTPS **sem cookies ou login**, analisando o HTML servido:
+  `/oportunidades`, `?uf=SC` e `?uf=SC&busca=Instituto+Federal` retornaram `200`
+  com 24 cards iniciais cada. No padrão, os sete primeiros cards foram
+  Hackathon TRT-SC/UDESC, NASA Space Apps, StartTech NIAVI, Startup Weekend
+  Imbituba, Decola ACATE Lages, Peopletech Summit e Decola ACATE Rio do Sul.
+  Com SC, os seis eventos locais vieram primeiro. Nenhum card de vestibular
+  apareceu nos 24 iniciais desses dois cenários. Na busca explícita, IFSC e IFC
+  continuaram aparecendo, com suas opções agrupadas.
+- Navegador real em uma aba pública dedicada: mesma sequência inicial;
+  mostrar mais passou de 24 para 48 cards e conservou o prefixo inteiro;
+  selecionar SC reiniciou em 24 cards e manteve eventos primeiro; buscar
+  Instituto Federal encontrou IFSC/IFC. Ao terminar, a aba foi restaurada à
+  página pública sem filtros. A aba de membros já aberta pelo usuário foi
+  preservada. Nenhum formulário de inscrição ou e-mail foi enviado.
+- Captura visual:
+  `/Users/viniciusbrigido/.codex/visualizations/2026/10/15/01a14112-6387-7960-acc0-4087d53026c0/radar-public-priority-20261016.png`.
+  Evidências adicionais: `/private/tmp/apogee-public-priority-deploy-20261016.log`,
+  `/private/tmp/apogee-public-priority-ci-site-20261016.log` e
+  `/private/tmp/apogee-public-priority-anonymous-results-20261016.json`.
+- Sem alteração de dados do catálogo, migração, DNS, Caddy, segredos,
+  certificados, volumes, redes ou serviços vizinhos. A alteração local
+  preexistente em `make-it-fly-current/tests/admission-processes.test.mjs` foi
+  preservada e não integrou a revisão publicada. Este registro documental é
+  posterior ao deploy e não altera o SHA implantado.
