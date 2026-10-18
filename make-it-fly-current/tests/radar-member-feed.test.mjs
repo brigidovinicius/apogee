@@ -17,6 +17,7 @@ const { OpportunityBenefits, OpportunityCosts } = load("components/opportunities
 const { OpportunitiesBoard } = load("components/opportunities/opportunities-board.tsx");
 const money = load("lib/opportunities/money.ts");
 
+
 const source = (patch = {}) => ({
   id: "one", title: "Hackathon universitário", institution: "Universidade",
   officialUrl: "https://example.edu/edital", lastCheckedAt: "2026-10-15T12:00:00Z",
@@ -301,4 +302,17 @@ test("public page uses shared editorial order before pagination and respects URL
       assert.doesNotMatch(html, /Encontro extracurricular|Projeto de extensão em robótica/);
     }
   } finally { query = ""; }
+});
+
+test("extension lodging support with a participant fee is not a cash award or a free activity", () => {
+  const item = opportunity({ benefitType: "extension_scholarship", categories: ["pesquisa", "bolsas"],
+    amountText: "Bolsa parcial de extensão cobre hospedagem fluvial e terrestre; sem bolsa em dinheiro anunciada. Taxa de alimentação: R$ 500,00, sem reembolso em caso de desistência. Passagens aéreas por conta do participante e sujeitas à coordenação. Não é participação gratuita." });
+  assert.equal(item.financials.benefits.length, 0);
+  assert.ok(item.financials.costs.some(text => text.includes("R$ 500,00")));
+  assert.equal(logic.matchesOpportunityBenefit(item, "remunerado"), false);
+  assert.equal(logic.matchesOpportunityBenefit(item, "gratuito"), false);
+  const rendered = renderToStaticMarkup(React.createElement(React.Fragment, null,
+    React.createElement(OpportunityBenefits, { opportunity: item }), React.createElement(OpportunityCosts, { opportunity: item })));
+  assert.doesNotMatch(rendered, /<strong>R\$ 500,00<\/strong>/);
+  assert.equal(item.editorialFocus, "extracurricular_project");
 });
