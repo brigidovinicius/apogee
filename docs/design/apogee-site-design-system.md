@@ -54,3 +54,7 @@ O preview usa o snapshot público local do Radar e uma galeria vazia. Configura�
 As seis amostras em `/__review/` são HTML gerado a partir dos componentes e CSS reais com dados fictícios, identificadas por faixa visível e sem ações persistentes. O servidor auxiliar de preview atende essas amostras apenas localmente; não existe rota de amostra, bypass de autenticação ou fixture de dados no código de produção. Elas servem à revisão visual, não comprovam jornadas autenticadas. Nenhuma conta, artigo, foto, mensagem ou aviso foi gravado para testar o redesign.
 
 Capturas `design-system-*.png` e `validacao-design-system.json` acompanham a entrega. O navegador foi devolvido ao tamanho normal e deixado no Radar atualizado.
+
+## Revisão mobile de membros e administração — 18/10/2026
+
+A revisão seguinte corrigiu a interferência entre a navegação do membro e a alternância de modo, reduziu o cabeçalho fixo do painel, limitou o menu em telas baixas, reorganizou os indicadores e aumentou os campos administrativos para 16 px no celular. Foram verificadas 49 combinações de sete telas e sete tamanhos, incluindo membro comum com nome longo, perfil e formulários. Os 265 testes e o build passaram novamente. Consulte `members-admin-mobile-review.md` para medições e limites das amostras.

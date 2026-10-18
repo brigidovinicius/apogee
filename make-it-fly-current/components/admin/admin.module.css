@@ -1050,3 +1050,15 @@
 :global([data-apogee-design]) .compactNav a[aria-current="page"] { color: var(--apogee-navy); background: var(--apogee-sky); }
 :global([data-apogee-design]) .navigation a[aria-current="page"] > span,
 :global([data-apogee-design]) .compactNav a[aria-current="page"] > span { color: inherit; }
+
+/* The account switcher scrolls with the page, leaving only navigation sticky. */
+@media (max-width: 760px) {
+  :global([data-apogee-design]) .mobileModeSwitcher { padding: .25rem 1rem 1rem; background: var(--apogee-black); border-bottom: 1px solid var(--apogee-border-subtle); }
+  :global([data-apogee-design]) .compactNav { max-height: min(32rem, calc(100svh - 10rem)); overscroll-behavior: contain; }
+  :global([data-apogee-design]) .metricCard { min-height: 8rem; padding: 1rem; }
+  :global([data-apogee-design]) .metricCard strong { font-size: 3rem; font-variant-numeric: tabular-nums; }
+  :global([data-apogee-design]) .field :is(input:not([type="checkbox"]), select, textarea) { font-size: 1rem; }
+}
+@media (min-width: 360px) and (max-width: 760px) {
+  :global([data-apogee-design]) .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

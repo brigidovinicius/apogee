@@ -17,12 +17,12 @@ export function AdminShell({ children, showModeSwitcher }: { children: ReactNode
           <summary>Menu</summary>
           <AdminNav compact />
         </details>
-        {showModeSwitcher ? (
-          <div className={styles.mobileModeSwitcher}>
-            <AdminModeSwitcher mode="admin" />
-          </div>
-        ) : null}
       </header>
+      {showModeSwitcher ? (
+        <div className={styles.mobileModeSwitcher}>
+          <AdminModeSwitcher mode="admin" />
+        </div>
+      ) : null}
 
       <aside className={styles.sidebar}>
         <Link className={styles.brand} href="/admin" aria-label="Apogee Admin — painel">

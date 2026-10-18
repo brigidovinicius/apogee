@@ -36,7 +36,7 @@ test("Stage 3 keeps the protected Radar path while giving member and opportunity
   assert.match(access, /await requireMember\("\/membros\/oportunidades"\)/);
   assert.match(proxy, /matcher: \["\/membros", "\/membros\/:path\*", "\/admin", "\/admin\/:path\*"\]/);
   assert.match(memberStyles, /@media \(max-width: 640px\)[\s\S]*?\.radarEntryLink \{\s*width: 100%;/);
-  assert.match(memberStyles, /\.memberBar a \{[\s\S]*?min-height: var\(--apogee-control-min-height\)/);
+  assert.match(memberStyles, /\.memberBar > nav a \{[\s\S]*?min-height: var\(--apogee-control-min-height\)/);
   assert.match(opportunityStyles, /\.filterGroup button,[\s\S]*?\.empty button \{[\s\S]*?min-height: var\(--apogee-control-min-height\)/);
   assert.match(opportunityStyles, /@media \(max-width: 760px\)[\s\S]*?\.grid \{\s*grid-template-columns: 1fr;/);
 });

@@ -409,7 +409,7 @@
   font-size: 0.8rem;
 }
 
-.memberBar nav {
+.memberBar > nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -425,7 +425,7 @@
   text-transform: uppercase;
 }
 
-.memberBar a {
+.memberBar > nav a {
   display: inline-flex;
   align-items: center;
   min-height: var(--apogee-control-min-height);
@@ -433,12 +433,12 @@
   opacity: 0.75;
 }
 
-.memberBar a:hover,
-.memberBar a[aria-current="page"] {
+.memberBar > nav a:hover,
+.memberBar > nav a[aria-current="page"] {
   opacity: 1;
 }
 
-.memberBar a[aria-current="page"] {
+.memberBar > nav a[aria-current="page"] {
   color: var(--navy);
   background: var(--sky);
   border-radius: var(--apogee-radius-soft);
@@ -715,7 +715,7 @@
     margin-bottom: 1.75rem;
   }
 
-  .memberBar nav {
+  .memberBar > nav {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.35rem;
@@ -739,7 +739,7 @@
     border: 0;
   }
 
-  .memberBar a {
+  .memberBar > nav a {
     justify-content: center;
     min-width: 0;
     padding-inline: 0.35rem;
@@ -799,4 +799,12 @@
 @media (max-width: 700px) {
   :global([data-apogee-design]) .pageHead { align-items: start; }
   :global([data-apogee-design]) .title { font-size: clamp(3rem, 12vw, 4.5rem); }
+}
+
+/* Keep account controls readable and separate from the three community tabs. */
+@media (max-width: 640px) {
+  :global([data-apogee-design]) .page { padding-top: 1.5rem; }
+  :global([data-apogee-design]) .memberIdentity { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; }
+  :global([data-apogee-design]) .memberIdentity > span:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
+  :global([data-apogee-design]) .memberBar > nav a { font-size: .8125rem; }
 }
