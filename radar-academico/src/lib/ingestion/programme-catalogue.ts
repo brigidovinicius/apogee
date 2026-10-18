@@ -1,4 +1,5 @@
 import { isAuditedYouthCall, normalizeAuditedYouthCall } from "./normalize-audited-youth-calls";
+import { AMAZONIA_ID, AMAZONIA_DOCUMENT_URL, isExtracurricularEdition, normalizeExtracurricularEdition } from "./normalize-extracurricular-20261017";
 import { CPS_CULTURAL_ID, CPS_CULTURAL_NEWS, normalizeCpsCultural } from "./normalize-cps-cultural";
 import { ACIM_SW_SOURCE_ID, normalizeAcimStartupWeekend } from "./normalize-acim-startup-weekend";
 import { AXIA_ID, normalizeAxiaInternship } from "./normalize-axia-internship";
@@ -14,6 +15,7 @@ import { PDAI_SOURCE_ID, PDAI_NEWS_URL, normalizeCapesPdai } from "./normalize-c
 import { PDSE_SOURCE_ID, PDSE_NEWS_URL, normalizeCapesPdse } from "./normalize-capes-pdse";
 
 export function programmeCataloguePageCount(id: string) {
+  if (isExtracurricularEdition(id)) return id === AMAZONIA_ID ? 2 : 1;
   if (isAuditedYouthCall(id)) return 1;
   if (id === CPS_CULTURAL_ID) return 2;
   if (id === AXIA_ID) return 1;
@@ -23,6 +25,7 @@ export function programmeCataloguePageCount(id: string) {
 }
 
 export function programmeSupplementUrl(id: string) {
+  if (id === AMAZONIA_ID) return AMAZONIA_DOCUMENT_URL;
   if (id === CPS_CULTURAL_ID) return CPS_CULTURAL_NEWS;
   if (id === PDAI_SOURCE_ID) return PDAI_NEWS_URL;
   if (id === PDSE_SOURCE_ID) return PDSE_NEWS_URL;
@@ -34,6 +37,7 @@ export function programmeCatalogueCanBeEmpty(id: string) {
 }
 
 export function normalizeProgrammeCatalogue(listing: string, application: string, source: OfficialSource) {
+  if (isExtracurricularEdition(source.id)) return normalizeExtracurricularEdition(listing, application, source);
   if (isAuditedYouthCall(source.id)) return normalizeAuditedYouthCall(listing, source);
   if (source.id === CPS_CULTURAL_ID) return normalizeCpsCultural(listing, application, source);
   if (source.id === AXIA_ID) return normalizeAxiaInternship(listing, source);

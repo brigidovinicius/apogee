@@ -79,7 +79,8 @@ async function ingestSource(
         budget.remaining -= 1;
         const application = await fetchOfficialResource(programmeSupplementUrl(source.id), source);
         result.pagesChecked += 1;
-        applicationHtml = application.body.toString("utf8");
+        applicationHtml = /application\/pdf/i.test(application.contentType)
+          ? await detailText(application.body, application.contentType) : application.body.toString("utf8");
       }
       const candidates = normalizeProgrammeCatalogue(resource.body.toString("utf8"), applicationHtml, source);
       // Senac validates the catalogue envelope even when all PSG places are full.
