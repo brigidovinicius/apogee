@@ -82,7 +82,7 @@ export function normalizeExtracurricularEdition(html: string, supplement: string
     title = "Projeto de extensão Amazônia Cidadã — UniEVANGÉLICA 2027";
     requireEvidence(headings, [/UniEVANGÉLICA abre inscrições para projeto de extensão e responsabilidade social na Amazônia/]);
     if (!terminal) requireEvidence(text, [/Edição 2027/, /15 a 30 de outubro de 2026/, /17 vagas/, /regularmente matriculados na UniEVANGÉLICA/,
-      /instituições internacionais/, /taxa de alimentação de R\$ 500/, /hospedagem fluvial e terrestre/]);
+      /instituições internacionais/, /taxa de alimentação de R\$ 500/i, /hospedagem fluvial e terrestre/]);
     const document = clean(supplement);
     if (!terminal) requireEvidence(document, [/CHAMAMENTO/, /Edição 2027/, /15 a 30\/10\/26/, /VOLUNTÁRIOS PAGANTES/, /Taxa de alimentação.*?R\$ 500,00/i,
       /Transporte aéreo/, /hospedagem fluvial e terrestre/, /Curso de Medicina.*?9º e 10ºp/,

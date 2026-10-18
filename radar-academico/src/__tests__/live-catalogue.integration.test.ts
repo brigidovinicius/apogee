@@ -27,6 +27,7 @@ import { manageCatalogue } from "@/lib/official-sources/catalogue-management";
 import { claimDueOfficialSources, completeScheduledSource } from "@/lib/ingestion/official-source-registry";
 import { claimDueDiscoveryTargets, completeDiscoveryTarget } from "@/lib/discovery/watchlist";
 import { withAdminTransaction } from "@/lib/db/client";
+import { FGV_DATATHON_ID, CPS_ROBOCODE_ID, IFMG_JECT_ID, AMAZONIA_ID } from "@/lib/ingestion/normalize-extracurricular-20261017";
 
 const source: OfficialSource = { id: "test-source", name: "Instituto", institutionName: "Instituto", institutionAcronym: "IF",
  sourceType: "federal_institute", baseUrl: "https://example.edu.br/", allowedDomains: ["example.edu.br"], allowedPathPrefixes: ["/"],
@@ -48,6 +49,9 @@ function form(item: Record<string, unknown>, patch: Record<string, unknown> = {}
 let migrationSnapshot: unknown[] = [];
 let pilotSourcesSnapshot: unknown[] = [];
 let cpsRedirectPaths: string[] = [];
+const extracurricularIds = [FGV_DATATHON_ID, CPS_ROBOCODE_ID, IFMG_JECT_ID, AMAZONIA_ID].sort();
+let extracurricularSources: Array<{ id: string; active: boolean; verification_status: string }> = [];
+let sourceMigrationReplayPreserved = false;
 beforeAll(async () => {
  state.db = new PGlite({ extensions: { pgcrypto } });
  const dir = new URL("../../db/migrations/", import.meta.url);
@@ -61,6 +65,10 @@ beforeAll(async () => {
   }
   await state.db.exec(await readFile(new URL(name, dir), "utf8"));
  }
+ extracurricularSources = (await state.db.query<{ id: string; active: boolean; verification_status: string }>("select id,active,verification_status from official_sources where id=any($1::text[]) order by id", [extracurricularIds])).rows;
+ const beforeReplay = (await state.db.query("select * from official_sources order by id")).rows;
+ await state.db.exec(await readFile(new URL("0036_audited_extracurricular_editions.sql", dir), "utf8"));
+ sourceMigrationReplayPreserved = JSON.stringify((await state.db.query("select * from official_sources order by id")).rows) === JSON.stringify(beforeReplay);
  cpsRedirectPaths = (await state.db.query<{allowed_path_prefixes:string[]}>("select allowed_path_prefixes from official_sources where id='cps-cultural-15-2026'")).rows[0].allowed_path_prefixes;
  migrationSnapshot = (await state.db.query("select review_status,verification_method,verified_at is not null as verified,published_at is not null as published from opportunities order by title")).rows;
  pilotSourcesSnapshot = (await state.db.query("select id,verification_status,verification_method,verification_evidence_url,audited_by from official_sources where id in ('cnpq-chamadas-abertas-2026','nasa-space-apps-2026') order by id")).rows;
@@ -68,6 +76,10 @@ beforeAll(async () => {
  vi.stubEnv("DATABASE_URL", "isolated-test-only");
 }, 30_000);
 afterAll(async () => { await state.db?.close(); vi.unstubAllEnvs(); });
+it("stages the four new editions inactive and preserves every source on migration replay", () => {
+ expect(extracurricularSources).toEqual(extracurricularIds.map(id => ({ id, active: false, verification_status: "verified" })));
+ expect(sourceMigrationReplayPreserved).toBe(true);
+});
 beforeEach(async () => {
  vi.clearAllMocks();
  await state.db!.exec("truncate official_sources,opportunities,opportunity_sources,opportunity_revisions,ingestion_runs,opportunity_management_events,opportunity_alert_limits cascade");

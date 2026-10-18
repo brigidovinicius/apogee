@@ -1,5 +1,4 @@
 import { expect, it } from "vitest";
-import { readFileSync } from "node:fs";
 import { normalizeExtracurricularEdition, FGV_DATATHON_ID, FGV_DATATHON_URL, CPS_ROBOCODE_ID, CPS_ROBOCODE_URL,
   IFMG_JECT_ID, IFMG_JECT_URL, AMAZONIA_ID, AMAZONIA_URL, AMAZONIA_DOCUMENT_URL } from "@/lib/ingestion/normalize-extracurricular-20261017";
 import { programmeCataloguePageCount, programmeSupplementUrl } from "@/lib/ingestion/programme-catalogue";
@@ -68,9 +67,4 @@ it("rejects partial pages, changed editions and deadlines without using menus as
   expect(() => normalizeExtracurricularEdition(fgv.replace("7º Desafio", "8º Desafio"), "", source(FGV_DATATHON_ID, FGV_DATATHON_URL), now)).toThrow();
   expect(() => normalizeExtracurricularEdition(ifmg.replace("20 de outubro", "21 de outubro"), "", source(IFMG_JECT_ID, IFMG_JECT_URL), now)).toThrow();
   expect(normalizeExtracurricularEdition(fgv, "", source("unregistered", FGV_DATATHON_URL), now)).toEqual([]);
-});
-it("stages only the four audited sources inactive and does not mutate existing sources", () => {
-  const sql = readFileSync(new URL("../../db/migrations/0036_audited_extracurricular_editions.sql", import.meta.url), "utf8");
-  expect(sql).toContain("85,false,'verified'"); expect(sql).not.toMatch(/\b(?:update|delete|drop|alter)\s/i);
-  for (const f of fixtures) expect(sql).toContain(`'${f.id}'`);
 });
