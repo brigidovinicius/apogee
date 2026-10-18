@@ -92,3 +92,14 @@
   .cutout { width: 4rem; height: 4rem; }
   .arrow { width: 2.6rem; height: 2.6rem; }
 }
+
+/* Apogee pages share the homepage spacing; event routes keep the original. */
+:global([data-apogee-design]) .root { max-width: none; padding: 0; }
+:global([data-apogee-design]) .panel { border-radius: 0; }
+:global([data-apogee-design]) .header { align-items: center; justify-content: space-between; gap: 1rem; padding-inline: var(--apogee-page-margin); background: #fff; color: #07182d; }
+:global([data-apogee-design]) .notch { min-height: 6.5rem; padding: 0; border-radius: 0; background: transparent; }
+:global([data-apogee-design]) .navigationLink { font-size: .9rem; }
+:global([data-apogee-design]) .headerActions { padding: 0; color: #07182d; }
+@media (max-width: 700px) {
+  :global([data-apogee-design]) .notch { min-height: 5rem; }
+}

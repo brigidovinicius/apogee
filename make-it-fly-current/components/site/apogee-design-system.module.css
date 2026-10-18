@@ -1,0 +1,26 @@
+.scope {
+  display: contents;
+  --apogee-page-margin: clamp(1.25rem, 4vw, 4rem);
+  --apogee-control-radius: .4rem;
+  --apogee-radius-soft: .4rem;
+  --apogee-group-radius: .5rem;
+  --apogee-surface-raised: #102a48;
+  --apogee-surface-subtle: #173653;
+  --apogee-surface-control: rgb(185 211 238 / 12%);
+  --apogee-control-fill: #f1f4f7;
+  --apogee-font-heading: var(--font-instrument-serif), Georgia, serif;
+  --apogee-font-sans: var(--font-inter), Arial, sans-serif;
+  --apogee-text-label: .8125rem;
+  font-family: var(--apogee-font-sans);
+  line-height: 1.55;
+}
+.scope :is(main, section, article, form, fieldset) { min-width: 0; }
+.scope :is(h1, h2, h3, p, label, td, th) { overflow-wrap: anywhere; }
+.scope :is(button, input, select, textarea) { font-family: var(--apogee-font-sans); }
+.scope :is(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scope *, .scope *::before, .scope *::after { scroll-behavior: auto !important; }
+}
