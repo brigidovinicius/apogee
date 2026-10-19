@@ -78,3 +78,8 @@
   border-color: var(--apogee-navy);
   background: rgb(185 211 238 / 24%);
 }
+
+/* The event keeps the original component treatment outside this scope. */
+:global([data-apogee-design]) .panel { box-shadow: none; }
+:global([data-apogee-design]) .eyebrow { text-transform: none; letter-spacing: 0; font-weight: 500; }
+:global([data-apogee-design]) .title { font-size: clamp(2.5rem, 4vw, 4rem); line-height: .98; letter-spacing: -.025em; }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { JourneyTracker } from "@/components/analytics/JourneyTracker";
+import { ApogeeDesignSystem } from "@/components/site/apogee-design-system";
 import "./globals.css";
 
 const inter = localFont({
@@ -88,7 +89,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <a className="skip-link" href="#experiencia">
           Pular para o conteúdo
         </a>
-        {children}
+        <ApogeeDesignSystem>{children}</ApogeeDesignSystem>
       </body>
     </html>
   );

@@ -768,3 +768,38 @@
     animation: none;
   }
 }
+
+/* Shared homepage design system. Scoped to preserve Make It Fly. */
+:global([data-apogee-design]) .page { --paper: #fff; font-family: var(--apogee-font-sans); }
+:global([data-apogee-design]) .grain,
+:global([data-apogee-design]) .heroRule,
+:global([data-apogee-design]) .galleryHero::after,
+:global([data-apogee-design]) .heroFooter { display: none; }
+:global([data-apogee-design]) .galleryHero { min-height: 34rem; padding: clamp(4rem, 8vw, 8rem) var(--apogee-page-margin); color: var(--paper); background: var(--ink); place-items: start; }
+:global([data-apogee-design]) .heroContent { text-align: left; width: 100%; }
+:global([data-apogee-design]) .heroEdition { margin-bottom: 2rem; color: var(--sky); }
+:global([data-apogee-design]) .galleryHero h1 { color: inherit; font-family: var(--apogee-font-heading); font-size: clamp(5rem, 13vw, 12rem); line-height: .95; font-weight: 400; letter-spacing: -.035em; text-transform: none; }
+:global([data-apogee-design]) .galleryHero h1 em { color: var(--sky); font-style: normal; transform: none; }
+:global([data-apogee-design]) .heroDetails { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2rem; width: 100%; margin: 3rem 0 0; }
+:global([data-apogee-design]) .heroDetails::before { display: none; }
+:global([data-apogee-design]) .heroDetails p { font-size: 1.125rem; text-transform: none; letter-spacing: 0; font-weight: 400; }
+:global([data-apogee-design]) .heroDetails a { color: var(--ink); background: var(--sky); border-color: var(--sky); border-radius: .4rem; text-transform: none; font-size: 1rem; letter-spacing: 0; font-weight: 500; }
+:global([data-apogee-design]) .heroDetails a:hover { background: var(--paper); }
+:global([data-apogee-design]) .heroEdition,
+:global([data-apogee-design]) .galleryHeading > p,
+:global([data-apogee-design]) .kicker { font-family: var(--apogee-font-sans); font-size: .8125rem; letter-spacing: 0; text-transform: none; }
+:global([data-apogee-design]) .galleryHero,
+:global([data-apogee-design]) .gallerySection { font-family: var(--apogee-font-sans); }
+:global([data-apogee-design]) .gallerySection { padding: clamp(4rem, 8vw, 8rem) var(--apogee-page-margin); border-top: 1px solid rgb(185 211 238 / 24%); }
+:global([data-apogee-design]) .galleryHeading h2 { line-height: .98; letter-spacing: -.025em; }
+:global([data-apogee-design]) .uploadSection { background: var(--sky); }
+@media (max-width: 700px) {
+  :global([data-apogee-design]) .galleryHero { min-height: 0; }
+  :global([data-apogee-design]) .heroDetails { flex-direction: column; align-items: start; }
+}
+
+:global([data-apogee-design]) .uploadIntro h2 { line-height: .98; letter-spacing: -.025em; }
+:global([data-apogee-design]) .uploadIntro ol,
+:global([data-apogee-design]) .uploadForm { font-family: var(--apogee-font-sans); font-size: .875rem; letter-spacing: 0; text-transform: none; }
+
+:global([data-apogee-design]) .heroDetailsMuted { opacity: 1; }

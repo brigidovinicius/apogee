@@ -64,3 +64,27 @@
 @media (max-width: 980px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } .hero { min-height: 25rem; } .heroIndex { display: none; } .sectionHeading { align-items: start; flex-direction: column; } .articleByline { display: grid; } }
 @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
+
+/* Shared homepage design system. Scoped to preserve Make It Fly. */
+:global([data-apogee-design]) .main,
+:global([data-apogee-design]) .articleMain { width: calc(100% - 2 * var(--apogee-page-margin)); }
+:global([data-apogee-design]) .hero h1,
+:global([data-apogee-design]) .articleHeader h1 { line-height: .98; letter-spacing: -.025em; }
+:global([data-apogee-design]) .hero h1 em { font-style: normal; }
+:global([data-apogee-design]) .heroIndex { display: none; }
+:global([data-apogee-design]) .eyebrow,
+:global([data-apogee-design]) .cardMeta,
+:global([data-apogee-design]) .articleByline,
+:global([data-apogee-design]) .readMore,
+:global([data-apogee-design]) .breadcrumb,
+:global([data-apogee-design]) .pagination,
+:global([data-apogee-design]) .sectionHeading > span { font-family: var(--apogee-font-sans); font-size: .8125rem; letter-spacing: 0; text-transform: none; }
+:global([data-apogee-design]) .categories { flex-wrap: wrap; overflow: visible; }
+:global([data-apogee-design]) .categories a { min-height: 2.75rem; border-radius: .4rem; font-size: .875rem; }
+:global([data-apogee-design]) .card { background: var(--apogee-navy); border-radius: 0; }
+:global([data-apogee-design]) .cardArt,
+:global([data-apogee-design]) .articleArt { color: var(--apogee-navy); background: var(--apogee-sky); }
+:global([data-apogee-design]) .cardArt::after,
+:global([data-apogee-design]) .articleArt::after { display: none; }
+:global([data-apogee-design]) .cardText h3 { font-size: 2.2rem; }
+:global([data-apogee-design]) .cardText p { font-size: 1rem; }

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { ApogeeHome } from "@/components/home/apogee-home";
+import { EditorialHome } from "@/components/home/editorial-home";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Apogee | Comunidade, ideias e experiências",
-  description: "Conheça a comunidade Apogee: encontros Make It Fly, fotos da comunidade e uma prévia de oportunidades estudantis para dar o próximo passo.",
+  description: "Seu próximo salto começa na Apogee. Explore o Radar de oportunidades, conheça os encontros Make It Fly e encontre uma comunidade para tirar ideias do papel.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Apogee | Comunidade, ideias e experiências",
@@ -37,6 +39,6 @@ export default function HomePage() {
 
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
-    <ApogeeHome />
+    <EditorialHome />
   </>;
 }

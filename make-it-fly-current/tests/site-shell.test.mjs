@@ -15,10 +15,17 @@ test("institutional shell is reused by the first public and member routes", asyn
     source("components/site/site-footer.tsx"),
   ]);
 
-  for (const route of [home, preview]) {
+  assert.match(home, /import \{ EditorialHome \} from "@\/components\/home\/editorial-home"/);
+  assert.match(home, /<EditorialHome \/>/);
+  for (const route of [preview]) {
     assert.match(route, /import \{ ApogeeHome \} from "@\/components\/home\/apogee-home"/);
     assert.match(route, /<ApogeeHome \/>/);
   }
+
+  const editorial = await source("components/home/editorial-home.tsx");
+  assert.match(editorial, /<SiteHeader current="home" prefetch=\{false\} \/>/);
+  assert.match(editorial, /<SiteFooter \/>/);
+  assert.match(editorial, /<main id="experiencia" tabIndex=\{-1\}>/);
 
   for (const route of [homeContent, opportunities, membersLayout]) {
     assert.match(route, /<SiteHeader/);
@@ -30,8 +37,7 @@ test("institutional shell is reused by the first public and member routes", asyn
   assert.match(homeContent, /<main id="experiencia" tabIndex=\{-1\}>/);
   assert.doesNotMatch(homeContent, /^["']use client["']/);
 
-  assert.match(header, /<details className=\{styles\.mobileNavigation\}>/);
-  assert.match(header, /aria-label="Abrir navegação"/);
+  assert.match(header, /<SiteMobileNavigation>/);
   assert.match(header, /aria-current=\{item\.section === current \? "page" : undefined\}/);
   assert.match(footer, /aria-label="Navegação do rodapé"/);
   assert.match(opportunities, /memberHref="\/membros\/entrar\?next=%2Fmembros%2Foportunidades"/);

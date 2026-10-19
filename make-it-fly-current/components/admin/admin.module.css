@@ -1031,3 +1031,34 @@
 .categoryFieldset legend { padding: 0 6px; font-weight: 700; }
 .categoryFieldset p { margin: 0 0 5px; font-size: 13px; line-height: 1.5; }
 .categoryOption { display: flex; align-items: flex-start; gap: 9px; font-size: 14px; line-height: 1.5; }
+
+/* Shared homepage design system. Scoped to preserve Make It Fly. */
+:global([data-apogee-design]) .main { background: var(--apogee-navy); }
+:global([data-apogee-design]) .sidebar { background: var(--apogee-black); }
+:global([data-apogee-design]) .eyebrow,
+:global([data-apogee-design]) .sectionEyebrow,
+:global([data-apogee-design]) .navLabel,
+:global([data-apogee-design]) .brand span,
+:global([data-apogee-design]) .mobileBrand span,
+:global([data-apogee-design]) .identityBadge,
+:global([data-apogee-design]) .dataBadge { font-family: var(--apogee-font-sans); font-size: .8125rem; letter-spacing: 0; text-transform: none; border-radius: .4rem; }
+:global([data-apogee-design]) .pageHeader h1 { font-size: clamp(3rem, 5vw, 5.5rem); line-height: .98; letter-spacing: -.025em; }
+:global([data-apogee-design]) .surface h2,
+:global([data-apogee-design]) .surfaceHeader h2 { font-family: var(--apogee-font-heading); font-size: 2rem; line-height: 1.1; font-weight: 400; }
+:global([data-apogee-design]) .metricCard strong { font-family: var(--apogee-font-heading); font-size: 3.5rem; line-height: 1; }
+:global([data-apogee-design]) .navigation a[aria-current="page"],
+:global([data-apogee-design]) .compactNav a[aria-current="page"] { color: var(--apogee-navy); background: var(--apogee-sky); }
+:global([data-apogee-design]) .navigation a[aria-current="page"] > span,
+:global([data-apogee-design]) .compactNav a[aria-current="page"] > span { color: inherit; }
+
+/* The account switcher scrolls with the page, leaving only navigation sticky. */
+@media (max-width: 760px) {
+  :global([data-apogee-design]) .mobileModeSwitcher { padding: .25rem 1rem 1rem; background: var(--apogee-black); border-bottom: 1px solid var(--apogee-border-subtle); }
+  :global([data-apogee-design]) .compactNav { max-height: min(32rem, calc(100svh - 10rem)); overscroll-behavior: contain; }
+  :global([data-apogee-design]) .metricCard { min-height: 8rem; padding: 1rem; }
+  :global([data-apogee-design]) .metricCard strong { font-size: 3rem; font-variant-numeric: tabular-nums; }
+  :global([data-apogee-design]) .field :is(input:not([type="checkbox"]), select, textarea) { font-size: 1rem; }
+}
+@media (min-width: 360px) and (max-width: 760px) {
+  :global([data-apogee-design]) .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

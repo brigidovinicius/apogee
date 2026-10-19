@@ -239,3 +239,15 @@
   .page:not([data-motion="full"]) .orbTravel, .page:not([data-motion="full"]) .desktopTitle > span > span { transform: none; }
   .page:not([data-motion="full"]) .detailObject { transform: translateX(-50%); }
 }
+
+/* Shared homepage design system. Scoped to preserve Make It Fly. */
+:global([data-apogee-design]) .apogeeHero :global([data-store-hero]) h1,
+:global([data-apogee-design]) .collectionIntro h2,
+:global([data-apogee-design]) .footer h2 { font-family: var(--apogee-font-heading); letter-spacing: -.025em; line-height: .98; }
+:global([data-apogee-design]) .apogeeHero :global([data-store-hero]) h1 > span:last-child { font-style: normal; }
+:global([data-apogee-design]) .collectionIntro { max-width: none; margin-inline: var(--apogee-page-margin); padding-inline: 0; }
+:global([data-apogee-design]) .collectionIntro > div > p,
+:global([data-apogee-design]) .footerEyebrow { font-size: .8125rem; letter-spacing: 0; text-transform: none; }
+:global([data-apogee-design]) .pill { min-height: 3rem; border-radius: .4rem; box-shadow: none; backdrop-filter: none; background: var(--store-card); }
+:global([data-apogee-design]) .footer { padding-inline: var(--apogee-page-margin); }
+:global([data-apogee-design]) .productCard { --card-background: #07182d; }

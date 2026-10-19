@@ -19,9 +19,11 @@ export function analyzeSeo(draft: SeoDraft) {
   const keyword = normalize(draft.focusKeyword);
   const containsKeyword = (value: string) => keyword.length >= 2
     && ` ${normalize(value)} `.includes(` ${keyword} `);
-  const slug = blogSlug(draft.slug || draft.title).replaceAll("-", " ");
+  const previewSlug = blogSlug(draft.slug || draft.title);
+  const slug = previewSlug.replaceAll("-", " ");
   const firstParagraph = draft.body.split(/\n\s*\n/)[0] ?? "";
   return {
+    previewSlug,
     previewTitle: draft.seoTitle.trim() || draft.title.trim(),
     previewDescription: draft.seoDescription.trim() || draft.excerpt.trim(),
     checks: [

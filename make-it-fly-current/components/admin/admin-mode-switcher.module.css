@@ -88,3 +88,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Two choices remain two equal touch targets, also inside the member bar. */
+@media (max-width: 760px) {
+  :global([data-apogee-design]) .options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :global([data-apogee-design]) .options a,
+  :global([data-apogee-design]) .options span { font-size: .8125rem; }
+  :global([data-apogee-design]) .status small { font-size: .75rem; }
+}

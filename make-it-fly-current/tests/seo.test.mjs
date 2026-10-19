@@ -86,7 +86,7 @@ test("gallery HTML contains real image dimensions, alt text and crawlable next/p
 });
 
 test("home structured data identifies the actual website and organization without invented offers", async () => {
-  const home = await load("app/page.tsx", { "@/components/home/apogee-home": { ApogeeHome: () => createElement("main", {}, "Apogee") } });
+  const home = await load("app/page.tsx", { "@/components/home/editorial-home": { EditorialHome: () => createElement("main", {}, "Apogee") } });
   const html = renderToStaticMarkup(createElement(home.default));
   const data = JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);
   assert.equal(data["@context"], "https://schema.org");

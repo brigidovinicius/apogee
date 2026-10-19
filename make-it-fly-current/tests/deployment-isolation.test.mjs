@@ -55,11 +55,13 @@ test("the single root layout preserves the approved visual wrapper and relocated
   const file = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const visual = file.statements.filter(statement => !(ts.isVariableStatement(statement)
     && statement.declarationList.declarations.some(declaration => declaration.name.getText(file) === "metadata"))
-    && !(ts.isImportDeclaration(statement) && statement.moduleSpecifier.text === "@/components/analytics/JourneyTracker"))
+    && !(ts.isImportDeclaration(statement) && ["@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system"].includes(statement.moduleSpecifier.text)))
     .map(statement => statement.getText(file)).join("\n").replaceAll("../fonts/", "./fonts/")
-    .replace("        <JourneyTracker />\n", "");
+    .replace("        <JourneyTracker />\n", "")
+    // The scoped boundary returns the original children on all /makeitfly routes.
+    .replace("<ApogeeDesignSystem>{children}</ApogeeDesignSystem>", "{children}");
   assert.equal(sha256(visual), "bb2dbfad30652ec73ab9929b3732b448473f74112cbcb0cdaac56663c16f2cc0",
-    "only metadata and the relocated font paths may differ from the approved layout");
+    "the event wrapper stays identical after removing metadata, analytics and the tested route-aware boundary");
   assert.ok(visual.includes("<html") && visual.includes("<body"));
   assert.match(text, /import "\.\/globals\.css"/);
   assert.equal((text.match(/<JourneyTracker \/>/g) ?? []).length, 1);

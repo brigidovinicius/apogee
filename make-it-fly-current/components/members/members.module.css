@@ -409,7 +409,7 @@
   font-size: 0.8rem;
 }
 
-.memberBar nav {
+.memberBar > nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -425,7 +425,7 @@
   text-transform: uppercase;
 }
 
-.memberBar a {
+.memberBar > nav a {
   display: inline-flex;
   align-items: center;
   min-height: var(--apogee-control-min-height);
@@ -433,12 +433,12 @@
   opacity: 0.75;
 }
 
-.memberBar a:hover,
-.memberBar a[aria-current="page"] {
+.memberBar > nav a:hover,
+.memberBar > nav a[aria-current="page"] {
   opacity: 1;
 }
 
-.memberBar a[aria-current="page"] {
+.memberBar > nav a[aria-current="page"] {
   color: var(--navy);
   background: var(--sky);
   border-radius: var(--apogee-radius-soft);
@@ -715,7 +715,7 @@
     margin-bottom: 1.75rem;
   }
 
-  .memberBar nav {
+  .memberBar > nav {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.35rem;
@@ -739,7 +739,7 @@
     border: 0;
   }
 
-  .memberBar a {
+  .memberBar > nav a {
     justify-content: center;
     min-width: 0;
     padding-inline: 0.35rem;
@@ -776,4 +776,35 @@
   .page * {
     transition: none !important;
   }
+}
+
+/* Shared homepage design system. Scoped to preserve Make It Fly. */
+:global([data-apogee-design]) .page { padding: clamp(3rem, 6vw, 6rem) var(--apogee-page-margin); background: var(--apogee-navy); }
+:global([data-apogee-design]) .container { max-width: 80rem; }
+:global([data-apogee-design]) .narrow { max-width: 32rem; }
+:global([data-apogee-design]) .title { font-size: clamp(3.5rem, 7vw, 7rem); line-height: .95; letter-spacing: -.025em; }
+:global([data-apogee-design]) .narrow .title { font-size: clamp(3.5rem, 6vw, 5rem); }
+:global([data-apogee-design]) .eyebrow,
+:global([data-apogee-design]) .radarEntryEyebrow,
+:global([data-apogee-design]) .memberNavLabel { font-family: var(--apogee-font-sans); font-size: .8125rem; letter-spacing: 0; text-transform: none; }
+:global([data-apogee-design]) .lead { font-size: 1.125rem; }
+:global([data-apogee-design]) .panel { box-shadow: none; border: 0; }
+:global([data-apogee-design]) .radarEntry { background: var(--apogee-sky); }
+:global([data-apogee-design]) .radarEntry h2 { font-family: var(--apogee-font-heading); font-size: clamp(2.5rem, 4vw, 4rem); line-height: 1; font-weight: 400; }
+:global([data-apogee-design]) .field input,
+:global([data-apogee-design]) .field textarea { border-radius: var(--apogee-control-radius); }
+:global([data-apogee-design]) .listItem { padding-block: 1.5rem; }
+:global([data-apogee-design]) .listItem h2,
+:global([data-apogee-design]) .listItem h3 { font-family: var(--apogee-font-heading); font-size: 2rem; font-weight: 400; }
+@media (max-width: 700px) {
+  :global([data-apogee-design]) .pageHead { align-items: start; }
+  :global([data-apogee-design]) .title { font-size: clamp(3rem, 12vw, 4.5rem); }
+}
+
+/* Keep account controls readable and separate from the three community tabs. */
+@media (max-width: 640px) {
+  :global([data-apogee-design]) .page { padding-top: 1.5rem; }
+  :global([data-apogee-design]) .memberIdentity { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; }
+  :global([data-apogee-design]) .memberIdentity > span:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
+  :global([data-apogee-design]) .memberBar > nav a { font-size: .8125rem; }
 }
