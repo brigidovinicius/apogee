@@ -1,0 +1,196 @@
+{
+  "scope": "Small sequential expansion of audited organizer editions. Four sources; no fictitious records or duplication by seats, teams, local NASA hosts or internal activities.",
+  "auditedAt": "2026-10-18T02:27:03.414Z",
+  "method": "Public GET with existing protected fetchOfficialResource, allowlisted exact paths, robots, SSRF/size limits and delays. Actual VPS fetch and runtime PDF.js extraction before activation. No forms, checkout, login, personal data or paid tools.",
+  "vpsChecks": {
+    "at": "2026-10-18T02:27:03.414Z",
+    "results": [
+      {
+        "id": "unievangelica",
+        "url": "https://www4.unievangelica.edu.br/noticia/unievangelica-abre-inscricoes-para-projeto-de-extensao-e-responsabilidade-social-na-amazonia",
+        "at": "2026-10-18T02:26:46.767Z",
+        "hash": "7f3f012ab1dad82f617e65019602ca181892623da3664875a9d4af3f25876c80",
+        "bytes": 111412,
+        "contentType": "text/html; charset=UTF-8"
+      },
+      {
+        "id": "ifmg",
+        "url": "https://www.formiga.ifmg.edu.br/todas-noticias/3944-xv-ject-abre-inscricoes-para-participacao-em-programacao-com-mais-de-30-atividades",
+        "at": "2026-10-18T02:26:49.963Z",
+        "hash": "54a80f98ec7421fbfcbb604e0a904992b22cb2e04271d319816757d90a6dc567",
+        "bytes": 60127,
+        "contentType": "text/html; charset=utf-8"
+      },
+      {
+        "id": "cps-programme",
+        "url": "https://robotica.cps.sp.gov.br/robocode-2026",
+        "at": "2026-10-18T02:26:56.807Z",
+        "hash": "232696f4f5854a41d83c280ff533e5a4148e5449e6df5ba872a719f2f8a85845",
+        "bytes": 97284,
+        "contentType": "text/html; charset=UTF-8"
+      },
+      {
+        "id": "fgv-edition",
+        "url": "https://eesp.fgv.br/evento/7o-desafio-de-dados-datathon-de-moedas-digitais-da-fgv-eesp",
+        "at": "2026-10-18T02:26:59.904Z",
+        "hash": "a3768bf0abfc7afe54a0add9907acc7d71755fcec529921dc269bf25b3b3eb99",
+        "bytes": 99645,
+        "contentType": "text/html; charset=UTF-8"
+      },
+      {
+        "id": "amazonia-edital",
+        "url": "https://www4.unievangelica.edu.br/storage/19222/Chamamento-Amaz%C3%B4nia.pdf",
+        "at": "2026-10-18T02:27:02.655Z",
+        "hash": "f7f8deb7017b88b07a26d207ea909e2663ca0b9353fe2c48d1a908e9026d5225",
+        "bytes": 181436,
+        "contentType": "application/pdf",
+        "pdfPages": 5,
+        "pdfTextLength": 9736,
+        "pdfEvidence": true
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "id": "wolfram",
+      "url": "https://www.wolfram.com/events/user-conference-brazil/2026/hackathon/",
+      "error": "Fonte oficial indisponível",
+      "decision": "not_activated_fetch_or_robots_blocked"
+    },
+    {
+      "id": "ueg",
+      "url": "https://www.eventos.ueg.br/publico/show/1695",
+      "at": "2026-10-17T15:03:50.345Z",
+      "hash": "e65eb7ceb347092c73355ee71a000bcddfd41da13074b86d417cbeb13802551e",
+      "bytes": 718183,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "not_activated_pending_complete_deadline_and_location_review"
+    },
+    {
+      "id": "unievangelica",
+      "url": "https://www4.unievangelica.edu.br/noticia/unievangelica-abre-inscricoes-para-projeto-de-extensao-e-responsabilidade-social-na-amazonia",
+      "at": "2026-10-17T15:03:52.745Z",
+      "hash": "7f3f012ab1dad82f617e65019602ca181892623da3664875a9d4af3f25876c80",
+      "bytes": 111412,
+      "contentType": "text/html; charset=UTF-8",
+      "sourceId": "unievangelica-amazonia-extension-2027",
+      "kind": "extracurricular_extension",
+      "registrationDeadline": "2026-10-30",
+      "decision": "approved_for_bounded_activation",
+      "registrationTime": "not_informed",
+      "recordsPerEdition": 1
+    },
+    {
+      "id": "lasalle",
+      "url": "https://www.unilasalle.edu.br/canoas/noticias/olimpiada-conect-inovacao-abre-inscricoes-2026",
+      "error": "Falha ao consultar fonte oficial",
+      "decision": "not_activated_fetch_or_robots_blocked"
+    },
+    {
+      "id": "ifmg",
+      "url": "https://www.formiga.ifmg.edu.br/todas-noticias/3944-xv-ject-abre-inscricoes-para-participacao-em-programacao-com-mais-de-30-atividades",
+      "at": "2026-10-17T15:03:55.928Z",
+      "hash": "65ef8f3f17d2b945353696074f795f85508b512efd98e1054bae3bfa11246630",
+      "bytes": 60127,
+      "contentType": "text/html; charset=utf-8",
+      "sourceId": "ifmg-formiga-xv-ject-2026",
+      "kind": "event",
+      "registrationDeadline": "2026-10-20",
+      "decision": "approved_for_bounded_activation",
+      "registrationTime": "not_informed",
+      "recordsPerEdition": 1
+    },
+    {
+      "id": "cianorte",
+      "url": "https://www.cianorte.pr.gov.br/noticiasView/11190_Inscricoes-abertas-para-o-Hackathon-GovTech-2026-.html",
+      "error": "robots.txt indisponível para revisão",
+      "decision": "not_activated_fetch_or_robots_blocked"
+    },
+    {
+      "id": "fgv",
+      "url": "https://portal.fgv.br/noticias/7o-desafio-de-dados-de-moedas-digitais-promove-desenvolvimento-de-solucoes-em-blockchain-e-criptoativos",
+      "at": "2026-10-17T15:05:16.459Z",
+      "hash": "dd2c84d4708ec0fbc26657dd960f54d4a58c02eb7e8b198a9c8ce173bc1ddd87",
+      "bytes": 66570,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "supporting_official_news_not_separate_opportunity"
+    },
+    {
+      "id": "cps",
+      "url": "https://www.cps.sp.gov.br/torneio-robocode-das-etecs-e-fatecs-esta-com-inscricoes-abertas/",
+      "at": "2026-10-17T15:05:23.686Z",
+      "hash": "800942b275f82faa06094b852d6f5230302824cfc8db47d2c77e08293d8b499d",
+      "bytes": 155818,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "supporting_official_news_not_separate_opportunity"
+    },
+    {
+      "id": "cefet",
+      "url": "https://www.ng.cefetmg.br/2026/10/09/hackatohm-reune-estudantes-para-solucionar-desafios-de-empresas-reais/",
+      "error": "Falha ao consultar fonte oficial",
+      "decision": "not_activated_fetch_or_robots_blocked"
+    },
+    {
+      "id": "cps-programme",
+      "url": "https://robotica.cps.sp.gov.br/robocode-2026",
+      "at": "2026-10-17T15:06:22.184Z",
+      "hash": "232696f4f5854a41d83c280ff533e5a4148e5449e6df5ba872a719f2f8a85845",
+      "bytes": 97284,
+      "contentType": "text/html; charset=UTF-8",
+      "sourceId": "cps-robocode-14-2026",
+      "kind": "robotics_competition",
+      "registrationDeadline": "2026-10-30",
+      "decision": "approved_for_bounded_activation",
+      "registrationTime": "not_informed",
+      "recordsPerEdition": 1
+    },
+    {
+      "id": "fgv-edition",
+      "url": "https://eesp.fgv.br/evento/7o-desafio-de-dados-datathon-de-moedas-digitais-da-fgv-eesp",
+      "at": "2026-10-17T15:06:43.970Z",
+      "hash": "a3768bf0abfc7afe54a0add9907acc7d71755fcec529921dc269bf25b3b3eb99",
+      "bytes": 99645,
+      "contentType": "text/html; charset=UTF-8",
+      "sourceId": "fgv-eesp-datathon-7-2026",
+      "kind": "data_competition",
+      "registrationDeadline": "2026-10-23",
+      "decision": "approved_for_bounded_activation",
+      "registrationTime": "not_informed",
+      "recordsPerEdition": 1
+    },
+    {
+      "id": "amazonia-edital",
+      "url": "https://www4.unievangelica.edu.br/storage/19222/Chamamento-Amaz%C3%B4nia.pdf",
+      "at": "2026-10-17T15:06:46.124Z",
+      "hash": "f7f8deb7017b88b07a26d207ea909e2663ca0b9353fe2c48d1a908e9026d5225",
+      "bytes": 181436,
+      "contentType": "application/pdf",
+      "decision": "required_official_supplement",
+      "sourceId": "unievangelica-amazonia-extension-2027",
+      "pages": 5,
+      "role": "Audited full document; runtime PDF extraction also passed on VPS. Costs and course periods confirmed."
+    },
+    {
+      "url": "https://web.inteli.edu.br/hackathongemini",
+      "decision": "not_activated_explicitly_closed",
+      "evidence": "Official page says Inscrições Encerradas; future final and promotional buttons do not reopen enrollment."
+    },
+    {
+      "url": "https://hackathonanima.com.br/",
+      "decision": "not_activated_ambiguous_current_enrollment",
+      "evidence": "Page announces finalists while retaining enrollment copy; no inferred open registration."
+    },
+    {
+      "url": "https://www.spaceappschallenge.org/2026/",
+      "decision": "already_covered_no_duplicate",
+      "evidence": "Existing NASA edition remains the single programme; local host pages are not new global opportunities."
+    }
+  ],
+  "limits": [
+    "Candidate URLs do not count as published records. Sources staged inactive; live activation and ingestion require later evidence.",
+    "UniEVANGELICA is restricted to its own students and international partner institutions; no national eligibility or precise Amazonian city/state inferred.",
+    "CPS eligibility remains Etec/Fatec; no free admission or financial prize presumed.",
+    "FGV national online competition, awards per team, not salary. Calendar widget does not override labeled registration/event dates.",
+    "Some hackathon candidates were inaccessible or closed and remain unactivated."
+  ]
+}

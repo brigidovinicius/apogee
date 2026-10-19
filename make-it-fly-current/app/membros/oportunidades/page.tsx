@@ -3,7 +3,7 @@ import { MemberBar } from "@/components/members/member-bar";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
 import styles from "@/components/members/members.module.css";
 import { requireMember } from "@/lib/members/dal";
-import { listMemberOpportunities } from "@/lib/opportunities/access";
+import { listMemberOpportunityPage } from "@/lib/opportunities/access";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +12,16 @@ export const metadata: Metadata = {
   description: "Oportunidades estudantis completas para membros da comunidade Apogee.",
 };
 
-export default async function MemberOpportunitiesPage() {
+export default async function MemberOpportunitiesPage({ searchParams }: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   // Proteção da rota. A DAL repete a autorização antes de ler os detalhes.
   const member = await requireMember("/membros/oportunidades");
-  const opportunities = await listMemberOpportunities().catch(() => null);
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(await searchParams)) {
+    if (typeof value === "string") params.set(key, value);
+  }
+  const catalogue = await listMemberOpportunityPage(params).catch(() => null);
 
   return (
     <div className={styles.container}>
@@ -29,7 +35,7 @@ export default async function MemberOpportunitiesPage() {
           </p>
         </div>
       </header>
-      {opportunities ? <OpportunitiesBoard opportunities={opportunities} /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
+      {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
     </div>
   );
 }

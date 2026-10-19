@@ -40,7 +40,8 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
       if (cataloguePages === 2) {
         const application = await fetchOfficialResource(programmeSupplementUrl(source.id), source);
         pagesChecked += 1;
-        applicationHtml = application.body.toString("utf8");
+        applicationHtml = /application\/pdf/i.test(application.contentType)
+          ? await readText(application.body, application.contentType) : application.body.toString("utf8");
       }
       if (source.id === PDAI_SOURCE_ID) catalogueTerminal = capesPdaiTerminalEvidence(courses.body.toString("utf8"), applicationHtml);
       if (source.id === PDSE_SOURCE_ID) catalogueTerminal = capesPdseTerminalEvidence(courses.body.toString("utf8"), applicationHtml);

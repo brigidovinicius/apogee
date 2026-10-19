@@ -25,7 +25,7 @@ test("public and member access share the live source without static fallback", a
   ]);
   assert.match(access, /^import "server-only";/m);
   assert.doesNotMatch(access, /STUDENT_OPPORTUNITIES|mergeOpportunities|SAMPLE_SIZE/);
-  assert.match(page, /listPublicOpportunities/);
+  assert.match(page, /listPublicOpportunityPage/);
   assert.match(page, /OpportunitiesBoard/);
   assert.match(page, /Catálogo temporariamente indisponível/);
   assert.doesNotMatch(board, /@\/content\/opportunities|@\/lib\/opportunities\/(access|radar-client)/);
@@ -44,7 +44,7 @@ test("o Radar completo exige sessão tanto na rota quanto na camada de acesso", 
 
   assert.match(access, /await requireMember\("\/membros\/oportunidades"\);/);
   assert.match(memberPage, /await requireMember\("\/membros\/oportunidades"\);/);
-  assert.match(memberPage, /listMemberOpportunities/);
+  assert.match(memberPage, /listMemberOpportunityPage/);
   assert.match(proxy, /matcher: \["\/membros", "\/membros\/:path\*", "\/admin", "\/admin\/:path\*"\]/);
   assert.match(radarClient, /RADAR_ACADEMICO_API_TOKEN/);
   assert.match(radarClient, /Authorization: `Bearer \$\{radarApiToken\}`/);

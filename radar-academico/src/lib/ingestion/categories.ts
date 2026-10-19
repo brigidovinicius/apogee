@@ -21,3 +21,21 @@ export function validCategories(value: unknown): value is OpportunityCategory[] 
     value.every((item) => typeof item === "string" && OPPORTUNITY_CATEGORIES.includes(item as OpportunityCategory)) &&
     new Set(value).size === value.length;
 }
+
+/** Title intent + participation context + audited source topics, rather than incidental keywords. */
+export function categoriesFromContext(input: { title: string; text: string; sourceCategories: string[];
+  benefitType: BenefitType; isCourse: boolean }): OpportunityCategory[] {
+  const categories = categoriesFromEvidence(input.benefitType, input.isCourse);
+  const title = input.title.trim();
+  const participation = /inscriç(?:ão|ões)|particip(?:ar|antes|ação)|equipes|candidatur|submiss(?:ão|ões)/iu.test(input.text);
+  const learningAbout = /^(?:curso|capacitação|formação|tutorial|guia)\b|\b(?:sobre|como organizar)\s+(?:hackathons?|competiç|eventos?)/iu.test(title);
+  if (!participation || learningAbout || input.isCourse) return categories;
+  const competition = /^(?:(?:\d+[ªº]?|[IVX]+)\s+)?(?:hackathon|competição|olimpíada|maratona de programação|desafio de inovação)\b/iu.test(title);
+  const event = /^(?:(?:\d+[ªº]?|[IVX]+)\s+)?(?:evento|workshop|conferência|congresso|seminário|encontro|feira|palestra|webinar)\b/iu.test(title);
+  const project = /^(?:projeto|programa)\s+de\s+(?:extensão|iniciação científica|inovação|empreendedorismo|aceleração|incubação)\b/iu.test(title);
+  const sourceSupports = (pattern: RegExp) => input.sourceCategories.some(category => pattern.test(category));
+  if (competition && sourceSupports(/competi|hackathon|olimpíada|inovação|eventos/iu)) categories.unshift("competicoes");
+  if ((event || competition) && sourceSupports(/eventos|comunidades|hackathon|competi/iu)) categories.push("eventos");
+  if (project && sourceSupports(/pesquisa|inovação|extensão|empreendedorismo|incuba|acelera/iu)) categories.unshift("pesquisa");
+  return [...new Set(categories)];
+}
