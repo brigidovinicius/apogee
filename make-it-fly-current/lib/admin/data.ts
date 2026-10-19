@@ -1,5 +1,5 @@
 import "server-only";
-import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, ilike, or, sql } from "drizzle-orm";
 import { requireAdmin } from "@/lib/admin/access";
 import { getDb } from "@/lib/members/db";
 import { forumPost, forumTopic, user } from "@/lib/members/schema";
@@ -49,7 +49,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
       accounts: count(),
       members: sql<number>`count(*) filter (where ${user.role} = 'member')`.mapWith(Number),
       admins: sql<number>`count(*) filter (where ${user.role} = 'admin')`.mapWith(Number),
-      newAccounts30Days: sql<number>`count(*) filter (where ${user.createdAt} >= ${since})`.mapWith(Number),
+      newAccounts30Days: sql<number>`count(*) filter (where ${gte(user.createdAt, since)})`.mapWith(Number),
     })
     .from(user);
 
