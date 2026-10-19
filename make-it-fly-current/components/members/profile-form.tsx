@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useActionState, useState } from "react";
 import { updateProfile, type FormState } from "@/app/membros/actions";
+import { useFormErrorFocus } from "@/components/ui/use-form-error-focus";
 import { memberAvatarUrl } from "@/lib/members/avatar-url";
 import { AvatarInitials } from "./avatar-initials";
 import { Field, FormMessage } from "./form-field";
@@ -77,10 +78,11 @@ function AvatarEditor({ name, userId, initialImage }: { name: string; userId: st
 
 export function ProfileForm({ name, userId, bio, image }: { name: string; userId: string; bio: string; image: string | null }) {
   const [state, action, pending] = useActionState(updateProfile, {} as FormState);
+  const formRef = useFormErrorFocus(state);
   return (
     <>
     <AvatarEditor name={name} userId={userId} initialImage={image} />
-    <form className={styles.form} action={action} noValidate>
+    <form ref={formRef} className={styles.form} action={action} noValidate>
       <FormMessage message={state.message} />
       <Field name="name" label="Nome" error={state.errors?.name}>
         {(props) => (

@@ -34,5 +34,5 @@ export function FormField({ name, label, error, hint, children }: FieldProps) {
 }
 
 export function FormMessage({ message }: { message?: string }) {
-  return message ? <p className={styles.message} role="alert">{message}</p> : null;
+  return message ? <p className={styles.message} role="alert" tabIndex={-1} data-form-message>{message}</p> : null;
 }

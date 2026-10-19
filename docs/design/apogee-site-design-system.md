@@ -58,3 +58,7 @@ Capturas `design-system-*.png` e `validacao-design-system.json` acompanham a ent
 ## Revisão mobile de membros e administração — 18/10/2026
 
 A revisão seguinte corrigiu a interferência entre a navegação do membro e a alternância de modo, reduziu o cabeçalho fixo do painel, limitou o menu em telas baixas, reorganizou os indicadores e aumentou os campos administrativos para 16 px no celular. Foram verificadas 49 combinações de sete telas e sete tamanhos, incluindo membro comum com nome longo, perfil e formulários. Os 265 testes e o build passaram novamente. Consulte `members-admin-mobile-review.md` para medições e limites das amostras.
+
+## Interações dos formulários — 18/10/2026
+
+Perfil e editor de artigos foram exercitados em amostras interativas isoladas, com ações reais de validação e persistência/transporte bloqueados. Foram corrigidos foco e associação dos erros, perda da seleção de tema após validação e endereço da prévia SEO. Os 268 testes e o build passaram. Consulte `profile-editor-interactions.md` para os cenários e os limites da integração simulada.
