@@ -63,3 +63,10 @@ test("calendar-day colors and event colors use the correct target; unknown dates
   assert.equal(countdown(event, now).tone, "safe");
   assert.equal(countdown({ ...event, eventStartsAt: null }, now).tone, null);
 });
+
+test("submission countdown never describes its deadline as registration", () => {
+ const item = { categories: ["competicoes"], deadline: "2026-12-15", deadlineKind: "submission" };
+ assert.equal(countdown(item, now).label, "Encerramento dos envios");
+ assert.equal(countdown(item, Date.parse("2026-12-16T03:00:00Z")).value, "Envios encerrados");
+ assert.equal(countdown({ ...item, deadlineAt: "2026-12-15T23:59:00Z" }, Date.parse("2026-12-16T03:00:00Z")).value, "Envios encerrados");
+});

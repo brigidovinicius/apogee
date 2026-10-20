@@ -72,3 +72,11 @@ test("audited admission metadata survives the Radar bridge only for course optio
  assert.equal(client.toOpportunity({...item,isCourse:false}).admissionProcess,null);
  assert.equal(client.toOpportunity({...item,admissionProcess:{id:"",title:"Missing ID"}}).admissionProcess,null);
 });
+
+test("submission deadline keeps its date and shows Envios instead of registration",async()=>{
+ const client=await import(`data:text/javascript;base64,${Buffer.from(output).toString("base64")}`);
+ const item={id:"climx",title:"ClimX",institution:"UV",officialUrl:"https://ipl-uv.github.io/ClimX/",lastCheckedAt:"2026-10-20T16:00:00Z",benefitType:"prize",applicantType:"mixed",categories:["competicoes"],deadlineAt:"2026-12-15 00:00:00+00",deadlinePrecision:"date_only",deadlineKind:"submission",countryCode:null,geographicScopeKind:"global"};
+ const mapped=client.toOpportunity(item);assert.equal(mapped.deadline,"2026-12-15");assert.equal(mapped.deadlineLabel,"Envios até 15 de dezembro");assert.equal(mapped.eventStartsAt,null);assert.match(mapped.summary,/envios abertos/);assert.equal(mapped.location,"Internacional");
+ const junction=client.toOpportunity({...item,deadlineKind:"registration",countryCode:"FI",geographicScopeKind:"country"});assert.equal(junction.location,"Finlândia");assert.equal(junction.stateCode,null);assert.equal(junction.cityName,null);
+ assert.equal(client.toOpportunity({...item,deadlineKind:undefined}).deadlineLabel,"Inscrições até 15 de dezembro");
+});

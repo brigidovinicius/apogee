@@ -679,3 +679,12 @@ it("keeps CPS cultural and virtual selections distinct on the same official inde
  expect(await ingest(sources[1])).toMatchObject({created:0,published:0});
  expect((await listLiveCatalogue()).map(x=>x.title)).toEqual(['Intercâmbio Cultural CPS']);
 });
+
+it("bridges audited submission deadlines consistently to public and management catalogues",async()=>{
+ const item=candidate({isCourse:false,categories:["competicoes"],evidenceJson:{deadline_at:evidence,opportunity_status:evidence,submission_deadline:{source_url:evidence.source_url,excerpt:"Envios até 20/10/2099; inscrição separada não informada."}}});
+ await save(item);
+ expect((await listLiveCatalogue())[0].deadlineKind).toBe("submission");
+ expect((await listLiveCatalogue(true))[0].deadlineKind).toBe("submission");
+ await save({...item,contentHash:"no-submission",evidenceJson:{deadline_at:evidence,opportunity_status:evidence}});
+ expect((await listLiveCatalogue())[0].deadlineKind).toBe("registration");
+});

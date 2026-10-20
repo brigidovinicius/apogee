@@ -1,0 +1,766 @@
+{
+  "researchDate": "2026-10-20",
+  "timezone": "America/Sao_Paulo",
+  "scope": "Pesquisa e curadoria local; nenhuma inserção, ativação, migração ou publicação no catálogo nesta rodada.",
+  "confirmedOpenCount": 8,
+  "pendingCount": 2,
+  "liveBaseline": {
+    "at": "2026-10-20T15:34:15.888Z",
+    "publicStatus": 200,
+    "adminStatus": 200,
+    "version": 3,
+    "publicRecords": 1178,
+    "adminRecords": 1178,
+    "uniquePublic": 1178,
+    "onlyPublic": [],
+    "onlyAdmin": [],
+    "fieldDifferences": [],
+    "cacheControl": "no-store"
+  },
+  "liveCompetitionCount": 8,
+  "openCandidates": [
+    {
+      "id": "senac-ms-decola-saude-2026",
+      "title": "Decola Hackathon — Missão Saúde | Dourados 2026",
+      "organizer": "Senac MS, com HU-UFGD/HU Brasil",
+      "url": "https://ms.senac.br/decola",
+      "registrationUrl": "https://www.sympla.com.br/evento/decola-hackathon-missao-saude-dourados/3602434",
+      "format": "presencial",
+      "city": "Dourados",
+      "state": "MS",
+      "country": "BR",
+      "registrationDeadline": "2026-10-26",
+      "submissionDeadline": null,
+      "eventStarts": "2026-10-29",
+      "eventEnds": "2026-10-31",
+      "eligibility": "A partir de 16 anos e cursando ao menos o 2º ano do Ensino Médio; equipes obrigatórias de quatro integrantes. Há cinco equipes externas e cinco de alunos/egressos do Senac.",
+      "cost": "Inscrição gratuita; deslocamento e hospedagem não anunciados como apoio. O regulamento prevê almoço em 30 e 31/10.",
+      "prizes": "R$ 6.000, R$ 3.000 e R$ 1.000 por equipe, conforme colocação, além de brindes e troféus.",
+      "conditions": "Protótipo na versão do Figma fornecida pela organização; MVPs ficam sob titularidade do Senac MS, com direito de autoria preservado e transferência às instituições apoiadoras/beneficiárias.",
+      "limitations": [
+        "Prazo geral oficial: 26/10, ou antes se esgotar. A Sympla exibe 29/10 para a opção de menor de idade; não estender o prazo geral com base nesse lote.",
+        "A descrição Sympla menciona bolsa/pre-incubação, sem condições suficientes no regulamento lido; não anunciar bolsa mensal.",
+        "Cabeçalho do PDF diz 29 e 31/10; a página e o cronograma de três dias incluem 30/10."
+      ],
+      "evidence": [
+        "/private/tmp/hackathons-decola-visible-20261020.txt",
+        "/private/tmp/hackathons-decola-regulation-20261020.txt",
+        "/private/tmp/hackathons-decola-registration-20261020.txt"
+      ],
+      "crawlReadiness": "HTML e PDF obtidos pelo coletor protegido; requer adaptador de edição com leitura do regulamento.",
+      "researchStatus": "open_confirmed_not_published",
+      "automatedPublicationReady": false,
+      "categories": [
+        "competicoes",
+        "eventos"
+      ],
+      "evidenceDigests": {
+        "/private/tmp/hackathons-decola-visible-20261020.txt": {
+          "sha256": "598fba23677077aad60dca31525750f37204b48627fb1ac70b27440fd793c248",
+          "bytes": 6126
+        },
+        "/private/tmp/hackathons-decola-regulation-20261020.txt": {
+          "sha256": "eaf9ccc71eac44694bbb5886d0e1e5540b66a486c239414fc82566294b974511",
+          "bytes": 15556
+        },
+        "/private/tmp/hackathons-decola-registration-20261020.txt": {
+          "sha256": "d87da4bd2219924c2ae2bdbe0235e543a632448ad13aacbebbc80312e1c9b015",
+          "bytes": 7381
+        }
+      }
+    },
+    {
+      "id": "hacktoberfest-sjc-2026",
+      "title": "Hacktoberfest Hack Day São José dos Campos 2026",
+      "organizer": "GitHub Community SJC e GDG São José dos Campos",
+      "url": "https://events.mlh.com/events/14779-hacktoberfest-hack-day-sao-jose-dos-campos",
+      "registrationUrl": "https://events.mlh.com/events/14779-hacktoberfest-hack-day-sao-jose-dos-campos/register",
+      "format": "presencial",
+      "city": "São José dos Campos",
+      "state": "SP",
+      "country": "BR",
+      "registrationDeadline": null,
+      "submissionDeadline": null,
+      "eventStarts": "2026-10-31",
+      "eventEnds": "2026-10-31",
+      "eligibility": "Universitários e profissionais; levar notebook, carregador e conta GitHub.",
+      "cost": "Taxa de inscrição não informada na página oficial auditada.",
+      "prizes": "Premiação para os três primeiros projetos; valor e natureza financeira não confirmados.",
+      "conditions": "Projetos open source; inscrição pela MLH. Evento das 9h às 17h de Brasília.",
+      "limitations": [
+        "Prazo de inscrição não informado: preservar ausência de prazo e retirar ao início do evento.",
+        "Não transformar o simples nome Hacktoberfest em uma competição global adicional."
+      ],
+      "evidenceUrls": [
+        "https://gdg.community.dev/events/details/google-gdg-sao-jose-dos-campos-presents-hacktoberfest-hack-day-sao-jose-dos-campos/"
+      ],
+      "crawlReadiness": "HTML da edição obtido com evidências de data, inscrição e competição; requer adaptador.",
+      "researchStatus": "open_confirmed_not_published",
+      "automatedPublicationReady": false,
+      "categories": [
+        "competicoes",
+        "eventos"
+      ],
+      "evidenceDigests": {}
+    },
+    {
+      "id": "junction-2026",
+      "title": "Junction 2026 — European Tech Renaissance",
+      "organizer": "Junction",
+      "url": "https://hackjunction.app/hackathons/junction-2026",
+      "format": "presencial",
+      "city": "Espoo, região de Helsinque",
+      "country": "FI",
+      "registrationDeadline": "2026-10-25",
+      "registrationDeadlineDisplay": "25 Oct 2026, 22:55; fuso do prazo não reconciliado para conversão.",
+      "submissionDeadline": null,
+      "eventStarts": "2026-11-13",
+      "eventEnds": "2026-11-15",
+      "eligibility": "Participantes internacionais; equipes de uma a quatro pessoas; participação depende de seleção.",
+      "cost": "Taxa de participação não confirmada na página auditada. Viagem/hospedagem não presumidas gratuitas.",
+      "prizes": "Não consolidado nesta pesquisa.",
+      "conditions": "Maratona de 48 horas na Hype Arena; apoio de viagem de €100/€300 para internacionais já encerrou.",
+      "limitations": [
+        "Não anunciar auxílio de viagem como aberto.",
+        "Não converter o horário de encerramento para Brasília sem confirmar o fuso específico."
+      ],
+      "crawlReadiness": "HTML com Status Open e prazo obtido pelo coletor protegido; requer adaptador.",
+      "researchStatus": "open_confirmed_not_published",
+      "automatedPublicationReady": false,
+      "categories": [
+        "competicoes",
+        "eventos"
+      ],
+      "evidenceDigests": {}
+    },
+    {
+      "id": "gemma-dev-agent-2026",
+      "title": "Google — The Gemma 4 Developer Agent Competition",
+      "organizer": "Google DeepMind",
+      "url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/overview",
+      "format": "online",
+      "country": null,
+      "registrationDeadline": "2026-11-25T23:59:00Z",
+      "submissionDeadline": "2026-12-02T23:59:00Z",
+      "eventStarts": null,
+      "eligibility": "Participação mundial sujeita às restrições dos termos; maioridade/18 anos, salvo autorização expressamente aceita; equipes de até cinco.",
+      "cost": "Sem compra obrigatória para inscrição. Treino/infraestrutura própria podem ter custos.",
+      "prizes": "US$ 65.000 no ranking principal: 37 mil, 18 mil e 10 mil. Os US$ 35.000 de artigos pertencem à trilha opcional vinculada, com prazo 12/11.",
+      "conditions": "Construir agentes de programação com as variantes Gemma aceitas e cumprir requisitos de código e avaliação.",
+      "limitations": [
+        "Uma edição; não duplicar a trilha opcional de artigos para inflar o catálogo.",
+        "Não anunciar US$100 mil como prêmio individual ou como total exclusivo da trilha principal."
+      ],
+      "evidence": [
+        "/private/tmp/hackathons-gemma-overview-20261020.txt",
+        "/private/tmp/hackathons-gemma-rules-20261020.txt"
+      ],
+      "crawlReadiness": "Navegador confirma Join Competition e cronograma; HTML protegido contém apenas envelope sem prazo. Adaptador dinâmico ou fonte oficial alternativa necessário.",
+      "researchStatus": "open_confirmed_not_published",
+      "automatedPublicationReady": false,
+      "categories": [
+        "competicoes"
+      ],
+      "evidenceDigests": {
+        "/private/tmp/hackathons-gemma-overview-20261020.txt": {
+          "sha256": "2d853b6a3f85e37a55abab757a8734215e4820d4b53a56e8540520950cfeec59",
+          "bytes": 18384
+        },
+        "/private/tmp/hackathons-gemma-rules-20261020.txt": {
+          "sha256": "d832350be476e6526a8c561cdd6aa8512dae89f879aeb91f64c624207795a5f9",
+          "bytes": 43181
+        }
+      }
+    },
+    {
+      "id": "chi-bench-2026",
+      "title": "CHI-Bench — IEEE Big Data Cup 2026",
+      "organizer": "Organização do desafio CHI-Bench / Haolin Chen",
+      "url": "https://www.kaggle.com/competitions/chi-bench",
+      "format": "online",
+      "country": null,
+      "registrationDeadline": "2026-11-07T23:59:00Z",
+      "submissionDeadline": "2026-11-15T23:59:00Z",
+      "eventStarts": null,
+      "eligibility": "Mundial, maioridade/18 anos conforme termos; equipes de até cinco.",
+      "cost": "Sem compra obrigatória para inscrição; computação/modelos próprios não são apoio financeiro presumido.",
+      "prizes": "US$ 3.000 distribuídos entre ouro, prata e bronze; Reliability Award separado.",
+      "conditions": "Agentes para fluxos administrativos de saúde em ambiente simulado. Exige obter aprovação de acesso ao handbook, código executável e evidências de avaliação.",
+      "limitations": [
+        "Não tratar a conferência nos EUA como exigência de viagem para a participação online sem confirmação."
+      ],
+      "evidence": [
+        "/private/tmp/hackathons-chi-overview-20261020.txt",
+        "/private/tmp/hackathons-chi-rules-20261020.txt"
+      ],
+      "crawlReadiness": "Join Hackathon e inscrições abertos no navegador; conteúdo não disponível no HTML protegido.",
+      "researchStatus": "open_confirmed_not_published",
+      "automatedPublicationReady": false,
+      "categories": [
+        "competicoes"
+      ],
+      "evidenceDigests": {
+        "/private/tmp/hackathons-chi-overview-20261020.txt": {
+          "sha256": "937f9b089fd3935a948e605fdbe4b7e96f52be40fe0d777940665bef48229df6",
+          "bytes": 23762
+        },
+        "/private/tmp/hackathons-chi-rules-20261020.txt": {
+          "sha256": "207ce68aa501dd2dd4cce56c69c822cd924eb8439e17cdefca88eecd01a6c8ec",
+          "bytes": 50002
+        }
+      }
+    },
+    {
+      "id": "3lc-low-light-2026",
+      "title": "The 3LC Low-Light Detection Challenge",
+      "organizer": "Equipe 3LC / anfitrião RishikeshJadhav3LC no Kaggle",
+      "url": "https://www.kaggle.com/competitions/the-3lc-low-light-detection-challenge/overview/abstract",
+      "format": "online",
+      "country": null,
+      "registrationDeadline": null,
+      "submissionDeadline": "2026-11-21T23:59:00Z",
+      "eventStarts": null,
+      "eligibility": "Mundial conforme termos; maioridade/18 anos; equipes de até quatro.",
+      "cost": "Inscrição sem compra obrigatória; conta 3LC Non-Commercial gratuita. Requer máquina própria compatível, Python e instalação local; GPU recomendada.",
+      "prizes": "US$ 2.000 no total, distribuídos por critérios da competição.",
+      "conditions": "Detecção de objetos em baixa luminosidade; formulário de avaliação para elegibilidade aos prêmios até 30/11/2026 às 23h59 UTC.",
+      "limitations": [
+        "21/11 é prazo de envio, não presumir prazo de entrada separado.",
+        "Kernels temporários em nuvem não substituem o ambiente local exigido."
+      ],
+      "evidence": [
+        "/private/tmp/hackathons-3lc-overview-20261020.txt",
+        "/private/tmp/hackathons-3lc-rules-20261020.txt"
+      ],
+      "crawlReadiness": "Join Competition e datas confirmados no navegador; HTML protegido sem cronograma.",
+      "researchStatus": "open_confirmed_not_published",
+      "automatedPublicationReady": false,
+      "categories": [
+        "competicoes"
+      ],
+      "evidenceDigests": {
+        "/private/tmp/hackathons-3lc-overview-20261020.txt": {
+          "sha256": "bd0772d72473da9aa6e8e4774d12ac6d98e84e0cc15e19d546cf7713ce2c90f3",
+          "bytes": 99511
+        },
+        "/private/tmp/hackathons-3lc-rules-20261020.txt": {
+          "sha256": "1fc6622f62f2585517b4d08c93df7e3e517e39bb40d9f2acdbbaabe1c1c2a9eb",
+          "bytes": 39668
+        }
+      }
+    },
+    {
+      "id": "buildarena-s02-2026",
+      "title": "BuildArena S02 — Human AI Engineering Challenge",
+      "organizer": "Equipe BuildArena; instituições e apoio identificados no overview",
+      "url": "https://www.kaggle.com/competitions/build-arena-human-ai-engineering-challenge/overview/hackathon-tracks-and-prizes",
+      "format": "online",
+      "country": null,
+      "registrationDeadline": null,
+      "submissionDeadline": "2026-11-14",
+      "submissionTimezone": "AoE (UTC−12)",
+      "eventStarts": null,
+      "eligibility": "Participação global conforme termos Kaggle; equipes de até três.",
+      "cost": "Exige jogo Besiege e DLC The Broken Beyond. A organização oferece chave do jogo base mediante formulário; não há confirmação de custeio do DLC ou de chamadas a modelos.",
+      "prizes": "US$ 3.000 no total na trilha Build with Agent.",
+      "conditions": "Agente constrói, simula e melhora máquina/controlador pelo MCP BuildArena 2.0; trilha humana é demonstrativa e não concorre ao prêmio principal.",
+      "limitations": [
+        "14/11 é prazo de envio em AoE; não transformar automaticamente em 14/11 de Brasília.",
+        "Não apresentar a atividade como inteiramente gratuita sem esclarecer dependências."
+      ],
+      "evidence": [
+        "/private/tmp/hackathons-buildarena-overview-20261020.txt",
+        "/private/tmp/hackathons-buildarena-rules-20261020.txt"
+      ],
+      "crawlReadiness": "Join Hackathon confirmado no navegador; HTML protegido sem evidências de cronograma.",
+      "researchStatus": "open_confirmed_not_published",
+      "automatedPublicationReady": false,
+      "categories": [
+        "competicoes"
+      ],
+      "evidenceDigests": {
+        "/private/tmp/hackathons-buildarena-overview-20261020.txt": {
+          "sha256": "95fef8af7fe99714d85cfaa938be296160bbd3b74cbb26c7d59d16879c39f05d",
+          "bytes": 38338
+        },
+        "/private/tmp/hackathons-buildarena-rules-20261020.txt": {
+          "sha256": "29df1be8849c43f60897ddec7ff551b10722931939f132e2fc0c7ec52c319eee",
+          "bytes": 96240
+        }
+      }
+    },
+    {
+      "id": "climx-2026",
+      "title": "ClimX — Extreme-aware Climate Model Emulation",
+      "organizer": "Image and Signal Processing Laboratory, Universitat de València; prêmios ESA Φ-lab",
+      "url": "https://ipl-uv.github.io/ClimX/",
+      "registrationUrl": "https://www.kaggle.com/competitions/climx-main-track",
+      "format": "online",
+      "country": null,
+      "registrationDeadline": null,
+      "submissionDeadline": "2026-12-15",
+      "eventStarts": null,
+      "eligibility": "Participação mundial conforme regras Kaggle; maioridade/18 anos; equipes de até dez.",
+      "cost": "Sem compra obrigatória para inscrição; processamento e infraestrutura de treinamento não são benefício garantido.",
+      "prizes": "€ 3.300 na trilha principal: €1.800, €1.000 e €500, sujeitos à classificação e reprodutibilidade.",
+      "conditions": "Código e pesos abertos em MIT ou Apache-2.0 para premiação; dados e modelos de fora proibidos nos termos específicos.",
+      "limitations": [
+        "A busca indexada estava desatualizada (30/11 e prêmio condicionado ao workshop). A página atual do organizador e as regras atuais confirmam 15/12 e €3.300.",
+        "Uma edição; não multiplicar as trilhas main e UQ em oportunidades independentes nesta curadoria."
+      ],
+      "evidence": [
+        "/private/tmp/hackathons-climx-visible-20261020.txt",
+        "/private/tmp/hackathons-climx-overview-20261020.txt",
+        "/private/tmp/hackathons-climx-rules-20261020.txt"
+      ],
+      "crawlReadiness": "Página oficial alternativa do organizador obtida pelo coletor protegido, com prazo, inscrição e prêmios; não exige usar o HTML vazio do Kaggle como evidência.",
+      "researchStatus": "open_confirmed_not_published",
+      "automatedPublicationReady": false,
+      "categories": [
+        "competicoes"
+      ],
+      "evidenceDigests": {
+        "/private/tmp/hackathons-climx-visible-20261020.txt": {
+          "sha256": "a830b0e5931f00b25fe3c37c6ff88f079510c3fe5368977c4cc4957ee1600d59",
+          "bytes": 16522
+        },
+        "/private/tmp/hackathons-climx-overview-20261020.txt": {
+          "sha256": "4a8a32cb53151bcb74387194d31b729b5c6eb19f1c330c7531bdc955cf271e26",
+          "bytes": 19417
+        },
+        "/private/tmp/hackathons-climx-rules-20261020.txt": {
+          "sha256": "bd0684e6117f0e14465ed051417642fb029b838b01ecec482b1c607f1c54ddd3",
+          "bytes": 39735
+        }
+      }
+    }
+  ],
+  "pendingCandidates": [
+    {
+      "id": "flagos-global-2026",
+      "title": "FlagOS Open Computing Global Challenge — Track 1",
+      "url": "https://www.kaggle.com/competitions/flag-os-open-computing-global-challenge-track-1",
+      "observed": "Join Hackathon, modalidade online mundial e cadastro até 13/11/2026 (UTC+8).",
+      "reason": "O cadastro obrigatório próprio aparece como flagos.io no overview e flagos.net nas regras. Ambas as consultas web falharam e a navegação na rota .net expirou em página vazia. Falta reconciliar/validar a rota antes de admitir na lista confirmada.",
+      "status": "pending_registration_route"
+    },
+    {
+      "id": "hult-prize-2027",
+      "title": "EF Hult Prize 2027",
+      "url": "https://www.hultprize.org/register",
+      "observed": "Formulário aberto; equipes 2–4. Suporte oficial informa entrega até 28/02/2027, 23h59 GMT.",
+      "reason": "Formulário usa idade em fevereiro/2027; termos vinculados ainda usam fevereiro/2025 e trazem condições societárias e investimento. Reconciliar o regulamento aplicável antes de publicar. Não anunciar US$1 milhão como bolsa ou prêmio sem contrapartida.",
+      "status": "pending_edition_terms_reconciliation"
+    }
+  ],
+  "excludedOrHeld": [
+    {
+      "title": "NASA Space Apps 2026 e sedes locais",
+      "reason": "Edição global já publicada; não duplicar suas sedes como novas competições.",
+      "url": "https://www.spaceappschallenge.org/2026/"
+    },
+    {
+      "title": "WorkInTech, Connect 7.0 e OBVC",
+      "reason": "Já publicados na leva anterior."
+    },
+    {
+      "title": "Desafio UniSoma 2026",
+      "reason": "Encerrado em 15/10 por lotação; lista de espera não comprova inscrição aberta.",
+      "url": "https://unisoma.com.br/desafio/"
+    },
+    {
+      "title": "IBM Z Datathon 2026",
+      "reason": "Evento ocorreu em 17–18/10, antes da pesquisa.",
+      "url": "https://community.ibm.com/zsystems/datathon/"
+    },
+    {
+      "title": "Hackathon STS 2026",
+      "reason": "Inscrições encerradas em 04/10, seleção já publicada.",
+      "url": "https://stssebrae.com.br/hackathon"
+    },
+    {
+      "title": "Hacka Sintechtica 2026",
+      "reason": "Página já anuncia finalistas; banner antigo não comprova entrada nova.",
+      "url": "https://hackathonanima.com.br/"
+    },
+    {
+      "title": "InovaUni Ciência Delas — Unitins",
+      "reason": "Página oficial apresenta comunicado de cancelamento em 08/10.",
+      "url": "https://unitins.br/Concursos/Publico/Home/S/a82f625d34f6e8ab01c39bb2eaab20e0"
+    },
+    {
+      "title": "Hackathon Ambiental Catanduva",
+      "reason": "Prazo de inscrição 10/10 vencido.",
+      "url": "https://www.catanduva.sp.gov.br/portal/noticias/0/3/4896/inscricoes-abertas-hackathon-ambiental/"
+    },
+    {
+      "title": "Hackathon SJP",
+      "reason": "Inscrição 02/10 e evento 09–10/10 encerrados.",
+      "url": "https://www.sjp.pr.gov.br/hackathon-sjp-busca-solucoes-tecnologicas-para-desafios-da-gestao-publica/"
+    },
+    {
+      "title": "Maratona Tech 2026",
+      "reason": "Fase 2 apenas para classificados; prazo inicial 31/07 vencido.",
+      "url": "https://www.maratona.tech/"
+    },
+    {
+      "title": "DataNova 2026",
+      "reason": "Cronograma, prêmios e critérios ainda apresentam dados provisórios/conflitantes; manter fora do lote.",
+      "url": "https://datanovathon.com/"
+    },
+    {
+      "title": "Rio Quantum Hack 2026",
+      "reason": "Falta confirmar prazo e disponibilidade da seleção no CERN/Indico; restrições de pós-graduação e pré-seleção.",
+      "url": "https://rioquantumhack.com.br/pt/"
+    },
+    {
+      "title": "Tech Sisters Hackathon 2026",
+      "reason": "Página mistura Applications open November 2026 com registro 18–27/10; reconciliar chamada e elegibilidade.",
+      "url": "https://www.tech-sisters.com/community-hackathons/"
+    },
+    {
+      "title": "GEMS Prize Challenge",
+      "reason": "Não admitido sem verificar a elegibilidade internacional/premiação no regulamento; selo de participação não substitui requisitos.",
+      "url": "https://www.drivendata.org/competitions/306/competition-doe-gems/"
+    }
+  ],
+  "exactUrlDedup": [
+    {
+      "candidate": "senac-ms-decola-saude-2026",
+      "sourceMatches": [],
+      "opportunityMatches": []
+    },
+    {
+      "candidate": "hacktoberfest-sjc-2026",
+      "sourceMatches": [],
+      "opportunityMatches": []
+    },
+    {
+      "candidate": "junction-2026",
+      "sourceMatches": [],
+      "opportunityMatches": []
+    },
+    {
+      "candidate": "gemma-dev-agent-2026",
+      "sourceMatches": [],
+      "opportunityMatches": []
+    },
+    {
+      "candidate": "chi-bench-2026",
+      "sourceMatches": [],
+      "opportunityMatches": []
+    },
+    {
+      "candidate": "flagos-global-2026",
+      "sourceMatches": [],
+      "opportunityMatches": []
+    },
+    {
+      "candidate": "3lc-low-light-2026",
+      "sourceMatches": [],
+      "opportunityMatches": []
+    },
+    {
+      "candidate": "buildarena-s02-2026",
+      "sourceMatches": [],
+      "opportunityMatches": []
+    },
+    {
+      "candidate": "climx-2026",
+      "sourceMatches": [],
+      "opportunityMatches": []
+    },
+    {
+      "candidate": "hult-prize-2027",
+      "sourceMatches": [],
+      "opportunityMatches": []
+    }
+  ],
+  "protectedFetch": [
+    {
+      "id": "senac-ms-decola-saude-2026",
+      "url": "https://ms.senac.br/decola",
+      "at": "2026-10-20T15:37:28.901Z",
+      "hash": "35a22a7103e5f962917db94f9e749670d5dcec2ba35b1d52f518f158b58a1a45",
+      "bytes": 57604,
+      "supplement": null,
+      "contentType": "text/html; charset=utf-8",
+      "checks": [
+        {
+          "check": "Missão Saúde 2026",
+          "present": false
+        },
+        {
+          "check": "26/10/2026",
+          "present": true
+        },
+        {
+          "check": "Inscrições abertas",
+          "present": false
+        },
+        {
+          "check": "29 a 31",
+          "present": true
+        }
+      ]
+    },
+    {
+      "id": "hacktoberfest-sjc-2026",
+      "url": "https://events.mlh.com/events/14779-hacktoberfest-hack-day-sao-jose-dos-campos",
+      "at": "2026-10-20T15:37:31.098Z",
+      "hash": "7c629b04465aacd207454e0285f0003c7ec96fc6918017d94410c1ab97cc8483",
+      "bytes": 25570,
+      "supplement": null,
+      "contentType": "text/html; charset=utf-8",
+      "checks": [
+        {
+          "check": "October 31, 2026",
+          "present": true
+        },
+        {
+          "check": "Log In & Register",
+          "present": true
+        },
+        {
+          "check": "primeiros colocados",
+          "present": true
+        }
+      ]
+    },
+    {
+      "id": "junction-2026",
+      "url": "https://hackjunction.app/hackathons/junction-2026",
+      "at": "2026-10-20T15:37:33.457Z",
+      "hash": "02b52037a65f00c231cd23e243063d458df52f7c6b10f44104a510b52a0067a7",
+      "bytes": 68091,
+      "supplement": null,
+      "contentType": "text/html; charset=utf-8",
+      "checks": [
+        {
+          "check": "Status",
+          "present": true
+        },
+        {
+          "check": "Open",
+          "present": true
+        },
+        {
+          "check": "25 Oct 2026",
+          "present": true
+        },
+        {
+          "check": "2026",
+          "present": true
+        }
+      ]
+    },
+    {
+      "id": "gemma-dev-agent-2026",
+      "url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/overview",
+      "at": "2026-10-20T15:37:35.532Z",
+      "hash": "f838b879579c5a5d15b5e2edfd3ee04bff784f1b970b48b31d770e6f676e0e32",
+      "bytes": 5973,
+      "supplement": null,
+      "contentType": "text/html; charset=utf-8",
+      "checks": [
+        {
+          "check": "Gemma",
+          "present": true
+        },
+        {
+          "check": "November 25",
+          "present": false
+        },
+        {
+          "check": "2026",
+          "present": false
+        },
+        {
+          "check": "Join Competition",
+          "present": false
+        }
+      ]
+    },
+    {
+      "id": "chi-bench-2026",
+      "url": "https://www.kaggle.com/competitions/chi-bench",
+      "at": "2026-10-20T15:37:39.537Z",
+      "hash": "3de4d664949d519601a8d12dbd2161d4e6ed8b09125feec03da29637f861c52d",
+      "bytes": 5961,
+      "supplement": null,
+      "contentType": "text/html; charset=utf-8",
+      "checks": [
+        {
+          "check": "CHI-Bench",
+          "present": true
+        },
+        {
+          "check": "November 7",
+          "present": false
+        },
+        {
+          "check": "2026",
+          "present": false
+        },
+        {
+          "check": "Join Hackathon",
+          "present": false
+        }
+      ]
+    },
+    {
+      "id": "flagos-global-2026",
+      "url": "https://www.kaggle.com/competitions/flag-os-open-computing-global-challenge-track-1",
+      "at": "2026-10-20T15:37:43.546Z",
+      "hash": "d85e3aa4c35289754559e4487ed8d36195aa46376db00d70eae28bbb1071acc0",
+      "bytes": 6031,
+      "supplement": null,
+      "contentType": "text/html; charset=utf-8",
+      "checks": [
+        {
+          "check": "FlagOS",
+          "present": true
+        },
+        {
+          "check": "November 13",
+          "present": false
+        },
+        {
+          "check": "2026",
+          "present": false
+        },
+        {
+          "check": "Join Hackathon",
+          "present": false
+        }
+      ]
+    },
+    {
+      "id": "3lc-low-light-2026",
+      "url": "https://www.kaggle.com/competitions/the-3lc-low-light-detection-challenge/overview/abstract",
+      "at": "2026-10-20T15:37:47.584Z",
+      "hash": "62766cbbc64b637ed4853b081da957723d87c34b2d9d659379f0fa2d7ce1fd1f",
+      "bytes": 6213,
+      "supplement": null,
+      "contentType": "text/html; charset=utf-8",
+      "checks": [
+        {
+          "check": "Low-Light Detection",
+          "present": true
+        },
+        {
+          "check": "21 November 2026",
+          "present": false
+        },
+        {
+          "check": "Join Competition",
+          "present": false
+        }
+      ]
+    },
+    {
+      "id": "buildarena-s02-2026",
+      "url": "https://www.kaggle.com/competitions/build-arena-human-ai-engineering-challenge/overview/hackathon-tracks-and-prizes",
+      "at": "2026-10-20T15:37:51.543Z",
+      "hash": "aa6fb9ebb16c0eeb1ec9158662539ebfb45f1a61bdb4d6a75d22912bf72c8c81",
+      "bytes": 6095,
+      "supplement": null,
+      "contentType": "text/html; charset=utf-8",
+      "checks": [
+        {
+          "check": "BuildArena",
+          "present": true
+        },
+        {
+          "check": "November 14",
+          "present": false
+        },
+        {
+          "check": "2026",
+          "present": false
+        },
+        {
+          "check": "Join Hackathon",
+          "present": false
+        }
+      ]
+    },
+    {
+      "id": "climx-2026",
+      "url": "https://www.kaggle.com/competitions/climx-main-track",
+      "at": "2026-10-20T15:37:55.551Z",
+      "hash": "13fa87d9b51f6f607f8e4b2d766250ae7cb63861003bdc17f7e2dd3edb673a6b",
+      "bytes": 6165,
+      "supplement": null,
+      "contentType": "text/html; charset=utf-8",
+      "checks": [
+        {
+          "check": "ClimX",
+          "present": true
+        },
+        {
+          "check": "November 30",
+          "present": false
+        },
+        {
+          "check": "2026",
+          "present": false
+        }
+      ]
+    },
+    {
+      "id": "hult-prize-2027",
+      "url": "https://www.hultprize.org/register",
+      "at": "2026-10-20T15:37:57.841Z",
+      "hash": "d263cdaee5a59264574723c6d717aed3f2f40ba6ca8da9690cb6536b28cf38b7",
+      "bytes": 162628,
+      "supplement": null,
+      "contentType": "text/html; charset=utf-8",
+      "checks": [
+        {
+          "check": "Register for",
+          "present": true
+        },
+        {
+          "check": "2027",
+          "present": true
+        },
+        {
+          "check": "2-4",
+          "present": true
+        }
+      ]
+    }
+  ],
+  "publicationConstraint": "Fontes novas exigem adaptadores/evidências validados e gates de release. Cadastro em plataforma, consulta web e coleta protegida não equivalem a publicação.",
+  "pdfInspection": "Adobe AnyPDF consultada; nenhuma ferramenta Acrobat/Adobe disponível. PDF oficial de sete páginas obtido pelo coletor protegido e texto lido com pypdf do runtime fornecido, sem instalação.",
+  "officialClimxProtectedFetch": {
+    "id": "climx-official-2026",
+    "url": "https://ipl-uv.github.io/ClimX/",
+    "at": "2026-10-20T15:42:40.130Z",
+    "hash": "e2aa7ddb1297779eb0b690d0045c4d155f7a0a054c3f18289a8aa4430eb76817",
+    "bytes": 41996,
+    "supplement": null,
+    "contentType": "text/html; charset=utf-8"
+  },
+  "decolaRegulationProtectedFetch": {
+    "id": "senac-ms-decola-saude-2026",
+    "url": "https://ms.senac.br/decola",
+    "at": "2026-10-20T15:39:34.535Z",
+    "hash": "9cf372d5effbf80295e8d84d0ce8e86e58534f1cd711838c4f3fe63cd87ce0eb",
+    "bytes": 57604,
+    "supplement": {
+      "url": "https://ms.senac.br/Portals/0/adam/Content/ORPnrz30UEmWymyb_8o1qg/Link/Regulamento%20-%20Decola%20Hackathon%20Sa%C3%BAde%20-%20Ed.%20Dourados.pdf",
+      "hash": "3dd01b6213eff21ff4a06025519da3632ca27f709e1cec0879c122e9150823a9",
+      "bytes": 343478
+    },
+    "contentType": "text/html; charset=utf-8"
+  },
+  "officialClimxExactUrlDedup": [
+    {
+      "candidate": "climx-official-2026",
+      "sourceMatches": [],
+      "opportunityMatches": []
+    }
+  ]
+}

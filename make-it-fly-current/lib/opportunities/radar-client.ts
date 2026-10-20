@@ -38,7 +38,7 @@ function isHttpsUrl(value: string) {
   }
 }
 
-function deadlineLabel(deadline: string | null, precision: string) {
+function deadlineLabel(deadline: string | null, precision: string, kind: unknown) {
   if (precision === "not_informed") return "Prazo não informado";
   if (precision === "continuous_flow") return "Inscrições em fluxo contínuo";
   if (!deadline) return "Prazo no edital oficial";
@@ -49,7 +49,7 @@ function deadlineLabel(deadline: string | null, precision: string) {
     month: "long",
     timeZone: "UTC",
   }).format(new Date(`${dateOnlyValue}T12:00:00Z`));
-  return `Inscrições até ${date}`;
+  return `${kind === "submission" ? "Envios" : "Inscrições"} até ${date}`;
 }
 
 function dateOnly(value: string, precision = "exact_datetime") {
@@ -98,6 +98,9 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
   const categories = Array.isArray(value.categories) && value.categories.every(isOpportunityCategory)
     ? [...new Set(value.categories)] : null;
   const nationallyEligible = value.nationallyEligible === true;
+  const countryCode = stringValue(value.countryCode);
+  const foreignCountry = countryCode && countryCode !== "BR" && /^[A-Z]{2}$/.test(countryCode)
+    ? new Intl.DisplayNames(["pt-BR"], { type: "region" }).of(countryCode) : null;
   const applicantType = stringValue(value.applicantType);
   const deadlineAt = value.deadlineAt === null ? null : stringValue(value.deadlineAt);
   const deadlinePrecision = stringValue(value.deadlinePrecision) ?? "date_only";
@@ -137,21 +140,22 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     level: levelFromRadar(applicantType),
     location: normalizedLocation.location.cityName
       ? `${normalizedLocation.location.cityName} · ${normalizedLocation.location.stateCode}`
-      : normalizedLocation.location.stateCode ?? (nationallyEligible ? "Brasil" : "Não informado na fonte pública"),
+      : normalizedLocation.location.stateCode ?? (nationallyEligible ? "Brasil" : foreignCountry ?? (value.geographicScopeKind === "global" ? "Internacional" : "Não informado na fonte pública")),
     stateCode: normalizedLocation.location.stateCode,
     cityName: normalizedLocation.location.cityName,
     nationallyEligible: nationallyEligible && normalizedLocation.location.stateCode === null,
     eligibility: normalizePublicText(stringValue(value.requirementsText) ?? "") || "Consulte o edital oficial para os critérios de elegibilidade.",
     benefit: stringValue(value.amountText) ?? "Consulte o edital oficial para o apoio previsto.",
-    summary: value.opportunityStatus === "upcoming" ? "Inscrições futuras confirmadas na fonte oficial." : "Oportunidade com inscrições abertas na fonte oficial.",
+    summary: value.deadlineKind === "submission" ? "Competição com envios abertos. Confira as condições de ingresso na fonte oficial." : value.opportunityStatus === "upcoming" ? "Inscrições futuras confirmadas na fonte oficial." : "Oportunidade com inscrições abertas na fonte oficial.",
     opportunityStatus: value.opportunityStatus === "upcoming" ? "upcoming" : "open",
     verificationMethod: value.verificationMethod === "admin" ? "admin" : "automatic",
     deadline,
     deadlineAt: deadlinePrecision === "exact_datetime" && deadlineAt ? new Date(deadlineAt).toISOString() : null,
     eventStartsAt,
+    deadlineKind: value.deadlineKind === "submission" ? "submission" : "registration",
     deadlineUnknown,
     alertsAvailable: value.alertsAvailable === true,
-    deadlineLabel: deadlineLabel(deadlineAt, deadlinePrecision),
+    deadlineLabel: deadlineLabel(deadlineAt, deadlinePrecision, value.deadlineKind),
     officialUrl,
     verifiedAt,
     verificationTimestamp: new Date(value.verificationMethod === "admin" ? stringValue(value.verifiedAt) ?? lastCheckedAt : lastCheckedAt).toISOString(),

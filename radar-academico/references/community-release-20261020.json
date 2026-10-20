@@ -1,0 +1,1396 @@
+{
+  "verifiedAt": "2026-10-20T14:51:45.516Z",
+  "pullRequest": "https://github.com/brigidovinicius/apogee/pull/73",
+  "ci": "https://github.com/brigidovinicius/apogee/actions/runs/39439966925",
+  "ciConclusion": "success",
+  "ciHead": "00e5424d0abc9b1be733a2ac40afbbbe543402c8",
+  "deployedRadarRevision": "7615c0a9951a9de47790753220a8d938589f97e1",
+  "approvedTree": "2e15ae1e8b8cbf23698e6f4d2d935264858405ec",
+  "unchangedSiteRevision": "28747e8f74700f9ce5f33771ceca08bf645720f8",
+  "backup": "/opt/apogee-backups/radar-community-20261020T144224Z",
+  "backupRestore": {
+    "radarTablesCompared": 13,
+    "membersTablesCompared": 16,
+    "checksumsAndFingerprints": "match"
+  },
+  "bridge": {
+    "at": "2026-10-20T14:51:45.516Z",
+    "publicStatus": 200,
+    "adminStatus": 200,
+    "version": 3,
+    "publicRecords": 1178,
+    "adminRecords": 1178,
+    "uniquePublic": 1178,
+    "onlyPublic": [],
+    "onlyAdmin": [],
+    "fieldDifferences": [],
+    "cacheControl": "no-store"
+  },
+  "before": 1168,
+  "after": 1178,
+  "removedIds": [],
+  "categories": {
+    "eventos": {
+      "before": 8,
+      "after": 17
+    },
+    "competicoes": {
+      "before": 5,
+      "after": 8
+    }
+  },
+  "newOpportunities": [
+    {
+      "id": "5eb9fce3-9b1a-442a-8f54-a9840aec5910",
+      "opportunityStatus": "open",
+      "verificationMethod": "automatic",
+      "verifiedAt": "2026-10-20 14:49:38.571+00",
+      "title": "WorkInTech e Hackathon — UniCesumar Maringá 2026",
+      "institution": "UniCesumar e Axion",
+      "benefitType": "other",
+      "categories": [
+        "eventos",
+        "competicoes"
+      ],
+      "isCourse": false,
+      "nationallyEligible": false,
+      "applicantType": "mixed",
+      "eventStartsAt": "2026-10-26",
+      "deadlineAt": null,
+      "deadlinePrecision": "not_informed",
+      "requirementsText": "Modalidade presencial na UniCesumar, em Maringá/PR. Workshops em 26 e 27/10; hackathon em 28, 29 e 30/10/2026, com equipes previstas de quatro a seis pessoas e avaliação por banca. Evento voltado a alunos de tecnologia; confirme vínculo e critérios de ingresso com a organização. Cadastro na plataforma do evento. Uma edição, incluindo os workshops e o hackathon; recrutamento anunciado não significa vaga de emprego garantida.",
+      "amountText": "Taxa de inscrição, remuneração e apoio financeiro não informados na página oficial. Consulte as condições da organização.",
+      "stateCode": "PR",
+      "cityName": "Maringá",
+      "geographicScopeKind": "city",
+      "countryCode": "BR",
+      "officialUrl": "https://www.workintech.com.br/",
+      "applicationUrl": "https://www.workintech.com.br/",
+      "lastCheckedAt": "2026-10-20 14:49:38.571+00",
+      "admissionProcess": null,
+      "alertsAvailable": true
+    },
+    {
+      "id": "d09f2cec-d79b-4b9a-a0f1-8c2efbb5359a",
+      "opportunityStatus": "open",
+      "verificationMethod": "automatic",
+      "verifiedAt": "2026-10-20 14:50:08.595+00",
+      "title": "REC’n’Play — Festival 2026",
+      "institution": "Organização do REC’n’Play",
+      "benefitType": "other",
+      "categories": [
+        "eventos"
+      ],
+      "isCourse": false,
+      "nationallyEligible": false,
+      "applicantType": "mixed",
+      "eventStartsAt": "2026-11-11",
+      "deadlineAt": null,
+      "deadlinePrecision": "not_informed",
+      "requirementsText": "Modalidade presencial, de 11 a 14/11/2026, em espaços do centro histórico do Recife/PE. Festival de inovação, tecnologia, criatividade e cultura, com oficinas, experiências e networking. Inscrição de participante pela plataforma indicada no site oficial; confira lotação, programação e regras de cada atividade. Voluntariado é outra seleção e não é uma vaga implícita nesta ficha.",
+      "amountText": "Festival com participação gratuita. Viagem, hospedagem, alimentação e remuneração não informadas como benefícios do participante na página consultada.",
+      "stateCode": "PE",
+      "cityName": "Recife",
+      "geographicScopeKind": "city",
+      "countryCode": "BR",
+      "officialUrl": "https://recnplay.pe/",
+      "applicationUrl": "https://recnplay.pe/",
+      "lastCheckedAt": "2026-10-20 14:50:08.595+00",
+      "admissionProcess": null,
+      "alertsAvailable": true
+    },
+    {
+      "id": "66fb5492-5983-4f75-8951-af66f1d8f74e",
+      "opportunityStatus": "open",
+      "verificationMethod": "automatic",
+      "verifiedAt": "2026-10-20 14:49:46.312+00",
+      "title": "Encontro do SouJava — Novembro 2026",
+      "institution": "SouJava",
+      "benefitType": "other",
+      "categories": [
+        "eventos"
+      ],
+      "isCourse": false,
+      "nationallyEligible": false,
+      "applicantType": "mixed",
+      "eventStartsAt": "2026-11-13",
+      "deadlineAt": null,
+      "deadlinePrecision": "not_informed",
+      "requirementsText": "Encontro da comunidade Java, em parceria com Oracle Brasil, em 13/11/2026. Local presencial: Oracle, Rua Dr. José Áureo Bustamante, 455, São Paulo/SP. Palestras sobre agentes de IA, Java, RAG e refatoração. A descrição informa 18h30 e o calendário exibe horário convertido: consulte a organização para confirmar horário e acesso à transmissão; a ficha preserva somente a data. Reserva pela página oficial do encontro.",
+      "amountText": "Taxa de inscrição, remuneração e apoio financeiro não informados na página oficial. Consulte as condições da organização.",
+      "stateCode": "SP",
+      "cityName": "São Paulo",
+      "geographicScopeKind": "city",
+      "countryCode": "BR",
+      "officialUrl": "https://encontros.soujava.org.br/talks/novembro-2026/",
+      "applicationUrl": "https://encontros.soujava.org.br/talks/novembro-2026/",
+      "lastCheckedAt": "2026-10-20 14:49:46.312+00",
+      "admissionProcess": null,
+      "alertsAvailable": true
+    },
+    {
+      "id": "2cdb99e7-0c16-4e6f-86f4-d1af4ee7cae4",
+      "opportunityStatus": "open",
+      "verificationMethod": "automatic",
+      "verifiedAt": "2026-10-20 14:50:04.866+00",
+      "title": "Semana de Inovação — Enap 2026",
+      "institution": "Escola Nacional de Administração Pública — Enap",
+      "benefitType": "other",
+      "categories": [
+        "eventos"
+      ],
+      "isCourse": false,
+      "nationallyEligible": false,
+      "applicantType": "mixed",
+      "eventStartsAt": "2026-11-10",
+      "deadlineAt": null,
+      "deadlinePrecision": "not_informed",
+      "requirementsText": "Modalidade híbrida, de 10 a 12/11/2026: presencial na Enap, Brasília/DF, e online via YouTube e Zoom. Inscrição única com escolha da modalidade; vagas presenciais limitadas. Inscrição geral não garante vaga em cada atividade, que exige reserva própria conforme lotação. Menores de 18 anos devem estar acompanhados dos responsáveis. Certificado conforme participação. O prazo encerrado para propostas de atividades não é o prazo de inscrição do público.",
+      "amountText": "Participação gratuita. Serviço opcional de acolhimento de crianças é cobrado pelo prestador. Viagem, hospedagem, alimentação e remuneração não anunciadas como apoio ao participante nesta página.",
+      "stateCode": "DF",
+      "cityName": "Brasília",
+      "geographicScopeKind": "city",
+      "countryCode": "BR",
+      "officialUrl": "https://semanadeinovacao.enap.gov.br/faq/",
+      "applicationUrl": "https://semanadeinovacao.enap.gov.br/faq/",
+      "lastCheckedAt": "2026-10-20 14:50:04.866+00",
+      "admissionProcess": null,
+      "alertsAvailable": true
+    },
+    {
+      "id": "a90d5fed-c966-434f-bc4b-ac79f3c82ffa",
+      "opportunityStatus": "open",
+      "verificationMethod": "automatic",
+      "verifiedAt": "2026-10-20 14:49:55.446+00",
+      "title": "Global Hack Week — Open Source Week 2026",
+      "institution": "Major League Hacking",
+      "benefitType": "other",
+      "categories": [
+        "eventos"
+      ],
+      "isCourse": false,
+      "nationallyEligible": true,
+      "applicantType": "mixed",
+      "eventStartsAt": "2026-12-04",
+      "deadlineAt": null,
+      "deadlinePrecision": "not_informed",
+      "requirementsText": "De 4 a 10/12/2026. Modalidade online, em inglês, para estudantes e profissionais. Participação global, incluindo o Brasil. Menores de 13 a 18 anos precisam de permissão dos responsáveis. Exige conta MLH e aceite do código de conduta e das regras. Semana de desafios técnicos, projetos e encontros da comunidade; pontos e brindes condicionados às regras não equivalem a prêmio em dinheiro.",
+      "amountText": "Participação gratuita. Sem premiação em dinheiro confirmada nesta ficha; brindes e envio sujeitos às regras da MLH.",
+      "stateCode": null,
+      "cityName": null,
+      "geographicScopeKind": "country",
+      "countryCode": "BR",
+      "officialUrl": "https://events.mlh.com/events/15199-global-hack-week-open-source-week",
+      "applicationUrl": "https://events.mlh.com/events/15199-global-hack-week-open-source-week",
+      "lastCheckedAt": "2026-10-20 14:49:55.446+00",
+      "admissionProcess": null,
+      "alertsAvailable": true
+    },
+    {
+      "id": "f600b1ef-f306-476b-840d-19418e2fe604",
+      "opportunityStatus": "open",
+      "verificationMethod": "automatic",
+      "verifiedAt": "2026-10-20 14:49:41.678+00",
+      "title": "Hackathon Connect 7.0 — 2026",
+      "institution": "Connect Inovação",
+      "benefitType": "other",
+      "categories": [
+        "eventos",
+        "competicoes"
+      ],
+      "isCourse": false,
+      "nationallyEligible": true,
+      "applicantType": "mixed",
+      "eventStartsAt": "2026-11-14",
+      "deadlineAt": null,
+      "deadlinePrecision": "not_informed",
+      "requirementsText": "Modalidade híbrida: participação online ou presencial em hubs parceiros no Brasil, conforme vagas. Aberto a estudantes, profissionais, empreendedores, pesquisadores e interessados em inovação. Equipes de três a cinco pessoas para concorrer; inscrição individual permite procurar equipe. Menores de 18 anos precisam de autorização validada do responsável. Evento em 14/11/2026, das 9h às 21h; entrega das soluções às 21h de Brasília. Esse horário é de entrega, não prazo de inscrição. Confira o regulamento e o endereço do hub escolhido.",
+      "amountText": "Inscrição e participação gratuitas. Premiação sujeita às regras da organização; não há valor financeiro confirmado nesta ficha. Despesas pessoais de transporte, alimentação e hospedagem são do participante, salvo apoio expressamente anunciado pelo hub.",
+      "stateCode": null,
+      "cityName": null,
+      "geographicScopeKind": "country",
+      "countryCode": "BR",
+      "officialUrl": "https://connectinovacao.com.br/hackathon/",
+      "applicationUrl": "https://connectinovacao.com.br/hackathon/",
+      "lastCheckedAt": "2026-10-20 14:49:41.678+00",
+      "admissionProcess": null,
+      "alertsAvailable": true
+    },
+    {
+      "id": "20e3d8b2-d055-4f64-a395-8560046a0a33",
+      "opportunityStatus": "open",
+      "verificationMethod": "automatic",
+      "verifiedAt": "2026-10-20 14:49:43.812+00",
+      "title": "Olimpíada Brasileira de Vibe Coding — OBVC 2026",
+      "institution": "Organização da OBVC",
+      "benefitType": "prize",
+      "categories": [
+        "competicoes"
+      ],
+      "isCourse": false,
+      "nationallyEligible": true,
+      "applicantType": "mixed",
+      "eventStartsAt": null,
+      "deadlineAt": "2026-10-31 00:00:00+00",
+      "deadlinePrecision": "date_only",
+      "requirementsText": "Modalidade online, para brasileiros ou residentes no Brasil, conforme o regulamento. Categorias Universitária e Ampla na mesma edição. A Universitária exige comprovação de matrícula para avaliação. Cada inscrição corresponde a um projeto. Inscrições até 31/10/2026; envio do projeto até 01/11/2026, com interface em português brasileiro. Avaliação pela comissão; não é maratona cronometrada. Confira propriedade intelectual, critérios e condições no regulamento oficial.",
+      "amountText": "Inscrição paga: R$ 60,00 na Universitária e R$ 120,00 na Ampla. Cupom de universidade parceira pode reduzir a taxa, sujeito à elegibilidade. Prêmios variam com o número de inscrições válidas: até R$ 50.000,00 para o primeiro lugar da Universitária e até R$ 100.000,00 na Ampla. São tetos condicionais da escala de premiação, não valores garantidos, bolsa ou salário.",
+      "stateCode": null,
+      "cityName": null,
+      "geographicScopeKind": "country",
+      "countryCode": "BR",
+      "officialUrl": "https://obvc.com.br/",
+      "applicationUrl": "https://obvc.com.br/",
+      "lastCheckedAt": "2026-10-20 14:49:43.812+00",
+      "admissionProcess": null,
+      "alertsAvailable": true
+    },
+    {
+      "id": "8bd26e9c-0145-48c9-aea6-3a8ca6092649",
+      "opportunityStatus": "open",
+      "verificationMethod": "automatic",
+      "verifiedAt": "2026-10-20 14:49:51.001+00",
+      "title": "Global Hack Week — Builders Week 2026",
+      "institution": "Major League Hacking",
+      "benefitType": "other",
+      "categories": [
+        "eventos"
+      ],
+      "isCourse": false,
+      "nationallyEligible": true,
+      "applicantType": "mixed",
+      "eventStartsAt": "2026-11-06",
+      "deadlineAt": null,
+      "deadlinePrecision": "not_informed",
+      "requirementsText": "De 6 a 12/11/2026. Modalidade online, em inglês, para estudantes e profissionais. Participação global, incluindo o Brasil. Menores de 13 a 18 anos precisam de permissão dos responsáveis. Exige conta MLH e aceite do código de conduta e das regras. Semana de desafios técnicos, projetos e encontros da comunidade; pontos e brindes condicionados às regras não equivalem a prêmio em dinheiro.",
+      "amountText": "Participação gratuita. Sem premiação em dinheiro confirmada nesta ficha; brindes e envio sujeitos às regras da MLH.",
+      "stateCode": null,
+      "cityName": null,
+      "geographicScopeKind": "country",
+      "countryCode": "BR",
+      "officialUrl": "https://events.mlh.com/events/14729-global-hack-week-builders-week",
+      "applicationUrl": "https://events.mlh.com/events/14729-global-hack-week-builders-week",
+      "lastCheckedAt": "2026-10-20 14:49:51.001+00",
+      "admissionProcess": null,
+      "alertsAvailable": true
+    },
+    {
+      "id": "f4f66233-65ae-4f17-a137-2c671c70854b",
+      "opportunityStatus": "open",
+      "verificationMethod": "automatic",
+      "verifiedAt": "2026-10-20 14:49:57.615+00",
+      "title": "DevOpsDays Florianópolis 2026",
+      "institution": "Comunidade DevOpsDays Florianópolis",
+      "benefitType": "other",
+      "categories": [
+        "eventos"
+      ],
+      "isCourse": false,
+      "nationallyEligible": false,
+      "applicantType": "mixed",
+      "eventStartsAt": "2026-10-24",
+      "deadlineAt": null,
+      "deadlinePrecision": "not_informed",
+      "requirementsText": "Modalidade presencial, em 24/10/2026, no Centro Universitário Cesusc — UNICESUSC, SC-401, 9301, Florianópolis/SC. Conferência da comunidade DevOps, com conteúdo e troca de experiências. Inscrição pelo link de ingresso indicado na página oficial. Horários, disponibilidade e condições devem ser confirmados com a organização.",
+      "amountText": "Taxa de inscrição, remuneração e apoio financeiro não informados na página oficial. Consulte as condições da organização.",
+      "stateCode": "SC",
+      "cityName": "Florianópolis",
+      "geographicScopeKind": "city",
+      "countryCode": "BR",
+      "officialUrl": "https://devopsdays.org/events/2026-florianopolis/welcome/",
+      "applicationUrl": "https://devopsdays.org/events/2026-florianopolis/welcome/",
+      "lastCheckedAt": "2026-10-20 14:49:57.615+00",
+      "admissionProcess": null,
+      "alertsAvailable": true
+    },
+    {
+      "id": "8b6da05f-563b-4e5b-ba6a-73d50f7d6e95",
+      "opportunityStatus": "open",
+      "verificationMethod": "automatic",
+      "verifiedAt": "2026-10-20 14:50:01.606+00",
+      "title": "DevOpsDays Recife 2026",
+      "institution": "Comunidade DevOpsDays Recife",
+      "benefitType": "other",
+      "categories": [
+        "eventos"
+      ],
+      "isCourse": false,
+      "nationallyEligible": false,
+      "applicantType": "mixed",
+      "eventStartsAt": "2026-12-12",
+      "deadlineAt": null,
+      "deadlinePrecision": "not_informed",
+      "requirementsText": "Modalidade presencial, em 12/12/2026, das 8h às 18h, na UNINASSAU Graças, Bloco B, Auditório Roque de Brito, Recife/PE. Conferência sobre cultura DevOps, automação, plataforma e segurança, para profissionais e interessados. Tema Rios, Pontes e Tecnologia. Ingresso pela plataforma indicada na página oficial; confirme disponibilidade e condições.",
+      "amountText": "Taxa de inscrição, remuneração e apoio financeiro não informados na página oficial. Consulte as condições da organização.",
+      "stateCode": "PE",
+      "cityName": "Recife",
+      "geographicScopeKind": "city",
+      "countryCode": "BR",
+      "officialUrl": "https://devopsdays.org/events/2026-recife/welcome/",
+      "applicationUrl": "https://devopsdays.org/events/2026-recife/welcome/",
+      "lastCheckedAt": "2026-10-20 14:50:01.606+00",
+      "admissionProcess": null,
+      "alertsAvailable": true
+    }
+  ],
+  "controlledIngestion": [
+    {
+      "id": "workintech-unicesumar-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 1,
+      "updated": 0,
+      "saved": 1,
+      "published": 1,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:48:48.737Z"
+    },
+    {
+      "id": "connect-hackathon-7-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 1,
+      "updated": 0,
+      "saved": 1,
+      "published": 1,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:48:51.581Z"
+    },
+    {
+      "id": "obvc-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 1,
+      "updated": 0,
+      "saved": 1,
+      "published": 1,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:48:53.744Z"
+    },
+    {
+      "id": "soujava-november-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 1,
+      "updated": 0,
+      "saved": 1,
+      "published": 1,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:48:57.117Z"
+    },
+    {
+      "id": "mlh-builders-november-2026",
+      "http": 200,
+      "pagesChecked": 2,
+      "discovered": 1,
+      "created": 1,
+      "updated": 0,
+      "saved": 1,
+      "published": 1,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:02.054Z"
+    },
+    {
+      "id": "mlh-open-source-december-2026",
+      "http": 200,
+      "pagesChecked": 2,
+      "discovered": 1,
+      "created": 1,
+      "updated": 0,
+      "saved": 1,
+      "published": 1,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:06.649Z"
+    },
+    {
+      "id": "devopsdays-florianopolis-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 1,
+      "updated": 0,
+      "saved": 1,
+      "published": 1,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:08.936Z"
+    },
+    {
+      "id": "devopsdays-recife-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 1,
+      "updated": 0,
+      "saved": 1,
+      "published": 1,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:12.970Z"
+    },
+    {
+      "id": "enap-innovation-week-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 1,
+      "updated": 0,
+      "saved": 1,
+      "published": 1,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:16.231Z"
+    },
+    {
+      "id": "recnplay-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 1,
+      "updated": 0,
+      "saved": 1,
+      "published": 1,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:19.800Z"
+    },
+    {
+      "completed": true,
+      "sources": 10
+    }
+  ],
+  "idempotencyRepeat": [
+    {
+      "id": "workintech-unicesumar-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 0,
+      "updated": 0,
+      "saved": 0,
+      "published": 0,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:38.590Z"
+    },
+    {
+      "id": "connect-hackathon-7-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 0,
+      "updated": 0,
+      "saved": 0,
+      "published": 0,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:41.691Z"
+    },
+    {
+      "id": "obvc-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 0,
+      "updated": 0,
+      "saved": 0,
+      "published": 0,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:43.821Z"
+    },
+    {
+      "id": "soujava-november-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 0,
+      "updated": 0,
+      "saved": 0,
+      "published": 0,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:46.324Z"
+    },
+    {
+      "id": "mlh-builders-november-2026",
+      "http": 200,
+      "pagesChecked": 2,
+      "discovered": 1,
+      "created": 0,
+      "updated": 0,
+      "saved": 0,
+      "published": 0,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:51.009Z"
+    },
+    {
+      "id": "mlh-open-source-december-2026",
+      "http": 200,
+      "pagesChecked": 2,
+      "discovered": 1,
+      "created": 0,
+      "updated": 0,
+      "saved": 0,
+      "published": 0,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:55.453Z"
+    },
+    {
+      "id": "devopsdays-florianopolis-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 0,
+      "updated": 0,
+      "saved": 0,
+      "published": 0,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:49:57.628Z"
+    },
+    {
+      "id": "devopsdays-recife-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 0,
+      "updated": 0,
+      "saved": 0,
+      "published": 0,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:50:01.618Z"
+    },
+    {
+      "id": "enap-innovation-week-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 0,
+      "updated": 0,
+      "saved": 0,
+      "published": 0,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:50:04.892Z"
+    },
+    {
+      "id": "recnplay-2026",
+      "http": 200,
+      "pagesChecked": 1,
+      "discovered": 1,
+      "created": 0,
+      "updated": 0,
+      "saved": 0,
+      "published": 0,
+      "blocked": 0,
+      "failed": 0,
+      "warnings": [],
+      "at": "2026-10-20T14:50:08.604Z"
+    },
+    {
+      "completed": true,
+      "sources": 10
+    }
+  ],
+  "databaseAudit": [
+    {
+      "type": "edition",
+      "data": {
+        "id": "f600b1ef-f306-476b-840d-19418e2fe604",
+        "official_source_id": "connect-hackathon-7-2026",
+        "title": "Hackathon Connect 7.0 — 2026",
+        "categories": [
+          "eventos",
+          "competicoes"
+        ],
+        "deadline_precision": "not_informed",
+        "deadline_at": null,
+        "event_starts_at": "2026-11-14",
+        "opportunity_status": "open",
+        "review_status": "approved",
+        "verification_method": "automatic",
+        "verified_at": "2026-10-20T14:49:41.678+00:00",
+        "publication_issue": null,
+        "source_conflict": false,
+        "published_at": "2026-10-20T14:48:51.552+00:00",
+        "deleted_at": null,
+        "next_source_check_at": "2026-10-21T14:49:41.659389+00:00"
+      }
+    },
+    {
+      "type": "edition",
+      "data": {
+        "id": "f4f66233-65ae-4f17-a137-2c671c70854b",
+        "official_source_id": "devopsdays-florianopolis-2026",
+        "title": "DevOpsDays Florianópolis 2026",
+        "categories": [
+          "eventos"
+        ],
+        "deadline_precision": "not_informed",
+        "deadline_at": null,
+        "event_starts_at": "2026-10-24",
+        "opportunity_status": "open",
+        "review_status": "approved",
+        "verification_method": "automatic",
+        "verified_at": "2026-10-20T14:49:57.615+00:00",
+        "publication_issue": null,
+        "source_conflict": false,
+        "published_at": "2026-10-20T14:49:08.929+00:00",
+        "deleted_at": null,
+        "next_source_check_at": "2026-10-21T14:49:57.594743+00:00"
+      }
+    },
+    {
+      "type": "edition",
+      "data": {
+        "id": "8b6da05f-563b-4e5b-ba6a-73d50f7d6e95",
+        "official_source_id": "devopsdays-recife-2026",
+        "title": "DevOpsDays Recife 2026",
+        "categories": [
+          "eventos"
+        ],
+        "deadline_precision": "not_informed",
+        "deadline_at": null,
+        "event_starts_at": "2026-12-12",
+        "opportunity_status": "open",
+        "review_status": "approved",
+        "verification_method": "automatic",
+        "verified_at": "2026-10-20T14:50:01.606+00:00",
+        "publication_issue": null,
+        "source_conflict": false,
+        "published_at": "2026-10-20T14:49:12.963+00:00",
+        "deleted_at": null,
+        "next_source_check_at": "2026-10-21T14:50:01.594007+00:00"
+      }
+    },
+    {
+      "type": "edition",
+      "data": {
+        "id": "2cdb99e7-0c16-4e6f-86f4-d1af4ee7cae4",
+        "official_source_id": "enap-innovation-week-2026",
+        "title": "Semana de Inovação — Enap 2026",
+        "categories": [
+          "eventos"
+        ],
+        "deadline_precision": "not_informed",
+        "deadline_at": null,
+        "event_starts_at": "2026-11-10",
+        "opportunity_status": "open",
+        "review_status": "approved",
+        "verification_method": "automatic",
+        "verified_at": "2026-10-20T14:50:04.866+00:00",
+        "publication_issue": null,
+        "source_conflict": false,
+        "published_at": "2026-10-20T14:49:16.222+00:00",
+        "deleted_at": null,
+        "next_source_check_at": "2026-10-21T14:50:04.825097+00:00"
+      }
+    },
+    {
+      "type": "edition",
+      "data": {
+        "id": "8bd26e9c-0145-48c9-aea6-3a8ca6092649",
+        "official_source_id": "mlh-builders-november-2026",
+        "title": "Global Hack Week — Builders Week 2026",
+        "categories": [
+          "eventos"
+        ],
+        "deadline_precision": "not_informed",
+        "deadline_at": null,
+        "event_starts_at": "2026-11-06",
+        "opportunity_status": "open",
+        "review_status": "approved",
+        "verification_method": "automatic",
+        "verified_at": "2026-10-20T14:49:51.001+00:00",
+        "publication_issue": null,
+        "source_conflict": false,
+        "published_at": "2026-10-20T14:49:02.042+00:00",
+        "deleted_at": null,
+        "next_source_check_at": "2026-10-21T14:49:50.986809+00:00"
+      }
+    },
+    {
+      "type": "edition",
+      "data": {
+        "id": "a90d5fed-c966-434f-bc4b-ac79f3c82ffa",
+        "official_source_id": "mlh-open-source-december-2026",
+        "title": "Global Hack Week — Open Source Week 2026",
+        "categories": [
+          "eventos"
+        ],
+        "deadline_precision": "not_informed",
+        "deadline_at": null,
+        "event_starts_at": "2026-12-04",
+        "opportunity_status": "open",
+        "review_status": "approved",
+        "verification_method": "automatic",
+        "verified_at": "2026-10-20T14:49:55.446+00:00",
+        "publication_issue": null,
+        "source_conflict": false,
+        "published_at": "2026-10-20T14:49:06.636+00:00",
+        "deleted_at": null,
+        "next_source_check_at": "2026-10-21T14:49:55.441761+00:00"
+      }
+    },
+    {
+      "type": "edition",
+      "data": {
+        "id": "20e3d8b2-d055-4f64-a395-8560046a0a33",
+        "official_source_id": "obvc-2026",
+        "title": "Olimpíada Brasileira de Vibe Coding — OBVC 2026",
+        "categories": [
+          "competicoes"
+        ],
+        "deadline_precision": "date_only",
+        "deadline_at": "2026-10-31T00:00:00+00:00",
+        "event_starts_at": null,
+        "opportunity_status": "open",
+        "review_status": "approved",
+        "verification_method": "automatic",
+        "verified_at": "2026-10-20T14:49:43.812+00:00",
+        "publication_issue": null,
+        "source_conflict": false,
+        "published_at": "2026-10-20T14:48:53.736+00:00",
+        "deleted_at": null,
+        "next_source_check_at": "2026-10-21T14:49:43.790817+00:00"
+      }
+    },
+    {
+      "type": "edition",
+      "data": {
+        "id": "d09f2cec-d79b-4b9a-a0f1-8c2efbb5359a",
+        "official_source_id": "recnplay-2026",
+        "title": "REC’n’Play — Festival 2026",
+        "categories": [
+          "eventos"
+        ],
+        "deadline_precision": "not_informed",
+        "deadline_at": null,
+        "event_starts_at": "2026-11-11",
+        "opportunity_status": "open",
+        "review_status": "approved",
+        "verification_method": "automatic",
+        "verified_at": "2026-10-20T14:50:08.595+00:00",
+        "publication_issue": null,
+        "source_conflict": false,
+        "published_at": "2026-10-20T14:49:19.792+00:00",
+        "deleted_at": null,
+        "next_source_check_at": "2026-10-21T14:50:08.578654+00:00"
+      }
+    },
+    {
+      "type": "edition",
+      "data": {
+        "id": "66fb5492-5983-4f75-8951-af66f1d8f74e",
+        "official_source_id": "soujava-november-2026",
+        "title": "Encontro do SouJava — Novembro 2026",
+        "categories": [
+          "eventos"
+        ],
+        "deadline_precision": "not_informed",
+        "deadline_at": null,
+        "event_starts_at": "2026-11-13",
+        "opportunity_status": "open",
+        "review_status": "approved",
+        "verification_method": "automatic",
+        "verified_at": "2026-10-20T14:49:46.312+00:00",
+        "publication_issue": null,
+        "source_conflict": false,
+        "published_at": "2026-10-20T14:48:57.11+00:00",
+        "deleted_at": null,
+        "next_source_check_at": "2026-10-21T14:49:46.296058+00:00"
+      }
+    },
+    {
+      "type": "edition",
+      "data": {
+        "id": "5eb9fce3-9b1a-442a-8f54-a9840aec5910",
+        "official_source_id": "workintech-unicesumar-2026",
+        "title": "WorkInTech e Hackathon — UniCesumar Maringá 2026",
+        "categories": [
+          "eventos",
+          "competicoes"
+        ],
+        "deadline_precision": "not_informed",
+        "deadline_at": null,
+        "event_starts_at": "2026-10-26",
+        "opportunity_status": "open",
+        "review_status": "approved",
+        "verification_method": "automatic",
+        "verified_at": "2026-10-20T14:49:38.571+00:00",
+        "publication_issue": null,
+        "source_conflict": false,
+        "published_at": "2026-10-20T14:48:48.716+00:00",
+        "deleted_at": null,
+        "next_source_check_at": "2026-10-21T14:49:38.565232+00:00"
+      }
+    },
+    {
+      "type": "source",
+      "data": {
+        "id": "connect-hackathon-7-2026",
+        "active": true,
+        "verification_status": "verified",
+        "crawl_interval_hours": 24,
+        "last_crawled_at": null,
+        "next_crawl_at": "2026-10-20T15:08:34.40283+00:00",
+        "verified_at": "2026-10-20T14:48:34.40283+00:00",
+        "verification_method": "operator_authorized_agent"
+      }
+    },
+    {
+      "type": "source",
+      "data": {
+        "id": "devopsdays-florianopolis-2026",
+        "active": true,
+        "verification_status": "verified",
+        "crawl_interval_hours": 24,
+        "last_crawled_at": null,
+        "next_crawl_at": "2026-10-20T15:08:34.40283+00:00",
+        "verified_at": "2026-10-20T14:48:34.40283+00:00",
+        "verification_method": "operator_authorized_agent"
+      }
+    },
+    {
+      "type": "source",
+      "data": {
+        "id": "devopsdays-recife-2026",
+        "active": true,
+        "verification_status": "verified",
+        "crawl_interval_hours": 24,
+        "last_crawled_at": null,
+        "next_crawl_at": "2026-10-20T15:08:34.40283+00:00",
+        "verified_at": "2026-10-20T14:48:34.40283+00:00",
+        "verification_method": "operator_authorized_agent"
+      }
+    },
+    {
+      "type": "source",
+      "data": {
+        "id": "enap-innovation-week-2026",
+        "active": true,
+        "verification_status": "verified",
+        "crawl_interval_hours": 24,
+        "last_crawled_at": null,
+        "next_crawl_at": "2026-10-20T15:08:34.40283+00:00",
+        "verified_at": "2026-10-20T14:48:34.40283+00:00",
+        "verification_method": "operator_authorized_agent"
+      }
+    },
+    {
+      "type": "source",
+      "data": {
+        "id": "mlh-builders-november-2026",
+        "active": true,
+        "verification_status": "verified",
+        "crawl_interval_hours": 24,
+        "last_crawled_at": null,
+        "next_crawl_at": "2026-10-20T15:08:34.40283+00:00",
+        "verified_at": "2026-10-20T14:48:34.40283+00:00",
+        "verification_method": "operator_authorized_agent"
+      }
+    },
+    {
+      "type": "source",
+      "data": {
+        "id": "mlh-open-source-december-2026",
+        "active": true,
+        "verification_status": "verified",
+        "crawl_interval_hours": 24,
+        "last_crawled_at": null,
+        "next_crawl_at": "2026-10-20T15:08:34.40283+00:00",
+        "verified_at": "2026-10-20T14:48:34.40283+00:00",
+        "verification_method": "operator_authorized_agent"
+      }
+    },
+    {
+      "type": "source",
+      "data": {
+        "id": "obvc-2026",
+        "active": true,
+        "verification_status": "verified",
+        "crawl_interval_hours": 24,
+        "last_crawled_at": null,
+        "next_crawl_at": "2026-10-20T15:08:34.40283+00:00",
+        "verified_at": "2026-10-20T14:48:34.40283+00:00",
+        "verification_method": "operator_authorized_agent"
+      }
+    },
+    {
+      "type": "source",
+      "data": {
+        "id": "recnplay-2026",
+        "active": true,
+        "verification_status": "verified",
+        "crawl_interval_hours": 24,
+        "last_crawled_at": null,
+        "next_crawl_at": "2026-10-20T15:08:34.40283+00:00",
+        "verified_at": "2026-10-20T14:48:34.40283+00:00",
+        "verification_method": "operator_authorized_agent"
+      }
+    },
+    {
+      "type": "source",
+      "data": {
+        "id": "soujava-november-2026",
+        "active": true,
+        "verification_status": "verified",
+        "crawl_interval_hours": 24,
+        "last_crawled_at": null,
+        "next_crawl_at": "2026-10-20T15:08:34.40283+00:00",
+        "verified_at": "2026-10-20T14:48:34.40283+00:00",
+        "verification_method": "operator_authorized_agent"
+      }
+    },
+    {
+      "type": "source",
+      "data": {
+        "id": "workintech-unicesumar-2026",
+        "active": true,
+        "verification_status": "verified",
+        "crawl_interval_hours": 24,
+        "last_crawled_at": null,
+        "next_crawl_at": "2026-10-20T15:08:34.40283+00:00",
+        "verified_at": "2026-10-20T14:48:34.40283+00:00",
+        "verification_method": "operator_authorized_agent"
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "workintech-unicesumar-2026",
+        "started_at": "2026-10-20T14:48:48.704518+00:00",
+        "finished_at": "2026-10-20T14:48:48.704518+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 1,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "connect-hackathon-7-2026",
+        "started_at": "2026-10-20T14:48:51.533735+00:00",
+        "finished_at": "2026-10-20T14:48:51.533735+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 1,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "obvc-2026",
+        "started_at": "2026-10-20T14:48:53.729847+00:00",
+        "finished_at": "2026-10-20T14:48:53.729847+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 1,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "soujava-november-2026",
+        "started_at": "2026-10-20T14:48:57.095348+00:00",
+        "finished_at": "2026-10-20T14:48:57.095348+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 1,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "mlh-builders-november-2026",
+        "started_at": "2026-10-20T14:49:02.024584+00:00",
+        "finished_at": "2026-10-20T14:49:02.024584+00:00",
+        "status": "completed",
+        "pages_checked": 2,
+        "items_discovered": 1,
+        "items_created": 1,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "mlh-open-source-december-2026",
+        "started_at": "2026-10-20T14:49:06.619617+00:00",
+        "finished_at": "2026-10-20T14:49:06.619617+00:00",
+        "status": "completed",
+        "pages_checked": 2,
+        "items_discovered": 1,
+        "items_created": 1,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "devopsdays-florianopolis-2026",
+        "started_at": "2026-10-20T14:49:08.922791+00:00",
+        "finished_at": "2026-10-20T14:49:08.922791+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 1,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "devopsdays-recife-2026",
+        "started_at": "2026-10-20T14:49:12.955125+00:00",
+        "finished_at": "2026-10-20T14:49:12.955125+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 1,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "enap-innovation-week-2026",
+        "started_at": "2026-10-20T14:49:16.218253+00:00",
+        "finished_at": "2026-10-20T14:49:16.218253+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 1,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "recnplay-2026",
+        "started_at": "2026-10-20T14:49:19.778173+00:00",
+        "finished_at": "2026-10-20T14:49:19.778173+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 1,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "workintech-unicesumar-2026",
+        "started_at": "2026-10-20T14:49:38.565232+00:00",
+        "finished_at": "2026-10-20T14:49:38.565232+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 0,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "connect-hackathon-7-2026",
+        "started_at": "2026-10-20T14:49:41.659389+00:00",
+        "finished_at": "2026-10-20T14:49:41.659389+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 0,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "obvc-2026",
+        "started_at": "2026-10-20T14:49:43.790817+00:00",
+        "finished_at": "2026-10-20T14:49:43.790817+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 0,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "soujava-november-2026",
+        "started_at": "2026-10-20T14:49:46.296058+00:00",
+        "finished_at": "2026-10-20T14:49:46.296058+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 0,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "mlh-builders-november-2026",
+        "started_at": "2026-10-20T14:49:50.986809+00:00",
+        "finished_at": "2026-10-20T14:49:50.986809+00:00",
+        "status": "completed",
+        "pages_checked": 2,
+        "items_discovered": 1,
+        "items_created": 0,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "mlh-open-source-december-2026",
+        "started_at": "2026-10-20T14:49:55.441761+00:00",
+        "finished_at": "2026-10-20T14:49:55.441761+00:00",
+        "status": "completed",
+        "pages_checked": 2,
+        "items_discovered": 1,
+        "items_created": 0,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "devopsdays-florianopolis-2026",
+        "started_at": "2026-10-20T14:49:57.594743+00:00",
+        "finished_at": "2026-10-20T14:49:57.594743+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 0,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "devopsdays-recife-2026",
+        "started_at": "2026-10-20T14:50:01.594007+00:00",
+        "finished_at": "2026-10-20T14:50:01.594007+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 0,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "enap-innovation-week-2026",
+        "started_at": "2026-10-20T14:50:04.825097+00:00",
+        "finished_at": "2026-10-20T14:50:04.825097+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 0,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "run",
+      "data": {
+        "official_source_id": "recnplay-2026",
+        "started_at": "2026-10-20T14:50:08.578654+00:00",
+        "finished_at": "2026-10-20T14:50:08.578654+00:00",
+        "status": "completed",
+        "pages_checked": 1,
+        "items_discovered": 1,
+        "items_created": 0,
+        "items_updated": 0,
+        "items_ignored": 0,
+        "items_failed": 0,
+        "error_summary": null
+      }
+    },
+    {
+      "type": "duplicates",
+      "data": []
+    }
+  ],
+  "dailySchedule": [
+    {
+      "id": "connect-hackathon-7-2026",
+      "active": true,
+      "interval_hours": 24,
+      "last_crawled_at": "2026-10-20T14:49:41.659389+00:00",
+      "next_crawl_at": "2026-10-21T14:49:41.659389+00:00"
+    },
+    {
+      "id": "devopsdays-florianopolis-2026",
+      "active": true,
+      "interval_hours": 24,
+      "last_crawled_at": "2026-10-20T14:49:57.594743+00:00",
+      "next_crawl_at": "2026-10-21T14:49:57.594743+00:00"
+    },
+    {
+      "id": "devopsdays-recife-2026",
+      "active": true,
+      "interval_hours": 24,
+      "last_crawled_at": "2026-10-20T14:50:01.594007+00:00",
+      "next_crawl_at": "2026-10-21T14:50:01.594007+00:00"
+    },
+    {
+      "id": "enap-innovation-week-2026",
+      "active": true,
+      "interval_hours": 24,
+      "last_crawled_at": "2026-10-20T14:50:04.825097+00:00",
+      "next_crawl_at": "2026-10-21T14:50:04.825097+00:00"
+    },
+    {
+      "id": "mlh-builders-november-2026",
+      "active": true,
+      "interval_hours": 24,
+      "last_crawled_at": "2026-10-20T14:49:50.986809+00:00",
+      "next_crawl_at": "2026-10-21T14:49:50.986809+00:00"
+    },
+    {
+      "id": "mlh-open-source-december-2026",
+      "active": true,
+      "interval_hours": 24,
+      "last_crawled_at": "2026-10-20T14:49:55.441761+00:00",
+      "next_crawl_at": "2026-10-21T14:49:55.441761+00:00"
+    },
+    {
+      "id": "obvc-2026",
+      "active": true,
+      "interval_hours": 24,
+      "last_crawled_at": "2026-10-20T14:49:43.790817+00:00",
+      "next_crawl_at": "2026-10-21T14:49:43.790817+00:00"
+    },
+    {
+      "id": "recnplay-2026",
+      "active": true,
+      "interval_hours": 24,
+      "last_crawled_at": "2026-10-20T14:50:08.578654+00:00",
+      "next_crawl_at": "2026-10-21T14:50:08.578654+00:00"
+    },
+    {
+      "id": "soujava-november-2026",
+      "active": true,
+      "interval_hours": 24,
+      "last_crawled_at": "2026-10-20T14:49:46.296058+00:00",
+      "next_crawl_at": "2026-10-21T14:49:46.296058+00:00"
+    },
+    {
+      "id": "workintech-unicesumar-2026",
+      "active": true,
+      "interval_hours": 24,
+      "last_crawled_at": "2026-10-20T14:49:38.565232+00:00",
+      "next_crawl_at": "2026-10-21T14:49:38.565232+00:00"
+    }
+  ],
+  "browserChecks": {
+    "publicEvents": 17,
+    "publicCompetitions": 8,
+    "obvcSearchResults": 1,
+    "obvcPaidRegistrationAndConditionalPrizesVisible": true,
+    "authenticatedMemberInProduction": "not exercised; synthetic session E2E passed in CI"
+  },
+  "scope": "Only Radar web recreated; original source flags unchanged; no alert/email flow invoked."
+}

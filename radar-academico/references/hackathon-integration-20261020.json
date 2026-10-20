@@ -1,0 +1,43 @@
+{
+  "authorization": "publish_four_legible_prepare_four_dynamic",
+  "sources": [
+    {
+      "id": "senac-ms-decola-saude-2026",
+      "url": "https://ms.senac.br/decola",
+      "at": "2026-10-20T15:52:42.752Z",
+      "hash": "da195d0a290392978a3df2df5aef381cfe3a435b889fd409edf54b6642f0c078",
+      "bytes": 57604,
+      "supplement": {
+        "url": "https://ms.senac.br/Portals/0/adam/Content/ORPnrz30UEmWymyb_8o1qg/Link/Regulamento%20-%20Decola%20Hackathon%20Sa%C3%BAde%20-%20Ed.%20Dourados.pdf",
+        "hash": "3dd01b6213eff21ff4a06025519da3632ca27f709e1cec0879c122e9150823a9",
+        "bytes": 343478
+      }
+    },
+    {
+      "id": "hacktoberfest-sjc-2026",
+      "url": "https://events.mlh.com/events/14779-hacktoberfest-hack-day-sao-jose-dos-campos",
+      "at": "2026-10-20T15:52:44.921Z",
+      "hash": "7145340ab83c32430603fcb002f0c58a95781423754e2debab9e2e9d50a98a4f",
+      "bytes": 25570
+    },
+    {
+      "id": "junction-2026",
+      "url": "https://hackjunction.app/hackathons/junction-2026",
+      "at": "2026-10-20T15:52:47.299Z",
+      "hash": "987d9cbcc47052217e35ac3fba1094e30a8b579a604cf4f919d3d0c2b6a3d702",
+      "bytes": 68895
+    },
+    {
+      "id": "climx-2026",
+      "url": "https://ipl-uv.github.io/ClimX/",
+      "at": "2026-10-20T15:52:49.362Z",
+      "hash": "e2aa7ddb1297779eb0b690d0045c4d155f7a0a054c3f18289a8aa4430eb76817",
+      "bytes": 41996
+    }
+  ],
+  "localValidation": {
+    "radarTests": 340,
+    "includesTemporaryLiveDocumentTests": 4
+  },
+  "productionStatus": "pending"
+}
