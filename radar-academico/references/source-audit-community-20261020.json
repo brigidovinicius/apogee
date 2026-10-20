@@ -1,0 +1,349 @@
+{
+  "auditedAt": "2026-10-20T14:18:41.857722+00:00",
+  "method": "Sequential public GET using existing fetchOfficialResource, exact URL allowlists, robots, TLS, SSRF and size limits. No forms, login, checkout or user submissions. Local preparation only; sources inactive and verification pending.",
+  "productionBaseline": {
+    "audited_at": "2026-10-20T14:09:10.573358+00:00",
+    "published_unique_ids": 1168,
+    "events": 8,
+    "competitions": 5
+  },
+  "localPrepared": {
+    "uniqueEditions": 10,
+    "events": 9,
+    "competitions": 3,
+    "overlap": 2,
+    "publishedInThisWork": 0
+  },
+  "decisions": [
+    {
+      "id": "workintech",
+      "url": "https://www.workintech.com.br/",
+      "at": "2026-10-20T14:10:03.053Z",
+      "hash": "e97702a7cfe27bf5307b270fe519ddeea93fa5d839e0a5a0be7b7273b2e4348e",
+      "bytes": 63604,
+      "contentType": "text/html; charset=utf-8",
+      "decision": "prepared_local_inactive_pending_vps_verification"
+    },
+    {
+      "id": "soujava",
+      "url": "https://encontros.soujava.org.br/",
+      "at": "2026-10-20T14:10:07.029Z",
+      "hash": "1afbcc38738541916319fd5f8e74722c731f24b8aa05947d8f49505bfd8a7a54",
+      "bytes": 239510,
+      "contentType": "text/html; charset=utf-8",
+      "decision": "supporting_index_only_no_duplicate"
+    },
+    {
+      "id": "mlh-builders",
+      "url": "https://events.mlh.com/events/14729-global-hack-week-builders-week",
+      "at": "2026-10-20T14:10:10.113Z",
+      "hash": "edee553a47f8c0149871d6409767f6d50b68ccfc5ba05811cf66fa173ed69562",
+      "bytes": 42545,
+      "contentType": "text/html; charset=utf-8",
+      "decision": "prepared_local_inactive_pending_vps_verification"
+    },
+    {
+      "id": "devfest-campinas",
+      "url": "https://gdgcampinas.github.io/DevFest-Campinas-2026/",
+      "at": "2026-10-20T14:10:12.618Z",
+      "hash": "dd0799efb2f9bc48175e39f50a7abbc7ecb42d51d9dad4590e8ce453c8f14562",
+      "bytes": 16948,
+      "contentType": "text/html; charset=utf-8",
+      "decision": "pending_dynamic_content_not_confirmed_by_protected_html"
+    },
+    {
+      "id": "devfest-jp",
+      "url": "https://devfestjoaopessoa.gdgjoaopessoa.com.br/",
+      "at": "2026-10-20T14:10:15.107Z",
+      "hash": "6b9f819215c9a58aba4df6bfdc7f0bb4d3c3678fb2ccd0fae9a39c97fd7e8929",
+      "bytes": 78814,
+      "contentType": "text/html; charset=utf-8",
+      "decision": "pending_reconciliation_of_price_and_venue"
+    },
+    {
+      "id": "enap",
+      "url": "https://semanadeinovacao.enap.gov.br/faq/",
+      "at": "2026-10-20T14:10:17.643Z",
+      "hash": "ad5164e8691463e34cb0bebc4d8820749a86849dedd4fc2511d86d3cde8ad0e8",
+      "bytes": 77896,
+      "contentType": "text/html; charset=utf-8",
+      "decision": "prepared_local_inactive_pending_vps_verification"
+    },
+    {
+      "id": "recnplay",
+      "url": "https://recnplay.pe/",
+      "at": "2026-10-20T14:10:21.589Z",
+      "hash": "eb470766f18f949e9a5ddfe8cb3288c26f289f11f21514c76c6a10dad82c44c3",
+      "bytes": 206347,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "prepared_local_inactive_pending_vps_verification"
+    },
+    {
+      "id": "hack-connect",
+      "url": "https://connectinovacao.com.br/hackathon/",
+      "at": "2026-10-20T14:10:24.990Z",
+      "hash": "2dd0cb3aafacca30f74d1c065dad0622e88520ecb3db09a4f78e973570ca3121",
+      "bytes": 80477,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "prepared_local_inactive_pending_vps_verification"
+    },
+    {
+      "id": "mit-einstein",
+      "url": "https://www.eretz.bio/mit-einstein/",
+      "at": "2026-10-20T14:10:28.492Z",
+      "hash": "3f353df69940e74d4d79d436472aed5134643738c1fa5376f311f5568cf9f0fa",
+      "bytes": 161253,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "closed_registration_2026_10_17"
+    },
+    {
+      "id": "obvc",
+      "url": "https://obvc.com.br/",
+      "at": "2026-10-20T14:10:30.884Z",
+      "hash": "65735c8195566db0109f2c70459971cf637d4c44f59e9f284da8af945be15b2d",
+      "bytes": 263749,
+      "contentType": "text/html; charset=utf-8",
+      "decision": "prepared_local_inactive_pending_vps_verification"
+    },
+    {
+      "id": "aveiro",
+      "url": "https://techweek.aveirotechcity.pt/events/aveiro-tech-city-hackathon-2/",
+      "at": "2026-10-20T14:10:37.608Z",
+      "hash": "2ae93913b5d93231e7ff07c20bcc94db80948b2a6c1ac32ef11321203035530e",
+      "bytes": 246133,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "pending_complete_eligibility_and_participation_rules"
+    },
+    {
+      "id": "hackapel",
+      "url": "https://hackapel.pelotas.rs.gov.br/",
+      "at": "2026-10-20T14:10:39.891Z",
+      "hash": "5582046d6ba9d0a9273491cc76d4f66f7a0f7ee897876f3d6228208432af2328",
+      "bytes": 177799,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "pending_registration_announced_as_coming_soon"
+    },
+    {
+      "id": "devops-floripa",
+      "url": "https://devopsdays.org/events/2026-florianopolis/welcome/",
+      "at": "2026-10-20T14:10:55.702Z",
+      "hash": "65c819a62069b9c818a8bcc63a38b3a5f5e779a364a3c2f8df4d80770b9f4c2b",
+      "bytes": 14903,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "prepared_local_inactive_pending_vps_verification"
+    },
+    {
+      "id": "devops-belem",
+      "url": "https://devopsdays.org/events/2026-belem/welcome/",
+      "at": "2026-10-20T14:10:59.590Z",
+      "hash": "7528471bbd7b5c8fde2693cb0f47fdf3fbf129ae122e72d23dd05e31592975f4",
+      "bytes": 13675,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "pending_participant_registration_route"
+    },
+    {
+      "id": "devops-brasilia",
+      "url": "https://devopsdays.org/events/2026-brasilia/welcome/",
+      "at": "2026-10-20T14:11:03.544Z",
+      "hash": "18cea5b4ec846f37cbb61f42ed4ae41b35d2c09a8069f03d938a71f34e0096d4",
+      "bytes": 15239,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "speaker_call_only_no_participant_registration_confirmed"
+    },
+    {
+      "id": "devops-salvador",
+      "url": "https://devopsdays.org/events/2026-salvador/welcome/",
+      "at": "2026-10-20T14:11:07.596Z",
+      "hash": "bdd8b1e780ee6ccb4c358d92e6290d969648c9399ecd731d279122fd1ccf453c",
+      "bytes": 13571,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "pending_participant_registration_route"
+    },
+    {
+      "id": "devops-recife",
+      "url": "https://devopsdays.org/events/2026-recife/welcome/",
+      "at": "2026-10-20T14:11:11.636Z",
+      "hash": "09815e71061c830cec65008e1835292277a59b1d79e95465bd77219a20a7b447",
+      "bytes": 18260,
+      "contentType": "text/html; charset=UTF-8",
+      "decision": "prepared_local_inactive_pending_vps_verification"
+    },
+    {
+      "id": "secomp",
+      "url": "https://www.secompif.com.br/",
+      "at": "2026-10-20T14:11:13.740Z",
+      "hash": "28ab22087f665467acea9a79a15339cb2a3e8d6c46608c4073f157e28254575c",
+      "bytes": 4015,
+      "contentType": "text/html",
+      "decision": "pending_dynamic_content_not_confirmed_by_protected_html"
+    },
+    {
+      "id": "mlh-open-source",
+      "url": "https://events.mlh.com/events/15199-global-hack-week-open-source-week",
+      "at": "2026-10-20T14:11:16.888Z",
+      "hash": "6193fec6ad9afaf6f8e848563e0704b8725756040728b0f9d3cc0f409db95074",
+      "bytes": 43446,
+      "contentType": "text/html; charset=utf-8",
+      "decision": "prepared_local_inactive_pending_vps_verification"
+    },
+    {
+      "id": "icehacks",
+      "url": "https://icehacks.devpost.com/",
+      "error": "Fonte oficial indisponível",
+      "decision": "not_eligible_for_activation_protected_fetch_failed"
+    },
+    {
+      "id": "launchpad",
+      "url": "https://launchpad-hacks.devpost.com/",
+      "error": "Fonte oficial indisponível",
+      "decision": "not_eligible_for_activation_protected_fetch_failed"
+    },
+    {
+      "id": "bridge-gap",
+      "url": "https://sq-hacks.devpost.com/rules",
+      "error": "Fonte oficial indisponível",
+      "decision": "not_eligible_for_activation_protected_fetch_failed"
+    },
+    {
+      "id": "soujava-nov",
+      "url": "https://encontros.soujava.org.br/talks/novembro-2026/",
+      "at": "2026-10-20T14:12:08.264Z",
+      "hash": "d1242226b2bc9929f23c813c4b8b777b0371c095af6358de7c1345a90ccbe63f",
+      "bytes": 154241,
+      "contentType": "text/html; charset=utf-8",
+      "decision": "prepared_local_inactive_pending_vps_verification"
+    },
+    {
+      "id": "mlh-global",
+      "url": "https://ghw.mlh.com/",
+      "at": "2026-10-20T14:13:30.323Z",
+      "hash": "a461c2b9d6e99790e053e3afd505dede7af319761d05df20173c463f86c736e1",
+      "bytes": 347494,
+      "contentType": "text/html",
+      "decision": "required_global_eligibility_supplement"
+    }
+  ],
+  "additionalWebRejection": {
+    "url": "https://unisoma.com.br/desafio/regulamento-2026/",
+    "decision": "closed_capacity_reached",
+    "evidence": "Registration explicitly ended 15/10; waiting list is not open registration despite older 25/10 schedule."
+  },
+  "limitations": [
+    "VPS protected fetch passed for all ten canonical URLs and the MLH supplement. Revalidate availability again at activation; real persisted ingestion and public/admin parity remain unperformed.",
+    "No push, CI, migration, deploy, source activation or publication.",
+    "Candidate counts do not imply production totals; recheck at activation.",
+    "MLH technical challenge weeks remain events, not cash competitions.",
+    "SouJava calendar converts time; keep date-only until timezone reconciliation.",
+    "ENAP speaker call deadline is distinct from public attendance."
+  ],
+  "productionExactUrlDedup": {
+    "existing_source_urls": 0,
+    "existing_opportunity_urls": 0,
+    "at": "2026-10-20",
+    "method": "BEGIN READ ONLY; exact canonical URLs against official_sources and opportunity_sources. No writes."
+  },
+  "vpsProtectedFetch": {
+    "at": "2026-10-20T14:24:21.564Z",
+    "method": "Transient diagnostic through docker exec node stdin, no files installed, no DB writes, no service changes. Same protected fetch-source/safe-request/robots code and existing public URLs; results indicate retrieval, not ingestion/publication.",
+    "results": [
+      {
+        "id": "workintech-unicesumar-2026",
+        "url": "https://www.workintech.com.br/",
+        "at": "2026-10-20T14:23:49.134Z",
+        "hash": "e97702a7cfe27bf5307b270fe519ddeea93fa5d839e0a5a0be7b7273b2e4348e",
+        "bytes": 63604,
+        "supplement": null,
+        "contentType": "text/html; charset=utf-8"
+      },
+      {
+        "id": "connect-hackathon-7-2026",
+        "url": "https://connectinovacao.com.br/hackathon/",
+        "at": "2026-10-20T14:23:51.995Z",
+        "hash": "2dd0cb3aafacca30f74d1c065dad0622e88520ecb3db09a4f78e973570ca3121",
+        "bytes": 80477,
+        "supplement": null,
+        "contentType": "text/html; charset=UTF-8"
+      },
+      {
+        "id": "obvc-2026",
+        "url": "https://obvc.com.br/",
+        "at": "2026-10-20T14:23:54.127Z",
+        "hash": "65735c8195566db0109f2c70459971cf637d4c44f59e9f284da8af945be15b2d",
+        "bytes": 263749,
+        "supplement": null,
+        "contentType": "text/html; charset=utf-8"
+      },
+      {
+        "id": "soujava-november-2026",
+        "url": "https://encontros.soujava.org.br/talks/novembro-2026/",
+        "at": "2026-10-20T14:23:57.380Z",
+        "hash": "b9b01df8deeb67e0156f2b471de0ef71559ce7c9ae1d41a258774fbc67139e84",
+        "bytes": 154238,
+        "supplement": null,
+        "contentType": "text/html; charset=utf-8"
+      },
+      {
+        "id": "mlh-builders-november-2026",
+        "url": "https://events.mlh.com/events/14729-global-hack-week-builders-week",
+        "at": "2026-10-20T14:24:01.816Z",
+        "hash": "930e7fe67fea6cc40f8ed7c421ad3c16d673007db7d8362efba00b520f27e7f5",
+        "bytes": 42545,
+        "supplement": {
+          "url": "https://ghw.mlh.com/",
+          "hash": "a461c2b9d6e99790e053e3afd505dede7af319761d05df20173c463f86c736e1",
+          "bytes": 347494
+        },
+        "contentType": "text/html; charset=utf-8"
+      },
+      {
+        "id": "mlh-open-source-december-2026",
+        "url": "https://events.mlh.com/events/15199-global-hack-week-open-source-week",
+        "at": "2026-10-20T14:24:06.225Z",
+        "hash": "4bfe2b7111d9eeba7814680db11af691cbabf1478caa49eaa39359a6c3480397",
+        "bytes": 43446,
+        "supplement": {
+          "url": "https://ghw.mlh.com/",
+          "hash": "a461c2b9d6e99790e053e3afd505dede7af319761d05df20173c463f86c736e1",
+          "bytes": 347494
+        },
+        "contentType": "text/html; charset=utf-8"
+      },
+      {
+        "id": "devopsdays-florianopolis-2026",
+        "url": "https://devopsdays.org/events/2026-florianopolis/welcome/",
+        "at": "2026-10-20T14:24:08.726Z",
+        "hash": "38c50d21354b7ce772c85b8a9c86c843b5584685889d94fbce42c8cec4ffb0ca",
+        "bytes": 14903,
+        "supplement": null,
+        "contentType": "text/html; charset=UTF-8"
+      },
+      {
+        "id": "devopsdays-recife-2026",
+        "url": "https://devopsdays.org/events/2026-recife/welcome/",
+        "at": "2026-10-20T14:24:12.480Z",
+        "hash": "614b350169bf380c17b1b014e8155982fd0eac4d8aabd26ed80e3073d407c84b",
+        "bytes": 18260,
+        "supplement": null,
+        "contentType": "text/html; charset=UTF-8"
+      },
+      {
+        "id": "enap-innovation-week-2026",
+        "url": "https://semanadeinovacao.enap.gov.br/faq/",
+        "at": "2026-10-20T14:24:15.596Z",
+        "hash": "ad5164e8691463e34cb0bebc4d8820749a86849dedd4fc2511d86d3cde8ad0e8",
+        "bytes": 77896,
+        "supplement": null,
+        "contentType": "text/html; charset=utf-8"
+      },
+      {
+        "id": "recnplay-2026",
+        "url": "https://recnplay.pe/",
+        "at": "2026-10-20T14:24:21.564Z",
+        "hash": "28a21fb7fa2cd1b5e6c72116ee6e73604b10cac540f87e957c1094a0995a0337",
+        "bytes": 206343,
+        "supplement": null,
+        "contentType": "text/html; charset=UTF-8"
+      }
+    ]
+  }
+}

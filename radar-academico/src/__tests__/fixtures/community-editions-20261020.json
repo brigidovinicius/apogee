@@ -1,0 +1,47 @@
+{
+  "capturedAt": "2026-10-20",
+  "method": "Compact behavioral fixtures using audited factual labels and enrollment links. Actual full HTML normalization was verified separately and is recorded in the source audit.",
+  "editions": [
+    {
+      "id": "workintech-unicesumar-2026",
+      "html": "<article><p>EDIÇÃO 2026. UniCesumar MARINGÁ. Workshops: 26 e 27 de outubro; hackathon nos dias 28, 29 e 30. 4–6 Pessoas por equipe. INSCRIÇÕES ABERTAS.</p><a href=\"https://www.workintech.com.br/login?next=hackathon\">QUERO PARTICIPAR →</a></article>"
+    },
+    {
+      "id": "connect-hackathon-7-2026",
+      "html": "<article><p>Hackathon 7.0 Connect. 14 de novembro de 2026. 09h às 21h. As equipes devem ter entre 3 e 5 integrantes. Inscrição e participação totalmente gratuitas; hubs de inovação parceiros espalhados pelo Brasil.</p><a href=\"https://hack.connectinovacao.com.br/\">Inscreva-se</a></article>"
+    },
+    {
+      "id": "obvc-2026",
+      "html": "<article><p>Olimpíada Brasileira de Vibe Coding. Inscrições até 31 de outubro de 2026. Entrega em 1º de novembro de 2026. Universitária: R$ 60; Ampla: R$ 120. Tetos 50.000 e 100.000; os prêmios crescem com o número de inscritos. Brasileiros e residentes no Brasil: é tudo online.</p><a href=\"https://obvc.com.br/inscricao\">Inscreva-se</a></article>"
+    },
+    {
+      "id": "soujava-november-2026",
+      "html": "<article><p>Encontro do SouJava - Novembro 2026. 13 November 2026. No dia 13/11, encontro na Oracle São Paulo. Juarez Barbosa Junior e Bruno Silva.</p><a href=\"https://encontros.soujava.org.br/checkout/select-tickets/\">Reservar minha vaga</a></article>"
+    },
+    {
+      "id": "mlh-builders-november-2026",
+      "html": "<article><p>Global Hack Week: Builders Week. Friday November 6, 2026; ends Nov 12. Event is hosted online. Major League Hacking. Minors (Between 13-18): parent's permission required.</p><a href=\"https://events.mlh.com/events/14729-global-hack-week-builders-week/register\">Log In &amp; Register</a></article>"
+    },
+    {
+      "id": "mlh-open-source-december-2026",
+      "html": "<article><p>Global Hack Week: Open Source Week. Friday December 4, 2026; ends Dec 10. Event is hosted online. Major League Hacking. Minors (Between 13-18): parent's permission required.</p><a href=\"https://events.mlh.com/events/15199-global-hack-week-open-source-week/register\">Log In &amp; Register</a></article>"
+    },
+    {
+      "id": "devopsdays-florianopolis-2026",
+      "html": "<article><p>devopsdays Florianópolis. October 24, 2026. Centro Universitário Cesusc. SC-401, 9301.</p><a href=\"https://www.sympla.com.br/evento/devopsdays-florianopolis-2026/3563063\">Adquira seu ingresso!</a></article>"
+    },
+    {
+      "id": "devopsdays-recife-2026",
+      "html": "<article><p>DEVOPSDAYS RECIFE - 2026. 12 de dezembro de 2026, das 8h às 18h. UNINASSAU Graças. Rios, Pontes e Tecnologia.</p><a href=\"https://www.even3.com.br/devopsdays-recife-770771/\">INGRESSOS</a></article>"
+    },
+    {
+      "id": "enap-innovation-week-2026",
+      "html": "<article><p>Semana de Inovação 2026 já estão abertas. 10 a 12 de novembro de 2026. sede da Enap, em Brasília. Participação totalmente gratuita, presencial e remota (online). Como posso submeter uma proposta de atividade? A chamada é outra seleção: para ela, o prazo de envio foi encerrado no primeiro semestre.</p><a href=\"https://si-2026-enap.mesa.tech/login\">Garanta a sua vaga</a></article>"
+    },
+    {
+      "id": "recnplay-2026",
+      "html": "<article><p>REC’n’Play 2026: de 11 a 14 de novembro. Festival gratuito de inovação no centro histórico do Recife. Inscrições abertas para o REC’n’Play 2026.</p><a href=\"https://register.jalanlive.com/recnplay2026/form?pos=415\">Inscrições REC'n'Play</a></article>"
+    }
+  ],
+  "mlhSupplement": "<p>Global Hack Week is a 100% free event for anyone, anywhere!</p>"
+}

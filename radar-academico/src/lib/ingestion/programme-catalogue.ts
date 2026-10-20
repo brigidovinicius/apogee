@@ -1,4 +1,5 @@
 import { isAuditedYouthCall, normalizeAuditedYouthCall } from "./normalize-audited-youth-calls";
+import { isCommunityEdition, communityEditionSupplement, normalizeCommunityEdition } from "./normalize-community-editions-20261020";
 import { AMAZONIA_ID, AMAZONIA_DOCUMENT_URL, isExtracurricularEdition, normalizeExtracurricularEdition } from "./normalize-extracurricular-20261017";
 import { CPS_CULTURAL_ID, CPS_CULTURAL_NEWS, normalizeCpsCultural } from "./normalize-cps-cultural";
 import { ACIM_SW_SOURCE_ID, normalizeAcimStartupWeekend } from "./normalize-acim-startup-weekend";
@@ -15,6 +16,7 @@ import { PDAI_SOURCE_ID, PDAI_NEWS_URL, normalizeCapesPdai } from "./normalize-c
 import { PDSE_SOURCE_ID, PDSE_NEWS_URL, normalizeCapesPdse } from "./normalize-capes-pdse";
 
 export function programmeCataloguePageCount(id: string) {
+  if (isCommunityEdition(id)) return communityEditionSupplement(id) ? 2 : 1;
   if (isExtracurricularEdition(id)) return id === AMAZONIA_ID ? 2 : 1;
   if (isAuditedYouthCall(id)) return 1;
   if (id === CPS_CULTURAL_ID) return 2;
@@ -25,6 +27,7 @@ export function programmeCataloguePageCount(id: string) {
 }
 
 export function programmeSupplementUrl(id: string) {
+  if (isCommunityEdition(id)) return communityEditionSupplement(id)!;
   if (id === AMAZONIA_ID) return AMAZONIA_DOCUMENT_URL;
   if (id === CPS_CULTURAL_ID) return CPS_CULTURAL_NEWS;
   if (id === PDAI_SOURCE_ID) return PDAI_NEWS_URL;
@@ -37,6 +40,7 @@ export function programmeCatalogueCanBeEmpty(id: string) {
 }
 
 export function normalizeProgrammeCatalogue(listing: string, application: string, source: OfficialSource) {
+  if (isCommunityEdition(source.id)) return normalizeCommunityEdition(listing, application, source);
   if (isExtracurricularEdition(source.id)) return normalizeExtracurricularEdition(listing, application, source);
   if (isAuditedYouthCall(source.id)) return normalizeAuditedYouthCall(listing, source);
   if (source.id === CPS_CULTURAL_ID) return normalizeCpsCultural(listing, application, source);
