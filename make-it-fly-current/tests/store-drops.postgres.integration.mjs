@@ -25,7 +25,7 @@ test("drop migration and public signup persist contacts and consent on real disp
     assert.equal((await POST(request({}))).status, 200);
     const [row] = await sql`select * from store_drop_signup`;
     assert.equal(row.name, "Synthetic Drop"); assert.equal(row.phone, "+5511999991234"); assert.equal(row.email, "synthetic-drop@example.test");
-    assert.equal(row.consent_version, "drops-v1"); assert.match(row.consent_text, /Autorizo a Apogee/); assert.ok(row.consented_at instanceof Date);
+    assert.equal(row.consent_version, "drops-v1"); assert.match(row.consent_text, /Autorizo a Apogee/); assert.equal((await sql`select consented_at between now() - interval '1 minute' and now() as recent from store_drop_signup`)[0].recent, true);
     assert.equal((await POST(request({ name: "Other Person", phone: "11911112222" }))).status, 200);
     const [preserved] = await sql`select name,phone from store_drop_signup`;
     assert.deepEqual({ ...preserved }, { name: row.name, phone: row.phone });
