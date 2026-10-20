@@ -1,3 +1,4 @@
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import Link from "next/link";
 import { AdminNotice, AdminPageHeader, MetricCard, adminStyles as styles } from "@/components/admin/admin-ui";
 import { getAdminOverview } from "@/lib/admin/data";
@@ -87,7 +88,7 @@ export default async function AdminDashboardPage() {
                 <li key={account.id}>
                   <span className={styles.avatar} aria-hidden>{initials(account.name)}</span>
                   <div>
-                    <strong>{account.name}</strong>
+                    <strong>{interfaceText(account.name)}</strong>
                     <span>{account.username ? `@${account.username}` : "Sem nome de usuário"} · {account.role === "admin" ? "Administrador" : "Membro"}</span>
                   </div>
                   <time dateTime={account.createdAt.toISOString()}>{dateTime.format(account.createdAt)}</time>

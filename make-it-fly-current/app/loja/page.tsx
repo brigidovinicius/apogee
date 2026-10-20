@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { StoreExperience } from "./store-experience";
 
-const description = "Conheça o moletom Building the Future , o boné Made to Create e a camiseta Apogee. Cadastre-se para receber novidades dos próximos drops.";
+const description = "Conheça o moletom Building the Future, o boné Made to Create e a camiseta Apogee. Cadastre-se para receber novidades dos próximos drops.";
 export const metadata: Metadata = {
   title: "Loja | Apogee",
   description,

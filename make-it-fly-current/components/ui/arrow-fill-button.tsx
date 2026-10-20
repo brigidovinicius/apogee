@@ -28,9 +28,9 @@ export type ArrowFillButtonProps = ArrowFillButtonOwnProps & Omit<ComponentProps
 
 export default function ArrowFillButton({
   btnText = "Hover Me", href = "#", className,
-  bgColor = "#25D366", textColor = "#07182d",
-  fillBgColor = "#ffffff", fillTextColor = "#075e54",
-  hoverFillBgColor = "#ffffff", hoverFillTextColor = "#075e54",
+  bgColor = "var(--apogee-action, #25d366)", textColor = "var(--apogee-navy, #07182d)",
+  fillBgColor = "#ffffff", fillTextColor = "var(--apogee-navy, #07182d)",
+  hoverFillBgColor = "#ffffff", hoverFillTextColor = "var(--apogee-navy, #07182d)",
   arrowColor, hoverArrowColor, animationDuration = 450, fillOnHover = true,
   prefetch = false, style, onPointerDown, onPointerUp, onPointerCancel, ...props
 }: ArrowFillButtonProps) {

@@ -35,7 +35,7 @@ export function SiteHeader({
   return (
     <header className={styles.header} data-tone={tone}>
       <div className={styles.headerInner}>
-        <Link className={styles.brand} href="/" aria-label="Apogee — início" prefetch={prefetch}>
+        <Link className={styles.brand} href="/" aria-label="Apogee - início" prefetch={prefetch}>
           <Image
             src={tone === "light" ? "/brand/apogee-logo-navy.svg" : "/brand/apogee-logo-white.svg"}
             alt=""

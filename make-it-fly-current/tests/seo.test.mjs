@@ -1,3 +1,5 @@
+import { interfaceText } from "../lib/presentation-text.mjs";
+import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -15,6 +17,8 @@ async function load(path, mocks = {}) {
   }).outputText;
   const loadedModule = { exports: {} };
   new Function("require", "module", "exports", output)((specifier) => {
+    if (specifier === "@/lib/presentation-text.mjs") return { interfaceText };
+    if (specifier === "@/components/ui/brand-mark") return opportunityLoader()("components/ui/brand-mark.tsx");
     if (specifier in mocks) return mocks[specifier];
     return require(specifier);
   }, loadedModule, loadedModule.exports);

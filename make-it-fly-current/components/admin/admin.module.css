@@ -1041,7 +1041,7 @@
 :global([data-apogee-design]) .brand span,
 :global([data-apogee-design]) .mobileBrand span,
 :global([data-apogee-design]) .identityBadge,
-:global([data-apogee-design]) .dataBadge { font-family: var(--apogee-font-sans); font-size: .8125rem; letter-spacing: 0; text-transform: none; border-radius: .4rem; }
+:global([data-apogee-design]) .dataBadge { font-family: var(--apogee-font-sans); font-size: .8125rem; letter-spacing: 0; text-transform: none; border-radius: var(--apogee-control-radius); }
 :global([data-apogee-design]) .pageHeader h1 { font-size: clamp(3rem, 5vw, 5.5rem); line-height: .98; letter-spacing: -.025em; }
 :global([data-apogee-design]) .surface h2,
 :global([data-apogee-design]) .surfaceHeader h2 { font-family: var(--apogee-font-heading); font-size: 2rem; line-height: 1.1; font-weight: 400; }

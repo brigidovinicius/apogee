@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ArrowUp, ArrowUpRight, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
@@ -17,7 +18,7 @@ function ProductGallery({ product }: { product: StoreProduct }) {
     <article className={styles.product} aria-labelledby={`title-${product.slug}`}>
       <button className={styles.mainPhoto} type="button" onClick={() => dialog.current?.showModal()} aria-label={`Ampliar foto de ${product.name}`} aria-haspopup="dialog">
         <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="(max-width: 700px) 100vw, 50vw" preload={active === 0} />
-        <span className={styles.enlarge} aria-hidden="true">Ampliar +</span>
+        <span className={styles.enlarge} aria-hidden="true">Ampliar <Plus size={14} aria-hidden="true" /></span>
       </button>
       <div className={styles.thumbnails} role="group" aria-label={`Fotos de ${product.name}`}>
         {product.photos.map((item, index) => (
@@ -29,9 +30,9 @@ function ProductGallery({ product }: { product: StoreProduct }) {
       </div>
       <div className={styles.productHeading}><h2 id={`title-${product.slug}`}>{product.name}</h2><span>{product.detail}</span></div>
       <p>{product.description}</p>
-      <a className={styles.productLink} href="#novos-drops">Receber novidades dos drops <span aria-hidden="true">↗</span></a>
+      <a className={styles.productLink} href="#novos-drops">Receber novidades dos drops <ArrowUpRight size={18} aria-hidden="true" /></a>
       <dialog ref={dialog} className={styles.photoDialog} aria-label={`Foto ampliada de ${product.name}`} onClick={(event) => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
-        <button className={styles.closePhoto} type="button" autoFocus onClick={() => dialog.current?.close()}>Fechar <span aria-hidden="true">×</span></button>
+        <button className={styles.closePhoto} type="button" autoFocus onClick={() => dialog.current?.close()}>Fechar <X size={18} aria-hidden="true" /></button>
         <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="90vw" />
       </dialog>
     </article>
@@ -96,14 +97,14 @@ export function StoreExperience() {
       <main id="experiencia">
         <section className={styles.intro} aria-labelledby="store-title">
           <div><p>Apogee Builders Club</p><h1 id="store-title">Vista o que<br />você cria.</h1></div>
-          <div className={styles.introCopy}><p>Building the future. Made to create.</p><p>Conheça as peças da Apogee e acompanhe os próximos drops.</p><a href="#novos-drops">Receber novidades <span aria-hidden="true">↗</span></a></div>
+          <div className={styles.introCopy}><p>Building the future. Made to create.</p><p>Conheça as peças da Apogee e acompanhe os próximos drops.</p><a href="#novos-drops">Receber novidades <ArrowUpRight size={18} aria-hidden="true" /></a></div>
         </section>
         <section className={styles.collection} aria-label="Produtos Apogee" id="produtos">
           {products.map(product => <ProductGallery key={product.slug} product={product} />)}
         </section>
         <DropSignup />
       </main>
-      <footer className={styles.footer}><Link href="/" aria-label="Apogee — início"><Image src="/brand/apogee-logo-navy.svg" alt="Apogee" width={112} height={69} /></Link><p>Building the future.</p><a href="#produtos">Voltar aos produtos ↑</a></footer>
+      <footer className={styles.footer}><Link href="/" aria-label="Apogee - início"><Image src="/brand/apogee-logo-navy.svg" alt="Apogee" width={112} height={69} /></Link><p>Building the future.</p><a href="#produtos">Voltar aos produtos <ArrowUp size={16} aria-hidden="true" /></a></footer>
     </div>
   );
 }

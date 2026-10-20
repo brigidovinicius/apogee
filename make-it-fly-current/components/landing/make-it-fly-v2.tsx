@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowUpRight } from "lucide-react";
 import { ApogeeHero } from "@/components/hero/ApogeeHero";
 import { ApogeeFlight } from "@/components/hero/ApogeeFlight";
 import { EnergySupport } from "./EnergySupport";
@@ -115,7 +116,7 @@ export function MakeItFlyV2() {
             navigationOnLight ? styles.topbarOnLight : "",
           ].join(" ")}
         >
-          <a className={styles.brand} href="#inicio" aria-label="Make it fly — início">
+          <a className={styles.brand} href="#inicio" aria-label="Make it fly - início">
             <span aria-hidden className={styles.brandMark} />
             <span className={styles.brandName}>
               <span>Make it fly</span>
@@ -323,7 +324,7 @@ export function MakeItFlyV2() {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    {AUTORA.handle} <span aria-hidden>↗</span>
+                    {AUTORA.handle} <span aria-hidden><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span>
                   </a>
                 </Reveal>
               </div>
@@ -383,7 +384,7 @@ export function MakeItFlyV2() {
             <Image
               className={styles.footerWordmark}
               src="/brand/make-it-fly-wordmark.png"
-              alt="Make it fly — Building the future"
+              alt="Make it fly - Building the future"
               width={2097}
               height={523}
               sizes="220px"

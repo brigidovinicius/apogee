@@ -1,5 +1,7 @@
 "use client";
 
+import { BrandMark } from "@/components/ui/brand-mark";
+import { ArrowUpRight } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import Link from "next/link";
 import { flushJourneyEvents, getJourneyId, trackJourney } from "@/components/analytics/journey-client";
@@ -153,14 +155,14 @@ export function ApplicationForm() {
 
   if (submitted) return (
     <section className={`${styles.panel} ${styles.result}`} aria-labelledby="result-title">
-      <span className={styles.resultSymbol} aria-hidden="true">✦</span>
+      <span className={styles.resultSymbol} aria-hidden="true"><BrandMark /></span>
       <p className={styles.panelEyebrow}>Aplicação recebida</p>
       <h2 ref={headingRef} tabIndex={-1} id="result-title">Recebemos sua aplicação.</h2>
       <div role="status" aria-live="polite">
         <p>Vamos revisar seu perfil e suas respostas com atenção.</p>
         <p className={styles.resultNote}>Se sua participação for aprovada, enviaremos o link do ingresso pelo contato informado. O envio desta aplicação ainda não garante uma vaga.</p>
       </div>
-      <Link href="/makeitfly" className={styles.secondary}>Voltar ao evento <span aria-hidden="true">↗</span></Link>
+      <Link href="/makeitfly" className={styles.secondary}>Voltar ao evento <span aria-hidden="true"><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></Link>
       <p className={styles.resultSignature}>Give your ideas wings.</p>
     </section>
   );
@@ -189,11 +191,11 @@ export function ApplicationForm() {
             <fieldset className={styles.question}><legend>Você tem uma ideia ou projeto que gostaria de tirar do papel? <span>(obrigatório)</span></legend><Choice name="hasIdea" value={values.hasIdea} onChange={v => change("hasIdea", v)} error={errors.hasIdea} />{fieldError("hasIdea")}</fieldset>
             {values.hasIdea === true && <div className={styles.field}><label htmlFor="ideaDescription">Conta pra gente, em poucas palavras, qual é essa ideia. <span>(opcional)</span></label><textarea id="ideaDescription" name="ideaDescription" rows={4} maxLength={2000} value={values.ideaDescription} onChange={e => change("ideaDescription", e.target.value)} aria-describedby={`idea-hint${errors.ideaDescription ? " ideaDescription-error" : ""}`} aria-invalid={Boolean(errors.ideaDescription)} /><p id="idea-hint" className={styles.hint}>Essa descrição não define sua participação. Até 2.000 caracteres.</p>{fieldError("ideaDescription")}</div>}
           </div>}
-          {step === 2 && <div className={styles.fields}><fieldset className={styles.question}><legend>Você tem notebook ou computador portátil que possa levar no dia do evento? <span>(obrigatório)</span></legend><Choice name="hasLaptop" value={values.hasLaptop} onChange={v => change("hasLaptop", v)} error={errors.hasLaptop} />{fieldError("hasLaptop")}</fieldset><fieldset className={styles.question}><legend>Você assina alguma ferramenta de IA e utiliza IA no seu dia a dia? <span>(obrigatório)</span></legend><Choice name="usesPaidAI" value={values.usesPaidAI} onChange={v => change("usesPaidAI", v)} error={errors.usesPaidAI} />{fieldError("usesPaidAI")}</fieldset><div className={styles.nextStepNote}><span aria-hidden="true">✦</span><p>Depois do envio, nossa equipe analisa sua aplicação. Se aprovada, você receberá o link do ingresso pelo contato informado.</p></div></div>}
+          {step === 2 && <div className={styles.fields}><fieldset className={styles.question}><legend>Você tem notebook ou computador portátil que possa levar no dia do evento? <span>(obrigatório)</span></legend><Choice name="hasLaptop" value={values.hasLaptop} onChange={v => change("hasLaptop", v)} error={errors.hasLaptop} />{fieldError("hasLaptop")}</fieldset><fieldset className={styles.question}><legend>Você assina alguma ferramenta de IA e utiliza IA no seu dia a dia? <span>(obrigatório)</span></legend><Choice name="usesPaidAI" value={values.usesPaidAI} onChange={v => change("usesPaidAI", v)} error={errors.usesPaidAI} />{fieldError("usesPaidAI")}</fieldset><div className={styles.nextStepNote}><span aria-hidden="true"><BrandMark /></span><p>Depois do envio, nossa equipe analisa sua aplicação. Se aprovada, você receberá o link do ingresso pelo contato informado.</p></div></div>}
           <div className={styles.honeypot} aria-hidden="true"><label htmlFor="website">Deixe este campo em branco</label><input id="website" name="website" tabIndex={-1} autoComplete="off" value={values.website} onChange={e => change("website", e.target.value)} /></div>
           <div className={styles.actions}>
             {step > 0 && <button type="button" className={styles.backButton} onClick={() => { setStep(step - 1); setErrors({}); setErrorMessage(""); }}><span aria-hidden="true">←</span> Voltar</button>}
-            <button type="submit" className={styles.primary}>{submitting ? "Enviando sua aplicação…" : step === 2 ? "Enviar aplicação" : "Continuar"}<span aria-hidden="true">{submitting ? "…" : "↗"}</span></button>
+            <button type="submit" className={styles.primary}>{submitting ? "Enviando sua aplicação…" : step === 2 ? "Enviar aplicação" : "Continuar"}<span aria-hidden="true">{submitting ? "…" : <ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} />}</span></button>
           </div>
         </fieldset>
         <p className={styles.privacy}>Seus dados serão usados pela Apogee para avaliar sua participação, organizar esta edição e manter contato sobre próximas experiências. Nesta sessão, também registramos as etapas percorridas e eventuais erros técnicos, sem copiar o conteúdo das suas respostas para esses eventos. Não exibimos suas respostas publicamente. O envio não reserva uma vaga.</p>

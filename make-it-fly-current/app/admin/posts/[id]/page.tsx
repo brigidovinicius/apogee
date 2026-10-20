@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminPageHeader, adminStyles as styles } from "@/components/admin/admin-ui";
@@ -30,7 +31,7 @@ export default async function AdminEditPostPage({ params, searchParams }: {
   return <div className={styles.content}>
     <AdminPageHeader title="Editar artigo" description="Altere o conteúdo e escolha como ele deve aparecer no blog." aside={<Link className={styles.secondaryButton} href="/admin/posts">Todos os artigos</Link>} />
     {query.salvo === "1" ? <p className={editorStyles.success} role="status">Alterações salvas.</p> : null}
-    {isPublicPost(post) ? <p className={editorStyles.publicLink}><Link href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">Ver artigo publicado ↗</Link></p> : null}
+    {isPublicPost(post) ? <p className={editorStyles.publicLink}><Link href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">Ver artigo publicado <ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></Link></p> : null}
     <PostEditor post={post} media={images.map((image) => ({ id: image.id, url: blogMediaUrl(image.id), alt: image.alt, caption: image.caption, width: image.width, height: image.height }))} />
     <section className={editorStyles.history} aria-labelledby="history-title">
       <h2 id="history-title">Histórico recente</h2>

@@ -1,3 +1,4 @@
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import { adminStyles as styles } from "@/components/admin/admin-ui";
 import type { RadarEditorialSource } from "@/lib/opportunities/radar-editorial-client";
 import { ingestRadarSource, setRadarSourceActive, verifyRadarSource } from "./actions";
@@ -16,7 +17,7 @@ export function SourceCard({ source }: { source: RadarEditorialSource }) {
       <div className={styles.radarSourceHeader}>
         <div>
           <p className={styles.sectionEyebrow}>{source.institutionAcronym || "Fonte oficial"}</p>
-          <h2>{source.name}</h2>
+          <h2>{interfaceText(source.name)}</h2>
           <p>{source.institutionName} · {location(source)}</p>
         </div>
         <div className={styles.catalogueMeta} aria-label="Estado da fonte">

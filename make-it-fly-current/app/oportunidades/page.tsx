@@ -3,6 +3,7 @@ import Link from "next/link";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
+import { ShareButton } from "@/components/site/share-button";
 import styles from "@/components/opportunities/opportunities.module.css";
 import { listPublicOpportunityPage } from "@/lib/opportunities/access";
 
@@ -50,6 +51,7 @@ export default async function OpportunitiesPage({ searchParams }: {
           <p className={styles.promise}>
             Consulte a fonte oficial para conferir os detalhes e realizar sua inscrição.
           </p>
+          <ShareButton title="Radar de oportunidades | Apogee" path="/oportunidades" />
         </section>
 
         <p className={styles.memberCta}><Link href="/membros/entrar?next=%2Fmembros%2Foportunidades">Entre na comunidade Apogee para explorar o Radar na área de membros →</Link></p>
