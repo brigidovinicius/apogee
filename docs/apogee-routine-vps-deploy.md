@@ -586,3 +586,15 @@ Limites: não havia artigo publicado para validar uma página individual em prod
 Evidências: [medições e interações](evidence/apple-hig/production-validation.json), [captura da homepage](evidence/apple-hig/home-production.png) e [auditoria de design](design/apple-hig-audit.md). Script e log locais: `/private/tmp/apogee-hig-deploy.sh` e `/private/tmp/apogee-hig-deploy.log`.
 
 Este registro é posterior à publicação e não implica novo deploy por atualização documental.
+
+## 20/10/2026 - Loja com produtos reais e novidades dos drops
+
+Autorização nesta conversa: após o aviso de migração e publicação pendentes, o usuário respondeu "Ok, execute inclua também esse produto". PR #81 integrada e CI completo 39515923117 aprovado. Publicado SHA 1ab3b065211794923ec25548c543c7ef61abd141, de árvore idêntica ao head validado 13f55dfe8c096f791e9d3816e879dc14ac2bd541.
+
+Backup /opt/apogee-backups/loja-drops-20261020/apogee_membros.dump com checksum e restauração isolada das 19 tabelas conferidos. Migração aditiva 0006_store_drop_signups aplicada como apogee_app (changed=true; repetição changed=false). Apenas web recriado, healthy, zero reinícios e 12 containers vizinhos com IDs e imagens preservados. Rollback de código e imagem e2d0899471c19e391d7d915b00e352d17a07a3a2 preservados; a tabela aditiva permanece caso haja rollback.
+
+HTTP 200 da loja e das sete fotos; três produtos verificados no navegador público em desktop e mobile, sem overflow. Cadastro técnico pela página confirmado no banco e somente o contato sintético removido depois. Histórico com sete migrações. Nenhuma mensagem externa, compra ou alteração de dados de visitantes.
+
+Em scripts enviados por stdin ao SSH, executar a migração com `docker compose ... run --rm --no-deps -T --interactive=false web node scripts/store-drops-migrate.mjs`. O run interativo padrão pode consumir as instruções seguintes do shell. A etapa de aplicação foi conferida e a troca concluída em uma continuação explícita antes de declarar a publicação.
+
+Detalhes em [loja-drops-20261020.md](loja-drops-20261020.md) e no runbook remoto /opt/apogee-site/releases/20261020-loja-drops.md. Registros documentais posteriores não implicam novo deploy.
