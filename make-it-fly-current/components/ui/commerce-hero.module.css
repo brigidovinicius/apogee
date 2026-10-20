@@ -101,5 +101,8 @@
 :global([data-apogee-design]) .navigationLink { font-size: .9rem; }
 :global([data-apogee-design]) .headerActions { padding: 0; color: #07182d; }
 @media (max-width: 700px) {
-  :global([data-apogee-design]) .notch { min-height: 5rem; }
+  :global([data-apogee-design]) .header { flex-wrap: nowrap; }
+  :global([data-apogee-design]) .notch { min-width: 0; min-height: 5rem; gap: .75rem; }
+  :global([data-apogee-design]) .headerActions { flex-basis: auto; min-height: 5rem; }
+  :global([data-apogee-design]) .notch .menuButton { border-radius: var(--apogee-control-radius); border: 1px solid var(--apogee-border); }
 }
