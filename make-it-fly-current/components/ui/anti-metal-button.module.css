@@ -1,0 +1,23 @@
+.accent {
+  transition: width 200ms cubic-bezier(.65, 0, .35, 1);
+}
+
+.button:not(:disabled):not([aria-disabled="true"]):is(:hover, :focus-visible) .accent {
+  width: calc(100% - .5rem);
+}
+
+@keyframes dot-wave {
+  0%, 70%, 100% { opacity: .25; transform: scale(.85); }
+  35% { opacity: 1; transform: scale(1); }
+}
+
+.dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dot-wave 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accent { transition: none; }
+  .dot { animation: none; opacity: 1; transform: none; }
+}
