@@ -38,6 +38,15 @@ export async function recordRadarEvent(eventId: string, eventType: string, sessi
 
 export type RadarAccess = { active: boolean; source: "admin" | "legacy" | "stripe" | null };
 
+// Consulta privada, sem reivindicar a compra antes de comprovar o e-mail.
+export async function radarPurchaseNeedsVerification(userId: string, livemode: boolean): Promise<boolean> {
+  const rows = await getSql()`select 1 from "user" u
+    where u.id = ${userId} and u.blocked = false and u.email_verified = false
+      and exists (select 1 from radar_purchase p where p.user_id is null
+        and p.email = lower(trim(u.email)) and p.livemode = ${livemode} and p.status = 'paid')`;
+  return rows.length > 0;
+}
+
 export async function radarAccess(userId: string, livemode: boolean): Promise<RadarAccess> {
   return getSql().begin(async tx => {
     const [user] = await tx`select id, email, email_verified, role, blocked from "user" where id = ${userId} for update`;
