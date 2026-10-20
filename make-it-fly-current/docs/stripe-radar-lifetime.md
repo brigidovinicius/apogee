@@ -55,9 +55,10 @@ Produto de produção criado nesta conversa: `prod_VTctkygreah2Mu`.
 Preço avulso: `price_1USfdJASpZUkiAYG3lMTSOG4`.
 Payment Link: `plink_1USfekASpZUkiAYG6i3JW8la`.
 Conta de produção: `acct_1R7iASASpZUkiAYG`.
-Sandbox utilizado antes da integração: `acct_1R7iAjPOeMUj2lOm`.
-Esses identificadores devem ser verificados novamente na ativação; o pagamento
-de teste anterior aprovou o checkout, mas não validou este webhook.
+Sandbox utilizado: `acct_1R7iAjPOeMUj2lOm`.
+Produto sandbox: `prod_VTcxn4KK0u6RoN`; preço: `price_1USfhEPOeMUj2lOmJKEsaQNi`.
+Esses identificadores devem ser verificados novamente na ativação. O teste real
+desta implementação está registrado ao final deste documento.
 
 Destino HTTPS previsto: `https://www.apogee.community/api/stripe/webhook`.
 Cadastre eventos da própria conta, formato snapshot:
@@ -82,7 +83,7 @@ pagamento, liberação após evento assinado, duplicação/concorrência, tentat
 de troca de usuário, preço incorreto, pagamento pendente, falha de rede,
 rollback, sandbox versus produção, e reembolso/disputa fora de ordem.
 
-O teste real exige renovar a autenticação Stripe, usar listener local ou destino
+O teste real exige autenticação Stripe válida, usar listener local ou destino
 HTTPS disponível, pagar com cartão fictício em sandbox e verificar entrega 2xx,
 registro no banco e acesso autenticado ao Radar. O clique financeiro fica com
 o usuário, conforme o bloqueio de revisão automática desta conversa.
@@ -131,10 +132,38 @@ ou projeto foi apagado.
 
 O CI foi configurado para executar os testes de billing em banco sintético próprio,
 após os jobs anteriores; ainda não foi executado remotamente. Nenhum push, PR,
-deploy, migração de produção, configuração de segredo real ou cadastro de webhook
-externo foi realizado nesta implementação.
+deploy, migração de produção, configuração de segredo de produção ou cadastro de
+destino persistente no Dashboard foi realizado nesta implementação. O teste real
+abaixo utilizou uma credencial sandbox existente somente em memória/ambiente do
+processo e a assinatura temporária do listener, sem gravação em `.env`.
 
-O teste completo com a Stripe real permanece pendente: a CLI tem autenticação
-expirada, o Safari aguardava o autenticador do usuário e a última tentativa de
-acesso ao computador informou Mac bloqueado. Será necessário desbloquear o Mac,
-concluir a verificação e iniciar um novo pareamento CLI antes do listener.
+## Teste completo com Stripe sandbox — 20/10/2026, 14:40 BRT
+
+Resultado: **passou**, com Checkout hospedado e evento reais da Stripe, recebidos
+pelo listener CLI na aplicação local. O usuário concluiu o pagamento fictício no
+Safari; nenhum pagamento de produção foi executado.
+
+- Sessão: `cs_test_a17HoqT0cVZnJW5iFlqFxopiZDhWEgL9e7Pd0x9JoqpvkhblEGsAjExr32`.
+- Evento: `evt_1USh1bPOeMUj2lOmsJ5OFRtV`.
+- PaymentIntent: `pi_3USh1aPOeMUj2lOm1T7b8NCI`.
+- Total confirmado: BRL 4900, `livemode=false`, item único e membro vinculado.
+- Antes do pagamento, o novo membro foi redirecionado à compra, sem conteúdo privado.
+- Entrega real de `checkout.session.completed`: HTTP 200; compra persistida como
+  paga, acesso sem expiração e papel do usuário mantido como `member`.
+- Após a confirmação, Radar autenticado respondeu HTTP 200 com a oportunidade
+  sintética. O Safari exibiu “Seu acesso ao Radar está liberado” e depois “Radar
+  completo” com “TESTE SANDBOX Radar vitalício”.
+- Reenvio assinado do mesmo evento: HTTP 200, uma compra e um recibo do evento.
+
+O roteiro reproduzível está em `scripts/test-radar-stripe-sandbox.mjs`. Usa a conta
+sandbox identificada acima, PostgreSQL novo e Next em loopback; o feed contém
+somente uma oportunidade sintética. Execute via fila npm com `PG_BIN` apontando
+para binários PostgreSQL existentes e a CLI autenticada nessa conta. Ele prepara
+o checkout, aguarda até 15 minutos pelo pagamento manual, verifica o fluxo e
+encerra somente seus próprios serviços. Arquivos e resultado são preservados em
+diretório temporário, indicado na saída. Não provisiona endpoint persistente nem
+publica a aplicação.
+
+O plugin `stripe@openai-curated` também foi instalado e habilitado; os testes acima
+usaram a CLI autenticada e o SDK. A disponibilidade de ferramentas MCP não foi
+confirmada nesta sessão.
