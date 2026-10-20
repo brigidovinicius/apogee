@@ -7,6 +7,8 @@ import { getAuth } from "@/lib/members/auth";
 import { clientIp, getCurrentMember, requireMember } from "@/lib/members/dal";
 import * as forum from "@/lib/members/forum";
 import { consumeRateLimit } from "@/lib/members/rate-limit";
+import { billingConfig, RADAR_ACCESS_PATH, radarBillingEnabled } from "@/lib/billing/config";
+import { radarPurchaseNeedsVerification } from "@/lib/billing/store";
 import {
   POSTS_PER_MINUTE,
   type FieldErrors,
@@ -65,12 +67,17 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
 
   if (!(await consumeRateLimit(`signup:${await clientIp()}`, 5, 3600))) return { message: TOO_MANY, values };
 
+  let needsVerification = false;
   try {
-    await getAuth().api.signUpEmail({ body: parsed.data, headers: await headers() });
+    const result = await getAuth().api.signUpEmail({ body: parsed.data, headers: await headers() });
+    // Mostra a orientação também a quem iniciou o cadastro sem um next do Radar.
+    try {
+      needsVerification = radarBillingEnabled() && await radarPurchaseNeedsVerification(result.user.id, billingConfig().livemode);
+    } catch { /* A conta foi criada; a página do Radar permite verificar/reenviar. */ }
   } catch (error) {
     return { message: authErrorMessage(error, "Não foi possível criar sua conta agora."), values };
   }
-  redirect(safeNextPath(text(form, "next")));
+  redirect(needsVerification ? RADAR_ACCESS_PATH : safeNextPath(text(form, "next")));
 }
 
 export async function completeUsername(_: FormState, form: FormData): Promise<FormState> {

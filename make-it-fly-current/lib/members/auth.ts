@@ -12,6 +12,8 @@ import * as schema from "./schema";
 import { nameSchema, usernameSchema } from "./validation";
 import { enforceMemberAuthAbuse } from "./auth-abuse";
 import { memberIpHeaders } from "./client-ip";
+import { billingConfig, RADAR_ACCESS_PATH, radarBillingEnabled } from "@/lib/billing/config";
+import { radarPurchaseNeedsVerification } from "@/lib/billing/store";
 
 function createAuth() {
   const secret = process.env.BETTER_AUTH_SECRET;
@@ -46,8 +48,28 @@ function createAuth() {
         const target = new URL(url);
         if (target.origin !== applicationOrigin()) throw new Error("Origem inválida.");
         await sendMemberMail({ to: user.email, subject: "Confirme seu e-mail na Apogee",
-          text: `Confirme o controle do seu e-mail: ${target.href}\n\nDepois, volte à Apogee para continuar. A verificação não concede papel administrativo.` });
+          text: `Confirme o controle do seu e-mail: ${target.href}\n\nSe você já comprou o Radar com este e-mail, confirme para liberar automaticamente seu acesso vitalício. Depois, volte à Apogee para continuar. A verificação não concede papel administrativo.` });
       },
+    },
+    hooks: {
+      before: createAuthMiddleware(enforceMemberAuthAbuse),
+      after: createAuthMiddleware(async (ctx): Promise<void> => {
+        // Cobre o formulário (Server Action) e a API. Só o cadastro concluído
+        // de quem tem compra paga pendente recebe este envio automático.
+        if (ctx.path !== "/sign-up/email" || !radarBillingEnabled()) return;
+        const user = ctx.context.newSession?.user;
+        if (!user || user.emailVerified) return;
+        try {
+          if (!(await radarPurchaseNeedsVerification(user.id, billingConfig().livemode))) return;
+          await getAuth().api.sendVerificationEmail({ body: {
+            email: user.email, callbackURL: `${applicationOrigin()}${RADAR_ACCESS_PATH}`,
+          } });
+        } catch {
+          // A conta já existe: não informar falha no cadastro nem expor dados.
+          // O comprador pode entrar e solicitar o reenvio na página de acesso.
+          console.error("[membros] confirmação automática do Radar indisponível; reenvio disponível");
+        }
+      }),
     },
     socialProviders: {
       google: {
@@ -108,7 +130,6 @@ function createAuth() {
       ipAddress: { ipAddressHeaders: memberIpHeaders() },
       defaultCookieAttributes: { httpOnly: true, sameSite: "lax" },
     },
-    hooks: { before: createAuthMiddleware(enforceMemberAuthAbuse) },
     databaseHooks: {
       user: {
         create: {
