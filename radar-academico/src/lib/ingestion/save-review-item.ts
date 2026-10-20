@@ -5,7 +5,7 @@ import { deadlineIsCurrent } from "./publication";
 import { normalizeBrazilianLocation } from "@/lib/location";
 
 export async function syncOfficialSource(source: OfficialSource) {
-  if (!process.env.DATABASE_URL) return;
+  if (!process.env.DATABASE_EDITOR_URL) return;
   const normalizedLocation = normalizeBrazilianLocation(source.location ?? {});
   if (normalizedLocation.status === "invalid") throw new Error(`Fonte ${source.id} com localização inválida`);
   await withAdminTransaction(async (client) => {
@@ -28,7 +28,7 @@ export async function syncOfficialSource(source: OfficialSource) {
 }
 
 export async function saveReviewItems(source: OfficialSource, result: IngestionResult) {
-  if (!process.env.DATABASE_URL) return { saved: 0, published: 0, blocked: 0, created: 0, updated: 0, persistence: "skipped_no_database" };
+  if (!process.env.DATABASE_EDITOR_URL) return { saved: 0, published: 0, blocked: 0, created: 0, updated: 0, persistence: "skipped_no_database" };
   let saved = 0, published = 0, blocked = 0, created = 0, updated = 0;
   await withAdminTransaction(async (client) => {
     await lockSource(client, source);

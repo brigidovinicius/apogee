@@ -14,7 +14,7 @@ if (url !== "postgres://apogee_test@127.0.0.1:55441/postgres" && !(process.env.C
 const sql = postgres(url, { ssl: false, max: 8, onnotice: () => {} });
 const origin = "http://localhost:35441";
 Object.assign(process.env, {
-  BETTER_AUTH_URL: origin, BETTER_AUTH_SECRET: "radar-billing-isolated-test-secret-at-least-32-chars",
+  APPLICATION_HOSTING_PROVIDER: "caddy", BETTER_AUTH_URL: origin, BETTER_AUTH_SECRET: "radar-billing-isolated-test-secret-at-least-32-chars",
   RADAR_BILLING_ENABLED: "true", STRIPE_MODE: "test", STRIPE_SECRET_KEY: "sk_test_synthetic",
   STRIPE_WEBHOOK_SECRET: "whsec_synthetic", STRIPE_RADAR_PRICE_ID: "price_radar", STRIPE_RADAR_PRODUCT_ID: "prod_radar",
   MEMBERS_EMAIL_ENABLED: "true", MEMBERS_RESEND_DOMAIN_VERIFIED: "true",
@@ -104,7 +104,7 @@ const { radarAccess } = load("lib/billing/store.ts");
 const { requireRadarAccess } = load("lib/billing/access.ts");
 let auth;
 let eventCounter = 0;
-const headers = cookie => ({ Origin: origin, "Content-Type": "application/json", ...(cookie ? { cookie } : {}) });
+const headers = cookie => ({ Origin: origin, "Content-Type": "application/json", "x-apogee-client-ip": "127.0.0.1", ...(cookie ? { cookie } : {}) });
 async function signup(email, username) {
   const response = await auth.handler(new Request(`${origin}/api/auth/sign-up/email`, { method: "POST", headers: headers(),
     body: JSON.stringify({ email, username, name: "Pessoa Teste", password: "Synthetic-password-123!", role: "admin", emailVerified: true }) }));

@@ -1,5 +1,6 @@
 import "server-only";
 import { APIError, betterAuth } from "better-auth";
+import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { username } from "better-auth/plugins";
@@ -9,6 +10,8 @@ import { getDb } from "./db";
 import { googleUsernameFromSubject } from "./google-oauth";
 import * as schema from "./schema";
 import { nameSchema, usernameSchema } from "./validation";
+import { enforceMemberAuthAbuse } from "./auth-abuse";
+import { memberIpHeaders } from "./client-ip";
 
 function createAuth() {
   const secret = process.env.BETTER_AUTH_SECRET;
@@ -102,9 +105,10 @@ function createAuth() {
       },
     },
     advanced: {
-      ipAddress: { ipAddressHeaders: ["x-vercel-forwarded-for", "x-forwarded-for"] },
+      ipAddress: { ipAddressHeaders: memberIpHeaders() },
       defaultCookieAttributes: { httpOnly: true, sameSite: "lax" },
     },
+    hooks: { before: createAuthMiddleware(enforceMemberAuthAbuse) },
     databaseHooks: {
       user: {
         create: {

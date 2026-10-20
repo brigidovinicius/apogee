@@ -1,27 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import ts from "typescript";
+import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
-const applicationsSource = await readFile(new URL("../lib/applications.ts", import.meta.url), "utf8");
-const applicationsOutput = ts.transpileModule(applicationsSource.replace('import "server-only";', ""), {
-  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
-}).outputText;
-const applicationsUrl = `data:text/javascript;base64,${Buffer.from(applicationsOutput).toString("base64")}`;
-const adminAuthSource = await readFile(new URL("../lib/admin-auth.ts", import.meta.url), "utf8");
-const adminAuthOutput = ts.transpileModule(adminAuthSource.replace('import "server-only";', ""), {
-  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
-}).outputText;
-const adminAuthUrl = `data:text/javascript;base64,${Buffer.from(adminAuthOutput).toString("base64")}`;
-const exportSource = await readFile(new URL("../lib/application-export.ts", import.meta.url), "utf8");
-const exportOutput = ts.transpileModule(
-  exportSource
-    .replace('import "server-only";', "")
-    .replace('from "@/lib/admin-auth"', `from "${adminAuthUrl}"`)
-    .replace('from "@/lib/applications"', `from "${applicationsUrl}"`),
-  { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } },
-).outputText;
-const api = await import(`data:text/javascript;base64,${Buffer.from(exportOutput).toString("base64")}`);
+const api = opportunityLoader()("lib/application-export.ts");
 
 const TOKEN = "a".repeat(64);
 const env = {

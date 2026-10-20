@@ -8,6 +8,7 @@ import { user as users } from "./schema";
 import { nameSchema } from "./validation";
 import { getAuth } from "./auth";
 import { isGeneratedGoogleUsername } from "./validation";
+import { memberClientIp } from "./client-ip";
 
 export type CurrentMember = {
   id: string;
@@ -59,9 +60,5 @@ export async function requireAdmin(next?: string): Promise<CurrentMember> {
 }
 
 export async function clientIp(): Promise<string> {
-  const list = await headers();
-  const provider = process.env.APPLICATION_HOSTING_PROVIDER || (process.env.VERCEL === "1" ? "vercel" : "unknown");
-  const header = provider === "vercel" ? "x-vercel-forwarded-for" : provider === "caddy" ? "x-forwarded-for" : null;
-  if (header) return list.get(header)?.split(",")[0]?.trim() || "unknown";
-  return "local";
+  return memberClientIp(await headers()) ?? "unknown";
 }

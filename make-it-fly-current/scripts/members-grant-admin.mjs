@@ -7,19 +7,40 @@ import postgres from "postgres";
 
 export class AdminRoleError extends Error {}
 
-export async function grantAdmin(sql, email) {
-  return sql.begin(async (tx) => {
-    await tx`lock table "user" in share row exclusive mode`;
-    const matches = await tx`
-      select id, role
+export function bootstrapTarget(email, userId) {
+  if (typeof email !== "string" || email.length > 320 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
+    throw new AdminRoleError("E-mail alvo ausente ou inválido.");
+  }
+  if (typeof userId !== "string" || !userId || userId.length > 200 || /[\s\p{C}]/u.test(userId)) {
+    throw new AdminRoleError("ID explícito da conta alvo ausente ou inválido.");
+  }
+  return { email: email.trim().toLowerCase(), userId };
+}
+
+export async function verifiedBootstrapAccount(tx, target) {
+  await tx`set local lock_timeout = '5s'`;
+  await tx`set local statement_timeout = '15s'`;
+  await tx`lock table "user" in share row exclusive mode`;
+  const matches = await tx`
+      select id, role, email_verified, blocked, can_manage_admins
       from "user"
-      where lower(email) = lower(${email})
+      where lower(email) = lower(${target.email})
       for update`;
 
-    if (matches.length === 0) throw new AdminRoleError("Conta alvo não encontrada.");
-    if (matches.length !== 1) throw new AdminRoleError("Conta alvo duplicada.");
+  if (matches.length === 0) throw new AdminRoleError("Conta alvo não encontrada.");
+  if (matches.length !== 1) throw new AdminRoleError("Conta alvo duplicada.");
+  const [account] = matches;
+  if (account.id !== target.userId) throw new AdminRoleError("ID e e-mail não correspondem à mesma conta.");
+  if (account.email_verified !== true || account.blocked !== false) {
+    throw new AdminRoleError("A conta alvo deve estar ativa e com e-mail verificado.");
+  }
+  return account;
+}
 
-    const [{ id, role: previousRole }] = matches;
+export async function grantAdmin(sql, email, expectedUserId) {
+  const target = bootstrapTarget(email, expectedUserId);
+  return sql.begin(async (tx) => {
+    const { id, role: previousRole } = await verifiedBootstrapAccount(tx, target);
     if (previousRole !== "member" && previousRole !== "admin") {
       throw new AdminRoleError("Papel atual inválido; nenhuma alteração realizada.");
     }
@@ -31,7 +52,7 @@ export async function grantAdmin(sql, email) {
     const updated = await tx`
       update "user"
       set role = 'admin'
-      where id = ${id} and role = 'member'
+      where id = ${id} and role = 'member' and email_verified = true and blocked = false
       returning role`;
     if (updated.length !== 1 || updated[0].role !== "admin") {
       throw new AdminRoleError("A concessão não alterou exatamente a conta alvo.");
@@ -64,15 +85,12 @@ export function databaseOptions() {
 }
 
 async function main() {
-  const email = process.env.MEMBERS_ADMIN_EMAIL?.trim().toLowerCase();
-  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-    throw new AdminRoleError("MEMBERS_ADMIN_EMAIL ausente ou inválido.");
-  }
+  const target = bootstrapTarget(process.env.MEMBERS_ADMIN_EMAIL, process.env.MEMBERS_ADMIN_USER_ID);
 
   const { url, options } = databaseOptions();
   const sql = postgres(url, options);
   try {
-    const result = await grantAdmin(sql, email);
+    const result = await grantAdmin(sql, target.email, target.userId);
     console.log(JSON.stringify({
       ...result,
       occurredAt: new Date().toISOString(),

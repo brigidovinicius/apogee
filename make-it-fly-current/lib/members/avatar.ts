@@ -1,4 +1,5 @@
 import "server-only";
+import { RequestBodyError, readRequestBody, UPLOAD_BODY_TIMEOUT_MS } from "@/lib/request-body";
 
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
@@ -33,26 +34,15 @@ export async function boundedAvatarForm(request: Request): Promise<FormData> {
     throw new AvatarError(413, "O envio excede 6 MB.");
   }
   if (!request.body) throw new AvatarError(400, "Selecione uma foto.");
-  const reader = request.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.byteLength;
-    if (size > MAX_REQUEST) {
-      await reader.cancel();
-      throw new AvatarError(413, "O envio excede 6 MB.");
-    }
-    chunks.push(value);
-  }
   try {
+    const body = await readRequestBody(request, MAX_REQUEST, UPLOAD_BODY_TIMEOUT_MS);
     return await new Request("http://localhost/upload", {
       method: "POST",
       headers: { "Content-Type": request.headers.get("content-type")! },
-      body: Buffer.concat(chunks),
+      body,
     }).formData();
-  } catch {
+  } catch (error) {
+    if (error instanceof RequestBodyError) throw new AvatarError(error.status, error.status === 413 ? "O envio excede 6 MB." : error.message);
     throw new AvatarError(400, "Não foi possível ler a foto enviada.");
   }
 }

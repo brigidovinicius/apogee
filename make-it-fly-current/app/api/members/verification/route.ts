@@ -13,8 +13,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   try {
-    const input = z.strictObject({ next: z.string().max(512) }).parse(await invitationBody(request));
     const id = await invitationActor(request);
+    const input = z.strictObject({ next: z.string().max(512) }).parse(await invitationBody(request));
     const [account] = await getDb().select().from(user).where(eq(user.id, id));
     if (!account || account.blocked) throw new InvitationError(403, "Conta indisponível.");
     if (account.emailVerified) return invitationResponse({ message: "Seu e-mail já está verificado. Volte ao convite." });

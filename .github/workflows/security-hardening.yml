@@ -35,13 +35,46 @@ jobs:
       - run: npm run typegen
       - run: npm run typecheck
       - run: npm run lint
+      - name: Runtime Compose isolates database credentials (configuration only)
+        if: matrix.app == 'radar-academico'
+        run: npm run test:runtime-compose
       - run: npm audit --omit=dev --audit-level=low
       - run: npm run build
       - name: Standalone smoke with synthetic configuration only
         run: node "$GITHUB_WORKSPACE/scripts/security-smoke.mjs" "${{ matrix.app }}"
       - run: git diff --check
-  gallery-postgres:
+  radar-runtime-postgres:
     needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic_runtime_ci_only
+          POSTGRES_DB: radar_sec05_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d radar_sec05_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: radar-academico
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: radar-academico/package-lock.json
+      - run: npm ci --no-fund --no-audit
+      - name: Reader/editor with actual logins, RLS, rollback and privilege rejection
+        run: node node_modules/vitest/vitest.mjs run --maxWorkers=1 src/__tests__/runtime-roles.postgres.test.ts
+        env:
+          RADAR_ROLES_TEST_ADMIN_URL: postgres://postgres:synthetic_runtime_ci_only@127.0.0.1:5432/radar_sec05_test
+  gallery-postgres:
+    needs: [validate, radar-runtime-postgres]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     services:
@@ -71,12 +104,22 @@ jobs:
         run: node --test tests/gallery-postgres.integration.mjs
         env:
           GALLERY_TEST_DATABASE_URL: postgres://gallery_test:synthetic_ci_only@127.0.0.1:5432/apogee_gallery_ci
+      - name: SEC-06 verified administrative bootstrap and category-only seed
+        run: npm run test:admin-bootstrap
+        env:
+          ADMIN_BOOTSTRAP_TEST_BOOTSTRAP_URL: postgres://gallery_test:synthetic_ci_only@127.0.0.1:5432/apogee_gallery_ci
       - name: Build the site for positive member-session validation
         run: npm run build
         env:
           BUILD_STANDALONE: 'true'
           NEXT_TELEMETRY_DISABLED: '1'
           NODE_OPTIONS: --max-old-space-size=3072
+      - name: SEC-04 persistent alert quotas and compiled HTTP
+        run: npm run test:alert-quotas
+        env:
+          ALERT_QUOTA_TEST_BOOTSTRAP_URL: postgres://gallery_test:synthetic_ci_only@127.0.0.1:5432/apogee_gallery_ci
+      - name: SEC-03 compiled HTTP body deadlines and authentication order
+        run: npm run test:body-http
       - name: Verified invitations and names on disposable PostgreSQL
         run: node --test tests/members-invitations.integration.mjs
         env:
@@ -85,6 +128,16 @@ jobs:
         run: node scripts/radar-member-e2e.mjs
         env:
           GALLERY_TEST_DATABASE_URL: postgres://gallery_test:synthetic_ci_only@127.0.0.1:5432/apogee_gallery_ci
+      - name: SEC-02 real Caddy, authentication endpoints and persistent rate limits
+        run: |
+          caddy_sec02_dir=$(mktemp -d)
+          curl --fail --location --max-time 60 --output "$caddy_sec02_dir/caddy.tar.gz" https://github.com/caddyserver/caddy/releases/download/v2.10.2/caddy_2.10.2_linux_amd64.tar.gz
+          printf '%s  %s\n' '747df7ee74de188485157a383633a1a963fd9233b71fbb4a69ddcbcc589ce4e2cc82dacf5dbbe136cb51d17e14c59daeb5d9bc92487610b0f3b93680b2646546' "$caddy_sec02_dir/caddy.tar.gz" | sha512sum --check
+          tar -xzf "$caddy_sec02_dir/caddy.tar.gz" -C "$caddy_sec02_dir" caddy
+          CADDY_BIN="$caddy_sec02_dir/caddy" npm run test:body-proxy
+          CADDY_BIN="$caddy_sec02_dir/caddy" npm run test:auth-proxy
+        env:
+          MEMBERS_AUTH_TEST_BOOTSTRAP_URL: postgres://gallery_test:synthetic_ci_only@127.0.0.1:5432/apogee_gallery_ci
   radar-billing-postgres:
     needs: gallery-postgres
     runs-on: ubuntu-24.04

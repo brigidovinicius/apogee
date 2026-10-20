@@ -106,9 +106,8 @@ export async function signIn(_: FormState, form: FormData): Promise<FormState> {
   if (!parsed.success) return { errors: fieldErrors(parsed.error), values };
 
   const ip = await clientIp();
-  const allowed =
-    (await consumeRateLimit(`signin-ip:${ip}`, 20, 600)) &&
-    (await consumeRateLimit(`signin-email:${parsed.data.email}`, 8, 600));
+  // A cota por conta é aplicada no hook do auth, também nos endpoints diretos.
+  const allowed = await consumeRateLimit(`signin-ip:${ip}`, 20, 600);
   if (!allowed) return { message: TOO_MANY, values };
 
   try {

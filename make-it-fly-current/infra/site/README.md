@@ -61,6 +61,15 @@ Não inicie Caddy antes de `apogee.community` apontar para o IP da VPS e de vali
 
 O Caddy cuida do certificado TLS e sobrescreve os headers encaminhados; por isso a aplicação usa `APPLICATION_HOSTING_PROVIDER=caddy` para os limites por IP. Nenhum segredo deve ser passado em comando, commit ou log.
 
+SEC-02: o auth/membros aceita apenas `X-Apogee-Client-IP` nesse modo. O Caddy
+sobrescreve esse cabeçalho com `{remote_host}`, sobrescreve `X-Forwarded-For` e
+remove cabeçalhos alternativos de IP. Em produção, IP ausente/inválido faz a rota
+de auth responder 503; não há fallback para outro provedor. As duas mudanças
+(imagem e Caddyfile) precisam entrar na mesma janela autorizada, ou o login ficará
+indisponível. Não exponha a porta do web nem encaminhe tráfego de CDN/proxy novo
+sem revisar a cadeia de confiança. Leia `docs/members-security-sec02.md` na raiz
+do repositório antes do corte. Esta implementação local não autoriza ativação.
+
 ## Rollback
 
 Se o site não responder após a mudança de DNS, pare apenas este stack (`docker compose --profile public down`) e restaure o valor anterior do registro A. Não execute comandos em `/opt/sistema-de-locacao` e não remova redes ou volumes compartilhados/existentes.

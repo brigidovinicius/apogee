@@ -1,4 +1,5 @@
 import "server-only";
+import { RequestBodyError, readRequestBody } from "@/lib/request-body";
 import { z } from "zod";
 import { getAuth } from "./auth";
 import { InvitationError } from "./invitations";
@@ -14,21 +15,10 @@ export async function invitationBody(request: Request): Promise<unknown> {
     throw new InvitationError(403, "Origem da solicitação não permitida.");
   }
   if (request.headers.get("content-type")?.split(";")[0] !== "application/json") throw new InvitationError(415, "Envie JSON válido.");
-  const reader = request.body?.getReader();
-  if (!reader) throw new InvitationError(400, "Solicitação inválida.");
-  const chunks: Uint8Array[] = [];
-  let length = 0;
   try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      length += value.length;
-      if (length > 4096) { await reader.cancel(); throw new InvitationError(413, "Solicitação muito longa."); }
-      chunks.push(value);
-    }
-    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    return JSON.parse((await readRequestBody(request, 4096)).toString("utf8"));
   } catch (error) {
-    if (error instanceof InvitationError) throw error;
+    if (error instanceof RequestBodyError) throw new InvitationError(error.status, error.message);
     throw new InvitationError(400, "Solicitação inválida.");
   }
 }

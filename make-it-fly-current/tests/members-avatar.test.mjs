@@ -1,3 +1,4 @@
+import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -14,7 +15,7 @@ async function loadSource(path, stubs = {}) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
   }).outputText;
   const loaded = { exports: {} };
-  new Function("require", "module", "exports", output)((name) => stubs[name] ?? require(name), loaded, loaded.exports);
+  new Function("require", "module", "exports", output)((name) => name === "@/lib/request-body" ? opportunityLoader()("lib/request-body.ts") : stubs[name] ?? require(name), loaded, loaded.exports);
   return loaded.exports;
 }
 

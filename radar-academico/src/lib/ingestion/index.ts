@@ -177,7 +177,7 @@ export type OfficialSourceIngestionOptions = {
 };
 
 async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
-  if (!process.env.DATABASE_URL) throw new Error("Banco do Radar não configurado");
+  if (!process.env.DATABASE_EDITOR_URL) throw new Error("Banco do Radar não configurado");
   if (!options.sourceId) throw new Error("Selecione uma fonte oficial para a coleta controlada");
   const requestedMaxPages = options.maxPages === undefined ? undefined : String(options.maxPages);
   const requestedMaxCandidates = options.maxCandidates === undefined ? undefined : String(options.maxCandidates);

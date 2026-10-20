@@ -23,6 +23,17 @@ dependendo de auditoria separada.
 
 ## Primeiro deploy autorizado
 
+**SEC-05:** antes de usar o runtime com pools separados, seguir
+`docs/radar-security-sec05.md` na raiz do repositório. A migração `0038` cria
+`radar_owner` (NOLOGIN), `radar_reader` e `radar_editor`, sem senhas no Git.
+Provisione credenciais próprias fora do Git e preencha `DATABASE_READER_URL`,
+`DATABASE_EDITOR_URL` e `DATABASE_MIGRATION_URL` no arquivo de operador protegido.
+`DATABASE_URL` não é mais aceita pelo web. O Compose usa uma lista explícita de
+variáveis: somente o perfil migrate recebe a credencial elevada; o scheduler não
+recebe credenciais do banco. Se usar arquivo diferente de `.env`, passe
+`docker compose --env-file /caminho/protegido ...` em cada comando.
+Nada disso autoriza migração, troca de credenciais ou deploy automaticamente.
+
 1. Crie `/opt/radar-academico`, coloque nele o checkout aprovado e copie
    `infra/vps/.env.example` para `infra/vps/.env` com modo `0600`.
 2. Gere os segredos apenas no arquivo protegido. Não os envie em comandos,

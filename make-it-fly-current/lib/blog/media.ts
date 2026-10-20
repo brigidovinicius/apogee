@@ -1,4 +1,5 @@
 import "server-only";
+import { RequestBodyError, readRequestBody, UPLOAD_BODY_TIMEOUT_MS } from "@/lib/request-body";
 
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
@@ -27,21 +28,15 @@ async function boundedForm(request: Request) {
   const lengthHeader = request.headers.get("content-length");
   if (lengthHeader && (!/^\d+$/.test(lengthHeader) || Number(lengthHeader) > MAX_REQUEST)) throw new MediaError(413, "O envio excede 6 MB.");
   if (!request.body) throw new MediaError(400, "Selecione uma imagem.");
-  const reader = request.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.byteLength;
-    if (size > MAX_REQUEST) { await reader.cancel(); throw new MediaError(413, "O envio excede 6 MB."); }
-    chunks.push(value);
-  }
   try {
+    const body = await readRequestBody(request, MAX_REQUEST, UPLOAD_BODY_TIMEOUT_MS);
     return await new Request("http://localhost/upload", {
-      method: "POST", headers: { "Content-Type": request.headers.get("content-type")! }, body: Buffer.concat(chunks),
+      method: "POST", headers: { "Content-Type": request.headers.get("content-type")! }, body,
     }).formData();
-  } catch { throw new MediaError(400, "Não foi possível ler a imagem enviada."); }
+  } catch (error) {
+    if (error instanceof RequestBodyError) throw new MediaError(error.status, error.message);
+    throw new MediaError(400, "Não foi possível ler a imagem enviada.");
+  }
 }
 
 function cleanText(value: FormDataEntryValue | null, max: number) {
