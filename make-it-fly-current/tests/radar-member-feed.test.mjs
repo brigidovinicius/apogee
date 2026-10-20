@@ -179,7 +179,7 @@ test("member DAL authorizes, shares public priority and applies explicit queries
   const formal = opportunity({ id: "formal", title: "Seleção de mestrado", isCourse: true, categories: ["formacao"], deadlineAt: "2099-01-01" });
   const event = opportunity({ id: "event", categories: ["eventos"], deadlineAt: "2099-12-01" });
   const isolated = opportunityLoader({
-    "@/lib/members/dal": { requireMember: async (path) => calls.push(path) },
+    "@/lib/members/dal": { requireMember: async (path) => { calls.push(path); return { id: "feed-test-member" }; } },
     "@/lib/admin/access": { requireAdmin: async () => {} },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => [formal, event] },
   });

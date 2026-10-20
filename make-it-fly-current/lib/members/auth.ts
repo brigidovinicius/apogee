@@ -43,7 +43,7 @@ function createAuth() {
         const target = new URL(url);
         if (target.origin !== applicationOrigin()) throw new Error("Origem inválida.");
         await sendMemberMail({ to: user.email, subject: "Confirme seu e-mail na Apogee",
-          text: `Confirme o controle do seu e-mail: ${target.href}\n\nDepois, volte ao convite para confirmar a aceitação. A verificação não concede papel administrativo.` });
+          text: `Confirme o controle do seu e-mail: ${target.href}\n\nDepois, volte à Apogee para continuar. A verificação não concede papel administrativo.` });
       },
     },
     socialProviders: {

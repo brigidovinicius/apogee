@@ -133,12 +133,13 @@ test("only the approved Apogee, blog, admin, community and Make It Fly surfaces 
     "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts",
     "app/api/members/invitations/route.ts", "app/api/members/verification/route.ts",
     "app/api/membros/avatar/[id]/route.ts", "app/api/membros/avatar/route.ts", "app/api/radar/alerts/route.ts",
+    "app/api/radar/checkout/route.ts", "app/api/radar/verify-email/route.ts", "app/api/stripe/webhook/route.ts",
     "app/blog/[slug]/page.tsx", "app/blog/media/[photo]/route.ts", "app/blog/page.tsx", "app/galeria/fotos/[photo]/route.ts", "app/galeria/page.tsx",
     "app/gerenciar-galeria/page.tsx", "app/home-robonauta/page.tsx", "app/layout.tsx", "app/login/page.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",
     "app/makeitfly/participar/page.tsx", "app/membros/cadastro/page.tsx", "app/membros/convite/page.tsx", "app/membros/entrar/page.tsx",
     "app/membros/forum/[categoria]/[topico]/page.tsx", "app/membros/forum/[categoria]/novo/page.tsx",
     "app/membros/forum/[categoria]/page.tsx", "app/membros/layout.tsx", "app/membros/oportunidades/page.tsx", "app/membros/page.tsx",
-    "app/membros/perfil/[username]/page.tsx", "app/membros/perfil/configurar/page.tsx", "app/membros/perfil/editar/page.tsx", "app/oportunidades/avisos/page.tsx", "app/oportunidades/page.tsx", "app/page.tsx",
+    "app/membros/perfil/[username]/page.tsx", "app/membros/perfil/configurar/page.tsx", "app/membros/perfil/editar/page.tsx", "app/membros/radar/acesso/page.tsx", "app/oportunidades/avisos/page.tsx", "app/oportunidades/page.tsx", "app/page.tsx",
   ]);
   for (const path of ["pages", "src/pages", "app/(publicado)/page.tsx", "app/(publicado)/layout.tsx", "app/(teste)/teste-terra/page.tsx", "app/(teste)/layout.tsx"]) {
     assert.equal(existsSync(new URL(path, root)), false, `${path} must not expose another page`);
