@@ -45,18 +45,23 @@ await cp(resolve("public"), resolve(standalone, "public"), { recursive: true });
 await cp(resolve(".next/static"), resolve(standalone, ".next/static"), { recursive: true });
 const server = spawn(process.execPath, [resolve(standalone, "server.js")], { cwd: standalone,
   env: { PATH: process.env.PATH, NODE_ENV: "production", NEXT_TELEMETRY_DISABLED: "1", PORT: String(port), HOSTNAME: "127.0.0.1",
-    BETTER_AUTH_URL: authOrigin, BETTER_AUTH_SECRET: randomBytes(32).toString("hex"), DATABASE_URL: databaseUrl.href,
+    APPLICATION_HOSTING_PROVIDER: "caddy", BETTER_AUTH_URL: authOrigin, BETTER_AUTH_SECRET: randomBytes(32).toString("hex"), DATABASE_URL: databaseUrl.href,
     DATABASE_SSL_MODE: "disable", RADAR_ACADEMICO_API_URL: `http://127.0.0.1:${bridgePort}/api/public/opportunities`, RADAR_ACADEMICO_API_TOKEN: "synthetic-ci-radar-only" },
   stdio: ["ignore", "pipe", "pipe"] });
 let logs = ""; server.stdout.on("data", chunk => { logs = (logs + chunk).slice(-5000); }); server.stderr.on("data", chunk => { logs = (logs + chunk).slice(-5000); });
-const get = (path, cookie = "") => fetch(origin + path, { headers: cookie ? { Cookie: cookie } : {}, redirect: "manual", signal: AbortSignal.timeout(10000) });
+// This CI-only loopback fixture supplies the trusted edge header; the separate
+// Caddy integration verifies stripping/overwriting headers from actual clients.
+const edgeHeaders = { "x-apogee-client-ip": "127.0.0.1" };
+const get = (path, cookie = "") => fetch(origin + path, { headers: { ...edgeHeaders, ...(cookie ? { Cookie: cookie } : {}) }, redirect: "manual", signal: AbortSignal.timeout(10000) });
 const titles = html => [...html.matchAll(/<h3[^>]*>([^<]+)<\/h3>/g)].map(match => match[1]).filter(title => title.startsWith("CI Evento"));
 try {
   let ready = false;
   for (let i = 0; i < 60; i++) { try { await get("/"); ready = true; break; } catch { await new Promise(done => setTimeout(done, 500)); } }
   assert.ok(ready, "standalone server starts");
+  const missingPeer = await fetch(origin + "/api/auth/get-session", { signal: AbortSignal.timeout(10000) });
+  assert.equal(missingPeer.status, 503, "production auth rejects requests without the trusted edge header");
   assert.ok([302, 303, 307, 308].includes((await get("/membros/oportunidades")).status));
-  const signUp = await fetch(origin + "/api/auth/sign-up/email", { method: "POST", headers: { "Content-Type": "application/json", Origin: authOrigin },
+  const signUp = await fetch(origin + "/api/auth/sign-up/email", { method: "POST", headers: { ...edgeHeaders, "Content-Type": "application/json", Origin: authOrigin },
     body: JSON.stringify({ name: "Synthetic Radar CI", username: "synthetic_radar_ci", email: "synthetic-radar@example.test", password: "Synthetic-CI-only-password-2026" }) });
   assert.equal(signUp.status, 200, "real Better Auth signup succeeds in the disposable database");
   const cookie = signUp.headers.getSetCookie().map(value => value.split(";")[0]).join("; ");
