@@ -1,0 +1,32 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "referrer_policy": "strict-origin-when-cross-origin"
+  },
+  {
+    "path": "/membros/cadastro",
+    "status": 200,
+    "referrer_policy": "strict-origin-when-cross-origin"
+  },
+  {
+    "path": "/membros/entrar",
+    "status": 200,
+    "referrer_policy": "strict-origin-when-cross-origin"
+  },
+  {
+    "path": "/membros/convite",
+    "status": 200,
+    "referrer_policy": "strict-origin-when-cross-origin"
+  },
+  {
+    "path": "/admin/convites",
+    "status": 307,
+    "referrer_policy": "strict-origin-when-cross-origin"
+  },
+  {
+    "path": "/api/members/invitations",
+    "status": 401,
+    "referrer_policy": "strict-origin-when-cross-origin"
+  }
+]

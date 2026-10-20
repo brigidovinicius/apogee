@@ -8,7 +8,7 @@ Implementação concluída e validada em desenvolvimento (19–20/10/2026) no ch
 - `/membros/convite`: apresentação por GET; somente POST autenticado aceita.
 - `/api/members/invitations`: esquema estrito por operação, sessão Better Auth, Origin configurada, limites em PostgreSQL. Não recebe identificador do ator ou flags de verificação na aceitação.
 - `/api/members/verification`: envia a verificação nativa Better Auth ao e-mail atual da conta; callback interno permitido. A verificação não concede perfil.
-- Administrador ativo pode gerenciar convites de membro. Administrador ativo com `can_manage_admins=true` pode gerenciar convites administrativos. Membro/visitante não pode. A autorização adicional não é herdada pelo administrador convidado e é reavaliada no consumo. Inicialização explícita: `MEMBERS_INVITATION_MANAGER_EMAIL=... node scripts/members-grant-invitation-manager.mjs` no ambiente autorizado; não executado em produção.
+- Administrador ativo pode gerenciar convites de membro. Administrador ativo com `can_manage_admins=true` pode gerenciar convites administrativos. Membro/visitante não pode. A autorização adicional não é herdada pelo administrador convidado e é reavaliada no consumo. Inicialização explícita: `MEMBERS_INVITATION_MANAGER_EMAIL=... node scripts/members-grant-invitation-manager.mjs` no ambiente autorizado; a execução posterior autorizada está no registro da release.
 - Migração aditiva `drizzle/0004_member_invitations.sql` e snapshot `meta/0004_snapshot.json`. Nenhuma migração remota aplicada.
 - Nomes: NFC, espaços normalizados, 1–100 pontos de código, ao menos uma letra, somente letras/marcas Unicode, espaços, hífen, apóstrofos e iniciais com ponto isolado. Rejeita links, domínios, e-mails, HTML, controles e codificações/disfarces representativos. Não decodifica nem remove trechos. Frontend, hooks create/update, fórum, confirmação social e convite usam a regra central. Nomes legados não são limpos automaticamente; React os escapa como texto.
 - Google: nome inválido vira o placeholder seguro “Membro” com confirmação obrigatória; todo novo cadastro Google confirma nome/usuário. Vínculo com conta local exige e-mail local já verificado para evitar vincular uma credencial social a cadastro não confirmado.
@@ -71,3 +71,10 @@ Arquivos principais: `lib/members/{validation,auth,dal,schema,forum,invitations,
 A política social e os hooks foram testados com perfis sintéticos; não foi executado login ao Google real no ambiente local. O recebimento real dos convites e a verificação por e-mail não dependem de Google e foram concluídos. Não houve push, CI remoto, merge, deploy, migração remota, mudança de DNS ou alteração do ambiente da VPS.
 
 Referências técnicas consultadas: documentação instalada de Next.js 16.3.8 (forms, route handlers, data security e logging) e [Better Auth — verificação de e-mail](https://better-auth.com/docs/concepts/email), além do código instalado da versão usada pelo projeto.
+
+
+Atualização de encerramento (20/10/2026): as limitações de publicação acima
+descrevem a etapa local original. A publicação posterior autorizada, o CI, a
+migração e as verificações reais estão no
+[registro público da release](member-invitations-rollout-20261020.md), que
+distingue a cobertura local e de CI das ações exercitadas em produção.

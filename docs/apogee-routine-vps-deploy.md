@@ -533,3 +533,22 @@ feita por causa deste registro.
   preexistente em `make-it-fly-current/tests/admission-processes.test.mjs` foi
   preservada e não integrou a revisão publicada. Este registro documental é
   posterior ao deploy e não altera o SHA implantado.
+
+## Registro de release — convites verificados (20/10/2026)
+
+PR [#71](https://github.com/brigidovinicius/apogee/pull/71), revisão publicada
+`28747e8f74700f9ce5f33771ceca08bf645720f8`, com CI funcional aprovado. Migração
+aditiva, envio de e-mail e permissão adicional da conta principal ativados após
+autorização explícita. Backup restaurado em ambiente isolado antes da migração;
+web saudável, zero reinícios e 12 containers vizinhos preservados.
+
+Envio, recebimento e revogação foram confirmados em produção para ambos os
+perfis de convite. Verificação de e-mail e recusa de acesso antes do aceite
+também foram confirmadas. A aceitação administrativa positiva foi exercitada
+localmente e no CI; a conta de validação permaneceu membro em produção, e os
+convites de teste foram revogados. Administrador principal e remetente de e-mail
+são configurações independentes.
+
+Resultados e limites no [resumo público da release](member-invitations-rollout-20261020.md).
+As capturas de produção e os snapshots de contas permanecem somente no
+ambiente local autorizado.
