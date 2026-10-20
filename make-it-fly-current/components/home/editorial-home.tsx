@@ -16,6 +16,7 @@ export function EditorialHome() {
         <div className={styles.heroBottom}>
           <p data-home-reveal data-home-delay="0.18">Oportunidades, encontros e gente curiosa para construir o que vem a seguir.</p>
           <div className={styles.heroActions} data-home-reveal data-home-delay="0.25">
+            <a className={styles.primaryAction} href="https://buy.stripe.com/aFa6oG2K91Y70WI0MLbQY01"><span>Acesso vitalício ao Radar por R$ 49,00</span><span aria-hidden="true">↗</span></a>
             <Link prefetch={false} className={styles.primaryAction} href="/oportunidades">Explorar o Radar <span aria-hidden="true">↗</span></Link>
             <a className={styles.secondaryAction} href="#comunidade">Conheça a comunidade <span aria-hidden="true">↓</span></a>
           </div>
