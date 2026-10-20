@@ -17,6 +17,7 @@
     "members:grant-admin": "node scripts/members-grant-admin.mjs",
     "gallery:migrate": "node scripts/gallery-migrate.mjs",
     "members:avatar:migrate": "node scripts/members-avatar-migrate.mjs",
+    "members:invitations:migrate": "node scripts/members-invitations-migrate.mjs",
     "blog:migrate": "node scripts/blog-migrate.mjs",
     "test:invitations": "node --test tests/members-invitations.integration.mjs",
     "members:grant-invitation-manager": "node scripts/members-grant-invitation-manager.mjs"

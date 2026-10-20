@@ -7,6 +7,8 @@ import postgres from "postgres";
 import ts from "typescript";
 import { migrateGallery } from "../scripts/gallery-migrate.mjs";
 import { migrateBlog } from "../scripts/blog-migrate.mjs";
+import { migrateMemberAvatar } from "../scripts/members-avatar-migrate.mjs";
+import { migrateMemberInvitations } from "../scripts/members-invitations-migrate.mjs";
 const initial = await readFile(new URL("../drizzle/0000_init.sql", import.meta.url), "utf8");
 const source = await readFile(new URL("../lib/gallery-repository.ts", import.meta.url), "utf8");
 const id = "2026-10-11T19-00-00-000Z-3033bf41-154b-4294-8a89-5c32c8e423df";
@@ -60,6 +62,18 @@ test("reviewed migration, atomic image storage, pagination and deletion work on 
     await assert.rejects(sql`INSERT INTO public.blog_media (id, post_id, alt, width, height, image)
       VALUES ('3033bf41-154b-4294-8a89-5c32c8e423de', ${post.id}, 'Synthetic image', 10, 10, ${Buffer.alloc(2097153)})`);
     assert.equal(Number((await sql`SELECT count(*) AS count FROM public.blog_media`)[0].count), 1);
+    assert.deepEqual(await migrateMemberAvatar(sql), { changed: true, migration: "0003_bored_logan" });
+    await sql`ALTER TABLE public."user" ADD COLUMN blocked boolean`;
+    await assert.rejects(migrateMemberInvitations(sql), /divergente/);
+    assert.equal((await sql`SELECT to_regclass('public.member_invitation') AS name`)[0].name, null);
+    await sql`ALTER TABLE public."user" DROP COLUMN blocked`;
+    assert.deepEqual(await migrateMemberInvitations(sql), { changed: true, migration: "0004_member_invitations" });
+    assert.deepEqual(await migrateMemberInvitations(sql), { changed: false, migration: "0004_member_invitations" });
+    const [preserved] = await sql`SELECT name, role, blocked, can_manage_admins, name_needs_confirmation FROM public."user" WHERE id = 'ci-existing-user'`;
+    assert.deepEqual({ ...preserved }, { name: "Synthetic CI", role: "member", blocked: false, can_manage_admins: false, name_needs_confirmation: false });
+    await sql`UPDATE drizzle.__drizzle_migrations SET hash = 'divergent' WHERE id = 5`;
+    await assert.rejects(migrateMemberInvitations(sql), /divergente/);
+    await sql`UPDATE drizzle.__drizzle_migrations SET hash = ${createHash("sha256").update(await readFile(new URL("../drizzle/0004_member_invitations.sql", import.meta.url), "utf8")).digest("hex")} WHERE id = 5`;
     await sql`UPDATE drizzle.__drizzle_migrations SET hash = 'divergent' WHERE id = 3`;
     await assert.rejects(migrateBlog(sql), /divergente/);
     await sql`UPDATE drizzle.__drizzle_migrations SET hash = ${createHash("sha256").update(await readFile(new URL("../drizzle/0002_rapid_queen_noir.sql", import.meta.url), "utf8")).digest("hex")} WHERE id = 3`;

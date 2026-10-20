@@ -11,7 +11,9 @@ import { username } from "better-auth/plugins";
 import { grantInvitationManager } from "../scripts/members-grant-invitation-manager.mjs";
 
 const url = process.env.INVITATIONS_TEST_DATABASE_URL;
-if (!url || !/^postgres:\/\/apogee_test@127\.0\.0\.1:55439\/postgres$/.test(url)) throw new Error("Use somente o PostgreSQL descartável de convites na porta 55439.");
+const localDatabase = "postgres://apogee_test@127.0.0.1:55439/postgres";
+const ciDatabase = "postgres://gallery_test:synthetic_ci_only@127.0.0.1:5432/apogee_gallery_ci";
+if (url !== localDatabase && !(process.env.CI === "true" && url === ciDatabase)) throw new Error("Use somente o PostgreSQL descartável local ou o banco sintético de CI.");
 const testSchema = `invites_${Date.now()}`;
 const setup = postgres(url, { ssl: false, max: 1 });
 await setup`create schema ${setup(testSchema)}`;
