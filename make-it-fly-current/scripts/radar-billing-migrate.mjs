@@ -6,7 +6,7 @@ import { databaseOptions } from "./members-grant-admin.mjs";
 
 const root = new URL("../drizzle/", import.meta.url);
 const journal = JSON.parse(readFileSync(new URL("meta/_journal.json", root), "utf8"));
-const migrations = journal.entries.map(entry => {
+const migrations = journal.entries.slice(0, 6).map(entry => {
   const source = readFileSync(new URL(`${entry.tag}.sql`, root), "utf8");
   return { entry, source, hash: createHash("sha256").update(source).digest("hex") };
 });

@@ -43,6 +43,13 @@
       "when": 1792515175005,
       "tag": "0005_radar_lifetime",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792535050816,
+      "tag": "0006_store_drop_signups",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,346 @@
+{
+  "release": "0fc00e3e7deaf1eeee44bb1e3fd9403dd7d44129",
+  "validatedHead": "bb201b33945d4ef48bbb45b0a8ac85145291e2a7",
+  "date": "2026-10-20",
+  "ci": "https://github.com/brigidovinicius/apogee/actions/runs/39510475442",
+  "siteTests": {
+    "tests": 425,
+    "pass": 425,
+    "fail": 0
+  },
+  "browser": [
+    {
+      "key": "higPublicChecks",
+      "result": [
+        {
+          "path": "/",
+          "width": 390,
+          "status": 200,
+          "overflow": false,
+          "badText": false,
+          "badLabels": 0,
+          "headingFont": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "bodyFont": "inter, \"inter Fallback\", Arial, sans-serif",
+          "share": false
+        },
+        {
+          "path": "/",
+          "width": 1440,
+          "status": 200,
+          "overflow": false,
+          "badText": false,
+          "badLabels": 0,
+          "headingFont": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "bodyFont": "inter, \"inter Fallback\", Arial, sans-serif",
+          "share": false
+        },
+        {
+          "path": "/oportunidades",
+          "width": 390,
+          "status": 200,
+          "overflow": false,
+          "badText": false,
+          "badLabels": 0,
+          "headingFont": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "bodyFont": "inter, \"inter Fallback\", Arial, sans-serif",
+          "share": true
+        },
+        {
+          "path": "/oportunidades",
+          "width": 1440,
+          "status": 200,
+          "overflow": false,
+          "badText": false,
+          "badLabels": 0,
+          "headingFont": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "bodyFont": "inter, \"inter Fallback\", Arial, sans-serif",
+          "share": true
+        },
+        {
+          "path": "/galeria",
+          "width": 390,
+          "status": 200,
+          "overflow": false,
+          "badText": false,
+          "badLabels": 0,
+          "headingFont": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "bodyFont": "inter, \"inter Fallback\", Arial, sans-serif",
+          "share": true
+        },
+        {
+          "path": "/galeria",
+          "width": 1440,
+          "status": 200,
+          "overflow": false,
+          "badText": false,
+          "badLabels": 0,
+          "headingFont": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "bodyFont": "inter, \"inter Fallback\", Arial, sans-serif",
+          "share": true
+        },
+        {
+          "path": "/blog",
+          "width": 390,
+          "status": 200,
+          "overflow": false,
+          "badText": false,
+          "badLabels": 0,
+          "headingFont": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "bodyFont": "inter, \"inter Fallback\", Arial, sans-serif",
+          "share": false
+        },
+        {
+          "path": "/blog",
+          "width": 1440,
+          "status": 200,
+          "overflow": false,
+          "badText": false,
+          "badLabels": 0,
+          "headingFont": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "bodyFont": "inter, \"inter Fallback\", Arial, sans-serif",
+          "share": false
+        },
+        {
+          "path": "/loja",
+          "width": 390,
+          "status": 200,
+          "overflow": false,
+          "badText": false,
+          "badLabels": 0,
+          "headingFont": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "bodyFont": "inter, \"inter Fallback\", Arial, sans-serif",
+          "share": false
+        },
+        {
+          "path": "/loja",
+          "width": 1440,
+          "status": 200,
+          "overflow": false,
+          "badText": false,
+          "badLabels": 0,
+          "headingFont": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "bodyFont": "inter, \"inter Fallback\", Arial, sans-serif",
+          "share": false
+        }
+      ]
+    },
+    {
+      "key": "higFinalEntryEventChecks",
+      "result": [
+        {
+          "path": "/membros/entrar",
+          "width": 390,
+          "status": 200,
+          "heading": "Entrar",
+          "overflow": false,
+          "badText": false,
+          "badLabels": false,
+          "theme": true,
+          "font": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "inputs": [
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            },
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            }
+          ]
+        },
+        {
+          "path": "/membros/entrar",
+          "width": 1440,
+          "status": 200,
+          "heading": "Entrar",
+          "overflow": false,
+          "badText": false,
+          "badLabels": false,
+          "theme": true,
+          "font": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "inputs": [
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            },
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            }
+          ]
+        },
+        {
+          "path": "/membros/cadastro",
+          "width": 390,
+          "status": 200,
+          "heading": "Criar conta",
+          "overflow": false,
+          "badText": false,
+          "badLabels": false,
+          "theme": true,
+          "font": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "inputs": [
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            },
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            },
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            },
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            }
+          ]
+        },
+        {
+          "path": "/membros/cadastro",
+          "width": 1440,
+          "status": 200,
+          "heading": "Criar conta",
+          "overflow": false,
+          "badText": false,
+          "badLabels": false,
+          "theme": true,
+          "font": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "inputs": [
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            },
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            },
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            },
+            {
+              "font": "16px",
+              "radius": "10px",
+              "height": 50
+            }
+          ]
+        },
+        {
+          "path": "/makeitfly",
+          "width": 390,
+          "status": 200,
+          "heading": "Make it fly",
+          "overflow": false,
+          "badText": false,
+          "badLabels": false,
+          "theme": false,
+          "font": "inter, \"inter Fallback\", sans-serif",
+          "inputs": []
+        },
+        {
+          "path": "/makeitfly",
+          "width": 1440,
+          "status": 200,
+          "heading": "Make it fly",
+          "overflow": false,
+          "badText": false,
+          "badLabels": false,
+          "theme": false,
+          "font": "inter, \"inter Fallback\", sans-serif",
+          "inputs": []
+        },
+        {
+          "path": "/makeitfly/participar",
+          "width": 390,
+          "status": 200,
+          "heading": "Uma ideia. O próximo passo.",
+          "overflow": false,
+          "badText": false,
+          "badLabels": false,
+          "theme": false,
+          "font": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "inputs": []
+        },
+        {
+          "path": "/makeitfly/participar",
+          "width": 1440,
+          "status": 200,
+          "heading": "Uma ideia. O próximo passo.",
+          "overflow": false,
+          "badText": false,
+          "badLabels": false,
+          "theme": false,
+          "font": "instrumentSerif, \"instrumentSerif Fallback\", Georgia, serif",
+          "inputs": []
+        }
+      ]
+    },
+    {
+      "key": "higFinalInteractions",
+      "result": {
+        "sharing": {
+          "url": "https://www.apogee.community/oportunidades",
+          "label": "Link copiado"
+        },
+        "menu": {
+          "closed": true,
+          "focus": true
+        },
+        "article": null,
+        "action": {
+          "href": "https://buy.stripe.com/aFa6oG2K91Y70WI0MLbQY01",
+          "background": "rgb(37, 211, 102)",
+          "color": "rgb(7, 24, 45)",
+          "font": "inter, \"inter Fallback\", Arial, sans-serif"
+        }
+      }
+    }
+  ],
+  "additional320px": [
+    {
+      "path": "/",
+      "overflow": false
+    },
+    {
+      "path": "/oportunidades",
+      "overflow": false
+    },
+    {
+      "path": "/galeria",
+      "overflow": false
+    },
+    {
+      "path": "/loja",
+      "overflow": false
+    },
+    {
+      "path": "/membros/entrar",
+      "overflow": false
+    }
+  ],
+  "production": {
+    "health": "healthy",
+    "restarts": 0,
+    "preservedOtherContainers": 12,
+    "envUnchanged": true
+  },
+  "limits": [
+    "Native share and clipboard transports were mocked during browser tests.",
+    "No published article was available for an end-to-end article check.",
+    "No real login, signup, upload, purchase or form submission was performed."
+  ]
+}

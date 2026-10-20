@@ -32,7 +32,7 @@ export function AdminNav({ compact = false }: { compact?: boolean }) {
       <p className={styles.navLabel}>Dependem de contrato</p>
       {plannedItems.map((label) => (
         <span className={styles.disabledNavItem} aria-disabled="true" key={label}>
-          <span aria-hidden>—</span>
+          <span aria-hidden> - </span>
           {label}
           <small>Indisponível</small>
         </span>

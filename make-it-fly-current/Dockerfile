@@ -34,6 +34,7 @@ COPY --from=builder --chown=nextjs:nextjs /app/scripts/gallery-migrate.mjs ./scr
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-avatar-migrate.mjs ./scripts/members-avatar-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-invitations-migrate.mjs ./scripts/members-invitations-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/radar-billing-migrate.mjs ./scripts/radar-billing-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/store-drops-migrate.mjs ./scripts/store-drops-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-grant-invitation-manager.mjs ./scripts/members-grant-invitation-manager.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/drizzle ./drizzle
 COPY --from=dependencies --chown=nextjs:nextjs /app/node_modules/postgres ./node_modules/postgres

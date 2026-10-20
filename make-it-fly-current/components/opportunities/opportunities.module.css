@@ -1075,10 +1075,10 @@
 :global([data-apogee-design]) .details dt,
 :global([data-apogee-design]) .launchWindow span,
 :global([data-apogee-design]) .cardFooter span { font-family: var(--apogee-font-sans); font-size: .8125rem; letter-spacing: 0; text-transform: none; }
-:global([data-apogee-design]) .card { border-radius: .4rem; }
+:global([data-apogee-design]) .card { border-radius: var(--apogee-group-radius); }
 :global([data-apogee-design]) .card h3 { font-family: var(--apogee-font-heading); font-size: 2.2rem; font-weight: 400; line-height: 1.1; }
 :global([data-apogee-design]) .filterTrigger,
-:global([data-apogee-design]) .filterGroup button { border-radius: .4rem; }
+:global([data-apogee-design]) .filterGroup button { border-radius: var(--apogee-control-radius); }
 
 :global([data-apogee-design]) .noticePage { flex: 1; padding-block: clamp(3rem, 7vw, 7rem); }
 :global([data-apogee-design]) .noticePage h1 { max-width: 20ch; font-family: var(--apogee-font-heading); font-size: clamp(3rem, 6vw, 6rem); font-weight: 400; line-height: .98; letter-spacing: -.025em; margin: 0 0 2rem; }
@@ -1086,3 +1086,19 @@
 
 :global([data-apogee-design]) .hero .eyebrow { color: #29415c; }
 :global([data-apogee-design]) .admissionSection > h3 { font-family: var(--apogee-font-heading); font-size: 2.2rem; font-weight: 400; line-height: 1.1; }
+
+@media (max-width: 700px) {
+  :global([data-apogee-design]) .hero { padding-block: var(--apogee-mobile-section-space); }
+  :global([data-apogee-design]) .hero h1 { font-size: var(--apogee-mobile-title); }
+  :global([data-apogee-design]) .promise,
+  :global([data-apogee-design]) .memberCta,
+  :global([data-apogee-design]) .count,
+  :global([data-apogee-design]) .searchBar label,
+  :global([data-apogee-design]) .searchBar button,
+  :global([data-apogee-design]) .categoryNavigation button,
+  :global([data-apogee-design]) .filterTrigger,
+  :global([data-apogee-design]) .filterGroup button,
+  :global([data-apogee-design]) .filterToolbar > p { font-size: var(--apogee-text-label); line-height: 1.5; }
+  :global([data-apogee-design]) .count { color: var(--apogee-sky); white-space: normal; }
+  :global([data-apogee-design]) .boardHeading { gap: 1rem; }
+}

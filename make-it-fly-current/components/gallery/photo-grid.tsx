@@ -1,5 +1,7 @@
 "use client";
 
+import { interfaceText } from "@/lib/presentation-text.mjs";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { ArrowDownRight } from "lucide-react";
 import Link from "next/link";
 import type { CommunityPhoto } from "@/lib/gallery-types";
@@ -47,10 +49,10 @@ export function PhotoGrid({ photos, loading, error, hasMore, loadingMore, onLoad
               style={{ animationDelay: `${(index % 4) * 80}ms` }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photo.src} alt={photo.anonymous ? "Foto do evento Make It Fly enviada anonimamente" : `Foto do evento Make It Fly enviada por ${photo.author}`} width={photo.width} height={photo.height} loading="lazy" decoding="async" />
+              <img src={photo.src} alt={photo.anonymous ? "Foto do evento Make It Fly enviada anonimamente" : `Foto do evento Make It Fly enviada por ${interfaceText(photo.author)}`} width={photo.width} height={photo.height} loading="lazy" decoding="async" />
               <figcaption>
                 <span>
-                  <strong>{photo.author}</strong>
+                  <strong>{interfaceText(photo.author)}</strong>
                   {!photo.anonymous && <small>@{photo.instagram}</small>}
                 </span>
               </figcaption>
@@ -66,7 +68,7 @@ export function PhotoGrid({ photos, loading, error, hasMore, loadingMore, onLoad
         </>
       ) : (
         <div className={styles.emptyGallery}>
-          <div aria-hidden className={styles.emptyGalleryMark}>✦</div>
+          <div aria-hidden className={styles.emptyGalleryMark}><BrandMark /></div>
           <div>
             <strong>{error ? "Não foi possível carregar as fotos agora." : loading ? "Carregando os registros da comunidade…" : "A galeria da Apogee começa com registros reais."}</strong>
             <p>

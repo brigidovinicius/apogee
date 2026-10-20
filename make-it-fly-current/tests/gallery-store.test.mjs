@@ -45,11 +45,10 @@ test("gallery publishes real photos with Apogee credits and no fake examples", a
   assert.doesNotMatch(`${source}\n${grid}\n${uploadCard}`, /revisão|curadoria|moderação/i);
 });
 
-test("store does not present a fictional live catalog or checkout", async () => {
+test("store presents the supplied products with contact signup and no purchase flow", async () => {
   const source = await read("../app/loja/store-experience.tsx");
-
-  assert.match(source, /A loja está em preparação/);
-  assert.match(source, /seleção em desenvolvimento/i);
-  assert.match(source, /Este item não está à venda/);
-  assert.doesNotMatch(source, /comprar agora|adicionar ao carrinho|checkout/i);
+  assert.match(source, /ProductGallery/);
+  assert.match(source, /DropSignup/);
+  assert.match(source, /fetch\("\/api\/loja\/novidades"/);
+  assert.doesNotMatch(source, /comprar agora|adicionar ao carrinho|checkout|Protótipo|StoreProductVisual/i);
 });

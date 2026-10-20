@@ -169,3 +169,7 @@ jobs:
         run: node --test --test-concurrency=1 tests/radar-billing.integration.mjs
         env:
           RADAR_BILLING_TEST_DATABASE_URL: postgres://billing_test:synthetic_ci_only@127.0.0.1:5432/apogee_billing_ci
+      - name: Store drop migration, consent, duplicate contacts and persistent limits
+        run: node --test tests/store-drops.postgres.integration.mjs
+        env:
+          RADAR_BILLING_TEST_DATABASE_URL: postgres://billing_test:synthetic_ci_only@127.0.0.1:5432/apogee_billing_ci

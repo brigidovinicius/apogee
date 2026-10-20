@@ -1,5 +1,7 @@
 "use client";
 
+import { interfaceText } from "@/lib/presentation-text.mjs";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { useCommunityPhotos } from "./use-community-photos";
 import styles from "@/components/landing/make-it-fly-v2.module.css";
 
@@ -10,7 +12,7 @@ export function GalleryHomepagePreview() {
   if (featured.length === 0) {
     return (
       <div className={styles.galleryPreviewEmpty} aria-live="polite">
-        <span aria-hidden>✦</span>
+        <span aria-hidden><BrandMark /></span>
         <p>{error ? "As fotos estão indisponíveis agora." : loading ? "Carregando fotos da comunidade…" : "As primeiras fotos da comunidade Apogee aparecerão aqui."}</p>
       </div>
     );
@@ -21,8 +23,8 @@ export function GalleryHomepagePreview() {
       {featured.map((photo) => (
         <figure key={photo.id} className={styles.galleryPreviewPhoto}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={photo.src} alt={photo.anonymous ? "Foto do Make It Fly enviada anonimamente" : `Foto do Make It Fly enviada por ${photo.author}`} loading="lazy" />
-          <figcaption><strong>{photo.author}</strong>{!photo.anonymous && <span>@{photo.instagram}</span>}</figcaption>
+          <img src={photo.src} alt={photo.anonymous ? "Foto do Make It Fly enviada anonimamente" : `Foto do Make It Fly enviada por ${interfaceText(photo.author)}`} loading="lazy" />
+          <figcaption><strong>{interfaceText(photo.author)}</strong>{!photo.anonymous && <span>@{photo.instagram}</span>}</figcaption>
         </figure>
       ))}
     </div>

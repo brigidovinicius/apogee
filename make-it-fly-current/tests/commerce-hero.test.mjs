@@ -35,8 +35,10 @@ async function loadComponent(path, dependencies = {}) {
 }
 
 const buttonModule = await loadComponent("components/ui/button.tsx");
+const brandModule = await loadComponent("components/ui/brand-mark.tsx");
 const commerceModule = await loadComponent("components/ui/commerce-hero.tsx", {
   "@/components/ui/button": buttonModule,
+  "@/components/ui/brand-mark": brandModule,
 });
 const { CommerceHero } = commerceModule;
 const renderHero = (props = {}) => renderToStaticMarkup(React.createElement(CommerceHero, props));
@@ -62,7 +64,7 @@ test("commerce hero server-renders one accessible heading without browser APIs o
 
 test("default navigation uses working site routes instead of button-only placeholders", () => {
   const html = renderHero();
-  assert.match(html, /aria-label="Apogee — início"/);
+  assert.match(html, /aria-label="Apogee - início"/);
   const nav = html.match(/<nav\b[^>]*aria-label="Navegação da loja"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
   assert.ok(nav, "the hero exposes a named navigation landmark");
   assert.match(nav, /<a\b[^>]*href="\/"[^>]*>Início<\/a>/);
@@ -132,38 +134,32 @@ test("motion follows the system by default and explicit pause leaves server cont
   assert.doesNotMatch(`${system}${paused}${animated}`, /motionEnabled=|onMenuRequest=/);
 });
 
-test("the store shows all six products on one page without a category area", async () => {
-  const { StoreExperience } = await loadComponent("app/loja/store-experience.tsx", {
-    "./store-orb": { StoreOrb: ({ motionEnabled }) => React.createElement("div", { "data-test-orb": "true", "data-test-orb-motion": String(motionEnabled) }) },
-    "./store-product-visual": { StoreProductVisual: ({ kind }) => React.createElement("svg", { "data-store-visual": kind }) },
-    "@/components/ui/card-7": { InteractiveProductCard: ({ title }) => React.createElement("h3", null, title) },
-    "@/components/ui/commerce-hero": commerceModule,
+test("the store shows the three real products, all photos and a consent-based contact form", async () => {
+  const { opportunityLoader } = await import("./helpers/load-opportunity-module.mjs");
+  const load = opportunityLoader({
+    "next/image": { __esModule: true, default: ({ preload, ...props }) => { void preload; return React.createElement("img", props); } },
+    "next/link": { __esModule: true, default: ({ children, ...props }) => React.createElement("a", props, children) },
+    "@/components/site/site-header": { SiteHeader: () => React.createElement("header", null, "Apogee") },
   });
+  const { StoreExperience } = load("app/loja/store-experience.tsx");
+  const { products } = load("lib/store/products.ts");
   const html = renderToStaticMarkup(React.createElement(StoreExperience));
+  assert.equal(products.length, 3);
+  assert.deepEqual(products.map(item => item.photos.length), [2, 3, 2]);
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-  assert.match(html, /id="store-title"/);
-  assert.match(html, /id="colecao"/);
-  assert.match(html, /id="produtos"/);
-  for (const slug of ["uniforme", "caderno", "apogeu", "poster", "bolsa", "encontro"]) {
-    assert.ok(html.includes(`id="produto-${slug}"`), `${slug} has an actual product target`);
+  assert.equal((html.match(/<article\b/g) ?? []).length, 3);
+  for (const product of products) {
+    assert.ok(html.includes(product.name));
+    for (const photo of product.photos) {
+      assert.ok(html.includes(photo.src));
+      const { access } = await import("node:fs/promises");
+      await access(new URL(`../public${photo.src}`, import.meta.url));
+    }
   }
-  assert.doesNotMatch(html, /aria-label="Categorias da coleção"|data-commerce-category|href="#produto-/);
-  assert.match(html, /Itens para quem vai/);
-  assert.match(html, /mudar o mundo/);
-  assert.match(html, /Para quem tem/);
-  assert.match(html, /sede de mudar/);
-  assert.match(html, /Apogee Builders Club/);
-  assert.doesNotMatch(html, /MakeItFly|Make it fly store/);
-  for (const [, anchor] of html.matchAll(/href="#([^"]+)"/g)) {
-    assert.ok(html.includes(`id="${anchor}"`), `local anchor #${anchor} resolves on the rendered page`);
-  }
-  assert.match(html, /<dialog\b[^>]*id="store-mobile-menu"/);
-  assert.match(html, /aria-controls="store-mobile-menu"/);
-  assert.match(html, /data-store-hero=/);
-  assert.match(html, /data-store-orb-travel=/);
-  assert.match(html, /data-motion="full"/);
-  assert.match(html, /data-commerce-motion="reduced"/);
-  assert.match(html, /data-test-orb-motion="true"/);
-  assert.doesNotMatch(html, /Ativar animações|Pausar animações|Usar preferência do sistema|store-motion-description|aria-pressed=/);
-  assert.doesNotMatch(html, /href="#"|cdn\.21st\.dev|Commerce_|Footwear|Log In|ShoppingBasket/);
+  for (const name of ["name", "phone", "email"]) assert.match(html, new RegExp(`<input(?=[^>]*name="${name}")(?=[^>]*required)[^>]*>` ));
+  assert.match(html, /type="checkbox"[^>]*required/);
+  assert.doesNotMatch(html, /type="checkbox"[^>]*checked/);
+  for (const [, anchor] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(html.includes(`id="${anchor}"`));
+  assert.match(html, /<dialog/);
+  assert.doesNotMatch(html, /carrinho|checkout|comprar agora|R\$|Protótipo|caderno orbital/i);
 });

@@ -1,4 +1,5 @@
 "use client";
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import { useActionState, useState } from "react";
 import { adminStyles as styles } from "@/components/admin/admin-ui";
 import type { RadarManagedOpportunity, RadarEditorialSource } from "@/lib/opportunities/radar-editorial-client";
@@ -35,7 +36,7 @@ export function CatalogueForm({ item, sources }: { item?: RadarManagedOpportunit
     <h2>{item ? "Editar oportunidade" : "Criar oportunidade"}</h2><p>Salvar atualiza o catálogo público. Preencha apenas informações sustentadas pela fonte oficial.</p>
     <form action={saveAction} className={styles.catalogueForm}>
       <input type="hidden" name="id" value={item?.id ?? ""} /><input type="hidden" name="version" value={item?.version ?? 0} />
-      <label className={styles.field}><span>Fonte oficial</span><select name="officialSourceId" required {...bind("officialSourceId")}><option value="">Selecione</option>{sources.filter((s) => !item || s.id === item.officialSourceId).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+      <label className={styles.field}><span>Fonte oficial</span><select name="officialSourceId" required {...bind("officialSourceId")}><option value="">Selecione</option>{sources.filter((s) => !item || s.id === item.officialSourceId).map((s) => <option key={s.id} value={s.id}>{interfaceText(s.name)}</option>)}</select></label>
       <label className={styles.field}><span>Título</span><input name="title" required maxLength={500} {...bind("title")} /></label>
       <label className={styles.field}><span>Instituição</span><input name="institution" required maxLength={500} {...bind("institution")} /></label>
       <label className={styles.field}><span>Link oficial</span><input name="officialUrl" type="url" required maxLength={2000} {...bind("officialUrl")} /></label>
@@ -50,7 +51,7 @@ export function CatalogueForm({ item, sources }: { item?: RadarManagedOpportunit
       <label className={styles.field}><span>Público</span><select name="applicantType" required {...bind("applicantType")}><option value="">Selecione</option>{options(applicants)}</select></label>
       <label className={styles.field}><span>Como se inscrever</span><select name="applicationRoute" required {...bind("applicationRoute")}><option value="">Selecione</option>{options(routes)}</select></label>
       <label className={styles.field}><span>Estado das inscrições</span><select name="opportunityStatus" required {...bind("opportunityStatus")}><option value="">Selecione</option><option value="open">Abertas</option><option value="upcoming">Abertura futura confirmada</option></select></label>
-      <label className={styles.field}><span>Precisão do prazo</span><select name="deadlinePrecision" required {...bind("deadlinePrecision")}><option value="">Selecione</option><option value="date_only">Data, sem horário</option><option value="exact_datetime">Data e horário com fuso</option><option value="continuous_flow">Fluxo contínuo explícito</option>{selectedCategories.includes("eventos") ? <option value="not_informed">Prazo não informado — evento com inscrições abertas</option> : null}</select></label>
+      <label className={styles.field}><span>Precisão do prazo</span><select name="deadlinePrecision" required {...bind("deadlinePrecision")}><option value="">Selecione</option><option value="date_only">Data, sem horário</option><option value="exact_datetime">Data e horário com fuso</option><option value="continuous_flow">Fluxo contínuo explícito</option>{selectedCategories.includes("eventos") ? <option value="not_informed">Prazo não informado - evento com inscrições abertas</option> : null}</select></label>
       <input type="hidden" name="deadlineAt" value={["continuous_flow", "not_informed"].includes(String(values.deadlinePrecision)) ? "" : values.deadlinePrecision === "exact_datetime" ? `${values.deadlineInput}${values.deadlineTimezone}` : String(values.deadlineInput)} />
       {values.deadlinePrecision && !["continuous_flow", "not_informed"].includes(String(values.deadlinePrecision)) ? <label className={styles.field}><span>Encerramento das inscrições</span><input name="deadlineInput" step={1} required type={values.deadlinePrecision === "exact_datetime" ? "datetime-local" : "date"} {...bind("deadlineInput")} /></label> : null}
       {values.deadlinePrecision === "exact_datetime" ? <label className={styles.field}><span>Fuso do horário informado</span><select name="deadlineTimezone" required {...bind("deadlineTimezone")}><option value="">Selecione</option><option value="-03:00">Brasília (UTC−3)</option><option value="Z">UTC</option></select></label> : null}

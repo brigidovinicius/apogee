@@ -60,7 +60,7 @@ export default function HyperdriveHero({
   editionLabel = "Florianópolis / setembro 2026",
   title = "Make it",
   titleEmphasis = "fly",
-  subtitle = "Tire uma ideia do papel — em um dia.",
+  subtitle = "Tire uma ideia do papel - em um dia.",
   description =
     "Chegue com uma ideia, trabalhe em profundidade e termine o dia mostrando um resultado.",
   meta = ["Florianópolis", "Setembro 2026", "40 participantes"],

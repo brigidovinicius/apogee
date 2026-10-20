@@ -11,7 +11,7 @@ type GalleryPageProps = { searchParams: Promise<{ pagina?: string | string[] }> 
 export async function generateMetadata({ searchParams }: GalleryPageProps): Promise<Metadata> {
   const page = galleryPageNumber((await searchParams).pagina);
   if (page === null) notFound();
-  const title = page === 1 ? "Galeria da comunidade Apogee | Make It Fly" : `Galeria Apogee — página ${page} | Make It Fly`;
+  const title = page === 1 ? "Galeria da comunidade Apogee | Make It Fly" : `Galeria Apogee - página ${page} | Make It Fly`;
   const description = "Veja e compartilhe fotos do Make It Fly na galeria da comunidade Apogee, com créditos de quem fotografou ou envio anônimo.";
   return {
     title, description,
