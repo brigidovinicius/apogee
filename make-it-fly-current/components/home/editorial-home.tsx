@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
+import ArrowFillButton from "@/components/ui/arrow-fill-button";
 import { HomeMotion } from "./home-motion";
 import { HomeRadar } from "./home-radar";
 import styles from "./editorial-home.module.css";
@@ -16,9 +17,9 @@ export function EditorialHome() {
         <div className={styles.heroBottom}>
           <p data-home-reveal data-home-delay="0.18">Oportunidades, encontros e gente curiosa para construir o que vem a seguir.</p>
           <div className={styles.heroActions} data-home-reveal data-home-delay="0.25">
-            <a className={styles.primaryAction} href="https://buy.stripe.com/aFa6oG2K91Y70WI0MLbQY01"><span>Acesso vitalício ao Radar por R$ 49,00</span><span aria-hidden="true">↗</span></a>
-            <Link prefetch={false} className={styles.primaryAction} href="/oportunidades">Explorar o Radar <span aria-hidden="true">↗</span></Link>
-            <a className={styles.secondaryAction} href="#comunidade">Conheça a comunidade <span aria-hidden="true">↓</span></a>
+            <ArrowFillButton href="https://buy.stripe.com/aFa6oG2K91Y70WI0MLbQY01" btnText="Acesso vitalício ao Radar por R$ 49,00" />
+            <ArrowFillButton href="/oportunidades" btnText="Explorar o Radar" />
+            <ArrowFillButton href="#comunidade" btnText="Conheça a comunidade" />
           </div>
         </div>
       </section>

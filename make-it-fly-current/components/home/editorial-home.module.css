@@ -57,7 +57,7 @@
 }
 .heroBottom > p { max-width: 27rem; margin: 0; font-size: clamp(1.125rem, 1.65vw, 1.5rem); line-height: 1.45; }
 .heroActions { display: flex; flex-direction: column; align-items: stretch; gap: .7rem; }
-.primaryAction, .secondaryAction, .inlineLink {
+.inlineLink {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -65,18 +65,7 @@
   min-height: 3rem;
   text-decoration: none;
 }
-.primaryAction {
-  padding: .8rem 1.25rem;
-  color: var(--home-ground);
-  background: var(--home-accent);
-  border-radius: .4rem;
-  transition: background 180ms ease, transform 180ms var(--home-ease);
-}
-.primaryAction:hover { background: var(--home-ink); transform: translateY(-3px); }
-.primaryAction:active { transform: translateY(0); }
-.secondaryAction { color: inherit; padding: .25rem 0; }
-.secondaryAction span, .inlineLink span, .communityLinks span { transition: transform 180ms var(--home-ease); }
-.secondaryAction:hover span { transform: translateY(4px); }
+.inlineLink span, .communityLinks span { transition: transform 180ms var(--home-ease); }
 .inlineLink:hover span, .communityLinks a:hover span { transform: translate(3px, -3px); }
 
 .radar, .community { padding: clamp(5rem, 10vw, 10rem) var(--home-margin); }
