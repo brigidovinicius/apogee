@@ -1,0 +1,103 @@
+.button {
+  --icon-circle: clamp(2.25rem, 3.1vw, 3rem);
+  --icon-right: clamp(.375rem, .55vw, .625rem);
+  --circle-inset-y: calc((100% - var(--icon-circle)) / 2);
+  --label-left: clamp(1.25rem, 3vw, 2.75rem);
+  --label-right: calc(var(--icon-circle) + var(--icon-right) + clamp(1rem, 2vw, 2rem));
+  --btn-ease: cubic-bezier(.785, .135, .15, .86);
+  position: relative;
+  display: inline-grid;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+  min-height: clamp(3.25rem, 4.2vw, 4rem);
+  padding: .875rem var(--label-right) .875rem var(--label-left);
+  overflow: hidden;
+  border: 1px solid var(--btn-bg);
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font-size: clamp(.875rem, 1.155vw, 1.125rem);
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.label { position: relative; z-index: 1; overflow-wrap: anywhere; }
+
+.fill,
+.fillLabel,
+.icon { pointer-events: none; }
+
+.fill {
+  position: absolute;
+  z-index: 2;
+  inset: var(--circle-inset-y) var(--icon-right) var(--circle-inset-y) calc(100% - var(--icon-right) - var(--icon-circle));
+  border-radius: inherit;
+  background: var(--btn-fill-bg);
+  transition: inset var(--btn-duration) var(--btn-ease), background-color var(--btn-duration) var(--btn-ease);
+}
+
+.fillLabel {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: grid;
+  align-items: center;
+  padding: .875rem var(--label-right) .875rem var(--label-left);
+  overflow-wrap: anywhere;
+  color: var(--btn-fill-text);
+  clip-path: inset(var(--circle-inset-y) var(--icon-right) var(--circle-inset-y) calc(100% - var(--icon-right) - var(--icon-circle)));
+  transition: clip-path var(--btn-duration) var(--btn-ease), color var(--btn-duration) var(--btn-ease);
+}
+
+.icon {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  right: var(--icon-right);
+  width: var(--icon-circle);
+  height: var(--icon-circle);
+  overflow: hidden;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: var(--btn-fill-bg);
+  color: var(--btn-arrow);
+  transition: background-color var(--btn-duration) var(--btn-ease), color var(--btn-duration) var(--btn-ease);
+}
+
+.icon svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 50%;
+  transition: transform var(--btn-duration) var(--btn-ease);
+}
+.enteringArrow { transform: translate(-170%, -50%) scale(0); }
+.leavingArrow { transform: translate(-50%, -50%); }
+
+.button[data-fill-on-hover="true"]:hover .fill { inset: 0; background: var(--btn-fill-bg-hover); }
+.button[data-fill-on-hover="true"]:hover .fillLabel { clip-path: inset(0); color: var(--btn-fill-text-hover); }
+.button:hover .icon { background: var(--btn-fill-bg-hover); color: var(--btn-arrow-hover); }
+.button:hover .enteringArrow { transform: translate(-50%, -50%) scale(1); }
+.button:hover .leavingArrow { transform: translate(70%, -50%) scale(0); }
+
+.button[data-fill-on-hover="true"]:is(:focus-visible, [data-pressed="true"]) .fill { inset: 0; background: var(--btn-fill-bg-hover); }
+.button[data-fill-on-hover="true"]:is(:focus-visible, [data-pressed="true"]) .fillLabel { clip-path: inset(0); color: var(--btn-fill-text-hover); }
+.button:is(:focus-visible, [data-pressed="true"]) .icon { background: var(--btn-fill-bg-hover); color: var(--btn-arrow-hover); }
+.button:is(:focus-visible, [data-pressed="true"]) .enteringArrow { transform: translate(-50%, -50%) scale(1); }
+.button:is(:focus-visible, [data-pressed="true"]) .leavingArrow { transform: translate(70%, -50%) scale(0); }
+
+.button:focus-visible { outline: 3px solid var(--apogee-focus-ring, currentColor); outline-offset: 4px; }
+
+@media (max-width: 700px) {
+  .button { width: 100%; font-size: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button *, .button *::before, .button *::after { transition: none; }
+}
