@@ -18,6 +18,7 @@
   border-radius: 999px;
   background: var(--btn-bg);
   color: var(--btn-text);
+  font-family: var(--apogee-font-sans, Arial, sans-serif);
   font-size: clamp(.875rem, 1.155vw, 1.125rem);
   font-weight: 500;
   line-height: 1.35;

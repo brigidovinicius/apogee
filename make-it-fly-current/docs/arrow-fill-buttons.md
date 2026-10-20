@@ -7,6 +7,7 @@ do Radar e comunidade permanecem iguais. Make It Fly fica preservado.
 O verde escolhido pelo usuário é `#25D366` (WhatsApp). O texto usa o navy da
 Apogee; o círculo é branco, com seta verde-escura. No hover ou foco, o branco
 preenche o botão e o texto assume o verde-escuro.
+O botão usa explicitamente `--apogee-font-sans` (Inter), a fonte dos textos do site.
 
 O projeto já tem TypeScript, Tailwind 4, shadcn e `lucide-react`; nenhuma
 dependência foi instalada. Componentes ficam em `components/ui/`, estilos
