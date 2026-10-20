@@ -51,12 +51,13 @@
 @media (min-width:701px) and (max-width:1100px) { .collection { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width:700px) {
   .intro { align-items: start; flex-direction: column; gap: 1.75rem; padding-top: 2.5rem; padding-bottom: 1.75rem; }
-  .intro h1 { font-size: clamp(3.6rem,15vw,5.5rem); }
+  .intro h1 { font-size: var(--apogee-mobile-title, clamp(3rem,13vw,3.5rem)); }
   .introCopy { max-width: 35ch; }
   .introCopy a { margin-top: .75rem; }
   .collection { grid-template-columns: minmax(0,1fr); gap: 3rem; }
   .signup { grid-template-columns: minmax(0,1fr); gap: 1.5rem; }
-  .signupCopy h2 { font-size: 3.2rem; }
+  .signupCopy h2 { font-size: var(--apogee-mobile-heading, clamp(2.5rem,11vw,3rem)); }
+  .consent, .feedback, .productHeading > span, .thumbnails > span { font-size: var(--apogee-text-label, .875rem); }
   .footer { flex-wrap: wrap; }
   .footer p { display: none; }
 }

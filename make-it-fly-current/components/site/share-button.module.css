@@ -3,7 +3,7 @@
 .button:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
 .button:active { background: color-mix(in srgb, currentColor 16%, transparent); }
 .button:disabled { opacity: .65; cursor: progress; }
-.feedback { margin: 0; font-size: .8125rem; line-height: 1.5; }
+.feedback { margin: 0; font-size: var(--apogee-text-label, .875rem); line-height: 1.5; }
 .manual { display: grid; gap: .4rem; width: min(100%, 32rem); font-size: .875rem; }
 .manual input { width: 100%; min-width: 0; min-height: 2.75rem; padding: .65rem; border: 1px solid currentColor; border-radius: var(--apogee-control-radius, .625rem); background: transparent; color: inherit; font: inherit; font-size: 1rem; }
 @media (prefers-reduced-motion: reduce) { .button { transition: none; } }

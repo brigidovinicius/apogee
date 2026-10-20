@@ -561,3 +561,28 @@ recriado, 12 containers vizinhos preservados, estado saudável e zero reinícios
 Fonte Inter, cor, responsividade, animação e navegação conferidas em produção.
 
 Evidências, limites e rollback no [registro da release](apogee-green-arrow-buttons-release-20261020.md).
+
+
+## Publicação da interface e compartilhamento em 20/10/2026
+
+O usuário autorizou a publicação e exigiu ausência de emojis e travessões e consistência global. A PR [80](https://github.com/brigidovinicius/apogee/pull/80) foi integrada após o [CI completo](https://github.com/brigidovinicius/apogee/actions/runs/39510475442) passar em todos os seis jobs. O site passou nos 425 testes com instalação limpa, tipos, lint, auditoria de dependências, build e smoke standalone. As integrações com PostgreSQL confirmaram papéis do Radar, galeria, convites, sessões, quotas e cobrança. O aviso já existente de imagem em gallery-admin permaneceu sem erros de lint.
+
+- Head validado: `bb201b33945d4ef48bbb45b0a8ac85145291e2a7`.
+- SHA publicado: `0fc00e3e7deaf1eeee44bb1e3fd9403dd7d44129`.
+- Head e merge têm a mesma árvore, verificada localmente e na VPS antes da troca.
+- Rollback: `34eb8fc82422daa7e79c43efedcb4d4567d2cbf0`, imagem `sha256:0cf611b7e9c243b4f1479934d0dededb86ac7bbb925cc20af66b5656780a4eed`.
+- Nova imagem: `sha256:426d7fcc533ff5ba0f6943ed28b04ec411b870e97cd9e7b7f68b6fe267c2f0cd`.
+
+O preflight confirmou checkout limpo, web saudável, imagem de rollback, `.env` modo 600 e capacidade disponível. Foram verificados SHA256SUMS do backup de 20/10, gzip do backup diário de membros de 20/10 e os fingerprints registrados de restauração. A troca foi feita por fetch Git e SHA exato. Compose config, build e recriação foram limitados ao serviço `web`, com `--no-deps`. Nenhuma migração foi executada.
+
+O web ficou `healthy`, com zero reinícios, em duas conferências. As oito rotas do smoke HTTP responderam 200: homepage, Radar, galeria, blog, loja, evento, entrada e cadastro. Os 12 containers vizinhos mantiveram IDs e imagens; o hash do `.env` permaneceu idêntico. DNS, Caddy, certificados, redes e volumes não foram alterados.
+
+A revisão pública no navegador conferiu nove rotas em 390 e 1440 px, sem overflow, emojis ou travessões no texto e nos rótulos acessíveis verificados. Mais cinco rotas foram medidas em 320 px, sem overflow. Títulos Apogee usam Instrument Serif e corpo usa Inter; entrada e cadastro têm campos de 16 px, 50 px de altura e raio de 10 px. O Make It Fly continua fora do tema global, com seus estilos e cenas preservados e apenas rótulos/ícones normalizados.
+
+O menu mobile fecha com Escape e devolve o foco. O compartilhamento do Radar copiou somente a URL pública canônica, mesmo com parâmetro de convite na URL de teste. O destino Stripe, verde `rgb(37, 211, 102)`, texto marinho e fonte Inter foram preservados. Nenhum formulário, compra, cadastro, upload ou e-mail foi submetido. Compartilhamento/clipboard foram simulados para evitar envio e alteração da área de transferência real.
+
+Limites: não havia artigo publicado para validar uma página individual em produção; essa integração foi compilada e usa o componente testado. Não foi feito login OAuth real nem jornada administrativa com sessão real. No navegador, os POSTs foram bloqueados de propósito; há erros dessas requisições e de fontes internas do iframe externo Google Forms, além de um aviso de preload. A homepage final não apresentou erros de console, mas não se afirma console limpo para todos os conteúdos externos.
+
+Evidências: [medições e interações](evidence/apple-hig/production-validation.json), [captura da homepage](evidence/apple-hig/home-production.png) e [auditoria de design](design/apple-hig-audit.md). Script e log locais: `/private/tmp/apogee-hig-deploy.sh` e `/private/tmp/apogee-hig-deploy.log`.
+
+Este registro é posterior à publicação e não implica novo deploy por atualização documental.
