@@ -10,3 +10,9 @@ Base: checkout limpo `radar-optimization-20261016`, `e6ed04f`, aplicação `make
 6. Testes de política, API e PostgreSQL descartável; navegador; lint, tipos, build sequenciais na fila. Mail sink de teste no harness, sem bypass no produto. Entrega externa depende de caixa controlada/configuração; simulação não prova entrega real.
 
 Arquivos: lib/members/{validation,auth,dal,schema,forum,invitations,mail}.ts; lib/admin/invitation-policy.ts; app/api/members/*; telas/componentes de convites e confirmação; componentes de nome; proxy; drizzle/0004_member_invitations.sql e journal; testes/scripts e este relatório. Sem push, publicação ou banco remoto.
+
+
+Atualização de encerramento (20/10/2026): o escopo local original acima foi
+seguido por autorizações explícitas para publicação, migração, configuração e
+testes na VPS. A implementação está publicada; ver o
+[registro público da release](member-invitations-rollout-20261020.md).
