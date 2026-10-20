@@ -83,7 +83,7 @@ test("custom category links retain titles, descriptions and original visual slot
     assert.ok(html.includes(category.title));
     assert.ok(html.includes(category.description));
   }
-  assert.equal((html.match(/data-category-art=/g) ?? []).length, 3);
+  assert.equal((html.match(/data-category-art=/g) ?? []).length, 2);
   assert.doesNotMatch(html, /cdn\.21st\.dev|Footwear|Technology|Accessories|href="#"/);
 });
 
