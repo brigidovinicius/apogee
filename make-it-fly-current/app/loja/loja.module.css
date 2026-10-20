@@ -243,7 +243,9 @@
 /* Shared homepage design system. Scoped to preserve Make It Fly. */
 :global([data-apogee-design]) .apogeeHero :global([data-store-hero]) h1,
 :global([data-apogee-design]) .collectionIntro h2,
-:global([data-apogee-design]) .footer h2 { font-family: var(--apogee-font-heading); letter-spacing: -.025em; line-height: .98; }
+:global([data-apogee-design]) .footer h2,
+:global([data-apogee-design]) .productStory h2,
+:global([data-apogee-design]) .releasePanel h2 { font-family: var(--apogee-font-heading); letter-spacing: -.025em; line-height: .98; }
 :global([data-apogee-design]) .apogeeHero :global([data-store-hero]) h1 > span:last-child { font-style: normal; }
 :global([data-apogee-design]) .collectionIntro { max-width: none; margin-inline: var(--apogee-page-margin); padding-inline: 0; }
 :global([data-apogee-design]) .collectionIntro > div > p,
@@ -253,3 +255,14 @@
 :global([data-apogee-design]) .productCard { --card-background: #07182d; }
 
 :global([data-apogee-design]) .page { --store-ink: var(--apogee-navy); --store-paper: var(--apogee-white); --store-card: var(--apogee-sky); --store-line: var(--apogee-sky); font-family: var(--apogee-font-sans); }
+
+@media (max-width: 700px) {
+  :global([data-apogee-design]) .logoNavy { width: 6.5rem; }
+  :global([data-apogee-design]) .collectionIntro > div > p,
+  :global([data-apogee-design]) .footerEyebrow,
+  :global([data-apogee-design]) .releasePanel > div:last-child > p:first-child { font-size: var(--apogee-text-label); }
+  :global([data-apogee-design]) .releasePanel { padding-inline: var(--apogee-page-margin); }
+  :global([data-apogee-design]) .releasePanel h2 { font-size: var(--apogee-mobile-title); }
+  :global([data-apogee-design]) .productStory { padding: var(--apogee-mobile-section-space) var(--apogee-page-margin); }
+  :global([data-apogee-design]) .productStory h2 { font-size: var(--apogee-mobile-heading); }
+}

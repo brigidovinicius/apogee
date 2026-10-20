@@ -803,3 +803,29 @@
 :global([data-apogee-design]) .uploadForm { font-family: var(--apogee-font-sans); font-size: .875rem; letter-spacing: 0; text-transform: none; }
 
 :global([data-apogee-design]) .heroDetailsMuted { opacity: 1; }
+
+@media (max-width: 700px) {
+  :global([data-apogee-design]) .galleryHero,
+  :global([data-apogee-design]) .gallerySection,
+  :global([data-apogee-design]) .uploadSection { padding: var(--apogee-mobile-section-space) var(--apogee-page-margin); }
+  :global([data-apogee-design]) .galleryHero h1 { font-size: var(--apogee-mobile-title); }
+  :global([data-apogee-design]) .galleryHeading h2,
+  :global([data-apogee-design]) .uploadIntro h2 { font-size: var(--apogee-mobile-heading); }
+  :global([data-apogee-design]) .heroEdition { margin-bottom: 1.5rem; }
+  :global([data-apogee-design]) .heroDetails { margin-top: 1.5rem; gap: 1.5rem; }
+  :global([data-apogee-design]) .heroEdition,
+  :global([data-apogee-design]) .galleryHeading > p,
+  :global([data-apogee-design]) .galleryHeading > span,
+  :global([data-apogee-design]) .kicker,
+  :global([data-apogee-design]) .emptyGallery p,
+  :global([data-apogee-design]) .creditChoice legend,
+  :global([data-apogee-design]) .creditChoice label,
+  :global([data-apogee-design]) .fields label > span,
+  :global([data-apogee-design]) .fieldHint,
+  :global([data-apogee-design]) .fieldError,
+  :global([data-apogee-design]) .consent,
+  :global([data-apogee-design]) .formFooter p,
+  :global([data-apogee-design]) .formFooter button { font-family: var(--apogee-font-sans); font-size: var(--apogee-text-label); line-height: 1.5; letter-spacing: 0; text-transform: none; }
+  :global([data-apogee-design]) .fieldHint,
+  :global([data-apogee-design]) .formFooter p { color: var(--apogee-ink-muted); }
+}

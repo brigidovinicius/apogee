@@ -76,3 +76,8 @@ A revisão incorpora a main que contém a correção de verificação do cadastr
 
 
 Validação local final do complemento: tipos aprovados, 373 testes da aplicação aprovados, lint sem erros (um aviso já existente de imagem em `gallery-admin.tsx:82`) e build de produção aprovado. As quatro suítes de regressão de dependências usam a instalação limpa do CI como gate separado. Os carregadores de testes foram atualizados para importar a função real de apresentação e a marca vetorial real, preservando as asserções funcionais. As novas referências de hash mudam apenas rótulos, metadados textuais e o ícone vetorial autorizado; os hashes de estilos e cenas do evento continuam intactos.
+
+
+## Resultado em produção
+
+Publicado o SHA `0fc00e3e7deaf1eeee44bb1e3fd9403dd7d44129`, com PR 80 integrada, CI completo aprovado e 425 testes do site aprovados. Web saudável e sem reinícios; os demais 12 containers foram preservados. As medições públicas, a captura e os limites estão no [registro do deploy](../apogee-routine-vps-deploy.md#publicação-da-interface-e-compartilhamento-em-20102026) e no [JSON de evidências](../evidence/apple-hig/production-validation.json). Este resultado substitui o limite de entrega local da primeira etapa.

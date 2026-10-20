@@ -6,6 +6,27 @@
   box-shadow: 0 2rem 5rem rgb(7 24 45 / 13%);
 }
 
+@media (max-width: 700px) {
+  :global([data-apogee-design]) .cardHeader p,
+  :global([data-apogee-design]) .formatHint,
+  :global([data-apogee-design]) .browseButton,
+  :global([data-apogee-design]) .fileCount,
+  :global([data-apogee-design]) .fileInfo > strong,
+  :global([data-apogee-design]) .fileMeta {
+    font-family: var(--apogee-font-sans);
+    font-size: var(--apogee-text-label);
+    line-height: 1.5;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  :global([data-apogee-design]) .cardHeader p,
+  :global([data-apogee-design]) .formatHint,
+  :global([data-apogee-design]) .fileCount,
+  :global([data-apogee-design]) .fileMeta { color: var(--apogee-ink-muted); }
+  :global([data-apogee-design]) .dropIcon,
+  :global([data-apogee-design]) .fileType { color: var(--apogee-navy); }
+}
+
 .cardBody {
   padding: clamp(1.25rem, 3vw, 2rem);
 }

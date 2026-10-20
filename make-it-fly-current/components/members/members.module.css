@@ -808,3 +808,14 @@
   :global([data-apogee-design]) .memberIdentity > span:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
   :global([data-apogee-design]) .memberBar > nav a { font-size: .8125rem; }
 }
+
+@media (max-width: 700px) {
+  :global([data-apogee-design]) .narrow .title { font-size: var(--apogee-mobile-title); }
+  :global([data-apogee-design]) .hint,
+  :global([data-apogee-design]) .field label,
+  :global([data-apogee-design]) .fieldError,
+  :global([data-apogee-design]) .errorSummary,
+  :global([data-apogee-design]) .primary,
+  :global([data-apogee-design]) .googleButton { font-size: var(--apogee-text-label); line-height: 1.5; }
+  :global([data-apogee-design]) .hint { margin: 0; color: var(--apogee-ink-muted); }
+}

@@ -13,7 +13,10 @@
   --apogee-action: #25d366;
   --apogee-font-heading: var(--font-instrument-serif), Georgia, serif;
   --apogee-font-sans: var(--font-inter), Arial, sans-serif;
-  --apogee-text-label: .8125rem;
+  --apogee-text-label: .875rem;
+  --apogee-mobile-section-space: 3rem;
+  --apogee-mobile-title: clamp(3rem, 13vw, 3.5rem);
+  --apogee-mobile-heading: clamp(2.5rem, 11vw, 3rem);
   font-family: var(--apogee-font-sans);
   line-height: 1.55;
 }
