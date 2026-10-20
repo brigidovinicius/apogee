@@ -1,3 +1,4 @@
+import { isHackathonEdition, hackathonSupplement, normalizeHackathonEdition } from "./normalize-hackathon-editions-20261020";
 import { isAuditedYouthCall, normalizeAuditedYouthCall } from "./normalize-audited-youth-calls";
 import { isCommunityEdition, communityEditionSupplement, normalizeCommunityEdition } from "./normalize-community-editions-20261020";
 import { AMAZONIA_ID, AMAZONIA_DOCUMENT_URL, isExtracurricularEdition, normalizeExtracurricularEdition } from "./normalize-extracurricular-20261017";
@@ -16,6 +17,7 @@ import { PDAI_SOURCE_ID, PDAI_NEWS_URL, normalizeCapesPdai } from "./normalize-c
 import { PDSE_SOURCE_ID, PDSE_NEWS_URL, normalizeCapesPdse } from "./normalize-capes-pdse";
 
 export function programmeCataloguePageCount(id: string) {
+  if (isHackathonEdition(id)) return hackathonSupplement(id) ? 2 : 1;
   if (isCommunityEdition(id)) return communityEditionSupplement(id) ? 2 : 1;
   if (isExtracurricularEdition(id)) return id === AMAZONIA_ID ? 2 : 1;
   if (isAuditedYouthCall(id)) return 1;
@@ -27,6 +29,7 @@ export function programmeCataloguePageCount(id: string) {
 }
 
 export function programmeSupplementUrl(id: string) {
+  if (isHackathonEdition(id)) return hackathonSupplement(id)!;
   if (isCommunityEdition(id)) return communityEditionSupplement(id)!;
   if (id === AMAZONIA_ID) return AMAZONIA_DOCUMENT_URL;
   if (id === CPS_CULTURAL_ID) return CPS_CULTURAL_NEWS;
@@ -40,6 +43,7 @@ export function programmeCatalogueCanBeEmpty(id: string) {
 }
 
 export function normalizeProgrammeCatalogue(listing: string, application: string, source: OfficialSource) {
+  if (isHackathonEdition(source.id)) return normalizeHackathonEdition(listing, application, source);
   if (isCommunityEdition(source.id)) return normalizeCommunityEdition(listing, application, source);
   if (isExtracurricularEdition(source.id)) return normalizeExtracurricularEdition(listing, application, source);
   if (isAuditedYouthCall(source.id)) return normalizeAuditedYouthCall(listing, source);

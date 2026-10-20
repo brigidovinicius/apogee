@@ -19,6 +19,9 @@ const liveQuery = `select
          o.event_starts_at as "eventStartsAt",
          o.deadline_at::text as "deadlineAt",
          o.deadline_precision as "deadlinePrecision",
+         case when o.evidence_json->'submission_deadline'->>'source_url'=os.source_page_url
+           and coalesce(o.evidence_json->'submission_deadline'->>'excerpt','')<>''
+           then 'submission' else 'registration' end as "deadlineKind",
          o.requirements_text as "requirementsText",
          o.amount_text as "amountText",
          o.state_code as "stateCode",
