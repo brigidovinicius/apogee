@@ -2,7 +2,7 @@ import "server-only";
 import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { forumCategory, forumPost, forumTopic, user } from "./schema";
-import { POSTS_PAGE_SIZE, TOPICS_PAGE_SIZE, slugify } from "./validation";
+import { POSTS_PAGE_SIZE, TOPICS_PAGE_SIZE, slugify, nameSchema, publicUsernameSchema } from "./validation";
 
 // Camada de dados do fórum. Só expõe campos públicos dos autores (nunca e-mail).
 
@@ -251,14 +251,14 @@ export async function deleteOwnPost(input: { authorId: string; postId: number })
 export async function updateProfile(input: { userId: string; name: string; bio: string }) {
   await getDb()
     .update(user)
-    .set({ name: input.name, bio: input.bio || null, updatedAt: sql`now()` })
+    .set({ name: nameSchema.parse(input.name), nameNeedsConfirmation: false, bio: input.bio || null, updatedAt: sql`now()` })
     .where(eq(user.id, input.userId));
 }
 
-export async function completeGoogleUsername(userId: string, previousUsername: string, username: string): Promise<boolean> {
+export async function completeGoogleUsername(userId: string, previousUsername: string, username: string, name: string): Promise<boolean> {
   const rows = await getDb()
     .update(user)
-    .set({ username, updatedAt: sql`now()` })
+    .set({ username: publicUsernameSchema.parse(username), name: nameSchema.parse(name), nameNeedsConfirmation: false, updatedAt: sql`now()` })
     .where(and(eq(user.id, userId), eq(user.username, previousUsername)))
     .returning({ id: user.id });
   return rows.length > 0;

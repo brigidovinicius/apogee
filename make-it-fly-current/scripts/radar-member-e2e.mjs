@@ -18,7 +18,8 @@ await admin.unsafe('CREATE DATABASE apogee_member_radar_ci');
 await admin.end();
 const databaseUrl = new URL(adminUrl); databaseUrl.pathname = "/apogee_member_radar_ci";
 const database = postgres(databaseUrl.href, { ssl: false, max: 1 });
-await database.unsafe(await readFile("drizzle/0000_init.sql", "utf8"));
+const journal = JSON.parse(await readFile("drizzle/meta/_journal.json", "utf8"));
+for (const entry of journal.entries) await database.unsafe(await readFile(`drizzle/${entry.tag}.sql`, "utf8"));
 
 const base = { institution: "Synthetic university", officialUrl: "https://example.edu/notice", lastCheckedAt: new Date().toISOString(),
   applicantType: "mixed", benefitType: "other", categories: ["eventos"], deadlineAt: "2099-12-31", deadlinePrecision: "date_only",
@@ -37,13 +38,14 @@ const bridgePort = bridge.address().port;
 const probe = portProbe(); await new Promise(done => probe.listen(0, "127.0.0.1", done));
 const port = probe.address().port; await new Promise(done => probe.close(done));
 const origin = `http://127.0.0.1:${port}`;
+const authOrigin = "https://apogee-ci.example";
 const standalone = resolve(".next/standalone");
 await access(resolve(standalone, "server.js"));
 await cp(resolve("public"), resolve(standalone, "public"), { recursive: true });
 await cp(resolve(".next/static"), resolve(standalone, ".next/static"), { recursive: true });
 const server = spawn(process.execPath, [resolve(standalone, "server.js")], { cwd: standalone,
   env: { PATH: process.env.PATH, NODE_ENV: "production", NEXT_TELEMETRY_DISABLED: "1", PORT: String(port), HOSTNAME: "127.0.0.1",
-    BETTER_AUTH_URL: origin, BETTER_AUTH_SECRET: randomBytes(32).toString("hex"), DATABASE_URL: databaseUrl.href,
+    BETTER_AUTH_URL: authOrigin, BETTER_AUTH_SECRET: randomBytes(32).toString("hex"), DATABASE_URL: databaseUrl.href,
     DATABASE_SSL_MODE: "disable", RADAR_ACADEMICO_API_URL: `http://127.0.0.1:${bridgePort}/api/public/opportunities`, RADAR_ACADEMICO_API_TOKEN: "synthetic-ci-radar-only" },
   stdio: ["ignore", "pipe", "pipe"] });
 let logs = ""; server.stdout.on("data", chunk => { logs = (logs + chunk).slice(-5000); }); server.stderr.on("data", chunk => { logs = (logs + chunk).slice(-5000); });
@@ -54,7 +56,7 @@ try {
   for (let i = 0; i < 60; i++) { try { await get("/"); ready = true; break; } catch { await new Promise(done => setTimeout(done, 500)); } }
   assert.ok(ready, "standalone server starts");
   assert.ok([302, 303, 307, 308].includes((await get("/membros/oportunidades")).status));
-  const signUp = await fetch(origin + "/api/auth/sign-up/email", { method: "POST", headers: { "Content-Type": "application/json", Origin: origin },
+  const signUp = await fetch(origin + "/api/auth/sign-up/email", { method: "POST", headers: { "Content-Type": "application/json", Origin: authOrigin },
     body: JSON.stringify({ name: "Synthetic Radar CI", username: "synthetic_radar_ci", email: "synthetic-radar@example.test", password: "Synthetic-CI-only-password-2026" }) });
   assert.equal(signUp.status, 200, "real Better Auth signup succeeds in the disposable database");
   const cookie = signUp.headers.getSetCookie().map(value => value.split(";")[0]).join("; ");

@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import { signIn, signUp, type FormState } from "@/app/membros/actions";
 import { googleOAuthErrorMessage } from "@/lib/members/social-auth";
 import { Field, FormMessage } from "./form-field";
+import { NameInput } from "./name-input";
 import styles from "./members.module.css";
 
 const initial: FormState = {};
@@ -93,7 +94,7 @@ export function SignUpForm({ next, googleError }: { next: string; googleError?: 
       <FormMessage message={state.message} />
       <input type="hidden" name="next" value={next} />
       <Field name="name" label="Nome" error={state.errors?.name}>
-        {(props) => <input {...props} name="name" autoComplete="name" required maxLength={60} defaultValue={state.values?.name} />}
+        {(props) => <NameInput {...props} defaultValue={state.values?.name} />}
       </Field>
       <Field
         name="username"

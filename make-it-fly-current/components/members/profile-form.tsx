@@ -7,6 +7,7 @@ import { useFormErrorFocus } from "@/components/ui/use-form-error-focus";
 import { memberAvatarUrl } from "@/lib/members/avatar-url";
 import { AvatarInitials } from "./avatar-initials";
 import { Field, FormMessage } from "./form-field";
+import { NameInput } from "./name-input";
 import styles from "./members.module.css";
 
 function AvatarEditor({ name, userId, initialImage }: { name: string; userId: string; initialImage: string | null }) {
@@ -86,7 +87,7 @@ export function ProfileForm({ name, userId, bio, image }: { name: string; userId
       <FormMessage message={state.message} />
       <Field name="name" label="Nome" error={state.errors?.name}>
         {(props) => (
-          <input {...props} name="name" autoComplete="name" required maxLength={60} defaultValue={state.values?.name ?? name} />
+          <NameInput {...props} defaultValue={state.values?.name ?? name} />
         )}
       </Field>
       <Field name="bio" label="Bio" error={state.errors?.bio} hint="Até 500 caracteres. Conte o que você está construindo.">

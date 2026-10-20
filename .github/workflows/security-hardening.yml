@@ -77,6 +77,10 @@ jobs:
           BUILD_STANDALONE: 'true'
           NEXT_TELEMETRY_DISABLED: '1'
           NODE_OPTIONS: --max-old-space-size=3072
+      - name: Verified invitations and names on disposable PostgreSQL
+        run: node --test tests/members-invitations.integration.mjs
+        env:
+          INVITATIONS_TEST_DATABASE_URL: postgres://gallery_test:synthetic_ci_only@127.0.0.1:5432/apogee_gallery_ci
       - name: Authenticated Radar with disposable PostgreSQL and synthetic source
         run: node scripts/radar-member-e2e.mjs
         env:

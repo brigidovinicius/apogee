@@ -31,6 +31,8 @@ COPY --from=builder --chown=nextjs:nextjs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-grant-admin.mjs ./scripts/members-grant-admin.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/gallery-migrate.mjs ./scripts/gallery-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-avatar-migrate.mjs ./scripts/members-avatar-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-invitations-migrate.mjs ./scripts/members-invitations-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-grant-invitation-manager.mjs ./scripts/members-grant-invitation-manager.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/drizzle ./drizzle
 COPY --from=dependencies --chown=nextjs:nextjs /app/node_modules/postgres ./node_modules/postgres
 USER nextjs

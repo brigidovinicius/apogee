@@ -1,0 +1,32 @@
+{
+  "suite": {
+    "tests": 298,
+    "pass": 298,
+    "fail": 0
+  },
+  "integration": {
+    "tests": 16,
+    "pass": 16,
+    "fail": 0
+  },
+  "finalSecurity": {
+    "tests": 20,
+    "pass": 20,
+    "fail": 0
+  },
+  "types": {
+    "result": "passed",
+    "notes": ""
+  },
+  "lint": {
+    "result": "passed",
+    "notes": "1 pre-existing gallery img warning"
+  },
+  "build": {
+    "result": "passed",
+    "notes": ""
+  },
+  "secretCleanup": {
+    "temporaryKeyFileExists": false
+  }
+}

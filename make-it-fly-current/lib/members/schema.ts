@@ -25,6 +25,9 @@ export const user = pgTable("user", {
   image: text("image"),
   username: text("username").unique(),
   bio: text("bio"),
+  canManageAdmins: boolean("can_manage_admins").notNull().default(false),
+  blocked: boolean("blocked").notNull().default(false),
+  nameNeedsConfirmation: boolean("name_needs_confirmation").notNull().default(false),
   role: text("role", { enum: ["member", "admin"] }).notNull().default("member"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -221,3 +224,35 @@ export const blogMedia = pgTable(
     check("blog_media_alt_check", sql`length(${table.alt}) between 3 and 160`),
   ],
 );
+
+// Privados: acessados apenas pelo servidor. Tokens em claro nunca são persistidos.
+export const memberInvitation = pgTable("member_invitation", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  role: text("role", { enum: ["member", "admin"] }).notNull(),
+  issuerId: text("issuer_id").notNull().references(() => user.id),
+  tokenHash: text("token_hash").notNull().unique(),
+  status: text("status", { enum: ["pending", "accepted", "revoked"] }).notNull().default("pending"),
+  delivery: text("delivery", { enum: ["sending", "provider_accepted", "unconfirmed"] }).notNull(),
+  acceptedBy: text("accepted_by").references(() => user.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+}, (table) => [
+  index("member_invitation_created_idx").on(table.createdAt.desc()),
+  check("member_invitation_role_check", sql`${table.role} in ('member', 'admin')`),
+  check("member_invitation_token_check", sql`${table.tokenHash} ~ '^[a-f0-9]{64}$'`),
+  check("member_invitation_status_check", sql`${table.status} in ('pending', 'accepted', 'revoked')`),
+  check("member_invitation_delivery_check", sql`${table.delivery} in ('sending', 'provider_accepted', 'unconfirmed')`),
+  check("member_invitation_acceptance_check", sql`(${table.status} = 'accepted') = (${table.acceptedBy} is not null and ${table.acceptedAt} is not null)`),
+]);
+export const memberInvitationEvent = pgTable("member_invitation_event", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  invitationId: text("invitation_id").notNull().references(() => memberInvitation.id),
+  actorId: text("actor_id").notNull().references(() => user.id),
+  action: text("action").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("member_invitation_event_invitation_idx").on(table.invitationId, table.createdAt),
+  check("member_invitation_event_action_check", sql`${table.action} in ('created', 'resent', 'revoked', 'accepted', 'provider_accepted', 'send_unconfirmed')`),
+]);

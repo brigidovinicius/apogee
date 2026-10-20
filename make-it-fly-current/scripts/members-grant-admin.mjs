@@ -41,7 +41,7 @@ export async function grantAdmin(sql, email) {
   });
 }
 
-function databaseOptions() {
+export function databaseOptions() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new AdminRoleError("DATABASE_URL não configurada.");
 

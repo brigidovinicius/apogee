@@ -11,17 +11,17 @@ export default async function CompleteProfilePage({ searchParams }: { searchPara
   const next = safeNextPath((await searchParams).next);
   const member = await getCurrentMember();
   if (!member) redirect(`/membros/entrar?next=${encodeURIComponent("/membros/perfil/configurar")}`);
-  if (!isGeneratedGoogleUsername(member.username)) redirect(next);
+  if (!isGeneratedGoogleUsername(member.username) && !member.nameNeedsConfirmation) redirect(next);
 
   return (
     <div className={styles.narrow}>
       <header className={styles.authIntro}>
         <p className={styles.eyebrow}>Área de membros</p>
-        <h1 className={styles.title}>Escolha seu nome de usuário</h1>
+        <h1 className={styles.title}>Confirme seu nome e usuário</h1>
         <p className={styles.lead}>Esta é a última etapa do cadastro com Google. Seu nome de usuário aparecerá no fórum e no perfil.</p>
       </header>
       <div className={`${styles.panel} ${styles.authPanel}`}>
-        <UsernameForm next={next} />
+        <UsernameForm next={next} name={member.nameNeedsConfirmation ? "" : member.name} username={isGeneratedGoogleUsername(member.username) ? "" : member.username} />
       </div>
     </div>
   );
