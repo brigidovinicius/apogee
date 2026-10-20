@@ -400,7 +400,7 @@ function OpportunityCard({ opportunity, management }: { opportunity: StudentOppo
       <div className={styles.launchWindow}>
         <CalendarDays size={17} aria-hidden />
         <div>
-          <span>Janela de inscrição</span>
+          <span>{opportunity.deadlineKind === "submission" ? "Janela de envio" : "Janela de inscrição"}</span>
           <strong>{opportunity.deadlineLabel}</strong>
           {opportunity.deadline && !opportunity.deadlineAt ? <small>Horário de encerramento não informado.</small> : null}
         </div>

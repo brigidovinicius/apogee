@@ -316,3 +316,10 @@ test("extension lodging support with a participant fee is not a cash award or a 
   assert.doesNotMatch(rendered, /<strong>R\$ 500,00<\/strong>/);
   assert.equal(item.editorialFocus, "extracurricular_project");
 });
+
+test("submission card labels the window and timer consistently", () => {
+ const item = opportunity({ id: "climx", title: "ClimX", deadlineKind: "submission", deadlineAt: "2099-12-15" });
+ const html = renderToStaticMarkup(React.createElement(OpportunitiesBoard, { opportunities: [item] }));
+ assert.match(html, /Janela de envio/); assert.match(html, /Envios até/); assert.match(html, /Encerramento dos envios/);
+ assert.doesNotMatch(html, /Janela de inscrição|Encerramento das inscrições/);
+});

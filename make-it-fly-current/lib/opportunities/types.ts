@@ -67,6 +67,7 @@ export type StudentOpportunity = OpportunityPreview & {
   deadlineAt?: string | null;
   /** Confirmed event start: YYYY-MM-DD or ISO timestamp with timezone. */
   eventStartsAt?: string | null;
+  deadlineKind?: "registration" | "submission";
   deadlineUnknown?: boolean;
   alertsAvailable?: boolean;
   deadline: string | null;

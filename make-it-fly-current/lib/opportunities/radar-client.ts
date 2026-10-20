@@ -152,6 +152,7 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     deadline,
     deadlineAt: deadlinePrecision === "exact_datetime" && deadlineAt ? new Date(deadlineAt).toISOString() : null,
     eventStartsAt,
+    deadlineKind: value.deadlineKind === "submission" ? "submission" : "registration",
     deadlineUnknown,
     alertsAvailable: value.alertsAvailable === true,
     deadlineLabel: deadlineLabel(deadlineAt, deadlinePrecision, value.deadlineKind),

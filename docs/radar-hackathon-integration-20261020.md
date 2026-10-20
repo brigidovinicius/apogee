@@ -6,7 +6,7 @@ Autorização do operador: integrar/publicar Decola Saúde, Hack Day SJC, Juncti
 
 - Adaptadores restritos a oito URLs/edições exatas. Decola exige HTML e regulamento PDF em cada coleta; nenhuma navegação pelo checkout. Inscrição geral preservada em 26/10, propriedade intelectual do Senac e Figma obrigatórios.
 - SJC mantém prazo de inscrição desconhecido e sai do catálogo quando o evento começa. Junction preserva 25/10 sem conversão de horário/fuso incerto; auxílio de viagem encerrado não fecha inscrição geral. Localização internacional fica em país, sem UF/cidade brasileira inventada.
-- ClimX preserva 15/12 como prazo de **envio**, sem inventar inscrição ou início de evento. Evidência `submission_deadline` produz `deadlineKind=submission` no contrato v3 público e administrativo. Site mostra “Envios até” e texto de participação compatível; clientes existentes continuam aceitando o contrato aditivo.
+- ClimX preserva 15/12 como prazo de **envio**, sem inventar inscrição ou início de evento. Evidência `submission_deadline` produz `deadlineKind=submission` no contrato v3 público e administrativo. Site mostra “Janela de envio”, “Envios até”, “Encerramento dos envios” e texto de participação compatível; clientes existentes continuam aceitando o contrato aditivo.
 - Migração 0038 cadastra oito fontes inativas/pendentes, sem inserir fichas nem alterar flags existentes. Ativação operacional será limitada às quatro legíveis após CI, backup restaurado e deploy.
 - As quatro Kaggle dinâmicas têm configuração, URLs de overview/regras, prazos, condições e roteamento de dois documentos preparados. Envelope JS não passa na validação. Além da inatividade, o rascunho retorna `sourceConflict=true`, bloqueando publicação até uma captura oficial compatível, auditada a cada execução, ser implementada. Nenhum texto de pesquisa é usado como resposta de coleta.
 
@@ -21,6 +21,8 @@ As quatro dinâmicas **ainda não fazem atualização automática**. A preparaç
 - Coletor protegido da VPS revalidou as quatro páginas e o PDF em 20/10/2026, 15:52:42–15:52:49 UTC. Robots, TLS, allowlists, limites e intervalos preservados. Hashes em `radar-academico/references/hackathon-integration-20261020.json`.
 - Suíte Radar: 340 testes passaram, dos quais quatro testes temporários usam o HTML atual e os bytes reais do PDF. O corpus permanente contém fatos resumidos, não os documentos integrais nem caminhos `/private/tmp` dependentes do ambiente.
 - Casos cobertos: identidade/URL/edição, fatos escondidos em script, inscrição indisponível, lotação/encerramento/cancelamento, expiração, suplemento obrigatório, IP/Figma, prazo desconhecido, auxílios encerrados, prazo de envio, geografia e migração idempotente. Contrato público/admin inclui tipo de prazo coerente.
+
+- Site: 310 testes na primeira revisão; após completar janela e contagem regressiva de envio, 39 testes direcionados passaram. CI completo deve validar a revisão final.
 
 ## Release
 

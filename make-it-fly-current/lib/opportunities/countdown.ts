@@ -7,10 +7,11 @@ const brazilDay = new Intl.DateTimeFormat("en-CA", {
 function dayNumber(date: string) { return Date.parse(`${date}T12:00:00Z`) / 86_400_000; }
 
 /** Date-only sources count calendar days; only confirmed timestamps count seconds. */
-export function opportunityCountdown(opportunity: Pick<StudentOpportunity, "categories" | "deadline" | "deadlineAt" | "eventStartsAt">, now: number | null): Countdown {
+export function opportunityCountdown(opportunity: Pick<StudentOpportunity, "categories" | "deadline" | "deadlineAt" | "eventStartsAt" | "deadlineKind">, now: number | null): Countdown {
   const event = opportunity.categories?.includes("eventos") === true;
   const target = event ? opportunity.eventStartsAt : opportunity.deadlineAt ?? opportunity.deadline;
-  const label = event ? "Início do evento" : "Encerramento das inscrições";
+  const submission = opportunity.deadlineKind === "submission";
+  const label = event ? "Início do evento" : submission ? "Encerramento dos envios" : "Encerramento das inscrições";
   const unknown: Countdown = { label, value: event ? "Data de início não informada" : "Sem prazo definido", tone: null, target: null };
   if (!target) return unknown;
   const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(target);
@@ -24,11 +25,11 @@ export function opportunityCountdown(opportunity: Pick<StudentOpportunity, "cate
     const days = Math.round(dayNumber(target) - dayNumber(`${part("year")}-${part("month")}-${part("day")}`));
     const value = days > 0 ? `Falta${days === 1 ? "" : "m"} ${days} dia${days === 1 ? "" : "s"}` : days === 0
       ? event ? "Evento hoje · horário não informado" : "Encerra hoje · horário não informado"
-      : event ? "Data de início já passou" : "Inscrições encerradas";
+      : event ? "Data de início já passou" : submission ? "Envios encerrados" : "Inscrições encerradas";
     return { label, value, tone: days < 0 ? null : days <= 7 ? "urgent" : "safe", target };
   }
   const seconds = Math.max(0, Math.ceil((Date.parse(target) - now) / 1000));
-  if (!seconds) return { label, value: event ? "Evento iniciado" : "Inscrições encerradas", tone: null, target };
+  if (!seconds) return { label, value: event ? "Evento iniciado" : submission ? "Envios encerrados" : "Inscrições encerradas", tone: null, target };
   const days = Math.floor(seconds / 86400);
   const pad = (value: number) => String(value).padStart(2, "0");
   return { label, value: `${days > 0 ? `${days}d ` : ""}${pad(Math.floor(seconds % 86400 / 3600))}h ${pad(Math.floor(seconds % 3600 / 60))}min ${pad(seconds % 60)}s`, tone: Date.parse(target) - now <= 7 * 86_400_000 ? "urgent" : "safe", target };
