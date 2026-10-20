@@ -1,3 +1,4 @@
+import * as lucide from "lucide-react";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -31,6 +32,7 @@ async function loadComponent(path, dependencies = {}) {
   return exports;
 }
 
+const brandModule = await loadComponent("components/ui/brand-mark.tsx");
 const cardModule = await loadComponent("components/ui/card-7.tsx", {
   "./card-7.module.css": cssModule,
 });
@@ -133,6 +135,8 @@ test("standalone and page-managed motion policies remain explicit in server mark
 
 test("the actual store renders six straight prototype cards instead of importing the Nike demo", async () => {
   const { StoreExperience } = await loadComponent("app/loja/store-experience.tsx", {
+    "@/components/ui/brand-mark": brandModule,
+    "lucide-react": lucide,
     "next/link": { default: ({ children, ...props }) => React.createElement("a", props, children) },
     "./loja.module.css": cssModule,
     "./store-orb": { StoreOrb: () => null },

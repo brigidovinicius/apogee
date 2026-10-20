@@ -3,7 +3,7 @@
 import { BrandMark } from "@/components/ui/brand-mark";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { StoreOrb } from "./store-orb";
 import { StoreProductVisual } from "./store-product-visual";
 import { InteractiveProductCard } from "@/components/ui/card-7";
@@ -21,7 +21,7 @@ const collection = [
 
 type CollectionItem = (typeof collection)[number];
 
-function CycleText({ children }: { children: string }) {
+function CycleText({ children }: { children: ReactNode }) {
   return <span className={styles.cycleText}><span>{children}</span><span aria-hidden>{children}</span></span>;
 }
 

@@ -195,7 +195,7 @@ export function ApplicationForm() {
           <div className={styles.honeypot} aria-hidden="true"><label htmlFor="website">Deixe este campo em branco</label><input id="website" name="website" tabIndex={-1} autoComplete="off" value={values.website} onChange={e => change("website", e.target.value)} /></div>
           <div className={styles.actions}>
             {step > 0 && <button type="button" className={styles.backButton} onClick={() => { setStep(step - 1); setErrors({}); setErrorMessage(""); }}><span aria-hidden="true">←</span> Voltar</button>}
-            <button type="submit" className={styles.primary}>{submitting ? "Enviando sua aplicação…" : step === 2 ? "Enviar aplicação" : "Continuar"}<span aria-hidden="true">{submitting ? "…" : "<ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} />"}</span></button>
+            <button type="submit" className={styles.primary}>{submitting ? "Enviando sua aplicação…" : step === 2 ? "Enviar aplicação" : "Continuar"}<span aria-hidden="true">{submitting ? "…" : <ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} />}</span></button>
           </div>
         </fieldset>
         <p className={styles.privacy}>Seus dados serão usados pela Apogee para avaliar sua participação, organizar esta edição e manter contato sobre próximas experiências. Nesta sessão, também registramos as etapas percorridas e eventuais erros técnicos, sem copiar o conteúdo das suas respostas para esses eventos. Não exibimos suas respostas publicamente. O envio não reserva uma vaga.</p>

@@ -1,3 +1,4 @@
+import { interfaceText } from "../lib/presentation-text.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -20,6 +21,7 @@ async function loadMembersPage() {
   }).outputText;
   const jsx = (type, props) => ({ type, props: props ?? {} });
   const modules = {
+    "@/lib/presentation-text.mjs": { interfaceText },
     "next/link": { default: "Link" },
     "react/jsx-runtime": { jsx, jsxs: jsx },
     "@/components/members/format": { formatDateTime: () => "" },

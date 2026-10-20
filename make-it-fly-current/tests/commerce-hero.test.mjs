@@ -35,8 +35,10 @@ async function loadComponent(path, dependencies = {}) {
 }
 
 const buttonModule = await loadComponent("components/ui/button.tsx");
+const brandModule = await loadComponent("components/ui/brand-mark.tsx");
 const commerceModule = await loadComponent("components/ui/commerce-hero.tsx", {
   "@/components/ui/button": buttonModule,
+  "@/components/ui/brand-mark": brandModule,
 });
 const { CommerceHero } = commerceModule;
 const renderHero = (props = {}) => renderToStaticMarkup(React.createElement(CommerceHero, props));
@@ -62,7 +64,7 @@ test("commerce hero server-renders one accessible heading without browser APIs o
 
 test("default navigation uses working site routes instead of button-only placeholders", () => {
   const html = renderHero();
-  assert.match(html, /aria-label="Apogee — início"/);
+  assert.match(html, /aria-label="Apogee - início"/);
   const nav = html.match(/<nav\b[^>]*aria-label="Navegação da loja"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
   assert.ok(nav, "the hero exposes a named navigation landmark");
   assert.match(nav, /<a\b[^>]*href="\/"[^>]*>Início<\/a>/);
@@ -134,6 +136,7 @@ test("motion follows the system by default and explicit pause leaves server cont
 
 test("the store shows all six products on one page without a category area", async () => {
   const { StoreExperience } = await loadComponent("app/loja/store-experience.tsx", {
+    "@/components/ui/brand-mark": brandModule,
     "./store-orb": { StoreOrb: ({ motionEnabled }) => React.createElement("div", { "data-test-orb": "true", "data-test-orb-motion": String(motionEnabled) }) },
     "./store-product-visual": { StoreProductVisual: ({ kind }) => React.createElement("svg", { "data-store-visual": kind }) },
     "@/components/ui/card-7": { InteractiveProductCard: ({ title }) => React.createElement("h3", null, title) },
