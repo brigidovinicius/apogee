@@ -53,7 +53,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
             <Link href={`/blog/${post.slug}`} className={styles.cardLink} aria-label={`Ler ${interfaceText(post.title)}`}>
               <div className={styles.cardArt} data-category={post.category}>{cover && cover.postId === post.id ? <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={cover.alt} width={cover.width} height={cover.height} loading="lazy" />
+                <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={interfaceText(cover.alt)} width={cover.width} height={cover.height} loading="lazy" />
               </> : <><span>{String((page - 1) * 12 + index + 1).padStart(2, "0")}</span><span aria-hidden><BrandMark /></span></>}</div>
               <div className={styles.cardText}><div className={styles.cardMeta}><span>{categoryLabel(post.category)}</span>{date ? <time dateTime={date.toISOString()}>{dateFormat.format(date)}</time> : null}</div><h3>{interfaceText(post.title)}</h3><p>{interfaceText(post.excerpt)}</p><span className={styles.readMore}>Ler artigo <span aria-hidden><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></span></div>
             </Link>

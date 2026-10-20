@@ -61,14 +61,14 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
       <ShareButton title={`${interfaceText(post.title)} | Apogee`} path={`/blog/${encodeURIComponent(post.slug)}`} />
       <div className={styles.articleArt} data-category={post.category}>{cover ? <>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={cover.alt} width={cover.width} height={cover.height} />
+        <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={interfaceText(cover.alt)} width={cover.width} height={cover.height} />
       </> : <><span>APOGEE / IDEIAS</span><span aria-hidden><BrandMark /></span></>}</div>
       <article className={styles.articleBody}>{paragraphs.map((paragraph, index) => {
         const marker = /^\[\[media:([a-f0-9-]{36})\]\]$/.exec(paragraph.trim());
         const image = marker ? mediaById.get(marker[1]) : null;
         return image ? <figure className={styles.inlineFigure} key={index}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={blogMediaUrl(image.id)} alt={image.alt} width={image.width} height={image.height} loading="lazy" />
+          <img src={blogMediaUrl(image.id)} alt={interfaceText(image.alt)} width={image.width} height={image.height} loading="lazy" />
           {image.caption ? <figcaption>{interfaceText(image.caption)}</figcaption> : null}
         </figure> : <p key={index}>{interfaceText(paragraph)}</p>;
       })}{video ? <div className={styles.videoFrame}><iframe src={video.src} title={`Vídeo do artigo no ${video.provider}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div> : null}</article>
