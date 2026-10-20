@@ -583,6 +583,6 @@ O menu mobile fecha com Escape e devolve o foco. O compartilhamento do Radar cop
 
 Limites: não havia artigo publicado para validar uma página individual em produção; essa integração foi compilada e usa o componente testado. Não foi feito login OAuth real nem jornada administrativa com sessão real. No navegador, os POSTs foram bloqueados de propósito; há erros dessas requisições e de fontes internas do iframe externo Google Forms, além de um aviso de preload. A homepage final não apresentou erros de console, mas não se afirma console limpo para todos os conteúdos externos.
 
-Evidências: [medições e interações](../evidence/apple-hig/production-validation.json), [captura da homepage](../evidence/apple-hig/home-production.png) e [auditoria de design](../design/apple-hig-audit.md). Script e log locais: `/private/tmp/apogee-hig-deploy.sh` e `/private/tmp/apogee-hig-deploy.log`.
+Evidências: [medições e interações](evidence/apple-hig/production-validation.json), [captura da homepage](evidence/apple-hig/home-production.png) e [auditoria de design](design/apple-hig-audit.md). Script e log locais: `/private/tmp/apogee-hig-deploy.sh` e `/private/tmp/apogee-hig-deploy.log`.
 
 Este registro é posterior à publicação e não implica novo deploy por atualização documental.
