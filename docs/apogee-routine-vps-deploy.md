@@ -552,3 +552,12 @@ são configurações independentes.
 Resultados e limites no [resumo público da release](member-invitations-rollout-20261020.md).
 As capturas de produção e os snapshots de contas permanecem somente no
 ambiente local autorizado.
+
+## Registro de release — botões verdes e fonte Inter (20/10/2026)
+
+PR [#78](https://github.com/brigidovinicius/apogee/pull/78), SHA publicado
+`16fa18b1da8c944cf8babfa6b02ca8a06b5757e3`. CI completo aprovado, somente web
+recriado, 12 containers vizinhos preservados, estado saudável e zero reinícios.
+Fonte Inter, cor, responsividade, animação e navegação conferidas em produção.
+
+Evidências, limites e rollback no [registro da release](apogee-green-arrow-buttons-release-20261020.md).
