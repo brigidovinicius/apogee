@@ -15,7 +15,8 @@ test("drop migration and public signup persist contacts and consent on real disp
     assert.deepEqual(await migrateStoreDrops(sql), { changed: true, migration: "0006_store_drop_signups" });
     assert.equal((await migrateStoreDrops(sql)).changed, false);
     Object.assign(process.env, { APPLICATION_HOSTING_PROVIDER: "caddy", BETTER_AUTH_SECRET: "store-drops-disposable-ci-secret-at-least-32" });
-    const load = opportunityLoader({ "@/lib/members/db": { getSql: () => sql, getDb: () => drizzle(sql) } });
+    const database = { getSql: () => sql, getDb: () => drizzle(sql) };
+    const load = opportunityLoader({ "@/lib/members/db": database, "./db": database });
     const { POST } = load("app/api/loja/novidades/route.ts");
     const origin = "https://www.apogee.community";
     const request = patch => new Request(`${origin}/api/loja/novidades`, { method: "POST", headers: { origin, "content-type": "application/json", "x-apogee-client-ip": "192.0.2.123" }, body: JSON.stringify({ name: "  Synthetic Drop  ", phone: "+55 (11) 99999-1234", email: " SYNTHETIC-DROP@example.test ", consent: true, website: "", ...patch }) });
