@@ -20,7 +20,9 @@
     "members:invitations:migrate": "node scripts/members-invitations-migrate.mjs",
     "blog:migrate": "node scripts/blog-migrate.mjs",
     "test:invitations": "node --test tests/members-invitations.integration.mjs",
-    "members:grant-invitation-manager": "node scripts/members-grant-invitation-manager.mjs"
+    "members:grant-invitation-manager": "node scripts/members-grant-invitation-manager.mjs",
+    "billing:migrate": "node scripts/radar-billing-migrate.mjs",
+    "test:billing": "node scripts/test-radar-billing.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -40,6 +42,7 @@
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
     "sharp": "^0.35.5",
+    "stripe": "^23.0.0",
     "three": "^0.185.1",
     "tw-animate-css": "^1.4.0",
     "zod": "^4.6.5"

@@ -256,3 +256,36 @@ export const memberInvitationEvent = pgTable("member_invitation_event", {
   index("member_invitation_event_invitation_idx").on(table.invitationId, table.createdAt),
   check("member_invitation_event_action_check", sql`${table.action} in ('created', 'resent', 'revoked', 'accepted', 'provider_accepted', 'send_unconfirmed')`),
 ]);
+
+// Direitos privados do Radar. Compra e acesso anterior são origens diferentes;
+// nenhum direito tem data de expiração e nenhum deles concede papel admin.
+export const radarLegacyAccess = pgTable("radar_legacy_access", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
+});
+export const radarPurchase = pgTable("radar_purchase", {
+  sessionId: text("session_id").primaryKey(),
+  paymentIntentId: text("payment_intent_id").notNull().unique(),
+  userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+  email: text("email"),
+  priceId: text("price_id").notNull(),
+  productId: text("product_id").notNull(),
+  amount: integer("amount").notNull(),
+  currency: text("currency").notNull(),
+  livemode: boolean("livemode").notNull(),
+  status: text("status", { enum: ["paid", "refunded", "disputed"] }).notNull(),
+  providerEventAt: timestamp("provider_event_at", { withTimezone: true }).notNull(),
+  recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  index("radar_purchase_user_idx").on(table.userId, table.livemode, table.status),
+  index("radar_purchase_unclaimed_idx").on(table.email, table.livemode).where(sql`${table.userId} is null`),
+  check("radar_purchase_amount_check", sql`${table.amount} = 4900`),
+  check("radar_purchase_currency_check", sql`${table.currency} = 'brl'`),
+  check("radar_purchase_status_check", sql`${table.status} in ('paid', 'refunded', 'disputed')`),
+]);
+export const radarStripeEvent = pgTable("radar_stripe_event", {
+  eventId: text("event_id").primaryKey(),
+  eventType: text("event_type").notNull(),
+  processedAt: timestamp("processed_at", { withTimezone: true }).notNull().defaultNow(),
+});
