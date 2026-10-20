@@ -1,5 +1,14 @@
 # Plano pendente de autorização: banco e runtime Radar
 
+**Substituído pela implementação local SEC-05.** Os pools agora usam
+`DATABASE_READER_URL` e `DATABASE_EDITOR_URL`; a migração operacional é
+`db/migrations/0038_runtime_database_roles.sql`, cobrindo também descoberta e
+alertas. Leia `docs/radar-security-sec05.md` na raiz do repositório antes de uma
+implantação autorizada. O arquivo SQL desta pasta continua histórico/incompleto,
+fora das migrações e não deve ser executado.
+
+O roteiro abaixo descreve o estado anterior e não comprova aplicação em produção.
+
 Nada deste diretório foi aplicado. `runtime-roles.sql` não integra `db/migrations`
 e termina em ROLLBACK. Não executar em produção como teste: até DDL revertido
 adquire locks. A evidência atual é de código/configuração, não de roles da VPS.

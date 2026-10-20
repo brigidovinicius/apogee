@@ -1,0 +1,47 @@
+--- upstream/lib/parse.js
++++ local/lib/parse.js
+@@ -1,0 +2,2 @@
++
++const assertDepth = require('./depth');
+@@ -146,0 +149 @@
++      assertDepth(stack.length);
+@@ -212,0 +216 @@
++      assertDepth(stack.length);
+--- upstream/lib/compile.js
++++ local/lib/compile.js
+@@ -1,0 +2,2 @@
++
++const assertDepth = require('./depth');
+@@ -7 +9,2 @@
+-  const walk = (node, parent = {}) => {
++  const walk = (node, parent = {}, depth = 0) => {
++    assertDepth(depth);
+@@ -50 +53 @@
+-        output += walk(child, node);
++        output += walk(child, node, depth + (child.nodes ? 1 : 0));
+--- upstream/lib/expand.js
++++ local/lib/expand.js
+@@ -1,0 +2,2 @@
++
++const assertDepth = require('./depth');
+@@ -36 +38,2 @@
+-  const walk = (node, parent = {}) => {
++  const walk = (node, parent = {}, depth = 0) => {
++    assertDepth(depth);
+@@ -103 +106 @@
+-        walk(child, node);
++        walk(child, node, depth + 1);
+--- upstream/lib/stringify.js
++++ local/lib/stringify.js
+@@ -1,0 +2,2 @@
++
++const assertDepth = require('./depth');
+@@ -6 +8,2 @@
+-  const stringify = (node, parent = {}) => {
++  const stringify = (node, parent = {}, depth = 0) => {
++    assertDepth(depth);
+@@ -24 +27 @@
+-        output += stringify(child);
++        output += stringify(child, {}, depth + (child.nodes ? 1 : 0));
+@@ -32 +34,0 @@
+-

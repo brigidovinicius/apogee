@@ -1,4 +1,5 @@
 import "server-only";
+import { RequestBodyError, readRequestBody } from "@/lib/request-body";
 
 import { createHmac } from "node:crypto";
 
@@ -185,26 +186,11 @@ async function readBody(request: Request): Promise<unknown> {
   if (request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") throw new ApplicationError(415, "Envie o formulário em formato JSON.");
   if (Number(request.headers.get("content-length")) > MAX_BODY_BYTES) throw new ApplicationError(413, "O formulário excede o tamanho permitido.");
   if (!request.body) throw new ApplicationError(400, "O formulário está vazio.");
-  const reader = request.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let bytes = 0;
   try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      bytes += value.byteLength;
-      if (bytes > MAX_BODY_BYTES) {
-        await reader.cancel();
-        throw new ApplicationError(413, "O formulário excede o tamanho permitido.");
-      }
-      chunks.push(value);
-    }
-    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    return JSON.parse((await readRequestBody(request, MAX_BODY_BYTES)).toString("utf8"));
   } catch (error) {
-    if (error instanceof ApplicationError) throw error;
+    if (error instanceof RequestBodyError) throw new ApplicationError(error.status, error.message);
     throw new ApplicationError(400, "Não foi possível ler o formulário. Tente novamente.");
-  } finally {
-    reader.releaseLock();
   }
 }
 

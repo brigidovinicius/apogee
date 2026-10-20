@@ -17,8 +17,8 @@ export async function GET(request: Request) {
 }
 export async function POST(request: Request) {
   try {
-    const input = bodySchema.parse(await invitationBody(request));
     const actor = await invitationActor(request);
+    const input = bodySchema.parse(await invitationBody(request));
     switch (input.action) {
       case "create": return invitationResponse(await createInvitation(actor, input.email, input.role));
       case "resend": return invitationResponse(await resendInvitation(actor, input.id));

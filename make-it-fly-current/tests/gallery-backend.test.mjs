@@ -1,3 +1,4 @@
+import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -14,6 +15,7 @@ async function load(path, mocks = {}) {
   const loadedModule = { exports: {} };
   new Function("require", "module", "exports", output)(specifier => {
     if (specifier === "server-only") return {};
+    if (specifier === "@/lib/request-body") return opportunityLoader()("lib/request-body.ts");
     return specifier in mocks ? mocks[specifier] : require(specifier);
   }, loadedModule, loadedModule.exports);
   return loadedModule.exports;

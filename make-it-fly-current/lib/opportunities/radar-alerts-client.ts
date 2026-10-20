@@ -1,4 +1,5 @@
 import "server-only";
+import { readRequestBody } from "@/lib/request-body";
 export async function radarAlertRequest(payload: Record<string,unknown>) {
   const url=process.env.RADAR_ACADEMICO_API_URL,token=process.env.RADAR_ACADEMICO_API_TOKEN;
   if (!url || !token) return {status:503,body:{error:"Avisos indisponíveis. Tente novamente mais tarde."}};
@@ -12,13 +13,7 @@ export async function radarAlertRequest(payload: Record<string,unknown>) {
 }
 export async function readAlertBody(request:Request) {
   if (request.headers.get("content-type")?.split(";")[0].trim()!=="application/json" || Number(request.headers.get("content-length"))>4096 || !request.body) throw new Error("Solicitação inválida");
-  const reader=request.body.getReader(); let size=0; const chunks:Uint8Array[]=[];
-  const timer=setTimeout(()=>{void reader.cancel();},5000);
-  try {
-    while(true) { const {done,value}=await reader.read(); if(done) break; size+=value.byteLength;
-      if(size>4096) { await reader.cancel(); throw new Error("Solicitação muito grande"); } chunks.push(value); }
-    const body:unknown=JSON.parse(Buffer.concat(chunks).toString("utf8"));
-    if (!body || typeof body!=="object" || Array.isArray(body)) throw new Error("Solicitação inválida");
-    return body as Record<string,unknown>;
-  } finally { clearTimeout(timer); reader.releaseLock(); }
+  const body: unknown = JSON.parse((await readRequestBody(request, 4096)).toString("utf8"));
+  if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("Solicitação inválida");
+  return body as Record<string, unknown>;
 }

@@ -27,7 +27,7 @@ const makeSource = (id: string): OfficialSource => ({
 });
 
 it("reconsulta catálogos compartilhados dentro do orçamento de páginas e não excede maxPages", async () => {
-  vi.stubEnv("DATABASE_URL", "fixture");
+  vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   const source: OfficialSource = { ...makeSource("ifc-integrated-technical-2027"),
     listingUrls: ["https://ingresso.ifc.edu.br/seletivos/processo-seletivo-2027/integrados/cursos/"],
     allowedDomains: ["ingresso.ifc.edu.br"], location: { stateCode: null, cityName: null } };
@@ -50,7 +50,7 @@ it("reconsulta catálogos compartilhados dentro do orçamento de páginas e não
 });
 
 it("coleta a edição compartilhada em um ciclo, mantendo o limite manual de fichas", async () => {
-  vi.stubEnv("DATABASE_URL", "fixture");
+  vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   const source: OfficialSource = { ...makeSource("ifsc-technical-courses-2027"),
     listingUrls: ["https://www.ifsc.edu.br/tecnicos"], allowedDomains: ["www.ifsc.edu.br"],
     location: { stateCode: null, cityName: null } };
@@ -74,7 +74,7 @@ it("coleta a edição compartilhada em um ciclo, mantendo o limite manual de fic
 afterEach(() => { vi.clearAllMocks(); vi.unstubAllEnvs(); });
 
 it("varre várias fontes vencidas, lê páginas de detalhe e publica resultados válidos automaticamente", async () => {
-  vi.stubEnv("DATABASE_URL", "fixture");
+  vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   const sources = [makeSource("source-a"), makeSource("source-b")];
   vi.mocked(claimDueOfficialSources).mockResolvedValue(sources);
   vi.mocked(loadOfficialSource).mockImplementation(async (id) => sources.find((source) => source.id === id) ?? null);
@@ -95,7 +95,7 @@ it("varre várias fontes vencidas, lê páginas de detalhe e publica resultados 
 });
 
 it("avança pelos links sem repetir sempre os primeiros", async () => {
-  vi.stubEnv("DATABASE_URL", "fixture");
+  vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   const source = makeSource("source-c");
   vi.mocked(loadOfficialSource).mockImplementation(async () => source);
   vi.mocked(fetchOfficialResource).mockImplementation(async (url) => {
@@ -119,7 +119,7 @@ it("avança pelos links sem repetir sempre os primeiros", async () => {
 });
 
 it("extrai o hackathon global da página oficial mesmo quando o primeiro main é um modal", async () => {
-  vi.stubEnv("DATABASE_URL", "fixture");
+  vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   const source: OfficialSource = {
     ...makeSource("nasa-space-apps-2026"),
     institutionName: "NASA Space Apps Challenge",
@@ -152,7 +152,7 @@ it("extrai o hackathon global da página oficial mesmo quando o primeiro main é
 });
 
 it("publica o edital de intercâmbio do MinC com país e prazo exato, sem inventar UF ou cidade", async () => {
-  vi.stubEnv("DATABASE_URL", "fixture");
+  vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   const url = "https://www.gov.br/cultura/pt-br/assuntos/editais/inscricoes-em-andamento/edital-de-intercambio-cultural-circulacao-e-participacao-audiovisual-no-exterior";
   const source: OfficialSource = {
     ...makeSource("minc-intercambio-audiovisual-2026"),
@@ -185,7 +185,7 @@ it("publica o edital de intercâmbio do MinC com país e prazo exato, sem invent
 });
 
 it("extrai bolsas de pesquisa da listagem oficial FAPESP sem duplicar os links em inglês", async () => {
-  vi.stubEnv("DATABASE_URL", "fixture");
+  vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   const url = "https://fapesp.br/oportunidades/projeto-de-logica/9715/";
   const source: OfficialSource = {
     ...makeSource("fapesp-open-fellowships"),
@@ -221,7 +221,7 @@ it("extrai bolsas de pesquisa da listagem oficial FAPESP sem duplicar os links e
 });
 
 it("coleta um edital municipal e um programa empresarial nas páginas dos próprios organizadores", async () => {
-  vi.stubEnv("DATABASE_URL", "fixture");
+  vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   const sjcUrl = "https://servicos.sjc.sp.gov.br/concurso/concurso_detalhe.aspx?codigo=192";
   const braskemUrl = "https://www.braskem.com.br/bahia-release/braskem-abre-inscricoes-para-programa-de-estagio-2027-com-mais-de-100-vagas-em-cinco-estados";
   const sources: OfficialSource[] = [{
@@ -268,7 +268,7 @@ it("coleta um edital municipal e um programa empresarial nas páginas dos própr
 it("coleta a URL exata Fulbright como ficha e não segue edital ou candidatura externos", async () => {
   vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-14T23:35:00Z"));
   try {
-  vi.stubEnv("DATABASE_URL", "fixture");
+  vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   vi.mocked(loadOfficialSource).mockResolvedValue(fulbrightSource);
   vi.mocked(recheckKnownOpportunities).mockResolvedValueOnce({ pagesChecked: 0, failed: 0, published: 0 });
   vi.mocked(fetchOfficialResource).mockResolvedValue({ body: Buffer.from(fulbrightHtml), contentType: "text/html", hash: "fixture", cached: false });
@@ -283,7 +283,7 @@ it("confirma PDAI em duas páginas oficiais dentro do orçamento e publica zero 
  const {pdaiSource:pdai,pdaiProgramme:programme,pdaiNews:news}=await import("./fixtures/capes-pdai");
  vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-14T23:55:00Z"));
  try {
-  vi.stubEnv("DATABASE_URL","fixture");vi.mocked(loadOfficialSource).mockResolvedValue(pdai);
+  vi.stubEnv("DATABASE_EDITOR_URL","fixture");vi.mocked(loadOfficialSource).mockResolvedValue(pdai);
   vi.mocked(recheckKnownOpportunities).mockResolvedValue({pagesChecked:0,failed:0,published:0});
   vi.mocked(fetchOfficialResource).mockImplementation(async url=>({body:Buffer.from(url===pdai.baseUrl?programme:news),contentType:"text/html",hash:"fixture",cached:false}));
   vi.mocked(saveReviewItems).mockResolvedValue({saved:1,published:1,blocked:0,created:1,updated:0,persistence:"postgres"});
@@ -300,7 +300,7 @@ it("confirma PDSE em duas páginas oficiais e mantém a etapa nacional futura", 
  const {pdseSource:pdse,pdseProgramme:programme,pdseNews:news}=await import("./fixtures/capes-pdse");
  vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-15T00:40:00Z"));
  try {
-  vi.stubEnv("DATABASE_URL","fixture");vi.mocked(loadOfficialSource).mockResolvedValue(pdse);
+  vi.stubEnv("DATABASE_EDITOR_URL","fixture");vi.mocked(loadOfficialSource).mockResolvedValue(pdse);
   vi.mocked(recheckKnownOpportunities).mockResolvedValue({pagesChecked:0,failed:0,published:0});
   vi.mocked(fetchOfficialResource).mockImplementation(async url=>({body:Buffer.from(url===pdse.baseUrl?programme:news),contentType:"text/html",hash:"fixture",cached:false}));
   vi.mocked(saveReviewItems).mockResolvedValue({saved:1,published:1,blocked:0,created:1,updated:0,persistence:"postgres"});
@@ -315,7 +315,7 @@ it("ingere uma edição Startup Weekend ACIM com uma única página e sem seguir
  const {acimSource:acim,acimHtml:html}=await import("./fixtures/acim-startup-weekend");
  vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-10-15T01:20:00Z"));
  try {
-  vi.stubEnv("DATABASE_URL","fixture");vi.mocked(loadOfficialSource).mockResolvedValue(acim);
+  vi.stubEnv("DATABASE_EDITOR_URL","fixture");vi.mocked(loadOfficialSource).mockResolvedValue(acim);
   vi.mocked(recheckKnownOpportunities).mockResolvedValue({pagesChecked:0,failed:0,published:0});
   vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from(html),contentType:"text/html",hash:"fixture",cached:false});
   vi.mocked(saveReviewItems).mockResolvedValue({saved:1,published:1,blocked:0,created:1,updated:0,persistence:"postgres"});

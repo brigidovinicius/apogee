@@ -42,7 +42,7 @@ function toOfficialSource(row: SourceRow): OfficialSource {
 }
 
 export async function loadOfficialSource(id: string): Promise<OfficialSource | null> {
-  if (!process.env.DATABASE_URL) return getOfficialSource(id) ?? null;
+  if (!process.env.DATABASE_EDITOR_URL) return getOfficialSource(id) ?? null;
   const rows = await withAdminTransaction(async (client) =>
     (await client.query<SourceRow>("select * from official_sources where id=$1 and active=true and verification_status='verified'", [id])).rows,
   );
@@ -50,7 +50,7 @@ export async function loadOfficialSource(id: string): Promise<OfficialSource | n
 }
 
 export async function loadActiveOfficialSources(): Promise<OfficialSource[]> {
-  if (!process.env.DATABASE_URL) return officialSourceRegistry.filter((source) => source.active);
+  if (!process.env.DATABASE_EDITOR_URL) return officialSourceRegistry.filter((source) => source.active);
   const rows = await withAdminTransaction(async (client) =>
     (await client.query<SourceRow>("select * from official_sources where active=true and verification_status='verified' order by priority desc")).rows,
   );
@@ -61,7 +61,7 @@ export async function loadActiveOfficialSources(): Promise<OfficialSource[]> {
 // the same source. The lease outlives the HTTP request and expires after a
 // worker crash; each completed source then receives its own configured interval.
 export async function claimDueOfficialSources(limit: number): Promise<OfficialSource[]> {
-  if (!process.env.DATABASE_URL) throw new Error("Banco do Radar não configurado");
+  if (!process.env.DATABASE_EDITOR_URL) throw new Error("Banco do Radar não configurado");
   const rows = await withAdminTransaction(async (client) =>
     (await client.query<SourceRow>(
       `with due as (

@@ -20,7 +20,7 @@ it("unauthenticated catalogue does not reach database", async () => {
   expect(queryPublic).not.toHaveBeenCalled();
 });
 it("every outward SQL query includes editorial and publication constraints", async () => {
-  vi.stubEnv("DATABASE_URL", "fixture-only"); vi.stubEnv("RADAR_ACADEMICO_API_TOKEN", "fixture-token");
+  vi.stubEnv("DATABASE_READER_URL", "fixture-only"); vi.stubEnv("RADAR_ACADEMICO_API_TOKEN", "fixture-token");
   await listPublicOpportunities(); await getPublicOpportunity("fixture-id");
   await GET(new Request("https://radar.example/api", { headers: { authorization: "Bearer fixture-token" } }));
   expect(queryPublic).toHaveBeenCalledTimes(3);

@@ -90,13 +90,13 @@ test("convites com Better Auth real e PostgreSQL: persistência, permissões, ve
     const member = await signup("member@example.test", "memberperson");
     const admin = await signup("admin@example.test", "adminperson");
     const outsider = await signup("other@example.test", "otherperson");
-    await sql`update "user" set role = 'admin', can_manage_admins = true where id = ${issuer.id}`;
+    await sql`update "user" set role = 'admin', can_manage_admins = true, email_verified = true where id = ${issuer.id}`;
     await sql`update "user" set role = 'admin' where id = ${operator.id}`;
     let memberInvite, adminInvite;
     await t.test("bootstrap exige admin existente, não promove membro e é idempotente", async () => {
-      await assert.rejects(grantInvitationManager(sql, "other@example.test"));
+      await assert.rejects(grantInvitationManager(sql, "other@example.test", outsider.id));
       assert.equal((await account(outsider.id)).can_manage_admins, false);
-      assert.equal((await grantInvitationManager(sql, "issuer@example.test")).changed, false);
+      assert.equal((await grantInvitationManager(sql, "issuer@example.test", issuer.id)).changed, false);
     });
     await t.test("painel administrativo consulta período sem erro de timestamp", async () => {
       const adminLoad = opportunityLoader({

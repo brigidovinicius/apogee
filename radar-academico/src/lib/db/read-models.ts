@@ -21,7 +21,7 @@ export interface PublicOpportunity {
 }
 
 export async function listPublicOpportunities(): Promise<PublicOpportunity[]> {
-  if (!process.env.DATABASE_URL) return [];
+  if (!process.env.DATABASE_READER_URL) return [];
   const result = await queryPublic<PublicOpportunity>(
     `select o.id,o.title,o.institution,o.benefit_type,o.deadline_at,o.deadline_precision,
       o.application_route,o.state_code,o.city_name,o.verified_at,o.has_retification,
@@ -34,7 +34,7 @@ export async function listPublicOpportunities(): Promise<PublicOpportunity[]> {
 }
 
 export async function getPublicOpportunity(id: string): Promise<PublicOpportunity | null> {
-  if (!process.env.DATABASE_URL) return null;
+  if (!process.env.DATABASE_READER_URL) return null;
   const result = await queryPublic<PublicOpportunity>(
     `select o.id,o.title,o.institution,o.benefit_type,o.deadline_at,o.deadline_precision,
       o.application_route,o.state_code,o.city_name,o.verified_at,o.has_retification,
@@ -47,7 +47,7 @@ export async function getPublicOpportunity(id: string): Promise<PublicOpportunit
 }
 
 export async function adminRows<T>(query: string, values: unknown[] = []): Promise<T[]> {
-  if (!process.env.DATABASE_URL) return [];
+  if (!process.env.DATABASE_EDITOR_URL) return [];
   return withAdminTransaction(async (client) => (await client.query(query, values)).rows as T[]);
 }
 
@@ -72,7 +72,7 @@ export type LocationMonitoring = {
 export async function getLocationMonitoring(
   filters: LocationMonitoringFilters,
 ): Promise<LocationMonitoring> {
-  if (!process.env.DATABASE_URL) {
+  if (!process.env.DATABASE_EDITOR_URL) {
     return {
       available: false, total: 0, filtered: 0, missing: 0, invalidStored: 0,
       rejectedDuringIngestion: null, lastUpdatedAt: null, states: [], cities: [], breakdown: [],

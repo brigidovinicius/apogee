@@ -7,6 +7,7 @@ const eslintConfig = defineConfig([
   ...nextTs,
   // Override default ignores of eslint-config-next.
   globalIgnores([
+    "vendor/braces/**", // Audited third-party copy; behavioral tests cover the local patch.
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",

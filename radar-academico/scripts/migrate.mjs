@@ -1,8 +1,10 @@
 import { readFile, readdir } from "node:fs/promises";
 import pg from "pg";
 
-if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL não configurada");
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 1 });
+// DATABASE_URL só é aceita neste processo de operador, nunca pelo runtime web.
+const url = process.env.DATABASE_MIGRATION_URL || process.env.DATABASE_URL;
+if (!url) throw new Error("DATABASE_MIGRATION_URL não configurada para o migrador");
+const pool = new pg.Pool({ connectionString: url, max: 1 });
 const client = await pool.connect();
 try {
   await client.query("create table if not exists schema_migrations (name text primary key, applied_at timestamptz not null default now())");

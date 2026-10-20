@@ -10,6 +10,8 @@
     "lint": "eslint",
     "test": "vitest run --maxWorkers=1",
     "test:watch": "vitest",
+    "test:runtime-roles": "node scripts/test-runtime-roles.mjs",
+    "test:runtime-compose": "node --test tests/runtime-compose.test.mjs",
     "migrate": "node scripts/migrate.mjs",
     "typecheck": "tsc --noEmit --incremental false",
     "typegen": "next typegen --webpack"
@@ -36,6 +38,10 @@
     "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "braces": "file:vendor/braces"
+  },
+  "overrides": {
+    "braces": "$braces"
   }
 }

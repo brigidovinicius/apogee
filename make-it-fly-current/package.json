@@ -10,6 +10,11 @@
     "typegen": "next typegen --webpack",
     "typecheck": "tsc --noEmit --incremental false",
     "test": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "test:auth-proxy": "node scripts/test-auth-proxy.mjs",
+    "test:body-proxy": "node scripts/test-body-proxy.mjs",
+    "test:body-http": "node scripts/test-body-http.mjs",
+    "test:alert-quotas": "node scripts/test-alert-quotas.mjs",
+    "test:admin-bootstrap": "node scripts/test-admin-bootstrap.mjs",
     "seo:verify": "node scripts/verify-seo.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -58,6 +63,14 @@
     "eslint-config-next": "^16.3.8",
     "shadcn": "^4.21.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "braces": "file:vendor/braces"
+  },
+  "overrides": {
+    "proxy-addr": "2.0.8",
+    "@modelcontextprotocol/sdk": "1.31.0",
+    "braces": "$braces",
+    "brace-expansion@1": "1.1.21",
+    "brace-expansion@5": "5.0.12"
   }
 }

@@ -1,20 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import ts from "typescript";
+import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
-const applicationsSource = await readFile(new URL("../lib/applications.ts", import.meta.url), "utf8");
-const applicationsOutput = ts.transpileModule(applicationsSource.replace('import "server-only";', ""), {
-  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
-}).outputText;
-const applicationsUrl = `data:text/javascript;base64,${Buffer.from(applicationsOutput).toString("base64")}`;
-const journeySource = await readFile(new URL("../lib/journey.ts", import.meta.url), "utf8");
-const journeyOutput = ts.transpileModule(
-  journeySource.replace('import "server-only";', "").replace('from "@/lib/applications"', `from "${applicationsUrl}"`),
-  { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } },
-).outputText;
-const api = await import(`data:text/javascript;base64,${Buffer.from(journeyOutput).toString("base64")}`);
+const api = opportunityLoader()("lib/journey.ts");
 
 const ORIGIN = "https://makeitfly.vercel.app";
 const env = {

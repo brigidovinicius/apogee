@@ -7,11 +7,11 @@ import type { OfficialSource, OpportunityCandidate } from "@/lib/ingestion/types
 const state = vi.hoisted(() => ({ db: null as PGlite | null }));
 vi.mock("@/lib/db/client", () => ({
   withAdminTransaction: (work: (client: PoolClient) => Promise<unknown>) => state.db!.transaction(async (tx) => {
-    await tx.exec("set local role radar_test; select set_config('app.is_admin','true',true)");
+    await tx.exec("set local role radar_editor; select set_config('app.is_admin','true',true)");
     return work(tx as unknown as PoolClient);
   }),
   queryPublic: (sql: string, values: unknown[] = []) => state.db!.transaction(async (tx) => {
-    await tx.exec("set local role radar_test; select set_config('app.is_admin','false',true)");
+    await tx.exec("set local role radar_reader; select set_config('app.is_admin','false',true)");
     return tx.query(sql, values);
   }),
 }));
@@ -72,8 +72,9 @@ beforeAll(async () => {
  cpsRedirectPaths = (await state.db.query<{allowed_path_prefixes:string[]}>("select allowed_path_prefixes from official_sources where id='cps-cultural-15-2026'")).rows[0].allowed_path_prefixes;
  migrationSnapshot = (await state.db.query("select review_status,verification_method,verified_at is not null as verified,published_at is not null as published from opportunities order by title")).rows;
  pilotSourcesSnapshot = (await state.db.query("select id,verification_status,verification_method,verification_evidence_url,audited_by from official_sources where id in ('cnpq-chamadas-abertas-2026','nasa-space-apps-2026') order by id")).rows;
- await state.db.exec("create role radar_test; grant usage on schema public to radar_test; grant select,insert,update,delete on all tables in schema public to radar_test");
- vi.stubEnv("DATABASE_URL", "isolated-test-only");
+
+ vi.stubEnv("DATABASE_EDITOR_URL", "isolated-test-only");
+ vi.stubEnv("DATABASE_READER_URL", "isolated-test-only");
 }, 30_000);
 afterAll(async () => { await state.db?.close(); vi.unstubAllEnvs(); });
 it("stages the four new editions inactive and preserves every source on migration replay", () => {

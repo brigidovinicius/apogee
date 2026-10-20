@@ -2,14 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import ts from "typescript";
+import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
+const api = opportunityLoader()("lib/applications.ts");
 const source = await readFile(new URL("../lib/applications.ts", import.meta.url), "utf8");
-// Next resolves this build-time boundary; plain Node tests need no package shim.
-const { outputText } = ts.transpileModule(source.replace('import "server-only";', ""), {
-  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
-});
-const api = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`);
+
 const NOW = Date.parse("2026-09-12T16:00:00Z");
 const ORIGIN = "https://makeitfly.vercel.app";
 const env = {

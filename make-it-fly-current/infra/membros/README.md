@@ -61,13 +61,28 @@ npm run db:seed
 ```
 
 Para conceder o papel administrativo a uma conta já cadastrada, use somente o
-comando estreito empacotado no serviço do site. Ele exige exatamente uma conta,
-altera apenas `role`, é idempotente e imprime somente evidência sanitizada:
+comando estreito empacotado no serviço do site, após autorização específica.
+Ele exige ID conferido e e-mail correspondente a exatamente uma conta ativa com
+e-mail verificado, altera apenas `role`, é idempotente e imprime somente evidência
+sanitizada. Não obtenha o ID de uma entrada não autenticada nem marque o e-mail
+como verificado manualmente para satisfazer o comando:
 
 ```sh
-docker exec -e MEMBERS_ADMIN_EMAIL=voce@exemplo.com apogee-site-web-1 \
+docker exec -e MEMBERS_ADMIN_EMAIL=voce@exemplo.com -e MEMBERS_ADMIN_USER_ID=ID_CONFERIDO apogee-site-web-1 \
   npm run members:grant-admin
 ```
+
+`db:seed` cria somente categorias. Se `MEMBERS_ADMIN_EMAIL` ou
+`MEMBERS_ADMIN_USER_ID` estiverem definidos, ele recusa a execução antes de
+conectar ao banco. Remova essas variáveis da sessão de seed; concessões usam o
+comando explícito. Não forneça essas variáveis como configuração permanente.
+
+Para autorizar um administrador já existente a emitir convites administrativos,
+o comando `members:grant-invitation-manager` exige também conta ativa/verificada,
+`MEMBERS_INVITATION_MANAGER_EMAIL` e `MEMBERS_INVITATION_MANAGER_USER_ID`
+correspondentes. Ele não promove membros. Consulte `docs/members-security-sec06.md`
+na raiz do repositório. As correções são locais; nenhum privilégio real foi
+concedido/revogado e nenhum deploy foi realizado por este lote.
 
 Quando o schema (`lib/members/schema.ts` ou `lib/gallery-schema.ts`) mudar, rode `npm run db:generate`, revise o SQL em `drizzle/` e rode `npm run db:migrate`.
 

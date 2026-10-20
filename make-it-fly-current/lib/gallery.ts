@@ -1,4 +1,5 @@
 import "server-only";
+import { RequestBodyError, readRequestBody, UPLOAD_BODY_TIMEOUT_MS } from "@/lib/request-body";
 
 import { createHmac, randomUUID } from "node:crypto";
 import sharp from "sharp";
@@ -114,26 +115,15 @@ function allowUpload(request: Request, signingSecret: string): boolean {
 
 async function boundedFormData(request: Request): Promise<FormData> {
   if (!request.body) throw new GalleryError(400, "Selecione uma foto antes de enviar.");
-  const reader = request.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.byteLength;
-    if (size > MAX_UPLOAD_BYTES) {
-      await reader.cancel();
-      throw new GalleryError(413, "A foto preparada excede o limite de 3 MB.");
-    }
-    chunks.push(value);
-  }
   try {
+    const body = await readRequestBody(request, MAX_UPLOAD_BYTES, UPLOAD_BODY_TIMEOUT_MS);
     return await new Request("http://localhost/upload", {
       method: "POST",
       headers: { "Content-Type": request.headers.get("content-type") || "" },
-      body: Buffer.concat(chunks),
+      body,
     }).formData();
-  } catch {
+  } catch (error) {
+    if (error instanceof RequestBodyError) throw new GalleryError(error.status, error.message);
     throw new GalleryError(400, "O envio está incompleto. Selecione a foto novamente.");
   }
 }
@@ -221,26 +211,11 @@ async function readAdminDeleteBody(request: Request): Promise<unknown> {
   if (length !== null && length > MAX_ADMIN_BODY_BYTES) throw new GalleryError(413, "Solicitação excede o tamanho permitido.");
   if (!request.body) throw new GalleryError(400, "Solicitação inválida.");
 
-  const reader = request.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let size = 0;
   try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      size += value.byteLength;
-      if (size > MAX_ADMIN_BODY_BYTES) {
-        await reader.cancel();
-        throw new GalleryError(413, "Solicitação excede o tamanho permitido.");
-      }
-      chunks.push(value);
-    }
-    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    return JSON.parse((await readRequestBody(request, MAX_ADMIN_BODY_BYTES)).toString("utf8"));
   } catch (error) {
-    if (error instanceof GalleryError) throw error;
+    if (error instanceof RequestBodyError) throw new GalleryError(error.status, error.message);
     throw new GalleryError(400, "Solicitação inválida.");
-  } finally {
-    reader.releaseLock();
   }
 }
 

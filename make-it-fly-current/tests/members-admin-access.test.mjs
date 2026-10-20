@@ -12,7 +12,7 @@ function database(initialRows) {
   const tx = async (strings, ...values) => {
     const statement = strings.join("?").replace(/\s+/g, " ").trim();
     statements.push(statement);
-    if (statement.startsWith("lock table")) return [];
+    if (statement.startsWith("lock table") || statement.startsWith("set local")) return [];
     if (statement.startsWith("select id, role")) return rows;
     if (statement.startsWith('update "user"')) {
       const row = rows.find((item) => item.id === values[0] && item.role === "member");
@@ -30,18 +30,18 @@ function database(initialRows) {
 }
 
 test("admin grant changes only one existing member and is idempotent", async () => {
-  const first = database([{ id: "member-id", role: "member" }]);
-  assert.deepEqual(await grantAdmin(first.sql, "authorized@example.com"), {
+  const first = database([{ id: "member-id", role: "member", email_verified: true, blocked: false }]);
+  assert.deepEqual(await grantAdmin(first.sql, "authorized@example.com", "member-id"), {
     id: "member-id",
     previousRole: "member",
     finalRole: "admin",
     changed: true,
   });
-  assert.deepEqual(first.rows, [{ id: "member-id", role: "admin" }]);
+  assert.deepEqual(first.rows, [{ id: "member-id", role: "admin", email_verified: true, blocked: false }]);
   assert.equal(first.statements.filter((statement) => statement.startsWith('update "user"')).length, 1);
 
-  const second = database([{ id: "member-id", role: "admin" }]);
-  assert.deepEqual(await grantAdmin(second.sql, "authorized@example.com"), {
+  const second = database([{ id: "member-id", role: "admin", email_verified: true, blocked: false }]);
+  assert.deepEqual(await grantAdmin(second.sql, "authorized@example.com", "member-id"), {
     id: "member-id",
     previousRole: "admin",
     finalRole: "admin",
@@ -53,11 +53,11 @@ test("admin grant changes only one existing member and is idempotent", async () 
 test("admin grant fails closed for missing, duplicate, or invalid roles", async () => {
   for (const rows of [
     [],
-    [{ id: "one", role: "member" }, { id: "two", role: "member" }],
-    [{ id: "one", role: "owner" }],
+    [{ id: "one", role: "member", email_verified: true, blocked: false }, { id: "two", role: "member", email_verified: true, blocked: false }],
+    [{ id: "one", role: "owner", email_verified: true, blocked: false }],
   ]) {
     const state = database(rows);
-    await assert.rejects(() => grantAdmin(state.sql, "authorized@example.com"), AdminRoleError);
+    await assert.rejects(() => grantAdmin(state.sql, "authorized@example.com", "one"), AdminRoleError);
     assert.equal(state.statements.some((statement) => statement.startsWith('update "user"')), false);
   }
 });
