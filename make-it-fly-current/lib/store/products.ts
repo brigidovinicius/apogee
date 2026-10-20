@@ -20,6 +20,16 @@ export const products = [
       { src: "/images/loja/bone-costas.jpg", alt: "Parte de trás do boné bege com fecho de ajuste", width: 1280, height: 853 },
     ],
   },
+  {
+    slug: "camiseta-apogee",
+    name: "Camiseta Apogee",
+    detail: "Azul-marinho",
+    description: "Camiseta de manga curta e gola redonda, com estrela no peito e assinatura Apogee nas costas.",
+    photos: [
+      { src: "/images/loja/camiseta-frente.jpg", alt: "Camiseta Apogee azul-marinho vista de frente com estrela no peito", width: 1254, height: 1254 },
+      { src: "/images/loja/camiseta-costas.jpg", alt: "Costas da camiseta azul-marinho com a assinatura Apogee abaixo da gola", width: 1254, height: 1254 },
+    ],
+  },
 ] as const;
 
 export type StoreProduct = (typeof products)[number];

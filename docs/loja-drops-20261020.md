@@ -41,3 +41,7 @@ Nenhum banco real foi acessado ou migrado. Não houve push, merge, publicação,
 - git diff --check: aprovado.
 
 Worktree: loja-drops-20261020. Branch: feat/loja-drops-20261020. O servidor de preview temporário foi encerrado após a revisão para liberar a fila global.
+
+## Ampliação e autorização de execução
+
+O usuário respondeu "Ok, execute inclua também esse produto" após o aviso de migração e publicação pendentes. Incluída Camiseta Apogee azul-marinho com frente e costas; catálogo agora com três produtos e sete fotos. Execução da ativação segue com preflight, validação final, backup e teste de restauração, migração e publicação restritas à Apogee. Evidências finais serão acrescentadas após cada etapa.

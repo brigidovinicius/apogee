@@ -83,7 +83,7 @@ test("custom category links retain titles, descriptions and original visual slot
     assert.ok(html.includes(category.title));
     assert.ok(html.includes(category.description));
   }
-  assert.equal((html.match(/data-category-art=/g) ?? []).length, 2);
+  assert.equal((html.match(/data-category-art=/g) ?? []).length, 3);
   assert.doesNotMatch(html, /cdn\.21st\.dev|Footwear|Technology|Accessories|href="#"/);
 });
 
@@ -132,7 +132,7 @@ test("motion follows the system by default and explicit pause leaves server cont
   assert.doesNotMatch(`${system}${paused}${animated}`, /motionEnabled=|onMenuRequest=/);
 });
 
-test("the store shows the two real products, all photos and a consent-based contact form", async () => {
+test("the store shows the three real products, all photos and a consent-based contact form", async () => {
   const { opportunityLoader } = await import("./helpers/load-opportunity-module.mjs");
   const load = opportunityLoader({
     "next/image": { __esModule: true, default: ({ preload, ...props }) => { void preload; return React.createElement("img", props); } },
@@ -142,10 +142,10 @@ test("the store shows the two real products, all photos and a consent-based cont
   const { StoreExperience } = load("app/loja/store-experience.tsx");
   const { products } = load("lib/store/products.ts");
   const html = renderToStaticMarkup(React.createElement(StoreExperience));
-  assert.equal(products.length, 2);
-  assert.deepEqual(products.map(item => item.photos.length), [2, 3]);
+  assert.equal(products.length, 3);
+  assert.deepEqual(products.map(item => item.photos.length), [2, 3, 2]);
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-  assert.equal((html.match(/<article\b/g) ?? []).length, 2);
+  assert.equal((html.match(/<article\b/g) ?? []).length, 3);
   for (const product of products) {
     assert.ok(html.includes(product.name));
     for (const photo of product.photos) {
