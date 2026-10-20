@@ -84,7 +84,7 @@ export default async function ProfilePage({ params }: Props) {
                 <div>
                   <h3>
                     <Link href={`/membros/forum/${reply.categorySlug}/${topicParam(reply.topicId, reply.topicSlug)}`}>
-                      {reply.topicTitle}
+                      {interfaceText(reply.topicTitle)}
                     </Link>
                   </h3>
                   <p>{interfaceText(reply.body.length > 180 ? `${reply.body.slice(0, 180)}…` : reply.body)}</p>
