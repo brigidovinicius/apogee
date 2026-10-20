@@ -1,3 +1,4 @@
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import { AdminPageHeader, adminStyles as styles } from "@/components/admin/admin-ui";
 import { listAdminUsers, type AdminUserFilter } from "@/lib/admin/data";
 
@@ -75,7 +76,7 @@ export default async function AdminUsersPage({
                   <summary>
                     <span className={styles.avatar} aria-hidden>{initials(account.name)}</span>
                     <span className={styles.userIdentity}>
-                      <strong>{account.name}</strong>
+                      <strong>{interfaceText(account.name)}</strong>
                       <span>{account.username ? `@${account.username}` : "Sem nome de usuário"}</span>
                     </span>
                     <span className={styles.roleBadge}>{account.role === "admin" ? "Administrador" : "Membro"}</span>

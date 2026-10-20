@@ -1,5 +1,6 @@
 "use client";
 
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import { useState } from "react";
 import type { CommunityPhoto } from "@/lib/gallery-types";
 import styles from "./gallery-admin.module.css";
@@ -32,7 +33,7 @@ export function GalleryAdmin() {
   }
 
   async function removePhoto(photo: CommunityPhoto) {
-    const label = photo.anonymous ? "esta foto anônima" : `a foto de ${photo.author}`;
+    const label = photo.anonymous ? "esta foto anônima" : `a foto de ${interfaceText(photo.author)}`;
     if (!window.confirm(`Excluir definitivamente ${label}?`)) return;
     setDeleting(photo.id);
     setStatus("");
@@ -78,7 +79,7 @@ export function GalleryAdmin() {
       <section className={styles.grid} aria-label="Fotos publicadas">
         {photos.map((photo) => (
           <article key={photo.id} className={styles.card}>
-            <img src={photo.src} alt={photo.anonymous ? "Publicação anônima" : `Publicação de ${photo.author}`} />
+            <img src={photo.src} alt={photo.anonymous ? "Publicação anônima" : `Publicação de ${interfaceText(photo.author)}`} />
             <div className={styles.cardBody}>
               <div>
                 <strong>{photo.anonymous ? "Anônimo" : photo.author}</strong>

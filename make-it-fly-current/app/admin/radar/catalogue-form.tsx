@@ -1,4 +1,5 @@
 "use client";
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import { useActionState, useState } from "react";
 import { adminStyles as styles } from "@/components/admin/admin-ui";
 import type { RadarManagedOpportunity, RadarEditorialSource } from "@/lib/opportunities/radar-editorial-client";
@@ -35,7 +36,7 @@ export function CatalogueForm({ item, sources }: { item?: RadarManagedOpportunit
     <h2>{item ? "Editar oportunidade" : "Criar oportunidade"}</h2><p>Salvar atualiza o catálogo público. Preencha apenas informações sustentadas pela fonte oficial.</p>
     <form action={saveAction} className={styles.catalogueForm}>
       <input type="hidden" name="id" value={item?.id ?? ""} /><input type="hidden" name="version" value={item?.version ?? 0} />
-      <label className={styles.field}><span>Fonte oficial</span><select name="officialSourceId" required {...bind("officialSourceId")}><option value="">Selecione</option>{sources.filter((s) => !item || s.id === item.officialSourceId).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+      <label className={styles.field}><span>Fonte oficial</span><select name="officialSourceId" required {...bind("officialSourceId")}><option value="">Selecione</option>{sources.filter((s) => !item || s.id === item.officialSourceId).map((s) => <option key={s.id} value={s.id}>{interfaceText(s.name)}</option>)}</select></label>
       <label className={styles.field}><span>Título</span><input name="title" required maxLength={500} {...bind("title")} /></label>
       <label className={styles.field}><span>Instituição</span><input name="institution" required maxLength={500} {...bind("institution")} /></label>
       <label className={styles.field}><span>Link oficial</span><input name="officialUrl" type="url" required maxLength={2000} {...bind("officialUrl")} /></label>
