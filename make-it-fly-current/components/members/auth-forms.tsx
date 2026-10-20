@@ -93,6 +93,7 @@ export function SignUpForm({ next, googleError }: { next: string; googleError?: 
     <form className={styles.form} action={action} noValidate>
       <FormMessage message={state.message} />
       <input type="hidden" name="next" value={next} />
+      <p className={styles.hint}>Já comprou o Radar? Use o mesmo e-mail da compra. Ao criar a conta com e-mail e senha, enviaremos a confirmação automaticamente. Confirme esse e-mail para liberar seu acesso vitalício.</p>
       <Field name="name" label="Nome" error={state.errors?.name}>
         {(props) => <NameInput {...props} defaultValue={state.values?.name} />}
       </Field>
