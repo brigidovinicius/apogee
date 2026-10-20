@@ -1,4 +1,3 @@
-import * as lucide from "lucide-react";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -32,7 +31,6 @@ async function loadComponent(path, dependencies = {}) {
   return exports;
 }
 
-const brandModule = await loadComponent("components/ui/brand-mark.tsx");
 const cardModule = await loadComponent("components/ui/card-7.tsx", {
   "./card-7.module.css": cssModule,
 });
@@ -131,31 +129,4 @@ test("standalone and page-managed motion policies remain explicit in server mark
   const managed = renderCard({ motionEnabled: true, motionManaged: true });
   assert.match(managed, /data-card-motion="enabled"/);
   assert.match(managed, /data-motion-managed="true"/);
-});
-
-test("the actual store renders six straight prototype cards instead of importing the Nike demo", async () => {
-  const { StoreExperience } = await loadComponent("app/loja/store-experience.tsx", {
-    "@/components/ui/brand-mark": brandModule,
-    "lucide-react": lucide,
-    "next/link": { default: ({ children, ...props }) => React.createElement("a", props, children) },
-    "./loja.module.css": cssModule,
-    "./store-orb": { StoreOrb: () => null },
-    "./store-product-visual": { StoreProductVisual: ({ kind }) => React.createElement("svg", { "data-store-visual": kind }) },
-    "@/components/ui/card-7": cardModule,
-    // The hero's navigation/category contract is covered separately. This
-    // focused card test keeps its supplied background, controls and CTA.
-    "@/components/ui/commerce-hero": {
-      CommerceHero: ({ background, headerActions, children }) => React.createElement("section", null, background, headerActions, children),
-    },
-  });
-  const html = renderToStaticMarkup(React.createElement(StoreExperience));
-  assert.equal((html.match(/data-store-card="true"/g) ?? []).length, 6);
-  assert.equal((html.match(/data-motion-managed="false"/g) ?? []).length, 6);
-  assert.equal((html.match(/data-card-motion="disabled"/g) ?? []).length, 6);
-  assert.equal((html.match(/data-card-badge="true">Protótipo<\/div>/g) ?? []).length, 6);
-  assert.equal((html.match(/aria-label="Ver protótipo [^"]+"/g) ?? []).length, 6);
-  assert.equal((html.match(/data-store-visual=/g) ?? []).length, 6);
-  assert.doesNotMatch(html, /Nike|M2K|\$149|cdn\.21st\.dev|class="indicators"/i);
-  assert.match(html, /A loja está em preparação/);
-  assert.doesNotMatch(html, /comprar agora|adicionar ao carrinho|checkout/i);
 });

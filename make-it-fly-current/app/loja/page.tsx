@@ -1,20 +1,13 @@
 import type { Metadata } from "next";
 import { StoreExperience } from "./store-experience";
 
+const description = "Conheça o moletom Building the Future, o boné Made to Create e a camiseta Apogee. Cadastre-se para receber novidades dos próximos drops.";
 export const metadata: Metadata = {
   title: "Loja | Apogee",
-  description:
-    "Peças, objetos e edições da comunidade Apogee Builders Club - primeira coleção em desenvolvimento.",
+  description,
   alternates: { canonical: "/loja" },
-  openGraph: {
-    title: "Loja | Apogee",
-    description: "Conheça os estudos da primeira coleção Apogee Builders Club, ainda em desenvolvimento.",
-    url: "/loja", siteName: "Apogee", locale: "pt_BR", type: "website",
-  },
-  twitter: {
-    card: "summary", title: "Loja | Apogee",
-    description: "Conheça os estudos da primeira coleção Apogee Builders Club, ainda em desenvolvimento.",
-  },
+  openGraph: { title: "Loja | Apogee", description, url: "/loja", siteName: "Apogee", locale: "pt_BR", type: "website" },
+  twitter: { card: "summary", title: "Loja | Apogee", description },
 };
 
 export default function StorePage() {
