@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Links de convite/verificação contêm segredos transitórios; omitir dos logs dev.
+  logging: { incomingRequests: { ignore: [/\/membros\/convite/, /\/membros\/(cadastro|entrar)/, /\/api\/auth\/verify-email/] } },
   async headers() {
     return [{ source: "/:path*", headers: [
       { key: "X-Content-Type-Options", value: "nosniff" },

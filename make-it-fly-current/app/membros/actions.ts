@@ -13,6 +13,7 @@ import {
   fieldErrors,
   parseTopicParam,
   profileSchema,
+  nameSchema,
   publicUsernameSchema,
   replySchema,
   safeNextPath,
@@ -53,7 +54,7 @@ function authErrorMessage(error: unknown, fallback: string): string {
     if (code === "INVALID_EMAIL_OR_PASSWORD") return "E-mail ou senha incorretos.";
     if (error.status === "TOO_MANY_REQUESTS") return TOO_MANY;
   }
-  console.error("[membros] erro de autenticação", error);
+  console.error("[membros] erro de autenticação");
   return fallback;
 }
 
@@ -76,14 +77,16 @@ export async function completeUsername(_: FormState, form: FormData): Promise<Fo
   const member = await getCurrentMember();
   if (!member) redirect("/membros/entrar");
   const next = safeNextPath(text(form, "next"));
-  if (!isGeneratedGoogleUsername(member.username)) redirect(next);
+  if (!isGeneratedGoogleUsername(member.username) && !member.nameNeedsConfirmation) redirect(next);
 
-  const values = { username: text(form, "username") };
+  const values = { username: text(form, "username"), name: text(form, "name") };
+  const name = nameSchema.safeParse(values.name);
+  if (!name.success) return { errors: { name: "Informe seu nome, sem links ou e-mails." }, values };
   const parsed = publicUsernameSchema.safeParse(values.username);
   if (!parsed.success) return { errors: { username: parsed.error.issues[0]?.message ?? "Escolha um nome de usuário válido." }, values };
 
   try {
-    const updated = await forum.completeGoogleUsername(member.id, member.username, parsed.data);
+    const updated = await forum.completeGoogleUsername(member.id, member.username, parsed.data, name.data);
     if (!updated) return { message: "Seu cadastro já foi concluído. Entre novamente para continuar.", values };
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {

@@ -126,14 +126,16 @@ test("only the approved Apogee, blog, admin, community and Make It Fly surfaces 
   };
   await visit("app");
   assert.deepEqual(files.filter(path => /\/(?:page|layout|route)\.(?:tsx?|jsx?|mdx)$/.test(path)).sort(), [
-    "app/admin/acesso-negado/page.tsx", "app/admin/curadoria/page.tsx", "app/admin/layout.tsx", "app/admin/page.tsx",
+    "app/admin/acesso-negado/page.tsx",
+    "app/admin/convites/page.tsx", "app/admin/curadoria/page.tsx", "app/admin/layout.tsx", "app/admin/page.tsx",
     "app/admin/posts/[id]/page.tsx", "app/admin/posts/novo/page.tsx", "app/admin/posts/page.tsx", "app/admin/radar/page.tsx", "app/admin/usuarios/page.tsx",
     "app/api/admin/posts/[id]/media/route.ts", "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/auth/[...all]/route.ts", "app/api/checkout/route.ts",
     "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts",
+    "app/api/members/invitations/route.ts", "app/api/members/verification/route.ts",
     "app/api/membros/avatar/[id]/route.ts", "app/api/membros/avatar/route.ts", "app/api/radar/alerts/route.ts",
     "app/blog/[slug]/page.tsx", "app/blog/media/[photo]/route.ts", "app/blog/page.tsx", "app/galeria/fotos/[photo]/route.ts", "app/galeria/page.tsx",
     "app/gerenciar-galeria/page.tsx", "app/home-robonauta/page.tsx", "app/layout.tsx", "app/login/page.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",
-    "app/makeitfly/participar/page.tsx", "app/membros/cadastro/page.tsx", "app/membros/entrar/page.tsx",
+    "app/makeitfly/participar/page.tsx", "app/membros/cadastro/page.tsx", "app/membros/convite/page.tsx", "app/membros/entrar/page.tsx",
     "app/membros/forum/[categoria]/[topico]/page.tsx", "app/membros/forum/[categoria]/novo/page.tsx",
     "app/membros/forum/[categoria]/page.tsx", "app/membros/layout.tsx", "app/membros/oportunidades/page.tsx", "app/membros/page.tsx",
     "app/membros/perfil/[username]/page.tsx", "app/membros/perfil/configurar/page.tsx", "app/membros/perfil/editar/page.tsx", "app/oportunidades/avisos/page.tsx", "app/oportunidades/page.tsx", "app/page.tsx",

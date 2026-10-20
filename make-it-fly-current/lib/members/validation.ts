@@ -26,11 +26,19 @@ export const publicUsernameSchema = usernameSchema.refine(
   "Escolha outro nome de usuário.",
 );
 
-export const nameSchema = z
-  .string()
-  .trim()
-  .min(2, "Informe seu nome.")
-  .max(60, "O nome pode ter no máximo 60 caracteres.");
+export const NAME_ERROR = "Informe seu nome, sem links ou e-mails.";
+
+// Política de aceitação: não decodifica URL/HTML nem faz consultas de rede.
+// O limite bruto vem antes de normalização/regex; controles nunca viram espaços.
+export const nameSchema = z.string({ error: NAME_ERROR })
+  .max(400, NAME_ERROR)
+  .pipe(z.string()
+  .refine((value) => !/[\p{C}\p{Zl}\p{Zp}]/u.test(value), NAME_ERROR)
+  .transform((value) => value.normalize("NFC").replace(/\p{Zs}+/gu, " ").trim())
+  .refine((value) => [...value].length >= 1 && [...value].length <= 100, NAME_ERROR)
+  .refine((value) => /\p{L}/u.test(value) && /^[\p{L}\p{M} '\u2019\u02bc.\-]+$/u.test(value), NAME_ERROR)
+  // Pontos só encerram iniciais isoladas: Ana M. e A. M.; example.com não passa.
+  .refine((value) => value.split(" ").every((part) => !part.includes(".") || /^\p{L}\p{M}*\.$/u.test(part)), NAME_ERROR));
 
 export const emailSchema = z.string().trim().toLowerCase().pipe(z.email("Informe um e-mail válido."));
 

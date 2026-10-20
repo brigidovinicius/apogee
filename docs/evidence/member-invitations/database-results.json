@@ -1,0 +1,23 @@
+{
+  "environment": "local disposable PostgreSQL",
+  "mailbox": "contato@apogee.community",
+  "invites": [
+    {
+      "invited_role": "member",
+      "status": "accepted",
+      "acceptance_events": 1
+    },
+    {
+      "invited_role": "admin",
+      "status": "accepted",
+      "acceptance_events": 1
+    }
+  ],
+  "recipient": {
+    "accounts": 1,
+    "email_verified": true,
+    "role": "admin",
+    "can_manage_admins": false
+  },
+  "evidence": "email verified via signed native Better Auth link received in Hostinger; explicit acceptance via browser POST"
+}
