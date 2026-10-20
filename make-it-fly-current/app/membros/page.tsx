@@ -1,3 +1,4 @@
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { formatDateTime } from "@/components/members/format";
@@ -19,7 +20,7 @@ export default async function ForumHomePage() {
         <div>
           <p className={styles.eyebrow}>Comunidade Apogee</p>
           <h1 className={styles.title}>Fórum</h1>
-          <p className={styles.lead}>Olá, {member.name.split(" ")[0]}. Escolha uma categoria para conversar.</p>
+          <p className={styles.lead}>Olá, {interfaceText(member.name).split(" ")[0]}. Escolha uma categoria para conversar.</p>
         </div>
       </header>
 
@@ -44,9 +45,9 @@ export default async function ForumHomePage() {
             <li className={styles.listItem} key={category.id}>
               <div>
                 <h2>
-                  <Link href={`/membros/forum/${category.slug}`}>{category.name}</Link>
+                  <Link href={`/membros/forum/${category.slug}`}>{interfaceText(category.name)}</Link>
                 </h2>
-                {category.description ? <p>{category.description}</p> : null}
+                {category.description ? <p>{interfaceText(category.description)}</p> : null}
                 {category.lastPostAt ? (
                   <p className={styles.meta}>Última atividade em {formatDateTime(category.lastPostAt)}</p>
                 ) : null}

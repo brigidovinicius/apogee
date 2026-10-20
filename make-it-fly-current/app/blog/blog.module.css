@@ -80,8 +80,8 @@
 :global([data-apogee-design]) .pagination,
 :global([data-apogee-design]) .sectionHeading > span { font-family: var(--apogee-font-sans); font-size: .8125rem; letter-spacing: 0; text-transform: none; }
 :global([data-apogee-design]) .categories { flex-wrap: wrap; overflow: visible; }
-:global([data-apogee-design]) .categories a { min-height: 2.75rem; border-radius: .4rem; font-size: .875rem; }
-:global([data-apogee-design]) .card { background: var(--apogee-navy); border-radius: 0; }
+:global([data-apogee-design]) .categories a { min-height: 2.75rem; border-radius: var(--apogee-control-radius); font-size: .875rem; }
+:global([data-apogee-design]) .card { background: var(--apogee-navy); border-radius: var(--apogee-group-radius); }
 :global([data-apogee-design]) .cardArt,
 :global([data-apogee-design]) .articleArt { color: var(--apogee-navy); background: var(--apogee-sky); }
 :global([data-apogee-design]) .cardArt::after,

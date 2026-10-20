@@ -4,7 +4,7 @@ import { StoreExperience } from "./store-experience";
 export const metadata: Metadata = {
   title: "Loja | Apogee",
   description:
-    "Peças, objetos e edições da comunidade Apogee Builders Club — primeira coleção em desenvolvimento.",
+    "Peças, objetos e edições da comunidade Apogee Builders Club - primeira coleção em desenvolvimento.",
   alternates: { canonical: "/loja" },
   openGraph: {
     title: "Loja | Apogee",

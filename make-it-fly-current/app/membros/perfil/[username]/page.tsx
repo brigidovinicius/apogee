@@ -1,3 +1,4 @@
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -32,7 +33,7 @@ export default async function ProfilePage({ params }: Props) {
         <div className={styles.profileHead}>
           <AvatarInitials name={profile.name} userId={profile.id} image={profile.image} size="large" />
           <div>
-            <h1 className={styles.title}>{profile.name}</h1>
+            <h1 className={styles.title}>{interfaceText(profile.name)}</h1>
             <p className={styles.eyebrow} style={{ margin: "0.6rem 0 0" }}>
               @{profile.username} · membro desde {formatMonthYear(profile.createdAt)}
             </p>
@@ -44,7 +45,7 @@ export default async function ProfilePage({ params }: Props) {
           </Link>
         ) : null}
       </header>
-      {profile.bio ? <p className={styles.bio}>{profile.bio}</p> : null}
+      {profile.bio ? <p className={styles.bio}>{interfaceText(profile.bio)}</p> : null}
 
       <section className={styles.section} aria-labelledby="topicos">
         <h2 className={styles.sectionTitle} id="topicos">
@@ -59,7 +60,7 @@ export default async function ProfilePage({ params }: Props) {
                 <div>
                   <h3>
                     <Link href={`/membros/forum/${topic.categorySlug}/${topicParam(topic.id, topic.slug)}`}>
-                      {topic.title}
+                      {interfaceText(topic.title)}
                     </Link>
                   </h3>
                   <p className={styles.meta}>{formatDateTime(topic.createdAt)}</p>
@@ -86,7 +87,7 @@ export default async function ProfilePage({ params }: Props) {
                       {reply.topicTitle}
                     </Link>
                   </h3>
-                  <p>{reply.body.length > 180 ? `${reply.body.slice(0, 180)}…` : reply.body}</p>
+                  <p>{interfaceText(reply.body.length > 180 ? `${reply.body.slice(0, 180)}…` : reply.body)}</p>
                   <p className={styles.meta}>{formatDateTime(reply.createdAt)}</p>
                 </div>
               </li>

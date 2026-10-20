@@ -1,3 +1,5 @@
+import { BrandMark } from "@/components/ui/brand-mark";
+import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,12 +28,12 @@ export default function ParticipatePage() {
           <h1 id="application-title">Uma ideia. O próximo passo.</h1>
           <p className={styles.introCopy}>Queremos conhecer você, entender o que está construindo e saber como a Make It Fly pode ajudar sua ideia a avançar.</p>
           <div className={styles.processNote}>
-            <span aria-hidden="true">✦</span>
+            <span aria-hidden="true"><BrandMark /></span>
             <p>Preencha todas as etapas: analisamos cada aplicação e enviamos o link do ingresso a quem for selecionado.</p>
           </div>
           <p className={styles.privacy}>Seus dados serão usados apenas para avaliar sua participação, organizar esta edição e entrar em contato sobre a Make It Fly.</p>
           <div className={styles.introSignature}>
-            <Image src="/brand/make-it-fly-wordmark.png" alt="Make It Fly — Building the future" width={2097} height={523} sizes="(max-width: 800px) 240px, 30vw" priority />
+            <Image src="/brand/make-it-fly-wordmark.png" alt="Make It Fly - Building the future" width={2097} height={523} sizes="(max-width: 800px) 240px, 30vw" priority />
             <span>Give your ideas wings.</span>
           </div>
         </section>
@@ -42,7 +44,7 @@ export default function ParticipatePage() {
               <p>Formulário de aplicação</p>
               <h2 id="form-heading">Conte o que você quer colocar no mundo.</h2>
             </div>
-            <a href={`${GOOGLE_FORM_URL}?usp=header`} target="_blank" rel="noreferrer">Abrir em nova aba <span aria-hidden="true">↗</span></a>
+            <a href={`${GOOGLE_FORM_URL}?usp=header`} target="_blank" rel="noreferrer">Abrir em nova aba <span aria-hidden="true"><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></a>
           </div>
           <iframe
             className={styles.formFrame}

@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowDownRight } from "lucide-react";
+import { ShareButton } from "@/components/site/share-button";
 import styles from "./gallery.module.css";
 
 type GalleryHeroProps = {
@@ -28,6 +29,8 @@ export function GalleryHero({ gridInView }: GalleryHeroProps) {
           </a>
         </div>
       </div>
+
+      <ShareButton title="Galeria da comunidade | Apogee" path="/galeria" />
 
       <div className={styles.heroFooter} aria-hidden>
         <span>Olhares</span>

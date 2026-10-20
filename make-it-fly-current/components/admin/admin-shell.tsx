@@ -9,7 +9,7 @@ export function AdminShell({ children, showModeSwitcher }: { children: ReactNode
   return (
     <div className={styles.shell}>
       <header className={styles.mobileHeader}>
-        <Link className={styles.mobileBrand} href="/admin" aria-label="Apogee Admin — painel">
+        <Link className={styles.mobileBrand} href="/admin" aria-label="Apogee Admin - painel">
           <Image src="/brand/apogee-logo-white.svg" alt="" width={1595} height={986} sizes="88px" />
           <span>Admin</span>
         </Link>
@@ -25,7 +25,7 @@ export function AdminShell({ children, showModeSwitcher }: { children: ReactNode
       ) : null}
 
       <aside className={styles.sidebar}>
-        <Link className={styles.brand} href="/admin" aria-label="Apogee Admin — painel">
+        <Link className={styles.brand} href="/admin" aria-label="Apogee Admin - painel">
           <Image src="/brand/apogee-logo-white.svg" alt="" width={1595} height={986} sizes="104px" />
           <span>Admin</span>
         </Link>

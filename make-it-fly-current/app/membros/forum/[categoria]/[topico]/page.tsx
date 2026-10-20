@@ -1,3 +1,4 @@
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -43,7 +44,7 @@ export default async function TopicPage({ params, searchParams }: Props) {
         </li>
       </ol>
       <header className={styles.pageHead}>
-        <h1 className={styles.title}>{topic.title}</h1>
+        <h1 className={styles.title}>{interfaceText(topic.title)}</h1>
       </header>
 
       <div>

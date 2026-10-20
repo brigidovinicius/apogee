@@ -1075,10 +1075,10 @@
 :global([data-apogee-design]) .details dt,
 :global([data-apogee-design]) .launchWindow span,
 :global([data-apogee-design]) .cardFooter span { font-family: var(--apogee-font-sans); font-size: .8125rem; letter-spacing: 0; text-transform: none; }
-:global([data-apogee-design]) .card { border-radius: .4rem; }
+:global([data-apogee-design]) .card { border-radius: var(--apogee-group-radius); }
 :global([data-apogee-design]) .card h3 { font-family: var(--apogee-font-heading); font-size: 2.2rem; font-weight: 400; line-height: 1.1; }
 :global([data-apogee-design]) .filterTrigger,
-:global([data-apogee-design]) .filterGroup button { border-radius: .4rem; }
+:global([data-apogee-design]) .filterGroup button { border-radius: var(--apogee-control-radius); }
 
 :global([data-apogee-design]) .noticePage { flex: 1; padding-block: clamp(3rem, 7vw, 7rem); }
 :global([data-apogee-design]) .noticePage h1 { max-width: 20ch; font-family: var(--apogee-font-heading); font-size: clamp(3rem, 6vw, 6rem); font-weight: 400; line-height: .98; letter-spacing: -.025em; margin: 0 0 2rem; }

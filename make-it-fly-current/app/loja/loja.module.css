@@ -248,6 +248,8 @@
 :global([data-apogee-design]) .collectionIntro { max-width: none; margin-inline: var(--apogee-page-margin); padding-inline: 0; }
 :global([data-apogee-design]) .collectionIntro > div > p,
 :global([data-apogee-design]) .footerEyebrow { font-size: .8125rem; letter-spacing: 0; text-transform: none; }
-:global([data-apogee-design]) .pill { min-height: 3rem; border-radius: .4rem; box-shadow: none; backdrop-filter: none; background: var(--store-card); }
+:global([data-apogee-design]) .pill { min-height: 3rem; border-radius: var(--apogee-control-radius); box-shadow: none; backdrop-filter: none; background: var(--store-card); }
 :global([data-apogee-design]) .footer { padding-inline: var(--apogee-page-margin); }
 :global([data-apogee-design]) .productCard { --card-background: #07182d; }
+
+:global([data-apogee-design]) .page { --store-ink: var(--apogee-navy); --store-paper: var(--apogee-white); --store-card: var(--apogee-sky); --store-line: var(--apogee-sky); font-family: var(--apogee-font-sans); }
