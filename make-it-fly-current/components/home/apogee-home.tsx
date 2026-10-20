@@ -98,7 +98,7 @@ export function ApogeeHome() {
               <p className={styles.eyebrow}>Da ideia ao encontro</p>
               <Image
                 src="/brand/make-it-fly-wordmark.png"
-                alt="Make It Fly — Building the future"
+                alt="Make It Fly - Building the future"
                 width={2097}
                 height={523}
                 sizes="(max-width: 700px) 85vw, 430px"

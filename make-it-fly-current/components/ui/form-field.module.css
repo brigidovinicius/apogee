@@ -16,7 +16,7 @@
   color: var(--apogee-navy);
   background: var(--apogee-white);
   border: 1px solid var(--apogee-border);
-  border-radius: var(--apogee-radius-sharp);
+  border-radius: var(--apogee-control-radius);
   font: inherit;
   font-size: var(--apogee-text-body);
   line-height: var(--apogee-leading-body);

@@ -1,7 +1,9 @@
 "use client";
 
+import { BrandMark } from "@/components/ui/brand-mark";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { StoreOrb } from "./store-orb";
 import { StoreProductVisual } from "./store-product-visual";
 import { InteractiveProductCard } from "@/components/ui/card-7";
@@ -19,7 +21,7 @@ const collection = [
 
 type CollectionItem = (typeof collection)[number];
 
-function CycleText({ children }: { children: string }) {
+function CycleText({ children }: { children: ReactNode }) {
   return <span className={styles.cycleText}><span>{children}</span><span aria-hidden>{children}</span></span>;
 }
 
@@ -127,7 +129,7 @@ export function StoreExperience() {
                   brand={<span className={styles.cardBrand} role="img" aria-label="Apogee" />}
                   badge="Protótipo"
                   visual={<div className={styles.cardArtwork}><StoreProductVisual kind={item.visual} /></div>}
-                  footer={<div className={styles.cardFooter}><span>{item.caption}<small>Ver estudo da peça <span aria-hidden>↗</span></small></span><span className={styles.cardNumber} aria-hidden>{String(index + 1).padStart(2, "0")}</span></div>}
+                  footer={<div className={styles.cardFooter}><span>{item.caption}<small>Ver estudo da peça <span aria-hidden><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></small></span><span className={styles.cardNumber} aria-hidden>{String(index + 1).padStart(2, "0")}</span></div>}
                   showIndicators={false}
                   motionEnabled={false}
                   onActivate={() => setSelected(item)}
@@ -155,16 +157,16 @@ export function StoreExperience() {
           <div className={styles.productDialogHeader}><span className={styles.logoNavy} role="img" aria-label="Apogee" /><button type="button" className={styles.closeButton} onClick={closeModal} autoFocus><CycleText>Voltar à coleção</CycleText><span aria-hidden>×</span></button></div>
           <div className={styles.productHero}>
             <span className={styles.productBarcode} aria-hidden />
-            <span className={styles.productCategory}>{selected.category} <span aria-hidden>✦</span></span>
-            <div className={styles.productMarquee} aria-hidden><div>{[0, 1, 2, 3].map((i) => <span key={i}>{selected.name} — {selected.detail}&nbsp;</span>)}</div></div>
+            <span className={styles.productCategory}>{selected.category} <span aria-hidden><BrandMark /></span></span>
+            <div className={styles.productMarquee} aria-hidden><div>{[0, 1, 2, 3].map((i) => <span key={i}>{selected.name} - {selected.detail}&nbsp;</span>)}</div></div>
             <div className={styles.detailObject}><StoreProductVisual kind={selected.visual} /></div>
             <div className={styles.detailNumber}><span>Protótipo</span><strong>{String(collection.indexOf(selected) + 1).padStart(2, "0")}</strong></div>
-            <div className={styles.productSticker}>Primeira<br />coleção<br /><span aria-hidden>↗</span></div>
+            <div className={styles.productSticker}>Primeira<br />coleção<br /><span aria-hidden><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></div>
             <button type="button" className={`${styles.pill} ${styles.productExplore}`} onClick={() => productDialog.current?.querySelector("[data-product-story]")?.scrollIntoView({ behavior: motionEnabled ? "smooth" : "instant", block: "start" })}><CycleText>Conhecer a peça ↓</CycleText></button>
           </div>
           <section className={styles.productStory} data-product-story>
             <div><p>Primeira coleção · {selected.detail}</p><h2 id="product-title">{selected.name}</h2><h3>{selected.caption}</h3></div>
-            <div><p>{selected.description}</p><p className={styles.developmentNote}>Estudo visual da coleção. Materiais, medidas e produção ainda estão em definição. Este item não está à venda.</p><Link className={styles.pill} href="/galeria"><CycleText>Conheça a comunidade ↗</CycleText></Link></div>
+            <div><p>{selected.description}</p><p className={styles.developmentNote}>Estudo visual da coleção. Materiais, medidas e produção ainda estão em definição. Este item não está à venda.</p><Link className={styles.pill} href="/galeria"><CycleText>Conheça a comunidade <ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></CycleText></Link></div>
           </section>
         </>}
       </dialog>
@@ -175,7 +177,7 @@ export function StoreExperience() {
 
       <dialog ref={menuDialog} id="store-mobile-menu" className={styles.mobileMenu} data-closing={closing} aria-label="Menu da loja" onCancel={(event) => { event.preventDefault(); closeModal(); }}>
         <div className={styles.menuHeader}><span className={styles.logoNavy} role="img" aria-label="Apogee" /><button className={styles.closeButton} type="button" onClick={closeModal} aria-label="Fechar menu" autoFocus>×</button></div>
-        <nav aria-label="Menu móvel"><a href="#produtos" onClick={closeModal}>Coleção<span>↗</span></a><Link href="/galeria">Nossa história<span>↗</span></Link><Link href="/">Início<span>↗</span></Link></nav>
+        <nav aria-label="Menu móvel"><a href="#produtos" onClick={closeModal}>Coleção<span><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></a><Link href="/galeria">Nossa história<span><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></Link><Link href="/">Início<span><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></Link></nav>
         <div className={styles.menuBottom}><p>Building the future.</p><span className={styles.menuSignature} role="img" aria-label="Apogee" /></div>
       </dialog>
     </div>

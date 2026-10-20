@@ -1,5 +1,6 @@
 "use client";
 
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import { OpportunityBenefits, OpportunityCosts } from "./opportunity-financials";
 import { AdmissionProcessCard } from "./admission-process-card";
 import { groupAdmissionProcesses } from "@/lib/opportunities/admission-processes";
@@ -372,15 +373,15 @@ function OpportunityCard({ opportunity, management }: { opportunity: StudentOppo
         {opportunity.kind}{OPPORTUNITY_CATEGORIES.filter(({ id }) => id !== primaryOpportunityCategory(opportunity) && opportunity.categories?.includes(id)).map(({ label }) => ` · ${label}`).join("")}
       </p> : null}
       <div className={styles.cardMain}>
-        <p className={styles.organization} title={opportunity.organization}>{opportunity.organization}</p>
-        <h3>{opportunity.title}</h3>
+        <p className={styles.organization} title={interfaceText(opportunity.organization)}>{interfaceText(opportunity.organization)}</p>
+        <h3>{interfaceText(opportunity.title)}</h3>
         <OpportunityBenefits opportunity={opportunity} />
-        <p className={styles.summary}>{opportunity.summary}</p>
+        <p className={styles.summary}>{interfaceText(opportunity.summary)}</p>
       </div>
       <dl className={styles.details}>
         <div>
           <dt>Localização</dt>
-          <dd className={styles.locationValue}><MapPin size={15} aria-hidden />{opportunity.location}</dd>
+          <dd className={styles.locationValue}><MapPin size={15} aria-hidden />{interfaceText(opportunity.location)}</dd>
         </div>
         {opportunity.eventStartsAt && Number.isFinite(Date.parse(opportunity.eventStartsAt)) ? <div>
           <dt>Realização</dt>
@@ -392,7 +393,7 @@ function OpportunityCard({ opportunity, management }: { opportunity: StudentOppo
         <dl className={styles.details}>
         <div>
           <dt>Para quem</dt>
-          <dd>{opportunity.eligibility}</dd>
+          <dd>{interfaceText(opportunity.eligibility)}</dd>
         </div>
           <OpportunityCosts opportunity={opportunity} />
         </dl>
@@ -401,7 +402,7 @@ function OpportunityCard({ opportunity, management }: { opportunity: StudentOppo
         <CalendarDays size={17} aria-hidden />
         <div>
           <span>Janela de inscrição</span>
-          <strong>{opportunity.deadlineLabel}</strong>
+          <strong>{interfaceText(opportunity.deadlineLabel)}</strong>
           {opportunity.deadline && !opportunity.deadlineAt ? <small>Horário de encerramento não informado.</small> : null}
         </div>
       </div>
@@ -414,7 +415,7 @@ function OpportunityCard({ opportunity, management }: { opportunity: StudentOppo
           className={styles.externalLink}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={`Ver página oficial de ${opportunity.title}`}
+          aria-label={`Ver página oficial de ${interfaceText(opportunity.title)}`}
         >
           Ver oportunidade <ArrowUpRight size={16} aria-hidden />
         </Link>

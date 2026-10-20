@@ -1,3 +1,4 @@
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import Link from "next/link";
 import { AvatarInitials } from "./avatar-initials";
 import { formatDateTime } from "./format";
@@ -31,16 +32,16 @@ export function PostCard({ post, canEdit, category, last }: PostCardProps) {
       <div className={styles.postContent}>
         <header className={styles.postHead}>
           {post.authorUsername ? (
-            <Link href={`/membros/perfil/${post.authorUsername}`}>{post.authorName}</Link>
+            <Link href={`/membros/perfil/${post.authorUsername}`}>{interfaceText(post.authorName)}</Link>
           ) : (
-            <strong>{post.authorName}</strong>
+            <strong>{interfaceText(post.authorName)}</strong>
           )}
           <span className={styles.meta}>
             <time dateTime={post.createdAt.toISOString()}>{formatDateTime(post.createdAt)}</time>
             {post.editedAt ? " · editado" : null}
           </span>
         </header>
-        <p className={styles.postBody}>{post.body}</p>
+        <p className={styles.postBody}>{interfaceText(post.body)}</p>
         {canEdit ? <PostTools postId={post.id} body={post.body} category={category} isOpening={post.isOpening} /> : null}
       </div>
     </article>

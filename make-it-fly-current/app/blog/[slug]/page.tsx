@@ -1,8 +1,11 @@
+import { interfaceText } from "@/lib/presentation-text.mjs";
+import { BrandMark } from "@/components/ui/brand-mark";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
+import { ShareButton } from "@/components/site/share-button";
 import { getPublicPost, listPostMedia } from "@/lib/blog/data";
 import { blogMediaUrl } from "@/lib/blog/media";
 import { categoryLabel, postDate } from "@/lib/blog/shared";
@@ -17,8 +20,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = await getPublicPost(slug);
   if (!post) return { title: "Artigo não encontrado | Apogee", robots: { index: false } };
-  const title = post.seoTitle || post.title;
-  const description = post.seoDescription || post.excerpt;
+  const title = interfaceText(post.seoTitle || post.title);
+  const description = interfaceText(post.seoDescription || post.excerpt);
   const media = post.coverMediaId ? await listPostMedia(post.id) : [];
   const cover = media.find((item) => item.id === post.coverMediaId);
   const image = cover ? { url: blogMediaUrl(cover.id), alt: cover.alt, width: cover.width, height: cover.height } : null;
@@ -54,21 +57,22 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
     <SiteHeader current="blog" />
     <main id="experiencia" tabIndex={-1} className={styles.articleMain}>
       <nav className={styles.breadcrumb} aria-label="Localização"><Link href="/blog">Blog</Link><span aria-hidden>/</span><span>{categoryLabel(post.category)}</span></nav>
-      <header className={styles.articleHeader}><p className={styles.eyebrow}>{categoryLabel(post.category)} / Apogee</p><h1>{post.title}</h1><p className={styles.articleLead}>{post.excerpt}</p><div className={styles.articleByline}><span>Por {post.authorName}</span>{date ? <time dateTime={date.toISOString()}>{dateFormat.format(date)}</time> : null}</div></header>
+      <header className={styles.articleHeader}><p className={styles.eyebrow}>{categoryLabel(post.category)} / Apogee</p><h1>{interfaceText(post.title)}</h1><p className={styles.articleLead}>{interfaceText(post.excerpt)}</p><div className={styles.articleByline}><span>Por {interfaceText(post.authorName)}</span>{date ? <time dateTime={date.toISOString()}>{dateFormat.format(date)}</time> : null}</div></header>
+      <ShareButton title={`${interfaceText(post.title)} | Apogee`} path={`/blog/${encodeURIComponent(post.slug)}`} />
       <div className={styles.articleArt} data-category={post.category}>{cover ? <>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={cover.alt} width={cover.width} height={cover.height} />
-      </> : <><span>APOGEE / IDEIAS</span><span aria-hidden>✳</span></>}</div>
+        <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={interfaceText(cover.alt)} width={cover.width} height={cover.height} />
+      </> : <><span>APOGEE / IDEIAS</span><span aria-hidden><BrandMark /></span></>}</div>
       <article className={styles.articleBody}>{paragraphs.map((paragraph, index) => {
         const marker = /^\[\[media:([a-f0-9-]{36})\]\]$/.exec(paragraph.trim());
         const image = marker ? mediaById.get(marker[1]) : null;
         return image ? <figure className={styles.inlineFigure} key={index}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={blogMediaUrl(image.id)} alt={image.alt} width={image.width} height={image.height} loading="lazy" />
-          {image.caption ? <figcaption>{image.caption}</figcaption> : null}
-        </figure> : <p key={index}>{paragraph}</p>;
+          <img src={blogMediaUrl(image.id)} alt={interfaceText(image.alt)} width={image.width} height={image.height} loading="lazy" />
+          {image.caption ? <figcaption>{interfaceText(image.caption)}</figcaption> : null}
+        </figure> : <p key={index}>{interfaceText(paragraph)}</p>;
       })}{video ? <div className={styles.videoFrame}><iframe src={video.src} title={`Vídeo do artigo no ${video.provider}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div> : null}</article>
-      <div className={styles.articleEnd}><span>✳</span><p>Mais ideias para seguir em frente.</p><Link href="/blog">← Voltar ao blog</Link></div>
+      <div className={styles.articleEnd}><span><BrandMark /></span><p>Mais ideias para seguir em frente.</p><Link href="/blog">← Voltar ao blog</Link></div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     </main>
     <SiteFooter />

@@ -1,5 +1,6 @@
 "use client";
 
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import { Compass, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -57,8 +58,8 @@ export function PublicOpportunitiesPreview({
                 <span>{opportunity.level}</span>
               </div>
               <div className={styles.cardMain}>
-                <p className={styles.organization}>{opportunity.organization}</p>
-                <h3>{opportunity.title}</h3>
+                <p className={styles.organization}>{interfaceText(opportunity.organization)}</p>
+                <h3>{interfaceText(opportunity.title)}</h3>
               </div>
               <div className={styles.previewDetails} aria-hidden="true">
                 <span />

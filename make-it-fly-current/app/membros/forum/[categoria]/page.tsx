@@ -1,3 +1,4 @@
+import { interfaceText } from "@/lib/presentation-text.mjs";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -37,12 +38,12 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <li>
           <Link href="/membros">Fórum</Link>
         </li>
-        <li aria-current="page">{category.name}</li>
+        <li aria-current="page">{interfaceText(category.name)}</li>
       </ol>
       <header className={styles.pageHead}>
         <div>
-          <h1 className={styles.title}>{category.name}</h1>
-          {category.description ? <p className={styles.lead}>{category.description}</p> : null}
+          <h1 className={styles.title}>{interfaceText(category.name)}</h1>
+          {category.description ? <p className={styles.lead}>{interfaceText(category.description)}</p> : null}
         </div>
         <Link className={styles.primaryLight} href={`${basePath}/novo`}>
           Novo tópico <span aria-hidden>+</span>
@@ -57,12 +58,12 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             <li className={styles.listItem} key={topic.id}>
               <div>
                 <h2>
-                  <Link href={`${basePath}/${topicParam(topic.id, topic.slug)}`}>{topic.title}</Link>
+                  <Link href={`${basePath}/${topicParam(topic.id, topic.slug)}`}>{interfaceText(topic.title)}</Link>
                 </h2>
                 <p className={styles.meta}>
                   <AvatarInitials name={topic.authorName} userId={topic.authorId} image={topic.authorImage} size="small" />{" "}
                   {topic.authorUsername ? (
-                    <Link href={`/membros/perfil/${topic.authorUsername}`}>{topic.authorName}</Link>
+                    <Link href={`/membros/perfil/${topic.authorUsername}`}>{interfaceText(topic.authorName)}</Link>
                   ) : (
                     topic.authorName
                   )}{" "}

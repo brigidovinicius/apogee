@@ -35,7 +35,9 @@ estado de pressão para toque. Textos longos podem quebrar para caber no celular
 - Navegação por clique para `/oportunidades` e por Enter para `/#comunidade`
   conferida. O link Stripe foi preservado sem abrir ou submeter o checkout.
 - `/makeitfly`: nenhum novo botão e nenhum wrapper do tema Apogee.
-- TypeScript/ESLint não foram executados nesta revisão: o preview já ativo na
-  porta 3112 ocupa a fila global; ele não foi encerrado sem autorização.
+- O CI da PR #78 executou testes, TypeScript, ESLint, auditoria, builds, smoke e
+  integrações com banco descartável: todos os seis jobs passaram. Não houve
+  build local concorrente com o preview da fila global.
 
-Entrega somente local, sem push ou deploy.
+Publicação autorizada e concluída na VPS. Evidências, SHA e rollback no
+[registro de release](../../docs/apogee-green-arrow-buttons-release-20261020.md).

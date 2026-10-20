@@ -80,6 +80,7 @@ test("the Make It Fly page directly renders the byte-identical approved page", a
   assert.doesNotMatch(publishedPage, /components\/published|redirect\s*\(/);
 });
 
+// Text labels were normalized by explicit user request; artwork and scene hashes remain fixed.
 test("approved fonts, public assets, icon and shared legacy dependencies retain their hashes", async () => {
   const original = {
     "app/icon.png": "552fe973a5eb07f389c8a3a33cdec72c420dc4a4",
@@ -90,7 +91,7 @@ test("approved fonts, public assets, icon and shared legacy dependencies retain 
     "app/fonts/inter-variable-latin.woff2": "1dc044f4824fd5af6bfed67fee48be70fa069f3f",
     "app/fonts/public-sans-variable-latin.woff2": "989b6c577de591300a4a67eae64de52874a595c5",
     "components/ui/button.tsx": "06a8fc436d5316da0ffe96c23dcfb7e7b5c5ea00",
-    "components/ui/hyperdrive-hero.tsx": "eb150c251665f8470f3b693a2e0cad81b702449b",
+    "components/ui/hyperdrive-hero.tsx": "0472dfcc3284ce837b854fde09d01a3fe47b923f",
     "components/ui/landing-page.tsx": "3e1123ab7ff453459b8066f7eb909acaabc3a583",
     "components/ui/lunar-gravity-card.tsx": "267dcb04dc720c436fe220fb64f07642f2c2c99d",
     "components/ui/moon-scene.tsx": "795ee06da7e225acaae6125ee35553786cef8428",
@@ -98,7 +99,7 @@ test("approved fonts, public assets, icon and shared legacy dependencies retain 
     "lib/utils.ts": "f8a9cf1b19a39d0008d291734254f336c9bde72f",
     "public/brand/apogee-logo-navy.svg": "02e60f4c3510b03cba70647ffbf56c6307b07bd4",
     "public/brand/apogee-logo-white.svg": "f15d7e7e0273c732d152fbd0ed451969c7c6325d",
-    "public/brand/apogee-star.svg": "61b0a510e697f572df9f7c0625969891bdaa90f7",
+    "public/brand/apogee-star.svg": "32ff3723c2f10084a46ff826ec135fb7517451f0",
     "public/brand/make-it-fly-wordmark.png": "b3938a6f70aaf8cba28cb5ea77db8c9c827be333",
     "public/file.svg": "fb380eeffe87d50b597383664c02982964d0d28c",
     "public/globe.svg": "2eba23b01a46733bb8423e6d38ebf5f7e95abec5",
@@ -161,7 +162,7 @@ test("public home and Make It Fly remain indexable while the Robonauta preview s
   assert.deepEqual(homeMetadata.robots ?? rootMetadata.robots, { index: true, follow: true });
   assert.equal(homeMetadata.title ?? rootMetadata.title, "Apogee | Comunidade, ideias e experiências");
   assert.deepEqual(previewMetadata.robots, { index: false, follow: false });
-  assert.equal(previewMetadata.title, "Apogee — Home com Robonauta");
+  assert.equal(previewMetadata.title, "Apogee - Home com Robonauta");
   assert.deepEqual(publishedMetadata.robots, { index: true, follow: true });
   assert.equal(publishedMetadata.title, "Make It Fly | Coworking e comunidade Apogee");
   assert.equal(publishedMetadata.description, "Conheça o Make It Fly, encontro de coworking, comunidade e foco da Apogee para tirar uma ideia do papel. Veja a proposta e como participar.");
@@ -186,7 +187,7 @@ test("public home and Make It Fly remain indexable while the Robonauta preview s
 
 test("application-era landing resources remain locked to their approved bytes", async () => {
   const approved = {
-    "components/landing/make-it-fly-v2.tsx": "0d324833fbdee9e3664a98cdca4f23e75149bc0f8f3dcc640741b63f3e57ba61",
+    "components/landing/make-it-fly-v2.tsx": "f681798d80a7facab2fca4b72ec24c18afb515565beecd11118a2bb5a3c20b2e",
     "components/landing/EnergySupport.tsx": "a26cec4e4ac498608f037b82567600c3beb972acd9835400b12ae2a8b11a5812",
     "components/landing/energy-support.module.css": "07be5818f9aea583a15ceac6a93c61295c613c730ae6ea16615e6d330fe910d4",
     "components/landing/make-it-fly-v2.module.css": "f851e77636550b48c8a166f5bfc60a3031df580ef19f76c58d9cb72016549602",

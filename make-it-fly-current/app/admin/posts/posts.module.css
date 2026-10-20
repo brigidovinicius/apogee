@@ -1,6 +1,6 @@
 .editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.38fr); gap: 1rem; align-items: start; max-width: 92rem; margin: auto; }
 .canvas, .inspector, .list, .history { border: 1px solid var(--apogee-border-subtle); border-radius: var(--apogee-group-radius); }
-.canvas { display: grid; gap: 1rem; padding: clamp(1.2rem, 3vw, 2rem); color: var(--apogee-navy); background: #f6f8fb; }
+.canvas { display: grid; gap: 1rem; padding: clamp(1.2rem, 3vw, 2rem); color: var(--apogee-navy); background: var(--apogee-paper-soft, #f1f4f7); }
 .inspector { display: grid; gap: 1rem; padding: 1.4rem; background: var(--apogee-surface-raised); }
 .sectionHeading span, .kicker { font-family: var(--font-dm-mono), monospace; font-size: 0.68rem; letter-spacing: .13em; text-transform: uppercase; }
 .sectionHeading span { opacity: .65; }
