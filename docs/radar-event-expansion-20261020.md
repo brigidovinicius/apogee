@@ -4,7 +4,7 @@
 
 Ampliar o perfil extracurricular do Radar usando o pipeline existente, uma ficha por edição, sem multiplicar vagas, equipes, trilhas ou dias. A leitura de produção de 20/10/2026 às 11:09 de Brasília confirmou 1.168 IDs publicados, oito com categoria `eventos` e cinco com `competicoes`; três fichas pertencem às duas categorias. Esses totais não devem ser somados como IDs distintos.
 
-Preparar dez edições: WorkInTech/UniCesumar, Hackathon Connect 7.0, OBVC, SouJava novembro, Global Hack Week Builders e Open Source, DevOpsDays Florianópolis e Recife, Semana de Inovação Enap e REC’n’Play. Expectativa local: nove fichas de eventos e três de competições, com duas interseções, totalizando dez IDs novos. Não é resultado publicado.
+Preparar dez edições: WorkInTech/UniCesumar, Hackathon Connect 7.0, OBVC, SouJava novembro, Global Hack Week Builders e Open Source, DevOpsDays Florianópolis e Recife, Semana de Inovação Enap e REC’n’Play. O lote preparado contém nove fichas de eventos e três de competições, com duas interseções, totalizando dez IDs novos. A publicação efetiva está registrada ao final deste documento.
 
 Arquivos: normalizador limitado às edições em `normalize-community-editions-20261020.ts`; integração de contagem, suplemento e normalização em `programme-catalogue.ts`; migração aditiva `0037_audited_community_editions.sql`, cadastrando fontes inativas e ainda sem verificação de produção; testes de regressão, fixtures mínimas e auditoria JSON em `references/`.
 
@@ -14,7 +14,7 @@ Validação: normalização dos HTML reais capturados pelo coletor protegido, te
 
 ## Gates
 
-Este pedido autoriza pesquisa e preparação local. Push, migração, deploy, ativação de fontes e publicação continuam sujeitos a autorização específica conforme `AGENTS.md`. Antes da ativação: revalidar cada URL a partir da VPS, revisar sobreposição com catálogo, backup restaurável, CI completo, SHA aprovado e implantação somente do Radar. Depois: ingestão limitada por fonte, repetição sem duplicatas, comparação de IDs e campos públicos/admin e filtros no site. Fontes rejeitadas ou pendentes não entram na migração.
+A preparação inicial autorizava pesquisa e trabalho local. A autorização específica posterior de push/CI, migração, deploy somente do Radar e ativação das dez fontes está registrada em “Publicação autorizada”; os gates foram concluídos conforme “Resultado em produção”. Antes da ativação: revalidar cada URL a partir da VPS, revisar sobreposição com catálogo, backup restaurável, CI completo, SHA aprovado e implantação somente do Radar. Depois: ingestão limitada por fonte, repetição sem duplicatas, comparação de IDs e campos públicos/admin e filtros no site. Fontes rejeitadas ou pendentes não entram na migração.
 
 ## Lote preparado
 
@@ -54,14 +54,55 @@ Foram auditadas sequencialmente 24 URLs pelo coletor protegido, contando página
 - Consulta `BEGIN READ ONLY` na VPS: **zero fontes e zero fichas existentes nas dez URLs canônicas**. É ausência de sobreposição exata, sem inserção ou publicação.
 - Logs: `/private/tmp/radar-expansion-{tests,types,lint,dedup}-20261020.log`; normalização real: `/private/tmp/radar-expansion-normalized-20261020.json`.
 
-No snapshot de referência, a adição integral do lote levaria eventos de **8 para 17** e competições de **5 para 8**. É uma projeção: datas e vagas podem encerrar antes da publicação. O lote ainda está local; nenhuma fonte ativada ou ficha publicada por este trabalho.
+No snapshot de referência, a projeção era eventos de **8 para 17** e competições de **5 para 8**. Esses totais foram confirmados após a publicação, com comparação de IDs e campos e filtros ao vivo, conforme o resultado abaixo. São números datados; eventos e inscrições podem encerrar depois da conferência.
 
 ## Checagem de acesso na VPS
 
 Em 20/10/2026, entre 11:23 e 11:24 de Brasília, as dez URLs e o suplemento MLH foram obtidos a partir da VPS com `fetchOfficialResource`, respeitando robots, TLS, allowlist, tamanho e intervalo. O diagnóstico transitório executou somente GET público em memória, sem instalação, arquivos no servidor, banco ou alteração de serviços. Os hashes, bytes e horários estão no JSON de auditoria; log completo em `/private/tmp/radar-expansion-vps-audit-20261020.jsonl`.
 
-Isso comprova acesso às fontes a partir do ambiente de produção, mas ainda não comprova ingestão, publicação ou filtros ao vivo. As validações locais passaram; push/CI, backup restaurável, SHA de release, migração, deploy, ativação, ingestão repetida e conferência público/admin continuam pendentes de autorização e execução.
+Essa checagem inicial comprovou acesso às fontes a partir da VPS. Depois da autorização específica, a ingestão real voltou a obter e validar todo o conteúdo oficial e o suplemento MLH, sem falhas ou bloqueios. A publicação e os filtros ao vivo foram conferidos separadamente, conforme o resultado abaixo.
 
 ## Publicação autorizada
 
 Em 20/10/2026, o usuário respondeu “ACEITO” à autorização específica de push/CI, migração, deploy somente do Radar e ativação das dez fontes, após CI e backup validado. A branch de release parte da main atual e contém apenas este lote. Fixtures de regressão compactadas para fatos e links de inscrição; o teste dos HTML oficiais integrais capturados continua registrado separadamente na auditoria.
+
+
+## Resultado em produção — concluído
+
+Conferência do bridge em **20/10/2026 às 11:51:45 de Brasília**:
+
+| Indicador | Antes | Depois | Variação |
+|---|---:|---:|---:|
+| IDs publicados únicos | 1.168 | 1.178 | +10 |
+| Eventos e comunidades | 8 | 17 | +9 |
+| Competições e hackathons | 5 | 8 | +3 |
+
+Categorias se sobrepõem: duas das dez novas fichas pertencem às duas categorias. Todos os 1.168 IDs anteriores foram preservados. Público/admin retornaram HTTP 200, bridge v3, os mesmos 1.178 IDs e os mesmos campos comuns: zero IDs exclusivos de cada lado, zero divergências de campos e zero IDs duplicados. A interface pública exibiu 1.078 cartões agrupados no mural geral; esse agrupamento de apresentação é distinto dos 1.178 IDs do catálogo. Nos filtros de eventos e competições, a interface exibiu respectivamente 17 e 8 cartões, sem agrupamentos adicionais nessas categorias.
+
+### Release e proteção dos dados
+
+- [PR #73](https://github.com/brigidovinicius/apogee/pull/73) integrado em 20/10/2026 às 11:43:14 de Brasília.
+- [CI completo aprovado](https://github.com/brigidovinicius/apogee/actions/runs/39439966925): 314 testes Radar, 309 site, quatro legados, integração Gallery em PostgreSQL e 16 testes de convites. O E2E de membro autenticado passou com sessão real sintética, paginação, vestibular explícito, SC/Gaspar, busca, reset e controles de acesso.
+- SHA Radar implantado: `7615c0a9951a9de47790753220a8d938589f97e1`. Sua árvore `2e15ae1e8b8cbf23698e6f4d2d935264858405ec` é idêntica à árvore validada pelo CI no head `00e5424d0abc9b1be733a2ac40afbbbe543402c8`.
+- Backup `/opt/apogee-backups/radar-community-20261020T144224Z`: dumps consistentes, checksums, ambientes protegidos e inventário. Restauração isolada comparou fingerprints de 13 tabelas Radar e 16 tabelas de membros, todos iguais. Bancos temporários próprios removidos após validação.
+- Migração `0037` aplicada; primeiro foram conferidas dez fontes inativas e pendentes, sem fichas. Somente depois do web saudável ocorreu a ativação autorizada, transacional e limitada aos dez IDs/URLs esperados.
+- Deploy por SSH: fetch da main, checkout destacado no SHA exato, build de `web`, build/run do serviço `migrate` com cache e recriação somente de `web` com `--no-deps --no-build --force-recreate`. Nada de `pull`, reset, clean ou cópia manual de aplicação.
+- Radar saudável, zero reinícios. Site saudável e preservado em `28747e8f74700f9ce5f33771ceca08bf645720f8`. IDs dos demais contêineres e os ambientes protegidos permaneceram iguais.
+- Rollback disponível: imagem anterior `radar-academico:1bb4e6b7fe55dd2ae8b9ca9395d5eea973cd89b8`; em necessidade, desativar somente os dez novos IDs e recriar somente o web nessa imagem. Não restaurar todo o banco automaticamente sobre dados novos.
+
+### Coleta e conferências
+
+- Ativação em 20/10/2026 às 11:48:34 de Brasília, com `verification_method=operator_authorized_agent`; não é auditoria humana.
+- Primeira rodada, 11:48:48–11:49:19: dez execuções concluídas, dez fichas criadas/publicadas, 12 páginas obtidas (duas para cada MLH), zero falhas/bloqueios/avisos.
+- Segunda rodada, 11:49:38–11:50:08: dez execuções concluídas, zero criações, zero atualizações, zero falhas/bloqueios/avisos. Banco: exatamente uma ficha por fonte e vinte `ingestion_runs` concluídos.
+- Todos os novos registros ficaram `approved`, `open`, verificados automaticamente, sem `publication_issue`, sem conflito, publicados e sem exclusão. Nove mantêm prazo não informado com início confirmado; a OBVC mantém prazo explícito de 31/10.
+- Fontes configuradas com intervalo de 24 horas, última coleta registrada pela execução concluída e próxima prevista para 21/10/2026, aproximadamente 11:49–11:50 de Brasília. O horário efetivo depende da fila normal do scheduler.
+- Flags `active` e `verification_status` de todas as fontes anteriores comparadas com o inventário anterior à migração: nenhuma alteração.
+- Browser público: filtros 17 eventos / 8 competições; busca OBVC com um resultado; requisitos expandidos exibem taxas de R$60/R$120 e prêmios condicionais. Buscas HTTP no site encontraram cada uma das dez edições.
+- Não foi criada sessão de membro em produção nem enviado e-mail de teste. O acesso de membro foi validado pelo E2E sintético do CI; a igualdade do conteúdo público/admin foi conferida ao vivo. O fluxo global de cron/alertas não foi invocado; as coletas usaram `sourceId` individual.
+
+Evidência estruturada: `radar-academico/references/community-release-20261020.json`. Logs locais: `/private/tmp/radar-community-{deploy,activation,ingest-first,ingest-repeat,final-db,schedule,bridge-before,bridge-after,reconciliation}-20261020.*`.
+
+### Ocorrência operacional resolvida
+
+Um diagnóstico antigo foi executado antes de sua revisão e sobrescreveu apenas o inventário auxiliar de fontes de um backup histórico, sem alterar dumps, ambientes ou checksums. O inventário foi reconstruído a partir do próprio dump histórico em restauração isolada, comparado com a referência preservada e teve seus checksums conferidos. O backup novo desta release foi criado e validado separadamente. Depois houve indisponibilidade temporária de SSH/HTTPS; o acesso voltou antes do deploy, sem alterações de firewall, DNS ou serviços. O Web Console foi apenas consultado como contingência; nenhum comando de deploy foi executado nele.
