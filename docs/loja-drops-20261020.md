@@ -1,47 +1,46 @@
 # Loja Apogee: produtos e novidades dos drops
 
-## Escopo
+## Resultado solicitado
 
-Pedido de 20/10/2026: substituir o catálogo conceitual por dois produtos reais, usando as cinco fotos enviadas; sem compra ou finalização. Recolher nome, telefone e e-mail para novidades dos próximos drops. Outros produtos serão fornecidos depois.
+Vitrine sem compra ou finalização com três produtos e sete fotos originais:
 
 - Moletom Building the Future azul-marinho: frente e detalhe.
 - Boné Made to Create bege: frente, lateral e costas.
-- Fotos originais copiadas, sem alterações. Nomes descritivos, sem inferir preço, material, estoque, data ou tamanhos.
-- Galerias com miniaturas, ampliação em diálogo nativo e navegação por teclado.
-- Cabeçalho e tokens existentes da Apogee; marinho #07182d, azul #b9d3ee, branco #fff, texto #173653, linha #dbe2e9; Instrument Serif nos títulos e Inter no corpo. Fotos ocupam duas colunas no desktop e uma no celular.
-- Página /makeitfly e seus descendentes preservados.
+- Camiseta Apogee azul-marinho: frente e costas.
 
-## Cadastro
+Nome, telefone e e-mail podem ser cadastrados para receber novidades dos próximos drops, com consentimento obrigatório. Nenhum preço, material, estoque, tamanho ou data foi inventado. Não há envio automático de mensagens, criação de conta, pedido ou reserva.
 
-POST /api/loja/novidades valida os três campos e consentimento obrigatório. Usa leitor de corpo existente (limite 4 KiB), allowlist de origem, honeypot e limites persistentes por IP, e-mail e global. Chaves pessoais dos limites usam HMAC com o segredo existente, sem expor contatos.
+As galerias usam miniaturas e ampliação em diálogo nativo. A grade usa três colunas no desktop, duas em telas intermediárias e uma no celular. Tipografia e tokens existentes da Apogee, com ícones vetoriais e foco visível. A atualização mantém as melhorias da main e não altera Make It Fly em relação à main integrada.
 
-Tabela privada store_drop_signup com nome, telefone normalizado, e-mail normalizado/único e texto, versão e data do consentimento. Duplicatas não sobrescrevem dados existentes; a resposta não revela se o contato já existia. Falha de banco retorna erro e o formulário preserva os campos para repetir. Não envia e-mail ou mensagem, não cria conta, pedido ou reserva.
+## Cadastro e migração
 
-Adicionar produtos: editar lib/store/products.ts e incluir suas imagens em public/images/loja.
+POST /api/loja/novidades valida os três campos, exige consentimento e origem permitida, limita o corpo a 4 KiB e aplica honeypot e limites persistentes por IP, e-mail e global. As chaves pessoais dos limites usam HMAC com o segredo existente.
 
-## Banco e publicação
+A tabela privada store_drop_signup guarda nome, telefone e e-mail normalizados e texto, versão e data do consentimento. E-mail é único; duplicatas não sobrescrevem os dados existentes e a resposta não revela se o contato já existia. Falhas ao salvar não produzem confirmação e preservam os campos para repetir.
 
-A migração 0006_store_drop_signups é aditiva. O comando npm run store:drops:migrate verifica hashes e ordem das seis migrações anteriores, recusa tabela/histórico divergente e transaciona somente a criação da tabela e o registro da migração. Não executa migrações anteriores.
+A migração 0006_store_drop_signups é aditiva. npm run store:drops:migrate verifica os hashes e a ordem das seis migrações anteriores, recusa tabela/histórico divergentes e transaciona somente a criação da tabela e o registro da migração. O script está empacotado no Dockerfile. O migrador antigo do billing limita-se às suas seis entradas anteriores.
 
-O migrador antigo do billing lê somente suas seis entradas para continuar utilizável antes da nova migração, mesmo com a extensão do journal.
+Adicionar produtos: lib/store/products.ts e public/images/loja.
 
-Nenhum banco real foi acessado ou migrado. Não houve push, merge, publicação, deploy, envio externo ou ativação de campanha. Para produção ainda são necessários autorização de banco, backup/restauração verificados, migração, autorização de publicação e teste real de persistência.
+## Autorização e validação
 
-## Validação
+Em 20/10/2026, após o aviso de migração e publicação pendentes, o usuário respondeu: "Ok, execute inclua também esse produto". O escopo de execução é ativar o cadastro e publicar esta vitrine na VPS existente, com backup e teste de restauração, preservando segredos e os demais serviços.
 
-- next typegen --webpack: aprovado.
-- tsc --noEmit --incremental false: aprovado.
-- ESLint nos arquivos alterados: aprovado, sem avisos na rodada final.
-- 29 testes focados: aprovados (cadastro, erros, consentimento, limites, duplicata, migração simulada, vitrine e isolamento do Make It Fly).
-- next build --webpack: aprovado, rota /loja estática e /api/loja/novidades dinâmica.
-- Hash SHA-256 das cinco fotos de destino: idênticos aos arquivos recebidos.
-- Browser interno: desktop 1440x1000 e celular 390x844, sem overflow horizontal; fotos carregadas, troca de miniatura, ampliação e Escape; consentimento exigido pelo navegador.
-- Preview de produção local recusou a origem localhost (403), mostrou erro e preservou os dados fictícios. Resposta de sucesso simulada exclusivamente para o endpoint local via CDP confirmou mensagem e limpeza dos campos. Interceptação removida, página recarregada e aba temporária fechada. Nenhum contato foi gravado.
-- Testes HTTP e do migrador usam dependências de banco simuladas e não comprovam persistência nem aplicação do SQL em PostgreSQL real.
-- git diff --check: aprovado.
+- Sete fotos copiadas com SHA-256 idêntico aos originais recebidos.
+- Typegen, typecheck e lint dos arquivos de produção alterados aprovados.
+- Suíte completa local: 435 testes aprovados com dependências isoladas deste worktree. O inventário de rotas foi atualizado para a nova API.
+- Build local aprovado na revisão anterior à correção do inventário; a rodada final está sendo concluída.
+- Galerias e formulário já conferidos no navegador em desktop e celular. A confirmação local foi simulada; não foi tratada como persistência real.
+- CI da PR #81 inclui teste real da migração e do cadastro em PostgreSQL descartável, após a suíte de billing. Aguarda a revisão final.
 
-Worktree: loja-drops-20261020. Branch: feat/loja-drops-20261020. O servidor de preview temporário foi encerrado após a revisão para liberar a fila global.
+## Backup e restauração
 
-## Ampliação e autorização de execução
+Backup protegido: /opt/apogee-backups/loja-drops-20261020/apogee_membros.dump. SHA-256 conferido e pg_restore executado com sucesso no banco isolado apogee_loja_restore_20261020. As contagens das 19 tabelas, incluindo o histórico Drizzle, conferiram entre origem e restauração. Nenhum conteúdo de registro foi exibido.
 
-O usuário respondeu "Ok, execute inclua também esse produto" após o aviso de migração e publicação pendentes. Incluída Camiseta Apogee azul-marinho com frente e costas; catálogo agora com três produtos e sete fotos. Execução da ativação segue com preflight, validação final, backup e teste de restauração, migração e publicação restritas à Apogee. Evidências finais serão acrescentadas após cada etapa.
+Na restauração, os seis hashes anteriores foram conferidos; o SQL exato da migração foi aplicado com SET ROLE apogee_app; os sete hashes finais conferiram. Inserção, duplicata sem sobrescrita e restrição de telefone passaram em transação revertida. A tabela de teste ficou vazia.
+
+## Publicação
+
+PR: https://github.com/brigidovinicius/apogee/pull/81
+
+Migração e deploy de produção ainda não executados. A revisão exata, CI, saúde, teste real e preservação dos serviços serão registrados após cada etapa.
