@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import test from "node:test";
+import { renderToStaticMarkup } from "react-dom/server";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import Stripe from "stripe";
@@ -21,10 +22,12 @@ Object.assign(process.env, {
   MEMBERS_RESEND_API_KEY: "re_isolated_test_key_no_network", MEMBERS_RESEND_FROM: "contato@apogee.community",
 });
 const mails = [];
+let failMail = false;
 const originalFetch = globalThis.fetch;
 globalThis.fetch = async (address, options) => {
   assert.equal(address, "https://api.resend.com/emails", "nenhuma rede externa neste teste");
   mails.push(JSON.parse(options.body));
+  if (failMail) return Response.json({ error: "synthetic mail failure" }, { status: 503 });
   return Response.json({ id: `test-mail-${mails.length}` });
 };
 const sessions = new Map();
@@ -141,6 +144,88 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
     auth = load("lib/members/auth.ts").getAuth();
     const buyer = await signup("buyer@example.test", "buyer");
     const other = await signup("other@example.test", "other");
+    assert.equal(mails.length, 0, "cadastro sem compra não dispara envio automático");
+
+    await t.test("compra antes do cadastro envia confirmação automaticamente, sem liberar antes do token", async () => {
+      const session = fixture("before_signup", null, " BeforeSignup@example.test ", true);
+      await deliver(event(session));
+      const before = mails.length;
+      const owner = await signup("beforesignup@example.test", "beforesignup");
+      assert.equal(mails.length, before + 1);
+      const mail = mails.at(-1);
+      assert.deepEqual(mail.to, [owner.email]);
+      assert.match(mail.text, /confirme para liberar automaticamente seu acesso vitalício/);
+      assert.equal((await radarAccess(owner.id, false)).active, false);
+      assert.equal((await sql`select user_id from radar_purchase where session_id = ${session.id}`)[0].user_id, null);
+      const pageLoad = opportunityLoader({
+        "@/lib/members/db": { getSql: () => sql },
+        "@/lib/members/dal": { requireMember: async () => ({ id: owner.id }) },
+      });
+      const Page = pageLoad("app/membros/radar/acesso/page.tsx").default;
+      const beforeHtml = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
+      assert.match(beforeHtml, /Confirme seu e-mail para liberar o Radar/);
+      assert.match(beforeHtml, /Reenviar e-mail de confirmação/);
+      assert.doesNotMatch(beforeHtml, /action="\/api\/radar\/checkout"/);
+      const target = new URL(mail.text.match(/http:\/\/localhost:35441\/api\/auth\/verify-email\?\S+/)[0]);
+      assert.equal(target.searchParams.get("callbackURL"), `${origin}/membros/radar/acesso`);
+      assert.equal((await auth.handler(new Request(target, { headers: { cookie: owner.cookie } }))).status, 302);
+      assert.deepEqual(await radarAccess(owner.id, false), { active: true, source: "stripe" });
+      assert.match(renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) })), /Seu acesso ao Radar está liberado/);
+      assert.equal((await radarAccess(other.id, false)).active, false);
+      const count = mails.length;
+      await deliver(event(session));
+      assert.equal(mails.length, count, "reentrega não repete e-mail de cadastro");
+      const login = await auth.api.signInEmail({ body: { email: owner.email, password: "Synthetic-password-123!" } });
+      assert.equal(login.user.id, owner.id);
+      assert.equal((await radarAccess(login.user.id, false)).active, true);
+    });
+
+    await t.test("Server Action de cadastro também envia e leva o comprador à orientação", async () => {
+      await deliver(event(fixture("action_signup", null, "actionbuyer@example.test", true)));
+      const actionLoad = opportunityLoader({
+        "@/lib/members/auth": { getAuth: () => auth },
+        "./db": { getDb: () => db, getSql: () => sql },
+        "@/lib/members/db": { getDb: () => db, getSql: () => sql },
+        "@/lib/members/dal": { clientIp: async () => "isolated-action" },
+        "@/lib/members/forum": {},
+        "next/headers": { headers: async () => new Headers({ Origin: origin }) },
+        "next/cache": { revalidatePath() {} },
+        "next/navigation": { redirect: path => { throw new Error(`REDIRECT:${path}`); } },
+      });
+      const form = new FormData();
+      for (const [key, value] of Object.entries({ name: "Comprador Teste", username: "actionbuyer", email: "actionbuyer@example.test", password: "Synthetic-password-123!", next: "/membros" })) form.set(key, value);
+      const before = mails.length;
+      await assert.rejects(actionLoad("app/membros/actions.ts").signUp({}, form), /REDIRECT:\/membros\/radar\/acesso$/);
+      assert.equal(mails.length, before + 1, "mesmo hook cobre API server sem Request");
+    });
+
+    await t.test("falha do e-mail preserva cadastro e acesso negado; reenvio permite confirmar", async () => {
+      await deliver(event(fixture("mail_retry", null, "mailretry@example.test", true)));
+      failMail = true;
+      let owner;
+      try { owner = await signup("mailretry@example.test", "mailretry"); }
+      finally { failMail = false; }
+      assert.equal((await radarAccess(owner.id, false)).active, false);
+      const before = mails.length;
+      assert.equal((await verification.POST(new Request(`${origin}/api/radar/verify-email`, { method: "POST", headers: headers(owner.cookie) }))).status, 303);
+      assert.equal(mails.length, before + 1);
+      const target = mails.at(-1).text.match(/http:\/\/localhost:35441\/api\/auth\/verify-email\?\S+/)[0];
+      assert.equal((await auth.handler(new Request(target, { headers: { cookie: owner.cookie } }))).status, 302);
+      assert.equal((await radarAccess(owner.id, false)).active, true);
+    });
+
+    await t.test("compra reembolsada ou de outro modo não dispara confirmação no cadastro", async () => {
+      const refunded = fixture("refunded_signup", null, "refundednew@example.test", true);
+      await deliver(event(refunded));
+      await sql`update radar_purchase set status = 'refunded' where session_id = ${refunded.id}`;
+      const live = fixture("live_signup", null, "livenew@example.test", true);
+      await deliver(event(live));
+      await sql`update radar_purchase set livemode = true where session_id = ${live.id}`;
+      const before = mails.length;
+      await signup("refundednew@example.test", "refundednew");
+      await signup("livenew@example.test", "livenew");
+      assert.equal(mails.length, before);
+    });
 
     await t.test("migração preserva acessos anteriores e não concede novamente ao repetir", async () => {
       assert.deepEqual(await radarAccess("legacy", false), { active: true, source: "legacy" });
