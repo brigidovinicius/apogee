@@ -3,10 +3,13 @@ import assert from "node:assert/strict";
 // Run with a cua_repl tab on a public source page and a signed-out local
 // test account. The form, session, route guards and database must be real.
 export async function verifyLoginReturnHistory(tab, {
-  entryLink, account, sourceHeading, destinationHeading, destinationPath,
+  entryLink, entryPath, account, sourceHeading, destinationHeading, destinationPath,
 }) {
+  await tab.playwright.getByRole("heading", { name: sourceHeading, exact: true })
+    .waitFor({ state: "visible", timeoutMs: 10000 });
   const source = await tab.url();
-  await entryLink.click();
+  if (entryPath) await tab.goto(new URL(entryPath, source).href);
+  else await entryLink.click();
   await tab.playwright.getByRole("heading", { name: "Entrar", exact: true })
     .waitFor({ state: "visible", timeoutMs: 10000 });
   await tab.getAXState({ emit: false });

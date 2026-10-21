@@ -1,7 +1,7 @@
 "use client";
 
 import { createAuthClient } from "better-auth/client";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useSyncExternalStore } from "react";
 import { signIn, signUp, type FormState } from "@/app/membros/actions";
 import { googleOAuthErrorMessage } from "@/lib/members/social-auth";
 import { Field, FormMessage } from "./form-field";
@@ -10,6 +10,10 @@ import styles from "./members.module.css";
 
 const initial: FormState = {};
 const authClient = createAuthClient();
+
+const subscribeToHydration = () => () => {};
+const clientHydrated = () => true;
+const serverHydrated = () => false;
 
 type GoogleAuthProps = {
   next: string;
@@ -65,6 +69,9 @@ function GoogleAuth({ next, errorMessage, requestSignUp = false }: GoogleAuthPro
 
 export function SignInForm({ next, googleError }: { next: string; googleError?: string }) {
   const [state, action, pending] = useActionState(signIn, initial);
+  // Native pre-hydration POSTs follow a 303 and keep the login in history.
+  // Wait for the client action, which honors RedirectType.replace.
+  const hydrated = useSyncExternalStore(subscribeToHydration, clientHydrated, serverHydrated);
   return (
     <form className={styles.form} action={action} noValidate>
       <FormMessage message={state.message} />
@@ -78,7 +85,7 @@ export function SignInForm({ next, googleError }: { next: string; googleError?: 
         {(props) => <input {...props} name="password" type="password" autoComplete="current-password" required />}
       </Field>
       <div className={styles.actions}>
-        <button className={styles.primary} type="submit" disabled={pending}>
+        <button className={styles.primary} type="submit" disabled={!hydrated || pending}>
           {pending ? "Entrando…" : "Entrar"} <span aria-hidden>→</span>
         </button>
       </div>
