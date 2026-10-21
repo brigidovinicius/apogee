@@ -68,7 +68,31 @@ try {
   assert.ok(cookie, "session cookie is issued");
   assert.equal((await database`select role from public."user" where email='synthetic-radar@example.test'`)[0].role, "member");
   const response = await get("/membros/oportunidades", cookie); assert.equal(response.status, 200);
-  const initial = await response.text(); assert.match(initial, /Radar completo/); assert.equal(titles(initial).length, 24); assert.doesNotMatch(initial, /CI IFSC Ingresso|CI IFC Ingresso/);
+  const initial = await response.text(); assert.match(initial, /Radar de oportunidades/); assert.equal(titles(initial).length, 24); assert.doesNotMatch(initial, /CI IFSC Ingresso|CI IFC Ingresso/);
+  assert.doesNotMatch(initial, /Equipes de estudantes|https:\/\/example.edu\/notice/);
+  const detailPath = "/membros/oportunidades/radar-event-0";
+  const firstDetail = await (await get(detailPath, cookie)).text();
+  assert.match(firstDetail, /Sua primeira oportunidade é grátis/);
+  assert.doesNotMatch(firstDetail, /Equipes de estudantes|https:\/\/example.edu\/notice/);
+  assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "0", "GET never consumes the free choice");
+  const formMarkup = [...firstDetail.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match => match[0]).find(form => form.includes("Abrir esta oportunidade grátis"));
+  assert.ok(formMarkup, "compiled Server Action form exists");
+  const decode = value => value.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+  const actionBody = new FormData();
+  for (const input of formMarkup.matchAll(/<input\b[^>]*>/g)) {
+    const name = input[0].match(/name="([^"]*)"/)?.[1];
+    if (name) actionBody.append(decode(name), decode(input[0].match(/value="([^"]*)"/)?.[1] ?? ""));
+  }
+  const opened = await fetch(origin + detailPath, { method: "POST", headers: { ...edgeHeaders, Cookie: cookie, Origin: origin }, body: actionBody, redirect: "manual" });
+  assert.equal(opened.status, 303, "compiled Server Action opens the first choice");
+  const freeDetail = await (await get(detailPath, cookie)).text();
+  assert.match(freeDetail, /Equipes de estudantes/); assert.match(freeDetail, /https:\/\/example.edu\/notice/);
+  assert.match(await (await get(detailPath, cookie)).text(), /Equipes de estudantes/, "reopening stays free");
+  const blockedSecond = await get("/membros/oportunidades/radar-event-1", cookie);
+  const blockedSecondHtml = await blockedSecond.text();
+  assert.ok(blockedSecond.headers.get("location")?.includes("/membros/radar/acesso") || /NEXT_REDIRECT[\s\S]*\/membros\/radar\/acesso/.test(blockedSecondHtml));
+  assert.doesNotMatch(blockedSecondHtml, /Equipes de estudantes|https:\/\/example.edu\/notice/);
+  assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "1");
   const second = await (await get("/membros/oportunidades?pagina=2", cookie)).text();
   assert.equal(titles(second).length, 6); assert.equal(titles(second).filter(title => titles(initial).includes(title)).length, 0);
   const allExams = await (await get("/membros/oportunidades?categoria=vestibular", cookie)).text();
@@ -87,7 +111,7 @@ try {
   assert.doesNotMatch(deniedAdminBody, /Radar · catálogo ao vivo|Criar oportunidade|CI Evento|CI IFSC Ingresso/);
   const invalid = await get("/membros/oportunidades", "better-auth.session_token=invalid.synthetic");
   const invalidBody = await invalid.text(); assert.doesNotMatch(invalidBody, /CI Evento|CI IFSC Ingresso/);
-  console.log("Authenticated Radar E2E OK: real session, pagination, explicit vestibular, SC/Gaspar, search, reset and access controls.");
+  console.log("Authenticated Radar E2E OK: real session, cards without private data, compiled free-opening action, reopening, second-detail paywall, pagination, filters and access controls.");
 } catch (error) { console.error(logs); throw error; }
 finally {
   server.kill("SIGTERM");

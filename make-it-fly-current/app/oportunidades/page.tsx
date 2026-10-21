@@ -49,7 +49,7 @@ export default async function OpportunitiesPage({ searchParams }: {
             Descubra eventos, hackathons, projetos e experiências para o seu próximo passo.
           </p>
           <p className={styles.promise}>
-            Consulte a fonte oficial para conferir os detalhes e realizar sua inscrição.
+            Faça login e escolha uma oportunidade para acessar os detalhes grátis. A partir da segunda, acesso vitalício por R$ 49,00.
           </p>
           <ShareButton title="Radar de oportunidades | Apogee" path="/oportunidades" />
         </section>

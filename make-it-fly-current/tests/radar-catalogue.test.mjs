@@ -45,7 +45,8 @@ test("B/D: one process, compact preview, complete source details and counts afte
   const output = html(result);
   assert.equal((output.match(/<article /g) ?? []).length, 1);
   assert.match(output, /2 opções de curso correspondem/);
-  assert.match(output, /Ver cursos e requisitos/);
+  assert.match(output, /Ver cursos/);
+  assert.doesNotMatch(output, /Equipes de estudantes/);
   assert.match(output, /<details/);
   assert.equal(page("categoria=vestibular&uf=SC&cidade=Gaspar&busca=quimica").opportunities.length, 1);
   assert.equal(page("categoria=vestibular&uf=SC&cidade=Gaspar").coverage.byCategory.eventos, 2);
