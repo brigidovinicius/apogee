@@ -134,7 +134,7 @@ test("motion follows the system by default and explicit pause leaves server cont
   assert.doesNotMatch(`${system}${paused}${animated}`, /motionEnabled=|onMenuRequest=/);
 });
 
-test("the store shows the three real products, all photos and a consent-based contact form", async () => {
+test("the store shows three real products and reveals signup only after buying intent", async () => {
   const { opportunityLoader } = await import("./helpers/load-opportunity-module.mjs");
   const load = opportunityLoader({
     "next/image": { __esModule: true, default: ({ preload, ...props }) => { void preload; return React.createElement("img", props); } },
@@ -156,9 +156,9 @@ test("the store shows the three real products, all photos and a consent-based co
       await access(new URL(`../public${photo.src}`, import.meta.url));
     }
   }
-  for (const name of ["name", "phone", "email"]) assert.match(html, new RegExp(`<input(?=[^>]*name="${name}")(?=[^>]*required)[^>]*>` ));
-  assert.match(html, /type="checkbox"[^>]*required/);
-  assert.doesNotMatch(html, /type="checkbox"[^>]*checked/);
+  assert.equal((html.match(/aria-label="Comprar /g) ?? []).length, 3);
+  assert.doesNotMatch(html, /<form|Quero receber novidades|href="#novos-drops"/);
+  assert.match(html, /<dialog[^>]*id="drop-purchase-dialog"/);
   for (const [, anchor] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(html.includes(`id="${anchor}"`));
   assert.match(html, /<dialog/);
   assert.doesNotMatch(html, /carrinho|checkout|comprar agora|R\$|Protótipo|caderno orbital/i);
