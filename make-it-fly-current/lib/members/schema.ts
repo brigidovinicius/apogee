@@ -263,6 +263,11 @@ export const radarLegacyAccess = pgTable("radar_legacy_access", {
   userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
   grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
 });
+export const radarFreeOpportunity = pgTable("radar_free_opportunity", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  opportunityId: text("opportunity_id").notNull(),
+  openedAt: timestamp("opened_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [check("radar_free_opportunity_id_check", sql`${table.opportunityId} ~ '^[A-Za-z0-9_-]{1,200}$'`)]);
 export const radarPurchase = pgTable("radar_purchase", {
   sessionId: text("session_id").primaryKey(),
   paymentIntentId: text("payment_intent_id").notNull().unique(),

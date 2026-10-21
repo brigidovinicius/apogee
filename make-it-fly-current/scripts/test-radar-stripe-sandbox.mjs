@@ -119,8 +119,10 @@ try {
   const cookie = signUp.headers.getSetCookie().map(value => value.split(";")[0]).join("; ");
   const before = await get("/membros/oportunidades", cookie);
   const denied = await before.text();
-  assert.ok(before.headers.get("location")?.includes("/membros/radar/acesso") || /NEXT_REDIRECT[\s\S]*\/membros\/radar\/acesso/.test(denied));
-  assert.doesNotMatch(denied, /TESTE SANDBOX Radar vitalício/);
+  assert.equal(before.status, 200);
+  assert.match(denied, /TESTE SANDBOX Radar vitalício/);
+  assert.doesNotMatch(denied, /Oportunidade sintética para validar o acesso\./);
+  assert.doesNotMatch(denied, /https:\/\/example\.com\/sandbox/);
   const checkout = await fetch(`${origin}/api/radar/checkout`, { method: "POST", headers: { Origin: origin, Cookie: cookie }, redirect: "manual" });
   assert.equal(checkout.status, 303, "Aplicação criou Checkout Session no sandbox.");
   const checkoutUrl = checkout.headers.get("location");
@@ -142,10 +144,10 @@ try {
   }
   assert.ok(purchase, "Pagamento de teste não foi confirmado dentro do prazo.");
   assert.equal(purchase.livemode, false);
-  const after = await get("/membros/oportunidades", cookie);
+  const after = await get(`/membros/oportunidades/radar-${sample.id}`, cookie);
   assert.equal(after.status, 200);
   const html = await after.text();
-  assert.match(html, /Radar completo/); assert.match(html, /TESTE SANDBOX Radar vitalício/);
+  assert.match(html, /Oportunidade sintética para validar o acesso\./); assert.match(html, /TESTE SANDBOX Radar vitalício/);
   const accessPage = await (await get("/membros/radar/acesso", cookie)).text();
   assert.match(accessPage, /Seu acesso ao Radar está liberado/);
   assert.equal((await database`select role from "user" where id = ${user.id}`)[0].role, "member");
@@ -161,7 +163,7 @@ try {
   assert.equal((await database`select * from radar_purchase where session_id = ${sessionId}`).length, 1);
   assert.equal((await database`select * from radar_stripe_event where event_id = ${event.id}`).length, 1);
   Object.assign(report, { result: "passed", sessionId, eventId: event.id, paymentIntentId: purchase.payment_intent_id,
-    webhookHttp: 200, radarBefore: "denied", radarAfter: 200, access: "lifetime", replayHttp: 200, purchaseCount: 1 });
+    webhookHttp: 200, radarBefore: "cards_only", radarAfter: 200, access: "lifetime", replayHttp: 200, purchaseCount: 1 });
   await writeFile(join(directory, "result.json"), JSON.stringify(report, null, 2), { mode: 0o600 });
   console.log(JSON.stringify({ phase: "paid_verified", ...report }));
   // Janela curta para conferir a mesma tela autenticada no Safari.

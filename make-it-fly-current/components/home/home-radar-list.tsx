@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import type { StudentOpportunity } from "@/lib/opportunities/types";
 import { selectHomeOpportunities, type HomeOpportunityCategory } from "@/lib/home-opportunities";
 import styles from "./editorial-home.module.css";
+import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 
 const categories: ReadonlyArray<{ id: HomeOpportunityCategory; label: string; href: string }> = [
   { id: "all", label: "Em destaque", href: "/oportunidades" },
@@ -36,7 +37,7 @@ export function HomeRadarList({ opportunities, capturedAt }: { opportunities: St
     <div aria-live="polite" aria-atomic="true">
       {items.length ? <ul className={styles.opportunities}>
         {items.map((item) => <li key={item.id}>
-          <a href={item.officialUrl} target="_blank" rel="noopener noreferrer" className={styles.opportunity}>
+          <Link prefetch={false} href={opportunityDetailPath(item.id)} className={styles.opportunity}>
             <div>
               <p className={styles.opportunityOrganization}>{interfaceText(item.organization)} · {item.kind}</p>
               <h3>{interfaceText(item.title)}</h3>
@@ -44,11 +45,11 @@ export function HomeRadarList({ opportunities, capturedAt }: { opportunities: St
             </div>
             <p className={styles.opportunityBenefit}>{interfaceText(item.benefit)}</p>
             <span className={styles.rowArrow} aria-hidden="true"><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span>
-            <span className={styles.srOnly}>Abrir fonte oficial em nova aba</span>
-          </a>
+            <span className={styles.srOnly}>Ver detalhes da oportunidade</span>
+          </Link>
         </li>)}
       </ul> : <p className={styles.catalogueMessage}>Nenhuma oportunidade disponível nesta prévia agora. Explore as outras categorias no Radar.</p>}
     </div>
-    <p className={styles.catalogueNote}>Informações do catálogo Apogee. Confira requisitos e inscrições na fonte oficial.</p>
+    <p className={styles.catalogueNote}>Faça login para acessar uma oportunidade detalhada grátis. Acesso vitalício às demais por R$ 49,00.</p>
   </div>;
 }
