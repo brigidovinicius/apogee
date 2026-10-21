@@ -83,7 +83,7 @@ test("pagination only accepts sane positive integers", () => {
   for (const bad of [undefined, "0", "-2", "1.5", "abc", "999999"]) assert.equal(v.parsePage(bad), 1);
 });
 
-test("post-login redirects stay inside the members area", () => {
+test("post-login redirects stay inside protected application routes", () => {
   assert.equal(v.safeNextPath("/membros/forum/ideias"), "/membros/forum/ideias");
   assert.equal(v.safeNextPath("/membros/forum/ideias?pagina=2#fim"), "/membros/forum/ideias?pagina=2#fim");
   for (const bad of [
