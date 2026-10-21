@@ -136,6 +136,9 @@ jobs:
           tar -xzf "$caddy_sec02_dir/caddy.tar.gz" -C "$caddy_sec02_dir" caddy
           CADDY_BIN="$caddy_sec02_dir/caddy" npm run test:body-proxy
           CADDY_BIN="$caddy_sec02_dir/caddy" npm run test:auth-proxy
+          python3 -m venv "$caddy_sec02_dir/http3-venv"
+          "$caddy_sec02_dir/http3-venv/bin/python" -m pip install --disable-pip-version-check --only-binary=:all: -r scripts/http3-test-requirements.txt
+          CADDY_BIN="$caddy_sec02_dir/caddy" "$caddy_sec02_dir/http3-venv/bin/python" scripts/test-http3-early-data.py
         env:
           MEMBERS_AUTH_TEST_BOOTSTRAP_URL: postgres://gallery_test:synthetic_ci_only@127.0.0.1:5432/apogee_gallery_ci
   radar-billing-postgres:
