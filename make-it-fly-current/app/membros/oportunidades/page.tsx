@@ -5,6 +5,7 @@ import styles from "@/components/members/members.module.css";
 import { requireMember } from "@/lib/members/dal";
 import { requireRadarAccess } from "@/lib/billing/access";
 import { listMemberOpportunityPage } from "@/lib/opportunities/access";
+import { memberRadarPath } from "@/lib/opportunities/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -16,13 +17,13 @@ export const metadata: Metadata = {
 export default async function MemberOpportunitiesPage({ searchParams }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  // Proteção da rota. A DAL repete a autorização antes de ler os detalhes.
-  const member = await requireMember("/membros/oportunidades");
-  await requireRadarAccess(member.id);
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(await searchParams)) {
     if (typeof value === "string") params.set(key, value);
   }
+  // Proteção da rota. A DAL repete a autorização antes de ler os detalhes.
+  const member = await requireMember(memberRadarPath(params));
+  await requireRadarAccess(member.id);
   const catalogue = await listMemberOpportunityPage(params).catch(() => null);
 
   return (

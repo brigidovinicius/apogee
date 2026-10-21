@@ -125,6 +125,7 @@ export function MakeItFlyV2() {
           </a>
 
           <nav className={styles.navLinks} aria-label="Navegação principal">
+            <Link href="/">Voltar à Apogee</Link>
             <a
               className={activeSection === "experiencia" ? styles.navActive : ""}
               href="#experiencia"
@@ -151,6 +152,7 @@ export function MakeItFlyV2() {
 
           <div className={styles.topbarActions}>
             <nav className={styles.mobilePortalLinks} aria-label="Áreas do site">
+              <Link href="/" aria-label="Voltar à Apogee">Apogee</Link>
               <Link href="/galeria">Galeria</Link>
               <Link href="/loja">Loja</Link>
             </nav>
@@ -411,6 +413,7 @@ export function MakeItFlyV2() {
             />
           </div>
           <div className={styles.footerMeta}>
+            <Link href="/">Voltar à Apogee <span aria-hidden>↗</span></Link>
             <a href="#inicio">
               Voltar ao topo <span aria-hidden>↑</span>
             </a>

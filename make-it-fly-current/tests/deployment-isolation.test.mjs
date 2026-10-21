@@ -186,8 +186,9 @@ test("public home and Make It Fly remain indexable while the Robonauta preview s
 });
 
 test("application-era landing resources remain locked to their approved bytes", async () => {
+  // 2026-10-20: only the three authorized Apogee return links changed.
   const approved = {
-    "components/landing/make-it-fly-v2.tsx": "f681798d80a7facab2fca4b72ec24c18afb515565beecd11118a2bb5a3c20b2e",
+    "components/landing/make-it-fly-v2.tsx": "122e59134c5a8b3c0803e75f51433188483a91c5c87eeb8e4ce83bbd117c4df0",
     "components/landing/EnergySupport.tsx": "a26cec4e4ac498608f037b82567600c3beb972acd9835400b12ae2a8b11a5812",
     "components/landing/energy-support.module.css": "07be5818f9aea583a15ceac6a93c61295c613c730ae6ea16615e6d330fe910d4",
     "components/landing/make-it-fly-v2.module.css": "f851e77636550b48c8a166f5bfc60a3031df580ef19f76c58d9cb72016549602",

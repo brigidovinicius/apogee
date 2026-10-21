@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { ShareButton } from "@/components/site/share-button";
 import styles from "@/components/opportunities/opportunities.module.css";
 import { listPublicOpportunityPage } from "@/lib/opportunities/access";
+import { memberRadarLoginHref } from "@/lib/opportunities/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -33,12 +34,13 @@ export default async function OpportunitiesPage({ searchParams }: {
     if (typeof value === "string") params.set(key, value);
   }
   const catalogue = await listPublicOpportunityPage(params).catch(() => null);
+  const memberHref = memberRadarLoginHref(params);
 
   return (
     <div className={styles.page}>
       <SiteHeader
         current="opportunities"
-        memberHref="/membros/entrar?next=%2Fmembros%2Foportunidades"
+        memberHref={memberHref}
         memberLabel="Entrar"
       />
 
@@ -54,7 +56,7 @@ export default async function OpportunitiesPage({ searchParams }: {
           <ShareButton title="Radar de oportunidades | Apogee" path="/oportunidades" />
         </section>
 
-        <p className={styles.memberCta}><Link href="/membros/entrar?next=%2Fmembros%2Foportunidades">Entre na comunidade Apogee para explorar o Radar na área de membros →</Link></p>
+        <p className={styles.memberCta}><Link href={memberHref}>Entre na comunidade Apogee para explorar o Radar na área de membros →</Link></p>
         {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
       </main>
 

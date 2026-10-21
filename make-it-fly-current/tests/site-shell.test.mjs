@@ -40,7 +40,8 @@ test("institutional shell is reused by the first public and member routes", asyn
   assert.match(header, /<SiteMobileNavigation>/);
   assert.match(header, /aria-current=\{item\.section === current \? "page" : undefined\}/);
   assert.match(footer, /aria-label="Navegação do rodapé"/);
-  assert.match(opportunities, /memberHref="\/membros\/entrar\?next=%2Fmembros%2Foportunidades"/);
+  assert.match(opportunities, /memberHref=\{memberHref\}/);
+  assert.match(opportunities, /memberRadarLoginHref\(params\)/);
 });
 
 test("shell keeps keyboard focus and mobile motion behavior in shared styles", async () => {
