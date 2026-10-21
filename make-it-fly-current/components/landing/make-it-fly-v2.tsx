@@ -116,30 +116,31 @@ export function MakeItFlyV2() {
             navigationOnLight ? styles.topbarOnLight : "",
           ].join(" ")}
         >
-          <a className={styles.brand} href="#inicio" aria-label="Make it fly - início">
+          {/* Link mantém o estado da rota nas entradas de histórico das âncoras. */}
+          <Link className={styles.brand} href="#inicio" aria-label="Make it fly - início">
             <span aria-hidden className={styles.brandMark} />
             <span className={styles.brandName}>
               <span>Make it fly</span>
               <span>By Apogee</span>
             </span>
-          </a>
+          </Link>
 
           <nav className={styles.navLinks} aria-label="Navegação principal">
             <Link href="/">Voltar à Apogee</Link>
-            <a
+            <Link
               className={activeSection === "experiencia" ? styles.navActive : ""}
               href="#experiencia"
               aria-current={activeSection === "experiencia" ? "location" : undefined}
             >
               Experiência
-            </a>
-            <a
+            </Link>
+            <Link
               className={activeSection === "programacao" ? styles.navActive : ""}
               href="#programacao"
               aria-current={activeSection === "programacao" ? "location" : undefined}
             >
               Programação
-            </a>
+            </Link>
             <Link
               className={activeSection === "galeria-preview" ? styles.navActive : ""}
               href="/galeria"
@@ -414,9 +415,9 @@ export function MakeItFlyV2() {
           </div>
           <div className={styles.footerMeta}>
             <Link href="/">Voltar à Apogee <span aria-hidden>↗</span></Link>
-            <a href="#inicio">
+            <Link href="#inicio">
               Voltar ao topo <span aria-hidden>↑</span>
-            </a>
+            </Link>
             <a className={styles.footerCredit} href="/earth/CREDITS.md" target="_blank" rel="noreferrer">
               Créditos das imagens
             </a>

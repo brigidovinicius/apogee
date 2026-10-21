@@ -75,3 +75,37 @@ continua na versão anterior até uma publicação autorizada separadamente.
 
 Evidências de navegador e logs: artefatos locais na pasta de visualizações deste
 chat, em `correcoes-navegacao-apogee.html` e `navigation-fix-evidence/`.
+
+## Reteste adicional — histórico após Programação
+
+O reteste encontrou uma falha em `/makeitfly`: clicar em Programação, sair para
+a Apogee e usar Voltar restaurava `/makeitfly#programacao`, mas mantinha o
+conteúdo da página inicial. O teste de navegador reproduziu essa divergência
+antes da correção, conferindo o conteúdo além da URL.
+
+As quatro âncoras internas da landing (marca/início, Experiência, Programação e
+Voltar ao topo) agora usam `next/link`, já importado pelo componente. A navegação
+passa pelo roteador, que preserva a árvore da rota no histórico. Na versão
+instalada do Next.js, o handler de `popstate` ignora entradas sem estado; a
+entrada criada pela âncora nativa não restaurava o conteúdo após a saída por Link.
+Não há handler global, recarga forçada ou alteração de CSS, conteúdo, hero ou
+Terra. Os dois hashes de preservação do TSX foram atualizados apenas após revisar
+essa alteração autorizada.
+
+Validação desta correção:
+
+- `node --test --test-concurrency=1 tests/navigation-return.test.mjs tests/deployment-isolation.test.mjs tests/energy-support.test.mjs`: **22 passaram, 0 falhas**.
+- `tests/browser/make-it-fly-history.mjs`, executado pelo `cua_repl` no preview
+  ativo: falhou antes da alteração com o h1 da página inicial; **9 cenários
+  passaram depois**, em 1280 e 390 px. Conferidos saída pelo cabeçalho/rodapé,
+  Voltar e Avançar, conteúdo correto e ponto de saída restaurado. Ao sair pelo
+  rodapé, Voltar restaura o rodapé, que era a posição no momento da saída.
+- `git diff --check` e verificação de sintaxe do teste de navegador: passaram.
+
+Esta rodada usou o preview persistente local, com o mesmo isolamento descrito
+acima. Não repetiu build, typecheck nem a suíte completa. O servidor permaneceu
+ativo para testes do usuário. Sem push, CI remoto, merge ou deploy.
+
+Evidências desta rodada: `makeitfly-history-fix/browser-results.json` e
+`makeitfly-history-fix/programacao-restaurada.png`, na pasta de visualizações
+deste chat.
