@@ -598,3 +598,13 @@ HTTP 200 da loja e das sete fotos; três produtos verificados no navegador públ
 Em scripts enviados por stdin ao SSH, executar a migração com `docker compose ... run --rm --no-deps -T --interactive=false web node scripts/store-drops-migrate.mjs`. O run interativo padrão pode consumir as instruções seguintes do shell. A etapa de aplicação foi conferida e a troca concluída em uma continuação explícita antes de declarar a publicação.
 
 Detalhes em [loja-drops-20261020.md](loja-drops-20261020.md) e no runbook remoto /opt/apogee-site/releases/20261020-loja-drops.md. Registros documentais posteriores não implicam novo deploy.
+
+## 20/10/2026 - Administração dos drops e cadastro após Comprar
+
+Publicação autorizada por “Sim” após revisão local. [PR #84](https://github.com/brigidovinicius/apogee/pull/84) integrada com os seis jobs do [CI 39521790590](https://github.com/brigidovinicius/apogee/actions/runs/39521790590) aprovados; 448 testes locais, tipos, lint e build aprovados. SHA publicado `63fb1ae088f88a84bc8d14d447921722516a89a9`, árvore idêntica ao head validado `db7a0a00c6b73d2f24015980ade78437be911541`.
+
+Somente web compilado e recriado, sem migração: saudável, zero reinícios, 12 containers vizinhos e `.env` preservados. Rollback `132597f27799bbd9d694e69f02cd74e3912c4489`, imagem `sha256:74961c741fe88f81394ef146993a9e0ae22e2e5d5f1fd84d7532d2960b487423`. Nenhuma modificação em Make It Fly, fotos ou dados.
+
+Loja pública conferida no navegador: três botões Comprar, formulário ausente inicialmente, mensagem/cadastro após clique, Escape com foco restaurado e mobile de 390 px sem overflow. Página administrativa anônima redireciona ao login; CSV anônimo retorna 401. Com sessão administrativa preexistente, lista real, busca, limpeza e download CSV foram conferidos. Arquivo com BOM, quatro colunas, telefone como texto e quantidade correta de linhas; contatos não foram incluídos nos registros de release.
+
+Detalhes em [loja-drops-admin-20261020.md](loja-drops-admin-20261020.md); runbook remoto `/opt/apogee-site/releases/20261020-loja-admin-drops.md`. Registro documental posterior, sem novo deploy.
