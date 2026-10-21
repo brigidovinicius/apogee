@@ -8,6 +8,7 @@ import { ApplicationLink } from "@/components/application/ApplicationLink";
 import { GalleryHomepagePreview } from "@/components/gallery/gallery-homepage-preview";
 import Image from "next/image";
 import Link from "next/link";
+import { rememberMakeItFlyScroll } from "@/lib/navigation/make-it-fly-scroll";
 import { ArrowDownRight } from "lucide-react";
 import {
   motion,
@@ -126,7 +127,7 @@ export function MakeItFlyV2() {
           </Link>
 
           <nav className={styles.navLinks} aria-label="Navegação principal">
-            <Link href="/">Voltar à Apogee</Link>
+            <Link href="/" onNavigate={rememberMakeItFlyScroll}>Voltar à Apogee</Link>
             <Link
               className={activeSection === "experiencia" ? styles.navActive : ""}
               href="#experiencia"
@@ -153,7 +154,7 @@ export function MakeItFlyV2() {
 
           <div className={styles.topbarActions}>
             <nav className={styles.mobilePortalLinks} aria-label="Áreas do site">
-              <Link href="/" aria-label="Voltar à Apogee">Apogee</Link>
+              <Link href="/" aria-label="Voltar à Apogee" onNavigate={rememberMakeItFlyScroll}>Apogee</Link>
               <Link href="/galeria">Galeria</Link>
               <Link href="/loja">Loja</Link>
             </nav>
@@ -414,7 +415,7 @@ export function MakeItFlyV2() {
             />
           </div>
           <div className={styles.footerMeta}>
-            <Link href="/">Voltar à Apogee <span aria-hidden>↗</span></Link>
+            <Link href="/" onNavigate={rememberMakeItFlyScroll}>Voltar à Apogee <span aria-hidden>↗</span></Link>
             <Link href="#inicio">
               Voltar ao topo <span aria-hidden>↑</span>
             </Link>

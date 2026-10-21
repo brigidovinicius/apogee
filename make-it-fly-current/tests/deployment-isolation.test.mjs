@@ -55,9 +55,13 @@ test("the single root layout preserves the approved visual wrapper and relocated
   const file = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const visual = file.statements.filter(statement => !(ts.isVariableStatement(statement)
     && statement.declarationList.declarations.some(declaration => declaration.name.getText(file) === "metadata"))
-    && !(ts.isImportDeclaration(statement) && ["@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system"].includes(statement.moduleSpecifier.text)))
+    && !(ts.isImportDeclaration(statement) && ["next/link", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration"].includes(statement.moduleSpecifier.text)))
     .map(statement => statement.getText(file)).join("\n").replaceAll("../fonts/", "./fonts/")
     .replace("        <JourneyTracker />\n", "")
+    .replace("        <MakeItFlyScrollRestoration />\n", "")
+    // The skip link keeps the same rendered anchor; only history handling changes.
+    .replace('<Link className="skip-link" href="#experiencia">', '<a className="skip-link" href="#experiencia">')
+    .replace("        </Link>\n", "        </a>\n")
     // The scoped boundary returns the original children on all /makeitfly routes.
     .replace("<ApogeeDesignSystem>{children}</ApogeeDesignSystem>", "{children}");
   assert.equal(sha256(visual), "bb2dbfad30652ec73ab9929b3732b448473f74112cbcb0cdaac56663c16f2cc0",
@@ -186,9 +190,9 @@ test("public home and Make It Fly remain indexable while the Robonauta preview s
 });
 
 test("application-era landing resources remain locked to their approved bytes", async () => {
-  // 2026-10-20: authorized return links and router-aware section links only.
+  // 2026-10-21: authorized navigation/history changes; visual assets stay locked.
   const approved = {
-    "components/landing/make-it-fly-v2.tsx": "0cac378db872ec50bc2fc72c5feab38410b87b5e412dfd7c68c7e5f52f3219fb",
+    "components/landing/make-it-fly-v2.tsx": "29323e359a43d8b2b6b601553bd2b7f70d6b7a17ba56980cf0c96f9f3a735705",
     "components/landing/EnergySupport.tsx": "a26cec4e4ac498608f037b82567600c3beb972acd9835400b12ae2a8b11a5812",
     "components/landing/energy-support.module.css": "07be5818f9aea583a15ceac6a93c61295c613c730ae6ea16615e6d330fe910d4",
     "components/landing/make-it-fly-v2.module.css": "f851e77636550b48c8a166f5bfc60a3031df580ef19f76c58d9cb72016549602",
