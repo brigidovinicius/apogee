@@ -21,7 +21,10 @@ www.apogee.community {
     Permissions-Policy "camera=(), geolocation=(), microphone=()"
     -Server
   }
-  reverse_proxy web:3000 {
+  # remote_ip rejects TLS early data with 425 until the peer is verified.
+  # Browsers retry after the handshake; HTTP/3 stays enabled (RFC 8470).
+  @verified_peer remote_ip 0.0.0.0/0 ::/0
+  reverse_proxy @verified_peer web:3000 {
     # Caddy é a única borda. Não confiar em IPs enviados pelo cliente ou outro CDN.
     header_up X-Apogee-Client-IP {remote_host}
     header_up X-Forwarded-For {remote_host}
