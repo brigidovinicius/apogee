@@ -38,6 +38,7 @@ controles e alvos mínimos foram reutilizados da UI consolidada.
 | --- | --- | --- |
 | Painel | Schema atual contém usuários, sessões e fórum; não contém billing, alertas, analytics, fontes ou jobs | `/admin` usa apenas contagens reais de contas e fórum e separa lacunas conhecidas como pendências, sem reproduzir números demonstrativos |
 | Usuários | Better Auth persiste nome, e-mail, usuário, verificação, papel e data; `role` aceita somente `member` ou `admin` | `/admin/usuarios` oferece leitura filtrada e limitada. Não existem mutações de papel, suspensão, entitlement ou exportação |
+| Cadastros dos drops | Contatos com consentimento na tabela privada `store_drop_signup` | `/admin/loja/drops` lista nome, telefone, e-mail e data, com busca, paginação e exportação CSV dos resultados, exclusiva para administradores |
 | Curadoria | Catálogo único do Radar | `/admin/curadoria` redireciona para `/admin/radar` |
 | Radar | Fichas validadas automaticamente e eventos de gerenciamento no banco próprio | `/admin/radar` apresenta o mesmo catálogo público com criação, edição e exclusão; fontes são configuradas em vista separada |
 | Blog | Tabelas `blog_post`, `blog_post_event` e `blog_media`, DAL editorial, slug, categoria, visibilidade por data e autorização de admin | `/admin/posts` lista e edita; `/admin/posts/novo` cria rascunhos, publica e agenda. O editor aceita capa, imagens no texto, link de vídeo e revisão SEO. A revisão por papel separado ainda não existe |

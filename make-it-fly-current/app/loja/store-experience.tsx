@@ -3,14 +3,14 @@
 import Image from "next/image";
 import { ArrowUp, ArrowUpRight, Plus, X } from "lucide-react";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { SiteHeader } from "@/components/site/site-header";
 import { products, type StoreProduct } from "@/lib/store/products";
 import { DROP_CONSENT_TEXT } from "@/lib/store/drop-consent";
 import styles from "./loja.module.css";
 
-function ProductGallery({ product }: { product: StoreProduct }) {
+function ProductGallery({ product, onBuy }: { product: StoreProduct; onBuy: () => void }) {
   const [active, setActive] = useState(0);
   const dialog = useRef<HTMLDialogElement>(null);
   const photo = product.photos[active];
@@ -30,7 +30,7 @@ function ProductGallery({ product }: { product: StoreProduct }) {
       </div>
       <div className={styles.productHeading}><h2 id={`title-${product.slug}`}>{product.name}</h2><span>{product.detail}</span></div>
       <p>{product.description}</p>
-      <a className={styles.productLink} href="#novos-drops">Receber novidades dos drops <ArrowUpRight size={18} aria-hidden="true" /></a>
+      <button className={styles.productLink} type="button" onClick={onBuy} aria-haspopup="dialog" aria-controls="drop-purchase-dialog" aria-label={`Comprar ${product.name}`}>Comprar <ArrowUpRight size={18} aria-hidden="true" /></button>
       <dialog ref={dialog} className={styles.photoDialog} aria-label={`Foto ampliada de ${product.name}`} onClick={(event) => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
         <button className={styles.closePhoto} type="button" autoFocus onClick={() => dialog.current?.close()}>Fechar <X size={18} aria-hidden="true" /></button>
         <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="90vw" />
@@ -39,7 +39,7 @@ function ProductGallery({ product }: { product: StoreProduct }) {
   );
 }
 
-function DropSignup() {
+function DropSignup({ productName }: { productName: string }) {
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const submitting = useRef(false);
@@ -73,8 +73,8 @@ function DropSignup() {
   }
 
   return (
-    <section id="novos-drops" className={styles.signup} aria-labelledby="signup-title">
-      <div className={styles.signupCopy}><span>Novos drops</span><h2 id="signup-title">O próximo drop<br />começa por aqui.</h2><p>Deixe seu contato para receber novidades dos produtos e dos próximos lançamentos da Apogee.</p></div>
+    <section className={styles.signup}>
+      <div className={styles.signupCopy}><span>{productName}</span><h2 id="signup-title">Novos drops em breve.</h2><p id="signup-description">Este produto ainda não está disponível para compra. Cadastre-se para receber novidades dos próximos drops.</p></div>
       <form className={styles.form} onSubmit={submit} aria-busy={status === "sending"}>
         <div className={styles.fields}>
           <label htmlFor="drop-name">Nome<input id="drop-name" name="name" autoComplete="name" required minLength={2} maxLength={120} placeholder="Seu nome" /></label>
@@ -91,18 +91,35 @@ function DropSignup() {
 }
 
 export function StoreExperience() {
+  const [selectedProduct, setSelectedProduct] = useState<StoreProduct | null>(null);
+  const purchaseDialog = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (!selectedProduct) return;
+    purchaseDialog.current?.showModal();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [selectedProduct]);
+
   return (
     <div className={styles.page}>
       <SiteHeader current="store" tone="light" />
       <main id="experiencia">
         <section className={styles.intro} aria-labelledby="store-title">
           <div><p>Apogee Builders Club</p><h1 id="store-title">Vista o que<br />você cria.</h1></div>
-          <div className={styles.introCopy}><p>Building the future. Made to create.</p><p>Conheça as peças da Apogee e acompanhe os próximos drops.</p><a href="#novos-drops">Receber novidades <ArrowUpRight size={18} aria-hidden="true" /></a></div>
+          <div className={styles.introCopy}><p>Building the future. Made to create.</p><p>Conheça as peças da Apogee e acompanhe os próximos drops.</p></div>
         </section>
         <section className={styles.collection} aria-label="Produtos Apogee" id="produtos">
-          {products.map(product => <ProductGallery key={product.slug} product={product} />)}
+          {products.map(product => <ProductGallery key={product.slug} product={product} onBuy={() => setSelectedProduct(product)} />)}
         </section>
-        <DropSignup />
+        <dialog ref={purchaseDialog} id="drop-purchase-dialog" className={styles.purchaseDialog}
+          aria-labelledby="signup-title" aria-describedby="signup-description"
+          onClose={() => setSelectedProduct(null)}
+          onClick={(event) => { if (event.target === event.currentTarget) purchaseDialog.current?.close(); }}>
+          <button className={styles.closePurchase} type="button" autoFocus onClick={() => purchaseDialog.current?.close()}>Fechar <X size={18} aria-hidden="true" /></button>
+          {selectedProduct ? <DropSignup key={selectedProduct.slug} productName={selectedProduct.name} /> : null}
+        </dialog>
       </main>
       <footer className={styles.footer}><Link href="/" aria-label="Apogee - início"><Image src="/brand/apogee-logo-navy.svg" alt="Apogee" width={112} height={69} /></Link><p>Building the future.</p><a href="#produtos">Voltar aos produtos <ArrowUp size={16} aria-hidden="true" /></a></footer>
     </div>

@@ -10,6 +10,7 @@ const liveItems = [
   { href: "/admin/posts", label: "Blog", exact: false },
   { href: "/admin/convites", label: "Convites", exact: false },
   { href: "/admin/usuarios", label: "Usuários", exact: false },
+  { href: "/admin/loja/drops", label: "Cadastros dos drops", exact: false },
 ] as const;
 
 const plannedItems = ["Moderação", "Assinaturas", "Conciliação", "Fila e jobs", "Auditoria"];

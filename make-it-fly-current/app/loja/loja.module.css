@@ -8,7 +8,6 @@
 .introCopy { max-width: 29ch; padding-bottom: .3rem; }
 .introCopy p:first-child { font-weight: 600; margin-bottom: 1rem; }
 .introCopy p { line-height: 1.6; color: var(--store-ink); }
-.introCopy a { display: inline-flex; align-items: center; gap: 2rem; min-height: 44px; margin-top: 1.5rem; border-bottom: 1px solid currentColor; font-size: .9rem; }
 .collection { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); align-items: start; gap: clamp(1.5rem,4vw,4rem); max-width: 92rem; margin: 0 auto; padding: 1rem var(--apogee-page-margin,4vw) clamp(4rem,7vw,7rem); scroll-margin-top: 2rem; }
 .product { min-width: 0; }
 .mainPhoto { display: block; position: relative; width: 100%; aspect-ratio: 1; padding: 0; border: 0; border-radius: .4rem; overflow: hidden; background: #f6f6f6; }
@@ -23,11 +22,12 @@
 .productHeading h2 { margin: 0; font-size: clamp(1.25rem,2vw,1.65rem); line-height: 1.25; font-weight: 500; letter-spacing: -.035em; }
 .productHeading > span { font-size: .8rem; color: #526478; }
 .product > p { max-width: 48ch; margin: 1rem 0; font-size: .9rem; line-height: 1.65; color: #526478; }
-.productLink { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 48px; padding: .75rem 0; border-bottom: 1px solid var(--store-line); font-size: .875rem; }
-.signup { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem,7vw,8rem); padding: clamp(3rem,6vw,6rem) max(var(--apogee-page-margin,4vw), calc((100vw - 84rem)/2)); color: #fff; background: var(--store-navy); scroll-margin-top: 2rem; }
+.productLink { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 1rem; min-height: 48px; padding: .75rem 1rem; border: 1px solid var(--store-navy); border-radius: var(--apogee-control-radius, .625rem); color: #fff; background: var(--store-navy); font-size: .875rem; }
+.productLink:hover { background: var(--store-ink); }
+.signup { display: grid; gap: 1.5rem; padding: 0 clamp(1.25rem,4vw,2.5rem) 1.5rem; color: #fff; background: var(--store-navy); }
 .signupCopy > span { font-size: .875rem; color: var(--store-sky); }
-.signupCopy h2 { margin: 1.25rem 0; font: 400 clamp(2.8rem,4.4vw,4.6rem)/1.02 var(--font-instrument-serif), Georgia, serif; letter-spacing: -.02em; }
-.signupCopy p { max-width: 34ch; font-size: 1rem; line-height: 1.6; color: #d9e5f1; }
+.signupCopy h2 { margin: 1rem 0; font: 400 clamp(2.3rem,4vw,3rem)/1.05 var(--font-instrument-serif), Georgia, serif; letter-spacing: -.02em; }
+.signupCopy p { margin: 0; font-size: 1rem; line-height: 1.6; color: #d9e5f1; }
 .form { position: relative; align-self: center; }
 .fields { display: grid; gap: 1.15rem; }
 .fields label { display: grid; gap: .55rem; font-size: .875rem; }
@@ -48,12 +48,15 @@
 .photoDialog::backdrop { background: rgb(7 24 45 / 80%); }
 .photoDialog > img { display: block; width: 100%; height: auto; max-height: 80svh; object-fit: contain; }
 .closePhoto { position: absolute; top: .5rem; right: 1rem; display: flex; align-items: center; gap: 1rem; min-height: 44px; padding: .5rem; border: 0; background: #fff; color: var(--store-navy); }
+.purchaseDialog { position: fixed; inset: 0; width: min(92vw, 36rem); max-width: 92vw; max-height: 92svh; margin: auto; padding: 0; border: 1px solid #73899f; border-radius: var(--apogee-control-radius, .625rem); background: var(--store-navy); color: #fff; overscroll-behavior: contain; }
+.purchaseDialog::backdrop { background: rgb(7 24 45 / 80%); }
+.closePurchase { display: flex; align-items: center; gap: .6rem; min-height: 44px; margin: .5rem .75rem .5rem auto; padding: .5rem; border: 0; color: #fff; background: transparent; }
+.purchaseDialog :is(button,input):focus-visible { outline-color: var(--store-sky); }
 @media (min-width:701px) and (max-width:1100px) { .collection { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width:700px) {
   .intro { align-items: start; flex-direction: column; gap: 1.75rem; padding-top: 2.5rem; padding-bottom: 1.75rem; }
   .intro h1 { font-size: var(--apogee-mobile-title, clamp(3rem,13vw,3.5rem)); }
   .introCopy { max-width: 35ch; }
-  .introCopy a { margin-top: .75rem; }
   .collection { grid-template-columns: minmax(0,1fr); gap: 3rem; }
   .signup { grid-template-columns: minmax(0,1fr); gap: 1.5rem; }
   .signupCopy h2 { font-size: var(--apogee-mobile-heading, clamp(2.5rem,11vw,3rem)); }

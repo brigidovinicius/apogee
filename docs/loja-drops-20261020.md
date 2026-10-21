@@ -29,9 +29,9 @@ Em 20/10/2026, após o aviso de migração e publicação pendentes, o usuário 
 - Sete fotos copiadas com SHA-256 idêntico aos originais recebidos.
 - Typegen, typecheck e lint dos arquivos de produção alterados aprovados.
 - Suíte completa local: 435 testes aprovados com dependências isoladas deste worktree. O inventário de rotas foi atualizado para a nova API.
-- Build local aprovado na revisão anterior à correção do inventário; a rodada final está sendo concluída.
+- Build local final aprovado.
 - Galerias e formulário já conferidos no navegador em desktop e celular. A confirmação local foi simulada; não foi tratada como persistência real.
-- CI da PR #81 inclui teste real da migração e do cadastro em PostgreSQL descartável, após a suíte de billing. Aguarda a revisão final.
+- CI da PR #81 inclui teste real da migração e do cadastro em PostgreSQL descartável, após a suíte de billing. Revisão final aprovada no CI.
 
 ## Backup e restauração
 
@@ -43,4 +43,21 @@ Na restauração, os seis hashes anteriores foram conferidos; o SQL exato da mig
 
 PR: https://github.com/brigidovinicius/apogee/pull/81
 
-Migração e deploy de produção ainda não executados. A revisão exata, CI, saúde, teste real e preservação dos serviços serão registrados após cada etapa.
+Publicada em 20/10/2026 na VPS existente.
+
+- PR #81 integrada; head validado 13f55dfe8c096f791e9d3816e879dc14ac2bd541.
+- CI completo aprovado: https://github.com/brigidovinicius/apogee/actions/runs/39515923117.
+- SHA publicado: 1ab3b065211794923ec25548c543c7ef61abd141. A árvore do merge é idêntica à do head validado.
+- Rollback preservado: e2d0899471c19e391d7d915b00e352d17a07a3a2; imagem sha256:5d0cdb003d94231c4dbe4dc0ae030bda32a4eef146c431439ce2ff232ab0d83c.
+- Migração retornou changed=true; repetição de conferência retornou changed=false. Histórico final com sete migrações.
+- Somente web recriado, healthy e zero reinícios. Os 12 containers vizinhos mantiveram IDs e imagens.
+- HTTP 200 em /loja, nas sete imagens, /makeitfly e /membros/entrar.
+- Navegador público: três produtos carregados; camiseta com frente, costas e ampliação; Escape fecha e devolve foco; 1440 px e 390 px sem overflow horizontal. Consentimento mobile com 14 px.
+- Cadastro técnico real pela página pública: sucesso, limpeza dos campos e conferência no PostgreSQL de nome, telefone, e-mail e texto/versão/data do consentimento. Removido somente o registro sintético criado pela verificação (DELETE 1), confirmado como ausente depois. Nenhum contato de visitante foi alterado e nenhuma mensagem foi enviada.
+- Teste remoto isolado adicional: 18 testes de billing e um de drops aprovados com PostgreSQL novo, dados sintéticos e sem rede externa. Containers próprios encerrados; snapshot de código preservado em /tmp/apogee-loja-validation-a01c134.
+
+A primeira execução aplicou a migração, mas o run interativo do Compose consumiu o restante do script SSH. O web ainda estava na revisão anterior. A continuação usou -T --interactive=false, reconferiu a migração idempotente e completou a troca com rollback e comparação dos vizinhos. Para execuções por stdin, usar sempre esses parâmetros no comando de migração.
+
+Runbook remoto: /opt/apogee-site/releases/20261020-loja-drops.md. Logs locais sanitizados: /tmp/apogee-store-deploy-20261020.log e /tmp/apogee-store-deploy-resume-20261020.log.
+
+Nenhum deploy de Radar ou ALU, alteração de DNS, proxy, segredo, rede, certificado ou volume.
