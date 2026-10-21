@@ -427,6 +427,11 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       await sql`update drizzle.__drizzle_migrations set hash = ${createHash("sha256").update(source).digest("hex")} where id = 8`;
       await sql`alter table radar_free_opportunity drop constraint radar_free_opportunity_id_check`;
       await assert.rejects(migrateRadarFreeOpportunity(sql), /Esquema divergente/);
+      // Restore only the fixtures created by this subtest. CI's next store
+      // migration test deliberately starts from the six-migration baseline.
+      await sql`drop table radar_free_opportunity`;
+      await sql`drop table store_drop_signup`;
+      await sql`delete from drizzle.__drizzle_migrations where created_at in (${journal.entries[6].when}, ${journal.entries[7].when})`;
     });
   } finally {
     globalThis.fetch = originalFetch;
