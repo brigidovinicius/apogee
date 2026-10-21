@@ -19,8 +19,18 @@ const nextConfig: NextConfig = {
   // Gera um servidor Node enxuto para o container da VPS. Os assets públicos
   // são copiados pelo Dockerfile conforme a documentação de self-hosting.
   output: "standalone",
+  // The loopback preview runs next start from this checkout, not a container bundle.
+  ...(process.env.APOGEE_LOCAL_PREVIEW === "1" ? { output: undefined } : {}),
   // Preserve the approved landing's CSS output during promotion to the root.
-  experimental: { cssChunking: false },
+  experimental: {
+    cssChunking: false,
+    ...(process.env.APOGEE_LOCAL_PREVIEW === "1" ? {
+      cpus: 1,
+      webpackBuildWorker: true,
+      webpackMemoryOptimizations: true,
+      preloadEntriesOnStart: false,
+    } : {}),
+  },
   // Desliga o double-mount do StrictMode em dev: ele monta/desmonta o Canvas
   // do react-three-fiber duas vezes, o que perde o contexto WebGL e deixa a
   // LUA invisivel so no `next dev` (no build de producao isso nao acontece —

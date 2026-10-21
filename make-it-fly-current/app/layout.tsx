@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { JourneyTracker } from "@/components/analytics/JourneyTracker";
 import { ApogeeDesignSystem } from "@/components/site/apogee-design-system";
 import { MakeItFlyScrollRestoration } from "@/components/site/make-it-fly-scroll-restoration";
+import { SkipLink } from "@/components/site/skip-link";
 import "./globals.css";
 
 const inter = localFont({
@@ -89,9 +89,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <body className="flex min-h-full flex-col bg-flight-ink font-sans text-flight-white">
         <JourneyTracker />
         <MakeItFlyScrollRestoration />
-        <Link className="skip-link" href="#experiencia">
-          Pular para o conteúdo
-        </Link>
+        <SkipLink />
         <ApogeeDesignSystem>{children}</ApogeeDesignSystem>
       </body>
     </html>

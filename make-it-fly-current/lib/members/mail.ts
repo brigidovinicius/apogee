@@ -3,8 +3,12 @@ import { randomUUID } from "node:crypto";
 
 export function applicationOrigin(): string {
   const url = new URL(process.env.BETTER_AUTH_URL ?? "");
+  const localHttp = url.protocol === "http:" && (
+    (process.env.NODE_ENV !== "production" && ["localhost", "127.0.0.1"].includes(url.hostname)) ||
+    (process.env.APOGEE_LOCAL_PREVIEW === "1" && url.origin === "http://127.0.0.1:4381")
+  );
   if (url.username || url.password || url.pathname !== "/" || url.search || url.hash ||
-      (url.protocol !== "https:" && !(process.env.NODE_ENV !== "production" && url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname)))) {
+      (url.protocol !== "https:" && !localHttp)) {
     throw new Error("Origem confiável da aplicação inválida.");
   }
   return url.origin;
