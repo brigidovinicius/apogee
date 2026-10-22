@@ -608,3 +608,9 @@ Somente web compilado e recriado, sem migração: saudável, zero reinícios, 12
 Loja pública conferida no navegador: três botões Comprar, formulário ausente inicialmente, mensagem/cadastro após clique, Escape com foco restaurado e mobile de 390 px sem overflow. Página administrativa anônima redireciona ao login; CSV anônimo retorna 401. Com sessão administrativa preexistente, lista real, busca, limpeza e download CSV foram conferidos. Arquivo com BOM, quatro colunas, telefone como texto e quantidade correta de linhas; contatos não foram incluídos nos registros de release.
 
 Detalhes em [loja-drops-admin-20261020.md](loja-drops-admin-20261020.md); runbook remoto `/opt/apogee-site/releases/20261020-loja-admin-drops.md`. Registro documental posterior, sem novo deploy.
+
+## 21/10/2026 — Retornos após login e histórico de navegação
+
+Publicação autorizada após o reteste do preview compilado. PR #87 integrado, CI 39702130219 com seis jobs aprovados e 478 testes do site passando. SHA publicado `41af1db8c6a5e0b88cd0803f4cede326e9049b3a`, mantendo as alterações de produção APG-84 e APG-85. Somente web reconstruído e recriado, healthy e zero reinícios; ambiente e 12 containers vizinhos preservados. Sem migrações.
+
+Quatorze verificações HTTPS e 23 verificações no navegador com sessão real existente passaram. Novo login em produção não foi executado. Rollback `7429096ddadc33bd5d3c7496960f5a8a9234a153` preservado. Detalhes e limites em [navigation-deploy-20261021.md](navigation-deploy-20261021.md). Registro documental posterior, sem novo deploy.
