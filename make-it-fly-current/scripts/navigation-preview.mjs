@@ -11,6 +11,10 @@ const env = {
   ...Object.fromEntries(["PATH", "TMPDIR", "LANG", "USER", "SHELL"].filter(k => process.env[k]).map(k => [k, process.env[k]])),
   ...localPreviewEnv(config, mode),
 };
+// Explicit, loopback-only browser test: no Google credentials or remote callback changes.
+const oauthFixture = process.argv.includes("--test-google-provider") && mode === "serve"
+  ? (await import("../tests/browser/google-provider-fixture.mjs")).createGoogleProviderFixture() : null;
+if (oauthFixture) await new Promise(resolve => oauthFixture.provider.listen(4384, "127.0.0.1", resolve));
 const sql = postgres(env.DATABASE_URL, { ssl: false, max: 1 });
 const catalogue = createServer(async (req, res) => {
   if (req.url !== "/catalogue" || req.headers.authorization !== `Bearer ${config.RADAR_ACADEMICO_API_TOKEN}`) {
@@ -27,7 +31,8 @@ await new Promise(resolve => catalogue.listen(4382, "127.0.0.1", resolve));
 let proxy;
 if (mode === "serve") {
   // Keep production auth's trusted-IP checks active on the compiled fixture.
-  proxy = createServer((req, res) => {
+  proxy = createServer(async (req, res) => {
+    if (oauthFixture && await oauthFixture.handle(req, res)) return;
     const upstream = request({ hostname: "127.0.0.1", port: 4383, method: req.method,
       path: req.url, headers: previewHeaders(req.headers) }, response => {
       res.writeHead(response.statusCode, response.headers); response.pipe(res);
@@ -49,7 +54,7 @@ console.log(`[navigation-preview] ${mode}; pid=${child.pid}; loopback only; no d
 let closing = false;
 async function cleanup() {
   if (closing) return; closing = true;
-  catalogue.close(); proxy?.close(); await sql.end();
+  catalogue.close(); proxy?.close(); oauthFixture?.provider.close(); await sql.end();
 }
 for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, () => child.kill(signal));
 child.once("error", async error => { console.error(error.message); await cleanup(); process.exitCode = 1; });

@@ -42,7 +42,7 @@ test("Google OAuth errors are safe and actionable without exposing provider deta
 test("Google keeps sign-up explicit and linking requires local email verification", async () => {
   const [auth, forms, example] = await Promise.all([
     readFile(new URL("../lib/members/auth.ts", import.meta.url), "utf8"),
-    readFile(new URL("../components/members/auth-forms.tsx", import.meta.url), "utf8"),
+    Promise.all(["components/members/auth-forms.tsx", "lib/members/google-login-flow.ts"].map(path => readFile(new URL(`../${path}`, import.meta.url), "utf8"))).then(parts => parts.join("\n")),
     readFile(new URL("../.env.example", import.meta.url), "utf8"),
   ]);
   assert.match(auth, /socialProviders:\s*\{\s*google:/s);

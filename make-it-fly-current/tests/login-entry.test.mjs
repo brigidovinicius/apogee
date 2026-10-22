@@ -48,7 +48,7 @@ test("the final member login keeps the Google button and sanitized OAuth errors"
     loadTypeScript("lib/members/social-auth.ts"),
   ]);
   assert.match(forms, /"Entrar com Google"/);
-  assert.match(forms, /googleOAuthErrorMessage\(result\.error\.code\)/);
-  assert.match(forms, /Não foi possível iniciar a entrada com Google\. Tente novamente\./);
+  assert.match(forms, /createGoogleLoginFlow/);
+  assert.match(forms, /window\.location\.replace\(path\)/);
   assert.equal(socialAuth.googleOAuthErrorMessage("provider_internal_detail"), "Não foi possível concluir a entrada com Google. Tente novamente.");
 });
