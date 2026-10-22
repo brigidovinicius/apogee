@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Checagem otimista: só confere se existe cookie de sessão. A validação real
 // acontece no servidor (lib/members/dal.ts) em cada página e action.
-const PUBLIC_MEMBER_PATHS = new Set(["/membros/entrar", "/membros/cadastro", "/membros/convite"]);
+const PUBLIC_MEMBER_PATHS = new Set(["/membros/entrar", "/membros/cadastro", "/membros/convite", "/membros/entrar/google/concluir"]);
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;

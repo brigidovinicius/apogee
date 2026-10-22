@@ -1,9 +1,9 @@
 "use client";
 
 import { createAuthClient } from "better-auth/client";
-import { useActionState, useState, useSyncExternalStore } from "react";
+import { useActionState, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { signIn, signUp, type FormState } from "@/app/membros/actions";
-import { googleOAuthErrorMessage } from "@/lib/members/social-auth";
+import { createGoogleLoginFlow } from "@/lib/members/google-login-flow";
 import { Field, FormMessage } from "./form-field";
 import { NameInput } from "./name-input";
 import styles from "./members.module.css";
@@ -24,26 +24,33 @@ type GoogleAuthProps = {
 function GoogleAuth({ next, errorMessage, requestSignUp = false }: GoogleAuthProps) {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string>();
-  const returnTo = requestSignUp ? "/membros/cadastro" : "/membros/entrar";
-  const errorCallbackURL = `${returnTo}?next=${encodeURIComponent(next)}`;
+  const flow = useRef<ReturnType<typeof createGoogleLoginFlow> | null>(null);
+  useEffect(() => () => { flow.current?.cancel(); }, []);
 
-  async function continueWithGoogle() {
+  function continueWithGoogle() {
+    if (flow.current) return;
     setPending(true);
     setMessage(undefined);
-    try {
-      const result = await authClient.signIn.social({
-        provider: "google",
-        callbackURL: next,
-        newUserCallbackURL: requestSignUp ? `/membros/perfil/configurar?next=${encodeURIComponent(next)}` : undefined,
-        errorCallbackURL,
-        requestSignUp,
-      });
-      if (result.error) setMessage(googleOAuthErrorMessage(result.error.code));
-    } catch {
-      setMessage("Não foi possível iniciar a entrada com Google. Tente novamente.");
-    } finally {
-      setPending(false);
-    }
+    flow.current = createGoogleLoginFlow({
+      origin: window.location.origin,
+      open: () => {
+        const popup = window.open("about:blank", "_blank", "popup,width=520,height=680");
+        if (popup) popup.opener = null;
+        return popup;
+      },
+      signIn: (options) => authClient.signIn.social(options),
+      hasSession: async () => {
+        const session = await authClient.getSession({ fetchOptions: { cache: "no-store" } });
+        return Boolean(session.data?.session);
+      },
+      replace: (path) => window.location.replace(path),
+      message: setMessage,
+      finish: () => { flow.current = null; setPending(false); },
+      now: Date.now,
+      schedule: (callback, delay) => setTimeout(callback, delay),
+      clear: (timer) => clearTimeout(timer),
+    }, next, requestSignUp);
+    flow.current.start();
   }
 
   return (
@@ -61,8 +68,11 @@ function GoogleAuth({ next, errorMessage, requestSignUp = false }: GoogleAuthPro
           <path fill="#FBBC05" d="M6.65 13.94A5.87 5.87 0 0 1 6.32 12c0-.67.12-1.32.33-1.94V7.48H3.4A9.75 9.75 0 0 0 2.25 12c0 1.62.39 3.16 1.15 4.52l3.25-2.58Z" />
           <path fill="#EA4335" d="M12 6.25c1.52 0 2.89.52 3.97 1.55l2.98-2.98C16.83 2.85 14.63 1.75 12 1.75a9.76 9.76 0 0 0-8.6 5.73l3.25 2.58A5.82 5.82 0 0 1 12 6.25Z" />
         </svg>
-        {pending ? "Redirecionando…" : requestSignUp ? "Criar conta com Google" : "Entrar com Google"}
+        {pending ? "Conclua na janela do Google…" : requestSignUp ? "Criar conta com Google" : "Entrar com Google"}
       </button>
+      {pending && <p className={styles.hint}>
+        A entrada foi aberta em outra janela. <button type="button" onClick={() => flow.current?.cancel()}>Cancelar entrada</button>
+      </p>}
     </>
   );
 }
