@@ -7,6 +7,7 @@ import { radarOpportunityDetail } from "@/lib/opportunities/detail-access";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 import { openFreeOpportunity } from "./actions";
 import styles from "@/components/members/members.module.css";
+import detailStyles from "./detail.module.css";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Detalhes da oportunidade | Apogee", robots: { index: false, follow: false } };
@@ -18,13 +19,14 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   return <div className={styles.container}>
     <MemberBar member={result.member} current="radar" />
     <div className={styles.narrow}>
-      <p><Link href="/membros/oportunidades">← Voltar ao Radar</Link></p>
+      <header className={detailStyles.header}>
+        <Link className={detailStyles.backLink} href="/membros/oportunidades">← Voltar ao Radar</Link>
+        <h1 className={styles.title}>{result.opportunity ? result.opportunity.title : "Sua primeira oportunidade é grátis"}</h1>
+      </header>
       {result.opportunity ? <>
-        <h1 className={styles.title}>{result.opportunity.title}</h1>
         {result.status === "free" ? <p>Esta é sua oportunidade gratuita. Você pode voltar a ela quando quiser enquanto estiver disponível.</p> : null}
         <OpportunityCard opportunity={result.opportunity} detailed />
       </> : <>
-        <h1 className={styles.title}>Sua primeira oportunidade é grátis</h1>
         <p><strong>{result.title}</strong></p>
         <p className={styles.lead}>Use seu acesso gratuito para abrir os detalhes desta oportunidade. Ela continuará disponível para você enquanto estiver no Radar.</p>
         <p>Para acessar uma segunda oportunidade diferente, o acesso vitalício custa R$ 49,00 em pagamento único.</p>
