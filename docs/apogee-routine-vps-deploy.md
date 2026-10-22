@@ -614,3 +614,10 @@ Detalhes em [loja-drops-admin-20261020.md](loja-drops-admin-20261020.md); runboo
 Publicação autorizada após o reteste do preview compilado. PR #87 integrado, CI 39702130219 com seis jobs aprovados e 478 testes do site passando. SHA publicado `41af1db8c6a5e0b88cd0803f4cede326e9049b3a`, mantendo as alterações de produção APG-84 e APG-85. Somente web reconstruído e recriado, healthy e zero reinícios; ambiente e 12 containers vizinhos preservados. Sem migrações.
 
 Quatorze verificações HTTPS e 23 verificações no navegador com sessão real existente passaram. Novo login em produção não foi executado. Rollback `7429096ddadc33bd5d3c7496960f5a8a9234a153` preservado. Detalhes e limites em [navigation-deploy-20261021.md](navigation-deploy-20261021.md). Registro documental posterior, sem novo deploy.
+
+
+## Retorno após Google OAuth — 22/10/2026
+
+PR [#88](https://github.com/brigidovinicius/apogee/pull/88), CI completo [39855751916](https://github.com/brigidovinicius/apogee/actions/runs/39855751916) aprovado nos seis jobs. Revisão publicada autorizada `a4cc461a447260ae335a893765ba8c3ba15fcded`, contendo a correção `512044e` e Next 16.4.2. Merge `069e1dbfd52db3194c4fcedbabf8d480ecde1a19` com árvore idêntica. Somente web recriado, .env e 24 containers vizinhos inventariados preservados. Sem migração ou configuração externa.
+
+15 verificações HTTPS e 27 cenários no Chrome passaram, incluindo dois novos logins Google reais, Voltar/Avançar do Radar e Blog administrativo, Galeria pública e retornos do Make It Fly. Saúde final healthy, zero reinícios/OOM na janela observada. Rollback 41af1db preservado. Resultados, limites e evidências em [google-oauth-deploy-20261022.md](google-oauth-deploy-20261022.md).
