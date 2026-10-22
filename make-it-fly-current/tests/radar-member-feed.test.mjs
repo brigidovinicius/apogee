@@ -137,14 +137,15 @@ test("expired dates, elapsed exact deadlines and elapsed events with unknown dea
   assert.equal(logic.isOpportunityOpen(opportunity({ deadlineAt: null, deadlinePrecision: "not_informed", categories: ["eventos"], eventStartsAt: "2026-10-15T14:59:59Z" }), "2026-10-15", now), false);
 });
 
-test("member board renders extracurriculars first, a shared 24-card page, distinct dates and intact requirements", () => {
+test("member board renders extracurriculars first, a shared 24-card page, distinct dates and protected requirements", () => {
   const exams = ["a", "b"].map(id => opportunity({ id, title: `Curso ${id}`, isCourse: true, categories: ["formacao"], admissionProcess: { id: "exam", title: "Vestibular agrupado" } }));
   const event = opportunity({ id: "event", title: "Encontro universitário", categories: ["eventos"], eventStartsAt: "2099-10-28", amountText: "Ingresso: R$ 79,90." });
   const ordered = orderOpportunityFeed([...exams, event], logic.EMPTY_OPPORTUNITY_FILTERS);
   const html = renderToStaticMarkup(React.createElement(OpportunitiesBoard, { opportunities: ordered, editorialFeed: true }));
   assert.ok(html.includes(event.title));
   assert.doesNotMatch(html, /Vestibular agrupado/);
-  assert.ok(html.includes(event.eligibility));
+  assert.ok(!html.includes(event.eligibility));
+  assert.match(html, /Ver detalhes/);
   assert.match(html, /Realização/); assert.match(html, /Janela de inscrição/); assert.match(html, /Início do evento/);
   assert.match(html, /<time dateTime="2099-10-28"/);
   const lots = orderOpportunityFeed([...exams, ...Array.from({ length: 25 }, (_, i) => ({ ...event, id: `event-${i}`, title: `Encontro ${i}` }))], logic.EMPTY_OPPORTUNITY_FILTERS);

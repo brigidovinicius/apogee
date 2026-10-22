@@ -8,6 +8,8 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import Stripe from "stripe";
 import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 import { migrateRadarBilling } from "../scripts/radar-billing-migrate.mjs";
+import { migrateStoreDrops } from "../scripts/store-drops-migrate.mjs";
+import { migrateRadarFreeOpportunity } from "../scripts/radar-free-opportunity-migrate.mjs";
 
 const url = process.env.RADAR_BILLING_TEST_DATABASE_URL;
 const ciDatabase = "postgres://billing_test:synthetic_ci_only@127.0.0.1:5432/apogee_billing_ci";
@@ -382,6 +384,54 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       await sql`alter table radar_purchase rename column corrupted_price_id to price_id`;
       assert.equal((await migrateRadarBilling(sql)).changed, false);
       assert.equal((await sql`select * from radar_legacy_access`).length, 1);
+    });
+    await t.test("uma oportunidade grátis: migração idempotente, concorrência real, reabertura e isolamento por conta", async () => {
+      await migrateStoreDrops(sql);
+      assert.equal((await migrateRadarFreeOpportunity(sql)).changed, true);
+      assert.equal((await migrateRadarFreeOpportunity(sql)).changed, false);
+      const { freeRadarOpportunity, claimFreeRadarOpportunity } = load("lib/opportunities/detail-store.ts");
+      const owner = await signup("free@example.test", "freeradar");
+      const another = await signup("anotherfree@example.test", "anotherfree");
+      assert.equal(await freeRadarOpportunity(owner.id), null);
+      const attempts = await Promise.all([claimFreeRadarOpportunity(owner.id, "radar-first"), claimFreeRadarOpportunity(owner.id, "radar-second")]);
+      assert.equal(attempts.filter(Boolean).length, 1);
+      const chosen = await freeRadarOpportunity(owner.id);
+      const otherId = chosen === "radar-first" ? "radar-second" : "radar-first";
+      assert.equal(await claimFreeRadarOpportunity(owner.id, chosen), true);
+      assert.equal(await claimFreeRadarOpportunity(owner.id, otherId), false);
+      assert.equal(await freeRadarOpportunity(owner.id), chosen);
+      assert.equal(await claimFreeRadarOpportunity(another.id, otherId), true);
+      assert.equal(await claimFreeRadarOpportunity("missing-user", "radar-first"), false);
+      await sql`update "user" set blocked = true where id = ${another.id}`;
+      assert.equal(await claimFreeRadarOpportunity(another.id, otherId), false);
+      const [count] = await sql`select count(*)::int as total from radar_free_opportunity where user_id = ${owner.id}`;
+      assert.equal(count.total, 1);
+      // The free slot is distinct from an unlimited paid/legacy/admin right.
+      assert.equal((await radarAccess(owner.id, false)).active, false);
+      const pendingCheckout = await checkout.POST(new Request(`${origin}/api/radar/checkout?next=%2Fmembros%2Foportunidades%2Fradar-second`, { method: "POST", headers: headers(owner.cookie) }));
+      assert.equal(pendingCheckout.status, 303);
+      const createdRequest = requests.filter(item => item.path === "/v1/checkout/sessions" && item.method === "POST").at(-1);
+      const checkoutFields = new URLSearchParams(createdRequest.body);
+      assert.equal(checkoutFields.get("success_url"), `${origin}/membros/radar/acesso?payment=received&next=%2Fmembros%2Foportunidades%2Fradar-second`);
+      assert.equal(checkoutFields.get("cancel_url"), `${origin}/membros/radar/acesso?payment=cancelled&next=%2Fmembros%2Foportunidades%2Fradar-second`);
+      const purchase = fixture("free_upgrade", owner.id);
+      await deliver(event(purchase));
+      assert.equal((await radarAccess(owner.id, false)).active, true);
+      assert.equal(await freeRadarOpportunity(owner.id), chosen);
+      // A returning paid user is not charged again and retains the selected detail.
+      const paidResponse = await checkout.POST(new Request(`${origin}/api/radar/checkout?next=%2Fmembros%2Foportunidades%2Fradar-second`, { method: "POST", headers: headers(owner.cookie) }));
+      assert.equal(paidResponse.headers.get("location"), `${origin}/membros/oportunidades/radar-second`);
+      await sql`update drizzle.__drizzle_migrations set hash = 'invalid' where id = 8`;
+      await assert.rejects(migrateRadarFreeOpportunity(sql), /Histórico divergente/);
+      const source = await readFile(new URL("../drizzle/0007_radar_free_opportunity.sql", import.meta.url), "utf8");
+      await sql`update drizzle.__drizzle_migrations set hash = ${createHash("sha256").update(source).digest("hex")} where id = 8`;
+      await sql`alter table radar_free_opportunity drop constraint radar_free_opportunity_id_check`;
+      await assert.rejects(migrateRadarFreeOpportunity(sql), /Esquema divergente/);
+      // Restore only the fixtures created by this subtest. CI's next store
+      // migration test deliberately starts from the six-migration baseline.
+      await sql`drop table radar_free_opportunity`;
+      await sql`drop table store_drop_signup`;
+      await sql`delete from drizzle.__drizzle_migrations where created_at in (${journal.entries[6].when}, ${journal.entries[7].when})`;
     });
   } finally {
     globalThis.fetch = originalFetch;

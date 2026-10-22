@@ -6,6 +6,7 @@ import { AdmissionProcessCard } from "./admission-process-card";
 import { groupAdmissionProcesses } from "@/lib/opportunities/admission-processes";
 import { OpportunityCountdown } from "./opportunity-countdown";
 import { OpportunityAlert } from "./opportunity-alert";
+import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 import { LiveCatalogueRefresh } from "./live-refresh";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -72,8 +73,8 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
     [catalogue, filterOptions, searchParams],
   );
   const visible = useMemo(
-    () => filterOpportunities(opportunities, filters, today, editorialFeed, management),
-    [filters, opportunities, today, editorialFeed, management],
+    () => catalogue ? opportunities : filterOpportunities(opportunities, filters, today, editorialFeed, management),
+    [catalogue, filters, opportunities, today, editorialFeed, management],
   );
   const grouped = useMemo(() => groupAdmissionProcesses(visible), [visible]);
   // Public/member ranking and pagination are computed on the server.
@@ -362,7 +363,7 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
   );
 }
 
-function OpportunityCard({ opportunity, management }: { opportunity: StudentOpportunity; management: boolean }) {
+export function OpportunityCard({ opportunity, management = false, detailed = management }: { opportunity: StudentOpportunity; management?: boolean; detailed?: boolean }) {
   return (
     <article className={styles.card}>
       <div className={styles.cardTopline}>
@@ -388,7 +389,7 @@ function OpportunityCard({ opportunity, management }: { opportunity: StudentOppo
           <dd><time dateTime={opportunity.eventStartsAt}>{formatDate(opportunity.eventStartsAt)}</time></dd>
         </div> : null}
       </dl>
-      <details className={styles.cardDisclosure}>
+      {detailed ? <details className={styles.cardDisclosure} open>
         <summary>Requisitos e condições</summary>
         <dl className={styles.details}>
         <div>
@@ -397,7 +398,7 @@ function OpportunityCard({ opportunity, management }: { opportunity: StudentOppo
         </div>
           <OpportunityCosts opportunity={opportunity} />
         </dl>
-      </details>
+      </details> : null}
       <div className={styles.launchWindow}>
         <CalendarDays size={17} aria-hidden />
         <div>
@@ -407,17 +408,18 @@ function OpportunityCard({ opportunity, management }: { opportunity: StudentOppo
         </div>
       </div>
       <OpportunityCountdown opportunity={opportunity} />
-      {opportunity.deadline === null ? <OpportunityAlert id={opportunity.id} title={opportunity.title} available={opportunity.alertsAvailable === true}/> : null}
+      {detailed && opportunity.deadline === null ? <OpportunityAlert id={opportunity.id} title={opportunity.title} available={opportunity.alertsAvailable === true}/> : null}
       <div className={styles.cardFooter}>
         <span>{opportunity.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={opportunity.verificationTimestamp ?? opportunity.verifiedAt} title="Horário de Brasília">{formatDate(opportunity.verificationTimestamp ?? opportunity.verifiedAt)}</time></span>
         <Link
-          href={opportunity.officialUrl}
+          href={detailed ? opportunity.officialUrl : opportunityDetailPath(opportunity.id)}
+          prefetch={false}
           className={styles.externalLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Ver página oficial de ${interfaceText(opportunity.title)}`}
+          target={detailed ? "_blank" : undefined}
+          rel={detailed ? "noopener noreferrer" : undefined}
+          aria-label={`Ver ${detailed ? "página oficial" : "detalhes"} de ${interfaceText(opportunity.title)}`}
         >
-          Ver oportunidade <ArrowUpRight size={16} aria-hidden />
+          {detailed ? "Ver página oficial e inscrição" : "Ver detalhes"} <ArrowUpRight size={16} aria-hidden />
         </Link>
       </div>
       {management ? <Link className={styles.externalLink} href={`/admin/radar?editar=${encodeURIComponent(opportunity.id.replace(/^radar-/, ""))}`}>Editar ou excluir</Link> : null}

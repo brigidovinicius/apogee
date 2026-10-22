@@ -5,7 +5,7 @@ import test from "node:test";
 import { migrateStoreDrops } from "../scripts/store-drops-migrate.mjs";
 
 const journal = JSON.parse(readFileSync(new URL("../drizzle/meta/_journal.json", import.meta.url), "utf8"));
-const history = journal.entries.map(entry => ({ hash: createHash("sha256").update(readFileSync(new URL(`../drizzle/${entry.tag}.sql`, import.meta.url))).digest("hex"), created_at: entry.when }));
+const history = journal.entries.slice(0, 7).map(entry => ({ hash: createHash("sha256").update(readFileSync(new URL(`../drizzle/${entry.tag}.sql`, import.meta.url))).digest("hex"), created_at: entry.when }));
 const names = ["id", "name", "phone", "email", "consent_version", "consent_text", "consented_at"];
 function database({ rows = history.slice(0, 6), present = false, broken = false } = {}) {
   let applied = false, recorded = false;

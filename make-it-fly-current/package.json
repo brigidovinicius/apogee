@@ -28,7 +28,8 @@
     "members:grant-invitation-manager": "node scripts/members-grant-invitation-manager.mjs",
     "billing:migrate": "node scripts/radar-billing-migrate.mjs",
     "test:billing": "node scripts/test-radar-billing.mjs",
-    "store:drops:migrate": "node scripts/store-drops-migrate.mjs"
+    "store:drops:migrate": "node scripts/store-drops-migrate.mjs",
+    "radar:free:migrate": "node scripts/radar-free-opportunity-migrate.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

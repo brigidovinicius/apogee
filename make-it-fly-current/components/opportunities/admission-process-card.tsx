@@ -5,6 +5,7 @@ import type { AdmissionGroup } from "@/lib/opportunities/admission-processes";
 import { OpportunityBenefits, OpportunityCosts } from "./opportunity-financials";
 import { OpportunityCountdown } from "./opportunity-countdown";
 import styles from "./opportunities.module.css";
+import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 
 export function AdmissionProcessCard({ group, management = false }: { group: AdmissionGroup; management?: boolean }) {
   const first = group.courses[0];
@@ -22,20 +23,20 @@ export function AdmissionProcessCard({ group, management = false }: { group: Adm
     {sharedWindow && first.deadline && !first.deadlineAt ? <small>Horário de encerramento não informado.</small> : null}
     {sharedWindow ? <OpportunityCountdown opportunity={first} /> : null}
     <details className={styles.admissionOptions}>
-      <summary>Ver cursos e requisitos ({group.courses.length})</summary>
+      <summary>{management ? "Ver cursos e requisitos" : "Ver cursos"} ({group.courses.length})</summary>
       <ul tabIndex={0} aria-label="Cursos, câmpus, vagas e requisitos disponíveis">{group.courses.map((course) => <li key={course.id}>
         <h4>{interfaceText(course.title)}</h4>
         <p>{interfaceText(course.location)} · {course.level}</p>
-        <p>{interfaceText(course.eligibility)}</p>
+        {management ? <p>{interfaceText(course.eligibility)}</p> : null}
         <OpportunityBenefits opportunity={course} />
-        <dl className={styles.details}><OpportunityCosts opportunity={course} /></dl>
+        {management ? <dl className={styles.details}><OpportunityCosts opportunity={course} /></dl> : null}
         {!sharedWindow ? <p>{interfaceText(course.deadlineLabel)}{course.opportunityStatus === "upcoming" ? " · Inscrições futuras" : ""}</p> : null}
-        {!sharedUrl ? <Link className={styles.externalLink} href={course.officialUrl} target="_blank" rel="noopener noreferrer">Ver fonte oficial deste curso</Link> : null}
+        {!management ? <Link prefetch={false} className={styles.externalLink} href={opportunityDetailPath(course.id)}>Ver detalhes deste curso</Link> : !sharedUrl ? <Link className={styles.externalLink} href={course.officialUrl} target="_blank" rel="noopener noreferrer">Ver fonte oficial deste curso</Link> : null}
         <p>{course.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={course.verificationTimestamp ?? course.verifiedAt}>{course.verifiedAt.split("-").reverse().join("/")}</time></p>
         {management ? <Link className={styles.externalLink} href={`/admin/radar?editar=${encodeURIComponent(course.id.replace(/^radar-/, ""))}`}>Editar ou excluir este curso</Link> : null}
       </li>)}</ul>
     </details>
-    {sharedUrl ? <div className={styles.cardFooter}>
+    {management && sharedUrl ? <div className={styles.cardFooter}>
       <Link className={styles.externalLink} href={first.officialUrl} target="_blank" rel="noopener noreferrer" aria-label={`Ver página oficial de ${interfaceText(group.title)}`}>
         Ver processo seletivo <ArrowUpRight size={16} aria-hidden />
       </Link>

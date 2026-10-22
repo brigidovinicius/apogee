@@ -7,6 +7,7 @@ import { billingConfig, BillingError, RADAR_ACCESS_PATH, RADAR_AMOUNT, RADAR_CHE
 import { billingFailure } from "@/lib/billing/http";
 import { radarAccess } from "@/lib/billing/store";
 import { stripeClient } from "@/lib/billing/stripe";
+import { radarDetailReturnPath } from "@/lib/opportunities/detail-path";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,8 +17,10 @@ export async function POST(request: Request) {
     if (request.headers.get("origin") !== applicationOrigin() || request.headers.get("sec-fetch-site") === "cross-site") throw new BillingError(403, "Origem não permitida.");
     const member = await getMemberFromHeaders(request.headers);
     if (!member) throw new BillingError(401, "Entre na sua conta para continuar.");
+    const next = radarDetailReturnPath(new URL(request.url).searchParams.get("next"));
+    const returnQuery = next === "/membros/oportunidades" ? "" : `&next=${encodeURIComponent(next)}`;
     const config = billingConfig();
-    if ((await radarAccess(member.id, config.livemode)).active) return Response.redirect(new URL("/membros/oportunidades", applicationOrigin()), 303);
+    if ((await radarAccess(member.id, config.livemode)).active) return Response.redirect(new URL(next, applicationOrigin()), 303);
     if (!(await consumeRateLimit(`radar-checkout:${member.id}`, 5, 3600))) throw new BillingError(429, "Aguarde antes de tentar novamente.");
     const stripe = stripeClient();
     const price = await stripe.prices.retrieve(config.price);
@@ -31,8 +34,8 @@ export async function POST(request: Request) {
       line_items: [{ price: config.price, quantity: 1 }], client_reference_id: member.id,
       customer_email: user.email, integration_identifier: `apogee_radar_${suffix}`,
       metadata: { integration: RADAR_CHECKOUT_TAG, radar_user_id: member.id },
-      success_url: `${applicationOrigin()}${RADAR_ACCESS_PATH}?payment=received`,
-      cancel_url: `${applicationOrigin()}${RADAR_ACCESS_PATH}?payment=cancelled`,
+      success_url: `${applicationOrigin()}${RADAR_ACCESS_PATH}?payment=received${returnQuery}`,
+      cancel_url: `${applicationOrigin()}${RADAR_ACCESS_PATH}?payment=cancelled${returnQuery}`,
     }, { idempotencyKey: `radar-${member.id}-${randomUUID()}` });
     if (!checkout.url || new URL(checkout.url).origin !== "https://checkout.stripe.com") throw new Error("Checkout indisponível.");
     return Response.redirect(checkout.url, 303);

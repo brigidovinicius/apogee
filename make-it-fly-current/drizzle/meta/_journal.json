@@ -50,6 +50,13 @@
       "when": 1792535050816,
       "tag": "0006_store_drop_signups",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792546800000,
+      "tag": "0007_radar_free_opportunity",
+      "breakpoints": true
     }
   ]
 }
