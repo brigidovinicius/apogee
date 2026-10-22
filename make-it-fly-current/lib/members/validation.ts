@@ -117,14 +117,17 @@ export function parsePage(value: string | string[] | undefined): number {
 
 const INTERNAL_ORIGIN = "https://apogee.invalid";
 
-/** Aceita só caminhos internos e normalizados da área de membros para evitar open redirect. */
+/** Aceita só destinos internos protegidos. Cada rota mantém sua autorização no servidor. */
 export function safeNextPath(value: unknown): string {
   if (typeof value !== "string" || value.includes("\\")) return "/membros";
 
   try {
     const next = new URL(value, INTERNAL_ORIGIN);
     if (next.origin !== INTERNAL_ORIGIN) return "/membros";
-    if (next.pathname !== "/membros" && !next.pathname.startsWith("/membros/")) return "/membros";
+    const protectedPath = next.pathname === "/membros" || next.pathname.startsWith("/membros/") ||
+      next.pathname === "/admin" || next.pathname.startsWith("/admin/") ||
+      next.pathname === "/gerenciar-galeria";
+    if (!protectedPath) return "/membros";
     return `${next.pathname}${next.search}${next.hash}`;
   } catch {
     return "/membros";

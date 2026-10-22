@@ -6,6 +6,7 @@ import { listRadarOpportunities } from "@/lib/opportunities/radar-client";
 import { buildOpportunityPage } from "./catalogue";
 import { filterOpportunities } from "./types";
 import { orderOpportunityFeed } from "./member-feed";
+import { memberRadarPath } from "./navigation";
 import { EMPTY_OPPORTUNITY_FILTERS, getOpportunityFilterOptions, sanitizeOpportunityFilters, type OpportunityFilters, sortByDeadline, type StudentOpportunity } from "@/lib/opportunities/types";
 export async function listPublicOpportunities(filters: OpportunityFilters = EMPTY_OPPORTUNITY_FILTERS): Promise<StudentOpportunity[]> {
   const opportunities = await listRadarOpportunities();
@@ -26,6 +27,6 @@ export async function listPublicOpportunityPage(params: URLSearchParams) {
   return { ...page, opportunities: page.opportunities.map(opportunityCardData) };
 }
 export async function listMemberOpportunityPage(params: URLSearchParams) {
-  await requireMember("/membros/oportunidades");
+  await requireMember(memberRadarPath(params));
   return listPublicOpportunityPage(params);
 }

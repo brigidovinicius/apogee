@@ -90,6 +90,6 @@ test("visitantes continuam redirecionados e não recebem os dados completos do R
 
   assert.match(proxy, /matcher: \["\/membros", "\/membros\/:path\*", "\/admin", "\/admin\/:path\*"\]/);
   assert.match(proxy, /login\.searchParams\.set\("next", pathname \+ search\)/);
-  assert.match(memberPage, /await requireMember\("\/membros\/oportunidades"\)/);
+  assert.match(memberPage, /await requireMember\(memberRadarPath\(params\)\)/);
   assert.match(access, /await requireMember\("\/membros\/oportunidades"\)/);
 });

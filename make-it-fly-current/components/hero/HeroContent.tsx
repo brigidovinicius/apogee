@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ABERTURA } from "@/content/site";
 import { ApplicationLink } from "@/components/application/ApplicationLink";
 import styles from "./apogee.module.css";
@@ -26,7 +27,7 @@ export function HeroContent() {
         <div className={styles.footer}>
           <ul aria-label="Informações do evento">{ABERTURA.meta.map(item => <li key={item}>{item}</li>)}</ul>
           <ApplicationLink className={styles.cta}>{ABERTURA.cta}</ApplicationLink>
-          <a className={styles.scrollCue} href="#experiencia">{ABERTURA.scroll}<span aria-hidden="true">↓</span></a>
+          <Link className={styles.scrollCue} href="#experiencia">{ABERTURA.scroll}<span aria-hidden="true">↓</span></Link>
         </div>
       </div>
     </div>

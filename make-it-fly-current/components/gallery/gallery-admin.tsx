@@ -2,6 +2,7 @@
 
 import { interfaceText } from "@/lib/presentation-text.mjs";
 import { useState } from "react";
+import Link from "next/link";
 import type { CommunityPhoto } from "@/lib/gallery-types";
 import styles from "./gallery-admin.module.css";
 
@@ -59,6 +60,10 @@ export function GalleryAdmin() {
   return (
     <main className={styles.page}>
       <header className={styles.header}>
+        <nav className={styles.navigation} aria-label="Navegação da galeria">
+          <Link href="/admin">Voltar ao painel</Link>
+          <Link href="/galeria">Ver galeria pública</Link>
+        </nav>
         <p>Make It Fly · administração</p>
         <h1>Gerenciar galeria</h1>
         <span>Liste as publicações e exclua somente o item selecionado.</span>

@@ -4,6 +4,7 @@ import { OpportunitiesBoard } from "@/components/opportunities/opportunities-boa
 import styles from "@/components/members/members.module.css";
 import { requireMember } from "@/lib/members/dal";
 import { listMemberOpportunityPage } from "@/lib/opportunities/access";
+import { memberRadarPath } from "@/lib/opportunities/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -15,12 +16,12 @@ export const metadata: Metadata = {
 export default async function MemberOpportunitiesPage({ searchParams }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  // A DAL repete a autenticação antes de ler o catálogo de cards.
-  const member = await requireMember("/membros/oportunidades");
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(await searchParams)) {
     if (typeof value === "string") params.set(key, value);
   }
+  // A DAL repete a autenticação antes de ler o catálogo de cards.
+  const member = await requireMember(memberRadarPath(params));
   const catalogue = await listMemberOpportunityPage(params).catch(() => null);
 
   return (

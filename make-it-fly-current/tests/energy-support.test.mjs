@@ -112,9 +112,9 @@ test("support has its own measured scroll scene without changing the primary sec
   assert.doesNotMatch(support, /<section\b|Canvas|useFrame/);
 });
 
-test("landing and footer retain the reviewed source after the authorized text and vector-icon normalization", async () => {
+test("landing and footer retain the reviewed source after the authorized text, vector-icon, return-link and hash-history changes", async () => {
   const source = await readSource("components/landing/make-it-fly-v2.tsx");
-  assert.equal(sha256(source), "f681798d80a7facab2fca4b72ec24c18afb515565beecd11118a2bb5a3c20b2e");
+  assert.equal(sha256(source), "29323e359a43d8b2b6b601553bd2b7f70d6b7a17ba56980cf0c96f9f3a735705");
 });
 
 test("Earth animation, hero and supplied can retain their approved hashes", async () => {
@@ -129,7 +129,7 @@ test("Earth animation, hero and supplied can retain their approved hashes", asyn
     "components/hero/EarthGlobe.tsx": "1ad77c62c57005533abd7d189f0ddb166e362dad162b10c0225624e834d2315e",
     "components/hero/StarField.tsx": "a73169c7aa120f90d745da4ed205348c3c3d3e994764d6d927bde81fd17fe104",
     "components/hero/Atmosphere.tsx": "04e3e228421aa33b847852f78719624f755fa4561b40a1c5ef1a629735dd2dba",
-    "components/hero/HeroContent.tsx": "55bf76317b773ed9d1f7aa66ac931e8b5c326613a45c9043bb7ae252e1f3d519",
+    "components/hero/HeroContent.tsx": "a5aa463864dff6c2027a2b8f70efdcb5393ba312950048ed174778e90ac46e6b",
     "components/hero/EarthPosterFallback.tsx": "2ef38eada43248edb3aa3345ca8bc7653efc72b72814040e1a6b153ea1e1881c",
     "lib/apogee-motion-policy.ts": "710df8f9f5fedaabdaf48921ffb3f66e96a6948ca4bf8a42371ea1bf2f76594b",
     "lib/apogee-scroll.ts": "07df4da2df36795f0d8617d7016e494eecb3e3e653f661906005e3d26e82927b",

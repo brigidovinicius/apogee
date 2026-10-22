@@ -1,7 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getAuth } from "@/lib/members/auth";
 import { clientIp, getCurrentMember, requireMember } from "@/lib/members/dal";
@@ -122,7 +122,9 @@ export async function signIn(_: FormState, form: FormData): Promise<FormState> {
   } catch (error) {
     return { message: authErrorMessage(error, "Não foi possível entrar agora."), values };
   }
-  redirect(safeNextPath(text(form, "next")));
+  // O login substitui sua entrada no histórico: Voltar retorna à página
+  // de origem, sem revisitar o login e redirecionar para esta sessão de novo.
+  redirect(safeNextPath(text(form, "next")), RedirectType.replace);
 }
 
 export async function signOut(): Promise<void> {

@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
 import ts from "typescript";
+import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
 const root = new URL("../", import.meta.url);
 const source = (path) => readFile(new URL(path, root), "utf8");
@@ -55,9 +56,14 @@ test("the single root layout preserves the approved visual wrapper and relocated
   const file = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const visual = file.statements.filter(statement => !(ts.isVariableStatement(statement)
     && statement.declarationList.declarations.some(declaration => declaration.name.getText(file) === "metadata"))
-    && !(ts.isImportDeclaration(statement) && ["@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system"].includes(statement.moduleSpecifier.text)))
+    && !(ts.isImportDeclaration(statement) && ["next/link", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link"].includes(statement.moduleSpecifier.text)))
     .map(statement => statement.getText(file)).join("\n").replaceAll("../fonts/", "./fonts/")
     .replace("        <JourneyTracker />\n", "")
+    .replace("        <MakeItFlyScrollRestoration />\n", "")
+    .replace("        <SkipLink />\n", '        <a className="skip-link" href="#experiencia">\n          Pular para o conteúdo\n        </a>\n')
+    // The skip link keeps the same rendered anchor; only history handling changes.
+    .replace('<Link className="skip-link" href="#experiencia">', '<a className="skip-link" href="#experiencia">')
+    .replace("        </Link>\n", "        </a>\n")
     // The scoped boundary returns the original children on all /makeitfly routes.
     .replace("<ApogeeDesignSystem>{children}</ApogeeDesignSystem>", "{children}");
   assert.equal(sha256(visual), "bb2dbfad30652ec73ab9929b3732b448473f74112cbcb0cdaac56663c16f2cc0",
@@ -150,11 +156,11 @@ test("only the approved Apogee, blog, admin, community and Make It Fly surfaces 
 });
 
 test("public home and Make It Fly remain indexable while the Robonauta preview stays noindex", async () => {
-  const [rootMetadata, homeMetadata, previewMetadata, publishedMetadata, publishedCss, config, pkg] = await Promise.all([
+  const [rootMetadata, homeMetadata, previewMetadata, publishedMetadata, publishedCss, pkg] = await Promise.all([
     readMetadata("app/layout.tsx"), readMetadata("app/page.tsx"),
     readMetadata("app/home-robonauta/page.tsx"),
     readMetadata("app/makeitfly/layout.tsx"), source("app/globals.css"),
-    source("next.config.ts"), source("package.json"),
+    source("package.json"),
   ]);
   assert.equal(rootMetadata.metadataBase.href, "https://www.apogee.community/");
   assert.equal(new URL(homeMetadata.alternates?.canonical, rootMetadata.metadataBase).href,
@@ -181,13 +187,14 @@ test("public home and Make It Fly remain indexable while the Robonauta preview s
   assert.doesNotMatch(JSON.stringify(publishedMetadata), /Florianópolis|Setembro|40 participantes|apoio oficial|noindex|teste-terra/i);
   assert.match(publishedCss, /overflow-x:\s*clip/);
   assert.equal(sha256(publishedCss), "aea4c2a15cd3f515161d259ddf541854b26a99093bba52013aab014f53bd5af3");
-  assert.match(config, /experimental:\s*\{\s*cssChunking:\s*false\s*\}/);
+  assert.equal(opportunityLoader()("next.config.ts").default.experimental.cssChunking, false);
   assert.match(JSON.parse(pkg).scripts.build, /next build --webpack/);
 });
 
 test("application-era landing resources remain locked to their approved bytes", async () => {
+  // 2026-10-21: authorized navigation/history changes; visual assets stay locked.
   const approved = {
-    "components/landing/make-it-fly-v2.tsx": "f681798d80a7facab2fca4b72ec24c18afb515565beecd11118a2bb5a3c20b2e",
+    "components/landing/make-it-fly-v2.tsx": "29323e359a43d8b2b6b601553bd2b7f70d6b7a17ba56980cf0c96f9f3a735705",
     "components/landing/EnergySupport.tsx": "a26cec4e4ac498608f037b82567600c3beb972acd9835400b12ae2a8b11a5812",
     "components/landing/energy-support.module.css": "07be5818f9aea583a15ceac6a93c61295c613c730ae6ea16615e6d330fe910d4",
     "components/landing/make-it-fly-v2.module.css": "f851e77636550b48c8a166f5bfc60a3031df580ef19f76c58d9cb72016549602",

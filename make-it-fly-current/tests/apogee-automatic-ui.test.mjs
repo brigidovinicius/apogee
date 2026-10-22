@@ -40,6 +40,7 @@ async function renderHeroContent() {
     "react/jsx-runtime": jsxRuntime,
     "@/content/site": content,
     "@/components/application/ApplicationLink": linkExports,
+    "next/link": { default: props => jsxRuntime.jsx("a", props) },
     "next/image": { default: props => jsxRuntime.jsx("img", props) },
     "./apogee.module.css": { default: new Proxy({}, { get: (_, key) => String(key) }) },
   };
