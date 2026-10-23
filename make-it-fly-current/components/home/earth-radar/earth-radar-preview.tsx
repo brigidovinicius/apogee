@@ -73,7 +73,7 @@ export function EarthRadarPreview() {
       const side = morph * Math.min(window.innerWidth * 0.055, 74);
       frame.style.inset = reduced.matches ? "" : `${morph * 92}px ${side}px ${morph * Math.min(window.innerHeight * 0.54, 470)}px`;
       frame.style.borderRadius = reduced.matches ? "" : `${morph * 28}px`;
-      const messageProgress = reduced.matches ? 1 : smoothProgress((progress - 0.5) / 0.42);
+      const messageProgress = reduced.matches ? 1 : smoothProgress((progress - 0.42) / 0.42);
       message.style.opacity = String(messageProgress);
       message.style.transform = reduced.matches ? "" : `translate(-50%, ${20 * (1 - messageProgress)}px)`;
       message.dataset.visible = String(messageProgress > 0);

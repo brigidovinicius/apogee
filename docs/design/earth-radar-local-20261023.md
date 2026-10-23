@@ -59,3 +59,9 @@ Não foram executados build de produção, serviços remotos, migrações, envio
 - Terra e texto usam uma curva suave com velocidade inicial e final nula. O texto aparece entre 50% e 92% da rolagem da introdução, com deslocamento vertical reduzido de 34 para 20 px.
 - Verificação desta iteração no servidor existente, sem reiniciá-lo: amostras de oito posições de rolagem no desktop 1440×900 e celular 390×844 confirmam encolhimento progressivo, opacidade de 0 a 1 e link disponível ao final. Sem rolagem horizontal ou erros de execução. Movimento reduzido preservado; `git diff --check` aprovado.
 - Capturas: `earth-radar-slower-1440.png` e `earth-radar-slower-390.png` na pasta de visualizações deste chat. Nenhum push ou deploy.
+
+### Entrada do texto antecipada
+
+A pedido do usuário, o início da entrada foi antecipado de 50% para 42% da rolagem da introdução. A duração da transição continua em 42 pontos percentuais: o texto fica totalmente visível aos 84%, antes de a Terra terminar de encolher aos 88%. O ritmo da Terra e a curva suave do texto foram preservados.
+
+Verificado no localhost em 1440×900 e 390×844: texto invisível no início, opacidade gradual durante o encolhimento, visibilidade completa ao final e modo de movimento reduzido preservado. Nenhum erro de execução. Capturas `earth-radar-earlier-copy-1440.png` e `earth-radar-earlier-copy-390.png`. Sem push ou deploy.
