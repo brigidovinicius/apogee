@@ -1,10 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { useMotionValue } from "framer-motion";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { DEMO_OPPORTUNITIES, QUICK_FILTERS, SIDEBAR_FILTERS, normalizePreviewText } from "./demo-opportunities";
 import styles from "./earth-radar.module.css";
+import { EarthRadarScene } from "./earth-radar-scene";
 
 const SAVED_KEY = "apogee:earth-radar-preview:saved:v1";
 const SAVED_EVENT = "apogee-preview-saved";
@@ -47,6 +48,7 @@ const smoothProgress = (value: number) => {
 
 export function EarthRadarPreview() {
   const root = useRef<HTMLDivElement>(null);
+  const earthProgress = useMotionValue(0);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("todas");
   const savedValue = useSyncExternalStore(subscribeSaved, savedSnapshot, () => "[]");
@@ -56,7 +58,6 @@ export function EarthRadarPreview() {
     const container = root.current;
     if (!container) return;
     const stage = container.querySelector<HTMLElement>("[data-earth-stage]")!;
-    const frame = container.querySelector<HTMLElement>("[data-earth-frame]")!;
     const message = container.querySelector<HTMLElement>("[data-earth-message]")!;
     const nav = container.querySelector<HTMLElement>("[data-preview-nav]")!;
     const progressLine = container.querySelector<HTMLElement>("[data-page-progress]")!;
@@ -70,9 +71,7 @@ export function EarthRadarPreview() {
       const stageTop = stage.getBoundingClientRect().top + window.scrollY;
       const progress = clamp((window.scrollY - stageTop) / Math.max(stage.offsetHeight - window.innerHeight, 1));
       const morph = smoothProgress((progress - 0.12) / 0.76);
-      const side = morph * Math.min(window.innerWidth * 0.055, 74);
-      frame.style.inset = reduced.matches ? "" : `${morph * 92}px ${side}px ${morph * Math.min(window.innerHeight * 0.54, 470)}px`;
-      frame.style.borderRadius = reduced.matches ? "" : `${morph * 28}px`;
+      earthProgress.set(reduced.matches ? 0 : morph);
       const messageProgress = reduced.matches ? 1 : smoothProgress((progress - 0.42) / 0.42);
       message.style.opacity = String(messageProgress);
       message.style.transform = reduced.matches ? "" : `translate(-50%, ${20 * (1 - messageProgress)}px)`;
@@ -102,7 +101,7 @@ export function EarthRadarPreview() {
       reduced.removeEventListener("change", schedule);
       window.cancelAnimationFrame(animationFrame);
     };
-  }, []);
+  }, [earthProgress]);
 
   const words = normalizePreviewText(query).trim().split(/\s+/).filter(Boolean);
   const visible = DEMO_OPPORTUNITIES.filter((item) => {
@@ -126,9 +125,7 @@ export function EarthRadarPreview() {
     <main id="experiencia" tabIndex={-1}>
       <section className={styles["earth-stage"]} data-earth-stage aria-label="Abertura da Apogee">
         <div className={styles["earth-sticky"]}>
-          <div className={styles["earth-frame"]} data-earth-frame>
-            <Image src="/design-preview/earth-horizon.png" alt="Horizonte da Terra visto do espaço ao entardecer" fill priority unoptimized sizes="100vw" />
-          </div>
+          <EarthRadarScene progress={earthProgress} />
           <div className={styles["earth-message"]} data-earth-message data-visible="false" inert>
             <h1>Seu próximo salto.</h1>
             <p>Oportunidades, encontros e gente curiosa para construir o que vem a seguir.</p>

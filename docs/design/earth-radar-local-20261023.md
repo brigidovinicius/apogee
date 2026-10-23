@@ -4,6 +4,8 @@ Data: 23/10/2026. Base: `19e1df9`. Branch: `feat/earth-radar-local-20261023`.
 
 Pedido: experimentar no projeto a direção visual dos arquivos recebidos, apenas no localhost. Não publicar, fazer push ou deploy.
 
+Revisão mais recente: a abertura agora reutiliza a Terra em 3D do Make It Fly. O movimento é da câmera e do globo; a cena ocupa a tela inteira sem redução de moldura. A fotografia recebida fica como imagem de carregamento e reserva. Os testes e as prévias solicitados pelo usuário devem ocorrer somente no navegador integrado do Codex.
+
 ## Direção implementada
 
 Os dois HTMLs recebidos são idênticos, assim como as duas imagens. O protótipo foi adaptado para componentes React e CSS Modules na aplicação `make-it-fly-current`, que atende a home Apogee. O prompt de continuidade anexado foi tratado como contexto; prevalece a autorização atual para implementar.
@@ -65,3 +67,17 @@ Não foram executados build de produção, serviços remotos, migrações, envio
 A pedido do usuário, o início da entrada foi antecipado de 50% para 42% da rolagem da introdução. A duração da transição continua em 42 pontos percentuais: o texto fica totalmente visível aos 84%, antes de a Terra terminar de encolher aos 88%. O ritmo da Terra e a curva suave do texto foram preservados.
 
 Verificado no localhost em 1440×900 e 390×844: texto invisível no início, opacidade gradual durante o encolhimento, visibilidade completa ao final e modo de movimento reduzido preservado. Nenhum erro de execução. Capturas `earth-radar-earlier-copy-1440.png` e `earth-radar-earlier-copy-390.png`. Sem push ou deploy.
+
+## Movimento do planeta, baseado no Make It Fly
+
+O usuário corrigiu a referência: o planeta deve se mover, em vez de uma moldura contendo sua fotografia. O experimento passou a reutilizar `components/hero/EarthCanvas.tsx`, incluindo esfera, texturas, atmosfera, luz e rotação existentes. Foi adicionada uma trajetória opcional de câmera, mantendo a trajetória padrão do Make It Fly. A prévia utiliza os primeiros 70% de `sampleApogee` para sair do horizonte próximo e terminar com o globo menor acima do texto. A introdução lenta e a entrada antecipada do texto permanecem.
+
+`EarthRadarScene` carrega a cena apenas no cliente, mostra a fotografia até a primeira renderização e mantém essa reserva sem WebGL ou com movimento reduzido. A renderização 3D é sob demanda e fica suspensa quando a introdução está fora da tela ou o documento está oculto. Os estilos não animam dimensões, bordas ou transformações do contêiner.
+
+Verificado antes da orientação de usar exclusivamente o navegador integrado: desktop 1440×900 e celular 390×844, afastamento da câmera, deslocamento do centro do globo, redução do diâmetro e retorno exato ao percorrer o scroll ao contrário. Contêiner fixo em toda a área de 100%×100svh, sem bordas arredondadas. Rota Make It Fly continua carregando a cena com a câmera padrão. Sem erros de execução na home. Foram simulados WebGL indisponível e alternância da preferência de movimento reduzido; ambos mantêm conteúdo visível e recuperam a cena quando aplicável. Avisos preexistentes sobre fontes e depreciação de `THREE.Clock` permanecem.
+
+Capturas `earth-radar-globe-desktop-*` e `earth-radar-globe-mobile-*` na pasta de visualizações deste chat. Nenhum push ou deploy. O Google Flow foi autorizado para novos materiais se necessários; esta correção reutiliza a cena 3D existente e não exigiu gerar imagens ou vídeos. Após a orientação do usuário, qualquer interação de navegador passa a ocorrer somente no navegador integrado do Codex.
+
+Após uma interrupção, foi confirmado que o servidor havia encerrado. Antes de reiniciá-lo, com a fila livre, ESLint nos três módulos TypeScript alterados e `tsc --noEmit --incremental false` passaram, sequencialmente. O servidor foi reaberto com o mesmo comando local.
+
+Na conferência do navegador integrado, a aba sinalizava movimento reduzido e mostrava corretamente a reserva estática. Para permitir o teste solicitado, foi configurada somente nessa aba a simulação `prefers-reduced-motion: no-preference`, via controle de desenvolvimento do navegador. Nenhuma configuração do macOS ou do navegador externo foi alterada. A cena ficou pronta com um único canvas; ao rolar, a câmera afastou de 1,428 para 6,678 e o diâmetro aparente da Terra caiu de 1,75 para 0,2702 da largura, mantendo o contêiner em 1280 px e raio de borda zero. Captura `earth-radar-globe-in-app.png`; aba deixada no início para o usuário testar.

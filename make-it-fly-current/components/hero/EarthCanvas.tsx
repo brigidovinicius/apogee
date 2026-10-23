@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type GLProps } from "@react-three/fiber";
 import type { MotionValue } from "framer-motion";
 import { ACESFilmicToneMapping, NoColorSpace, PerspectiveCamera, SRGBColorSpace, Texture, TextureLoader, WebGLRenderer } from "three";
-import { APOGEE_FOV, APOGEE_SUN, sampleEarthFlight } from "@/lib/apogee-config";
+import { APOGEE_FOV, APOGEE_SUN, sampleEarthFlight, type ApogeeSample } from "@/lib/apogee-config";
 import EarthGlobe, { type EarthTextures } from "./EarthGlobe";
 import StarField from "./StarField";
 
@@ -14,11 +14,13 @@ export type EarthCanvasProps = {
   active: boolean;
   onReady: () => void;
   onError: () => void;
+  /** Optional camera path; the Make It Fly scene keeps its existing default. */
+  sampleCamera?: (progress: number, compact: boolean, aspect: number) => ApogeeSample;
 };
 
 type RendererDefaults = Parameters<Extract<GLProps, (props: never) => unknown>>[0];
 
-function EarthScene({ progress, compact, active, onReady, onError }: EarthCanvasProps) {
+function EarthScene({ progress, compact, active, onReady, onError, sampleCamera = sampleEarthFlight }: EarthCanvasProps) {
   const gl = useThree((state) => state.gl);
   const camera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
@@ -90,7 +92,7 @@ function EarthScene({ progress, compact, active, onReady, onError }: EarthCanvas
   useFrame(() => {
     if (!active || !(camera instanceof PerspectiveCamera)) return;
     const aspect = Math.max(size.width, 1) / Math.max(size.height, 1);
-    const sample = sampleEarthFlight(progress.get(), compact, aspect);
+    const sample = sampleCamera(progress.get(), compact, aspect);
     camera.position.set(...sample.camera);
     camera.lookAt(0, 0, 0);
     // An off-axis lens positions the globe without scaling or moving its mesh.
@@ -106,6 +108,7 @@ function EarthScene({ progress, compact, active, onReady, onError }: EarthCanvas
     gl.domElement.setAttribute("data-scroll-progress", sample.progress.toFixed(4));
     gl.domElement.setAttribute("data-camera-distance", sample.distance.toFixed(4));
     gl.domElement.setAttribute("data-earth-center", sample.center.map(value => value.toFixed(4)).join(","));
+    gl.domElement.setAttribute("data-earth-diameter", sample.diameterRatio.toFixed(4));
   }, -1);
 
   const ready = useCallback(() => {
@@ -122,7 +125,7 @@ function EarthScene({ progress, compact, active, onReady, onError }: EarthCanvas
   );
 }
 
-export default function EarthCanvas({ progress, compact, active, onReady, onError }: EarthCanvasProps) {
+export default function EarthCanvas({ progress, compact, active, onReady, onError, sampleCamera }: EarthCanvasProps) {
   const [initializationFailed, setInitializationFailed] = useState(false);
   const reportedReady = useRef(false);
   const reportedError = useRef(false);
@@ -184,7 +187,7 @@ export default function EarthCanvas({ progress, compact, active, onReady, onErro
         fallback={null}
         style={{ width: "100%", height: "100%", pointerEvents: "none" }}
       >
-        <EarthScene progress={progress} compact={compact} active={active} onReady={ready} onError={error} />
+        <EarthScene progress={progress} compact={compact} active={active} onReady={ready} onError={error} sampleCamera={sampleCamera} />
       </Canvas>}
     </div>
   );

@@ -165,16 +165,26 @@
       isolation: isolate;
     }
 
-    .preview .earth-frame {
+    .preview .earth-scene {
       position: absolute;
       inset: 0;
       overflow: hidden;
-      background: var(--night-soft);
-      transform-origin: center top;
-      will-change: inset, border-radius, box-shadow;
+      background: var(--night);
+      pointer-events: none;
     }
 
-    .preview .earth-frame img {
+    .preview .earth-fallback,
+    .preview .earth-canvas {
+      position: absolute;
+      inset: 0;
+      transition: opacity 700ms ease;
+    }
+
+    .preview .earth-canvas { opacity: 0; }
+    .preview .earth-scene[data-scene="ready"] .earth-canvas { opacity: 1; }
+    .preview .earth-scene[data-scene="ready"] .earth-fallback { opacity: 0; }
+
+    .preview .earth-fallback img {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -183,7 +193,7 @@
       transform: scale(1.07);
     }
 
-    .preview .earth-frame::after {
+    .preview .earth-scene::after {
       content: "";
       position: absolute;
       inset: 0;
@@ -927,7 +937,8 @@
       }
 
       .preview .global-nav,
-      .preview .earth-frame,
+      .preview .earth-fallback,
+      .preview .earth-canvas,
       .preview .earth-message,
       .preview .opportunity {
         transition: none;
@@ -954,7 +965,7 @@
 .preview .demo-note { margin-top: 18px; font-size: 12px; }
 .preview .reset-filters { display: block; margin: 18px auto 0; padding: 10px 16px; border: 1px solid var(--line); border-radius: 999px; }
 .preview .membership-cta { display: inline-block; text-align: center; text-decoration: none; }
-.preview .earth-frame img { display: block; }
+.preview .earth-fallback img { display: block; }
 .preview .opportunity h3 { overflow-wrap: normal; }
 .preview .habit-card small { color: #526173; }
 .preview .habit-example strong { white-space: nowrap; }
@@ -977,8 +988,7 @@
 @media (prefers-reduced-motion: reduce) {
   .preview .earth-stage { height: auto; min-height: 0; }
   .preview .earth-sticky { position: relative; height: auto; }
-  .preview .earth-frame { position: relative; inset: auto !important; height: 100svh; border-radius: 0 !important; box-shadow: none !important; }
-  .preview .earth-frame img { transform: scale(1.07); }
+  .preview .earth-scene { position: relative; height: 100svh; }
   .preview .earth-message { position: relative; inset: auto; width: var(--page); margin: 0 auto; padding: 64px 0 80px; opacity: 1 !important; visibility: visible; transform: none !important; }
   .preview .habit-copy, .preview .habit-card { position: static; }
 }
