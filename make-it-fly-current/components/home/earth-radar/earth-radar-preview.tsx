@@ -39,6 +39,11 @@ function toggleSaved(id: string) {
 }
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
+// A curva começa e termina sem mudanças bruscas de velocidade.
+const smoothProgress = (value: number) => {
+  const progress = clamp(value);
+  return progress * progress * (3 - 2 * progress);
+};
 
 export function EarthRadarPreview() {
   const root = useRef<HTMLDivElement>(null);
@@ -64,13 +69,13 @@ export function EarthRadarPreview() {
       animationFrame = 0;
       const stageTop = stage.getBoundingClientRect().top + window.scrollY;
       const progress = clamp((window.scrollY - stageTop) / Math.max(stage.offsetHeight - window.innerHeight, 1));
-      const morph = clamp((progress - 0.14) / 0.66);
+      const morph = smoothProgress((progress - 0.12) / 0.76);
       const side = morph * Math.min(window.innerWidth * 0.055, 74);
       frame.style.inset = reduced.matches ? "" : `${morph * 92}px ${side}px ${morph * Math.min(window.innerHeight * 0.54, 470)}px`;
       frame.style.borderRadius = reduced.matches ? "" : `${morph * 28}px`;
-      const messageProgress = reduced.matches ? 1 : clamp((progress - 0.43) / 0.28);
+      const messageProgress = reduced.matches ? 1 : smoothProgress((progress - 0.5) / 0.42);
       message.style.opacity = String(messageProgress);
-      message.style.transform = reduced.matches ? "" : `translate(-50%, ${34 * (1 - messageProgress)}px)`;
+      message.style.transform = reduced.matches ? "" : `translate(-50%, ${20 * (1 - messageProgress)}px)`;
       message.dataset.visible = String(messageProgress > 0);
       message.inert = messageProgress < 0.9;
       const navProgress = reduced.matches ? (window.scrollY > 24 ? 1 : 0) : clamp((progress - 0.28) / 0.16);

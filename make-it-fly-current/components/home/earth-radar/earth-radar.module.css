@@ -152,8 +152,8 @@
 
     .preview .earth-stage {
       position: relative;
-      height: 210vh;
-      min-height: 1200px;
+      /* Mais espaço de rolagem para a Terra encolher sem pressa. */
+      height: 300svh;
       background: var(--night);
     }
 
@@ -199,7 +199,7 @@
       width: var(--page);
       color: white;
       opacity: 0;
-      transform: translate(-50%, 34px);
+      transform: translate(-50%, 20px);
       will-change: opacity, transform;
     }
 
@@ -817,8 +817,7 @@
 
     @media (max-width: 660px) {
       .preview .earth-stage {
-        height: 185vh;
-        min-height: 1050px;
+        height: 300svh;
       }
 
       .preview .nav-inner {
@@ -960,7 +959,7 @@
 .preview .habit-card small { color: #526173; }
 .preview .habit-example strong { white-space: nowrap; }
 @media (max-width: 660px) {
-  .preview .earth-stage { min-height: 0; height: 210svh; }
+  .preview .earth-stage { height: 300svh; }
   .preview .earth-message p { max-width: 32ch; font-size: 16px; line-height: 1.4; margin-top: 18px; }
   .preview .earth-message a { margin-top: 20px; }
   .preview .radar-heading h2 { font-size: clamp(46px, 14.5vw, 58px); }

@@ -52,3 +52,10 @@ No navegador local:
 As capturas estão na pasta de visualizações deste chat, com nomes `earth-radar-desktop-*` e `earth-radar-mobile-*`. O Next.js atualizou automaticamente o nível do título de seu bloco em `make-it-fly-current/AGENTS.md`.
 
 Não foram executados build de produção, serviços remotos, migrações, envios de formulário, compras, push ou deploy. Responsividade foi verificada por simulação de viewport; aparelho físico ainda não foi testado.
+
+## Ajuste de ritmo solicitado em 23/10/2026
+
+- Introdução com altura de três telas (`300svh`), antes `210vh` no desktop e `210svh` no celular. O trecho efetivo de encolhimento passou de aproximadamente 73% para 152% de uma altura de tela, pouco mais do dobro.
+- Terra e texto usam uma curva suave com velocidade inicial e final nula. O texto aparece entre 50% e 92% da rolagem da introdução, com deslocamento vertical reduzido de 34 para 20 px.
+- Verificação desta iteração no servidor existente, sem reiniciá-lo: amostras de oito posições de rolagem no desktop 1440×900 e celular 390×844 confirmam encolhimento progressivo, opacidade de 0 a 1 e link disponível ao final. Sem rolagem horizontal ou erros de execução. Movimento reduzido preservado; `git diff --check` aprovado.
+- Capturas: `earth-radar-slower-1440.png` e `earth-radar-slower-390.png` na pasta de visualizações deste chat. Nenhum push ou deploy.
