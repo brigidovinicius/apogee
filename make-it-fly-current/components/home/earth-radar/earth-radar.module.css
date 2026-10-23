@@ -117,9 +117,11 @@
 
     .preview .wordmark {
       color: inherit;
-      font-size: 17px;
-      font-weight: 650;
-      letter-spacing: -0.02em;
+      font-family: "Snell Roundhand", "Segoe Script", "Brush Script MT", cursive;
+      font-size: 36px;
+      font-weight: 400;
+      letter-spacing: -0.035em;
+      line-height: 1;
       text-decoration: none;
     }
 
@@ -169,7 +171,7 @@
       position: absolute;
       inset: 0;
       overflow: hidden;
-      background: var(--night);
+      background: #061b38;
       pointer-events: none;
     }
 
@@ -180,7 +182,7 @@
       transition: opacity 700ms ease;
     }
 
-    .preview .earth-canvas { opacity: 0; }
+    .preview .earth-canvas { opacity: 0; filter: blur(0.6px); }
     .preview .earth-scene[data-scene="ready"] .earth-canvas { opacity: 1; }
     .preview .earth-scene[data-scene="ready"] .earth-fallback { opacity: 0; }
 
@@ -193,12 +195,37 @@
       transform: scale(1.07);
     }
 
+    .preview .earth-scene::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 85% 25% at 50% 34%, rgba(106, 164, 194, 0.4), transparent 75%);
+      opacity: var(--earth-haze-opacity, 1);
+      pointer-events: none;
+    }
+
     .preview .earth-scene::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(2, 8, 20, 0.12), transparent 52%, rgba(2, 8, 20, 0.14));
+      background: linear-gradient(180deg, rgba(3, 16, 39, 0.1), transparent 52%, rgba(3, 16, 39, 0.08));
       pointer-events: none;
+    }
+
+    .preview .earth-signature {
+      position: absolute;
+      z-index: 3;
+      top: clamp(24px, 6svh, 72px);
+      left: 50%;
+      transform: translateX(-50%);
+      color: #f3f7fa;
+      font-family: "Snell Roundhand", "Segoe Script", "Brush Script MT", cursive;
+      font-size: clamp(70px, 9vw, 128px);
+      font-weight: 400;
+      letter-spacing: -0.045em;
+      line-height: 1.2;
+      pointer-events: none;
+      will-change: opacity;
     }
 
     .preview .earth-message {

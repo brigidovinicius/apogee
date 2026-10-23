@@ -4,15 +4,27 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import type { MotionValue } from "framer-motion";
 import { Component, useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
-import { sampleApogee } from "@/lib/apogee-config";
+import { APOGEE_FOV, apogeeDistance, sampleApogee, smoothApogee } from "@/lib/apogee-config";
 import styles from "./earth-radar.module.css";
 
 // Mesmas texturas, esfera, atmosfera e rotação do Make It Fly.
 const EarthCanvas = dynamic(() => import("@/components/hero/EarthCanvas"), { ssr: false, loading: () => null });
 
 function samplePreviewCamera(progress: number, compact: boolean, aspect: number) {
-  // A câmera sai de perto do horizonte e revela o globo acima da mensagem.
-  return sampleApogee(progress * 0.7, compact, aspect);
+  const sample = sampleApogee(progress * 0.7, compact, aspect);
+  // Horizonte largo e centralizado como na fotografia, seguido do voo existente.
+  const openingDiameter = compact ? 5.8 : 3.2;
+  const openingDistance = apogeeDistance(openingDiameter, aspect);
+  const blend = smoothApogee(progress / 0.6);
+  const distance = openingDistance + (sample.distance - openingDistance) * blend;
+  const openingCenterY = 0.32 + openingDiameter * aspect / 2;
+  return {
+    ...sample,
+    distance,
+    diameterRatio: 1 / (Math.sqrt(distance * distance - 1) * Math.tan(APOGEE_FOV * Math.PI / 360) * aspect),
+    center: [0.5 + (sample.center[0] - 0.5) * blend, openingCenterY + (sample.center[1] - openingCenterY) * blend] as const,
+    camera: sample.camera.map(value => value * distance / sample.distance) as [number, number, number],
+  };
 }
 
 function subscribeMedia(query: string, notify: () => void) {
@@ -81,7 +93,7 @@ function SceneSurface({ progress, canAnimate, compact, documentVisible }: {
     {canAnimate && !failed && <div className={styles["earth-canvas"]} aria-hidden="true">
       <SceneBoundary onError={onError}>
         <EarthCanvas progress={progress} compact={compact} active={inView && documentVisible}
-          onReady={onReady} onError={onError} sampleCamera={samplePreviewCamera} />
+          onReady={onReady} onError={onError} sampleCamera={samplePreviewCamera} appearance="horizon" />
       </SceneBoundary>
     </div>}
   </div>;

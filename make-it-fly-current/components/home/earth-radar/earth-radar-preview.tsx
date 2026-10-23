@@ -59,6 +59,7 @@ export function EarthRadarPreview() {
     if (!container) return;
     const stage = container.querySelector<HTMLElement>("[data-earth-stage]")!;
     const message = container.querySelector<HTMLElement>("[data-earth-message]")!;
+    const signature = container.querySelector<HTMLElement>("[data-earth-signature]")!;
     const nav = container.querySelector<HTMLElement>("[data-preview-nav]")!;
     const progressLine = container.querySelector<HTMLElement>("[data-page-progress]")!;
     const lightSections = container.querySelectorAll<HTMLElement>('[data-nav-theme="light"]');
@@ -72,6 +73,8 @@ export function EarthRadarPreview() {
       const progress = clamp((window.scrollY - stageTop) / Math.max(stage.offsetHeight - window.innerHeight, 1));
       const morph = smoothProgress((progress - 0.12) / 0.76);
       earthProgress.set(reduced.matches ? 0 : morph);
+      container.style.setProperty("--earth-haze-opacity", String(reduced.matches ? 0 : 1 - smoothProgress(morph / 0.6)));
+      signature.style.opacity = String(reduced.matches ? 1 : 1 - smoothProgress((progress - 0.16) / 0.24));
       const messageProgress = reduced.matches ? 1 : smoothProgress((progress - 0.42) / 0.42);
       message.style.opacity = String(messageProgress);
       message.style.transform = reduced.matches ? "" : `translate(-50%, ${20 * (1 - messageProgress)}px)`;
@@ -114,7 +117,7 @@ export function EarthRadarPreview() {
     <div className={styles["page-progress"]} data-page-progress aria-hidden="true" />
     <header className={styles["global-nav"]} data-preview-nav inert>
       <div className={styles["nav-inner"]}>
-        <a className={styles.wordmark} href="#experiencia" aria-label="Apogee, voltar ao início">apogee</a>
+        <a className={styles.wordmark} href="#experiencia" aria-label="Apogee, voltar ao início">Apogee</a>
         <nav className={styles["nav-links"]} aria-label="Navegação principal">
           <a href="#radar">Radar</a><a href="#comunidade">Comunidade</a>
           <Link prefetch={false} href="/blog">Blog</Link><Link prefetch={false} href="/makeitfly">Make It Fly</Link>
@@ -126,6 +129,7 @@ export function EarthRadarPreview() {
       <section className={styles["earth-stage"]} data-earth-stage aria-label="Abertura da Apogee">
         <div className={styles["earth-sticky"]}>
           <EarthRadarScene progress={earthProgress} />
+          <div className={styles["earth-signature"]} data-earth-signature>Apogee</div>
           <div className={styles["earth-message"]} data-earth-message data-visible="false" inert>
             <h1>Seu próximo salto.</h1>
             <p>Oportunidades, encontros e gente curiosa para construir o que vem a seguir.</p>
