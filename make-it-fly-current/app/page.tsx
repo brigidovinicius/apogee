@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { EditorialHome } from "@/components/home/editorial-home";
+import { EarthRadarPreview } from "@/components/home/earth-radar/earth-radar-preview";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,11 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
+  // Experimento autorizado só para localhost. Builds de produção mantêm a home atual.
+  if (process.env.NODE_ENV === "development" && process.env.APOGEE_LOCAL_DESIGN === "earth-radar") {
+    return <EarthRadarPreview />;
+  }
+
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
