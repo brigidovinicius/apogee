@@ -2,10 +2,11 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { listPublicOpportunities } from "@/lib/opportunities/access";
 import { homeOpportunitySnapshot } from "@/lib/home-opportunities";
+import { EarthRadarList } from "./earth-radar/earth-radar-list";
 import { HomeRadarList } from "./home-radar-list";
 import styles from "./editorial-home.module.css";
 
-export async function HomeRadar() {
+export async function HomeRadar({ presentation = "editorial" }: { presentation?: "editorial" | "earth" }) {
   const catalogue = await listPublicOpportunities().catch(() => null);
   if (catalogue === null) {
     return <div className={styles.catalogueMessage}>
@@ -14,5 +15,6 @@ export async function HomeRadar() {
     </div>;
   }
   const now = new Date();
-  return <HomeRadarList opportunities={homeOpportunitySnapshot(catalogue, now)} capturedAt={now.toISOString()} />;
+  const List = presentation === "earth" ? EarthRadarList : HomeRadarList;
+  return <List opportunities={homeOpportunitySnapshot(catalogue, now)} capturedAt={now.toISOString()} />;
 }

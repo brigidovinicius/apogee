@@ -1,0 +1,1032 @@
+/* Apogee: abertura cinematográfica e catálogo público. */
+
+    .preview {
+      --night: #06162c;
+      --night-soft: #0d2440;
+      --ink: #101b2c;
+      --muted: #637083;
+      --paper: #f7f9fa;
+      --white: #ffffff;
+      --mist: #eaf0f4;
+      --sky: #dceaf3;
+      --blue: #a8c7dc;
+      --line: rgba(16, 27, 44, 0.13);
+      --warm: #f3e7d4;
+      --green: #dcece5;
+      --page: min(1240px, calc(100vw - 64px));
+      --radius-large: 34px;
+    }
+
+    .preview * {
+      box-sizing: border-box;
+    }
+
+    .preview {
+      scroll-behavior: smooth;
+      background: var(--night);
+    }
+
+    .preview {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .preview button,
+    .preview input {
+      color: inherit;
+      font: inherit;
+    }
+
+    .preview button,
+    .preview a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .preview button:focus-visible,
+    .preview a:focus-visible,
+    .preview input:focus-visible {
+      outline: 3px solid rgba(104, 151, 186, 0.45);
+      outline-offset: 3px;
+    }
+
+    .preview a {
+      color: inherit;
+    }
+
+    /* Uma linha fina mostra que a rolagem está transformando a experiência. */
+    .preview .page-progress {
+      position: fixed;
+      z-index: 100;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #b8d6e9;
+      pointer-events: none;
+    }
+
+    /*
+      A navegação não aparece na primeira tela.
+      Ela entra somente quando a pessoa começa a rolar.
+    */
+    .preview .global-nav {
+      position: fixed;
+      z-index: 90;
+      top: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(-12px);
+      pointer-events: none;
+      transition: color 220ms ease, background 220ms ease, border-color 220ms ease;
+    }
+
+    .preview .global-nav.is-visible {
+      pointer-events: auto;
+    }
+
+    .preview .global-nav.is-light {
+      color: var(--ink);
+      background: rgba(247, 249, 250, 0.87);
+      border-bottom: 1px solid rgba(16, 27, 44, 0.08);
+      backdrop-filter: blur(18px);
+    }
+
+    .preview .global-nav:not(.is-light) {
+      color: var(--white);
+    }
+
+    .preview .nav-inner {
+      display: flex;
+      width: var(--page);
+      min-height: 72px;
+      margin: 0 auto;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+    }
+
+    .preview .wordmark {
+      color: inherit;
+      font-family: "Snell Roundhand", "Segoe Script", "Brush Script MT", cursive;
+      font-size: 36px;
+      font-weight: 400;
+      letter-spacing: -0.035em;
+      line-height: 1;
+      text-decoration: none;
+    }
+
+    .preview .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 27px;
+      font-size: 13px;
+    }
+
+    .preview .nav-links a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .preview .nav-links a:hover {
+      text-decoration: underline;
+      text-underline-offset: 5px;
+    }
+
+    .preview .nav-access {
+      padding: 10px 15px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+    }
+
+    /* ================================================================
+       1. ABERTURA CINEMATOGRÁFICA
+       ================================================================ */
+
+    .preview .earth-stage {
+      position: relative;
+      /* Mais espaço de rolagem para a Terra encolher sem pressa. */
+      height: 300svh;
+      background: var(--night);
+    }
+
+    .preview .earth-sticky {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .preview .earth-scene {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #061b38;
+      pointer-events: none;
+    }
+
+    .preview .earth-fallback,
+    .preview .earth-video {
+      position: absolute;
+      inset: 0;
+      transition: opacity 700ms ease;
+    }
+
+    .preview .earth-video { width: 100%; height: 100%; object-fit: cover; object-position: 65% 50%; opacity: 0; }
+    .preview .earth-scene[data-scene="ready"] .earth-video { opacity: 1; }
+    .preview .earth-scene[data-scene="ready"] .earth-fallback { opacity: 0; }
+
+    .preview .earth-fallback img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 65% 50%;
+    }
+
+    .preview .earth-scene::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(5, 22, 47, 0.68), transparent 75%),
+        linear-gradient(0deg, rgba(5, 22, 47, 0.82), transparent 64%);
+      opacity: var(--earth-copy-progress, 0);
+      pointer-events: none;
+    }
+
+    .preview .earth-signature {
+      position: absolute;
+      z-index: 3;
+      top: clamp(8px, 2svh, 24px);
+      left: 50%;
+      width: min(400px, 92vw, 48svh);
+      transform: translateX(-50%);
+      /* O preto dos assets desaparece sobre a Terra; o brilho vem do Flow. */
+      mix-blend-mode: screen;
+      pointer-events: none;
+      will-change: opacity;
+    }
+
+    .preview .earth-signature-art {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .preview .earth-signature-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      opacity: 0;
+      transition: opacity 800ms ease-in-out;
+    }
+
+    .preview .earth-signature[data-signature-state="playing"] .earth-signature-video {
+      opacity: 0.75;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .preview .earth-signature-video { display: none; }
+    }
+
+    .preview .earth-message {
+      position: absolute;
+      z-index: 2;
+      top: 57svh;
+      left: 50%;
+      width: var(--page);
+      color: white;
+      opacity: 0;
+      transform: translate(-50%, 20px);
+      will-change: opacity, transform;
+    }
+
+    .preview .earth-message h1 {
+      max-width: 870px;
+      margin: 0;
+      font-size: clamp(58px, 7.2vw, 112px);
+      font-weight: 420;
+      letter-spacing: -0.07em;
+      line-height: 0.92;
+    }
+
+    .preview .earth-message p {
+      max-width: 610px;
+      margin: 26px 0 0;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: clamp(17px, 1.65vw, 22px);
+      line-height: 1.45;
+    }
+
+    .preview .earth-message a {
+      display: inline-block;
+      margin-top: 32px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.64);
+      color: white;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    /* ================================================================
+       2. RADAR — O PRODUTO VIRA A PÁGINA
+       ================================================================ */
+
+    .preview .radar {
+      position: relative;
+      z-index: 3;
+      min-height: 100vh;
+      background: var(--paper);
+    }
+
+    .preview .radar-heading {
+      width: var(--page);
+      margin: 0 auto;
+      padding: 152px 0 74px;
+    }
+
+    .preview .radar-heading-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 30px;
+      border-top: 1px solid var(--line);
+      padding-top: 22px;
+    }
+
+    .preview .radar-heading-top span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .preview .radar-heading h2 {
+      max-width: 920px;
+      margin: 62px 0 0;
+      font-size: clamp(58px, 7.4vw, 116px);
+      font-weight: 430;
+      letter-spacing: -0.072em;
+      line-height: 0.91;
+    }
+
+    .preview .radar-heading p {
+      max-width: 620px;
+      margin: 30px 0 0;
+      color: var(--muted);
+      font-size: 19px;
+      line-height: 1.5;
+    }
+
+    .preview .radar-product {
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr);
+      width: var(--page);
+      margin: 0 auto;
+      padding-bottom: 120px;
+      border-top: 1px solid var(--line);
+    }
+
+    /* Menu lateral apenas com texto, sem desenhos decorativos. */
+    .preview .radar-sidebar {
+      position: sticky;
+      top: 96px;
+      align-self: start;
+      padding: 28px 32px 28px 0;
+    }
+
+    .preview .radar-sidebar strong {
+      display: block;
+      margin-bottom: 21px;
+      font-size: 13px;
+    }
+
+    .preview .radar-sidebar nav {
+      display: grid;
+      gap: 4px;
+    }
+
+    .preview .radar-sidebar button {
+      padding: 9px 0;
+      color: #637083;
+      background: transparent;
+      border: 0;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .preview .radar-sidebar button.active,
+    .preview .radar-sidebar button:hover {
+      color: var(--ink);
+    }
+
+    .preview .saved-count {
+      display: inline-grid;
+      min-width: 22px;
+      height: 22px;
+      margin-left: 7px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      font-size: 11px;
+    }
+
+    .preview .radar-main {
+      min-width: 0;
+      padding: 28px 0 0 42px;
+      border-left: 1px solid var(--line);
+    }
+
+    .preview .return-note {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 68px;
+      padding: 0 22px;
+      background: var(--sky);
+      border-radius: 18px;
+      font-size: 14px;
+    }
+
+    .preview .return-note strong {
+      font-weight: 650;
+    }
+
+    .preview .return-note span:last-child {
+      color: #4e6475;
+      font-size: 12px;
+    }
+
+    .preview .search-wrap {
+      position: sticky;
+      z-index: 20;
+      top: 72px;
+      padding: 24px 0 17px;
+      background: rgba(247, 249, 250, 0.94);
+      backdrop-filter: blur(16px);
+    }
+
+    .preview .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 68px;
+      padding: 0 22px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 16px 50px rgba(36, 55, 78, 0.06);
+    }
+
+    .preview .search-bar input {
+      width: 100%;
+      min-width: 0;
+      background: transparent;
+      border: 0;
+      outline: 0;
+      font-size: 16px;
+    }
+
+    .preview .search-bar button {
+      padding: 10px 0 10px 18px;
+      background: transparent;
+      border: 0;
+      border-left: 1px solid var(--line);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .preview .quick-filters {
+      display: flex;
+      gap: 25px;
+      padding: 8px 0 31px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .preview .quick-filter {
+      flex: 0 0 auto;
+      padding: 8px 0 7px;
+      color: #637083;
+      background: transparent;
+      border: 0;
+      border-bottom: 1px solid transparent;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .preview .quick-filter.active {
+      color: var(--ink);
+      border-color: var(--ink);
+    }
+
+    .preview .list-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 145px 125px;
+      gap: 24px;
+      padding: 0 20px 12px;
+      color: #637083;
+      font-size: 11px;
+    }
+
+    .preview .opportunities {
+      border-top: 1px solid var(--line);
+    }
+
+    .preview .opportunity {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 145px 125px;
+      gap: 24px;
+      align-items: center;
+      min-height: 128px;
+      padding: 22px 20px;
+      border-bottom: 1px solid var(--line);
+      transition: background 160ms ease;
+    }
+
+    .preview .opportunity:hover {
+      background: white;
+    }
+
+    .preview .opportunity[hidden] {
+      display: none;
+    }
+
+    .preview .opportunity-copy {
+      min-width: 0;
+    }
+
+    .preview .opportunity-kicker {
+      margin: 0 0 9px;
+      color: #768292;
+      font-size: 11px;
+    }
+
+    .preview .opportunity h3 {
+      max-width: 650px;
+      margin: 0;
+      font-size: clamp(19px, 2vw, 26px);
+      font-weight: 560;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+    }
+
+    .preview .opportunity-org {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .preview .opportunity-meta {
+      color: #516073;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .preview .opportunity-meta strong,
+    .preview .opportunity-meta span {
+      display: block;
+    }
+
+    .preview .opportunity-meta strong {
+      color: var(--ink);
+      font-weight: 550;
+    }
+
+    .preview .opportunity-action {
+      justify-self: end;
+      min-width: 88px;
+      padding: 10px 14px;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .preview .opportunity-action.saved {
+      color: white;
+      background: var(--night);
+      border-color: var(--night);
+    }
+
+    .preview .empty-state {
+      display: none;
+      padding: 70px 20px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+    }
+
+    .preview .empty-state.visible {
+      display: block;
+    }
+
+    .preview .all-link {
+      display: inline-block;
+      margin-top: 30px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--ink);
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    /* ================================================================
+       3. RETENÇÃO — POR QUE VOLTAR
+       ================================================================ */
+
+    .preview .habit-section {
+      padding: 150px 0;
+      color: white;
+      background: var(--night);
+    }
+
+    .preview .habit-grid {
+      display: grid;
+      grid-template-columns: minmax(270px, 0.8fr) minmax(420px, 1.2fr);
+      gap: clamp(70px, 10vw, 160px);
+      width: var(--page);
+      margin: 0 auto;
+    }
+
+    .preview .habit-copy {
+      position: sticky;
+      top: 140px;
+      align-self: start;
+    }
+
+    .preview .habit-copy h2 {
+      margin: 0;
+      font-size: clamp(50px, 6vw, 92px);
+      font-weight: 430;
+      letter-spacing: -0.065em;
+      line-height: 0.94;
+    }
+
+    .preview .habit-copy p {
+      max-width: 470px;
+      margin: 28px 0 0;
+      color: rgba(255, 255, 255, 0.66);
+      font-size: 18px;
+      line-height: 1.55;
+    }
+
+    .preview .habit-cards {
+      display: grid;
+      gap: 34px;
+      padding-bottom: 120px;
+    }
+
+    .preview .habit-card {
+      position: sticky;
+      top: 112px;
+      min-height: 420px;
+      padding: 44px;
+      color: var(--ink);
+      border-radius: var(--radius-large);
+      box-shadow: 0 26px 90px rgba(0, 0, 0, 0.24);
+    }
+
+    .preview .habit-card:nth-child(1) {
+      top: 112px;
+      background: var(--sky);
+    }
+
+    .preview .habit-card:nth-child(2) {
+      top: 136px;
+      background: var(--warm);
+    }
+
+    .preview .habit-card:nth-child(3) {
+      top: 160px;
+      background: var(--green);
+    }
+
+    .preview .habit-card small {
+      color: #697485;
+      font-size: 12px;
+    }
+
+    .preview .habit-card h3 {
+      max-width: 530px;
+      margin: 42px 0 0;
+      font-size: clamp(36px, 4vw, 62px);
+      font-weight: 480;
+      letter-spacing: -0.055em;
+      line-height: 1;
+    }
+
+    .preview .habit-card p {
+      max-width: 500px;
+      margin: 22px 0 0;
+      color: #566476;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .preview .habit-example {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 24px;
+      margin-top: 64px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(16, 27, 44, 0.16);
+      font-size: 13px;
+    }
+
+    .preview .habit-example strong {
+      font-size: 30px;
+      font-weight: 520;
+      letter-spacing: -0.05em;
+    }
+
+    /* ================================================================
+       4. COMUNIDADE E PRÓXIMO PASSO
+       ================================================================ */
+
+    .preview .community {
+      padding: 145px 0;
+      background: #edf3f6;
+    }
+
+    .preview .community-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+      gap: 80px;
+      width: var(--page);
+      margin: 0 auto;
+      align-items: end;
+    }
+
+    .preview .community h2 {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(58px, 7vw, 108px);
+      font-weight: 430;
+      letter-spacing: -0.07em;
+      line-height: 0.92;
+    }
+
+    .preview .community-copy p {
+      max-width: 580px;
+      margin: 32px 0 0;
+      color: var(--muted);
+      font-size: 19px;
+      line-height: 1.55;
+    }
+
+    .preview .community-links {
+      border-top: 1px solid var(--line);
+    }
+
+    .preview .community-links a {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 19px 0;
+      border-bottom: 1px solid var(--line);
+      text-decoration: none;
+    }
+
+    .preview .community-links a:hover span:first-child {
+      text-decoration: underline;
+      text-underline-offset: 5px;
+    }
+
+    .preview .membership {
+      padding: 120px 0;
+      color: white;
+      background: #10243d;
+    }
+
+    .preview .membership-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 60px;
+      width: var(--page);
+      margin: 0 auto;
+      align-items: end;
+    }
+
+    .preview .membership h2 {
+      max-width: 770px;
+      margin: 0;
+      font-size: clamp(48px, 6vw, 88px);
+      font-weight: 430;
+      letter-spacing: -0.065em;
+      line-height: 0.96;
+    }
+
+    .preview .membership p {
+      max-width: 590px;
+      margin: 26px 0 0;
+      color: rgba(255, 255, 255, 0.68);
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    .preview .membership-cta {
+      min-width: 230px;
+      padding: 18px 24px;
+      color: var(--night);
+      background: white;
+      border: 0;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .preview .site-footer {
+      padding: 30px 0;
+      color: rgba(255, 255, 255, 0.62);
+      background: #10243d;
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .preview .footer-inner {
+      display: flex;
+      width: var(--page);
+      margin: 0 auto;
+      justify-content: space-between;
+      gap: 30px;
+      font-size: 12px;
+    }
+
+    /* ================================================================
+       RESPONSIVIDADE — A MESMA HISTÓRIA EM TELAS MENORES
+       ================================================================ */
+
+    @media (max-width: 900px) {
+      .preview {
+        --page: min(100% - 38px, 760px);
+      }
+
+      .preview .nav-links a:not(.nav-access):not([href="#radar"]) {
+        display: none;
+      }
+
+      .preview .radar-product {
+        grid-template-columns: 1fr;
+      }
+
+      .preview .radar-sidebar {
+        position: static;
+        display: flex;
+        overflow-x: auto;
+        padding: 18px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .preview .radar-sidebar strong {
+        display: none;
+      }
+
+      .preview .radar-sidebar nav {
+        display: flex;
+        gap: 20px;
+      }
+
+      .preview .radar-sidebar button {
+        flex: 0 0 auto;
+      }
+
+      .preview .radar-main {
+        padding-left: 0;
+        border-left: 0;
+      }
+
+      .preview .habit-grid,
+      .preview .community-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .preview .habit-copy {
+        position: static;
+      }
+
+      .preview .membership-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .preview .membership-cta {
+        justify-self: start;
+      }
+    }
+
+    @media (max-width: 660px) {
+      .preview .earth-stage {
+        height: 300svh;
+      }
+
+      .preview .nav-inner {
+        min-height: 64px;
+      }
+
+      .preview .nav-links {
+        gap: 12px;
+      }
+
+      .preview .nav-access {
+        padding: 8px 12px;
+      }
+
+      .preview .earth-message {
+        top: 50svh;
+      }
+
+      .preview .earth-message h1 {
+        font-size: clamp(54px, 18vw, 78px);
+      }
+
+      .preview .earth-message p {
+        font-size: 17px;
+      }
+
+      .preview .radar-heading {
+        padding: 120px 0 55px;
+      }
+
+      .preview .radar-heading-top {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+      }
+
+      .preview .radar-heading h2 {
+        margin-top: 40px;
+        font-size: 58px;
+      }
+
+      .preview .return-note {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+        padding: 17px;
+      }
+
+      .preview .search-wrap {
+        top: 64px;
+      }
+
+      .preview .search-bar {
+        min-height: 58px;
+      }
+
+      .preview .list-head {
+        display: none;
+      }
+
+      .preview .opportunity {
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        padding: 22px 4px;
+      }
+
+      .preview .opportunity-meta {
+        grid-column: 1;
+      }
+
+      .preview .opportunity-action {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+      }
+
+      .preview .habit-section,
+      .preview .community {
+        padding: 100px 0;
+      }
+
+      .preview .habit-grid {
+        gap: 60px;
+      }
+
+      .preview .habit-card {
+        min-height: 380px;
+        padding: 30px;
+      }
+
+      .preview .habit-card:nth-child(1) { top: 92px; }
+      .preview .habit-card:nth-child(2) { top: 112px; }
+      .preview .habit-card:nth-child(3) { top: 132px; }
+
+      .preview .community-inner {
+        gap: 60px;
+      }
+
+      .preview .footer-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .preview {
+        scroll-behavior: auto;
+      }
+
+      .preview .global-nav,
+      .preview .earth-fallback,
+      .preview .earth-video,
+      .preview .earth-message,
+      .preview .opportunity {
+        transition: none;
+      }
+    }
+
+/* Ajustes de integração: foco, controles e movimento reduzido. */
+.preview { --apogee-font-heading: var(--font-inter), Arial, sans-serif; width: 100%; line-height: 1.5; }
+.preview :is(h1,h2,h3) { font-family: var(--font-inter), Arial, sans-serif; text-transform: none; }
+.preview :is(section[id], main[id]) { scroll-margin-top: 80px; }
+.preview button { cursor: pointer; }
+.preview .earth-message { visibility: hidden; }
+.preview .earth-message[data-visible="true"] { visibility: visible; }
+.preview .global-nav { visibility: hidden; }
+.preview .global-nav.is-visible { visibility: visible; }
+.preview .earth-message p { margin-top: 26px; }
+.preview .search-bar input:focus-visible { outline: 2px solid #4d7393; outline-offset: 5px; }
+.preview .nav-access, .preview .quick-filter, .preview .radar-sidebar button, .preview .opportunity-action { min-height: 44px; }
+.preview .nav-access { display: inline-flex; align-items: center; }
+.preview .radar-sidebar button { white-space: nowrap; }
+.preview .quick-filters { scrollbar-width: thin; }
+.preview .opportunity-action { min-width: 88px; }
+.preview .result-count { margin: 0 20px 18px; color: #637083; font-size: 12px; }
+.preview .demo-note { margin-top: 18px; font-size: 12px; }
+.preview .reset-filters { display: block; margin: 18px auto 0; padding: 10px 16px; border: 1px solid var(--line); border-radius: 999px; }
+.preview .membership-cta { display: inline-block; text-align: center; text-decoration: none; }
+.preview .earth-fallback img { display: block; }
+.preview .opportunity h3 { overflow-wrap: normal; }
+.preview .habit-card small { color: #526173; }
+.preview .habit-example strong { white-space: nowrap; }
+@media (max-width: 660px) {
+  .preview .earth-stage { height: 300svh; }
+  .preview .earth-message p { max-width: 32ch; font-size: 16px; line-height: 1.4; margin-top: 18px; }
+  .preview .earth-message a { margin-top: 20px; }
+  .preview .radar-heading h2 { font-size: clamp(46px, 14.5vw, 58px); }
+  .preview .opportunity h3 { font-size: 21px; }
+  .preview .habit-card { min-height: 390px; padding: 26px; }
+  .preview .habit-example { gap: 12px; margin-top: 42px; }
+  .preview .habit-example strong { font-size: 26px; }
+}
+@media (max-height: 550px) and (min-width: 661px) {
+  .preview .earth-message { top: 50svh; }
+  .preview .earth-message h1 { font-size: 58px; }
+  .preview .earth-message p { margin-top: 12px; font-size: 16px; }
+  .preview .earth-message a { margin-top: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preview .earth-stage { height: auto; min-height: 0; }
+  .preview .earth-sticky { position: relative; height: auto; }
+  .preview .earth-scene { position: relative; height: 100svh; }
+  .preview .earth-message { position: relative; inset: auto; width: var(--page); margin: 0 auto; padding: 64px 0 80px; opacity: 1 !important; visibility: visible; transform: none !important; }
+  .preview .habit-copy, .preview .habit-card { position: static; }
+}
+
+.preview .opportunity-action { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.preview .opportunity h3 a { text-decoration: none; }
+.preview .opportunity h3 a:hover { text-decoration: underline; text-underline-offset: 4px; }
