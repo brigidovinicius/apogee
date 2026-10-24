@@ -8,7 +8,6 @@ import { APOGEE_SUN, sampleEarthFlight } from "@/lib/apogee-config";
 import Atmosphere from "./Atmosphere";
 
 export type EarthTextures = { day: Texture; night: Texture; clouds: Texture; bump: Texture };
-export type EarthAppearance = "natural" | "horizon";
 
 /** The night map contributes only where the globe faces away from the sun. */
 const prepareSurface: MeshStandardMaterial["onBeforeCompile"] = (shader) => {
@@ -30,22 +29,6 @@ const prepareSurface: MeshStandardMaterial["onBeforeCompile"] = (shader) => {
     `);
 };
 
-// Paleta da referência: azul acinzentado, luz difusa e relevo sem verdes fortes.
-const prepareHorizonSurface: MeshStandardMaterial["onBeforeCompile"] = (shader) => {
-  shader.fragmentShader = shader.fragmentShader
-    .replace("#include <map_fragment>", `
-      #include <map_fragment>
-      float terrainLuma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-      float terrainTone = smoothstep(0.006, 0.22, terrainLuma);
-      diffuseColor.rgb = mix(vec3(0.055, 0.13, 0.2), vec3(0.46, 0.58, 0.64), terrainTone);
-    `)
-    .replace("#include <opaque_fragment>", `
-      float softHorizon = pow(1.0 - max(dot(normalize(normal), normalize(vViewPosition)), 0.0), 3.0);
-      outgoingLight = mix(outgoingLight, vec3(0.13, 0.26, 0.36), 0.2 + softHorizon * 0.25);
-      #include <opaque_fragment>
-    `);
-};
-
 const prepareClouds: MeshStandardMaterial["onBeforeCompile"] = (shader) => {
   shader.fragmentShader = shader.fragmentShader.replace("#include <alphamap_fragment>", `
     #ifdef USE_ALPHAMAP
@@ -56,14 +39,12 @@ const prepareClouds: MeshStandardMaterial["onBeforeCompile"] = (shader) => {
   `);
 };
 
-export default function EarthGlobe({ progress, compact, textures, onRendered, appearance = "natural" }: {
+export default function EarthGlobe({ progress, compact, textures, onRendered }: {
   progress: MotionValue<number>;
   compact: boolean;
   textures: EarthTextures;
   onRendered: () => void;
-  appearance?: EarthAppearance;
 }) {
-  const soft = appearance === "horizon";
   const surface = useRef<Group>(null);
   const clouds = useRef<Mesh>(null);
   const rendered = useRef(false);
@@ -79,7 +60,7 @@ export default function EarthGlobe({ progress, compact, textures, onRendered, ap
     if (clouds.current) clouds.current.rotation.y = -1.32 + sample.cloudRotation;
   });
 
-  const segments = soft ? compact ? 160 : 192 : compact ? 80 : 128;
+  const segments = compact ? 80 : 128;
 
   return (
     <group rotation={[0.1, 0, -0.1]}>
@@ -89,15 +70,15 @@ export default function EarthGlobe({ progress, compact, textures, onRendered, ap
           <meshStandardMaterial
             map={textures.day}
             bumpMap={textures.bump}
-            bumpScale={soft ? 0.001 : compact ? 0.003 : 0.004}
-            emissiveMap={soft ? undefined : textures.night}
-            emissive={soft ? "#91aabd" : "#e5bd75"}
-            emissiveIntensity={soft ? 0.24 : 1.2}
-            roughness={soft ? 1 : 0.88}
-            metalness={soft ? 0 : 0.02}
-            color={soft ? "#e9f1f5" : "#c6cdd0"}
-            onBeforeCompile={soft ? prepareHorizonSurface : prepareSurface}
-            customProgramCacheKey={() => soft ? "apogee-earth-horizon-v1" : "apogee-earth-day-night-v1"}
+            bumpScale={compact ? 0.003 : 0.004}
+            emissiveMap={textures.night}
+            emissive="#e5bd75"
+            emissiveIntensity={1.2}
+            roughness={0.88}
+            metalness={0.02}
+            color="#c6cdd0"
+            onBeforeCompile={prepareSurface}
+            customProgramCacheKey={() => "apogee-earth-day-night-v1"}
           />
         </mesh>
       </group>
@@ -105,10 +86,8 @@ export default function EarthGlobe({ progress, compact, textures, onRendered, ap
         <sphereGeometry args={[1.005, segments, segments / 2]} />
         <meshStandardMaterial
           alphaMap={textures.clouds}
-          color={soft ? "#d4e3e6" : "#deded0"}
-          emissive={soft ? "#668ba0" : "#000000"}
-          emissiveIntensity={soft ? 0.12 : 0}
-          opacity={soft ? 0.6 : 0.43}
+          color="#deded0"
+          opacity={0.43}
           transparent
           depthWrite={false}
           alphaTest={0.008}
@@ -117,7 +96,7 @@ export default function EarthGlobe({ progress, compact, textures, onRendered, ap
           customProgramCacheKey={() => "apogee-cloud-luminance-v1"}
         />
       </mesh>
-      {!soft && <Atmosphere progress={progress} compact={compact} />}
+      <Atmosphere progress={progress} compact={compact} />
     </group>
   );
 }

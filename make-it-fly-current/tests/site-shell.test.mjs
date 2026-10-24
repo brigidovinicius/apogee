@@ -23,9 +23,12 @@ test("institutional shell is reused by the first public and member routes", asyn
   }
 
   const editorial = await source("components/home/editorial-home.tsx");
-  assert.match(editorial, /<SiteHeader current="home" prefetch=\{false\} \/>/);
-  assert.match(editorial, /<SiteFooter \/>/);
-  assert.match(editorial, /<main id="experiencia" tabIndex=\{-1\}>/);
+  assert.match(editorial, /<EarthRadarPreview radar=/);
+  assert.match(editorial, /<HomeRadar presentation="earth" \/>/);
+  const earth = await source("components/home/earth-radar/earth-radar-preview.tsx");
+  assert.match(earth, /<SiteFooter \/>/);
+  assert.match(earth, /<main id="experiencia" tabIndex=\{-1\}>/);
+  assert.doesNotMatch(earth, /DEMO_OPPORTUNITIES|localStorage|Prévia local/);
 
   for (const route of [homeContent, opportunities, membersLayout]) {
     assert.match(route, /<SiteHeader/);

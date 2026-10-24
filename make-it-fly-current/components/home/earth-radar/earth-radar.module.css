@@ -1,9 +1,4 @@
-/*
-      APOGEE — PROTÓTIPO VISUAL NAVEGÁVEL
-
-      O arquivo é propositalmente único: HTML, CSS e JavaScript ficam juntos.
-      Isso facilita abrir, estudar e modificar o protótipo sem instalar nada.
-    */
+/* Apogee: abertura cinematográfica e catálogo público. */
 
     .preview {
       --night: #06162c;
@@ -176,56 +171,68 @@
     }
 
     .preview .earth-fallback,
-    .preview .earth-canvas {
+    .preview .earth-video {
       position: absolute;
       inset: 0;
       transition: opacity 700ms ease;
     }
 
-    .preview .earth-canvas { opacity: 0; filter: blur(0.6px); }
-    .preview .earth-scene[data-scene="ready"] .earth-canvas { opacity: 1; }
+    .preview .earth-video { width: 100%; height: 100%; object-fit: cover; object-position: 65% 50%; opacity: 0; }
+    .preview .earth-scene[data-scene="ready"] .earth-video { opacity: 1; }
     .preview .earth-scene[data-scene="ready"] .earth-fallback { opacity: 0; }
 
     .preview .earth-fallback img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: 50% 55%;
-      filter: saturate(0.84) contrast(1.04) brightness(0.88);
-      transform: scale(1.07);
-    }
-
-    .preview .earth-scene::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 85% 25% at 50% 34%, rgba(106, 164, 194, 0.4), transparent 75%);
-      opacity: var(--earth-haze-opacity, 1);
-      pointer-events: none;
+      object-position: 65% 50%;
     }
 
     .preview .earth-scene::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(3, 16, 39, 0.1), transparent 52%, rgba(3, 16, 39, 0.08));
+      background: linear-gradient(90deg, rgba(5, 22, 47, 0.68), transparent 75%),
+        linear-gradient(0deg, rgba(5, 22, 47, 0.82), transparent 64%);
+      opacity: var(--earth-copy-progress, 0);
       pointer-events: none;
     }
 
     .preview .earth-signature {
       position: absolute;
       z-index: 3;
-      top: clamp(24px, 6svh, 72px);
+      top: clamp(8px, 2svh, 24px);
       left: 50%;
+      width: min(400px, 92vw, 48svh);
       transform: translateX(-50%);
-      color: #f3f7fa;
-      font-family: "Snell Roundhand", "Segoe Script", "Brush Script MT", cursive;
-      font-size: clamp(70px, 9vw, 128px);
-      font-weight: 400;
-      letter-spacing: -0.045em;
-      line-height: 1.2;
+      /* O preto dos assets desaparece sobre a Terra; o brilho vem do Flow. */
+      mix-blend-mode: screen;
       pointer-events: none;
       will-change: opacity;
+    }
+
+    .preview .earth-signature-art {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .preview .earth-signature-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      opacity: 0;
+      transition: opacity 800ms ease-in-out;
+    }
+
+    .preview .earth-signature[data-signature-state="playing"] .earth-signature-video {
+      opacity: 0.75;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .preview .earth-signature-video { display: none; }
     }
 
     .preview .earth-message {
@@ -965,7 +972,7 @@
 
       .preview .global-nav,
       .preview .earth-fallback,
-      .preview .earth-canvas,
+      .preview .earth-video,
       .preview .earth-message,
       .preview .opportunity {
         transition: none;
@@ -1019,3 +1026,7 @@
   .preview .earth-message { position: relative; inset: auto; width: var(--page); margin: 0 auto; padding: 64px 0 80px; opacity: 1 !important; visibility: visible; transform: none !important; }
   .preview .habit-copy, .preview .habit-card { position: static; }
 }
+
+.preview .opportunity-action { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.preview .opportunity h3 a { text-decoration: none; }
+.preview .opportunity h3 a:hover { text-decoration: underline; text-underline-offset: 4px; }

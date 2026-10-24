@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type GLProps } from "@react-three/fiber";
 import type { MotionValue } from "framer-motion";
 import { ACESFilmicToneMapping, NoColorSpace, PerspectiveCamera, SRGBColorSpace, Texture, TextureLoader, WebGLRenderer } from "three";
-import { APOGEE_FOV, APOGEE_SUN, sampleEarthFlight, type ApogeeSample } from "@/lib/apogee-config";
-import EarthGlobe, { type EarthTextures, type EarthAppearance } from "./EarthGlobe";
+import { APOGEE_FOV, APOGEE_SUN, sampleEarthFlight } from "@/lib/apogee-config";
+import EarthGlobe, { type EarthTextures } from "./EarthGlobe";
 import StarField from "./StarField";
 
 export type EarthCanvasProps = {
@@ -14,16 +14,11 @@ export type EarthCanvasProps = {
   active: boolean;
   onReady: () => void;
   onError: () => void;
-  /** Optional camera path; the Make It Fly scene keeps its existing default. */
-  sampleCamera?: (progress: number, compact: boolean, aspect: number) => ApogeeSample;
-  /** The atmospheric palette is used only by the local design experiment. */
-  appearance?: EarthAppearance;
 };
 
 type RendererDefaults = Parameters<Extract<GLProps, (props: never) => unknown>>[0];
 
-function EarthScene({ progress, compact, active, onReady, onError, sampleCamera = sampleEarthFlight, appearance = "natural" }: EarthCanvasProps) {
-  const soft = appearance === "horizon";
+function EarthScene({ progress, compact, active, onReady, onError }: EarthCanvasProps) {
   const gl = useThree((state) => state.gl);
   const camera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
@@ -95,7 +90,7 @@ function EarthScene({ progress, compact, active, onReady, onError, sampleCamera 
   useFrame(() => {
     if (!active || !(camera instanceof PerspectiveCamera)) return;
     const aspect = Math.max(size.width, 1) / Math.max(size.height, 1);
-    const sample = sampleCamera(progress.get(), compact, aspect);
+    const sample = sampleEarthFlight(progress.get(), compact, aspect);
     camera.position.set(...sample.camera);
     camera.lookAt(0, 0, 0);
     // An off-axis lens positions the globe without scaling or moving its mesh.
@@ -111,8 +106,6 @@ function EarthScene({ progress, compact, active, onReady, onError, sampleCamera 
     gl.domElement.setAttribute("data-scroll-progress", sample.progress.toFixed(4));
     gl.domElement.setAttribute("data-camera-distance", sample.distance.toFixed(4));
     gl.domElement.setAttribute("data-earth-center", sample.center.map(value => value.toFixed(4)).join(","));
-    gl.domElement.setAttribute("data-earth-diameter", sample.diameterRatio.toFixed(4));
-    gl.domElement.setAttribute("data-earth-appearance", appearance);
   }, -1);
 
   const ready = useCallback(() => {
@@ -121,15 +114,15 @@ function EarthScene({ progress, compact, active, onReady, onError, sampleCamera 
 
   return (
     <>
-      <ambientLight color={soft ? "#b9d3e0" : "#8fabb5"} intensity={soft ? 0.85 : 0.065} />
-      <directionalLight position={APOGEE_SUN} color={soft ? "#e9f3f5" : "#fff3d9"} intensity={soft ? 2.2 : 3.35} />
+      <ambientLight color="#8fabb5" intensity={0.065} />
+      <directionalLight position={APOGEE_SUN} color="#fff3d9" intensity={3.35} />
       <StarField progress={progress} compact={compact} />
-      {textures && <EarthGlobe progress={progress} compact={compact} textures={textures} onRendered={ready} appearance={appearance} />}
+      {textures && <EarthGlobe progress={progress} compact={compact} textures={textures} onRendered={ready} />}
     </>
   );
 }
 
-export default function EarthCanvas({ progress, compact, active, onReady, onError, sampleCamera, appearance }: EarthCanvasProps) {
+export default function EarthCanvas({ progress, compact, active, onReady, onError }: EarthCanvasProps) {
   const [initializationFailed, setInitializationFailed] = useState(false);
   const reportedReady = useRef(false);
   const reportedError = useRef(false);
@@ -191,7 +184,7 @@ export default function EarthCanvas({ progress, compact, active, onReady, onErro
         fallback={null}
         style={{ width: "100%", height: "100%", pointerEvents: "none" }}
       >
-        <EarthScene progress={progress} compact={compact} active={active} onReady={ready} onError={error} sampleCamera={sampleCamera} appearance={appearance} />
+        <EarthScene progress={progress} compact={compact} active={active} onReady={ready} onError={error} />
       </Canvas>}
     </div>
   );
