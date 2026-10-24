@@ -21,6 +21,7 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
   useEffect(() => {
     const container = root.current;
     if (!container) return;
+    const pageStyle = container.style;
     const stage = container.querySelector<HTMLElement>("[data-earth-stage]")!;
     const message = container.querySelector<HTMLElement>("[data-earth-message]")!;
     const signature = container.querySelector<HTMLElement>("[data-earth-signature]")!;
@@ -39,7 +40,7 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
       earthProgress.set(reduced.matches ? 0 : morph);
       signature.style.opacity = String(reduced.matches ? 1 : 1 - smoothProgress((progress - 0.16) / 0.24));
       const messageProgress = reduced.matches ? 1 : smoothProgress((progress - 0.42) / 0.42);
-      container.style.setProperty("--earth-copy-progress", String(messageProgress));
+      pageStyle.setProperty("--earth-copy-progress", String(messageProgress));
       message.style.opacity = String(messageProgress);
       message.style.transform = reduced.matches ? "" : `translate(-50%, ${20 * (1 - messageProgress)}px)`;
       message.dataset.visible = String(messageProgress > 0);
