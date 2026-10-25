@@ -11,14 +11,14 @@ const require = createRequire(import.meta.url);
 async function load(path, mocks = {}) {
   const source = await readFile(new URL(`../${path}`, import.meta.url), "utf8");
   const code = ts.transpileModule(source, { fileName: path, compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText;
-  const module = { exports: {} };
-  new Function("require", "module", "exports", code)((id) => id in mocks ? mocks[id] : require(id), module, module.exports);
-  return module.exports;
+  const loadedModule = { exports: {} };
+  new Function("require", "module", "exports", code)((id) => id in mocks ? mocks[id] : require(id), loadedModule, loadedModule.exports);
+  return loadedModule.exports;
 }
 const helpers = await load("lib/home-opportunities.ts");
 const { opportunityDetailPath } = await load("lib/opportunities/detail-path.ts");
 const { EarthRadarList } = await load("components/home/earth-radar/earth-radar-list.tsx", {
-  "next/link": { __esModule: true, default: ({ children, prefetch: _prefetch, ...props }) => createElement("a", props, children) },
+  "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return createElement("a", props, children); } },
   "@/lib/home-opportunities": helpers,
   "@/lib/opportunities/detail-path": { opportunityDetailPath },
   "@/lib/presentation-text.mjs": { interfaceText },
@@ -46,7 +46,7 @@ test("Earth homepage has an honest empty state instead of demonstration opportun
 
 test("public catalogue outages keep the catalogue link without inventing entries", async () => {
   const { HomeRadar } = await load("components/home/home-radar.tsx", {
-    "next/link": { __esModule: true, default: ({ children, prefetch: _prefetch, ...props }) => createElement("a", props, children) },
+    "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return createElement("a", props, children); } },
     "@/lib/opportunities/access": { listPublicOpportunities: async () => { throw new Error("offline"); } },
     "@/lib/home-opportunities": helpers,
     "./earth-radar/earth-radar-list": { EarthRadarList },
