@@ -77,7 +77,7 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
       <div className={styles["nav-inner"]}>
         <a className={styles.wordmark} href="#experiencia" aria-label="Apogee, voltar ao início">Apogee</a>
         <nav className={styles["nav-links"]} aria-label="Navegação principal">
-          <a href="#radar">Radar</a><a href="#comunidade">Comunidade</a>
+          <Link prefetch={false} href="/oportunidades">Radar</Link><a href="#comunidade">Comunidade</a>
           <Link prefetch={false} href="/blog">Blog</Link><Link prefetch={false} href="/makeitfly">Make It Fly</Link>
           <Link prefetch={false} className={styles["nav-access"]} href="/membros/entrar">Acessar</Link>
         </nav>
@@ -91,7 +91,7 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
           <div className={styles["earth-message"]} data-earth-message data-visible="false" inert>
             <h1>Seu próximo salto.</h1>
             <p>Oportunidades, encontros e gente curiosa para construir o que vem a seguir.</p>
-            <a href="#radar">Explorar o Radar</a>
+            <Link prefetch={false} href="/oportunidades">Explorar o Radar</Link>
           </div>
         </div>
       </section>

@@ -57,3 +57,18 @@ test("public catalogue outages keep the catalogue link without inventing entries
   assert.match(html, /temporariamente indisponível/);
   assert.match(html, /href="\/oportunidades"/);
 });
+
+
+test("both opening Radar calls to action navigate to the opportunities catalogue", async () => {
+  const { EarthRadarPreview } = await load("components/home/earth-radar/earth-radar-preview.tsx", {
+    "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return createElement("a", props, children); } },
+    "@/components/site/site-footer": { SiteFooter: () => null },
+    "./earth-radar-scene": { EarthRadarScene: () => null },
+    "./earth-signature": { EarthSignature: () => null },
+    "./earth-radar.module.css": { __esModule: true, default: {} },
+  });
+  const html = renderToStaticMarkup(createElement(EarthRadarPreview, { radar: null }));
+  assert.match(html, /href="\/oportunidades">Radar<\/a>/);
+  assert.match(html, /href="\/oportunidades">Explorar o Radar<\/a>/);
+  assert.doesNotMatch(html, /href="#radar"/);
+});
