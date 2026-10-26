@@ -35,6 +35,16 @@ function setup() {
   };
 }
 
+test("touch devices and data saving use a signature animation independent of video autoplay", () => {
+  const { resolveSignatureMode } = setup();
+  assert.equal(resolveSignatureMode({ reducedMotion: false, touch: true, saveData: false }), "lightweight");
+  assert.equal(resolveSignatureMode({ reducedMotion: false, touch: false, saveData: true }), "lightweight");
+  assert.equal(resolveSignatureMode({ reducedMotion: false, touch: false, saveData: false }), "video");
+  for (const touch of [true, false]) for (const saveData of [true, false]) {
+    assert.equal(resolveSignatureMode({ reducedMotion: true, touch, saveData }), "static");
+  }
+});
+
 test("signature starts at 0, 10 and 20 seconds with an 8-second pass and no overlapping plays", async () => {
   const f = setup(); const dispose = f.startSignatureLoop(f.media, state => f.states.push(state));
   await settle(); assert.equal(f.media.plays, 1);

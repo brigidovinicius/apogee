@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { SiteFooter } from "@/components/site/site-footer";
 import { useMotionValue } from "framer-motion";
 import { useEffect, useRef, type ReactNode } from "react";
@@ -52,7 +53,7 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
       nav.inert = navProgress < 0.9;
       nav.classList.toggle(styles["is-light"], [...lightSections].some((section) => {
         const rect = section.getBoundingClientRect();
-        return rect.top <= 76 && rect.bottom > 76;
+        return rect.top <= nav.offsetHeight && rect.bottom > nav.offsetHeight;
       }));
       progressLine.style.width = `${clamp(window.scrollY / Math.max(document.documentElement.scrollHeight - window.innerHeight, 1)) * 100}%`;
     }
@@ -75,7 +76,10 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
     <div className={styles["page-progress"]} data-page-progress aria-hidden="true" />
     <header className={styles["global-nav"]} data-preview-nav inert>
       <div className={styles["nav-inner"]}>
-        <a className={styles.wordmark} href="#experiencia" aria-label="Apogee, voltar ao início">Apogee</a>
+        <a className={styles.wordmark} href="#experiencia" aria-label="Apogee, voltar ao início">
+          <Image className={styles["wordmark-white"]} src="/brand/apogee-logo-white.svg" alt="" width={1595} height={986} sizes="120px" loading="eager" />
+          <Image className={styles["wordmark-navy"]} src="/brand/apogee-logo-navy.svg" alt="" width={1595} height={986} sizes="120px" loading="eager" />
+        </a>
         <nav className={styles["nav-links"]} aria-label="Navegação principal">
           <Link prefetch={false} href="/oportunidades">Radar</Link><a href="#comunidade">Comunidade</a>
           <Link prefetch={false} href="/blog">Blog</Link><Link prefetch={false} href="/makeitfly">Make It Fly</Link>
