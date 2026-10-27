@@ -9,6 +9,7 @@ Autorização do operador: “audite, teste, valide e publique”, em 27/10/2026
 - NIAVI/StartTech ocorreu em 24/10. WorkInTech começou em 26/10. JECT/IFMG começa em 27/10 e encerrou inscrições em 20/10. Pausar a coleta dessas três edições evita repetir falhas sobre eventos que já deixaram de ser elegíveis. A operação preserva os registros e as evidências históricas.
 - IFPE é uma importação manual específica, com prazo armazenado em 23/10 e URL indisponível na auditoria. Pausar sua coleta não declara nova verificação nem encerramento comprovado pela rede.
 - USP permanece com falha de conectividade; a consulta de robots na VPS também excedeu 20 segundos. Nenhuma proteção de robots, TLS, DNS, tamanho ou redirecionamento foi relaxada.
+- A página DAE/UFSC devolve gzip mesmo com `Accept-Encoding: identity`. A compatibilidade fica limitada ao ID, host e caminho exatos dessa fonte, com teto tanto para bytes recebidos quanto para a saída do zlib; codificações comprimidas continuam bloqueadas por padrão. Testes cobrem expansão acima do limite, corpo inválido, escopo e bloqueio por robots.
 - Falhas de coleta e reconsulta agora registram categorias fixas (timeout, DNS, TLS, HTTP, robots, limites e mudança de evidência), sem copiar erros arbitrários ou respostas privadas. Descoberta ignora links de navegação e blocos de cabeçalho/lateral.
 
 ## Edições preparadas
@@ -29,11 +30,11 @@ As migrações 0039–0041 apenas cadastram oito fontes inativas e pendentes. Ca
 ## Validação local
 
 - Primeira execução completa detectou instalação compartilhada de dependências anterior à correção `braces`; o link criado para esta tarefa foi substituído por instalação isolada com `npm ci`. Nenhuma instalação de outro projeto foi alterada.
-- Suíte completa com dependências isoladas: **363 testes aprovados; 15 dependentes de configuração externa ignorados localmente**, 53 arquivos (52 aprovados, um ignorado). Limite de tempo local de 60 segundos para inicialização dos bancos descartáveis; testes preservam asserções.
+- Suíte completa com dependências isoladas: **365 testes aprovados; 15 dependentes de configuração externa ignorados localmente**, 53 arquivos (52 aprovados, um ignorado). Limite de tempo local de 60 segundos para inicialização dos bancos descartáveis; testes preservam asserções.
 - Checagem TypeScript após geração de tipos: aprovada com Node 24.19.0.
 - Lint: aprovado. CI e resultado da implantação: registrar na evidência final após execução.
 - Revisão independente corrigiu o público estruturado do PROAA para incluir TAEs e fez a evidência de prazo apontar para o trecho que contém 17h de 27/10.
-- Seis candidatos passaram na captura local HTML/PDF real; transferências e ICIF tiveram falhas de transporte e aguardam a auditoria na VPS. Isso não é confirmação de publicação.
+- Seis candidatos passaram na captura local e no primeiro dry run da VPS com HTML/PDF reais. A versão anterior bloqueou transferências por gzip não solicitado e ICIF por robots indisponível; transferências será revalidada após a correção limitada. ICIF permanece inativa enquanto a origem bloquear a coleta. Isso não é confirmação de publicação.
 
 ## Backup e procedimento de publicação
 

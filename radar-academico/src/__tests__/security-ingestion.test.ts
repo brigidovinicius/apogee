@@ -1,8 +1,9 @@
 import { afterEach, expect, it, vi } from "vitest";
+import { gzipSync } from "node:zlib";
 vi.mock("node:dns/promises", () => ({ lookup: vi.fn() }));
 vi.mock("@/lib/ingestion/safe-request", async (original) => ({ ...await original<typeof import("@/lib/ingestion/safe-request")>(), safeRequest: vi.fn() }));
 import { lookup } from "node:dns/promises";
-import { collectBounded, isPublicAddress, publicLookup, safeRequest } from "@/lib/ingestion/safe-request";
+import { collectBounded, decodeBoundedResponse, isPublicAddress, publicLookup, safeRequest } from "@/lib/ingestion/safe-request";
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { BoundedCache } from "@/lib/ingestion/bounded-cache";
 import { sourceSettings, sourceUrls } from "@/lib/ingestion/source-settings";
@@ -28,6 +29,37 @@ it("stream overflow stops reading instead of buffering remaining chunks", async 
   async function* stream() { try { for (let i = 0; i < 100; i++) { yielded++; yield new Uint8Array(4); } } finally { closed = true; } }
   await expect(collectBounded(stream(), 5)).rejects.toThrow("limite");
   expect(yielded).toBe(2); expect(closed).toBe(true);
+});
+it("keeps gzip disabled by default and bounds both encoded bytes and decoded output", () => {
+  const body=Buffer.from("Verified public text");
+  const zipped=gzipSync(body);
+  expect(()=>decodeBoundedResponse(zipped,"gzip",100)).toThrow("limites");
+  expect(decodeBoundedResponse(zipped,"gzip",100,true).toString()).toBe(body.toString());
+  expect(()=>decodeBoundedResponse(zipped,"gzip",10,true)).toThrow("limites");
+  const bomb=gzipSync(Buffer.alloc(100_000,65));
+  expect(bomb.byteLength).toBeLessThan(1000);
+  expect(()=>decodeBoundedResponse(bomb,"gzip",1000,true)).toThrow("limites");
+  expect(()=>decodeBoundedResponse(zipped,"br",100,true)).toThrow("limites");
+  expect(()=>decodeBoundedResponse(Buffer.from("broken"),"gzip",100,true)).toThrow("limites");
+});
+it("limits the gzip opt-in to the exact audited DAE source, host and path while retaining robots checks",async()=>{
+  vi.stubEnv("INGESTION_REQUEST_DELAY_MS","100");
+  const url="https://dae.ufsc.br/admissao-por-transferencias-e-retornos-edital/";
+  const dae={...source,id:"ufsc-transfers-2027-1",allowedDomains:["dae.ufsc.br","other.ufsc.br"]};
+  vi.mocked(safeRequest).mockImplementation(async requested=>requested.endsWith("/robots.txt")?new Response(""):new Response("Official public page"));
+  await fetchOfficialResource(url,dae);
+  expect(vi.mocked(safeRequest).mock.calls.every(call=>call[5]===true)).toBe(true);
+  vi.mocked(safeRequest).mockClear();
+  await fetchOfficialResource(url,{...dae,id:"another-source"});
+  expect(vi.mocked(safeRequest).mock.calls.every(call=>call[5]===false)).toBe(true);
+  vi.mocked(safeRequest).mockClear();
+  await fetchOfficialResource("https://dae.ufsc.br/another-page/",dae);
+  expect(vi.mocked(safeRequest).mock.calls.every(call=>call[5]===false)).toBe(true);
+  vi.mocked(safeRequest).mockClear();
+  await fetchOfficialResource(url.replace("dae.ufsc.br","other.ufsc.br"),dae);
+  expect(vi.mocked(safeRequest).mock.calls.every(call=>call[5]===false)).toBe(true);
+  vi.mocked(safeRequest).mockImplementation(async requested=>requested.endsWith("/robots.txt")?new Response("User-agent: *\nDisallow: /"):new Response("Must not read"));
+  await expect(fetchOfficialResource(url,dae)).rejects.toThrow("robots");
 });
 it("redirect chains are capped and each hop respects the allowlist", async () => {
   vi.stubEnv("INGESTION_REQUEST_DELAY_MS", "100");

@@ -2029,5 +2029,58 @@
       "evidenceFile": "pages/29aa0975632080c3.html",
       "excerpt": "Pular para o conteúdo Pitches regionais do Programa Nascer começam com 495 ideias inovadoras de toda Santa Catarina Milena Nandi 14/10/2026 13:34 Até 10 de novembro, empreendedores de 20 cidades-polo apresentam suas propostas em busca de vagas no Super Pitch Day, etapa estadual marcada para 28 de novembro, em Maravilha. (Fotos: Leonardo Ferreira/SCTI) Com 495 ideias inovadoras desenvolvidas por empreendedores de todas as regiões catarinenses, o P"
     }
-  ]
+  ],
+  "vpsPreflight": {
+    "checkedAt": "2026-10-27T13:19:17.835Z",
+    "databaseAccess": false,
+    "commit": "c6fd460bd5dfa8d2c6fbecfddab20381eb4c44bd",
+    "sources": [
+      {
+        "sourceId": "cnpq-maidai-30-2026",
+        "valid": true,
+        "primarySha256": "d5e81012edc0d4bdd37b14424f195610f3194447fde96be451d4312305476993",
+        "supplementSha256": "f95afaf25669d08101223fecd2c189ac775c4ec9101a861fbacdc596444d3592"
+      },
+      {
+        "sourceId": "cnpq-anr-32-2026",
+        "valid": true,
+        "primarySha256": "30ab8d9c887fe8e3e731f41db6f0248f16b86ac24fe4f73d634b52a258fa8da3",
+        "supplementSha256": "371176d2cd3bbd29a039bcfeab592ae8f6e5fa294f4cd20e1cf326230931feed"
+      },
+      {
+        "sourceId": "cnpq-productivity-33-2026",
+        "valid": true,
+        "primarySha256": "b36f9044b8d92acf585fbe0a9a4ffdfff6a9914dbcd22568ccad39fe1f64cb3d",
+        "supplementSha256": "c00738c73f1bbef10cbea3a680d9948f04cc39985db2b2d64109664281ab5c92"
+      },
+      {
+        "sourceId": "ufsc-proaa-2027",
+        "valid": true,
+        "primarySha256": "c18d820feb60ee97fd6329551cc47ef0945e548093d8c7113c1fef366fd9b1ed",
+        "supplementSha256": "2d36cf4835e51c2f637653af435cdbc9553122b182b43ed80085a29cb5b85c0a"
+      },
+      {
+        "sourceId": "ufsc-ppgtg-masters-2027-1",
+        "valid": true,
+        "primarySha256": "c746c44445324faebbec59994ef2aa38acb18a7519908bd8d80591bf18beabea",
+        "supplementSha256": "7f1f400dae7305a6bc6d227d9f980acb5a9eaeca878d389e25548d87103cc7b5"
+      },
+      {
+        "sourceId": "ufsc-transfers-2027-1",
+        "valid": false,
+        "reason": "response_limit_exceeded"
+      },
+      {
+        "sourceId": "cps-icif-gastronomy-8-2026",
+        "valid": false,
+        "reason": "robots_unavailable_or_disallowed"
+      },
+      {
+        "sourceId": "ufsc-ieg-research-submissions-2026",
+        "valid": true,
+        "primarySha256": "0f6359db79a68f0e92f45559c3f83bc679322e741ca1ceae9c01e080cb98be1c",
+        "supplementSha256": "0f6359db79a68f0e92f45559c3f83bc679322e741ca1ceae9c01e080cb98be1c"
+      }
+    ]
+  }
 }
