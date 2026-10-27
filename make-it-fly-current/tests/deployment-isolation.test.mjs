@@ -193,9 +193,9 @@ test("public home and Make It Fly remain indexable while the Robonauta preview s
 });
 
 test("application-era landing resources remain locked to their approved bytes", async () => {
-  // 2026-10-21: authorized navigation/history changes; visual assets stay locked.
+  // 2026-10-27: requested global logo standardization changes only the Apogee return-link artwork; event visuals stay locked.
   const approved = {
-    "components/landing/make-it-fly-v2.tsx": "29323e359a43d8b2b6b601553bd2b7f70d6b7a17ba56980cf0c96f9f3a735705",
+    "components/landing/make-it-fly-v2.tsx": "169811a0dfc2043696fd56fd7eb4f47ea1dfcb8bfac3251ea290a4ad6f5e0325",
     "components/landing/EnergySupport.tsx": "a26cec4e4ac498608f037b82567600c3beb972acd9835400b12ae2a8b11a5812",
     "components/landing/energy-support.module.css": "07be5818f9aea583a15ceac6a93c61295c613c730ae6ea16615e6d330fe910d4",
     "components/landing/make-it-fly-v2.module.css": "f851e77636550b48c8a166f5bfc60a3031df580ef19f76c58d9cb72016549602",

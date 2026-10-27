@@ -36,10 +36,10 @@ export function ShareButton({ title, path }: ShareButtonProps) {
       try {
         await navigator.clipboard.writeText(url);
         setCopied(true);
-        setStatus("Link copiado. Cole onde quiser compartilhar.");
+        setStatus("Link copiado, cole onde quiser compartilhar");
       } catch {
         setManual(true);
-        setStatus("Selecione e copie o link abaixo para compartilhar.");
+        setStatus("Selecione e copie o link abaixo para compartilhar");
       }
     } finally {
       pending.current = false;
@@ -52,7 +52,7 @@ export function ShareButton({ title, path }: ShareButtonProps) {
       {copied ? <Check size={18} aria-hidden="true" /> : <Share size={18} aria-hidden="true" />}
       {busy ? "Abrindo…" : copied ? "Link copiado" : "Compartilhar"}
     </button>
-    <p className={styles.feedback} id={feedbackId} role="status" aria-atomic="true">{status || "Compartilha o link público desta página."}</p>
+    <p className={styles.feedback} id={feedbackId} role="status" aria-atomic="true">{status || "Compartilha o link público desta página"}</p>
     {manual ? <label className={styles.manual}>Link público
       <input type="url" readOnly value={url} onFocus={(event) => event.currentTarget.select()} />
     </label> : null}

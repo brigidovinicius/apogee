@@ -1,6 +1,9 @@
 .scope {
   display: contents;
-  --apogee-page-margin: clamp(1.25rem, 4vw, 4rem);
+  --apogee-page-margin: max(1.25rem, calc((100vw - 1240px) / 2));
+  --apogee-navy: #06162c;
+  --apogee-paper-soft: #f7f9fa;
+  --apogee-section-space: clamp(3rem, 6vw, 5rem);
   --apogee-control-radius: .625rem;
   --apogee-radius-soft: .625rem;
   --apogee-group-radius: .875rem;
@@ -8,10 +11,9 @@
   --apogee-surface-subtle: #173653;
   --apogee-surface-control: rgb(185 211 238 / 12%);
   --apogee-control-fill: #f1f4f7;
-  --apogee-paper-soft: #f1f4f7;
   --apogee-ink-muted: #29415c;
   --apogee-action: #25d366;
-  --apogee-font-heading: var(--font-instrument-serif), Georgia, serif;
+  --apogee-font-heading: var(--font-inter), Arial, sans-serif;
   --apogee-font-sans: var(--font-inter), Arial, sans-serif;
   --apogee-text-label: .875rem;
   --apogee-mobile-section-space: 3rem;
@@ -24,7 +26,8 @@
 .scope :is(h1, h2, h3, p, label, td, th) { overflow-wrap: anywhere; }
 .scope :is(button, input, select, textarea) { font-family: var(--apogee-font-sans); }
 .scope :is(p, label, dt, dd, th, td, small) { font-family: var(--apogee-font-sans); }
-.scope :is(h1, h2) { font-family: var(--apogee-font-heading); font-weight: 400; }
+.scope :is(h1, h2) { font-weight: 400; }
+.scope[data-apogee-design] :is(h1, h2, h3) { font-family: var(--apogee-font-heading); }
 .scope :is(button, summary, select, input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"])) { min-height: var(--apogee-control-min-height); }
 .scope :is(input, select, textarea) { scroll-margin-block: 6rem; }
 .scope :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) { border-radius: var(--apogee-control-radius); }

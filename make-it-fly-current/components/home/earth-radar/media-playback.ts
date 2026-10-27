@@ -1,6 +1,13 @@
-import type { MotionValue } from "framer-motion";
+import type { ScrollProgress } from "./scroll-progress";
 
 type SignatureState = "loading" | "playing" | "waiting" | "blocked";
+
+export function resolveSignatureMode({ reducedMotion, touch, saveData }: {
+  reducedMotion: boolean; touch: boolean; saveData: boolean;
+}) {
+  if (reducedMotion) return "static";
+  return touch || saveData ? "lightweight" : "video";
+}
 
 // O início de cada passagem fica a 10s do anterior: 8s de brilho e 2s de repouso.
 export function startSignatureLoop(media: HTMLVideoElement, onState: (state: SignatureState) => void) {
@@ -79,7 +86,7 @@ export function startSignatureLoop(media: HTMLVideoElement, onState: (state: Sig
 
 export function startEarthScrubbing(
   media: HTMLVideoElement,
-  progress: Pick<MotionValue<number>, "get" | "on">,
+  progress: Pick<ScrollProgress, "get" | "on">,
   onReady: () => void,
   onBlocked: (blocked: boolean) => void,
 ) {

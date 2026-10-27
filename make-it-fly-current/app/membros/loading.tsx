@@ -7,7 +7,7 @@ export default function MembersLoading() {
       <StatePanel
         eyebrow="Área de membros"
         title="Preparando sua área"
-        description="Estamos reunindo as informações da comunidade."
+        description="Estamos reunindo as informações da comunidade"
         busy
       />
     </div>

@@ -60,13 +60,13 @@ function DropSignup({ productName }: { productName: string }) {
         signal: AbortSignal.timeout(15_000),
       });
       const result = await response.json();
-      if (!response.ok || result.ok !== true) throw new Error(result.message || "Não foi possível cadastrar agora. Tente novamente.");
+      if (!response.ok || result.ok !== true) throw new Error(result.message || "Não foi possível cadastrar agora, tente novamente");
       setStatus("success");
-      setMessage("Cadastro recebido! Você está na lista para receber novidades dos próximos drops.");
+      setMessage("Cadastro recebido! Você está na lista para receber novidades dos próximos drops");
       form.reset();
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error && error.name === "Error" ? error.message : "Não foi possível confirmar seu cadastro. Tente novamente.");
+      setMessage(error instanceof Error && error.name === "Error" ? error.message : "Não foi possível confirmar seu cadastro, tente novamente");
     } finally {
       submitting.current = false;
     }
@@ -74,7 +74,7 @@ function DropSignup({ productName }: { productName: string }) {
 
   return (
     <section className={styles.signup}>
-      <div className={styles.signupCopy}><span>{productName}</span><h2 id="signup-title">Novos drops em breve.</h2><p id="signup-description">Este produto ainda não está disponível para compra. Cadastre-se para receber novidades dos próximos drops.</p></div>
+      <div className={styles.signupCopy}><span>{productName}</span><h2 id="signup-title">Novos drops em breve</h2><p id="signup-description">Este produto ainda não está disponível para compra, cadastre-se para receber novidades dos próximos drops</p></div>
       <form className={styles.form} onSubmit={submit} aria-busy={status === "sending"}>
         <div className={styles.fields}>
           <label htmlFor="drop-name">Nome<input id="drop-name" name="name" autoComplete="name" required minLength={2} maxLength={120} placeholder="Seu nome" /></label>
@@ -107,8 +107,8 @@ export function StoreExperience() {
       <SiteHeader current="store" tone="light" />
       <main id="experiencia">
         <section className={styles.intro} aria-labelledby="store-title">
-          <div><p>Apogee Builders Club</p><h1 id="store-title">Vista o que<br />você cria.</h1></div>
-          <div className={styles.introCopy}><p>Building the future. Made to create.</p><p>Conheça as peças da Apogee e acompanhe os próximos drops.</p></div>
+          <div><p>Apogee Builders Club</p><h1 id="store-title">Vista o que<br />você cria</h1></div>
+          <div className={styles.introCopy}><p>Building the future · Made to create</p><p>Conheça as peças da Apogee e acompanhe os próximos drops</p></div>
         </section>
         <section className={styles.collection} aria-label="Produtos Apogee" id="produtos">
           {products.map(product => <ProductGallery key={product.slug} product={product} onBuy={() => setSelectedProduct(product)} />)}
@@ -121,7 +121,7 @@ export function StoreExperience() {
           {selectedProduct ? <DropSignup key={selectedProduct.slug} productName={selectedProduct.name} /> : null}
         </dialog>
       </main>
-      <footer className={styles.footer}><Link href="/" aria-label="Apogee - início"><Image src="/brand/apogee-logo-navy.svg" alt="Apogee" width={112} height={69} /></Link><p>Building the future.</p><a href="#produtos">Voltar aos produtos <ArrowUp size={16} aria-hidden="true" /></a></footer>
+      <footer className={styles.footer}><Link href="/" aria-label="Apogee - início"><Image src="/brand/apogee-logo-navy.svg" alt="Apogee" width={112} height={69} /></Link><p>Building the future</p><a href="#produtos">Voltar aos produtos <ArrowUp size={16} aria-hidden="true" /></a></footer>
     </div>
   );
 }

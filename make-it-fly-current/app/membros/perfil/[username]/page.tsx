@@ -52,7 +52,7 @@ export default async function ProfilePage({ params }: Props) {
           {plural(profile.topicCount, "tópico", "tópicos")}
         </h2>
         {profile.topics.length === 0 ? (
-          <p className={styles.empty}>Nenhum tópico ainda.</p>
+          <p className={styles.empty}>Nenhum tópico ainda</p>
         ) : (
           <ul className={styles.list}>
             {profile.topics.map((topic) => (
@@ -76,7 +76,7 @@ export default async function ProfilePage({ params }: Props) {
           {plural(profile.replyCount, "resposta", "respostas")}
         </h2>
         {profile.replies.length === 0 ? (
-          <p className={styles.empty}>Nenhuma resposta ainda.</p>
+          <p className={styles.empty}>Nenhuma resposta ainda</p>
         ) : (
           <ul className={styles.list}>
             {profile.replies.map((reply) => (

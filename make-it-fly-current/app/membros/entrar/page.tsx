@@ -19,7 +19,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
       <header className={styles.authIntro}>
         <p className={styles.eyebrow}>Área de membros</p>
         <h1 className={styles.title}>Entrar</h1>
-        <p className={styles.lead}>Acesse o fórum, seu perfil e o Radar de oportunidades da comunidade Apogee.</p>
+        <p className={styles.lead}>Acesse o fórum, seu perfil e o Radar de oportunidades da comunidade Apogee</p>
       </header>
       <div className={`${styles.panel} ${styles.authPanel}`}>
         <SignInForm next={next} googleError={googleOAuthErrorMessage(params.error)} />

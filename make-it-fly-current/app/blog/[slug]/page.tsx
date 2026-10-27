@@ -72,7 +72,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
           {image.caption ? <figcaption>{interfaceText(image.caption)}</figcaption> : null}
         </figure> : <p key={index}>{interfaceText(paragraph)}</p>;
       })}{video ? <div className={styles.videoFrame}><iframe src={video.src} title={`Vídeo do artigo no ${video.provider}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div> : null}</article>
-      <div className={styles.articleEnd}><span><BrandMark /></span><p>Mais ideias para seguir em frente.</p><Link href="/blog">← Voltar ao blog</Link></div>
+      <div className={styles.articleEnd}><span><BrandMark /></span><p>Mais ideias para seguir em frente</p><Link href="/blog">← Voltar ao blog</Link></div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     </main>
     <SiteFooter />

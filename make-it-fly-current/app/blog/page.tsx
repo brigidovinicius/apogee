@@ -36,8 +36,8 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
     <main id="experiencia" tabIndex={-1} className={styles.main}>
       <section className={styles.hero}>
         <p className={styles.eyebrow}>Apogee / editorial</p>
-        <h1>Ideias que abrem <em>caminhos.</em></h1>
-        <p>Um espaço para aprender, questionar e descobrir novas possibilidades em estudos, negócios, ciência, tecnologia e tudo o que move o mundo.</p>
+        <h1>Ideias que abrem <em>caminhos</em></h1>
+        <p>Um espaço para aprender, questionar e descobrir novas possibilidades em estudos, negócios, ciência, tecnologia e tudo o que move o mundo</p>
         <span className={styles.heroIndex} aria-hidden>01 - 06</span>
       </section>
       <nav className={styles.categories} aria-label="Temas do blog">
@@ -59,7 +59,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
             </Link>
           </article>;
         })}
-      </div> : <div className={styles.empty}><p>Novas ideias estão a caminho.</p><span>{category ? "Ainda não há artigos publicados neste tema." : "O blog ainda não tem artigos publicados."}</span></div>}
+      </div> : <div className={styles.empty}><p>Novas ideias estão a caminho</p><span>{category ? "Ainda não há artigos publicados neste tema" : "O blog ainda não tem artigos publicados"}</span></div>}
       {pages > 1 ? <nav className={styles.pagination} aria-label="Páginas do blog">
         {page > 1 ? <Link href={pageUrl(page - 1)}>← Anterior</Link> : <span />}
         <span>{page} / {pages}</span>

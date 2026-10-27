@@ -20,7 +20,7 @@ export default async function ForumHomePage() {
         <div>
           <p className={styles.eyebrow}>Comunidade Apogee</p>
           <h1 className={styles.title}>Fórum</h1>
-          <p className={styles.lead}>Olá, {interfaceText(member.name).split(" ")[0]}. Escolha uma categoria para conversar.</p>
+          <p className={styles.lead}>Olá, {interfaceText(member.name).split(" ")[0]}. Escolha uma categoria para conversar</p>
         </div>
       </header>
 
@@ -29,7 +29,7 @@ export default async function ForumHomePage() {
           <p className={styles.radarEntryEyebrow}>Área exclusiva para membros</p>
           <h2 id="radar-entry-title">Radar de Oportunidades</h2>
           <p>
-            Encontre bolsas, programas e intercâmbios com critérios, apoios, prazos e fontes oficiais.
+            Encontre bolsas, programas e intercâmbios com critérios, apoios, prazos e fontes oficiais
           </p>
         </div>
         <Link className={styles.radarEntryLink} href="/membros/oportunidades">
@@ -38,7 +38,7 @@ export default async function ForumHomePage() {
       </section>
 
       {categories.length === 0 ? (
-        <p className={styles.empty}>Nenhuma categoria criada ainda.</p>
+        <p className={styles.empty}>Nenhuma categoria criada ainda</p>
       ) : (
         <ul className={styles.list}>
           {categories.map((category) => (

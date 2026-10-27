@@ -1,6 +1,6 @@
 "use client";
 
-import { BrandMark } from "@/components/ui/brand-mark";
+import Image from "next/image";
 import type { HTMLAttributes, ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Frame, Menu, NotebookPen, Orbit, Shirt } from "lucide-react";
@@ -59,8 +59,8 @@ export function CommerceHero({
   id = "colecao",
   className,
   title = <><span>Itens para quem vai</span><br /><span>mudar o mundo</span></>,
-  description = "Peças e edições em desenvolvimento para acompanhar ideias, encontros e novas trajetórias.",
-  brand = <>Apogee<span className={styles.brandMark} aria-hidden="true"><BrandMark /></span></>,
+  description = "Peças e edições em desenvolvimento para acompanhar ideias, encontros e novas trajetórias",
+  brand = <Image src="/brand/apogee-logo-navy.svg" alt="" width={112} height={69} className={styles.brandLogo} />,
   brandLabel = "Apogee - início",
   brandHref = "/",
   navigation = defaultNavigation,

@@ -7,8 +7,8 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import styles from "./apogee-home.module.css";
 
-const titleLines = ["Ideias que", "chegam", "mais alto", "juntos."];
-const lead = "Gente curiosa e com sede de construir o futuro.";
+const titleLines = ["Ideias que", "chegam", "mais alto", "juntos"];
+const lead = "Gente curiosa e com sede de construir o futuro";
 const titlePace = 65;
 const titleStart = 220;
 
@@ -88,7 +88,7 @@ export function ApogeeHome() {
             <a href="#encontros" className={styles.exploreLink}>
               Tem mais por aqui <ArrowDown size={15} aria-hidden="true" />
             </a>
-            <p>Apogee. O ponto de encontro das suas próximas ideias.</p>
+            <p>Apogee. O ponto de encontro das suas próximas ideias</p>
           </div>
         </section>
 
@@ -105,8 +105,8 @@ export function ApogeeHome() {
               />
             </div>
             <div className={styles.eventCopy}>
-              <h2 id="event-title">Um dia para<br /><em>avançar sua ideia.</em></h2>
-              <p>Um encontro de coworking, comunidade e foco para quem quer dar o próximo passo. Traga sua ideia. Encontre novas perspectivas.</p>
+              <h2 id="event-title">Um dia para<br /><em>avançar sua ideia</em></h2>
+              <p>Um encontro de coworking, comunidade e foco para quem quer dar o próximo passo. Traga sua ideia. Encontre novas perspectivas</p>
               <Link href="/makeitfly" className={styles.eventLink}>
                 Conheça o encontro <ArrowUpRight size={20} aria-hidden="true" />
               </Link>
@@ -117,17 +117,17 @@ export function ApogeeHome() {
         <section className={styles.discover} aria-labelledby="discover-title">
           <div className={styles.discoverHeading}>
             <p className={styles.eyebrow}>Continue explorando</p>
-            <h2 id="discover-title">A comunidade<br /><em>acontece aqui.</em></h2>
+            <h2 id="discover-title">A comunidade<br /><em>acontece aqui</em></h2>
           </div>
           <div className={styles.destinations}>
             <Link href="/galeria" className={styles.destination}>
               <span className={styles.destinationLabel}>Galeria</span>
-              <span className={styles.destinationTitle}>Encontros que ficam.<small>Veja os registros da comunidade.</small></span>
+              <span className={styles.destinationTitle}>Encontros que ficam.<small>Veja os registros da comunidade</small></span>
               <ArrowUpRight size={27} aria-hidden="true" />
             </Link>
             <Link href="/oportunidades" className={styles.destination}>
               <span className={styles.destinationLabel}>Oportunidades</span>
-              <span className={styles.destinationTitle}>Olhe para o próximo passo.<small>Explore a prévia do Radar Apogee.</small></span>
+              <span className={styles.destinationTitle}>Olhe para o próximo passo.<small>Explore a prévia do Radar Apogee</small></span>
               <ArrowUpRight size={27} aria-hidden="true" />
             </Link>
           </div>

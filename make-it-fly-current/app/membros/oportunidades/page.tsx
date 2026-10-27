@@ -32,11 +32,11 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
           <p className={styles.eyebrow}>Área de membros · Radar de oportunidades</p>
           <h1 className={styles.title}>Radar de oportunidades</h1>
           <p className={styles.lead}>
-            Escolha uma oportunidade para acessar os detalhes grátis. Para explorar as demais, compre o acesso vitalício por R$ 49,00.
+            Escolha uma oportunidade para acessar os detalhes grátis. Para explorar as demais, compre o acesso vitalício por R$ 49,00
           </p>
         </div>
       </header>
-      {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
+      {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
     </div>
   );
 }
