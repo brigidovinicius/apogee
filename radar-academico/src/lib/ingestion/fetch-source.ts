@@ -36,9 +36,11 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     visited.add(url);
     const parsed = new URL(url);
     const seaOfficialHeaderCompatibility = source.id === "sed-novos-valores-2026" && parsed.hostname === "www.sea.sc.gov.br";
-    // DAE ignores Accept-Encoding: identity on this exact audited public page.
-    const ufscGzipCompatibility = source.id === "ufsc-transfers-2027-1" && parsed.hostname === "dae.ufsc.br" &&
-      parsed.pathname === "/admissao-por-transferencias-e-retornos-edital/";
+    // Both exact evidence pages for this call ignore Accept-Encoding: identity.
+    const ufscGzipCompatibility = source.id === "ufsc-transfers-2027-1" && (
+      parsed.hostname === "dae.ufsc.br" && parsed.pathname === "/admissao-por-transferencias-e-retornos-edital/" ||
+      parsed.hostname === "noticias.ufsc.br" && parsed.pathname === "/2026/10/ufsc-lanca-edital-de-transferencias-e-retornos-com-5-139-vagas/"
+    );
     const robotsUrl = `${parsed.origin}/robots.txt`;
     const robotsKey = source.id === "evg-enap-open-courses" && parsed.hostname === "www.escolavirtual.gov.br" ? `${robotsUrl}|${agent}` : null;
     let robots = robotsKey ? evgRobotsCache.get(robotsKey) : undefined;

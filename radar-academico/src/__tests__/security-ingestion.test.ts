@@ -45,15 +45,21 @@ it("keeps gzip disabled by default and bounds both encoded bytes and decoded out
 it("limits the gzip opt-in to the exact audited DAE source, host and path while retaining robots checks",async()=>{
   vi.stubEnv("INGESTION_REQUEST_DELAY_MS","100");
   const url="https://dae.ufsc.br/admissao-por-transferencias-e-retornos-edital/";
-  const dae={...source,id:"ufsc-transfers-2027-1",allowedDomains:["dae.ufsc.br","other.ufsc.br"]};
+  const dae={...source,id:"ufsc-transfers-2027-1",allowedDomains:["dae.ufsc.br","noticias.ufsc.br","other.ufsc.br"]};
   vi.mocked(safeRequest).mockImplementation(async requested=>requested.endsWith("/robots.txt")?new Response(""):new Response("Official public page"));
   await fetchOfficialResource(url,dae);
+  expect(vi.mocked(safeRequest).mock.calls.every(call=>call[5]===true)).toBe(true);
+  vi.mocked(safeRequest).mockClear();
+  await fetchOfficialResource("https://noticias.ufsc.br/2026/10/ufsc-lanca-edital-de-transferencias-e-retornos-com-5-139-vagas/",dae);
   expect(vi.mocked(safeRequest).mock.calls.every(call=>call[5]===true)).toBe(true);
   vi.mocked(safeRequest).mockClear();
   await fetchOfficialResource(url,{...dae,id:"another-source"});
   expect(vi.mocked(safeRequest).mock.calls.every(call=>call[5]===false)).toBe(true);
   vi.mocked(safeRequest).mockClear();
   await fetchOfficialResource("https://dae.ufsc.br/another-page/",dae);
+  expect(vi.mocked(safeRequest).mock.calls.every(call=>call[5]===false)).toBe(true);
+  vi.mocked(safeRequest).mockClear();
+  await fetchOfficialResource("https://noticias.ufsc.br/another-page/",dae);
   expect(vi.mocked(safeRequest).mock.calls.every(call=>call[5]===false)).toBe(true);
   vi.mocked(safeRequest).mockClear();
   await fetchOfficialResource(url.replace("dae.ufsc.br","other.ufsc.br"),dae);
