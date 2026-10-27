@@ -36,12 +36,17 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     visited.add(url);
     const parsed = new URL(url);
     const seaOfficialHeaderCompatibility = source.id === "sed-novos-valores-2026" && parsed.hostname === "www.sea.sc.gov.br";
+    // Both exact evidence pages for this call ignore Accept-Encoding: identity.
+    const ufscGzipCompatibility = source.id === "ufsc-transfers-2027-1" && (
+      parsed.hostname === "dae.ufsc.br" && parsed.pathname === "/admissao-por-transferencias-e-retornos-edital/" ||
+      parsed.hostname === "noticias.ufsc.br" && parsed.pathname === "/2026/10/ufsc-lanca-edital-de-transferencias-e-retornos-com-5-139-vagas/"
+    );
     const robotsUrl = `${parsed.origin}/robots.txt`;
     const robotsKey = source.id === "evg-enap-open-courses" && parsed.hostname === "www.escolavirtual.gov.br" ? `${robotsUrl}|${agent}` : null;
     let robots = robotsKey ? evgRobotsCache.get(robotsKey) : undefined;
     if (!robots) {
       await rateLimit(parsed.hostname);
-      const robotsResponse = await safeRequest(robotsUrl, { "User-Agent": agent }, 128 * 1024, "GET", seaOfficialHeaderCompatibility);
+      const robotsResponse = await safeRequest(robotsUrl, { "User-Agent": agent }, 128 * 1024, "GET", seaOfficialHeaderCompatibility, ufscGzipCompatibility);
       // Only a real 404 permits absence; errors are never cached or reused after expiry.
       if (!robotsResponse.ok && robotsResponse.status !== 404) throw new Error("robots.txt indisponível para revisão");
       const body = robotsResponse.ok ? await robotsResponse.text() : "";
@@ -59,7 +64,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     const headers: Record<string, string> = { "User-Agent": agent, Accept: "text/html,application/rss+xml,application/pdf;q=0.9" };
     if (cached?.etag) headers["If-None-Match"] = cached.etag;
     if (cached?.modified) headers["If-Modified-Since"] = cached.modified;
-    const response = await safeRequest(url, headers, maxBytes, "GET", seaOfficialHeaderCompatibility);
+    const response = await safeRequest(url, headers, maxBytes, "GET", seaOfficialHeaderCompatibility, ufscGzipCompatibility);
     // 304 is a cache response, not a redirect.
     if (response.status === 304 && cached) {
       return { body: cached.body, contentType: cached.contentType, hash: crypto.createHash("sha256").update(cached.body).digest("hex"), cached: true };
@@ -70,7 +75,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
       url = new URL(location, url).toString();
       continue;
     }
-    if (!response.ok) throw new Error("Fonte oficial indisponível");
+    if (!response.ok) throw new Error(`Fonte oficial indisponível (HTTP ${response.status})`);
     // safeRequest enforces this cap while bytes arrive, before buffering.
     const body = Buffer.from(await response.arrayBuffer());
     const contentType = response.headers.get("content-type") ?? "";
