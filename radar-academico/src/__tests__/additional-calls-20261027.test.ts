@@ -3,6 +3,9 @@ import { PGlite } from "@electric-sql/pglite";
 import { expect, it } from "vitest";
 import { ICIF_ID,ICIF_URL,ICIF_DOCUMENT,IEG_ID,IEG_URL,normalizeAdditionalCall } from "@/lib/ingestion/normalize-additional-calls-20261027";
 import { publicationIssue } from "@/lib/ingestion/publication";
+import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
+import { CNPQ_AUDITED_CALLS, cnpqCallUrl, cnpqDocumentUrl } from "@/lib/ingestion/normalize-cnpq-audited-calls";
+import { UFSC_AUDITED_CALLS } from "@/lib/ingestion/normalize-ufsc-audited-calls";
 import type { OfficialSource } from "@/lib/ingestion/types";
 
 const now=new Date("2026-10-27T12:00:00Z");
@@ -42,6 +45,27 @@ it("stages eight inactive sources and preserves existing operator configuration 
     const files=["0039_audited_cnpq_calls_20261027.sql","0040_audited_ufsc_calls_20261027.sql","0041_audited_cps_ieg_calls_20261027.sql"];
     for(const file of files)await db.exec(readFileSync(new URL(`../../db/migrations/${file}`,import.meta.url),"utf8"));
     expect((await db.query("select count(*)::int as count from official_sources where not active and verification_status='pending'")).rows).toEqual([{count:8}]);
+    const staged=(await db.query<{id:string;base_url:string;allowed_domains:string[];allowed_path_prefixes:string[]}>("select id,base_url,allowed_domains,allowed_path_prefixes from official_sources")).rows;
+    const urls=[...CNPQ_AUDITED_CALLS.map(call=>({id:call.id,url:cnpqCallUrl(call),supplement:cnpqDocumentUrl(call)})),
+      ...UFSC_AUDITED_CALLS,{id:ICIF_ID,url:ICIF_URL,supplement:ICIF_DOCUMENT},{id:IEG_ID,url:IEG_URL,supplement:IEG_URL}];
+    for(const call of urls){
+      const row=staged.find(row=>row.id===call.id)!;
+      const configured={id:row.id,baseUrl:row.base_url,active:true,allowedDomains:row.allowed_domains,allowedPathPrefixes:row.allowed_path_prefixes} as OfficialSource;
+      expect(isOfficialSourceUrl(call.url,[configured]),call.id+" primary scope").toBe(true);
+      expect(isOfficialSourceUrl(call.supplement,[configured]),call.id+" supplemental scope").toBe(true);
+      expect(isOfficialSourceUrl("https://www.gov.br/unrelated",[configured])).toBe(false);
+    }
+    const repair=readFileSync(new URL("../../db/migrations/0042_repair_cnpq_audited_path_scopes.sql",import.meta.url),"utf8");
+    // Simulate the already-deployed malformed configuration, alongside an operator override.
+    const malformed=staged.find(row=>row.id==="cnpq-maidai-30-2026")!;
+    const goodPath=malformed.allowed_path_prefixes[0];
+    await db.query("update official_sources set allowed_path_prefixes=$1,active=true,verification_status='verified',crawl_interval_hours=48 where id=$2",[["https://www.gov.br"+goodPath],malformed.id]);
+    await db.exec("update official_sources set allowed_path_prefixes=array['/custom-operator-scope/'] where id='cnpq-anr-32-2026'");
+    await db.exec(repair);await db.exec(repair);
+    expect((await db.query("select allowed_path_prefixes,active,verification_status,crawl_interval_hours from official_sources where id='cnpq-maidai-30-2026'")).rows)
+      .toEqual([{allowed_path_prefixes:[goodPath],active:true,verification_status:"verified",crawl_interval_hours:48}]);
+    expect((await db.query("select allowed_path_prefixes from official_sources where id='cnpq-anr-32-2026'")).rows)
+      .toEqual([{allowed_path_prefixes:["/custom-operator-scope/"]}]);
     await db.exec("update official_sources set active=true,verification_status='verified',crawl_interval_hours=48 where id='ufsc-proaa-2027'");
     for(const file of files)await db.exec(readFileSync(new URL(`../../db/migrations/${file}`,import.meta.url),"utf8"));
     expect((await db.query("select active,verification_status,crawl_interval_hours,audience_scope from official_sources where id='ufsc-proaa-2027'")).rows)

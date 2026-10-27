@@ -5,7 +5,7 @@ insert into official_sources (
  listing_urls,extraction_mode,audience_scope,geographic_scope,categories,priority,active,verification_status,crawl_interval_hours,notes
 )
 select id,name,'Conselho Nacional de Desenvolvimento Científico e Tecnológico','CNPq','federal_government',url,
- array['www.gov.br'],array[path],array[url],'html',array[audience],array[]::text[],array['bolsas','pesquisa'],85,false,'pending',24,
+ array['www.gov.br'],array[regexp_replace(path, '^https://[^/]+', '')],array[url],'html',array[audience],array[]::text[],array['bolsas','pesquisa'],85,false,'pending',24,
  'Auditoria 27/10/2026: página oficial e PDF da edição. Referência source-audit-20261027.json. Pendente de revalidação e ativação autorizada na VPS. Uma ficha por chamada. Não inferir cidade, remuneração ou candidatura direta de estudante.'
 from (values
  ('cnpq-maidai-30-2026','CNPq/CAPES MAI/DAI — propostas institucionais 30/2026','institution',
