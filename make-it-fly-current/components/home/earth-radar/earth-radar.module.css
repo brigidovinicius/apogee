@@ -165,6 +165,9 @@
       animation: signature-sweep 10s infinite;
       animation-play-state: var(--signature-play-state, running);
     }
+    .preview .earth-signature[data-motion-hidden] .earth-signature-sweep {
+      animation-play-state: paused;
+    }
 
     /* Oito segundos da esquerda para a direita, seguidos por dois de repouso. */
     @keyframes signature-sweep {

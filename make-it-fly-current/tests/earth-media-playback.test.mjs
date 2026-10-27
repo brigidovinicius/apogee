@@ -105,3 +105,23 @@ test("Earth can recover after Safari denies autoplay instead of permanently disc
   f.progressTo(.75); f.frame(); assert.ok(f.media.currentTime > 5.9);
   playback.dispose();
 });
+
+test("Earth ignores sub-frame scroll jitter instead of repeatedly decoding the same frame", async () => {
+  const f = setup(); let time = 0, seeks = 0;
+  Object.defineProperty(f.media, "currentTime", { get: () => time, set: value => { time = value; seeks++; } });
+  const playback = f.startEarthScrubbing(f.media, f.progress, () => {}, () => {}); await settle();
+  f.progressTo(.5); f.frame(); const first = time;
+  for (const value of [.50001, .5001, .5002]) { f.progressTo(value); f.frame(); }
+  assert.equal(time, first); assert.equal(seeks, 1);
+  f.progressTo(.65); f.frame(); assert.ok(time > first); assert.equal(seeks, 2);
+  playback.dispose();
+});
+
+test("Earth suspends decoding in a hidden tab and catches up once on return", async () => {
+  const f = setup(); const playback = f.startEarthScrubbing(f.media, f.progress, () => {}, () => {}); await settle();
+  f.page.hidden = true; f.page.dispatchEvent(new Event("visibilitychange"));
+  f.progressTo(.9); f.frame(); assert.equal(f.media.currentTime, 0);
+  f.page.hidden = false; f.page.dispatchEvent(new Event("visibilitychange"));
+  f.frame(); assert.ok(f.media.currentTime > 7);
+  playback.dispose();
+});
