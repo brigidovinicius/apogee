@@ -36,7 +36,7 @@ test('native sharing receives only the canonical public URL and makes no deliver
   try {
     await view.render().props.children[0].props.onClick();
     assert.deepEqual(calls, [{ title: 'Radar | Apogee', url: 'https://www.apogee.community/oportunidades' }]);
-    assert.equal(view.render().props.children[1].props.children, 'Compartilha o link público desta página.');
+    assert.equal(view.render().props.children[1].props.children, 'Compartilha o link público desta página');
   } finally { view.restore(); }
 });
 

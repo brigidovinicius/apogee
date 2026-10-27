@@ -60,15 +60,22 @@ test("public catalogue outages keep the catalogue link without inventing entries
 
 
 test("both opening Radar calls to action navigate to the opportunities catalogue", async () => {
+  const { SiteHeader } = await load("components/site/site-header.tsx", {
+    "./site-mobile-navigation": { SiteMobileNavigation: () => null },
+    "./site-shell.module.css": { __esModule: true, default: {} },
+  });
+  const { createScrollProgress } = await load("components/home/earth-radar/scroll-progress.ts");
   const { EarthRadarPreview } = await load("components/home/earth-radar/earth-radar-preview.tsx", {
     "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return createElement("a", props, children); } },
+    "./scroll-progress": { createScrollProgress },
+    "@/components/site/site-header": { SiteHeader },
     "@/components/site/site-footer": { SiteFooter: () => null },
     "./earth-radar-scene": { EarthRadarScene: () => null },
     "./earth-signature": { EarthSignature: () => null },
     "./earth-radar.module.css": { __esModule: true, default: {} },
   });
   const html = renderToStaticMarkup(createElement(EarthRadarPreview, { radar: null }));
-  assert.match(html, /href="\/oportunidades">Radar<\/a>/);
+  assert.match(html, /href="\/oportunidades">Oportunidades<\/a>/);
   assert.match(html, /href="\/oportunidades">Explorar o Radar<\/a>/);
   assert.doesNotMatch(html, /href="#radar"/);
 });
@@ -91,7 +98,7 @@ test("mobile signature and video failures keep an animated fallback covering bot
     assert.ok(html.includes(`data-signature-state="${expected}"`));
     assert.equal(html.includes("<video"), video);
     assert.match(html, /<mask[^>]*height="940"[^>]*mask-type:luminance/);
-    assert.match(html, /<image href="[^"]*signature-gpt.png" width="1672" height="940"/);
+    assert.match(html, /<image href="[^"]*signature-gpt.webp" width="1672" height="940"/);
     assert.match(html, /<g mask="url\(#[^"]+\)"><rect[^>]+height="940"/);
   }
 });

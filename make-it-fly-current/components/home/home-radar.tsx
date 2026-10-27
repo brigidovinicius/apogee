@@ -10,7 +10,7 @@ export async function HomeRadar({ presentation = "editorial" }: { presentation?:
   const catalogue = await listPublicOpportunities().catch(() => null);
   if (catalogue === null) {
     return <div className={styles.catalogueMessage}>
-      <p>A prévia do Radar está temporariamente indisponível.</p>
+      <p>A prévia do Radar está temporariamente indisponível</p>
       <Link prefetch={false} href="/oportunidades">Abrir o catálogo de oportunidades <span aria-hidden="true"><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></Link>
     </div>;
   }

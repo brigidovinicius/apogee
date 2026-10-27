@@ -154,7 +154,7 @@ export function MakeItFlyV2() {
 
           <div className={styles.topbarActions}>
             <nav className={styles.mobilePortalLinks} aria-label="Áreas do site">
-              <Link href="/" aria-label="Voltar à Apogee" onNavigate={rememberMakeItFlyScroll}>Apogee</Link>
+              <Link href="/" aria-label="Voltar à Apogee" onNavigate={rememberMakeItFlyScroll}><Image src="/brand/apogee-logo-white.svg" alt="" width={72} height={45} /></Link>
               <Link href="/galeria">Galeria</Link>
               <Link href="/loja">Loja</Link>
             </nav>

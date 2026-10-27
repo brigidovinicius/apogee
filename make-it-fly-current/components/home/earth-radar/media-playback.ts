@@ -1,4 +1,4 @@
-import type { MotionValue } from "framer-motion";
+import type { ScrollProgress } from "./scroll-progress";
 
 type SignatureState = "loading" | "playing" | "waiting" | "blocked";
 
@@ -86,7 +86,7 @@ export function startSignatureLoop(media: HTMLVideoElement, onState: (state: Sig
 
 export function startEarthScrubbing(
   media: HTMLVideoElement,
-  progress: Pick<MotionValue<number>, "get" | "on">,
+  progress: Pick<ScrollProgress, "get" | "on">,
   onReady: () => void,
   onBlocked: (blocked: boolean) => void,
 ) {

@@ -57,13 +57,13 @@ export function EarthSignature() {
   return <div ref={root} className={styles["earth-signature"]} data-earth-signature
     data-signature-state={mode === "static" ? "static" : shimmer ? "shimmer" : state}
     role="img" aria-label="Apogee, assinatura manuscrita e estrela">
-    <Image className={styles["earth-signature-art"]} src={`${MEDIA}/signature-gpt.png`}
+    <Image className={styles["earth-signature-art"]} src={`${MEDIA}/signature-gpt.webp`}
       alt="" width={1672} height={940} sizes="(max-width: 440px) 92vw, 400px" loading="eager" unoptimized draggable={false} />
     {/* A mesma arte recorta o brilho nas letras e na estrela, sem autoplay no celular. */}
     <svg className={styles["earth-signature-shimmer"]} viewBox="0 0 1672 940" aria-hidden="true" focusable="false">
       <defs>
         <mask id={`${id}-mask`} maskUnits="userSpaceOnUse" x="0" y="0" width="1672" height="940" style={{ maskType: "luminance" }}>
-          <image href={`${MEDIA}/signature-gpt.png`} width="1672" height="940" />
+          <image href={`${MEDIA}/signature-gpt.webp`} width="1672" height="940" />
         </mask>
         <linearGradient id={`${id}-light`}>
           <stop offset="0" stopColor="white" stopOpacity="0" />
@@ -79,7 +79,7 @@ export function EarthSignature() {
     </svg>
     {mode === "video" && !failed && <video ref={video}
       className={styles["earth-signature-video"]} src={`${MEDIA}/signature-light-flow-smooth-60fps.mp4`}
-      poster={`${MEDIA}/signature-gpt.png`} preload="auto" muted playsInline disablePictureInPicture
+      poster={`${MEDIA}/signature-gpt.webp`} preload="auto" muted playsInline disablePictureInPicture
       aria-hidden="true" tabIndex={-1} onError={() => setFailed(true)} />}
   </div>;
 }

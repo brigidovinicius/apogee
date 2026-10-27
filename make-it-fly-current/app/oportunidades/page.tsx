@@ -48,16 +48,16 @@ export default async function OpportunitiesPage({ searchParams }: {
         <section className={styles.hero} aria-labelledby="opportunities-title">
           <h1 id="opportunities-title">Radar de oportunidades</h1>
           <p className={styles.lead}>
-            Descubra eventos, hackathons, projetos e experiências para o seu próximo passo.
+            Descubra eventos, hackathons, projetos e experiências para o seu próximo passo
           </p>
           <p className={styles.promise}>
-            Faça login e escolha uma oportunidade para acessar os detalhes grátis. A partir da segunda, acesso vitalício por R$ 49,00.
+            Faça login e escolha uma oportunidade para acessar os detalhes grátis. A partir da segunda, acesso vitalício por R$ 49,00
           </p>
           <ShareButton title="Radar de oportunidades | Apogee" path="/oportunidades" />
         </section>
 
         <p className={styles.memberCta}><Link href={memberHref}>Entre na comunidade Apogee para explorar o Radar na área de membros →</Link></p>
-        {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes.</p>}
+        {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
       </main>
 
       <SiteFooter />

@@ -48,8 +48,8 @@ export function HomeRadarList({ opportunities, capturedAt }: { opportunities: St
             <span className={styles.srOnly}>Ver detalhes da oportunidade</span>
           </Link>
         </li>)}
-      </ul> : <p className={styles.catalogueMessage}>Nenhuma oportunidade disponível nesta prévia agora. Explore as outras categorias no Radar.</p>}
+      </ul> : <p className={styles.catalogueMessage}>Nenhuma oportunidade disponível nesta prévia agora. Explore as outras categorias no Radar</p>}
     </div>
-    <p className={styles.catalogueNote}>Faça login para acessar uma oportunidade detalhada grátis. Acesso vitalício às demais por R$ 49,00.</p>
+    <p className={styles.catalogueNote}>Faça login para acessar uma oportunidade detalhada grátis. Acesso vitalício às demais por R$ 49,00</p>
   </div>;
 }

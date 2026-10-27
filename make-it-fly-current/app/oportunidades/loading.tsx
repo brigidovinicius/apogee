@@ -7,7 +7,7 @@ export default function OpportunitiesLoading() {
       <StatePanel
         eyebrow="Radar de oportunidades"
         title="Atualizando o Radar"
-        description="Estamos verificando as oportunidades disponíveis."
+        description="Estamos verificando as oportunidades disponíveis"
         busy
       />
     </main>

@@ -21,13 +21,13 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
       <p><Link href="/membros/oportunidades">← Voltar ao Radar</Link></p>
       {result.opportunity ? <>
         <h1 className={styles.title}>{result.opportunity.title}</h1>
-        {result.status === "free" ? <p>Esta é sua oportunidade gratuita. Você pode voltar a ela quando quiser enquanto estiver disponível.</p> : null}
+        {result.status === "free" ? <p>Esta é sua oportunidade gratuita. Você pode voltar a ela quando quiser enquanto estiver disponível</p> : null}
         <OpportunityCard opportunity={result.opportunity} detailed />
       </> : <>
         <h1 className={styles.title}>Sua primeira oportunidade é grátis</h1>
         <p><strong>{result.title}</strong></p>
-        <p className={styles.lead}>Use seu acesso gratuito para abrir os detalhes desta oportunidade. Ela continuará disponível para você enquanto estiver no Radar.</p>
-        <p>Para acessar uma segunda oportunidade diferente, o acesso vitalício custa R$ 49,00 em pagamento único.</p>
+        <p className={styles.lead}>Use seu acesso gratuito para abrir os detalhes desta oportunidade. Ela continuará disponível para você enquanto estiver no Radar</p>
+        <p>Para acessar uma segunda oportunidade diferente, o acesso vitalício custa R$ 49,00 em pagamento único</p>
         <form action={openFreeOpportunity.bind(null, id)}>
           <button type="submit" className={styles.primary}>Abrir esta oportunidade grátis</button>
         </form>

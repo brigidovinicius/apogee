@@ -37,6 +37,7 @@ async function loadComponent(path, dependencies = {}) {
 const buttonModule = await loadComponent("components/ui/button.tsx");
 const brandModule = await loadComponent("components/ui/brand-mark.tsx");
 const commerceModule = await loadComponent("components/ui/commerce-hero.tsx", {
+  "next/image": { default: require("next/image").default },
   "@/components/ui/button": buttonModule,
   "@/components/ui/brand-mark": brandModule,
 });

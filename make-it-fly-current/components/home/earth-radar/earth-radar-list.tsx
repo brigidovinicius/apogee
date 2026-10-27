@@ -35,7 +35,7 @@ export function EarthRadarList({ opportunities, capturedAt }: { opportunities: S
       </nav>
     </aside>
     <div className={styles["radar-main"]}>
-      <div className={styles["return-note"]}><strong>Há novas possibilidades esperando por você.</strong><span>Oportunidades do Radar</span></div>
+      <div className={styles["return-note"]}><strong>Há novas possibilidades esperando por você</strong><span>Oportunidades do Radar</span></div>
       <div className={styles["search-wrap"]}>
         <form className={styles["search-bar"]} role="search" action="/oportunidades">
           <input name="busca" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Busque uma área, instituição ou objetivo" aria-label="Buscar oportunidades" />
@@ -59,10 +59,10 @@ export function EarthRadarList({ opportunities, capturedAt }: { opportunities: S
         </article>)}
       </div>
       {!visible.length && <div className={`${styles["empty-state"]} ${styles.visible}`}>
-        <p>Nenhuma oportunidade em destaque combina com esta busca. Explore o catálogo completo.</p>
+        <p>Nenhuma oportunidade em destaque combina com esta busca, explore o catálogo completo</p>
         <button className={styles["reset-filters"]} onClick={() => { setQuery(""); setCategory("all"); }}>Limpar filtros</button>
       </div>}
-      <p className={styles["demo-note"]}>Faça login para acessar uma oportunidade detalhada grátis. Acesso vitalício às demais por R$ 49,00.</p>
+      <p className={styles["demo-note"]}>Faça login para acessar uma oportunidade detalhada grátis, com acesso vitalício às demais por R$ 49,00</p>
       <Link prefetch={false} className={styles["all-link"]} href="/oportunidades">Ver o Radar completo</Link>
     </div>
   </div>;

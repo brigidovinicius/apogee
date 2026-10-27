@@ -11,7 +11,7 @@ export default function BlogError({ reset }: { reset: () => void }) {
     <SiteHeader current="blog" />
     <main id="experiencia" tabIndex={-1} className={styles.main} style={{ paddingBlock: "4rem" }}>
       <div role="alert">
-        <StatePanel eyebrow="Blog Apogee" title="A leitura espera um instante." description="Não foi possível carregar as publicações. Tente novamente em alguns instantes."
+        <StatePanel eyebrow="Blog Apogee" title="A leitura espera um instante" description="Não foi possível carregar as publicações, tente novamente em alguns instantes"
           actions={<><button className={statePanelStyles.primary} type="button" onClick={reset}>Tentar novamente</button><Link className={statePanelStyles.secondary} href="/">Voltar ao início</Link></>} />
       </div>
     </main>

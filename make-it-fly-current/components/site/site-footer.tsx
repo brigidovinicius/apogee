@@ -14,7 +14,7 @@ export function SiteFooter() {
             height={986}
             sizes="112px"
           />
-          <p>Comunidade e experiências para tirar ideias do papel.</p>
+          <p>Comunidade e experiências para tirar ideias do papel</p>
         </div>
         <nav aria-label="Navegação do rodapé">
           <Link href="/">Início</Link>

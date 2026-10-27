@@ -255,7 +255,7 @@
 :global([data-apogee-design]) .header { border-bottom: 0; }
 :global([data-apogee-design]) .headerInner,
 :global([data-apogee-design]) .footerInner { width: auto; margin-inline: var(--apogee-page-margin); }
-:global([data-apogee-design]) .headerInner { min-height: 6.5rem; }
+:global([data-apogee-design]) .headerInner { min-height: 5rem; }
 :global([data-apogee-design]) .brand img { width: 7.5rem; }
 :global([data-apogee-design]) .desktopNavigation { gap: clamp(.8rem, 2vw, 2rem); }
 :global([data-apogee-design]) .desktopNavigation a,
@@ -271,14 +271,14 @@
 :global([data-apogee-design]) .mobileNavigation a[aria-current="page"] { font-weight: 650; text-decoration: underline; text-underline-offset: .25em; }
 :global([data-apogee-design]) .desktopNavigation a:hover,
 :global([data-apogee-design]) .desktopNavigation a[aria-current="page"] { color: var(--apogee-sky); }
-:global([data-apogee-design]) .header[data-tone="light"] { background: #f1f4f7; }
+:global([data-apogee-design]) .header[data-tone="light"] { background: var(--apogee-paper-soft); }
 :global([data-apogee-design]) .header[data-tone="light"] .desktopNavigation a:hover,
 :global([data-apogee-design]) .header[data-tone="light"] .desktopNavigation a[aria-current="page"] { color: #29415c; }
 :global([data-apogee-design]) .footer { border-top: 0; }
 :global([data-apogee-design]) .footer nav { gap: .25rem; }
 :global([data-apogee-design]) .footer nav a { display: inline-flex; align-items: center; min-height: var(--apogee-control-min-height); }
 @media (max-width: 1100px) {
-  :global([data-apogee-design]) .headerInner { grid-template-columns: 1fr auto; min-height: 5.5rem; }
+  :global([data-apogee-design]) .headerInner { grid-template-columns: 1fr auto; min-height: 5rem; }
   :global([data-apogee-design]) .desktopNavigation,
   :global([data-apogee-design]) .memberLink { display: none; }
   :global([data-apogee-design]) .mobileNavigation { display: block; position: relative; }
@@ -286,3 +286,10 @@
 @media (max-width: 700px) {
   :global([data-apogee-design]) .headerInner { min-height: 5rem; }
 }
+
+.adaptiveNavy { display: none; }
+.header[data-adaptive] { transition: background 180ms ease, color 180ms ease; }
+.header[data-adaptive][data-tone="dark"] { background: rgb(6 22 44 / 94%); }
+.header[data-adaptive][data-tone="light"] .adaptiveWhite { display: none; }
+.header[data-adaptive][data-tone="light"] .adaptiveNavy { display: block; }
+@media (prefers-reduced-motion: reduce) { .header[data-adaptive] { transition: none; } }

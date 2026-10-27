@@ -12,6 +12,7 @@ type SiteHeaderProps = {
   tone?: "dark" | "light";
   prefetch?: boolean;
   eventLink?: boolean;
+  adaptive?: boolean;
 };
 
 const navigation: ReadonlyArray<{ href: string; label: string; section?: SiteSection }> = [
@@ -30,13 +31,15 @@ export function SiteHeader({
   tone = "dark",
   prefetch,
   eventLink = false,
+  adaptive = false,
 }: SiteHeaderProps) {
   const links = eventLink ? [...navigation, { href: "/makeitfly#participar", label: "Participar" }] : navigation;
   return (
-    <header className={styles.header} data-tone={tone}>
+    <header className={styles.header} data-tone={tone} data-adaptive={adaptive || undefined}>
       <div className={styles.headerInner}>
         <Link className={styles.brand} href="/" aria-label="Apogee - início" prefetch={prefetch}>
           <Image
+            className={adaptive ? styles.adaptiveWhite : undefined}
             src={tone === "light" ? "/brand/apogee-logo-navy.svg" : "/brand/apogee-logo-white.svg"}
             alt=""
             width={1595}
@@ -44,6 +47,7 @@ export function SiteHeader({
             sizes="112px"
             preload
           />
+          {adaptive && <Image className={styles.adaptiveNavy} src="/brand/apogee-logo-navy.svg" alt="" width={1595} height={986} sizes="112px" />}
         </Link>
 
         <nav className={styles.desktopNavigation} aria-label="Navegação principal">

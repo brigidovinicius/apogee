@@ -18,7 +18,7 @@ export default async function CompleteProfilePage({ searchParams }: { searchPara
       <header className={styles.authIntro}>
         <p className={styles.eyebrow}>Área de membros</p>
         <h1 className={styles.title}>Confirme seu nome e usuário</h1>
-        <p className={styles.lead}>Esta é a última etapa do cadastro com Google. Seu nome de usuário aparecerá no fórum e no perfil.</p>
+        <p className={styles.lead}>Esta é a última etapa do cadastro com Google. Seu nome de usuário aparecerá no fórum e no perfil</p>
       </header>
       <div className={`${styles.panel} ${styles.authPanel}`}>
         <UsernameForm next={next} name={member.nameNeedsConfirmation ? "" : member.name} username={isGeneratedGoogleUsername(member.username) ? "" : member.username} />

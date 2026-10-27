@@ -106,3 +106,5 @@
   :global([data-apogee-design]) .headerActions { flex-basis: auto; min-height: 5rem; }
   :global([data-apogee-design]) .notch .menuButton { border-radius: var(--apogee-control-radius); border: 1px solid var(--apogee-border); }
 }
+
+.brandLogo { display: block; width: 7rem; height: auto; }
