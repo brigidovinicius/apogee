@@ -14,6 +14,7 @@ import * as cheerio from "cheerio";
 import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupplementUrl, programmeCatalogueCanBeEmpty } from "./programme-catalogue";
 import { isAuditedAcateEventUrl, normalizeAcateEvent } from "./normalize-acate-events";
 import { FULBRIGHT_SOURCE_ID, normalizeFulbright } from "./normalize-fulbright";
+import { ingestionFailureReason } from "./failure-reason";
 
 import { EVG_SOURCE_ID, EVG_POLICY_URL, normalizeEvgPolicy, normalizeEvgCourse, isEvgCourseUrl, parseEvgListing, type EvgPolicy } from "./normalize-evg-courses";
 
@@ -143,9 +144,9 @@ async function ingestSource(
           : normalizeOpportunity({ title: item.title, text, url: item.url, source });
         if (candidate) result.discovered.push(candidate);
         else result.ignored += 1;
-      } catch {
+      } catch (error) {
         result.failed += 1;
-        result.warnings.push("Falha ao consultar página de oportunidade oficial.");
+        result.warnings.push(`Falha ao consultar página de oportunidade oficial. Motivo: ${ingestionFailureReason(error)}.`);
       }
     }
     const nextOffset = start + processed;
@@ -156,9 +157,9 @@ async function ingestSource(
       result.nextListingIndex = listingIndex;
       result.nextLinkOffset = nextOffset;
     }
-  } catch {
+  } catch (error) {
     result.failed += 1;
-    result.warnings.push("Falha ao consultar fonte oficial; revisar configuração e disponibilidade.");
+    result.warnings.push(`Falha ao consultar fonte oficial; revisar configuração e disponibilidade. Motivo: ${ingestionFailureReason(error)}.`);
   }
   const deduplicated = deduplicateCandidates(result.discovered);
   if (maxCandidates !== undefined && deduplicated.length > maxCandidates) {
@@ -214,6 +215,7 @@ async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
     result.pagesChecked += rechecked.pagesChecked + contextPages;
     result.failed += rechecked.failed;
     if (rechecked.failed) result.warnings.push("Falha ao reconsultar ficha existente; verificação anterior preservada.");
+    for (const reason of rechecked.failureReasons ?? []) result.warnings.push(`Reconsulta: ${reason}.`);
     const persistence = await saveReviewItems(source, result);
     report.push({ ...result, ...persistence, published: persistence.published + rechecked.published });
     if (budget.remaining <= 0) break;

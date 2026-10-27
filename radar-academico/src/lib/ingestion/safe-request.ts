@@ -33,7 +33,7 @@ export const publicLookup: LookupFunction = (hostname, options, callback) => {
     }
     if (options.all) callback(null, addresses);
     else callback(null, addresses[0].address, addresses[0].family);
-  }, () => callback(new Error("Falha na resolução da fonte"), "", 4));
+  }, (error: unknown) => callback(new Error("Falha na resolução da fonte", { cause: error }), "", 4));
 };
 
 export async function collectBounded(stream: AsyncIterable<Uint8Array>, maxBytes: number) {
@@ -84,7 +84,7 @@ export function safeRequest(url: string, headers: Record<string, string>, maxByt
         resolve(new Response(new Uint8Array(body), { status, headers: responseHeaders }));
       })().catch((error: unknown) => { response.destroy(); reject(error); });
     });
-    req.on("error", () => reject(new Error("Falha ao consultar fonte oficial")));
+    req.on("error", (error: Error) => reject(new Error("Falha ao consultar fonte oficial", { cause: error })));
     req.end();
   });
 }

@@ -1,4 +1,5 @@
 import { isIP } from "node:net";
+import * as cheerio from "cheerio";
 import { loadActiveOfficialSources } from "@/lib/ingestion/official-source-registry";
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { parseHtml } from "@/lib/ingestion/parse-html";
@@ -8,6 +9,7 @@ import { claimDueDiscoveryTargets, completeDiscoveryTarget, saveDiscoveryLeads, 
 
 const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|oportunidade|curso|oficina|formação|prêmio|premiaç|competição|hackathon|desafio|edital|seleção|inscriç|chamada|programa|evento|workshop|conferência|congresso|seminário|encontro|feira|palestra|webinar|extensão|empreendedorismo|incuba|acelera/i;
 const tracking = /^(utm_.+|fbclid|gclid)$/i;
+const navigationLabel = /^(?:[«»\s]*(?:anterior|próximo)[«»\s]*|cursos|eventos e cursos|calendário de inscrições|inscrições e acompanhamento|chamadas (?:abertas|andamento)|ver todos os palestrantes|programação|destaques|a feira|acesso à informação)$/i;
 
 export function candidateUrl(input: string): string | null {
   try {
@@ -22,9 +24,11 @@ export function candidateUrl(input: string): string | null {
 
 export function discoveryLinks(html: string, target: DiscoveryTarget, mappedSources: OfficialSource[]) {
   const seen = new Set<string>();
-  return parseHtml(html, target.official_url).flatMap((item) => {
+  const $ = cheerio.load(html);
+  $("header,aside").remove();
+  return parseHtml($.html(), target.official_url).flatMap((item) => {
     const url = candidateUrl(item.url);
-    if (!url || url === target.official_url || seen.has(url)) return [];
+    if (!url || url === target.official_url || seen.has(url) || navigationLabel.test(item.title)) return [];
     const path = new URL(url).pathname;
     if (path.includes("@@search") || isOfficialSourceUrl(url, mappedSources) ||
       !relevant.test(`${item.title} ${path}`)) return [];

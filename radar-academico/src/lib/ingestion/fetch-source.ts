@@ -70,7 +70,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
       url = new URL(location, url).toString();
       continue;
     }
-    if (!response.ok) throw new Error("Fonte oficial indisponível");
+    if (!response.ok) throw new Error(`Fonte oficial indisponível (HTTP ${response.status})`);
     // safeRequest enforces this cap while bytes arrive, before buffering.
     const body = Buffer.from(await response.arrayBuffer());
     const contentType = response.headers.get("content-type") ?? "";

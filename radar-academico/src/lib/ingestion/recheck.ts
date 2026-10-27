@@ -11,6 +11,7 @@ import { normalizeAcateEvent } from "./normalize-acate-events";
 import { FULBRIGHT_SOURCE_ID, normalizeFulbright } from "./normalize-fulbright";
 import { PDAI_SOURCE_ID, capesPdaiTerminalEvidence } from "./normalize-capes-pdai";
 import { PDSE_SOURCE_ID, capesPdseTerminalEvidence } from "./normalize-capes-pdse";
+import { ingestionFailureReason } from "./failure-reason";
 
 import { EVG_SOURCE_ID, normalizeEvgCourse, type EvgPolicy } from "./normalize-evg-courses";
 
@@ -19,7 +20,9 @@ function fapespPostingId(url: string) {
 }
 
 export async function recheckKnownOpportunities(source: OfficialSource, limit: number,
-  readText: (body: Buffer, contentType: string) => Promise<string>, evgPolicy?: EvgPolicy) {
+  readText: (body: Buffer, contentType: string) => Promise<string>, evgPolicy?: EvgPolicy): Promise<{
+    pagesChecked: number; failed: number; published: number; failureReasons?: string[];
+  }> {
   if (limit < 1) return { pagesChecked: 0, failed: 0, published: 0 };
   const rows = await withAdminTransaction(async (client) => (await client.query<StoredOpportunity & { source_page_url: string }>(
     `select o.*,os.source_page_url from opportunities o join lateral (
@@ -28,6 +31,7 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
       and (o.next_source_check_at is null or o.next_source_check_at<=now())
     order by o.last_source_check_at nulls first,o.id limit $2`, [source.id, limit])).rows);
   let pagesChecked = 0, failed = 0, published = 0;
+  const failureReasons = new Set<string>();
   let verifiedListingLinks: string[] | null = null;
   let catalogueCandidates: Map<string, OpportunityCandidate> | null = null;
   let catalogueTerminal: ReturnType<typeof capesPdaiTerminalEvidence> = null;
@@ -50,13 +54,13 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
       // missing/invalid embedded JSON throws and preserves the previous evidence.
       if (!candidates.length && !programmeCatalogueCanBeEmpty(source.id)) throw new Error("Oferta não confirmada");
       catalogueCandidates = new Map(candidates.map((candidate) => [canonicalOpportunityKey(source.id, candidate.title, candidate.sourcePageUrl), candidate]));
-    } catch {
+    } catch (error) {
       // A source failure is one failed check, even when many records share its URL.
       await withAdminTransaction((client) => client.query(
         "update opportunities set next_source_check_at=now()+interval '1 hour' where id=any($1::uuid[])",
         [rows.map((row) => row.id)],
       ));
-      return { pagesChecked, failed: 1, published: 0 };
+      return { pagesChecked, failed: 1, published: 0, failureReasons: [ingestionFailureReason(error)] };
     }
   }
   for (const row of rows) {
@@ -126,11 +130,12 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
         }
         await client.query("update opportunities set next_source_check_at=now()+interval '24 hours' where id=$1", [row.id]);
       });
-    } catch {
+    } catch (error) {
       failed += 1;
+      failureReasons.add(ingestionFailureReason(error));
       // A network failure does not claim a new successful verification or a closed opportunity.
       await withAdminTransaction((client) => client.query("update opportunities set next_source_check_at=now()+interval '1 hour' where id=$1", [row.id]));
     }
   }
-  return { pagesChecked, failed, published };
+  return { pagesChecked, failed, published, ...(failureReasons.size ? { failureReasons: [...failureReasons] } : {}) };
 }
