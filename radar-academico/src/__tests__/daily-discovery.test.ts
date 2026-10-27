@@ -62,3 +62,15 @@ it("blocks unsafe URLs and leaves failed pages unpublished", async () => {
   expect(saveDiscoveryLeads).not.toHaveBeenCalled();
   expect(completeDiscoveryTarget).toHaveBeenCalledWith(target.id, "blocked");
 });
+
+it("does not fill the review queue with navigation while retaining concrete calls", () => {
+  const html=`<header><a href="/cursos/">Cursos de formação</a></header>
+    <aside><a href="/inscricao/">Inscrições para eventos</a></aside>
+    <main><a href="/chamadas/analise-em-andamento">Próximo »</a>
+    <a href="/chamadas/abertas">CHAMADAS ABERTAS</a>
+    <a href="/cursos">Cursos</a>
+    <a href="/chamadas/produtividade-33-2026">Chamada 33/2026 — Bolsas de Produtividade</a></main>`;
+  expect(discoveryLinks(html,target,[])).toEqual([expect.objectContaining({
+    url:"https://events.example.org/chamadas/produtividade-33-2026",
+  })]);
+});

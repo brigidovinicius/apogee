@@ -2,6 +2,7 @@ import { lookup } from "node:dns/promises";
 import { request } from "node:https";
 import { BlockList, isIP } from "node:net";
 import type { LookupFunction } from "node:net";
+import { gunzipSync } from "node:zlib";
 
 const blocked = new BlockList();
 for (const [network, prefix] of [
@@ -33,7 +34,7 @@ export const publicLookup: LookupFunction = (hostname, options, callback) => {
     }
     if (options.all) callback(null, addresses);
     else callback(null, addresses[0].address, addresses[0].family);
-  }, () => callback(new Error("Falha na resolução da fonte"), "", 4));
+  }, (error: unknown) => callback(new Error("Falha na resolução da fonte", { cause: error }), "", 4));
 };
 
 export async function collectBounded(stream: AsyncIterable<Uint8Array>, maxBytes: number) {
@@ -47,9 +48,22 @@ export async function collectBounded(stream: AsyncIterable<Uint8Array>, maxBytes
   return Buffer.concat(chunks, total);
 }
 
-// No proxy environment, redirects, connection reuse, cookies or decompression.
+export function decodeBoundedResponse(body: Buffer, encoding: string | null, maxBytes: number, allowGzip = false): Buffer {
+  if (body.byteLength > maxBytes) throw new Error("Resposta da fonte fora dos limites");
+  if (!encoding || encoding === "identity") return body;
+  if (encoding !== "gzip" || !allowGzip) throw new Error("Resposta da fonte fora dos limites");
+  try {
+    // Cap output inside zlib, before allocation can exceed the configured body budget.
+    return gunzipSync(body, { maxOutputLength: maxBytes });
+  } catch {
+    throw new Error("Resposta da fonte fora dos limites");
+  }
+}
+
+// No proxy environment, redirects, connection reuse or cookies. Gzip requires an
+// individually audited opt-in and preserves both encoded and decoded byte caps.
 // A single deadline covers DNS, TLS, headers and streaming body consumption.
-export function safeRequest(url: string, headers: Record<string, string>, maxBytes: number, method = "GET", allowMalformedResponseHeaders = false): Promise<Response> {
+export function safeRequest(url: string, headers: Record<string, string>, maxBytes: number, method = "GET", allowMalformedResponseHeaders = false, allowGzipResponse = false): Promise<Response> {
   const target = new URL(url);
   if (target.protocol !== "https:" || target.port && target.port !== "443" || target.username || target.password || isIP(target.hostname.replace(/^\[|\]$/g, ""))) {
     return Promise.reject(new Error("URL de rede não permitida"));
@@ -77,14 +91,19 @@ export function safeRequest(url: string, headers: Record<string, string>, maxByt
         }
         const encoding = responseHeaders.get("content-encoding");
         const declared = responseHeaders.get("content-length");
-        if (encoding && encoding !== "identity" || declared && (!/^\d+$/.test(declared) || Number(declared) > maxBytes)) {
+        if (encoding && encoding !== "identity" && !(allowGzipResponse && encoding === "gzip") || declared && (!/^\d+$/.test(declared) || Number(declared) > maxBytes)) {
           throw new Error("Resposta da fonte fora dos limites");
         }
-        const body = await collectBounded(response, maxBytes);
+        const encoded = await collectBounded(response, maxBytes);
+        const body = decodeBoundedResponse(encoded, encoding, maxBytes, allowGzipResponse);
+        if (encoding === "gzip") {
+          responseHeaders.delete("content-encoding");
+          responseHeaders.set("content-length", String(body.byteLength));
+        }
         resolve(new Response(new Uint8Array(body), { status, headers: responseHeaders }));
       })().catch((error: unknown) => { response.destroy(); reject(error); });
     });
-    req.on("error", () => reject(new Error("Falha ao consultar fonte oficial")));
+    req.on("error", (error: Error) => reject(new Error("Falha ao consultar fonte oficial", { cause: error })));
     req.end();
   });
 }

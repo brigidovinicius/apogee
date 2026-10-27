@@ -14,8 +14,15 @@ import type { OfficialSource } from "./types";
 import { normalizeIfscQualification } from "./normalize-ifsc-qualification";
 import { PDAI_SOURCE_ID, PDAI_NEWS_URL, normalizeCapesPdai } from "./normalize-capes-pdai";
 import { PDSE_SOURCE_ID, PDSE_NEWS_URL, normalizeCapesPdse } from "./normalize-capes-pdse";
+import { cnpqCall, cnpqDocumentUrl, normalizeCnpqAuditedCall } from "./normalize-cnpq-audited-calls";
+import { ufscAuditedCall, normalizeUfscAuditedCall } from "./normalize-ufsc-audited-calls";
+import { ICIF_ID, ICIF_DOCUMENT, IEG_ID, additionalCallUrl, normalizeAdditionalCall } from "./normalize-additional-calls-20261027";
 
 export function programmeCataloguePageCount(id: string) {
+  if (id === ICIF_ID) return 2;
+  if (id === IEG_ID) return 1;
+  if (ufscAuditedCall(id)) return 2;
+  if (cnpqCall(id)) return 2;
   if (isCommunityEdition(id)) return communityEditionSupplement(id) ? 2 : 1;
   if (isExtracurricularEdition(id)) return id === AMAZONIA_ID ? 2 : 1;
   if (isAuditedYouthCall(id)) return 1;
@@ -27,6 +34,11 @@ export function programmeCataloguePageCount(id: string) {
 }
 
 export function programmeSupplementUrl(id: string) {
+  if (id === ICIF_ID) return ICIF_DOCUMENT;
+  const ufscCall = ufscAuditedCall(id);
+  if (ufscCall) return ufscCall.supplement;
+  const call = cnpqCall(id);
+  if (call) return cnpqDocumentUrl(call);
   if (isCommunityEdition(id)) return communityEditionSupplement(id)!;
   if (id === AMAZONIA_ID) return AMAZONIA_DOCUMENT_URL;
   if (id === CPS_CULTURAL_ID) return CPS_CULTURAL_NEWS;
@@ -40,6 +52,9 @@ export function programmeCatalogueCanBeEmpty(id: string) {
 }
 
 export function normalizeProgrammeCatalogue(listing: string, application: string, source: OfficialSource) {
+  if (additionalCallUrl(source.id)) return normalizeAdditionalCall(listing, application, source);
+  if (ufscAuditedCall(source.id)) return normalizeUfscAuditedCall(listing, application, source);
+  if (cnpqCall(source.id)) return normalizeCnpqAuditedCall(listing, application, source);
   if (isCommunityEdition(source.id)) return normalizeCommunityEdition(listing, application, source);
   if (isExtracurricularEdition(source.id)) return normalizeExtracurricularEdition(listing, application, source);
   if (isAuditedYouthCall(source.id)) return normalizeAuditedYouthCall(listing, source);
