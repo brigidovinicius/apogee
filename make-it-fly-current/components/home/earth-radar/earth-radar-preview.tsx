@@ -22,7 +22,6 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
   useEffect(() => {
     const container = root.current;
     if (!container) return;
-    const pageStyle = container.style;
     const stage = container.querySelector<HTMLElement>("[data-earth-stage]")!;
     const message = container.querySelector<HTMLElement>("[data-earth-message]")!;
     const signature = container.querySelector<HTMLElement>("[data-earth-signature]")!;
@@ -34,14 +33,22 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
     // Um cálculo por quadro, mesmo quando chegam vários eventos de rolagem.
     function update() {
       animationFrame = 0;
+      // Read all layout before style writes to avoid reflow during scrolling.
       const stageTop = stage.getBoundingClientRect().top + window.scrollY;
       const progress = clamp((window.scrollY - stageTop) / Math.max(stage.offsetHeight - window.innerHeight, 1));
+      const navHeight = nav.offsetHeight;
+      const light = [...lightSections].some((section) => {
+        const rect = section.getBoundingClientRect();
+        return rect.top <= navHeight && rect.bottom > navHeight;
+      });
+      const sceneStyle = stage.querySelector<HTMLElement>("[data-earth-scene]")!.style;
       const morph = smoothProgress((progress - 0.12) / 0.76);
       earthProgress.set(reduced.matches ? 0 : morph);
-      pageStyle.setProperty("--earth-detail-progress", String(reduced.matches ? 0 : smoothProgress((morph - 0.94) / 0.06)));
+      sceneStyle.setProperty("--earth-detail-progress", String(reduced.matches ? 0 : smoothProgress((morph - 0.94) / 0.06)));
       signature.style.opacity = String(reduced.matches ? 1 : 1 - smoothProgress((progress - 0.16) / 0.24));
+      signature.toggleAttribute("data-motion-hidden", !reduced.matches && progress >= 0.4);
       const messageProgress = reduced.matches ? 1 : smoothProgress((progress - 0.42) / 0.42);
-      pageStyle.setProperty("--earth-copy-progress", String(messageProgress));
+      sceneStyle.setProperty("--earth-copy-progress", String(messageProgress));
       message.style.opacity = String(messageProgress);
       message.style.transform = reduced.matches ? "" : `translate(-50%, ${20 * (1 - messageProgress)}px)`;
       message.dataset.visible = String(messageProgress > 0);
@@ -51,10 +58,6 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
       nav.style.transform = `translateY(${-12 * (1 - navProgress)}px)`;
       nav.classList.toggle(styles["is-visible"], navProgress > 0.9);
       nav.inert = navProgress < 0.9;
-      const light = [...lightSections].some((section) => {
-        const rect = section.getBoundingClientRect();
-        return rect.top <= nav.offsetHeight && rect.bottom > nav.offsetHeight;
-      });
       nav.querySelector<HTMLElement>("header")!.dataset.tone = light ? "light" : "dark";
     }
     function schedule() {

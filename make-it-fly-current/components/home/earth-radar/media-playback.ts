@@ -100,9 +100,12 @@ export function startEarthScrubbing(
   function sync() {
     frame = 0;
     // Safari pode disponibilizar só metadata até o primeiro play/seek.
-    if (disposed || media.readyState < 1 || !Number.isFinite(media.duration) || media.seeking) return;
-    const target = Math.min(1, Math.max(0, progress.get())) * Math.max(0, media.duration - 1 / 30);
-    if (Math.abs(media.currentTime - target) > 1 / 60) media.currentTime = target;
+    if (disposed || document.hidden || media.readyState < 1 || !Number.isFinite(media.duration) || media.seeking) return;
+    // Both orbital clips are 24 fps. Avoid decoding the same frame again
+    // when tiny scroll deltas would otherwise seek between real frames.
+    const lastFrame = Math.max(0, Math.ceil(media.duration * 24) - 1);
+    const target = Math.round(Math.min(1, Math.max(0, progress.get())) * lastFrame) / 24;
+    if (Math.abs(media.currentTime - target) > 1 / 48) media.currentTime = target;
   }
   function schedule() { if (!frame) frame = window.requestAnimationFrame(sync); }
   function decoded() {

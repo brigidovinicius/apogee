@@ -15,6 +15,7 @@ const inter = localFont({
 });
 
 const notoMono = localFont({
+  preload: false,
   src: "./fonts/noto-sans-mono-latin-variable.woff2",
   variable: "--font-noto-mono",
   weight: "400 500",
@@ -22,6 +23,7 @@ const notoMono = localFont({
 });
 
 const instrumentSerif = localFont({
+  preload: false,
   src: [
     { path: "./fonts/instrument-serif-latin-400-normal.woff2", weight: "400", style: "normal" },
     { path: "./fonts/instrument-serif-latin-400-italic.woff2", weight: "400", style: "italic" },
@@ -31,6 +33,7 @@ const instrumentSerif = localFont({
 });
 
 const dmMono = localFont({
+  preload: false,
   src: [
     {
       path: "./fonts/dm-mono-300-latin.woff2",

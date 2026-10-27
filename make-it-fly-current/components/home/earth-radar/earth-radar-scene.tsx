@@ -41,19 +41,36 @@ function SceneSurface({ progress, mode }: { progress: ScrollProgress; mode: "sta
   const [blocked, setBlocked] = useState(false);
   const [failed, setFailed] = useState(false);
 
-  // The sharp poster paints first; the multi-megabyte video waits for intent.
+  // Paint the sharp poster first, then warm the video during idle time.
+  // Waiting for the first scroll left phones seeking into an unfetched file.
   useEffect(() => {
     if (mode === "static" || requested) return;
+    let idle = 0, timer = 0;
     function request() {
+      if (document.hidden) return;
       const rect = root.current?.getBoundingClientRect();
       if (rect && rect.bottom > 0 && rect.top < window.innerHeight) setRequested(true);
     }
+    function warm() {
+      if (idle || timer) return;
+      if (typeof window.requestIdleCallback === "function") {
+        idle = window.requestIdleCallback(() => { idle = 0; request(); }, { timeout: 1200 });
+      } else timer = window.setTimeout(() => { timer = 0; request(); }, 150);
+    }
+    function visible() { if (!document.hidden) warm(); }
+    if (document.readyState === "complete") warm();
+    else window.addEventListener("load", warm, { once: true });
+    document.addEventListener("visibilitychange", visible);
     if (window.scrollY > 0) request();
     window.addEventListener("scroll", request, { passive: true });
     window.addEventListener("wheel", request, { passive: true });
     window.addEventListener("touchstart", request, { passive: true });
     window.addEventListener("keydown", request);
     return () => {
+      if (idle) window.cancelIdleCallback(idle);
+      window.clearTimeout(timer);
+      window.removeEventListener("load", warm);
+      document.removeEventListener("visibilitychange", visible);
       window.removeEventListener("scroll", request);
       window.removeEventListener("wheel", request);
       window.removeEventListener("touchstart", request);
@@ -82,8 +99,8 @@ function SceneSurface({ progress, mode }: { progress: ScrollProgress; mode: "sta
       </picture>
     </div>
     {requested && mode !== "static" && !failed && <video ref={video} className={styles["earth-video"]}
-      src={mode === "mobile" ? `${MEDIA}/earth-mobile-flow-web.mp4` : "/design-preview/earth-cinematic-v1/earth-orbit-flow-scroll.mp4"}
-      preload="metadata" muted playsInline disablePictureInPicture tabIndex={-1} aria-hidden="true"
+      src={mode === "mobile" ? `${MEDIA}/earth-mobile-scroll-v3.mp4` : `${MEDIA}/earth-desktop-scroll-v3.mp4`}
+      preload="auto" muted playsInline disablePictureInPicture tabIndex={-1} aria-hidden="true"
       onError={() => setFailed(true)} />}
     {mode === "desktop" && requested && <Image className={styles["earth-detail"]}
       src={`${MEDIA}/earth-desktop-detail.webp`} alt="" fill sizes="100vw" unoptimized aria-hidden="true" />}

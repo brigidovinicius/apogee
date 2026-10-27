@@ -58,6 +58,8 @@ test("the single root layout preserves the approved visual wrapper and relocated
     && statement.declarationList.declarations.some(declaration => declaration.name.getText(file) === "metadata"))
     && !(ts.isImportDeclaration(statement) && ["next/link", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link"].includes(statement.moduleSpecifier.text)))
     .map(statement => statement.getText(file)).join("\n").replaceAll("../fonts/", "./fonts/")
+    // On-demand font fetching changes network priority, not typography.
+    .replaceAll("  preload: false,\n", "")
     .replace("        <JourneyTracker />\n", "")
     .replace("        <MakeItFlyScrollRestoration />\n", "")
     .replace("        <SkipLink />\n", '        <a className="skip-link" href="#experiencia">\n          Pular para o conteúdo\n        </a>\n')
