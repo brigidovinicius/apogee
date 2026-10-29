@@ -1,5 +1,7 @@
 # Homologação local de login, salvos e ICS
 
+Consulte também a [rodada completa de testes](radar-calendarios-testes-20261029.md), com correções, cobertura e limitações atualizadas.
+
 Este ambiente usa a aplicação compilada, Better Auth, sessões, permissões e server actions reais, com PostgreSQL e catálogo fictícios isolados. Não acessa os bancos ou serviços privados de produção.
 
 ## Abrir e testar

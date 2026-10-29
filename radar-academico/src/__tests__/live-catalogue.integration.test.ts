@@ -702,3 +702,22 @@ it("rejects unaudited or impossible calendar dates before persistence", async ()
  }
  expect(await listLiveCatalogue()).toHaveLength(0);
 });
+
+it("persists editorial classification and all calendar stages, preserves curation and removes inactive sources", async () => {
+ await save(candidate());
+ const original=(await listLiveCatalogue(true))[0];
+ const discovery={primaryType:"competicoes",subtype:"olimpiada",areas:["matematica","fisica"],editions:[{id:"2099",name:"Edição 2099",stages:[
+  {id:"exam",name:"Prova",kind:"exam",start:"2099-11-01T13:00:00-03:00",end:"2099-11-01T18:00:00-03:00",sourceUrl:evidence.source_url,checkedAt:"2026-10-28T12:00:00Z"},
+  {id:"result",name:"Resultado",kind:"result",start:"2099-12-01",sourceUrl:evidence.source_url,checkedAt:"2026-10-28T12:00:00Z"},
+ ]}]};
+ await manageCatalogue("PATCH",form(original,{discovery,opportunityStatus:"closed",deadlinePrecision:"not_informed",deadlineAt:""}));
+ expect(await listLiveCatalogue()).toHaveLength(0);
+ expect((await listCalendarCatalogue())[0]).toMatchObject({discovery});
+ await save(candidate({contentHash:"subsequent-crawl",discovery:{primaryType:"formacao",areas:[],editions:[]}}));
+ expect((await listCalendarCatalogue())[0]).toMatchObject({discovery});
+ await state.db!.query("update opportunities set opportunity_status='result_published',deadline_at='2000-01-01' where id=$1",[original.id]);
+ expect(await listLiveCatalogue()).toHaveLength(0);
+ expect(await listCalendarCatalogue()).toHaveLength(1);
+ await state.db!.query("update official_sources set active=false where id=$1",[source.id]);
+ expect(await listCalendarCatalogue()).toHaveLength(0);
+});

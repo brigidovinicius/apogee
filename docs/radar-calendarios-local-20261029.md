@@ -1,5 +1,7 @@
 # Radar e calendários — validação local
 
+Validação ampliada posterior: [relatório de testes de 29/10/2026](radar-calendarios-testes-20261029.md). Os números da primeira rodada abaixo são históricos.
+
 ## Escopo acordado
 
 - Manter uma oportunidade gratuita por conta e o acesso vitalício existente. Nenhum detalhe protegido entra em páginas públicas, metadados ou calendários anônimos.
@@ -40,7 +42,7 @@ Não foi alterada a composição do catálogo real. A ativação e os extratores
 - Radar: `0043_opportunity_discovery.sql`, aditiva. Armazena classificação, edições e etapas no próprio registro e permite a leitura de próximas etapas quando a inscrição já fechou.
 - Membros: `0008_radar_calendar.sql`, aditiva. Salvos por conta, histórico dos eventos exportados e apenas hash dos tokens privados.
 - O calendário pessoal fica **desabilitado por padrão**. A variável privada `RADAR_CALENDAR_PERSONAL_ENABLED=true` só deve ser configurada após a migração correspondente em ambiente de teste aprovado. Acesso exige os direitos vitalícios/admin/legado existentes. O acesso gratuito aos detalhes continua com uma oportunidade.
-- As migrações foram exercitadas apenas em PostgreSQL em memória (PGlite). Nenhum banco real foi migrado.
+- As migrações foram inicialmente exercitadas em PGlite e posteriormente em PostgreSQL real exclusivamente local, nos bancos isolados de homologação. Nenhum banco remoto foi migrado.
 - A assinatura ICS exige revalidação do direito de acesso a cada consulta; a rotação invalida o link anterior. O feed usa `private, no-store`, e indisponibilidade do Radar responde 503 em vez de cancelar tudo.
 - Antes de qualquer futura publicação, validar uma conta gratuita, uma vitalícia e uma revogada em ambiente de teste, edição de etapas pelo painel e sincronização real no Google/Apple/Outlook. Revisar o proxy de produção para não registrar tokens de `/meu-calendario/` nos logs; a aplicação já os omite dos logs de desenvolvimento.
 
@@ -55,12 +57,12 @@ Não foi alterada a composição do catálogo real. A ativação e os extratores
 - Regras: acesso gratuito/vitalício preservado; nenhum requisito ou URL protegida nos dados públicos; calendário sem inventar prazo; encerramento da inscrição separado de prova/resultado; token inválido/revogado bloqueado; ICS com UID estável, fuso, data sem horário, escape, linhas UTF-8 e cancelamento. Histórico do feed guarda somente ID, título e etapa, sem repetir a ficha completa a cada data.
 - Chromium/Playwright com **dados fictícios explícitos**, API de teste e servidor apenas em `127.0.0.1`: páginas em 1440 px e 375 px sem transbordamento horizontal; três etapas de olimpíada; vestibular encerrado com duas próximas etapas e sem prazo legado; filtro com estado vazio; URL antiga redirecionando no navegador para a canônica; detalhes anônimos redirecionando ao login; feed inválido retornando 404 e `private, no-store`.
 - Inspeção do HTML/RSC público não encontrou os marcadores privados da fixture. Console sem erro de aplicação; avisos de preload de CSS e um 404 intencional no teste do token inválido.
-- Os servidores temporários de teste são encerrados ao concluir a inspeção. Nenhum processo de outro projeto é interrompido.
+- O primeiro preview temporário foi substituído pelo ambiente persistente de homologação, mantido ligado para revisão. Nenhum processo de outro projeto é interrompido.
 
 ### Pendências para homologação
 
 1. Revisão visual do usuário, incluindo dispositivo físico e preferências para a densidade das etapas.
-2. Ambiente de teste com as duas migrações e contas gratuita, vitalícia e revogada; validar salvar/remover/rotacionar pela interface e a edição pelo painel.
+2. A edição completa pelo painel conectado ao serviço editorial segue pendente. Login, contas gratuita/vitalícia/revogada, salvar/remover/rotacionar já foram validados no ambiente local; consultar o relatório ampliado.
 3. Assinatura real em aplicativos externos, incluindo alteração e cancelamento de etapa. Os testes locais verificam o arquivo ICS, não o comportamento de cada provedor.
 4. Validar robots, extração, retificações e deduplicação de cada nova fonte antes de ativação; a diversificação do catálogo real ainda não foi publicada.
 5. Após a homologação, obter autorização expressa de publicação. Não houve push, deploy, migração remota ou nova fonte ativada nesta tarefa.

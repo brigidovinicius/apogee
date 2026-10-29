@@ -36,3 +36,18 @@ test("management uses session actor and returns errors without redirecting away 
  data.set("confirmDelete", "on"); await handlers.deleteRadarOpportunity({ error: "" }, data);
  assert.equal(mutations[2].method, "DELETE");
 });
+test("editorial form carries classification and stages while preserving the session actor", async () => {
+ const mutations=[];const handlers=await actions(true,mutations);const data=new FormData();
+ const discovery={primaryType:"competicoes",subtype:"olimpiada",areas:["matematica"],editions:[{id:"2026",name:"2026",stages:[{id:"exam",name:"Prova",kind:"exam",start:"2026-11-10",sourceUrl:"https://official.edu.br/edital",checkedAt:"2026-10-28T12:00:00Z"}]}]};
+ data.set("id","test-id");data.set("version","4");data.set("actor","forged");data.set("discovery",JSON.stringify(discovery));
+ await handlers.saveRadarOpportunity({error:""},data);
+ assert.deepEqual(mutations[0].input.discovery,discovery);assert.equal(mutations[0].input.actor,"apogee:real-admin");
+});
+test("editorial form rejects malformed and oversized stage JSON before calling the service", async () => {
+ const mutations=[];const handlers=await actions(true,mutations);const data=new FormData();
+ data.set("discovery","{invalid");
+ assert.deepEqual(await handlers.saveRadarOpportunity({error:""},data),{error:"Calendário inválido."});
+ data.set("discovery"," ".repeat(40001));
+ assert.deepEqual(await handlers.saveRadarOpportunity({error:""},data),{error:"Calendário muito extenso."});
+ assert.equal(mutations.length,0);
+});

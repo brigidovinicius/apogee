@@ -21,7 +21,7 @@ export default async function CalendarPage({params,searchParams}:Props) {
   const visible=items?.filter(calendar.matches).filter(i=>!area || i.discovery?.areas.includes(area)).map(opportunityCardData);
   return <div className={styles.page}><SiteHeader current="opportunities"/><main className={styles.main}>
     <div className={styles.hero}><Link href="/calendarios">← Todos os calendários</Link><h1>{calendar.name}</h1><p>{calendar.description}</p><p>As etapas de prova e resultado ajudam quem já participa. Confira a etapa de inscrição para saber quando se candidatar.</p></div>
-    <form className={styles.filters}><label>Área de interesse<select name="area" defaultValue={area??""}><option value="">Todas as áreas</option>{Object.entries(AREAS).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label><button type="submit">Filtrar</button><Link href={`/calendarios/${slug}`}>Limpar</Link></form>
+    <form className={styles.filters}><label>Área de interesse<select key={area??""} name="area" defaultValue={area??""}><option value="">Todas as áreas</option>{Object.entries(AREAS).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label><button type="submit">Filtrar</button><Link href={`/calendarios/${slug}`}>Limpar</Link></form>
     {visible ? <CalendarList items={visible} allStages/> : <p role="alert">Calendário temporariamente indisponível.</p>}
   </main><SiteFooter/></div>;
 }

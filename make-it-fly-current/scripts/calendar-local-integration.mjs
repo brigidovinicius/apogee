@@ -10,30 +10,61 @@ assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'48763');assert.equ
 const sql=postgres(url.href,{ssl:false,prepare:false,max:1});
 drizzle(sql); // Reproduce the production client's JSON serializer configuration.
 const id='radar-local-storage-regression';
-let created=false;
+const other='radar-local-storage-isolation';
+const created=[];
 try {
   assert.equal((await sql`select marker from radar_local_environment`)[0].marker,'apogee-radar-calendar-local-v1');
-  assert.equal((await sql`select id from "user" where id=${id}`).length,0,'Do not overwrite an existing account');
-  await sql`insert into "user" (id,name,email,username) values (${id},'Teste de persistência','storage-regression@radar.test','storage_regression')`;
-  created=true;
-  await sql`insert into radar_legacy_access (user_id) values (${id})`;
+  for(const user of [id,other]) {
+    assert.equal((await sql`select id from "user" where id=${user}`).length,0,'Do not overwrite an existing account');
+    await sql`insert into "user" (id,name,email,username) values (${user},'Teste de persistência',${user+'@radar.test'},${user.replaceAll('-','_')})`;
+    created.push(user);
+    await sql`insert into radar_legacy_access (user_id) values (${user})`;
+  }
   const raw=(await sql`select payload from radar_local_catalogue where id='demo-olimpiada'`)[0].payload;
   const item=opportunityLoader()('lib/opportunities/radar-client.ts').toOpportunity(raw);
-  const calendar=opportunityLoader({'@/lib/members/db':{getSql:()=>sql},'./radar-client':{listRadarOpportunities:async()=>[item]}})('lib/opportunities/personal-calendar.ts');
+  const secondItem={...item,id:'radar-isolation'};
+  let live=[item,secondItem];
+  const calendar=opportunityLoader({'@/lib/members/db':{getSql:()=>sql},'./radar-client':{listRadarOpportunities:async()=>live}})('lib/opportunities/personal-calendar.ts');
+  const {renderCalendarFeed}=opportunityLoader()('lib/opportunities/ics.ts');
   process.env.RADAR_CALENDAR_PERSONAL_ENABLED='true';process.env.STRIPE_MODE='test';
-  await calendar.saveOpportunity(id,item.id,false);
+  await Promise.all([calendar.saveOpportunity(id,item.id,false),calendar.saveOpportunity(id,item.id,false)]);
+  await calendar.saveOpportunity(other,secondItem.id,false);
   await calendar.rememberCalendarEvents(id,[item]);
   let saved=await calendar.savedOpportunities(id);
-  assert.equal(saved[0].snapshot.id,item.id);assert.equal(saved[0].history.length,3);
+  assert.equal(saved.length,1);assert.equal(saved[0].snapshot.id,item.id);assert.equal(saved[0].history.length,3);
   assert.equal(saved[0].history[0].item.discovery,undefined);
+  assert.equal(saved[0].history[0].stage.sourceUrl,undefined);
+  await calendar.saveOpportunity(id,secondItem.id,true);
+  assert.equal((await calendar.savedOpportunities(other))[0].removedAt,null,'One member cannot remove another member’s saved opportunity');
+  await assert.rejects(calendar.saveOpportunity(id,'radar-missing',false),/indisponível/);
+  await assert.rejects(calendar.saveOpportunity(id,'invalid',false),/inválida/);
   const first=await calendar.rotateCalendarToken(id);
+  const otherToken=await calendar.rotateCalendarToken(other);
   assert.equal(await calendar.calendarTokenOwner(first),id);
+  assert.equal(await calendar.calendarTokenOwner(otherToken),other);
+  assert.equal((await sql`select token_hash from radar_calendar_feed where user_id=${id}`)[0].token_hash,calendar.tokenHash(first));
   const second=await calendar.rotateCalendarToken(id);
   assert.equal(await calendar.calendarTokenOwner(first),null);
   assert.equal(await calendar.calendarTokenOwner(second),id);
+  assert.equal(await calendar.calendarTokenOwner(otherToken),other,'Rotation is scoped to one member');
+  const edition=item.discovery.editions[0];
+  const added={...item,discovery:{...item.discovery,editions:[{...edition,stages:[...edition.stages,{...edition.stages[1],id:'extra',name:'Matrícula',kind:'enrollment'}]}]}};
+  live=[added,secondItem];
+  await calendar.rememberCalendarEvents(id,live);
+  saved=await calendar.savedOpportunities(id);assert.equal(saved[0].history.length,4);
+  live=[item,secondItem];
+  assert.equal((renderCalendarFeed(saved,live).match(/STATUS:CANCELLED/g)||[]).length,1,'Removed stage is cancelled after a later export');
   await calendar.saveOpportunity(id,item.id,true);
   saved=await calendar.savedOpportunities(id);assert.ok(saved[0].removedAt);
+  assert.equal((renderCalendarFeed(saved,live).match(/STATUS:CANCELLED/g)||[]).length,4);
+  await calendar.saveOpportunity(id,item.id,false);
+  saved=await calendar.savedOpportunities(id);assert.equal(saved[0].removedAt,null);assert.equal(saved[0].history.length,4);
+  assert.equal((renderCalendarFeed(saved,live).match(/STATUS:CONFIRMED/g)||[]).length,3);
+  process.env.RADAR_CALENDAR_PERSONAL_ENABLED='false';
+  assert.equal(await calendar.calendarTokenOwner(second),null);
+  process.env.RADAR_CALENDAR_PERSONAL_ENABLED='true';
   await sql`delete from radar_legacy_access where user_id=${id}`;
   assert.equal(await calendar.calendarTokenOwner(second),null);
-  console.log('OK: shared Drizzle/Postgres client, save/read/history, removal, token rotation and entitlement revocation.');
-} finally {if(created)await sql`delete from "user" where id=${id} and email='storage-regression@radar.test'`;await sql.end();}
+  assert.equal(await calendar.calendarTokenOwner(otherToken),other);
+  console.log('OK: real shared Drizzle/Postgres client; duplicate save, two-account isolation, invalid/unavailable opportunity, compact history, added/removed/restored stages, hashed tokens, rotation, feature flag and entitlement revocation.');
+} finally {for(const user of created)await sql`delete from "user" where id=${user} and email=${user+'@radar.test'}`;await sql.end();}

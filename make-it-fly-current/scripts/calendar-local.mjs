@@ -36,7 +36,7 @@ function fixtures() {
   const stage = (id,name,kind,start,end) => ({id,name,kind,start,...(end?{end}:{}),sourceUrl:base.officialUrl,checkedAt:checked});
   return [
     {...base,id:'demo-olimpiada',title:'Olimpíada de Matemática — Demonstração local',discovery:{primaryType:'competicoes',subtype:'olimpiada',areas:['matematica'],editions:[{id:'demo',name:'Edição de teste',stages:[stage('inscricoes','Inscrições','registration',date(-7),date(7)),stage('prova','Prova','exam',date(17)),stage('resultado','Resultado','result',date(40))]}]}},
-    {...base,id:'demo-hackathon',title:'Hackathon — Demonstração local',discovery:{primaryType:'competicoes',subtype:'hackathon',areas:['tecnologia'],editions:[{id:'demo',name:'Edição de teste',stages:[stage('inscricoes','Inscrições','registration',date(-2),date(9)),stage('evento','Encontro de equipes','event',date(20))]}]}},
+    {...base,id:'demo-hackathon',title:'Hackathon — Demonstração local',deadlineAt:date(9),discovery:{primaryType:'competicoes',subtype:'hackathon',areas:['tecnologia'],editions:[{id:'demo',name:'Edição de teste',stages:[stage('inscricoes','Inscrições','registration',date(-2),date(9)),stage('evento','Encontro de equipes','event',date(20))]}]}},
     {...base,id:'demo-vestibular',title:'Vestibular — Demonstração local',categories:['formacao'],opportunityStatus:'closed',deadlineAt:null,deadlinePrecision:'not_informed',discovery:{primaryType:'formacao',subtype:'vestibular',areas:[],editions:[{id:'demo',name:'Edição de teste',stages:[stage('prova','Segunda fase','exam',date(24)+'T13:00:00-03:00',date(24)+'T18:00:00-03:00'),stage('chamada','Primeira chamada','result',date(50))]}]}},
   ];
 }
