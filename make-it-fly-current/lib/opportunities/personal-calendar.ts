@@ -24,7 +24,8 @@ export async function saveOpportunity(userId:string,id:string,remove:boolean) {
   }
   const item=(await listRadarOpportunities(true)).find(i=>i.id===id);
   if(!item)throw Error("Oportunidade indisponível");
-  await getSql()`insert into radar_saved_opportunity (user_id,opportunity_id,snapshot) values (${userId},${id},${getSql().json(item)})
+  // Drizzle configures this shared client with transparent JSON serializers.
+  await getSql()`insert into radar_saved_opportunity (user_id,opportunity_id,snapshot) values (${userId},${id},${JSON.stringify(item)}::jsonb)
     on conflict (user_id,opportunity_id) do update set snapshot=excluded.snapshot,removed_at=null`;
 }
 export async function savedOpportunities(userId:string) {
@@ -58,7 +59,7 @@ export async function rememberCalendarEvents(userId:string,live:StudentOpportuni
         const publicStage = {id: stage.id, name: stage.name, kind: stage.kind, start: stage.start, end: stage.end, checkedAt: stage.checkedAt};
         history.set(key, {key, stage: publicStage, item: {id: item.id, title: item.title}});
       }
-      await tx`update radar_saved_opportunity set feed_history=${tx.json(JSON.parse(JSON.stringify([...history.values()])))} where user_id=${userId} and opportunity_id=${String(row.opportunity_id)}`;
+      await tx`update radar_saved_opportunity set feed_history=${JSON.stringify([...history.values()])}::jsonb where user_id=${userId} and opportunity_id=${String(row.opportunity_id)}`;
     }
   });
 }

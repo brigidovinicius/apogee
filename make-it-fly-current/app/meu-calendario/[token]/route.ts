@@ -1,5 +1,6 @@
 import { calendarTokenOwner,savedOpportunities,rememberCalendarEvents } from "@/lib/opportunities/personal-calendar";
 import { listRadarOpportunities } from "@/lib/opportunities/radar-client";
+import { applicationOrigin } from "@/lib/members/mail";
 import { renderCalendarFeed } from "@/lib/opportunities/ics";
 export const dynamic="force-dynamic";
 const headers={"Cache-Control":"private, no-store","Referrer-Policy":"no-referrer","X-Robots-Tag":"noindex, nofollow"};
@@ -12,6 +13,6 @@ export async function GET(_request:Request,{params}:{params:Promise<{token:strin
     const live=await listRadarOpportunities(true);
     await rememberCalendarEvents(owner,live);
     const saved=await savedOpportunities(owner);
-    return new Response(renderCalendarFeed(saved,live),{headers:{...headers,"Content-Type":"text/calendar; charset=utf-8","Content-Disposition":'inline; filename="apogee.ics"'}});
+    return new Response(renderCalendarFeed(saved,live,Date.now(),applicationOrigin()),{headers:{...headers,"Content-Type":"text/calendar; charset=utf-8","Content-Disposition":'inline; filename="apogee.ics"'}});
   } catch { return new Response("Agenda temporariamente indisponível",{status:503,headers}); }
 }

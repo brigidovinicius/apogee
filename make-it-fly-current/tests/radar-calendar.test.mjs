@@ -78,3 +78,10 @@ test("paid authorization is required inside the save action and cannot be suppli
   const actions=opportunityLoader({"@/lib/opportunities/personal-calendar":{requireCalendarMember:async()=>{throw Error("DENIED")},saveOpportunity:async(...args)=>{saved=args}}})("app/membros/meu-calendario/actions.ts");
   await assert.rejects(actions.toggleSaved("radar-abc",false),/DENIED/);assert.equal(saved,null);
 });
+
+
+test("local ICS event links remain on the configured test origin",()=>{
+  const text=renderCalendarFeed([{snapshot:base,removedAt:null}],[base],now,"http://127.0.0.1:4381");
+  assert.match(text,/URL:http:\/\/127\.0\.0\.1:4381\/oportunidades\//);
+  assert.doesNotMatch(text,/URL:https:\/\/www\.apogee\.community/);
+});

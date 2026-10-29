@@ -10,7 +10,7 @@ function fold(line:string) {
   return [...lines,current].join("\r\n");
 }
 /** Stable per-stage UIDs, all-day dates and explicit cancellations for removed events. */
-export function renderCalendarFeed(saved:{snapshot:StudentOpportunity;removedAt:string|null;history?:CalendarFeedEntry[]}[],live:StudentOpportunity[],now=Date.now()) {
+export function renderCalendarFeed(saved:{snapshot:StudentOpportunity;removedAt:string|null;history?:CalendarFeedEntry[]}[],live:StudentOpportunity[],now=Date.now(),origin="https://www.apogee.community") {
   const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Apogee//Radar//PT-BR","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:Meu calendário Apogee"];
   for(const record of saved) {
     const current=live.find(i=>i.id===record.snapshot.id);
@@ -23,7 +23,7 @@ export function renderCalendarFeed(saved:{snapshot:StudentOpportunity;removedAt:
       const generatedAt = new Date(now).toISOString();
       const updated = record.removedAt ?? (cancelled ? generatedAt : stage.checkedAt);
       lines.push("BEGIN:VEVENT",`UID:${createHash("sha256").update(key).digest("hex")}@radar.apogee.community`,`DTSTAMP:${timestamp(generatedAt)}`,`LAST-MODIFIED:${timestamp(updated)}`,
-        dateLine("DTSTART",stage.start),`SUMMARY:${escape(item.title+" — "+stage.name)}`,`URL:https://www.apogee.community${publicOpportunityPath(item)}`,
+        dateLine("DTSTART",stage.start),`SUMMARY:${escape(item.title+" — "+stage.name)}`,`URL:${new URL(publicOpportunityPath(item), origin).href}`,
         `DESCRIPTION:${escape("Confira as condições e eventuais alterações no Radar Apogee.")}`,`STATUS:${cancelled?"CANCELLED":"CONFIRMED"}`,"TRANSP:TRANSPARENT");
       if(stage.start.length===10) {
         const end=new Date((stage.end??stage.start)+"T12:00:00Z");end.setUTCDate(end.getUTCDate()+1);
