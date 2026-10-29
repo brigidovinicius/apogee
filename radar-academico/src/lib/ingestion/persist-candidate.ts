@@ -1,8 +1,10 @@
+import { isDeepStrictEqual } from "node:util";
 import type { PoolClient } from "pg";
 import type { OfficialSource, OpportunityCandidate } from "./types";
 import { canonicalOpportunityKey } from "./revision-key";
 import { publicationIssue } from "./publication";
 import { categoriesFromEvidence } from "./categories";
+import { parseDiscovery, classifyDiscovery } from "./discovery";
 import { programmeCataloguePageCount } from "./programme-catalogue";
 
 export const candidateColumns = {
@@ -83,10 +85,15 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
     content_hash: incoming.contentHash, management_overrides: overrides,
     has_retification: incoming.hasRetification === true,
   });
+  // Preserve curated stages when existing collectors do not supply enrichment.
+  const stored = existing?.discovery as OpportunityCandidate["discovery"];
+  const enrichment = candidate.discovery ?? (stored?.areas?.length || stored?.subtype || stored?.editions?.length ? stored : classifyDiscovery(candidate.title, candidate.categories));
+  candidate.discovery = parseDiscovery(enrichment, source);
+  values.discovery = candidate.discovery;
   const fields = Object.keys(values);
   const args: unknown[] = Object.values(values);
   const now = new Date().toISOString();
-  const changed = !existing || existing.content_hash !== incoming.contentHash || options.mode === "admin" || existing.publication_issue !== issue;
+  const changed = !existing || existing.content_hash !== incoming.contentHash || options.mode === "admin" || existing.publication_issue !== issue || !isDeepStrictEqual(existing.discovery, values.discovery);
   let id: string;
   if (existing) {
     args.push(now, options.mode, existing.id);

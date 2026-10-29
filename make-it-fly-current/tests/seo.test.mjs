@@ -1,5 +1,5 @@
-import { interfaceText } from "../lib/presentation-text.mjs";
 import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
+import { interfaceText } from "../lib/presentation-text.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -109,10 +109,12 @@ test("API responses are noindex while robots and sitemap remain crawlable", asyn
   const robots = (await load("app/robots.ts")).default();
   const publishedAt = new Date("2026-10-11T12:00:00.000Z");
   const sitemap = await (await load("app/sitemap.ts", {
+    "@/lib/opportunities/radar-client": { listRadarOpportunities: async()=>[] },
+    "@/lib/opportunities/discovery": opportunityLoader()("lib/opportunities/discovery.ts"),
     "@/lib/blog/data": { listPublicPostUrls: async () => [{ slug: "ideias-apogee", updatedAt: publishedAt }] },
   })).default();
   assert.equal(robots.rules.allow, "/");
   assert.equal(robots.sitemap, "https://www.apogee.community/sitemap.xml");
-  assert.deepEqual(sitemap.map(entry => new URL(entry.url).pathname), ["/", "/oportunidades", "/galeria", "/loja", "/makeitfly", "/blog", "/blog/ideias-apogee"]);
+  assert.deepEqual(sitemap.map(entry => new URL(entry.url).pathname), ["/", "/oportunidades", "/galeria", "/loja", "/makeitfly", "/blog", "/calendarios/olimpiadas-cientificas", "/calendarios/vestibulares", "/calendarios/eventos", "/calendarios/hackathons", "/calendarios", "/blog/ideias-apogee"]);
   assert.equal(sitemap.at(-1).lastModified, publishedAt);
 });

@@ -56,6 +56,7 @@ export default async function OpportunitiesPage({ searchParams }: {
           <ShareButton title="Radar de oportunidades | Apogee" path="/oportunidades" />
         </section>
 
+        <p><Link href="/calendarios">Explorar calendários de oportunidades →</Link></p>
         <p className={styles.memberCta}><Link href={memberHref}>Entre na comunidade Apogee para explorar o Radar na área de membros →</Link></p>
         {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
       </main>

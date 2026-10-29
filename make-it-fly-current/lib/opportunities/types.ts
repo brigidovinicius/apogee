@@ -1,3 +1,4 @@
+import type { Discovery } from "./discovery";
 import {
   BRAZILIAN_STATE_CODES,
   SEARCH_CITIES_BY_STATE,
@@ -19,7 +20,8 @@ export const OPPORTUNITY_CATEGORIES = [
 
 /** One editorial category leads the card; other verified categories remain searchable. */
 export const OPPORTUNITY_CATEGORY_PRIORITY = ["eventos", "competicoes", "pesquisa", "carreira", "bolsas", "intercambios", "formacao"] as const;
-export function primaryOpportunityCategory(item: { categories?: readonly string[] }) {
+export function primaryOpportunityCategory(item: { categories?: readonly string[]; discovery?: Discovery }) {
+  if (item.discovery?.primaryType) return item.discovery.primaryType;
   if (item.categories?.includes("competicoes")) return "competicoes";
   return OPPORTUNITY_CATEGORY_PRIORITY.find(category => item.categories?.includes(category)) ?? null;
 }
@@ -31,6 +33,8 @@ export const isOpportunityCategory = (value: unknown): value is OpportunityCateg
   typeof value === "string" && OPPORTUNITY_CATEGORIES.some((category) => category.id === value);
 
 /** Campos que podem compor a prévia pública do Radar. */
+export const AREAS = { matematica:'Matemática', fisica:'Física', quimica:'Química', biologia:'Biologia', astronomia:'Astronomia e espaço', clima:'Terra e clima', ambiente:'Meio ambiente', saude:'Saúde', neurociencia:'Neurociência', tecnologia:'Tecnologia', ia:'Inteligência artificial', robotica:'Robótica e engenharia', dados:'Dados', humanas:'Humanas e história', geografia:'Geografia', linguas:'Línguas', educacao:'Educação', artes:'Artes e design', comunicacao:'Comunicação', negocios:'Negócios', direito:'Direito e políticas públicas', 'relacoes-internacionais':'Relações internacionais', esportes:'Esportes' };
+
 export type OpportunityPreview = {
   id: string;
   title: string;
@@ -48,6 +52,7 @@ export type OpportunityFinancials = {
 
 /** Dados públicos do catálogo; controles administrativos permanecem no servidor. */
 export type StudentOpportunity = OpportunityPreview & {
+  discovery?: Discovery;
   /** Derived conservatively by the server from the verified source fields. */
   participationFormat?: "online" | "presencial" | "hibrido" | null;
   explicitlyUnpaid?: boolean;
@@ -74,7 +79,7 @@ export type StudentOpportunity = OpportunityPreview & {
   officialUrl: string;
   verifiedAt: string;
   verificationTimestamp?: string;
-  opportunityStatus?: "open" | "upcoming";
+  opportunityStatus?: "open" | "upcoming" | "closed" | "result_published";
   verificationMethod?: "automatic" | "admin";
 };
 
@@ -91,6 +96,7 @@ export function mergeOpportunities(
 }
 
 export type OpportunityFilters = {
+  area?: keyof typeof AREAS | null;
   category?: OpportunityCategory | "vestibular" | null;
   kind: OpportunityKind | null;
   level: EducationLevel | null;
@@ -133,6 +139,7 @@ export function dateInBrazil(now = new Date()) {
 }
 
 export function isOpportunityOpen(opportunity: StudentOpportunity, today = dateInBrazil(), now = Date.now()) {
+  if (opportunity.opportunityStatus && !["open", "upcoming"].includes(opportunity.opportunityStatus)) return false;
   if (opportunity.deadlineAt && Date.parse(opportunity.deadlineAt) < now) return false;
   if (opportunity.deadlineUnknown && opportunity.eventStartsAt) {
     const start = opportunity.eventStartsAt;
@@ -217,6 +224,7 @@ export function opportunityFiltersFromSearchParams(searchParams: URLSearchParams
     stateCode: location.status === "valid" ? location.location.stateCode : null,
     cityName: location.status === "valid" ? location.location.cityName : null,
     ...(query ? { query } : {}),
+    ...(Object.hasOwn(AREAS, searchParams.get("area") ?? "") ? { area: searchParams.get("area") as keyof typeof AREAS } : {}),
     ...(["online", "presencial", "hibrido"].includes(searchParams.get("formato") ?? "") ? { format: searchParams.get("formato") as OpportunityFilters["format"] } : {}),
     ...(searchParams.get("abrangencia") === "nacional" ? { scope: "nacional" as const } : {}),
     ...(["remunerado", "nao-remunerado", "premiacao", "gratuito"].includes(searchParams.get("beneficio") ?? "") ? { benefit: searchParams.get("beneficio") as OpportunityFilters["benefit"] } : {}),
@@ -229,6 +237,7 @@ export function setOpportunityFilterSearchParams(
   filters: OpportunityFilters,
 ) {
   const values = {
+    area: filters.area,
     categoria: filters.category,
     modalidade: filters.kind,
     formacao: filters.level,
@@ -287,6 +296,7 @@ export function filterOpportunities(
       if (!includeAllAdmissions && isEntranceExamOpportunity(opportunity)) return false;
       return !filters.category || opportunity.categories?.includes(filters.category);
     })
+    .filter((opportunity) => !filters.area || opportunity.discovery?.areas.includes(filters.area))
     .filter((opportunity) => filters.kind === null || opportunity.kind === filters.kind)
     .filter((opportunity) => filters.level === null || opportunity.level === filters.level)
     .filter((opportunity) => filters.stateCode === null || opportunity.stateCode === filters.stateCode || opportunity.nationallyEligible === true)
@@ -304,6 +314,6 @@ export function filterOpportunities(
 }
 
 export function countActiveOpportunityFilters(filters: OpportunityFilters) {
-  return Number(Boolean(filters.category)) + Number(filters.kind !== null) + Number(filters.level !== null) +
+  return Number(Boolean(filters.area)) + Number(Boolean(filters.category)) + Number(filters.kind !== null) + Number(filters.level !== null) +
     Number(filters.stateCode !== null) + Number(filters.cityName !== null) + Number(Boolean(filters.query?.trim())) + Number(Boolean(filters.format)) + Number(Boolean(filters.scope)) + Number(Boolean(filters.benefit)) + Number(Boolean(filters.deadlineWindow));
 }

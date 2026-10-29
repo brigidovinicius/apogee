@@ -57,6 +57,13 @@
       "when": 1792546800000,
       "tag": "0007_radar_free_opportunity",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793232000000,
+      "tag": "0008_radar_calendar",
+      "breakpoints": true
     }
   ]
 }

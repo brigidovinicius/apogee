@@ -6,6 +6,8 @@ import {
   customType,
   index,
   integer,
+  jsonb,
+  primaryKey,
   pgTable,
   text,
   timestamp,
@@ -309,3 +311,17 @@ export const storeDropSignup = pgTable("store_drop_signup", {
   check("store_drop_signup_phone_check", sql`${table.phone} ~ '^\\+?[0-9]{10,15}$'`),
   check("store_drop_signup_email_check", sql`${table.email} = lower(trim(${table.email})) and length(${table.email}) between 3 and 254`),
 ]);
+
+export const radarSavedOpportunity = pgTable("radar_saved_opportunity", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  opportunityId: text("opportunity_id").notNull(),
+  snapshot: jsonb("snapshot").notNull(),
+  feedHistory: jsonb("feed_history").notNull().default([]),
+  savedAt: timestamp("saved_at", { withTimezone: true }).notNull().defaultNow(),
+  removedAt: timestamp("removed_at", { withTimezone: true }),
+}, table => [primaryKey({columns:[table.userId,table.opportunityId]}),check("radar_saved_opportunity_opportunity_id_check",sql`${table.opportunityId} ~ '^[A-Za-z0-9_-]{1,200}$'`)]);
+export const radarCalendarFeed = pgTable("radar_calendar_feed", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [check("radar_calendar_feed_token_hash_check",sql`${table.tokenHash} ~ '^[a-f0-9]{64}$'`)]);

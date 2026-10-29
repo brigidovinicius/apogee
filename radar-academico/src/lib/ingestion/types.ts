@@ -92,6 +92,7 @@ export interface OpportunityCandidate {
   evidenceJson: Record<string, FieldEvidence>;
   extractionMethod: ExtractionMode;
   contentHash: string;
+  discovery?: import("./discovery").Discovery;
   requiresManualReview?: boolean;
   hasRetification?: boolean;
   sourceConflict?: boolean;

@@ -1,0 +1,29 @@
+.page { min-height:100vh; background:#f8fafb; color:#10263b; }
+.main { width:min(100% - 40px,1080px); margin:auto; padding:72px 0 80px; }
+.hero { max-width:740px; margin:0 0 40px; }
+.hero h1 { font-size:clamp(2.2rem,6vw,4rem); line-height:1.08; letter-spacing:-.04em; margin:16px 0; }
+.hero p { color:#4d6071; line-height:1.7; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; }
+.tile { display:block; padding:28px; background:linear-gradient(140deg,#e9f0fa,#f5f8ee); border:1px solid #d9e2eb; border-radius:24px; color:inherit; text-decoration:none; }
+.tile:nth-child(2n) { background:linear-gradient(140deg,#f0ecfb,#eaf4f2); }
+.tile h2 { font-size:1.4rem; margin:12px 0; }
+.tile p { line-height:1.6; }
+.filters { display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin:24px 0; }
+.filters label { display:grid; gap:6px; }
+.filters select,.filters button,.action { min-height:44px; padding:10px 16px; border:1px solid #c4ced8; border-radius:14px; background:white; color:#10263b; font:inherit; }
+.action { display:inline-block; text-decoration:none; margin:8px 8px 8px 0; cursor:pointer; }
+.month { margin-top:36px; }
+.month h2 { font-size:1.2rem; border-left:4px solid #a4b9d8; padding-left:12px; }
+.list { list-style:none; padding:0; }
+.row { display:flex; align-items:start; justify-content:space-between; gap:16px; padding:24px; margin:12px 0; background:white; border:1px solid #dfe5eb; border-radius:20px; }
+.row h3 { margin:8px 0; font-size:1.12rem; }
+.row a { color:inherit; text-decoration-thickness:1px; text-underline-offset:4px; }
+.row p { line-height:1.6; margin:8px 0; }
+.meta,.row small { color:#516476; font-size:.85rem; }
+.label { white-space:nowrap; padding:6px 10px; border-radius:999px; background:#edf2f8; font-size:.8rem; }
+.empty { padding:28px; border:1px dashed #a4b4c5; border-radius:20px; line-height:1.7; }
+.page :focus-visible { outline:3px solid #285eb0; outline-offset:4px; }
+@media(max-width:600px) { .main {width:calc(100% - 32px);padding-top:48px} .row {flex-direction:column;padding:20px}.grid{grid-template-columns:1fr} }
+
+
+.month h2::first-letter { text-transform:uppercase; }

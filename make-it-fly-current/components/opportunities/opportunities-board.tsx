@@ -1,12 +1,12 @@
 "use client";
 
+import { AREAS, displayOpportunityTitle, publicOpportunityPath } from "@/lib/opportunities/discovery";
 import { interfaceText } from "@/lib/presentation-text.mjs";
 import { OpportunityBenefits, OpportunityCosts } from "./opportunity-financials";
 import { AdmissionProcessCard } from "./admission-process-card";
 import { groupAdmissionProcesses } from "@/lib/opportunities/admission-processes";
 import { OpportunityCountdown } from "./opportunity-countdown";
 import { OpportunityAlert } from "./opportunity-alert";
-import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 import { LiveCatalogueRefresh } from "./live-refresh";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -220,6 +220,11 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
         </div>
 
         <div className={styles.filterFields}>
+          <div className={styles.locationField}><label htmlFor="opportunity-area">Área de interesse</label>
+            <select id="opportunity-area" value={filters.area ?? ""} onChange={event => updateFilters({ ...filters, area: event.target.value as OpportunityFilters["area"] || null })}>
+              <option value="">Todas as áreas</option>{Object.entries(AREAS).map(([value,label]) => <option key={value} value={value}>{label}</option>)}
+            </select><span className={styles.fieldHint}>Apenas áreas identificadas na fonte.</span>
+          </div>
           <div className={styles.locationField}>
             <label htmlFor="opportunity-format">Formato confirmado</label>
             <select id="opportunity-format" value={filters.format ?? ""} onChange={event => updateFilters({ ...filters, format: event.target.value as OpportunityFilters["format"] || null })}>
@@ -363,27 +368,24 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
   );
 }
 
-export function OpportunityCard({ opportunity, management = false, detailed = management }: { opportunity: StudentOpportunity; management?: boolean; detailed?: boolean }) {
+export function OpportunityCard({ opportunity, management = false, detailed = management, detailHref }: { opportunity: StudentOpportunity; management?: boolean; detailed?: boolean; detailHref?: string }) {
   return (
     <article className={styles.card}>
       <div className={styles.cardTopline}>
         <span className={styles.kind}>{OPPORTUNITY_CATEGORIES.find(category => category.id === primaryOpportunityCategory(opportunity))?.label ?? opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
         <span>{opportunity.level}</span>
       </div>
-      {opportunity.categories?.length ? <p className={styles.cardCategories}>
-        {opportunity.kind}{OPPORTUNITY_CATEGORIES.filter(({ id }) => id !== primaryOpportunityCategory(opportunity) && opportunity.categories?.includes(id)).map(({ label }) => ` · ${label}`).join("")}
-      </p> : null}
       <div className={styles.cardMain}>
         <p className={styles.organization} title={interfaceText(opportunity.organization)}>{interfaceText(opportunity.organization)}</p>
-        <h3>{interfaceText(opportunity.title)}</h3>
+        <h3>{interfaceText(displayOpportunityTitle(opportunity.title))}</h3>
         <OpportunityBenefits opportunity={opportunity} />
-        <p className={styles.summary}>{interfaceText(opportunity.summary)}</p>
+        {detailed && <p className={styles.summary}>{interfaceText(opportunity.summary)}</p>}
       </div>
       <dl className={styles.details}>
-        <div>
+        {!/^(?:não informado|não informada)/iu.test(opportunity.location) && <div>
           <dt>Localização</dt>
           <dd className={styles.locationValue}><MapPin size={15} aria-hidden />{interfaceText(opportunity.location)}</dd>
-        </div>
+        </div>}
         {opportunity.eventStartsAt && Number.isFinite(Date.parse(opportunity.eventStartsAt)) ? <div>
           <dt>Realização</dt>
           <dd><time dateTime={opportunity.eventStartsAt}>{formatDate(opportunity.eventStartsAt)}</time></dd>
@@ -404,7 +406,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
         <div>
           <span>Janela de inscrição</span>
           <strong>{interfaceText(opportunity.deadlineLabel)}</strong>
-          {opportunity.deadline && !opportunity.deadlineAt ? <small>Horário de encerramento não informado.</small> : null}
+          {detailed && opportunity.deadline && !opportunity.deadlineAt ? <small>Horário de encerramento não informado.</small> : null}
         </div>
       </div>
       <OpportunityCountdown opportunity={opportunity} />
@@ -412,12 +414,12 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
       <div className={styles.cardFooter}>
         <span>{opportunity.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={opportunity.verificationTimestamp ?? opportunity.verifiedAt} title="Horário de Brasília">{formatDate(opportunity.verificationTimestamp ?? opportunity.verifiedAt)}</time></span>
         <Link
-          href={detailed ? opportunity.officialUrl : opportunityDetailPath(opportunity.id)}
+          href={detailed ? opportunity.officialUrl : detailHref ?? publicOpportunityPath(opportunity)}
           prefetch={false}
           className={styles.externalLink}
           target={detailed ? "_blank" : undefined}
           rel={detailed ? "noopener noreferrer" : undefined}
-          aria-label={`Ver ${detailed ? "página oficial" : "detalhes"} de ${interfaceText(opportunity.title)}`}
+          aria-label={`Ver ${detailed ? "página oficial" : "detalhes"} de ${interfaceText(displayOpportunityTitle(opportunity.title))}`}
         >
           {detailed ? "Ver página oficial e inscrição" : "Ver detalhes"} <ArrowUpRight size={16} aria-hidden />
         </Link>

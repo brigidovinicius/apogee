@@ -1,3 +1,4 @@
+import { readDiscovery, stageEnd } from "./discovery";
 import "server-only";
 import {
   type EducationLevel,
@@ -115,12 +116,15 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
   const deadline = deadlineAt ? dateOnly(deadlineAt, deadlinePrecision) : null;
   const eventStartsAt = stringValue(value.eventStartsAt);
   const deadlineUnknown = deadlinePrecision === "not_informed";
-  if (deadlineUnknown && (deadlineAt || !categories.includes("eventos") || value.opportunityStatus !== "open" || !eventStartsAt || !Number.isFinite(Date.parse(eventStartsAt)))) return null;
-  if (deadlinePrecision !== "continuous_flow" && !deadlineUnknown && !deadline) return null;
+  const discovery = readDiscovery(value.discovery);
+  const hasCalendarStages = ["open", "upcoming", "closed", "result_published"].includes(String(value.opportunityStatus)) && discovery.editions.some(edition => edition.stages.some(stage => stageEnd(stage) >= Date.now()));
+  if (deadlineUnknown && !hasCalendarStages && (deadlineAt || !categories.includes("eventos") || !["open","closed","result_published"].includes(String(value.opportunityStatus)) || !eventStartsAt || !Number.isFinite(Date.parse(eventStartsAt)))) return null;
+  if (deadlinePrecision !== "continuous_flow" && !deadlineUnknown && !deadline && !hasCalendarStages) return null;
 
   const editorialNature = editorialNatureFromRadar(value);
   return {
     id: `radar-${id}`,
+    discovery,
     admissionProcess: isCourse && isRecord(value.admissionProcess) &&
       stringValue(value.admissionProcess.id) && stringValue(value.admissionProcess.title)
       ? { id: stringValue(value.admissionProcess.id)!, title: stringValue(value.admissionProcess.title)! } : null,
@@ -143,8 +147,8 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     nationallyEligible: nationallyEligible && normalizedLocation.location.stateCode === null,
     eligibility: normalizePublicText(stringValue(value.requirementsText) ?? "") || "Consulte o edital oficial para os critérios de elegibilidade.",
     benefit: stringValue(value.amountText) ?? "Consulte o edital oficial para o apoio previsto.",
-    summary: value.opportunityStatus === "upcoming" ? "Inscrições futuras confirmadas na fonte oficial." : "Oportunidade com inscrições abertas na fonte oficial.",
-    opportunityStatus: value.opportunityStatus === "upcoming" ? "upcoming" : "open",
+    summary: ["closed", "result_published"].includes(String(value.opportunityStatus)) ? "Inscrições encerradas. Acompanhe as próximas etapas confirmadas." : value.opportunityStatus === "upcoming" ? "Inscrições futuras confirmadas na fonte oficial." : "Oportunidade com inscrições abertas na fonte oficial.",
+    opportunityStatus: ["closed", "result_published", "upcoming"].includes(String(value.opportunityStatus)) ? value.opportunityStatus as StudentOpportunity["opportunityStatus"] : "open",
     verificationMethod: value.verificationMethod === "admin" ? "admin" : "automatic",
     deadline,
     deadlineAt: deadlinePrecision === "exact_datetime" && deadlineAt ? new Date(deadlineAt).toISOString() : null,
@@ -162,11 +166,13 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
  * Reads the separate Radar service only from the Apogee server. No Radar URL
  * or credentials are exposed to browsers. Failures remain explicit.
  */
-export async function listRadarOpportunities(): Promise<StudentOpportunity[]> {
+export async function listRadarOpportunities(calendar = false): Promise<StudentOpportunity[]> {
   if (!radarApiUrl || !radarApiToken) throw new Error("Catálogo indisponível");
 
   try {
-    const response = await fetch(radarApiUrl, {
+    const url = new URL(radarApiUrl);
+    if (calendar) url.searchParams.set("view", "calendar");
+    const response = await fetch(url.toString(), {
       cache: "no-store",
       headers: { Accept: "application/json", Authorization: `Bearer ${radarApiToken}` },
       signal: AbortSignal.timeout(2_000),

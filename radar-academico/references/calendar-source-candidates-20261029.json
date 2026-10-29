@@ -1,0 +1,60 @@
+{
+  "checkedOn": "2026-10-29",
+  "status": "public_evidence_only_no_activation",
+  "note": "Consulta das páginas públicas; robots, coletor e retificações ainda precisam de validação. Nenhum cadastro ou data foi publicado.",
+  "entries": [
+    {
+      "name": "OBMEP",
+      "url": "https://www.obmep.org.br/calendario.htm",
+      "subtype": "olimpiada",
+      "areas": [
+        "matematica"
+      ],
+      "edition": "2026",
+      "observation": "Inscrições encerradas; divulgação de premiados em 15/12/2026. Usar como acompanhamento, não como candidatura aberta.",
+      "nextChecks": [
+        "robots e fetch protegido",
+        "parser por linha do ano, sem misturar calendário histórico",
+        "revisão de retificações e regulamento"
+      ]
+    },
+    {
+      "name": "Olimpíada Brasileira de Informática",
+      "url": "https://olimpiada.ic.unicamp.br/calendario/datas_importantes",
+      "subtype": "olimpiada",
+      "areas": [
+        "tecnologia"
+      ],
+      "edition": "2026",
+      "observation": "Datas por modalidade; inscrição da escola é diferente da inscrição de competidores. Não condensar todos os prazos em uma única data.",
+      "nextChecks": [
+        "robots e fetch protegido",
+        "edição, modalidade e nível em etapas distintas",
+        "conferir elegibilidade no regulamento"
+      ]
+    },
+    {
+      "name": "Comvest Unicamp",
+      "url": "https://www.comvest.unicamp.br/ingresso-2027/vestibular-2027/",
+      "subtype": "vestibular",
+      "areas": [],
+      "edition": "2027",
+      "observation": "Portal oficial acessível. Vestibular e Enem-Unicamp são processos distintos; preservar uma identidade por processo, sem multiplicar por curso.",
+      "nextChecks": [
+        "robots e fetch protegido",
+        "calendário de inscrição, provas, chamadas e matrícula",
+        "deduplicação com processos já existentes"
+      ]
+    },
+    {
+      "name": "Fuvest",
+      "url": "https://www.fuvest.br/vestibular-da-usp/",
+      "subtype": "vestibular",
+      "areas": [],
+      "observation": "HTTP 403 na consulta desta tarefa. Sem datas importadas e sem contornar o bloqueio.",
+      "nextChecks": [
+        "verificar disponibilidade oficial posteriormente"
+      ]
+    }
+  ]
+}

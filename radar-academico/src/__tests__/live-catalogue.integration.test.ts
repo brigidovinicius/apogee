@@ -22,7 +22,7 @@ import { subscribeToOpportunity, updateAlertSubscription, queueOpportunityChange
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { recheckKnownOpportunities } from "@/lib/ingestion/recheck";
 import { saveReviewItems } from "@/lib/ingestion/save-review-item";
-import { listLiveCatalogue } from "@/lib/db/live-catalogue";
+import { listLiveCatalogue, listCalendarCatalogue } from "@/lib/db/live-catalogue";
 import { manageCatalogue } from "@/lib/official-sources/catalogue-management";
 import { claimDueOfficialSources, completeScheduledSource } from "@/lib/ingestion/official-source-registry";
 import { claimDueDiscoveryTargets, completeDiscoveryTarget } from "@/lib/discovery/watchlist";
@@ -679,4 +679,26 @@ it("keeps CPS cultural and virtual selections distinct on the same official inde
  await state.db!.query('update opportunities set deleted_at=now() where id=$1',[virtual.id]);
  expect(await ingest(sources[1])).toMatchObject({created:0,published:0});
  expect((await listLiveCatalogue()).map(x=>x.title)).toEqual(['Intercâmbio Cultural CPS']);
+});
+
+it("keeps audited stages after registration closes, preserves them across crawls and hides removed/conflicting records", async () => {
+ const discovery = { primaryType:"competicoes", subtype:"olimpiada", areas:["matematica"], editions:[{id:"2099",name:"2099",stages:[{id:"exam",name:"Prova",kind:"exam" as const,start:"2099-11-01",sourceUrl:evidence.source_url,checkedAt:"2026-10-28T12:00:00Z"}]}] };
+ await save(candidate({discovery}));
+ const first=(await listLiveCatalogue(true))[0];
+ await save(candidate({deadlineAt:"2000-01-01",opportunityStatus:"closed",contentHash:"closed"}));
+ expect(await listLiveCatalogue()).toHaveLength(0);
+ expect(await listCalendarCatalogue()).toHaveLength(1);
+ const current=(await listLiveCatalogue(true))[0];
+ expect(current.discovery).toEqual(discovery);
+ await expect(manageCatalogue("PATCH",form(current,{discovery:{...discovery,areas:["invented"]}}))).rejects.toThrow();
+ await state.db!.query("update opportunities set source_conflict=true where id=$1",[first.id]);
+ expect(await listCalendarCatalogue()).toHaveLength(0);
+ await state.db!.query("update opportunities set source_conflict=false,deleted_at=now() where id=$1",[first.id]);
+ expect(await listCalendarCatalogue()).toHaveLength(0);
+});
+it("rejects unaudited or impossible calendar dates before persistence", async () => {
+ for(const patch of [{start:"2099-02-30"},{sourceUrl:"https://untrusted.test"},{checkedAt:"2099-01-01T00:00:00Z"},{start:"2099-01-01T12:00:00"}]) {
+  await expect(save(candidate({ discovery:{areas:[],editions:[{id:"x",name:"x",stages:[{id:"s",name:"Etapa",kind:"exam",start:"2099-11-01",sourceUrl:evidence.source_url,checkedAt:"2026-10-28T12:00:00Z",...patch}]}]} }))).rejects.toThrow();
+ }
+ expect(await listLiveCatalogue()).toHaveLength(0);
 });

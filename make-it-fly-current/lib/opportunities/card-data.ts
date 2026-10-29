@@ -5,6 +5,7 @@ import type { StudentOpportunity } from "./types";
  */
 export function opportunityCardData(item: StudentOpportunity): StudentOpportunity {
   return {
+    discovery: item.discovery ? { ...item.discovery, editions: item.discovery.editions.map(e => ({ ...e, stages: e.stages.map(s => ({ id: s.id, name: s.name, kind: s.kind, start: s.start, end: s.end, checkedAt: s.checkedAt })) })) } : undefined,
     id: item.id, title: item.title, organization: item.organization, kind: item.kind, level: item.level,
     categories: item.categories, participationFormat: item.participationFormat, explicitlyUnpaid: item.explicitlyUnpaid,
     entranceExam: item.entranceExam, editorialNature: item.editorialNature, editorialFocus: item.editorialFocus,

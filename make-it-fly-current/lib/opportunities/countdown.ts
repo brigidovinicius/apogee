@@ -6,7 +6,7 @@ const brazilDay = new Intl.DateTimeFormat("en-CA", {
 });
 function dayNumber(date: string) { return Date.parse(`${date}T12:00:00Z`) / 86_400_000; }
 
-/** Date-only sources count calendar days; only confirmed timestamps count seconds. */
+/** Date-only sources count calendar days; confirmed timestamps display the verified local time. */
 export function opportunityCountdown(opportunity: Pick<StudentOpportunity, "categories" | "deadline" | "deadlineAt" | "eventStartsAt">, now: number | null): Countdown {
   const event = opportunity.categories?.includes("eventos") === true;
   const target = event ? opportunity.eventStartsAt : opportunity.deadlineAt ?? opportunity.deadline;
@@ -27,9 +27,12 @@ export function opportunityCountdown(opportunity: Pick<StudentOpportunity, "cate
       : event ? "Data de início já passou" : "Inscrições encerradas";
     return { label, value, tone: days < 0 ? null : days <= 7 ? "urgent" : "safe", target };
   }
-  const seconds = Math.max(0, Math.ceil((Date.parse(target) - now) / 1000));
-  if (!seconds) return { label, value: event ? "Evento iniciado" : "Inscrições encerradas", tone: null, target };
-  const days = Math.floor(seconds / 86400);
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return { label, value: `${days > 0 ? `${days}d ` : ""}${pad(Math.floor(seconds % 86400 / 3600))}h ${pad(Math.floor(seconds % 3600 / 60))}min ${pad(seconds % 60)}s`, tone: Date.parse(target) - now <= 7 * 86_400_000 ? "urgent" : "safe", target };
+  const remaining = Date.parse(target) - now;
+  if (remaining <= 0) return { label, value: event ? "Evento iniciado" : "Inscrições encerradas", tone: null, target };
+  const dateLabel = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date(target));
+  const todayLabel = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date(now));
+  const days = Math.round(dayNumber(dateLabel)-dayNumber(todayLabel));
+  const time = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }).format(new Date(target));
+  const value = days > 1 ? `Faltam ${days} dias` : days === 1 ? `${event ? "Começa" : "Encerra"} amanhã às ${time}` : `${event ? "Começa" : "Encerra"} hoje às ${time}`;
+  return { label, value, tone: remaining <= 7 * 86_400_000 ? "urgent" : "safe", target };
 }
