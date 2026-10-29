@@ -4,7 +4,7 @@
 
 Implementada a conexão direta do calendário pessoal com a API Google Calendar. A conexão é opcional e separada do login Better Auth. Nenhuma alteração de produção, deploy, push, mudança do cliente OAuth de produção ou escrita real em agendas Google foi feita nesta rodada.
 
-**Configuração Google concluída após autorização explícita; consentimento da conta e sincronização real ainda pendentes.** O navegador confirmou o projeto `apogee-oauth-local`, com clientes distintos “Apogee Local” e “Apogee Produção”. O cliente local termina em `earocvt248dibbrmp00cmfamh2qcs6qa.apps.googleusercontent.com`. Após autorização explícita, a API Calendar foi ativada e o retorno do Agenda em 127.0.0.1:4381 foi acrescentado somente a esse cliente, preservando o retorno de login antigo. O cliente “Apogee Produção” não foi editado. A chave original foi localizada em configuração privada anterior do Apogee, conferida pelo ID local e sufixo mascarado do console, e copiada somente para o arquivo privado do harness. Nenhuma chave nova foi criada.
+**Configuração Google concluída após autorização explícita; conexão autorizada pelo usuário; consentimento no aviso de app em teste e sincronização real ainda pendentes.** O navegador confirmou o projeto `apogee-oauth-local`, com clientes distintos “Apogee Local” e “Apogee Produção”. O cliente local termina em `earocvt248dibbrmp00cmfamh2qcs6qa.apps.googleusercontent.com`. Após autorização explícita, a API Calendar foi ativada e o retorno do Agenda em 127.0.0.1:4381 foi acrescentado somente a esse cliente, preservando o retorno de login antigo. O cliente “Apogee Produção” não foi editado. A chave original foi localizada em configuração privada anterior do Apogee, conferida pelo ID local e sufixo mascarado do console, e copiada somente para o arquivo privado do harness. Nenhuma chave nova foi criada.
 
 ## Comportamento entregue
 
@@ -40,7 +40,7 @@ O harness local chama esse endpoint a cada minuto, somente quando configurado. *
 4. Importar o arquivo usando a fila:
    `python3 /Users/viniciusbrigido/.codex/npm-queue/npm-queue.py --command node scripts/google-calendar-local-configure.mjs /caminho/privado/cliente.json`.
    O script aceita exclusivamente o ID local verificado, grava configuração 0600 em `.local/radar-calendar/google-calendar.json` e preserva a chave de criptografia entre execuções. O arquivo fica fora do Git.
-5. Preview reiniciado com a conexão habilitada; conta fictícia vitalícia autenticada no Chrome. A revisão automática bloqueou a abertura do OAuth por exigir consentimento específico para a conta Google, separado da autorização de configuração. Solicitada autorização para conectar a conta Google do usuário à conta fictícia e usar somente a agenda “Apogee — TESTE LOCAL”. Conceder somente a permissão de agendas criadas pelo Apogee. Se houver exigência de público de testes/consentimento, configurar somente após autorização.
+5. Preview reiniciado com a conexão habilitada; conta fictícia vitalícia autenticada no Chrome. O usuário autorizou explicitamente conectar a conta Google à conta fictícia e testar apenas a agenda “Apogee — TESTE LOCAL”. O fluxo chegou ao aviso do Google “O Google não verificou este app”. A revisão automática bloqueou o botão Continuar por exigir confirmação específica desse aviso; a confirmação foi solicitada e permanece pendente. Conceder somente a permissão de agendas criadas pelo Apogee. Se houver exigência de público de testes/consentimento, configurar somente após autorização.
 6. Confirmar no Google Agenda real criação, atualização e cancelamento dos eventos fictícios, preservando os calendários pessoais.
 
 O harness recusa credenciais do cliente de produção. O login Google segue desativado neste preview; a conexão do Agenda usa seu próprio par de variáveis.
@@ -55,3 +55,10 @@ O harness recusa credenciais do cliente de produção. O login Google segue desa
 - A autenticação Google real e a sincronização real são pendentes, não aprovadas por simulação.
 
 - Smoke HTTP do preview: job sem Bearer retorna 401; callback anônimo retorna 303 para a mensagem de acesso, sem códigos na URL de destino e com Cache-Control no-store.
+
+## Preparação da validação real
+
+- Conta local fictícia `local_vitalicio` autenticada e conta Google autorizada selecionada.
+- Conector Calendar confirmou a mesma identidade Google; será usado apenas para leitura independente dos eventos criados pelo produto.
+- Oportunidade local fictícia `radar-demo-google-sync-20261029` preparada: prova em 03/11/2026, 14h–15h de Brasília, e resultado em 05/11/2026 (dia inteiro). Ainda não salva pelo membro nem enviada ao Google.
+- Nenhuma agenda ou evento Google criado enquanto o aviso aguarda confirmação.
