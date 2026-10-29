@@ -160,9 +160,10 @@ export function getOpportunityFilterOptions(
   opportunities: readonly StudentOpportunity[],
   today = dateInBrazil(),
   now = Date.now(),
+  includeClosed = false,
 ): OpportunityFilterOptions {
   const openOpportunities = opportunities.filter((opportunity) =>
-    isOpportunityOpen(opportunity, today, now),
+    includeClosed || isOpportunityOpen(opportunity, today, now),
   );
   const hasNational = openOpportunities.some((opportunity) => opportunity.nationallyEligible === true);
 
@@ -286,11 +287,12 @@ export function filterOpportunities(
   preserveOrder = false,
   includeAllAdmissions = false,
   now = Date.now(),
+  includeClosed = false,
 ) {
   const normalizeSearch = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("pt-BR");
   const query = normalizeSearch(filters.query?.trim() ?? "");
   return (preserveOrder ? [...opportunities] : sortByDeadline(opportunities))
-    .filter((opportunity) => isOpportunityOpen(opportunity, today, now))
+    .filter((opportunity) => includeClosed || isOpportunityOpen(opportunity, today, now))
     .filter((opportunity) => {
       if (filters.category === "vestibular") return isEntranceExamOpportunity(opportunity);
       if (!includeAllAdmissions && isEntranceExamOpportunity(opportunity)) return false;

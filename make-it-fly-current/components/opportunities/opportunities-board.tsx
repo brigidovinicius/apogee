@@ -58,12 +58,13 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [visibleLimit, setVisibleLimit] = useState(24);
   const [initialToday] = useState(() => dateInBrazil());
+  const [initialNow] = useState(Date.now);
   const today = catalogue?.today ?? initialToday;
   const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   const filterOptions = useMemo(
-    () => catalogue?.filterOptions ?? getOpportunityFilterOptions(opportunities, today),
-    [catalogue, opportunities, today],
+    () => catalogue?.filterOptions ?? getOpportunityFilterOptions(opportunities, today, initialNow, management),
+    [catalogue, opportunities, today, initialNow, management],
   );
   const filters = useMemo(
     () => catalogue?.filters ?? sanitizeOpportunityFilters(
@@ -73,8 +74,8 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
     [catalogue, filterOptions, searchParams],
   );
   const visible = useMemo(
-    () => catalogue ? opportunities : filterOpportunities(opportunities, filters, today, editorialFeed, management),
-    [catalogue, filters, opportunities, today, editorialFeed, management],
+    () => catalogue ? opportunities : filterOpportunities(opportunities, filters, today, editorialFeed, management, initialNow, management),
+    [catalogue, filters, opportunities, today, initialNow, editorialFeed, management],
   );
   const grouped = useMemo(() => groupAdmissionProcesses(visible), [visible]);
   // Public/member ranking and pagination are computed on the server.
@@ -84,12 +85,12 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
   const activeFilterCount = countActiveOpportunityFilters(filters);
   const coverage = useMemo(() => {
     if (catalogue) return catalogue.coverage;
-    const open = opportunities.filter((item) => isOpportunityOpen(item, today));
+    const open = management ? opportunities : opportunities.filter((item) => isOpportunityOpen(item, today, initialNow));
     return { total: groupAdmissionProcesses(open).total, byCategory: Object.fromEntries(
-      [...OPPORTUNITY_CATEGORIES.map(({ id }) => [id, groupAdmissionProcesses(filterOpportunities(open, { ...filters, category: id }, today, true, management)).total]),
-        ["vestibular", groupAdmissionProcesses(filterOpportunities(open, { ...filters, category: "vestibular" }, today, true)).total]]),
+      [...OPPORTUNITY_CATEGORIES.map(({ id }) => [id, groupAdmissionProcesses(filterOpportunities(open, { ...filters, category: id }, today, true, management, initialNow, management)).total]),
+        ["vestibular", groupAdmissionProcesses(filterOpportunities(open, { ...filters, category: "vestibular" }, today, true, management, initialNow, management)).total]]),
     };
-  }, [catalogue, opportunities, today, filters, management]);
+  }, [catalogue, opportunities, today, initialNow, filters, management]);
   const cityOptions = filters.stateCode
     ? filterOptions.citiesByState[filters.stateCode] ?? []
     : [];

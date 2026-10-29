@@ -119,6 +119,25 @@ test("management retains admission course access within formação; injected clo
   assert.equal(buildOpportunityPage([exact], new URLSearchParams(), new Date("2026-10-16T15:00:02Z")).total, 0);
 });
 
+test("management keeps closed calendar records editable with matching counts and filter options", () => {
+  const closed = item("Prova futura", { opportunityStatus: "closed", deadline: null, deadlineUnknown: true,
+    categories: ["competicoes"], level: "Pós-graduação", kind: "Programa" });
+  const result = item("Resultado futuro", { opportunityStatus: "result_published", deadline: null,
+    categories: ["competicoes"], level: "Pós-graduação", kind: "Programa" });
+  const data = [closed, result];
+  assert.equal(page("", data).total, 0, "public registration feed remains unchanged");
+  query = "categoria=competicoes&formacao=Pós-graduação&busca=Prova";
+  try {
+    const output = renderToStaticMarkup(React.createElement(OpportunitiesBoard, { opportunities: data, management: true })).replace(/<!--.*?-->/g, "");
+    assert.match(output, /Prova futura/);
+    assert.doesNotMatch(output, /Resultado futuro/);
+    assert.match(output, /Editar ou excluir/);
+    assert.match(output, /1 oportunidade visível/);
+    assert.match(output, /aria-label="Formação: Pós-graduação" aria-pressed="true"/);
+    assert.match(output, /Competições e hackathons.*?\(1\)/s);
+  } finally { query = ""; }
+});
+
 
 test("bucket ranking matches the exhaustive greedy reference on mixed organizations, categories and scores", () => {
   const data = Array.from({ length: 80 }, (_, i) => item(`candidate-${i}`, { organization: `Organization ${i % 9}`,
