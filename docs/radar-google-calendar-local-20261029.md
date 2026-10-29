@@ -1,0 +1,55 @@
+# Google Agenda — implementação e validação local (29/10/2026)
+
+## Escopo e estado
+
+Implementada a conexão direta do calendário pessoal com a API Google Calendar. A conexão é opcional e separada do login Better Auth. Nenhuma alteração de produção, deploy, push, mudança do cliente OAuth de produção ou escrita real em agendas Google foi feita nesta rodada.
+
+**A conexão real ainda está pendente da configuração do Google.** O navegador confirmou o projeto `apogee-oauth-local`, com clientes distintos “Apogee Local” e “Apogee Produção”. O cliente local termina em `earocvt248dibbrmp00cmfamh2qcs6qa.apps.googleusercontent.com` e possui apenas o retorno `http://localhost:3000/api/auth/callback/google`. A API Calendar está desativada. O console não permite visualizar nem baixar a chave secreta existente; é necessário recuperar o arquivo privado original ou o responsável gerar uma chave adicional no cliente local.
+
+## Comportamento entregue
+
+- Botão de conexão, estado da conexão, última sincronização, atualização manual e desconexão em Meu calendário.
+- Permissão solicitada: `https://www.googleapis.com/auth/calendar.app.created`. Cria uma agenda secundária “Apogee — oportunidades”; no preview, “Apogee — TESTE LOCAL”.
+- Inclui apenas etapas das oportunidades salvas. Alterações atualizam os mesmos eventos; remoções cancelam eventos; salvar novamente restaura com uma nova revisão estável.
+- Eventos de dia inteiro têm final exclusivo, conforme o formato Google. Um horário sem duração positiva vira marcador de um minuto explicitamente descrito, sem inventar a duração real da etapa.
+- Sincronização em um sentido: Radar → Google. Edições feitas manualmente no Google não retornam ao catálogo.
+- Assinatura privada ICS existente preservada.
+- Desconectar apaga o refresh token local, interrompe atualizações e mantém a agenda já criada. Não revoga o cliente OAuth compartilhado, pois isso poderia interromper o login Google.
+- As ações usam a identidade da sessão, mantêm o acesso comercial atual e o job verifica o direito de acesso/bloqueio. Calendário principal e IDs arbitrários fornecidos pelo navegador não são aceitos.
+
+## Persistência e segurança
+
+Migração `0009_google_calendar`: conexão, tentativa OAuth e mapa de eventos. Aplicada somente ao PostgreSQL marcado do ambiente local (127.0.0.1:48763 / apogee_radar_calendar_local).
+
+OAuth usa state aleatório vinculado a cookie HttpOnly/SameSite=Lax, hash no banco, validade de dez minutos, PKCE S256 e callback associado à sessão. O refresh token e o verificador PKCE usam AES-256-GCM, com chave privada e vínculo ao usuário. Credenciais ficam no servidor; respostas de erro não expõem tokens. Callback usa no-store/no-referrer e está excluído dos logs de requisições de desenvolvimento.
+
+As sincronizações da mesma conexão são serializadas. IDs estáveis recuperam conflitos após respostas parciais; mapas das operações concluídas são preservados em falhas de API. Falhas de catálogo nunca são tratadas como remoção de todos os eventos. Quota/indisponibilidade ficam pendentes para nova tentativa; invalid_grant exige reconectar.
+
+## Execução periódica
+
+Após salvar/remover, uma sincronização é enfileirada e executada após a resposta. O endpoint POST `/api/internal/google-agenda/sync` processa até três conexões vencidas por chamada sequencialmente e exige Bearer secreto com pelo menos 32 caracteres. Cada conexão limita operações e tempo por rodada; normalmente atualiza a cada quinze minutos, retomando lotes incompletos.
+
+O harness local chama esse endpoint a cada minuto, somente quando configurado. **Não foi instalado agendamento nem alterada infraestrutura em produção.** Antes de futura publicação autorizada, será necessário configurar o job no ambiente de destino; habilitar apenas a interface não garante atualizações periódicas.
+
+## Configuração local pendente
+
+1. Autorizar a ativação da Google Calendar API no projeto existente (o projeto também contém o cliente de produção).
+2. No cliente **Apogee Local**, acrescentar, preservando o retorno de login existente:
+   `http://127.0.0.1:4381/api/integracoes/google-agenda/callback`.
+3. Recuperar o JSON privado original do cliente local, ou o responsável gerar uma chave adicional e salvar o JSON localmente. Não enviar secrets no chat. O navegador exige participação do usuário para criar/alterar credenciais.
+4. Importar o arquivo usando a fila:
+   `python3 /Users/viniciusbrigido/.codex/npm-queue/npm-queue.py --command node scripts/google-calendar-local-configure.mjs /caminho/privado/cliente.json`.
+   O script aceita exclusivamente o ID local verificado, grava configuração 0600 em `.local/radar-calendar/google-calendar.json` e preserva a chave de criptografia entre execuções. O arquivo fica fora do Git.
+5. Reiniciar o preview local integrado e conectar pelo botão usando uma conta de teste. Conceder somente a permissão de agendas criadas pelo Apogee. Se houver exigência de público de testes/consentimento, configurar somente após autorização.
+6. Confirmar no Google Agenda real criação, atualização e cancelamento dos eventos fictícios, preservando os calendários pessoais.
+
+O harness recusa credenciais do cliente de produção. O login Google segue desativado neste preview; a conexão do Agenda usa seu próprio par de variáveis.
+
+## Validações
+
+- 37 testes direcionados aprovados: Google Calendar, calendário/ICS, ciclo de vida, formulário editorial e gestão.
+- Integração com PostgreSQL local real e driver Drizzle: estado OAuth, PKCE, isolamento entre contas, replay, criptografia, criação, idempotência, atualização de datas, cancelamentos, remoção/restauração, falha de catálogo, perda de direito, desconexão/reconexão e revogação da autorização Google.
+- Somente as respostas HTTP Google foram simuladas nessa integração; nenhuma chamada atingiu o Google ou uma agenda real.
+- Geração de rotas Next e TypeScript aprovados. Lint sem erros, com um aviso anterior de `<img>` em `components/gallery/gallery-admin.tsx`.
+- Build local final aprovado. Preview integrado reaberto em 127.0.0.1:4381; a interface mostra Google Agenda aguardando configuração, com botão desabilitado. Sessão administrativa preservada no Chrome e a sessão do navegador integrado não foi encerrada.
+- A autenticação Google real e a sincronização real são pendentes, não aprovadas por simulação.

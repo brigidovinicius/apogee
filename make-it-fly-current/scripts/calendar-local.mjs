@@ -1,6 +1,6 @@
 // Local-only acceptance harness. Real authentication/actions, synthetic catalogue.
 import assert from 'node:assert/strict';
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { readFile, readdir, writeFile, stat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { createServer, request } from 'node:http';
 import { spawn } from 'node:child_process';
@@ -69,8 +69,8 @@ if(mode==='setup') {
     }
     await sql`create table if not exists radar_local_catalogue (id text primary key,payload jsonb not null)`;
     for(const item of fixtures())await sql`insert into radar_local_catalogue values (${item.id},${sql.json(item)}) on conflict (id) do nothing`;
-    await writeFile(new URL('CONTAS-DE-TESTE.md',state),`# Teste local do Radar\n\nhttp://127.0.0.1:4381/membros/entrar?next=%2Fmembros%2Foportunidades\n\nSenha local: ${config.LOCAL_TEST_PASSWORD}\n\n${accounts.map(a=>'- '+a.key+'@radar.test — '+(a.access?'acesso vitalício de teste':'sem acesso vitalício')).join('\n')}\n\nUse e-mail e senha. Google, e-mail e pagamentos externos estão desabilitados.\n\nAbra uma oportunidade, salve, entre em Meu calendário e gere o link privado. O .ics pode ser assinado por aplicativo neste Mac. Google Agenda/Outlook na nuvem não conseguem consultar 127.0.0.1; nenhum túnel público foi criado.\n`,{mode:0o600});
-    console.log('Nove migrações locais aplicadas; três contas e três oportunidades de teste prontas.');
+    await writeFile(new URL('CONTAS-DE-TESTE.md',state),`# Teste local do Radar\n\nhttp://127.0.0.1:4381/membros/entrar?next=%2Fmembros%2Foportunidades\n\nSenha local: ${config.LOCAL_TEST_PASSWORD}\n\n${accounts.map(a=>'- '+a.key+'@radar.test — '+(a.access?'acesso vitalício de teste':'sem acesso vitalício')).join('\n')}\n\nUse e-mail e senha. O login Google, e-mail e pagamentos estão desabilitados. A conexão Google Agenda é separada e só é ativada com a configuração privada de teste.\n\nAbra uma oportunidade, salve, entre em Meu calendário e gere o link privado. O .ics pode ser assinado por aplicativo neste Mac. Google Agenda/Outlook na nuvem não conseguem consultar 127.0.0.1; nenhum túnel público foi criado.\n`,{mode:0o600});
+    console.log('Migrações locais verificadas; contas e oportunidades de teste preservadas.');
   } finally {await sql.end();}
 } else if(mode!=='serve') {
   try {
@@ -87,6 +87,16 @@ if(mode==='setup') {
   await verifyMarker();
   assert.ok((await sql`select tag from radar_local_migrations where tag='0008_radar_calendar'`).length);
   const editorial=process.argv[3]==='--editorial' ? JSON.parse(await readFile(new URL('editorial-config.json',state),'utf8')) : null;
+  let google = null;
+  try {
+    const file = new URL('google-calendar.json',state);
+    const info = await stat(file); assert.equal(info.mode & 0o077,0,'Google test config must be private (0600)');
+    google = JSON.parse(await readFile(file,'utf8'));
+    assert.equal(google.marker,'apogee-google-calendar-local-v1');
+    assert.equal(google.GOOGLE_CALENDAR_CLIENT_ID,'914658639835-earocvt248dibbrmp00cmfamh2qcs6qa.apps.googleusercontent.com','Only the verified Apogee Local client is allowed');
+    assert.match(google.GOOGLE_CALENDAR_ENCRYPTION_KEY,/^[a-f0-9]{64}$/i);
+    assert.ok(google.GOOGLE_CALENDAR_CLIENT_SECRET && google.GOOGLE_CALENDAR_SYNC_SECRET.length >= 32);
+  } catch(error) { if(error.code!=='ENOENT')throw error; }
   const runtimeEnv=Object.fromEntries(['PATH','TMPDIR','LANG','HOME','CODEX_NPM_QUEUE_OWNER'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]));
   let radarChild;
   if(editorial) {
@@ -135,12 +145,23 @@ if(mode==='setup') {
     DATABASE_URL:dbUrl.href,DATABASE_SSL_MODE:'disable',DATABASE_POOL_MAX:'2',BETTER_AUTH_URL:'http://127.0.0.1:4381',BETTER_AUTH_SECRET:config.BETTER_AUTH_SECRET,
     APPLICATION_HOSTING_PROVIDER:'caddy',RADAR_ACADEMICO_API_URL:'http://127.0.0.1:48762/catalogue',RADAR_ACADEMICO_API_TOKEN:config.RADAR_ACADEMICO_API_TOKEN,
     RADAR_CALENDAR_PERSONAL_ENABLED:'true',STRIPE_MODE:'test',RADAR_BILLING_ENABLED:'false',MEMBERS_EMAIL_ENABLED:'false',GOOGLE_CLIENT_ID:'',GOOGLE_CLIENT_SECRET:'',
+    ...(google?Object.fromEntries(['GOOGLE_CALENDAR_CLIENT_ID','GOOGLE_CALENDAR_CLIENT_SECRET','GOOGLE_CALENDAR_ENCRYPTION_KEY','GOOGLE_CALENDAR_SYNC_SECRET'].map(k=>[k,google[k]])):{}),
+    RADAR_GOOGLE_CALENDAR_ENABLED:google?'true':'false',
     ...(editorial?{RADAR_LOCAL_EDITORIAL:'1',RADAR_ACADEMICO_ADMIN_API_URL:'http://radar-academico:3000/api/internal/editorial/sources',RADAR_ACADEMICO_ADMIN_API_TOKEN:editorial.ADMIN_API_TOKEN}:{}),
   };
   const child=spawn(process.execPath,[...(editorial?['--import',fileURLToPath(new URL('./calendar-local-network.mjs',import.meta.url))]:[]),'node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port','48761'],{cwd:fileURLToPath(app),env,stdio:'inherit'});
   console.log('Homologação LOCAL: http://127.0.0.1:4381 — autenticação real, banco e catálogo isolados; sem deploy.');
   if(editorial)console.log('Painel integrado ao Radar real em 127.0.0.1:3000, usando somente o banco editorial local e fontes fictícias.');
+  let syncing = false;
+  const timer = google ? setInterval(async()=>{
+    if(syncing)return; syncing=true;
+    try {
+      const response=await fetch('http://127.0.0.1:48761/api/internal/google-agenda/sync',{method:'POST',headers:{Authorization:'Bearer '+google.GOOGLE_CALENDAR_SYNC_SECRET},signal:AbortSignal.timeout(150000)});
+      if(!response.ok)console.warn('Google Agenda: sincronização local pendente.');
+    } catch { console.warn('Google Agenda: serviço local indisponível.'); }
+    finally { syncing=false; }
+  },60000):null;
   for(const signal of ['SIGTERM','SIGINT'])process.on(signal,()=>{child.kill(signal);radarChild?.kill(signal);});
   radarChild?.once('exit',()=>child.kill('SIGTERM'));
-  child.once('exit',async code=>{radarChild?.kill('SIGTERM');catalogue.close();proxy.close();await sql.end();process.exitCode=code??1;});
+  child.once('exit',async code=>{if(timer)clearInterval(timer);radarChild?.kill('SIGTERM');catalogue.close();proxy.close();await sql.end();process.exitCode=code??1;});
 }

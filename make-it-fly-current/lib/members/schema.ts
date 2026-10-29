@@ -325,3 +325,36 @@ export const radarCalendarFeed = pgTable("radar_calendar_feed", {
   tokenHash: text("token_hash").notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, table => [check("radar_calendar_feed_token_hash_check",sql`${table.tokenHash} ~ '^[a-f0-9]{64}$'`)]);
+
+export const radarGoogleCalendar = pgTable("radar_google_calendar", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  refreshTokenEncrypted: text("refresh_token_encrypted"),
+  calendarId: text("calendar_id"),
+  connectedAt: timestamp("connected_at", { withTimezone: true }),
+  lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
+  nextSyncAt: timestamp("next_sync_at", { withTimezone: true }).notNull().defaultNow(),
+  lastError: text("last_error"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  check("radar_google_calendar_calendar_id_check",sql`${table.calendarId} is null or (${table.calendarId} <> 'primary' and length(${table.calendarId}) between 3 and 1024)`),
+  check("radar_google_calendar_last_error_check",sql`${table.lastError} is null or ${table.lastError} in ('reconnect','permission','quota','unavailable','invalid_response','access')`),
+  index("radar_google_calendar_due_idx").on(table.nextSyncAt).where(sql`${table.refreshTokenEncrypted} is not null`),
+]);
+export const radarGoogleCalendarOAuth = pgTable("radar_google_calendar_oauth", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  stateHash: text("state_hash").notNull().unique(),
+  verifierEncrypted: text("verifier_encrypted").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+}, table => [check("radar_google_calendar_oauth_state_hash_check",sql`${table.stateHash} ~ '^[a-f0-9]{64}$'`)]);
+export const radarGoogleCalendarEvent = pgTable("radar_google_calendar_event", {
+  userId: text("user_id").notNull().references(() => radarGoogleCalendar.userId, { onDelete: "cascade" }),
+  entryKey: text("entry_key").notNull(),
+  eventId: text("event_id").notNull(),
+  revision: integer("revision").notNull().default(0),
+  contentHash: text("content_hash").notNull(),
+  cancelled: boolean("cancelled").notNull().default(false),
+}, table => [
+  primaryKey({columns:[table.userId,table.entryKey]}),
+  check("radar_google_calendar_event_event_id_check",sql`${table.eventId} ~ '^[a-f0-9]{64}$'`),
+  check("radar_google_calendar_event_revision_check",sql`${table.revision} >= 0`),
+]);

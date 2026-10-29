@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Links de convite/verificação contêm segredos transitórios; omitir dos logs dev.
-  logging: { incomingRequests: { ignore: [/\/meu-calendario\//, /\/membros\/convite/, /\/membros\/(cadastro|entrar)/, /\/api\/auth\/verify-email/] } },
+  logging: { incomingRequests: { ignore: [/\/api\/integracoes\/google-agenda\/callback/, /\/meu-calendario\//, /\/membros\/convite/, /\/membros\/(cadastro|entrar)/, /\/api\/auth\/verify-email/] } },
   async headers() {
     return [{ source: "/:path*", headers: [
       { key: "X-Content-Type-Options", value: "nosniff" },

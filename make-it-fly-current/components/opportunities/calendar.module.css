@@ -27,3 +27,7 @@
 
 
 .month h2::first-letter { text-transform:uppercase; }
+
+.subscription { margin:32px 0; padding:24px; border:1px solid #dfe5eb; border-radius:20px; background:white; line-height:1.6; }
+.subscription form { display:inline-block; }
+.action:disabled { cursor:wait; opacity:.6; }
