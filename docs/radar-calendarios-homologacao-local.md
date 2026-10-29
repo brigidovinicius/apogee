@@ -2,6 +2,8 @@
 
 Consulte também a [rodada completa de testes](radar-calendarios-testes-20261029.md), com correções, cobertura e limitações atualizadas.
 
+A [validação posterior do painel integrado e do Calendário do Mac](radar-admin-mac-calendar-20261029.md) confirmou criação, edição, exclusão e sincronização de eventos fictícios. A busca textual do Mac não os exibiu durante a sessão; confira as datas indicadas no relatório.
+
 Este ambiente usa a aplicação compilada, Better Auth, sessões, permissões e server actions reais, com PostgreSQL e catálogo fictícios isolados. Não acessa os bancos ou serviços privados de produção.
 
 ## Abrir e testar
@@ -67,3 +69,23 @@ Resultados em 29/10/2026:
 - Os testes automatizados de persistência confirmaram revogação do token ao perder o direito. A sincronização em um aplicativo externo depende da validação do usuário; nenhum calendário pessoal real foi alterado.
 
 O ambiente permanece ligado para a validação, com os dados persistidos apenas nesta instância local.
+
+## Painel Radar integrado ao serviço real, somente local
+
+Além das três contas de membro, o preparo editorial adiciona `admin@radar.test` (papel admin) e `assinatura@radar.test` (membro com acesso legado). Ambas usam a senha de demonstração documentada no arquivo privado de contas. O teste no Calendário do Mac usou a agenda da conta administrativa, separada da conta vitalícia do usuário.
+
+O modo integrado preserva os três exemplos originais e inclui os registros que forem criados pelo painel. Usa outro banco local, `radar_calendar_editorial_local`, e o servidor Radar na porta 3000. Antes de iniciar, essa porta deve estar livre; não encerre serviços de outros projetos. As fontes reais da cópia são desativadas; somente a fonte fictícia fica ativa, sem coleta automática. Não acione fontes reais durante a homologação.
+
+Com o preview pausado mediante autorização, prepare o banco e compile os dois projetos em sequência:
+
+```sh
+python3 make-it-fly-current/scripts/calendar-editorial-database.py
+npm run build --prefix radar-academico
+APOGEE_LOCAL_PREVIEW=1 npm run build --prefix make-it-fly-current
+cd make-it-fly-current
+python3 /Users/viniciusbrigido/.codex/npm-queue/npm-queue.py --command node scripts/calendar-local.mjs serve --editorial
+```
+
+O script confere o diretório do cluster, banco e marcadores locais antes das migrações. Não substitui senhas de roles existentes. Os dois servidores compilados pertencem ao mesmo processo de homologação na fila; não inicie builds ou testes pesados enquanto estiverem ativos. Use `http://127.0.0.1:4381/admin/radar` e login de administrador para criar/editar oportunidades fictícias.
+
+A assinatura `Apogee QA local 29-10` foi adicionada **Em Meu Mac**, com atualização configurada a cada 5 minutos. Após remoção no painel, o Apple Calendar exibe os eventos como cancelados. O teste terminou com a ficha QA excluída e seus dois eventos cancelados; os exemplos anteriores continuam disponíveis. Não houve integração com a API do Google nem gravação em calendários Google/iCloud.

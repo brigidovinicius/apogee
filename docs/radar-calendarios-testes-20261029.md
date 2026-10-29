@@ -1,5 +1,7 @@
 # Radar e calendários: testes locais de 29/10/2026
 
+Atualização posterior: a [validação integrada do painel e do Calendário do Mac](radar-admin-mac-calendar-20261029.md) concluiu as duas pendências desta rodada e corrigiu o filtro administrativo de inscrições encerradas. Os limites abaixo descrevem o estado no encerramento da bateria original.
+
 ## Resultado
 
 Foram executados 929 testes automatizados distintos com sucesso: 527 da Apogee, 387 do Radar e 15 testes adicionais de permissões em PostgreSQL real. A suíte padrão do Radar ignora estes últimos quando não há banco dedicado; eles foram executados separadamente no banco descartável local `radar_sec05_test`. Reexecuções direcionadas não foram somadas ao total.

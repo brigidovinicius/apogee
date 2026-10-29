@@ -86,12 +86,37 @@ if(mode==='setup') {
 } else {
   await verifyMarker();
   assert.ok((await sql`select tag from radar_local_migrations where tag='0008_radar_calendar'`).length);
+  const editorial=process.argv[3]==='--editorial' ? JSON.parse(await readFile(new URL('editorial-config.json',state),'utf8')) : null;
+  const runtimeEnv=Object.fromEntries(['PATH','TMPDIR','LANG','HOME','CODEX_NPM_QUEUE_OWNER'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]));
+  let radarChild;
+  if(editorial) {
+    assert.equal(editorial.marker,'apogee-radar-editorial-local-v1');
+    for(const key of ['DATABASE_READER_URL','DATABASE_EDITOR_URL']) {
+      const url=new URL(editorial[key]);
+      assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'48763');assert.equal(url.pathname,'/radar_calendar_editorial_local');
+      assert.equal(url.username,key==='DATABASE_READER_URL'?'radar_reader':'radar_editor');
+    }
+    const radar=new URL('../../radar-academico/',import.meta.url);
+    assert.deepEqual((await readdir(radar)).filter(n=>/^\.env(?:$|\.)/.test(n)&&n!=='.env.example'),[]);
+    radarChild=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port','3000'],{
+      cwd:fileURLToPath(radar),stdio:'inherit',env:{...runtimeEnv,NODE_ENV:'production',NODE_OPTIONS:'--max-old-space-size=512',NEXT_TELEMETRY_DISABLED:'1',
+        DATABASE_READER_URL:editorial.DATABASE_READER_URL,DATABASE_EDITOR_URL:editorial.DATABASE_EDITOR_URL,DATABASE_POOL_MAX:'2',DATABASE_SSL:'false',
+        RADAR_ACADEMICO_API_TOKEN:editorial.PUBLIC_API_TOKEN,RADAR_ACADEMICO_ADMIN_API_TOKEN:editorial.ADMIN_API_TOKEN},
+    });
+  }
   const catalogue=createServer(async(req,res)=>{
     const url=new URL(req.url,'http://127.0.0.1:48762');
     if(url.pathname!=='/catalogue'||req.headers.authorization!==`Bearer ${config.RADAR_ACADEMICO_API_TOKEN}`){res.writeHead(404).end();return;}
     try{
       const rows=await sql`select payload from radar_local_catalogue order by id`;
       const items=rows.map(r=>r.payload).filter(i=>url.searchParams.get('view')==='calendar'||['open','upcoming'].includes(i.opportunityStatus));
+      if(editorial) {
+        const endpoint=new URL('http://127.0.0.1:3000/api/public/opportunities');
+        if(url.searchParams.get('view')==='calendar')endpoint.searchParams.set('view','calendar');
+        const response=await fetch(endpoint,{headers:{Authorization:`Bearer ${editorial.PUBLIC_API_TOKEN}`},signal:AbortSignal.timeout(5000)});
+        assert.equal(response.status,200);const body=await response.json();assert.equal(body.version,3);assert.ok(Array.isArray(body.opportunities));
+        items.push(...body.opportunities);
+      }
       res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'}).end(JSON.stringify({version:3,opportunities:items}));
     }catch{res.writeHead(503).end();}
   });
@@ -105,14 +130,17 @@ if(mode==='setup') {
   const listen=(server,port)=>new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,'127.0.0.1',resolve);});
   await listen(catalogue,48762);await listen(proxy,4381);
   const env={
-    ...Object.fromEntries(['PATH','TMPDIR','LANG','HOME','CODEX_NPM_QUEUE_OWNER'].filter(k=>process.env[k]).map(k=>[k,process.env[k]])),
+    ...runtimeEnv,
     NODE_ENV:'production',NODE_OPTIONS:'--max-old-space-size=768',NEXT_TELEMETRY_DISABLED:'1',APOGEE_LOCAL_PREVIEW:'1',
     DATABASE_URL:dbUrl.href,DATABASE_SSL_MODE:'disable',DATABASE_POOL_MAX:'2',BETTER_AUTH_URL:'http://127.0.0.1:4381',BETTER_AUTH_SECRET:config.BETTER_AUTH_SECRET,
     APPLICATION_HOSTING_PROVIDER:'caddy',RADAR_ACADEMICO_API_URL:'http://127.0.0.1:48762/catalogue',RADAR_ACADEMICO_API_TOKEN:config.RADAR_ACADEMICO_API_TOKEN,
     RADAR_CALENDAR_PERSONAL_ENABLED:'true',STRIPE_MODE:'test',RADAR_BILLING_ENABLED:'false',MEMBERS_EMAIL_ENABLED:'false',GOOGLE_CLIENT_ID:'',GOOGLE_CLIENT_SECRET:'',
+    ...(editorial?{RADAR_LOCAL_EDITORIAL:'1',RADAR_ACADEMICO_ADMIN_API_URL:'http://radar-academico:3000/api/internal/editorial/sources',RADAR_ACADEMICO_ADMIN_API_TOKEN:editorial.ADMIN_API_TOKEN}:{}),
   };
-  const child=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port','48761'],{cwd:fileURLToPath(app),env,stdio:'inherit'});
+  const child=spawn(process.execPath,[...(editorial?['--import',fileURLToPath(new URL('./calendar-local-network.mjs',import.meta.url))]:[]),'node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port','48761'],{cwd:fileURLToPath(app),env,stdio:'inherit'});
   console.log('Homologação LOCAL: http://127.0.0.1:4381 — autenticação real, banco e catálogo isolados; sem deploy.');
-  for(const signal of ['SIGTERM','SIGINT'])process.on(signal,()=>child.kill(signal));
-  child.once('exit',async code=>{catalogue.close();proxy.close();await sql.end();process.exitCode=code??1;});
+  if(editorial)console.log('Painel integrado ao Radar real em 127.0.0.1:3000, usando somente o banco editorial local e fontes fictícias.');
+  for(const signal of ['SIGTERM','SIGINT'])process.on(signal,()=>{child.kill(signal);radarChild?.kill(signal);});
+  radarChild?.once('exit',()=>child.kill('SIGTERM'));
+  child.once('exit',async code=>{radarChild?.kill('SIGTERM');catalogue.close();proxy.close();await sql.end();process.exitCode=code??1;});
 }
