@@ -81,11 +81,16 @@ beforeAll(async () => {
  vi.stubEnv("DATABASE_READER_URL", "isolated-test-only");
 }, 30_000);
 afterAll(async () => { await state.db?.close(); vi.unstubAllEnvs(); });
-it("collects/rechecks the actual OBMEP snapshot without duplicates, preserving edits, failures and tombstones", async () => {
- const s = calendarAuditSource("obmep-calendar-2026");
+it.each([
+ ["obmep-calendar-2026", "obmep-calendar-2026.html", "15 de dezembro", "16 de dezembro", "awards", "2026-12-16"],
+ ["comvest-vestibular-2027", "comvest-vestibular-2027-official-news.html", "25/1/2027", "24/1/2027", "result-1", "2027-01-24"],
+ ["fuvest-vestibular-2027", "fuvest-vestibular-2027-official-news.html", "26 de janeiro de 2027", "27 de janeiro de 2027", "result-1", "2027-01-27"],
+])("collects/rechecks %s without duplicates, preserving edits, failures and tombstones", async (id, fixture, oldDate, newDate, stageId, expectedDate) => {
+ const s = calendarAuditSource(id);
  await state.db!.exec(await readFile(new URL("../../db/migrations/0044_calendar_sources_local_validation.sql", import.meta.url), "utf8"));
+ await state.db!.exec(await readFile(new URL("../../db/migrations/0045_calendar_official_alternatives.sql", import.meta.url), "utf8"));
  await state.db!.query("update official_sources set active=true,verification_status='verified' where id=$1", [s.id]);
- const html = await readFile(new URL("./fixtures/obmep-calendar-2026.html", import.meta.url), "utf8");
+ const html = await readFile(new URL(`./fixtures/${fixture}`, import.meta.url), "utf8");
  const respond = (body: string) => vi.mocked(fetchOfficialResource).mockResolvedValue({ body: Buffer.from(body), contentType: "text/html", hash: "fixture", cached: false });
  respond(html);
  expect(await runOfficialSourceIngestion({ sourceId: s.id, maxPages: 1 })).toMatchObject({ discovered: 1 });
@@ -94,12 +99,12 @@ it("collects/rechecks the actual OBMEP snapshot without duplicates, preserving e
  await runOfficialSourceIngestion({ sourceId: s.id, maxPages: 1 });
  expect(await read()).toHaveLength(1);
  await state.db!.query("update opportunities set next_source_check_at=null,management_overrides=$2,requirements_text='Curadoria preservada' where id=$1", [original.id, { requirementsText: "Curadoria preservada" }]);
- respond(html.replace("15 de dezembro", "16 de dezembro"));
+ respond(html.replace(oldDate, newDate));
  expect(await recheckKnownOpportunities(s, 1, async () => "")).toMatchObject({ failed: 0, pagesChecked: 1 });
  const updated = (await read())[0];
  expect(updated.id).toBe(original.id);
  expect(updated.requirements_text).toBe("Curadoria preservada");
- expect(updated.discovery.editions[0].stages.find(s => s.id === "awards")?.start).toBe("2026-12-16");
+ expect(updated.discovery.editions[0].stages.find(s => s.id === stageId)?.start).toBe(expectedDate);
  await state.db!.query("update opportunities set next_source_check_at=null where id=$1", [original.id]);
  respond("<main>Access denied</main>");
  expect(await recheckKnownOpportunities(s, 1, async () => "")).toMatchObject({ failed: 1 });

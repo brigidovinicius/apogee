@@ -163,66 +163,113 @@ export function normalizeCalendarSource(html: string, source: OfficialSource, no
     if (!match) fail();
     add("olympic-week", "Semana Olímpica da OBI — participação conforme convocação", "event", portugueseDates(match![1], spec.edition), week);
   } else if (source.id === "comvest-vestibular-2027") {
-    const main = $("main").length === 1 ? $("main") : $("body");
-    if (!main.find("h1").toArray().some(el => clean($(el).text()) === "Vestibular 2027")) fail();
-    const lines = [...new Set(main.find("li").filter((_, el) => $(el).find("li").length === 0).toArray().map(el => clean($(el).text())))];
-    const closeLines: string[] = [];
-    for (const line of lines) {
-      const parts = line.split(/\s+[–—]\s+/);
-      if (parts.length < 2 || !/^\d/.test(parts[0])) continue;
-      const description = parts.slice(1).join(" — "), normalized = fold(description);
-      if (/enem|indigena|vagas olimpicas|remanescentes|provao/.test(normalized)) continue;
-      let id = "", kind: Stage["kind"] = "event";
-      if (/abertura para inscricoes/.test(normalized)) { id = "registration-open"; kind = "registration"; }
-      else if (/ultimo dia para inscricao|prazo final para inscricoes/.test(normalized)) {
-        if (/prorrogad/.test(normalized)) {
-          evidence.registration_extension = { source_url: spec.url, excerpt: line };
-          continue; // Only a replacement row with its own full date can supersede it.
-        }
-        id = "registration-close"; kind = "registration"; closeLines.push(line);
-      } else if (/matricula virtual/.test(normalized)) { id = `enrollment-${normalized.match(/(\d+)[aª.]?\s*chamada/)?.[1] || fail()}`; kind = "enrollment"; }
-      else if (/divulgacao.*(?:aprovados|convocados)/.test(normalized)) { id = `result-${key(description.replace(/,.*$/, ""))}`; kind = "result"; }
-      else if (/prova/.test(normalized) && !/divulgacao|locais|condicoes|recursos/.test(normalized)) { id = `exam-${key(description)}`; kind = "exam"; }
-      else continue;
-      const dates = portugueseDates(parts[0]);
-      if (!["2026", "2027"].includes(dates.start.slice(0, 4))) fail();
-      if (id === "registration-close") {
-        const clock = /até\s+(?:às\s+|as\s+)?(\d{1,2})(?::(\d{2})|\s*horas|h(\d{2})?)/i.exec(description);
-        if (clock) dates.start = time(dates.start, clock[1], clock[2] || clock[3] || "00");
+    const content = $(".single-post__post-content");
+    const text = clean(content.text());
+    if (content.length !== 1 || !text.includes("Calendário Vestibular Unicamp 2027") ||
+      !/Comvest.*prorrogou o período de inscrições para o Vestibular Unicamp 2027/.test(text) ||
+      !$("meta[property='article:published_time']").attr("content")?.startsWith("2026-")) fail();
+    // This later Comvest-authored notice supersedes the August 3 announcement.
+    const closingMatch = /Inscrições: até (\d{1,2} de [a-zç]+ de 2026), às (\d{1,2}) horas/i.exec(text);
+    if (!closingMatch) fail();
+    closing = time(portugueseDates(closingMatch![1]).start, closingMatch![2]);
+    registrationEvidence = `Prorrogação do Vestibular Unicamp 2027. ${closingMatch![0]}`;
+    evidence.registration_extension = { source_url: spec.url, excerpt: registrationEvidence };
+    const heading = content.find("p").filter((_, el) => clean($(el).text()) === "Calendário Vestibular Unicamp 2027");
+    const table = heading.next("figure").find("table");
+    if (heading.length !== 1 || table.length !== 1) fail();
+    const rows = tableRows($, table);
+    if (rows.length !== 12 || rows.some(row => row.length !== 2)) fail();
+    const expected = ["Divulgação dos contemplados com a Isenção da Taxa", "Inscrições Vestibular Unicamp 2026",
+      "Prova de Habilidades Específicas – Música", "1ª fase", "2ª fase", "Provas de Habilidades Específicas",
+      "Divulgação dos aprovados em 1ª chamada", "Matrícula virtual da 1ª Chamada",
+      "Divulgação dos aprovados em 2ª Chamada", "Matrícula virtual da 2ª Chamada",
+      "Divulgação dos aprovados em 3ª Chamada", "Matrícula virtual da 3ª Chamada"];
+    rows.forEach((row, i) => {
+      // The publisher mislabeled this one row 2026. Heading/prose explicitly identify admission 2027.
+      const label = i === 1 ? row[0].replace(/Unicamp 2027$/, "Unicamp 2026") : row[0].replace(/[-–—]/g, "–");
+      if (fold(label) !== fold(expected[i])) fail();
+    });
+    const numeric = (value: string, year: string): Dates => {
+      const m = /^(\d{1,2})(?:\/(\d{1,2}))?(?: (a|e) (\d{1,2}))?\/(\d{1,2})\/(20\d{2})$/.exec(value);
+      if (!m || m[6] !== year || m[3] === "e" && +m[4] !== +m[1] + 1) return fail();
+      const start = iso(m[1], m[2] || m[5], m[6]);
+      const end = iso(m[4] || m[1], m[5], m[6]);
+      if (end < start) fail();
+      return { start, ...(end !== start ? { end } : {}) };
+    };
+    const registration = numeric(rows[1][1], "2026");
+    if (registration.end !== closing.slice(0, 10)) fail();
+    opening = registration.start;
+    add("registration-open", "Abertura das inscrições", "registration", { start: opening }, rows[1].join(" — "));
+    add("registration-close", "Encerramento das inscrições — prazo prorrogado", "registration", { start: closing }, registrationEvidence);
+    add("exam-music", "Habilidades específicas — envio de vídeos de Música", "exam", numeric(rows[2][1], "2026"), rows[2].join(" — "));
+    const clock = /As duas fases serão aplicadas no período da manhã, com início às (\d{1,2}) horas/.exec(text);
+    if (!clock) fail();
+    const phase1 = numeric(rows[3][1], "2026");
+    if (phase1.end) fail();
+    add("exam-1", "Prova da 1ª fase", "exam", { start: time(phase1.start, clock![1]) }, `${rows[3].join(" — ")}; ${clock![0]}`);
+    const phase2 = numeric(rows[4][1], "2026");
+    if (!phase2.end || Date.parse(phase2.end) - Date.parse(phase2.start) !== 86_400_000) fail();
+    for (const [i, date] of [phase2.start, phase2.end!].entries()) {
+      add(`exam-2-day-${i + 1}`, `Prova da 2ª fase — ${i + 1}º dia`, "exam", { start: time(date, clock![1]) }, `${rows[4].join(" — ")}; ${clock![0]}`);
+    }
+    add("exam-skills", "Habilidades específicas — Artes Cênicas, Artes Visuais e Dança", "exam", numeric(rows[5][1], "2026"), rows[5].join(" — "));
+    for (let call = 1; call <= 3; call++) {
+      const result = rows[4 + call * 2], enrollment = rows[5 + call * 2];
+      const resultDate = numeric(result[1], spec.edition);
+      add(`result-${call}`, `Divulgação dos aprovados — ${call}ª chamada`, "result", resultDate, result.join(" — "));
+      let dates: Dates;
+      if (call === 3) dates = numeric(enrollment[1], spec.edition);
+      else {
+        const m = /^(\d{2})h(\d{2}) do dia (\d{2})\/(\d{2}) às (\d{2})h(\d{2}) do dia (\d{2})\/(\d{2})$/.exec(enrollment[1]);
+        if (!m) fail();
+        dates = { start: time(iso(m![3], m![4], spec.edition), m![1], m![2]), end: time(iso(m![7], m![8], spec.edition), m![5], m![6]) };
       }
-      if (kind === "enrollment") {
-        const clocks = [...description.matchAll(/(\d{1,2})h(\d{2})/g)];
-        if (clocks.length === 2) { dates.end = time(dates.end || dates.start, clocks[1][1], clocks[1][2]); dates.start = time(dates.start, clocks[0][1], clocks[0][2]); }
-        else if (clocks.length) fail();
+      if (dates.start < resultDate.start) fail();
+      add(`enrollment-${call}`, `Matrícula virtual — ${call}ª chamada`, "enrollment", dates, `${result.join(" — ")}; ${enrollment.join(" — ")}`);
+    }
+  } else {
+    const content = $("article#post-1040750 > .entry-content");
+    const text = clean(content.text());
+    if (content.length !== 1 || !text.includes("Cronograma do Vestibular 2027") ||
+      !text.includes("Texto: Assessoria de Imprensa da Fuvest") ||
+      !$("meta[property='article:published_time']").attr("content")?.startsWith("2026-")) fail();
+    const heading = content.children("p").filter((_, el) => clean($(el).text()) === "Principais datas:");
+    const lines = heading.next("ul").children("li");
+    if (heading.length !== 1 || lines.length !== 9) fail();
+    const definitions: Record<string, [string, Stage["kind"], string]> = {
+      "abertura das inscricoes": ["registration-open", "registration", "Abertura das inscrições"],
+      "encerramento das inscricoes": ["registration-close", "registration", "Encerramento das inscrições"],
+      "prova da 1ª fase": ["exam-1", "exam", "Prova da 1ª fase"],
+      "divulgacao dos convocados e dos locais da 2ª fase": ["result-2", "result", "Convocação para a 2ª fase"],
+      "provas da 2ª fase": ["exam-2", "exam", "Prova da 2ª fase"],
+      "provas de competencias especificas": ["exam-skills", "exam", "Provas de Competências Específicas"],
+      "divulgacao da primeira chamada para matricula": ["result-1", "result", "Primeira chamada para matrícula"],
+    };
+    lines.each((_, el) => {
+      const line = clean($(el).text()), parts = line.split(/\s+[–—]\s+/);
+      if (parts.length !== 2) fail();
+      const definition = definitions[fold(parts[1])];
+      // Materials/local announcements are not exam dates; the October location date was later updated.
+      if (!definition) {
+        if (!["divulgacao do guia de provas", "divulgacao dos locais de prova da 1ª fase"].includes(fold(parts[1]))) fail();
+        return;
       }
-      add(id, description.slice(0, 160), kind, dates, line);
+      const [id, kind, name] = definition;
+      const dates = portugueseDates(parts[0], "2026");
+      if (dates.start.slice(0, 4) !== (id === "result-1" ? "2027" : "2026")) fail();
+      if (id === "exam-2") {
+        if (!dates.end || Date.parse(dates.end) - Date.parse(dates.start) !== 86_400_000) fail();
+        [dates.start, dates.end!].forEach((date, i) => add(`${id}-day-${i + 1}`, `${name} — ${i + 1}º dia`, kind, { start: date }, line));
+      } else {
+        if (id !== "exam-skills" && dates.end) fail();
+        add(id, name, kind, dates, line);
+      }
       if (id === "registration-open") opening = dates.start;
       if (id === "registration-close") closing = dates.start;
-    }
-    if (closeLines.length !== 1 || !stages.some(s => s.kind === "exam") || !stages.some(s => s.kind === "result")) fail();
+    });
+    if (stages.length !== 8) fail();
     registrationEvidence = stages.filter(s => s.kind === "registration").map(s => evidence[`calendar_${s.id}`].excerpt).join("; ");
-  } else {
-    // Fuvest's portal separates the registration range from its two exam panels.
-    const main = $("main").length === 1 ? $("main") : $("body");
-    main.find("h1,h2,h3,h4,p,div,li").append(" ");
-    const text = clean(main.text());
-    if (!/(?:FUVEST|VESTIBULAR(?: DA USP)?)\s*(?:[–—-]\s*)?2027/i.test(text)) fail();
-    const registration = /(?:Inscriç(?:ão|ões)|Período)\s*:?\s*das\s+(\d{1,2})h\s+de\s+(\d{2}\/\d{2}\/2026)\s+até\s+(?:as|às)\s+(\d{1,2})h\s+de\s+(\d{2}\/\d{2}\/2026)/ig;
-    const ranges = [...text.matchAll(registration)];
-    if (!ranges.length || new Set(ranges.map(m => m.slice(1).join("|"))).size !== 1) fail();
-    const reg = ranges[0];
-    opening = time(numericDates(reg[2], "2026").start, reg[1]); closing = time(numericDates(reg[4], "2026").start, reg[3]);
-    registrationEvidence = reg[0];
-    add("registration-open", "Abertura das inscrições", "registration", { start: opening }, reg[0]);
-    add("registration-close", "Encerramento das inscrições", "registration", { start: closing }, reg[0]);
-    for (const [id, name, pattern] of [
-      ["exam-1", "Prova da 1ª fase", /M[ÚU]LTIPLA ESCOLHA\s+(\d{2}\/\d{2}\/2026)/i],
-      ["exam-2-day-1", "Prova da 2ª fase — primeiro dia", /DISSERTATIVA\s+(\d{2}\/\d{2}\/2026)\s+PRIMEIRA PROVA/i],
-      ["exam-2-day-2", "Prova da 2ª fase — segundo dia", /(\d{2}\/\d{2}\/2026)\s+SEGUNDA PROVA/i],
-    ] as const) {
-      const match = pattern.exec(text); if (!match) fail();
-      add(id, name, "exam", numericDates(match![1], "2026"), match![0]);
-    }
   }
 
   if (!opening || !closing || Date.parse(closing) < Date.parse(opening)) fail();
@@ -242,5 +289,5 @@ export function normalizeCalendarSource(html: string, source: OfficialSource, no
     amountText: "Calendário oficial; benefícios e condições financeiras não inferidos.", extractionMethod: "html", discovery, evidenceJson: evidence,
     // checkedAt changes on every fetch; only source facts define the content revision.
     contentHash: crypto.createHash("sha256").update(JSON.stringify({ id: spec.id, status, evidence, stages: stages.map(({ checkedAt: _checkedAt, ...stage }) => { void _checkedAt; return stage; }) })).digest("hex"),
-    hasRetification: /prorrogad|retificaç/i.test(Object.values(evidence).map(e => e.excerpt).join(" ")) }];
+    hasRetification: /prorrog|retificaç/i.test(Object.values(evidence).map(e => e.excerpt).join(" ")) }];
 }

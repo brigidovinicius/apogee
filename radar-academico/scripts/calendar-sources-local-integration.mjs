@@ -24,13 +24,18 @@ try {
   assert.equal((await admin.query("show data_directory")).rows[0].data_directory, path.join(state, "pgdata"));
   assert.equal((await admin.query("select marker from radar_local_environment")).rows[0].marker, editorial.marker);
   const audit = JSON.parse(await readFile(path.join(state, "source-audit/fetch-results.json"), "utf8"));
-  const approved = audit.sources.filter(row => row.fetched && row.parsed && Date.now() - Date.parse(row.checkedAt) < 86_400_000);
-  assert.deepEqual(approved.map(row => row.sourceId).sort(), ["obmep-calendar-2026", "obi-calendar-2026"].sort(), "Somente fontes com coleta real aprovada");
+  const knownIds = ["obmep-calendar-2026", "obi-calendar-2026", "comvest-vestibular-2027", "fuvest-vestibular-2027"];
+  const selectedIds = process.argv.length > 2 ? process.argv.slice(2) : knownIds;
+  assert(selectedIds.length > 0 && new Set(selectedIds).size === selectedIds.length && selectedIds.every(id => knownIds.includes(id)));
+  const approved = audit.sources.filter(row => selectedIds.includes(row.sourceId) && row.fetched && row.parsed && Date.now() - Date.parse(row.checkedAt) < 86_400_000);
+  assert.deepEqual(approved.map(row => row.sourceId).sort(), [...selectedIds].sort(), "Somente fontes com coleta real aprovada");
   process.env.DATABASE_EDITOR_URL = editorial.DATABASE_EDITOR_URL;
   process.env.DATABASE_READER_URL = editorial.DATABASE_READER_URL;
   process.env.DATABASE_SSL = "false";
   server = await createServer({ root, configFile: false, cacheDir: path.join(state, "source-audit/vite-integration"),
     resolve: { alias: { "@": path.join(root, "src") } }, server: { middlewareMode: true, hmr: false }, appType: "custom", optimizeDeps: { noDiscovery: true } });
+  const { calendarSource } = await server.ssrLoadModule("/src/lib/ingestion/calendar-sources.ts");
+  for (const row of approved) assert.equal(row.url, calendarSource(row.sourceId)?.url, "Auditoria deve corresponder à fonte atual");
   const { runOfficialSourceIngestion } = await server.ssrLoadModule("/src/lib/ingestion/index.ts");
   const { listCalendarCatalogue, listLiveCatalogue } = await server.ssrLoadModule("/src/lib/db/live-catalogue.ts");
   const results = [];
@@ -49,7 +54,5 @@ try {
     results.push({ sourceId: row.sourceId, opportunityId: calendar.id, stages: calendar.discovery.editions.flatMap(e => e.stages).length, duplicateCount: 0, status: "closed", visibleInCalendar: true, visibleAsOpen: false });
     console.log(JSON.stringify(results.at(-1)));
   }
-  const blocked = (await admin.query("select id,active,verification_status from official_sources where id=any($1::text[]) order by id", [["comvest-vestibular-2027", "fuvest-vestibular-2027"]])).rows;
-  assert(blocked.every(row => !row.active && row.verification_status === "pending"));
-  await writeFile(path.join(state, "source-audit/local-integration.json"), JSON.stringify({ checkedAt: new Date().toISOString(), localOnly: true, results, blocked }, null, 2));
+  await writeFile(path.join(state, "source-audit/local-integration.json"), JSON.stringify({ checkedAt: new Date().toISOString(), localOnly: true, results }, null, 2));
 } finally { await server?.close(); await admin.end(); }

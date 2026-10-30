@@ -4,8 +4,8 @@ import { safeRequest } from "@/lib/ingestion/safe-request";
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { calendarAuditSource } from "@/lib/ingestion/calendar-sources";
 afterEach(() => vi.resetAllMocks());
-it("never requests Comvest content when robots disallows its path", async () => {
-  vi.mocked(safeRequest).mockResolvedValue(new Response("User-agent: *\nDisallow: /ingresso-2027/", { status: 200 }));
+it("never requests alternative Comvest content when robots disallows its path", async () => {
+  vi.mocked(safeRequest).mockResolvedValue(new Response("User-agent: *\nDisallow: /noticias/", { status: 200 }));
   const source = calendarAuditSource("comvest-vestibular-2027");
   await expect(fetchOfficialResource(source.baseUrl, source)).rejects.toThrow("bloqueado por robots");
   expect(safeRequest).toHaveBeenCalledTimes(1);

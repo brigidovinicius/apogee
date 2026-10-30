@@ -1,5 +1,7 @@
 # Coletores de calendários — validação local em 29/10/2026
 
+> Atualização em 30/10: Comvest e Fuvest foram coletadas por publicações oficiais alternativas e validadas localmente. Veja [o relatório atual](radar-calendar-alternatives-local-20261030.md). O conteúdo abaixo preserva o resultado histórico de 29/10.
+
 ## Resultado e limite de homologação
 
 Quatro adaptadores por edição foram implementados na ingestão existente e conectados à recoleta. **OBMEP e OBI passaram pela coleta real e persistência local. Comvest e Fuvest permanecem bloqueadas para coleta real.** Os testes dos dois últimos usam marcação representativa explicitamente identificada, não HTML obtido pelo coletor. Não considerar essas duas fontes homologadas para ativação.
