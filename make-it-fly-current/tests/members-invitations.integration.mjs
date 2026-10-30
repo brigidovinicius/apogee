@@ -81,8 +81,9 @@ test("convites com Better Auth real e PostgreSQL: persistência, permissões, ve
     // Exclusivo deste cluster recém-criado, com marcador que evita reexecução destrutiva.
     const existing = await sql`select to_regclass('"user"') as name`;
     if (existing[0].name) throw new Error("Banco não vazio; inicialize outro cluster descartável.");
-    for (const file of ["0000_init", "0001_gallery_postgres", "0002_rapid_queen_noir", "0003_bored_logan", "0004_member_invitations"]) {
-      await sql.unsafe((await readFile(new URL(`../drizzle/${file}.sql`, import.meta.url), "utf8")).replaceAll('"public".', `"${testSchema}".`));
+    const journal = JSON.parse(await readFile(new URL("../drizzle/meta/_journal.json", import.meta.url), "utf8"));
+    for (const entry of journal.entries) {
+      await sql.unsafe((await readFile(new URL(`../drizzle/${entry.tag}.sql`, import.meta.url), "utf8")).replaceAll('"public".', `"${testSchema}".`));
     }
     auth = load("lib/members/auth.ts").getAuth();
     const issuer = await signup("issuer@example.test", "issuer");
@@ -108,6 +109,7 @@ test("convites com Better Auth real e PostgreSQL: persistência, permissões, ve
     });
     await t.test("cadastro público ignora autopromoção e verificação do navegador", async () => {
       const row = await account(member.id);
+      assert.equal(row.adult_declared, false);
       assert.equal(row.role, "member"); assert.equal(row.email_verified, false); assert.equal(row.can_manage_admins, false);
       const forbidden = await authCall("update-user", { name: "Ana", role: "admin", isAdmin: true, emailVerified: true, canManageAdmins: true }, member.cookie);
       assert.equal(forbidden.status, 400);

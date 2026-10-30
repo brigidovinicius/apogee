@@ -143,6 +143,10 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
     }
     await sql`insert into "user" (id, name, username, email) values ('legacy', 'Membro anterior', 'legacy', 'legacy@example.test')`;
     assert.equal((await migrateRadarBilling(sql)).changed, true);
+    // Keep the six-entry journal for the historical billing migrator scenarios,
+    // while the real current auth adapter needs the additive protection schema.
+    // This is the disposable fixture only; operational migrations use the journal.
+    await sql.unsafe(await readFile(new URL("../drizzle/0010_supervised_registration.sql", import.meta.url), "utf8"));
     auth = load("lib/members/auth.ts").getAuth();
     const buyer = await signup("buyer@example.test", "buyer");
     const other = await signup("other@example.test", "other");
