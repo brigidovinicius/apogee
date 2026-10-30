@@ -6,7 +6,7 @@ import styles from "./privacy.module.css";
 export const dynamic="force-dynamic";
 export function generateMetadata() {
   return {title:"Política de Privacidade | Apogee",description:"Como a Apogee trata dados pessoais e como exercer seus direitos de privacidade.",
-    alternates:{canonical:"/privacidade"},robots:{index:privacyPolicyReady(),follow:true}};
+    alternates:{canonical:"/privacidade"},robots:{index:privacyPolicyReady()&&process.env.APOGEE_LOCAL_PREVIEW!=="1",follow:true}};
 }
 
 export default function PrivacyPage() {
@@ -15,7 +15,8 @@ export default function PrivacyPage() {
   return <main id="experiencia" className={styles.page}>
     <Link href="/">Apogee · Voltar ao início</Link>
     <header><p>Privacidade e proteção de dados</p><h1>Política de Privacidade</h1><p>Versão de 30 de outubro de 2026</p></header>
-    {!ready && <aside role="note" className={styles.draft}><strong>Minuta para revisão</strong><p>O canal de contato e as regras de cadastro de menores ainda precisam ser confirmados antes da publicação.</p></aside>}
+    {!ready && <aside role="note" className={styles.draft}><strong>Minuta para revisão</strong><p>Identificação e contato já foram informados. O texto e os procedimentos de atendimento e proteção de menores ainda precisam de revisão e aprovação antes da publicação.</p></aside>}
+    <p><Link href="/termos">Termos de Uso</Link></p>
     <section aria-labelledby="controlador"><h2 id="controlador">Quem é responsável pelos dados</h2>
       <p>O controlador responsável pelo tratamento descrito nesta política é <strong>{privacyIdentity.name}</strong>, CNPJ {privacyIdentity.document}, responsável pela Apogee.{privacyIdentity.location && <> Localização: {privacyIdentity.location}.</>}</p>
       <p>Canal de privacidade: {privacyIdentity.email?<a href={`mailto:${privacyIdentity.email}`}>{privacyIdentity.email}</a>:"a confirmar nesta minuta"}. Use este canal para pedidos sobre dados pessoais e para contato com o responsável por privacidade.</p>

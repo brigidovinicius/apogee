@@ -109,6 +109,8 @@ test("API responses are noindex while robots and sitemap remain crawlable", asyn
   const robots = (await load("app/robots.ts")).default();
   const publishedAt = new Date("2026-10-11T12:00:00.000Z");
   const sitemap = await (await load("app/sitemap.ts", {
+    "@/lib/privacy-policy": {privacyPolicyReady:()=>false},
+    "@/lib/terms-of-use": {termsOfUseReady:()=>false},
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async()=>[] },
     "@/lib/opportunities/discovery": opportunityLoader()("lib/opportunities/discovery.ts"),
     "@/lib/blog/data": { listPublicPostUrls: async () => [{ slug: "ideias-apogee", updatedAt: publishedAt }] },

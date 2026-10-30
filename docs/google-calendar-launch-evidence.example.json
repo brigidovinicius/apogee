@@ -1,0 +1,19 @@
+{
+  "candidateSha": null,
+  "gates": {
+    "guardianReviewProcess": {"status": "pending", "reference": null, "checkedAt": null},
+    "existingAccountsPlan": {"status": "pending", "reference": null, "checkedAt": null},
+    "retentionAndProviders": {"status": "pending", "reference": null, "checkedAt": null},
+    "supportDelivery": {"status": "pending", "reference": null, "checkedAt": null},
+    "googleBranding": {"status": "pending", "reference": null, "checkedAt": null},
+    "googleAudienceProduction": {"status": "pending", "reference": null, "checkedAt": null},
+    "googleDomainAndScopes": {"status": "pending", "reference": null, "checkedAt": null},
+    "quotaAndPilotCapacity": {"status": "pending", "reference": null, "checkedAt": null},
+    "backupRestore": {"status": "pending", "reference": null, "checkedAt": null},
+    "productionMigrations": {"status": "pending", "reference": null, "checkedAt": null},
+    "workerHealth": {"status": "pending", "reference": null, "checkedAt": null},
+    "alertReceiverDelivery": {"status": "pending", "reference": null, "checkedAt": null},
+    "externalMonitor": {"status": "pending", "reference": null, "checkedAt": null},
+    "publishedPilot": {"status": "pending", "reference": null, "checkedAt": null}
+  }
+}

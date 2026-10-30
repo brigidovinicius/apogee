@@ -1,5 +1,7 @@
 # Google Agenda para usuários reais: situação e plano de liberação
 
+> **Registro histórico desta consulta.** A revisão corrente, incluindo minutas de termos, aprovação por versão e checagem local, está em [situação atual de liberação](google-agenda-current-readiness-20261030.md). As referências a lacunas técnicas abaixo descrevem o momento anterior aos ajustes subsequentes.
+
 > Atualização posterior, ainda local: [retentativas, quotas e alertas implementados e testados](google-agenda-fila-retentativas-local-20261030.md). A lacuna técnica de espera fixa e transporte de alertas descrita nesta consulta foi tratada no candidato; instalação, destinatário e dimensionamento real de produção continuam pendentes. O inventário de migrações passa a incluir também `0011_google_calendar_retries`.
 
 **Conclusão em 30/10/2026: candidato local validado, produção ainda não liberada.** Esta rodada prepara procedimento e pendências; não autoriza deploy, push, migração, alteração OAuth, mensagens ou coleta de documentos reais.

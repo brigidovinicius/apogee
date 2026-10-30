@@ -1,3 +1,4 @@
+import {legalApprovals} from "./legal-documents.mjs";
 // Controller identity, contact and inclusion of minors confirmed on 2026-10-30.
 export const privacyIdentity: {name:string;document:string;location:string|null;email:string|null;audienceConfirmed:boolean} = {
   name:"62.858.706 ROSA MARIA PEREIRA MIRANDA - ME",
@@ -7,7 +8,7 @@ export const privacyIdentity: {name:string;document:string;location:string|null;
   audienceConfirmed:true,
 };
 export function privacyPolicyReady() {
-  return !!privacyIdentity.email && privacyIdentity.audienceConfirmed && process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED==='true';
+  return !!privacyIdentity.email && privacyIdentity.audienceConfirmed && process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED==='true' && legalApprovals().privacy;
 }
 
 export const privacySections = [
