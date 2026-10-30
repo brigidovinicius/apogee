@@ -7,6 +7,13 @@ import {createAlertMonitor,webhookSender} from '../scripts/google-calendar-alert
 const good={status:'ok',due:0,connected:10,lagSeconds:0,errors:0,reconnect:0,quota:0,paused:0};
 const bad={...good,status:'warning',errors:1,quota:1};
 async function fixture(fn) {const dir=await mkdtemp(join(tmpdir(),'google-alert-'));try{await fn(join(dir,'state.json'));}finally{await rm(dir,{recursive:true});}}
+test('new incident and recovery deliver immediately when the clock advances during observation',()=>fixture(async file=>{
+  let time=1000;const sent=[];
+  const monitor=createAlertMonitor({file,now:()=>time++,deliver:async event=>sent.push(event),log:()=>{}});
+  await monitor(bad);assert.deepEqual(sent.map(event=>event.type),['opened']);
+  await monitor(good);assert.deepEqual(sent.map(event=>event.type),['opened','recovered']);
+  assert.equal(JSON.parse(await readFile(file)).outbox.length,0);
+}));
 test('one opened/recovered alert per incident, also across monitor restart, with sanitized metrics',()=>fixture(async file=>{
   const sent=[],logs=[];const opts={file,deliver:async e=>sent.push(e),log:e=>logs.push(e)};
   let monitor=createAlertMonitor(opts);

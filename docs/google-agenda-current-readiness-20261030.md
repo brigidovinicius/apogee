@@ -1,5 +1,7 @@
 # Google Agenda: revisão atual e próximos ajustes locais
 
+**Atualização local posterior — monitor e capacidade:** o [relatório desta implementação](google-agenda-monitor-capacidade-local-20261030.md) sucede esta fotografia. Monitor independente de leitura, heartbeat persistente, histórico agregado, p95 e projeções foram preparados localmente; migração `0012` aplicada somente no banco de teste. Instalação fora do host, receptor real, medição de quota/capacidade e liberação continuam pendentes. As consultas à produção/console descritas abaixo pertencem à rodada anterior e não foram repetidas na etapa do monitor.
+
 **Situação: candidato local preparado, liberação para usuários reais ainda pendente.** Esta revisão sucede os relatórios de cadastro supervisionado e fila. Base anterior: commit `113feda`; os novos arquivos de termos e preflight são registrados no commit desta etapa. Não houve push, deploy, migração ou alteração de configuração em produção.
 
 ## O que foi reconfirmado nesta rodada
@@ -31,9 +33,9 @@ O critério que depende do cadastro supervisionado foi preservado: os textos nã
 | Contas existentes | Controle de acesso no servidor | Aprovar plano de comunicação/revisão: ativar a proteção bloqueia contas comuns sem aprovação; não aprovar titulares por script |
 | Google | Cliente/callback e escopo mínimo preparados anteriormente | Completar branding, comprovar domínio quando exigido, cumprir verificação aplicável e publicar audiência/branding com confirmação própria |
 | Atendimento | Código de verificação e canal informado | Demonstrar recebimento de e-mail e resposta pela equipe; aceitação do provedor de envio não prova entrega |
-| Alertas | Webhook opcional e deduplicação/outbox testados localmente | Escolher e autorizar receptor, validar idempotência/reconciliação e entrega; monitor externo precisa detectar processo/host parado |
-| Operação | Relatórios e comando de checagem local | Histórico de métricas, p95 por conta, limites reais de quota, teto do piloto e responsável de plantão |
-| Release | Migrações locais `0008`–`0011` inventariadas no candidato | Conferir journal real, backup/restauração, compatibilidade do Radar, autorização do SHA/push/deploy/migrações e rollback |
+| Alertas | Monitor independente, parada do worker/fila vazia, queda/timeout do alvo e deduplicação/outbox preparados e testados localmente | Escolher e autorizar receptor, validar entrega real e instalar monitor em host independente com supervisão própria |
+| Operação | Histórico agregado por tentativa, p95 e projeções com amostra mínima e supressão durante falhas | Medir mistura de trabalho e limites reais de quota, validar teto do piloto e definir responsável de plantão |
+| Release | Migrações locais `0008`–`0012` inventariadas no candidato | Conferir journal real, backup/restauração, compatibilidade do Radar, autorização do SHA/push/deploy/migrações e rollback |
 
 Antes de aprovar os termos, revisar especialmente a apresentação da oferta, o significado comercial de acesso vitalício, atendimento de cancelamento/restituição e o modo de apresentar/registrar ciência ou aceite quando aplicável. A minuta não altera o checkout ou compras existentes e não é um contrato aprovado.
 

@@ -63,7 +63,7 @@ test("one-time state comparison rejects malformed and mismatched values",()=>{
 });
 test("sync job requires a configured bearer and rejects non-ASCII safely",async()=>{
   const route=opportunityLoader({"@/lib/opportunities/google-calendar-sync":{syncDueGoogleCalendars:async()=>3},
-    "@/lib/opportunities/google-calendar-queue":{googleQueuePolicy:()=>({batchSize:3,maxLagSeconds:900}),googleQueueStatus:async()=>({configured:true,lagSeconds:0,due:0})},
+    "@/lib/opportunities/google-calendar-queue":{recordGoogleWorkerHeartbeat:async()=>{},googleQueuePolicy:()=>({batchSize:3,maxLagSeconds:900}),googleQueueStatus:async()=>({configured:true,lagSeconds:0,due:0})},
   })("app/api/internal/google-agenda/sync/route.ts");
   process.env.GOOGLE_CALENDAR_SYNC_SECRET="a".repeat(32);
   assert.equal((await route.POST(new Request("http://localhost",{method:"POST"}))).status,401);

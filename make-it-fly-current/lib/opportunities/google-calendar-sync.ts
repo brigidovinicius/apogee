@@ -10,8 +10,12 @@ import { calendarEntries } from "./discovery";
 import { googleQueuePolicy } from "./google-calendar-queue";
 import { adultAccess } from "@/lib/members/protection";
 import { googleProjectCooldown,recordGoogleFailure,recordGoogleFailureOutsideTransaction } from "./google-calendar-failures";
+import {measureGoogleCalendarSync} from "./google-calendar-metrics";
 
 export async function syncGoogleCalendar(userId: string,options:{manual?:boolean}={}): Promise<"synced" | "pending" | "disconnected" | "failed"> {
+  return measureGoogleCalendarSync(()=>performGoogleCalendarSync(userId,options));
+}
+async function performGoogleCalendarSync(userId:string,options:{manual?:boolean}):Promise<"synced"|"pending"|"disconnected"|"failed"> {
   if (!googleCalendarConfig()) return "disconnected";
   const [connection] = await getSql()`select user_id,retry_not_before,retry_paused,last_error from radar_google_calendar where user_id=${userId} and refresh_token_encrypted is not null`;
   if (!connection) return "disconnected";

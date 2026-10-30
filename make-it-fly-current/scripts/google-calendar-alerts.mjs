@@ -3,15 +3,17 @@ import {dirname} from 'node:path';
 import {randomUUID} from 'node:crypto';
 
 function reasonsFor(status) {
-  if(status.status==='failed')return ['worker_unavailable'];
+  if(status.status==='failed')return [status.endpointUnavailable?'endpoint_unavailable':'worker_unavailable'];
   const reasons=[];
   if(status.status==='warning')reasons.push('queue_unhealthy');
+  if(status.workerStale)reasons.push('worker_stale');
+  if(status.capacityPressure)reasons.push('capacity_pressure');
   for(const [key,reason] of [['quota','quota'],['reconnect','reconnect'],['paused','retries_paused'],['errors','sync_errors']])if(status[key]>0)reasons.push(reason);
   return reasons;
 }
 function safeMetrics(status) {
-  return Object.fromEntries(['due','connected','lagSeconds','errors','reconnect','quota','paused','retrying'].map(key=>
-    [key,Number.isSafeInteger(status[key])&&status[key]>=0?status[key]:0]));
+  return Object.fromEntries(['due','ready','connected','lagSeconds','errors','reconnect','quota','paused','retrying','sampleSize','p95DurationMs','estimatedDrainSeconds'].map(key=>
+    [key,Number.isSafeInteger(status[key])&&status[key]>=0?status[key]:['p95DurationMs','estimatedDrainSeconds'].includes(key)?null:0]));
 }
 export function webhookSender({url,local=false,fetcher=fetch}) {
   if(!url)return null;
@@ -23,9 +25,10 @@ export function webhookSender({url,local=false,fetcher=fetch}) {
     if(!response.ok)throw Error('Alert delivery failed');
   };
 }
-export function createAlertMonitor({file,deliver=null,log=console.log,now=Date.now,random=Math.random}) {
+export function createAlertMonitor({file,deliver=null,log=console.log,now=Date.now,random=Math.random,component='google-calendar-alert'}) {
+  if(!['google-calendar-alert','google-calendar-external-monitor'].includes(component))throw Error('Invalid calendar alert component');
   let state,loaded=false;
-  function enqueue(event) {
+  function enqueue(event,observedAt) {
     if(!deliver)return;
     // Bound disk/memory during a prolonged receiver outage and flapping health.
     // Keep the oldest unacknowledged event plus a summary of newer changes.
@@ -34,7 +37,8 @@ export function createAlertMonitor({file,deliver=null,log=console.log,now=Date.n
       event.coalescedEvents=removed.reduce((n,item)=>n+1+(item.event.coalescedEvents??0),0);
       event.reconcileComponent=true;
     }
-    state.outbox.push({event,attempts:0,notBefore:now()});
+    // A fresh event is eligible in this observation, even if the wall clock advances.
+    state.outbox.push({event,attempts:0,notBefore:observedAt});
   }
   async function persist() {
     await mkdir(dirname(file),{recursive:true,mode:0o700});
@@ -50,15 +54,15 @@ export function createAlertMonitor({file,deliver=null,log=console.log,now=Date.n
     const time=now(),reasons=reasonsFor(status),metrics=safeMetrics(status);
     if(reasons.length && !state.active) {
       state.active={id:randomUUID(),at:new Date(time).toISOString(),reasons,transportQueued:!!deliver};
-      const event={component:'google-calendar-alert',type:'opened',eventId:randomUUID(),incidentId:state.active.id,at:state.active.at,reasons,metrics};
-      enqueue(event);
+      const event={component,type:'opened',eventId:randomUUID(),incidentId:state.active.id,at:state.active.at,reasons,metrics};
+      enqueue(event,time);
       log(JSON.stringify(event));
     }else if(reasons.length && state.active && deliver && !state.active.transportQueued) {
-      enqueue({component:'google-calendar-alert',type:'opened',eventId:randomUUID(),incidentId:state.active.id,at:new Date(time).toISOString(),reasons,metrics});
+      enqueue({component,type:'opened',eventId:randomUUID(),incidentId:state.active.id,at:new Date(time).toISOString(),reasons,metrics},time);
       state.active.transportQueued=true;
     }else if(!reasons.length && state.active) {
-      const event={component:'google-calendar-alert',type:'recovered',eventId:randomUUID(),incidentId:state.active.id,at:new Date(time).toISOString(),reasons:state.active.reasons,metrics};
-      if(state.active.transportQueued)enqueue(event);
+      const event={component,type:'recovered',eventId:randomUUID(),incidentId:state.active.id,at:new Date(time).toISOString(),reasons:state.active.reasons,metrics};
+      if(state.active.transportQueued)enqueue(event,time);
       log(JSON.stringify(event));state.active=null;
     }
     // Persist before transmission; a crash retries the same idempotency key.
@@ -70,7 +74,7 @@ export function createAlertMonitor({file,deliver=null,log=console.log,now=Date.n
         next.attempts=Math.min(30,next.attempts+1);
         const delay=Math.min(3600000,60000*2**Math.min(next.attempts-1,10));
         next.notBefore=time+Math.min(3600000,delay+Math.floor(delay*0.25*random()));
-        log(JSON.stringify({component:'google-calendar-alert',type:'delivery_failed',at:new Date(time).toISOString(),attempt:next.attempts}));
+        log(JSON.stringify({component,type:'delivery_failed',at:new Date(time).toISOString(),attempt:next.attempts}));
       }
       await persist();
     }

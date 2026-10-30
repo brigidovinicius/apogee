@@ -21,6 +21,7 @@ try {
   for(let n=0;n<7;n++)await sql`insert into ${sql(table)} (user_id,refresh_token_encrypted,next_sync_at) values (${'synthetic-'+n},'not-a-token',now()-interval '1 minute')`;
   const sync=opportunityLoader({
     '@/lib/members/db':{getSql:()=>tagged},
+    './google-calendar-metrics':{measureGoogleCalendarSync:fn=>fn()},
     '@/lib/billing/store':{radarAccess:async()=>({active:false})},
     './google-calendar-config':{googleCalendarConfig:()=>({})},
     './google-calendar-queue':{googleQueuePolicy:()=>({batchSize:3,budgetMs:90000})},

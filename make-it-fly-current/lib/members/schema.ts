@@ -348,7 +348,22 @@ export const radarGoogleCalendar = pgTable("radar_google_calendar", {
 export const radarGoogleCalendarQueueState=pgTable("radar_google_calendar_queue_state",{
   singleton:boolean("singleton").primaryKey().default(true),
   cooldownUntil:timestamp("cooldown_until",{withTimezone:true}),
-},table=>[check("radar_google_calendar_queue_state_singleton_check",sql`${table.singleton}`)]);
+  workerSeenAt:timestamp("worker_seen_at",{withTimezone:true}),workerState:text("worker_state"),
+},table=>[check("radar_google_calendar_queue_state_singleton_check",sql`${table.singleton}`),
+  check("radar_google_calendar_queue_state_worker_state_check",sql`${table.workerState} is null or ${table.workerState} in ('running','ok','failed')`)]);
+export const radarGoogleCalendarMetric=pgTable("radar_google_calendar_metric",{
+  id:bigint("id",{mode:"number"}).primaryKey().generatedAlwaysAsIdentity(),
+  finishedAt:timestamp("finished_at",{withTimezone:true}).notNull().default(sql`clock_timestamp()`),
+  durationMs:integer("duration_ms").notNull(),outcome:text("outcome").notNull(),googleCalls:integer("google_calls").notNull(),
+  httpErrors:integer("http_errors").notNull(),networkErrors:integer("network_errors").notNull(),quotaResponses:integer("quota_responses").notNull(),eventsChanged:integer("events_changed").notNull(),
+},table=>[index("radar_google_calendar_metric_finished_idx").on(table.finishedAt),
+  check("radar_google_calendar_metric_duration_ms_check",sql`${table.durationMs}>=0`),
+  check("radar_google_calendar_metric_outcome_check",sql`${table.outcome} in ('synced','pending','failed','disconnected','thrown')`),
+  check("radar_google_calendar_metric_google_calls_check",sql`${table.googleCalls}>=0`),
+  check("radar_google_calendar_metric_http_errors_check",sql`${table.httpErrors}>=0`),
+  check("radar_google_calendar_metric_network_errors_check",sql`${table.networkErrors}>=0`),
+  check("radar_google_calendar_metric_quota_responses_check",sql`${table.quotaResponses}>=0`),
+  check("radar_google_calendar_metric_events_changed_check",sql`${table.eventsChanged}>=0`)]);
 export const radarGoogleCalendarOAuth = pgTable("radar_google_calendar_oauth", {
   userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
   stateHash: text("state_hash").notNull().unique(),

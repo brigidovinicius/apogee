@@ -51,6 +51,7 @@ try {
   const item=opportunityLoader()("lib/opportunities/radar-client.ts").toOpportunity(raw);
   let live=[item];
   const load=opportunityLoader({
+    "./google-calendar-metrics":{measureGoogleCalendarSync:fn=>fn()},
     "@/lib/members/db":{getSql:()=>sql},"@/lib/members/mail":{applicationOrigin:()=>"http://127.0.0.1:4381"},
     "@/lib/billing/store":{radarAccess:async()=>({active})},
     "./radar-client":{listRadarOpportunities:async()=>{if(outage)throw Error("outage");return live;}},

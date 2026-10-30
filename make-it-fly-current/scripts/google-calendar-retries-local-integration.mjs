@@ -10,18 +10,19 @@ import postgres from 'postgres';
 import {opportunityLoader} from '../tests/helpers/load-opportunity-module.mjs';
 import {syncBatch} from './google-calendar-worker.mjs';
 import {createAlertMonitor,webhookSender} from './google-calendar-alerts.mjs';
+import {exerciseMonitorAndCapacity} from './google-calendar-monitor-local-checks.mjs';
 
 const config=JSON.parse(await readFile(new URL('../../.local/radar-calendar/config.json',import.meta.url),'utf8'));
 const dbUrl=new URL(config.DATABASE_URL);
 assert.equal(dbUrl.hostname,'127.0.0.1');assert.equal(dbUrl.port,'48763');assert.equal(dbUrl.pathname,'/apogee_radar_calendar_local');
 const sql=postgres(dbUrl.href,{ssl:false,max:3,prepare:false,onnotice:()=>{}});
 const schema='calendar_retry_qa_'+randomBytes(6).toString('hex');
-const tables=['radar_google_calendar_queue_state','radar_google_calendar_event','radar_google_calendar_oauth','radar_google_calendar','radar_saved_opportunity'];
+const tables=['radar_google_calendar_metric','radar_google_calendar_queue_state','radar_google_calendar_event','radar_google_calendar_oauth','radar_google_calendar','radar_saved_opportunity'];
 // Real tagged driver and transactions; only this random schema is in search_path.
 // Do not add public as fallback: a missing fixture table must fail closed.
 const qa=postgres(dbUrl.href,{ssl:false,max:2,prepare:false,connection:{search_path:schema},onnotice:()=>{}});
 const originalFetch=global.fetch,events=new Map(),alerts=[],alertKeys=[],logs=[];
-let mode='quota',tokenCalls=0,apiCalls=0,partialWrites=0,alertFail=true,route,time=Date.now(),checks=0;
+let mode='quota',tokenCalls=0,apiCalls=0,partialWrites=0,alertFail=true,hangMonitor=false,route,time=Date.now(),checks=0;
 const check=(value,label)=>{assert.ok(value,label);checks++;};
 const server=createServer(async(req,res)=>{
   try {
@@ -30,6 +31,7 @@ const server=createServer(async(req,res)=>{
     const reply=(body,status=200,headers={})=>{res.writeHead(status,{'Content-Type':'application/json',...headers});res.end(JSON.stringify(body));};
     if(path==='/alerts') {alerts.push(JSON.parse(raw));alertKeys.push(req.headers['idempotency-key']);reply({},alertFail?503:200);return;}
     if(path==='/api/internal/google-agenda/sync') {
+      if(req.method==='GET'&&hangMonitor)return;
       const request=new Request('http://127.0.0.1'+path,{method:req.method,headers:req.headers});
       const result=await route[req.method](request);res.writeHead(result.status,Object.fromEntries(result.headers));res.end(await result.text());return;
     }
@@ -128,7 +130,9 @@ try {
     check((await state('a')).refresh_token_encrypted===null,'Revoked grant is removed from retry queue');
     check(!logs.join('').includes('SYNTHETIC_REFRESH')&&!JSON.stringify(alerts).includes('synthetic-a'),'Logs and alerts do not identify accounts/tokens');
     const [{n}]=await qa`select count(*)::int as n from radar_google_calendar_event where user_id='a'`;check(n===3,'Event mapping retained after failures');
-    console.log(JSON.stringify({passed:checks,localOnly:true,realPostgres:true,realLoopbackHttp:true,googleResponsesSimulated:true,externalAlertsSent:0}));
+    const observed=await exerciseMonitorAndCapacity({qa,load,origin,server,directory,getApiCalls:()=>apiCalls,setMonitorHang:value=>{hangMonitor=value;}});
+    checks+=observed.checks;
+    console.log(JSON.stringify({passed:checks,localOnly:true,realPostgres:true,realLoopbackHttp:true,separateWorkerAndMonitorProcesses:true,googleResponsesSimulated:true,externalAlertsSent:0,capacityScenarios:observed.scenarios,monitorNotifications:observed.monitorNotifications}));
   } finally {await rm(directory,{recursive:true});}
 } finally {
   global.fetch=originalFetch;await new Promise(resolve=>server.close(resolve));

@@ -39,7 +39,7 @@ test('protected monitoring reports backlog as unhealthy and does not run sync',a
   let lag=1000,runs=0;
   const route=opportunityLoader({
     '@/lib/opportunities/google-calendar-sync':{syncDueGoogleCalendars:async()=>{runs++;return 3;}},
-    '@/lib/opportunities/google-calendar-queue':{googleQueuePolicy:()=>({batchSize:3,maxLagSeconds:900}),googleQueueStatus:async()=>({configured:true,due:10,connected:20,lagSeconds:lag,errors:2,reconnect:1})},
+    '@/lib/opportunities/google-calendar-queue':{recordGoogleWorkerHeartbeat:async()=>{},googleQueuePolicy:()=>({batchSize:3,maxLagSeconds:900}),googleQueueStatus:async()=>({configured:true,due:10,connected:20,lagSeconds:lag,errors:2,reconnect:1})},
   })('app/api/internal/google-agenda/sync/route.ts');
   const previous=process.env.GOOGLE_CALENDAR_SYNC_SECRET;process.env.GOOGLE_CALENDAR_SYNC_SECRET='a'.repeat(32);
   const request=()=>new Request('http://localhost',{headers:{Authorization:'Bearer '+'a'.repeat(32)}});

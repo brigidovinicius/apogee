@@ -33,7 +33,7 @@ export async function checkHeartbeat(path,now=Date.now()) {
   }catch{return false;}
 }
 async function main() {
-  const file='/tmp/apogee-google-calendar-health.json';
+  const file=process.env.GOOGLE_CALENDAR_WORKER_HEALTH_FILE??'/tmp/apogee-google-calendar-health.json';
   if(process.argv.includes('--healthcheck')){process.exitCode=await checkHeartbeat(file)?0:1;return;}
   const origin=process.env.GOOGLE_CALENDAR_INTERNAL_ORIGIN ?? 'http://web:3000';
   const url=new URL(origin);

@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { requiredGoogleCalendarConfig, GOOGLE_CALENDAR_SCOPE } from "./google-calendar-config";
 import { publicOpportunityPath, type CalendarEntry } from "./discovery";
 import { retryAfterMilliseconds } from "./google-calendar-retry";
+import {measuredGoogleFetch,recordGoogleQuotaResponse,recordGoogleEventChange} from "./google-calendar-telemetry";
 
 export class GoogleCalendarError extends Error {
   constructor(public code: "reconnect" | "permission" | "quota" | "unavailable" | "invalid_response", public status = 0,
@@ -23,6 +24,7 @@ function providerError(response:Response,body:Record<string,unknown>,token=false
   const detail=body.error && typeof body.error==='object' ? body.error as {errors?:{reason?:string}[]}:null;
   const reasons=Array.isArray(detail?.errors)?detail.errors.map(item=>item?.reason):[];
   const quota=response.status===429 || reasons.some(r=>['rateLimitExceeded','userRateLimitExceeded','quotaExceeded','dailyLimitExceeded'].includes(r??''));
+  if(quota)recordGoogleQuotaResponse();
   const scope=reasons.includes('userRateLimitExceeded')?'account':'project';
   const reconnect=token ? body.error==='invalid_grant' : response.status===401;
   const code=quota?'quota':reconnect?'reconnect':
@@ -31,7 +33,7 @@ function providerError(response:Response,body:Record<string,unknown>,token=false
 }
 export async function googleTokens(parameters: Record<string, string>, signal?: AbortSignal) {
   const config = requiredGoogleCalendarConfig();
-  const response = await fetch("https://oauth2.googleapis.com/token", {
+  const response = await measuredGoogleFetch("https://oauth2.googleapis.com/token", {
     method: "POST", redirect: "error", cache: "no-store",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ ...parameters, client_id: config.clientId, client_secret: config.clientSecret }),
@@ -45,7 +47,7 @@ export async function googleTokens(parameters: Record<string, string>, signal?: 
 }
 export async function googleApi(accessToken: string, path: string, method = "GET", body?: unknown, signal?: AbortSignal) {
   if (!path.startsWith("/calendars") || path.includes("://")) throw new GoogleCalendarError("invalid_response");
-  const response = await fetch("https://www.googleapis.com/calendar/v3" + path, {
+  const response = await measuredGoogleFetch("https://www.googleapis.com/calendar/v3" + path, {
     method, redirect: "error", cache: "no-store",
     headers: { Authorization: "Bearer " + accessToken, ...(body === undefined ? {} : { "Content-Type": "application/json" }) },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
@@ -53,6 +55,7 @@ export async function googleApi(accessToken: string, path: string, method = "GET
   });
   const result = await responseJson(response);
   if (!response.ok) throw providerError(response,result);
+  if(path.includes('/events')&&['POST','PATCH','DELETE'].includes(method))recordGoogleEventChange();
   return result;
 }
 export function googleEventId(userId: string, calendarId: string, key: string, revision = 0) {
