@@ -36,7 +36,6 @@ export function stageEnd(stage: Pick<Stage,'start'|'end'>) {
   return Date.parse(end.length === 10 ? `${end}T23:59:59-03:00` : end);
 }
 export type CalendarEntry = { item: StudentOpportunity; edition: string; key: string; stage: Stage };
-export type CalendarFeedEntry = Pick<CalendarEntry, "key" | "stage"> & { item: Pick<StudentOpportunity, "id" | "title"> };
 export function calendarEntries(items: readonly StudentOpportunity[], now=Date.now()): CalendarEntry[] {
   const entries: CalendarEntry[] = [];
   const processes = new Set<string>();

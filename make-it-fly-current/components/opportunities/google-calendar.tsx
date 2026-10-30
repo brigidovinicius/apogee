@@ -25,6 +25,7 @@ export function GoogleCalendar({status,result}: {
   return <section className={styles.subscription} aria-labelledby="google-calendar-heading">
     <h2 id="google-calendar-heading">Google Agenda</h2>
     <p>Receba as etapas das oportunidades salvas em um calendário separado do Apogee. Novas datas e cancelamentos são atualizados automaticamente enquanto a conexão estiver ativa.</p>
+    <p><a href="/privacidade#google-agenda">Como seus dados são usados na conexão Google</a></p>
     {!status.configured ? <><p>A conexão com o Google Agenda ainda precisa ser configurada neste ambiente.</p><button className={styles.action} disabled>Conectar Google Agenda</button></> : <>
       <p>O Apogee solicita acesso somente aos calendários que ele cria.</p>
       {message && <p role="status">{message}</p>}

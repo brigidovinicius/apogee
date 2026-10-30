@@ -36,6 +36,32 @@ services:
       retries: 5
       start_period: 20s
 
+  google-calendar-sync:
+    image: apogee-site:${APOGEE_RELEASE_SHA:-local}
+    profiles: [google-calendar]
+    restart: unless-stopped
+    init: true
+    environment:
+      GOOGLE_CALENDAR_INTERNAL_ORIGIN: http://web:3000
+      GOOGLE_CALENDAR_SYNC_SECRET: ${GOOGLE_CALENDAR_SYNC_SECRET:-}
+    command: ["node", "scripts/google-calendar-worker.mjs"]
+    depends_on:
+      web:
+        condition: service_healthy
+    networks: [public]
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 128m
+    cpus: 0.25
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "node", "scripts/google-calendar-worker.mjs", "--healthcheck"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 180s
+
   caddy:
     image: caddy:2.10.2-alpine
     restart: unless-stopped

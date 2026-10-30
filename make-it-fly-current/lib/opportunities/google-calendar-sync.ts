@@ -7,6 +7,7 @@ import { googleCalendarConfig, openGoogleSecret, sealGoogleSecret } from "./goog
 import { googleApi, googleTokens, googleEventBody, googleEventId, upsertGoogleEvent, cancelGoogleEvent, GoogleCalendarError } from "./google-calendar-client";
 import { listRadarOpportunities } from "./radar-client";
 import { calendarEntries } from "./discovery";
+import { googleQueuePolicy } from "./google-calendar-queue";
 
 export async function syncGoogleCalendar(userId: string): Promise<"synced" | "pending" | "disconnected" | "failed"> {
   if (!googleCalendarConfig()) return "disconnected";
@@ -96,7 +97,24 @@ export async function syncGoogleCalendar(userId: string): Promise<"synced" | "pe
 }
 export async function syncDueGoogleCalendars() {
   if (!googleCalendarConfig()) return 0;
-  const rows = await getSql()`select user_id from radar_google_calendar where refresh_token_encrypted is not null and next_sync_at<=now() order by next_sync_at limit 3`;
-  for (const row of rows) await syncGoogleCalendar(String(row.user_id));
-  return rows.length;
+  const policy=googleQueuePolicy();
+  const deadline=Date.now()+policy.budgetMs;
+  let processed=0;
+  while(processed<policy.batchSize && Date.now()<deadline) {
+    // Claim one due connection atomically; other workers skip it. A crashed
+    // worker leaves a bounded lease, so the connection becomes eligible again.
+    const [row]=await getSql()`with candidate as (
+      select user_id from radar_google_calendar
+      where refresh_token_encrypted is not null and next_sync_at<=now()
+      order by next_sync_at,user_id for update skip locked limit 1
+    ) update radar_google_calendar c set next_sync_at=now()+interval '3 minutes'
+      from candidate where c.user_id=candidate.user_id returning c.user_id`;
+    if(!row)break;
+    try {await syncGoogleCalendar(String(row.user_id));}
+    catch {
+      await getSql()`update radar_google_calendar set last_error='unavailable',next_sync_at=now()+interval '5 minutes' where user_id=${String(row.user_id)}`;
+    }
+    processed++;
+  }
+  return processed;
 }

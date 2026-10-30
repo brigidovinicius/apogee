@@ -24,6 +24,7 @@ export function SiteFooter() {
           <Link href="/loja">Loja</Link>
           <Link href="/makeitfly">Make It Fly</Link>
           <Link href="/membros">Membros</Link>
+          <Link href="/privacidade">Privacidade</Link>
         </nav>
       </div>
     </footer>

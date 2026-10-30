@@ -5,7 +5,6 @@ const load=opportunityLoader();
 const { readDiscovery, calendarEntries, publicOpportunityPath, displayOpportunityTitle }=load("lib/opportunities/discovery.ts");
 const { opportunityCardData }=load("lib/opportunities/card-data.ts");
 const { isOpportunityOpen, opportunityFiltersFromSearchParams, setOpportunityFilterSearchParams, primaryOpportunityCategory }=load("lib/opportunities/types.ts");
-const { renderCalendarFeed }=load("lib/opportunities/ics.ts");
 const now=Date.parse("2026-10-29T12:00:00Z");
 const stage={id:"exam",name:"Prova",kind:"exam",start:"2026-11-10",sourceUrl:"https://official.test/PRIVATE",checkedAt:"2026-10-28T12:00:00Z"};
 const base={id:"radar-abc",title:"Olimpíada de Matemática",organization:"Organização",kind:"Programa",level:"Ensino médio",categories:["competicoes"],
@@ -39,49 +38,8 @@ test("area filters round-trip through URLs and titles are cleaned without changi
   assert.equal(displayOpportunityTitle("Curso, início 2026-10-22"),"Curso");
   assert.ok(publicOpportunityPath(base).endsWith("--radar-abc"));
 });
-test("ICS uses stable UIDs, inclusive all-day dates and never leaks official URLs or requirements",()=>{
-  const saved=[{snapshot:base,removedAt:null}];
-  const first=renderCalendarFeed(saved,[base],now);
-  assert.match(first,/DTSTART;VALUE=DATE:20261110/);assert.match(first,/DTEND;VALUE=DATE:20261111/);
-  assert.doesNotMatch(first,/PRIVATE/);
-  const revised={...base,title:"Nome atualizado"};
-  assert.equal(first.match(/UID:[^\r]+/)[0],renderCalendarFeed(saved,[revised],now).match(/UID:[^\r]+/)[0]);
-  const cancelled=renderCalendarFeed([{snapshot:base,removedAt:"2026-10-29T12:00:00Z"}],[],now);
-  assert.match(cancelled,/STATUS:CANCELLED/);
-  assert.match(renderCalendarFeed(saved,[],now),/LAST-MODIFIED:20261029T120000Z/);
-  assert.match(renderCalendarFeed([{snapshot:base,removedAt:"2026-10-29T12:00:00Z"}],[],Date.parse("2027-01-01T00:00:00Z")),/STATUS:CANCELLED/);
-});
-test("ICS remembers stages first exported after saving and cancels them after removal",()=>{
-  const extra={...base,discovery:{...base.discovery,editions:[{id:"2026",name:"2026",stages:[stage,{...stage,id:"result",name:"Resultado",kind:"result",start:"2026-12-01"}]}]}};
-  const text=renderCalendarFeed([{snapshot:base,history:calendarEntries([extra],0),removedAt:"2026-10-29T12:00:00Z"}],[],now);
-  assert.equal((text.match(/STATUS:CANCELLED/g)||[]).length,2);
-});
-test("ICS escapes line injection and folds UTF-8 at 75 octets",()=>{
-  const item={...base,title:"á".repeat(90)+"\nBEGIN:VEVENT,;"};
-  const text=renderCalendarFeed([{snapshot:item,removedAt:null}],[item],now);
-  assert.equal(text.split("\r\n").filter(l=>l==="BEGIN:VEVENT").length,1);
-  for(const line of text.split("\r\n"))assert.ok(Buffer.byteLength(line)<=75);
-});
-test("private feed rejects malformed tokens before a database lookup and revoked access before reading saved content",async()=>{
-  let reads=0,active=false;
-  const tagged=async()=>{reads++;return [{user_id:"owner"}];};
-  const personal=opportunityLoader({"@/lib/members/db":{getSql:()=>tagged},"@/lib/billing/store":{radarAccess:async()=>({active})}})("lib/opportunities/personal-calendar.ts");
-  process.env.RADAR_CALENDAR_PERSONAL_ENABLED="true";
-  try {
-    assert.equal(await personal.calendarTokenOwner("invalid"),null);assert.equal(reads,0);
-    assert.equal(await personal.calendarTokenOwner("a".repeat(64)),null);
-    active=true;assert.equal(await personal.calendarTokenOwner("a".repeat(64)),"owner");
-  } finally { delete process.env.RADAR_CALENDAR_PERSONAL_ENABLED; }
-});
 test("paid authorization is required inside the save action and cannot be supplied by a client",async()=>{
   let saved=null;
   const actions=opportunityLoader({"@/lib/opportunities/personal-calendar":{requireCalendarMember:async()=>{throw Error("DENIED")},saveOpportunity:async(...args)=>{saved=args}}})("app/membros/meu-calendario/actions.ts");
   await assert.rejects(actions.toggleSaved("radar-abc",false),/DENIED/);assert.equal(saved,null);
-});
-
-
-test("local ICS event links remain on the configured test origin",()=>{
-  const text=renderCalendarFeed([{snapshot:base,removedAt:null}],[base],now,"http://127.0.0.1:4381");
-  assert.match(text,/URL:http:\/\/127\.0\.0\.1:4381\/oportunidades\//);
-  assert.doesNotMatch(text,/URL:https:\/\/www\.apogee\.community/);
 });
