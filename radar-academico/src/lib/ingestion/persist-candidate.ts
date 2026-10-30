@@ -6,6 +6,7 @@ import { publicationIssue } from "./publication";
 import { categoriesFromEvidence } from "./categories";
 import { parseDiscovery, classifyDiscovery } from "./discovery";
 import { programmeCataloguePageCount } from "./programme-catalogue";
+import { calendarSource } from "./calendar-sources";
 
 export const candidateColumns = {
   title: "title", institution: "institution", applicantType: "applicant_type", applicationRoute: "application_route",
@@ -35,7 +36,7 @@ export async function findCandidate(client: PoolClient, candidate: OpportunityCa
       where os.opportunity_id=o.id and os.source_page_url=$2)
       and ($3::boolean=false or lower(btrim(o.title))=lower(btrim($4)))
     order by o.created_at limit 2 for update`,
-  [candidate.officialSourceId, candidate.sourcePageUrl, Boolean(programmeCataloguePageCount(candidate.officialSourceId)), candidate.title]);
+  [candidate.officialSourceId, candidate.sourcePageUrl, Boolean(programmeCataloguePageCount(candidate.officialSourceId)) && !calendarSource(candidate.officialSourceId), candidate.title]);
   if (foreign.rows.length>1) throw new Error("Página já pertence a outro catálogo; identidade ambígua");
   if (foreign.rows[0]) return foreign.rows[0];
   const result = await client.query<StoredOpportunity>(

@@ -1,0 +1,170 @@
+{
+  "databaseAccess": false,
+  "sources": [
+    {
+      "sourceId": "obmep-calendar-2026",
+      "url": "https://www.obmep.org.br/calendario.htm",
+      "checkedAt": "2026-10-30T00:25:12.849Z",
+      "fetched": true,
+      "sha256": "a338a45347bb6e1665155d2d08deed6c934057e5a8caa12fd3cfb2c79115d624",
+      "bytes": 56254,
+      "parsed": true,
+      "candidates": 1,
+      "stages": 8
+    },
+    {
+      "sourceId": "obi-calendar-2026",
+      "url": "https://olimpiada.ic.unicamp.br/calendario/datas_importantes",
+      "checkedAt": "2026-10-30T00:25:19.444Z",
+      "fetched": true,
+      "sha256": "ed9d218dcb92cc552eab2f0cc43e9f17378508225825749709ef54a5855a415d",
+      "bytes": 17201,
+      "parsed": true,
+      "candidates": 1,
+      "stages": 16
+    },
+    {
+      "sourceId": "comvest-vestibular-2027",
+      "url": "https://www.comvest.unicamp.br/ingresso-2027/vestibular-2027/",
+      "checkedAt": "2026-10-30T00:25:21.991Z",
+      "fetched": false,
+      "parsed": false,
+      "reason": "Acesso bloqueado por robots.txt"
+    },
+    {
+      "sourceId": "fuvest-vestibular-2027",
+      "url": "https://www.fuvest.br/vestibular-da-usp/",
+      "checkedAt": "2026-10-30T00:25:22.447Z",
+      "fetched": false,
+      "parsed": false,
+      "reason": "robots.txt indisponível para revisão"
+    }
+  ],
+  "localIntegration": {
+    "checkedAt": "2026-10-30T00:29:34.703Z",
+    "localOnly": true,
+    "results": [
+      {
+        "sourceId": "obmep-calendar-2026",
+        "opportunityId": "de88a7f8-c8ef-4236-ba05-e7ea3b767176",
+        "stages": 8,
+        "duplicateCount": 0,
+        "status": "closed",
+        "visibleInCalendar": true,
+        "visibleAsOpen": false
+      },
+      {
+        "sourceId": "obi-calendar-2026",
+        "opportunityId": "e8ff1dbe-3120-4914-b29b-4df900da09a3",
+        "stages": 16,
+        "duplicateCount": 0,
+        "status": "closed",
+        "visibleInCalendar": true,
+        "visibleAsOpen": false
+      }
+    ],
+    "blocked": [
+      {
+        "id": "comvest-vestibular-2027",
+        "active": false,
+        "verification_status": "pending"
+      },
+      {
+        "id": "fuvest-vestibular-2027",
+        "active": false,
+        "verification_status": "pending"
+      }
+    ]
+  },
+  "validation": [
+    {
+      "check": "radar-tests",
+      "exitCode": 0,
+      "seconds": 33.7,
+      "log": "/private/tmp/radar-collectors-final-radar-tests-20261029.log"
+    },
+    {
+      "check": "apogee-tests",
+      "exitCode": 0,
+      "seconds": 61.8,
+      "log": "/private/tmp/radar-collectors-final-apogee-tests-20261029.log"
+    },
+    {
+      "check": "postgres-roles",
+      "exitCode": 0,
+      "seconds": 3.6,
+      "log": "/private/tmp/radar-collectors-final-postgres-roles-20261029.log"
+    },
+    {
+      "check": "calendar-storage",
+      "exitCode": 0,
+      "seconds": 1.7,
+      "log": "/private/tmp/radar-collectors-final-calendar-storage-20261029.log"
+    },
+    {
+      "check": "google-integration",
+      "exitCode": 0,
+      "seconds": 1.4,
+      "log": "/private/tmp/radar-collectors-final-google-integration-20261029.log"
+    },
+    {
+      "check": "radar-types",
+      "exitCode": 0,
+      "seconds": 4.6,
+      "log": "/private/tmp/radar-collectors-final-radar-types-20261029.log"
+    },
+    {
+      "check": "radar-lint",
+      "exitCode": 0,
+      "seconds": 5.3,
+      "log": "/private/tmp/radar-collectors-final-radar-lint-20261029.log"
+    },
+    {
+      "check": "apogee-types",
+      "exitCode": 0,
+      "seconds": 10.8,
+      "log": "/private/tmp/radar-collectors-final-apogee-types-20261029.log"
+    },
+    {
+      "check": "apogee-lint",
+      "exitCode": 0,
+      "seconds": 11.8,
+      "log": "/private/tmp/radar-collectors-final-apogee-lint-20261029.log"
+    },
+    {
+      "check": "radar-build",
+      "exitCode": 0,
+      "seconds": 13.7,
+      "log": "/private/tmp/radar-collectors-final-radar-build-20261029.log"
+    },
+    {
+      "check": "apogee-build",
+      "exitCode": 0,
+      "seconds": 44.8,
+      "log": "/private/tmp/radar-collectors-final-apogee-build-20261029.log"
+    }
+  ],
+  "previewSmoke": [
+    {
+      "path": "/calendarios/olimpiadas-cientificas",
+      "status": 200,
+      "contentAndFilters": "passed"
+    },
+    {
+      "path": "/calendarios/olimpiadas-cientificas?area=matematica",
+      "status": 200,
+      "contentAndFilters": "passed"
+    },
+    {
+      "path": "/calendarios/olimpiadas-cientificas?area=tecnologia",
+      "status": 200,
+      "contentAndFilters": "passed"
+    }
+  ],
+  "automatedTests": {
+    "apogee": 539,
+    "radar": 415,
+    "postgresRoles": 15,
+    "totalDistinctPassed": 969
+  }
+}

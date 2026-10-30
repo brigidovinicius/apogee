@@ -1,7 +1,7 @@
 {
   "checkedOn": "2026-10-29",
-  "status": "public_evidence_only_no_activation",
-  "note": "Consulta das páginas públicas; robots, coletor e retificações ainda precisam de validação. Nenhum cadastro ou data foi publicado.",
+  "status": "local_collectors_implemented_two_live_sources_verified_two_blocked",
+  "note": "Quatro adaptadores implementados e testados localmente. OBMEP e OBI passaram pelo fetch protegido e foram importadas apenas no PostgreSQL local. Comvest bloqueada por robots; Fuvest com robots indisponível. Nenhum deploy ou ativação em produção.",
   "entries": [
     {
       "name": "OBMEP",
@@ -13,10 +13,10 @@
       "edition": "2026",
       "observation": "Inscrições encerradas; divulgação de premiados em 15/12/2026. Usar como acompanhamento, não como candidatura aberta.",
       "nextChecks": [
-        "robots e fetch protegido",
-        "parser por linha do ano, sem misturar calendário histórico",
-        "revisão de retificações e regulamento"
-      ]
+        "Revalidar a fonte antes de qualquer futura ativação em produção"
+      ],
+      "sourceId": "obmep-calendar-2026",
+      "localValidation": "live_fetch_parser_postgres_recheck_passed"
     },
     {
       "name": "Olimpíada Brasileira de Informática",
@@ -28,10 +28,10 @@
       "edition": "2026",
       "observation": "Datas por modalidade; inscrição da escola é diferente da inscrição de competidores. Não condensar todos os prazos em uma única data.",
       "nextChecks": [
-        "robots e fetch protegido",
-        "edição, modalidade e nível em etapas distintas",
-        "conferir elegibilidade no regulamento"
-      ]
+        "Revalidar a fonte antes de qualquer futura ativação em produção"
+      ],
+      "sourceId": "obi-calendar-2026",
+      "localValidation": "live_fetch_parser_postgres_recheck_passed"
     },
     {
       "name": "Comvest Unicamp",
@@ -39,22 +39,26 @@
       "subtype": "vestibular",
       "areas": [],
       "edition": "2027",
-      "observation": "Portal oficial acessível. Vestibular e Enem-Unicamp são processos distintos; preservar uma identidade por processo, sem multiplicar por curso.",
+      "observation": "O robots.txt bloqueia /ingresso-2027/. Adaptador testado com marcação representativa e prorrogação explícita; não confundir vestibular com ENEM-Unicamp. Sem importação local da fonte bloqueada.",
       "nextChecks": [
-        "robots e fetch protegido",
-        "calendário de inscrição, provas, chamadas e matrícula",
-        "deduplicação com processos já existentes"
-      ]
+        "Coleta real ainda bloqueada; não ativar nem importar snapshots de busca como substituto",
+        "Validar o adaptador com HTML oficial recebido pelo fetch protegido quando a fonte permitir"
+      ],
+      "sourceId": "comvest-vestibular-2027",
+      "localValidation": "representative_parser_tests_only_live_fetch_blocked"
     },
     {
       "name": "Fuvest",
       "url": "https://www.fuvest.br/vestibular-da-usp/",
       "subtype": "vestibular",
       "areas": [],
-      "observation": "HTTP 403 na consulta desta tarefa. Sem datas importadas e sem contornar o bloqueio.",
+      "observation": "robots.txt indisponível na coleta protegida local. Parser conservador testado somente com marcação representativa; não é homologação da fonte ao vivo.",
       "nextChecks": [
-        "verificar disponibilidade oficial posteriormente"
-      ]
+        "Coleta real ainda bloqueada; não ativar nem importar snapshots de busca como substituto",
+        "Validar o adaptador com HTML oficial recebido pelo fetch protegido quando a fonte permitir"
+      ],
+      "sourceId": "fuvest-vestibular-2027",
+      "localValidation": "representative_parser_tests_only_live_fetch_blocked"
     }
   ]
 }

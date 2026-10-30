@@ -15,7 +15,9 @@ vi.mock("@/lib/db/client", () => ({
     return tx.query(sql, values);
   }),
 }));
-vi.mock("@/lib/ingestion/fetch-source", () => ({ fetchOfficialResource: vi.fn() }));
+vi.mock("@/lib/ingestion/fetch-source", async importOriginal => ({
+ ...(await importOriginal<typeof import("@/lib/ingestion/fetch-source")>()), fetchOfficialResource: vi.fn(),
+}));
 vi.mock("@/lib/alerts/mail", () => ({ alertsAvailable:()=>true, alertMailConfiguration:vi.fn(()=>({dailyLimit:50})), sendAlertMail:vi.fn() }));
 import { alertMailConfiguration, sendAlertMail } from "@/lib/alerts/mail";
 import { subscribeToOpportunity, updateAlertSubscription, queueOpportunityChanges, runOpportunityAlerts } from "@/lib/alerts/monitoring";
@@ -28,6 +30,8 @@ import { claimDueOfficialSources, completeScheduledSource } from "@/lib/ingestio
 import { claimDueDiscoveryTargets, completeDiscoveryTarget } from "@/lib/discovery/watchlist";
 import { withAdminTransaction } from "@/lib/db/client";
 import { FGV_DATATHON_ID, CPS_ROBOCODE_ID, IFMG_JECT_ID, AMAZONIA_ID } from "@/lib/ingestion/normalize-extracurricular-20261017";
+import { calendarAuditSource } from "@/lib/ingestion/calendar-sources";
+import { runOfficialSourceIngestion } from "@/lib/ingestion";
 
 const source: OfficialSource = { id: "test-source", name: "Instituto", institutionName: "Instituto", institutionAcronym: "IF",
  sourceType: "federal_institute", baseUrl: "https://example.edu.br/", allowedDomains: ["example.edu.br"], allowedPathPrefixes: ["/"],
@@ -77,6 +81,49 @@ beforeAll(async () => {
  vi.stubEnv("DATABASE_READER_URL", "isolated-test-only");
 }, 30_000);
 afterAll(async () => { await state.db?.close(); vi.unstubAllEnvs(); });
+it("collects/rechecks the actual OBMEP snapshot without duplicates, preserving edits, failures and tombstones", async () => {
+ const s = calendarAuditSource("obmep-calendar-2026");
+ await state.db!.exec(await readFile(new URL("../../db/migrations/0044_calendar_sources_local_validation.sql", import.meta.url), "utf8"));
+ await state.db!.query("update official_sources set active=true,verification_status='verified' where id=$1", [s.id]);
+ const html = await readFile(new URL("./fixtures/obmep-calendar-2026.html", import.meta.url), "utf8");
+ const respond = (body: string) => vi.mocked(fetchOfficialResource).mockResolvedValue({ body: Buffer.from(body), contentType: "text/html", hash: "fixture", cached: false });
+ respond(html);
+ expect(await runOfficialSourceIngestion({ sourceId: s.id, maxPages: 1 })).toMatchObject({ discovered: 1 });
+ const read = async () => (await state.db!.query<{id:string;discovery:{editions:{stages:{id:string;start:string}[]}[]};requirements_text:string;deleted_at:string|null}>("select id,discovery,requirements_text,deleted_at from opportunities where official_source_id=$1", [s.id])).rows;
+ const original = (await read())[0];
+ await runOfficialSourceIngestion({ sourceId: s.id, maxPages: 1 });
+ expect(await read()).toHaveLength(1);
+ await state.db!.query("update opportunities set next_source_check_at=null,management_overrides=$2,requirements_text='Curadoria preservada' where id=$1", [original.id, { requirementsText: "Curadoria preservada" }]);
+ respond(html.replace("15 de dezembro", "16 de dezembro"));
+ expect(await recheckKnownOpportunities(s, 1, async () => "")).toMatchObject({ failed: 0, pagesChecked: 1 });
+ const updated = (await read())[0];
+ expect(updated.id).toBe(original.id);
+ expect(updated.requirements_text).toBe("Curadoria preservada");
+ expect(updated.discovery.editions[0].stages.find(s => s.id === "awards")?.start).toBe("2026-12-16");
+ await state.db!.query("update opportunities set next_source_check_at=null where id=$1", [original.id]);
+ respond("<main>Access denied</main>");
+ expect(await recheckKnownOpportunities(s, 1, async () => "")).toMatchObject({ failed: 1 });
+ expect((await read())[0].discovery).toEqual(updated.discovery);
+ await state.db!.query("update opportunities set deleted_at=now() where id=$1", [original.id]);
+ respond(html);
+ await runOfficialSourceIngestion({ sourceId: s.id, maxPages: 1 });
+ expect(await read()).toHaveLength(1);
+ expect((await read())[0].deleted_at).not.toBeNull();
+});
+it("does not duplicate a calendar already owned or deleted under another source with a different title", async () => {
+ const s = calendarAuditSource("obmep-calendar-2026");
+ await state.db!.exec(await readFile(new URL("../../db/migrations/0044_calendar_sources_local_validation.sql", import.meta.url), "utf8"));
+ await state.db!.query("update official_sources set active=true,verification_status='verified' where id=$1", [s.id]);
+ await state.db!.query("update official_sources set allowed_domains=$1,allowed_path_prefixes=$2 where id=$3", [s.allowedDomains, s.allowedPathPrefixes, source.id]);
+ const legacy = { ...source, allowedDomains: s.allowedDomains, allowedPathPrefixes: s.allowedPathPrefixes };
+ await saveReviewItems(legacy, { sourceId: source.id, pagesChecked: 1, discovered: [candidate({ title: "Olimpíada de Matemática — edição 2026", sourcePageUrl: s.baseUrl })], ignored: 0, failed: 0, locationRejected: 0, warnings: [] });
+ const body = await readFile(new URL("./fixtures/obmep-calendar-2026.html", import.meta.url), "utf8");
+ vi.mocked(fetchOfficialResource).mockResolvedValue({ body: Buffer.from(body), contentType: "text/html", hash: "fixture", cached: false });
+ expect(await runOfficialSourceIngestion({ sourceId: s.id, maxPages: 1 })).toMatchObject({ blocked: 1 });
+ await state.db!.exec("update opportunities set deleted_at=now()");
+ expect(await runOfficialSourceIngestion({ sourceId: s.id, maxPages: 1 })).toMatchObject({ blocked: 1 });
+ expect((await state.db!.query("select count(*)::int as n from opportunities")).rows).toEqual([{ n: 1 }]);
+});
 it("stages the four new editions inactive and preserves every source on migration replay", () => {
  expect(extracurricularSources).toEqual(extracurricularIds.map(id => ({ id, active: false, verification_status: "verified" })));
  expect(sourceMigrationReplayPreserved).toBe(true);

@@ -1,5 +1,7 @@
 # Radar e calendários — validação local
 
+Estado posterior das fontes: [coletores e bateria completa local](radar-calendar-collectors-local-20261029.md). OBMEP/OBI foram homologadas e importadas somente no ambiente local; Comvest/Fuvest permanecem bloqueadas para coleta real. As pendências de fontes descritas abaixo registram a primeira entrega.
+
 Validação ampliada posterior: [relatório de testes de 29/10/2026](radar-calendarios-testes-20261029.md). Os números da primeira rodada abaixo são históricos.
 
 ## Escopo acordado
