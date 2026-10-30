@@ -22,6 +22,15 @@ it("expires at midnight after the confirmed date in Brasilia",()=>{
  expect(normalizeCpsCultural(listing,news,source,new Date("2026-10-18T02:59:59Z"))[0].opportunityStatus).toBe("open");
  expect(normalizeCpsCultural(listing,news,source,new Date("2026-10-18T03:00:00Z"))[0].opportunityStatus).toBe("closed");
 });
+it("keeps the official 22/10 extension and closed modalities without reopening the past edition",()=>{
+ const extended=listing.replaceAll("17/10","22/10");
+ expect(normalizeCpsCultural(extended,news,source,new Date("2026-10-21T15:00:00Z"))[0]).toMatchObject({deadlineAt:"2026-10-22",hasRetification:true,opportunityStatus:"open"});
+ const closed=extended.replaceAll("ABERTAS De 23/09 até 22/10","ENCERRADAS De 23/09 até 22/10");
+ const item=normalizeCpsCultural(closed,news,source,new Date("2026-10-30T15:00:00Z"))[0];
+ expect(item).toMatchObject({deadlineAt:"2026-10-22",hasRetification:true,opportunityStatus:"closed"});
+ expect(item.evidenceJson.deadline_at.source_url).toBe(CPS_OPEN_URL);
+ expect(()=>normalizeCpsCultural(extended.replace("22/10","17/10"),news,source,now)).toThrow("Prazos CPS conflitantes");
+});
 it("rejects incomplete responses, edition, benefit and date contradictions",()=>{
  for(const [a,b] of [["<h1>Manutenção</h1>",news],[listing.replace(block(34),""),news],[listing.replaceAll("17/10","18/10"),news],[listing,news.replaceAll("2026","2027")],[listing,news.replace("Ajuda de custo em moeda local","")],[listing,news.replace("15º","16º")],[listing,news.replace("critérios acadêmicos definidos em cada edital","")]]) expect(()=>normalizeCpsCultural(a,b,source,now)).toThrow();
  expect(normalizeCpsCultural(listing,news,{...source,id:"another"},now)).toEqual([]);

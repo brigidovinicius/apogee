@@ -17,10 +17,12 @@ async function run() {
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const report = await response.json();
+    const discoveryBlocked = report.discovery?.targets?.filter((target) => ["blocked", "failed"].includes(target.status)).length ?? 0;
     console.log(JSON.stringify({
       component: "radar-scheduler",
       startedAt,
-      status: report.failed > 0 || report.discovery?.failed ? "completed_with_warnings" : "completed",
+      status: report.failed > 0 || report.discovery?.failed || discoveryBlocked > 0 || report.leadProcessing?.failed > 0 ||
+        report.leadProcessing?.blocked > 0 || report.leadProcessing?.retried > 0 ? "completed_with_warnings" : "completed",
       sourcesChecked: report.sourcesChecked,
       pagesChecked: report.pagesChecked,
       discovered: report.discovered,
@@ -30,6 +32,17 @@ async function run() {
       discoveryTargetsChecked: report.discovery?.targetsChecked ?? 0,
       discoveryNewLeads: report.discovery?.newLeads ?? 0,
       discoveryFailed: report.discovery?.failed === true,
+      discoveryBlocked,
+      leadsChecked: report.leadProcessing?.leadsChecked ?? 0,
+      leadsCreated: report.leadProcessing?.created ?? 0,
+      leadsUpdated: report.leadProcessing?.updated ?? 0,
+      leadsPublished: report.leadProcessing?.published ?? 0,
+      leadsBlocked: report.leadProcessing?.blocked ?? 0,
+      leadsRetried: report.leadProcessing?.retried ?? 0,
+      leadsIgnored: report.leadProcessing?.ignored ?? 0,
+      leadsLeaseLost: report.leadProcessing?.leaseLost ?? 0,
+      leadsFailed: report.leadProcessing?.failed ?? 0,
+      leadReasons: report.leadProcessing?.reasons ?? {},
       alertsEnabled: report.alerts?.enabled === true,
       alertsSent: report.alerts?.sent ?? 0,
       alertsFailed: report.alerts?.failed ?? 0,

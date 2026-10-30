@@ -85,6 +85,38 @@ it("keeps closed ENAP speaker submissions separate from open attendance", () => 
   expect(normalize({ ...fixture, html: fixture.html.replace("2026 já estão abertas", "2026 estão encerradas") }).opportunityStatus).toBe("closed");
 });
 
+const recnplayUpdatedPage = `<main><h1>REC’n’Play 2026</h1>
+  <p>O maior festival gratuito de inovação, tecnologia, criatividade e cultura do Brasil</p>
+  <p>11 a 14 de novembro · Bairro do Recife · Gratuito</p>
+  <p>O evento transforma o centro histórico do Recife em um grande palco de conhecimento.</p>
+  <a href="https://register.jalanlive.com/recnplay2026/form?pos=415">Inscreva-se</a></main>`;
+
+it("accepts the REC’n’Play organizer's updated layout while retaining the audited edition", () => {
+  const fixture = { id: "recnplay-2026", html: recnplayUpdatedPage };
+  const item = normalize(fixture, new Date("2026-10-30T15:00:00Z"));
+  expect(item).toMatchObject({ opportunityStatus: "open", eventStartsAt: "2026-11-11", deadlinePrecision: "not_informed", cityName: "Recife" });
+  expect(publicationIssue(item, source(fixture.id), new Date("2026-10-30T15:00:00Z"))).toBeNull();
+});
+
+it("rejects changed REC’n’Play year, event dates or location despite a retained enrollment button", () => {
+  for (const html of [recnplayUpdatedPage.replace("2026</h1>", "2027</h1>"),
+    recnplayUpdatedPage.replace("2026</h1>", "2027</h1>") + "<p>Notícia da edição passada REC’n’Play 2026</p>",
+    recnplayUpdatedPage.replace("11 a 14", "12 a 15"), recnplayUpdatedPage.replace("centro histórico do Recife", "outro local")]) {
+    expect(() => normalize({ id: "recnplay-2026", html })).toThrow("Evidência da edição mudou");
+  }
+});
+
+it("closes REC’n’Play when its exact edition enrollment link is removed, replaced or cancelled", () => {
+  const cases = [
+    [recnplayUpdatedPage.replace("href=", "data-removed="), "closed"],
+    [recnplayUpdatedPage.replace("/recnplay2026/", "/recnplay2027/"), "closed"],
+    [recnplayUpdatedPage + "<p>Evento cancelado.</p>", "cancelled"],
+  ] as const;
+  for (const [html, status] of cases) {
+    expect(normalize({ id: "recnplay-2026", html }).opportunityStatus).toBe(status);
+  }
+});
+
 it("stages exactly ten inactive pending sources and preserves pre-existing flags on reapplication", async () => {
   const db = new PGlite();
   try {

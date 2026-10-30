@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/admin";
 import { withAdminTransaction } from "@/lib/db/client";
 import { candidateUrl } from "@/lib/discovery/daily-discovery";
+import { requeueDiscoveryLeads } from "@/lib/discovery/watchlist";
 
 const slug = /^[a-z0-9][a-z0-9-]{0,79}$/;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -48,12 +49,16 @@ export async function toggleDiscoveryTarget(form: FormData) {
   const id = field(form, "id", 80);
   const enabled = field(form, "enabled", 5);
   if (!slug.test(id) || !["true", "false"].includes(enabled)) throw new Error("Fonte inválida");
-  const result = await withAdminTransaction((client) => client.query(
-    `update discovery_targets set enabled=$2,next_check_at=null,updated_at=now()
-     where id=$1 and ($2=false or (official_verified_at is not null and official_verified_url=official_url))
-     returning id`,
-    [id, enabled === "true"],
-  ));
+  const result = await withAdminTransaction(async (client) => {
+    const result = await client.query(
+      `update discovery_targets set enabled=$2,next_check_at=null,updated_at=now()
+       where id=$1 and ($2=false or (official_verified_at is not null and official_verified_url=official_url))
+       returning id`,
+      [id, enabled === "true"],
+    );
+    if (result.rows[0] && enabled === "true") await requeueDiscoveryLeads(client, { targetId: id, reason: "configuration_changed" });
+    return result;
+  });
   if (!result.rows[0]) throw new Error("Página não verificada como oficial");
   revalidatePath("/admin/descoberta");
 }
@@ -108,9 +113,9 @@ export async function reviewDiscoveryLead(form: FormData) {
   const id = field(form, "id", 36);
   const status = field(form, "status", 10);
   if (!uuid.test(id) || !["reviewing", "dismissed"].includes(status)) throw new Error("Candidato inválido");
-  await withAdminTransaction((client) => client.query(
-    "update discovery_leads set status=$2,reviewed_at=now() where id=$1 and status in ('new','reviewing')",
-    [id, status],
-  ));
+  await withAdminTransaction(async (client) => {
+    await client.query("update discovery_leads set status=$2,reviewed_at=now() where id=$1 and status in ('new','reviewing')", [id, status]);
+    if (status === "reviewing") await requeueDiscoveryLeads(client, { leadId: id, reason: "manual_recheck" });
+  });
   revalidatePath("/admin/descoberta");
 }

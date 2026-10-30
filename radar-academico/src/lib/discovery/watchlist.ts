@@ -1,3 +1,4 @@
+import type { PoolClient } from "pg";
 import { withAdminTransaction } from "@/lib/db/client";
 
 export type DiscoveryTarget = {
@@ -24,6 +25,10 @@ export type DiscoveryLead = {
   url: string;
   title: string;
   status: "new" | "reviewing" | "mapped" | "dismissed";
+  processing_status: "pending" | "processing" | "retry" | "blocked" | "completed" | "ignored";
+  processing_reason: string | null;
+  processing_attempts: number;
+  processed_at: Date | null;
   first_seen_at: Date;
   last_seen_at: Date;
 };
@@ -42,7 +47,7 @@ export type EventEdition = {
 export async function listDiscoveryWatchlist() {
   return withAdminTransaction(async (client) => {
     const targets = await client.query<DiscoveryTarget>("select id,name,organizer,kind,official_url,topics,priority,enabled,official_verified_at,official_verified_url,official_review_note,last_checked_at,next_check_at,last_status,evidence_url from discovery_targets order by priority desc,name");
-    const leads = await client.query<DiscoveryLead>("select id,target_id,url,title,status,first_seen_at,last_seen_at from discovery_leads where status in ('new','reviewing') order by last_seen_at desc limit 100");
+    const leads = await client.query<DiscoveryLead>("select id,target_id,url,title,status,first_seen_at,last_seen_at,processing_status,processing_reason,processing_attempts,processed_at from discovery_leads where status in ('new','reviewing') order by last_seen_at desc limit 100");
     const events = await client.query<EventEdition>("select id,target_id,edition_name,starts_on::text,ends_on::text,location_text,status,evidence_url from annual_event_editions order by starts_on nulls last,edition_name");
     return { targets: targets.rows, leads: leads.rows, events: events.rows };
   });
@@ -80,8 +85,36 @@ export async function saveDiscoveryLeads(targetId: string, leads: { url: string;
         [targetId, lead.url, lead.title, lead.excerpt],
       );
       if (result.rows[0]) added += 1;
-      else await client.query("update discovery_leads set last_seen_at=now() where target_id=$1 and url=$2", [targetId, lead.url]);
+      else {
+        const existing = await client.query<{ id: string }>("update discovery_leads set last_seen_at=now() where target_id=$1 and url=$2 returning id", [targetId, lead.url]);
+        if (existing.rows[0]) await requeueDiscoveryLeads(client, { leadId: existing.rows[0].id, reason: "rediscovered" });
+      }
     }
     return added;
   });
+}
+
+/** Re-evaluation is audited and never revives a dismissal or an active lease. */
+export async function requeueDiscoveryLeads(client: PoolClient, options: {
+  leadId?: string; targetId?: string;
+  reason: "manual_recheck" | "configuration_changed" | "rediscovered";
+}) {
+  if (Boolean(options.leadId) === Boolean(options.targetId)) throw new Error("Escolha um link ou um alvo");
+  const field = options.leadId ? "id" : "target_id";
+  const result = await client.query(
+    `with reset as (
+       update discovery_leads set processing_status='pending',processing_next_at=now(),
+         processing_attempts=0,processing_reason=null,processed_at=null,
+         processing_lease_until=null,processing_lease_token=null
+       where ${field}=$1 and status in ('new','reviewing') and processing_status in ('blocked','retry')
+         and ($2::text<>'rediscovered' or (processing_status='blocked'
+           and processing_reason is distinct from 'retry_exhausted'
+           and processed_at<=now()-interval '24 hours'))
+       returning id
+     ) insert into ingestion_runs(started_at,finished_at,status,execution_metadata)
+       select now(),now(),'skipped',jsonb_build_object('component','discovery-requeue','lead_id',id,'reason',$2::text)
+       from reset`,
+    [options.leadId ?? options.targetId, options.reason],
+  );
+  return result.rowCount ?? 0;
 }
