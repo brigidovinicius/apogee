@@ -6,6 +6,8 @@ import { OpportunityBenefits, OpportunityCosts } from "./opportunity-financials"
 import { OpportunityCountdown } from "./opportunity-countdown";
 import styles from "./opportunities.module.css";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
+import { publicOpportunityPath } from "@/lib/opportunities/discovery";
+import { ShareButton } from "@/components/site/share-button";
 
 export function AdmissionProcessCard({ group, management = false }: { group: AdmissionGroup; management?: boolean }) {
   const first = group.courses[0];
@@ -32,6 +34,7 @@ export function AdmissionProcessCard({ group, management = false }: { group: Adm
         {management ? <dl className={styles.details}><OpportunityCosts opportunity={course} /></dl> : null}
         {!sharedWindow ? <p>{interfaceText(course.deadlineLabel)}{course.opportunityStatus === "upcoming" ? " · Inscrições futuras" : ""}</p> : null}
         {!management ? <Link prefetch={false} className={styles.externalLink} href={opportunityDetailPath(course.id)}>Ver detalhes deste curso</Link> : !sharedUrl ? <Link className={styles.externalLink} href={course.officialUrl} target="_blank" rel="noopener noreferrer">Ver fonte oficial deste curso</Link> : null}
+        <ShareButton title={interfaceText(course.title)} path={publicOpportunityPath(course)} compact />
         <p>{course.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={course.verificationTimestamp ?? course.verifiedAt}>{course.verifiedAt.split("-").reverse().join("/")}</time></p>
         {management ? <Link className={styles.externalLink} href={`/admin/radar?editar=${encodeURIComponent(course.id.replace(/^radar-/, ""))}`}>Editar ou excluir este curso</Link> : null}
       </li>)}</ul>

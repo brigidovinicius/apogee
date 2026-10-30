@@ -25,7 +25,7 @@ function harness(navigatorValue) {
     return require(specifier);
   }, mod, mod.exports);
   return {
-    render() { index = 0; return mod.exports.ShareButton({ title: 'Radar | Apogee', path: '/oportunidades' }); },
+    render(props = {}) { index = 0; return mod.exports.ShareButton({ title: 'Radar | Apogee', path: '/oportunidades', ...props }); },
     restore() { if (descriptor) Object.defineProperty(globalThis, 'navigator', descriptor); else delete globalThis.navigator; },
   };
 }
@@ -89,5 +89,19 @@ test('repeated activation opens only one pending share sheet', async () => {
     finish();
     await first;
     assert.equal(view.render().props.children[0].props.disabled, false);
+  } finally { view.restore(); }
+});
+
+test('a compact opportunity share copies its public detail and announces recovery', async () => {
+  let copied;
+  const props = { title: 'NASA Space Apps', path: '/oportunidades/nasa-space-apps--radar-pilot', compact: true };
+  const view = harness({ clipboard: { writeText: async value => { copied = value; } } });
+  try {
+    const output = view.render(props);
+    assert.equal(output.props.children[0].props['aria-label'], 'Compartilhar NASA Space Apps');
+    assert.equal(output.props.children[1].props.children, '');
+    await output.props.children[0].props.onClick();
+    assert.equal(copied, 'https://www.apogee.community/oportunidades/nasa-space-apps--radar-pilot');
+    assert.match(view.render(props).props.children[1].props.children, /Link copiado/);
   } finally { view.restore(); }
 });

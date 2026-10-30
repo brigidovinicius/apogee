@@ -477,6 +477,59 @@ it("avisa alterações e início uma vez, mas não a repetição da consulta di�
  expect(await runOpportunityAlerts()).toMatchObject({queued:0,sent:0});
  expect((await state.db!.query("select status from opportunity_alert_subscriptions")).rows[0]).toMatchObject({status:"completed"});
 });
+it("aceita acompanhamento com prazo e preserva mudanças anteriores à confirmação",async()=>{
+ await save(); const id=(await listLiveCatalogue())[0].id;
+ await subscribeToOpportunity({opportunityId:id,email:"student@example.test",consent:true});
+ const job=(await state.db!.query<{payload:{text:string}}>("select payload from opportunity_alert_outbox")).rows[0];
+ const confirm=/acao=confirmar&token=([a-f0-9]{64})/.exec(job.payload.text)![1];
+ await save(candidate({deadlineAt:"2099-10-21",contentHash:"updated-before-confirmation"}));
+ await updateAlertSubscription("confirm",confirm);
+ expect(await queueOpportunityChanges()).toBe(1);
+ const notice=(await state.db!.query<{payload:{text:string}}>("select payload from opportunity_alert_outbox where kind='change'")).rows[0].payload.text;
+ expect(notice).toContain("20/10/2099 → 21/10/2099");
+ expect(notice).toContain(`/oportunidades/oportunidade--radar-${id}`);
+ expect(await queueOpportunityChanges()).toBe(0);
+ expect(sendAlertMail).not.toHaveBeenCalled();
+});
+it("o scheduler da fonte respeita a reconsulta NASA de seis horas",async()=>{
+ await completeScheduledSource(source.id,false);
+ expect((await state.db!.query("select next_crawl_at >= now()+interval '23 hours' as daily from official_sources where id=$1",[source.id])).rows[0]).toEqual({daily:true});
+ const s={...source,id:"nasa-space-apps-2026"};
+ await state.db!.query("update official_sources set id=$1,crawl_interval_hours=24 where id=$2",[s.id,source.id]);
+ await saveReviewItems(s,{sourceId:s.id,pagesChecked:1,discovered:[candidate({officialSourceId:s.id})],ignored:0,failed:0,locationRejected:0,warnings:[]});
+ await completeScheduledSource(s.id,false);
+ expect((await state.db!.query("select next_crawl_at between now()+interval '5 hours 59 minutes' and now()+interval '6 hours 1 minute' as six_hours from official_sources where id=$1",[s.id])).rows[0]).toEqual({six_hours:true});
+ expect(await claimDueOfficialSources(1)).toEqual([]);
+ await state.db!.query("update official_sources set next_crawl_at=now()-interval '1 second' where id=$1",[s.id]);
+ expect((await claimDueOfficialSources(1)).map(s=>s.id)).toEqual([s.id]);
+});
+it("não anuncia retirada por extração inconclusiva, preservando o acompanhamento",async()=>{
+ const {confirm}=await eventSubscription();await updateAlertSubscription("confirm",confirm);
+ await state.db!.exec("update opportunities set next_source_check_at=null");
+ vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from("changed-page"),contentType:"text/html",hash:"inconclusive",cached:false});
+ await recheckKnownOpportunities(source,1,async()=>"Página temporariamente incompleta.");
+ expect(await queueOpportunityChanges()).toBe(0);
+ expect((await state.db!.query("select status from opportunity_alert_subscriptions")).rows[0]).toEqual({status:"active"});
+ await save(openEvent());
+ expect(await queueOpportunityChanges()).toBe(0);
+});
+it("avisa mudança no término de etapa, ignorando apenas a nova conferência",async()=>{
+ const discovery = (end:string,checkedAt:string):NonNullable<OpportunityCandidate["discovery"]> => ({areas:[],editions:[{id:"edition",name:"Edição",stages:[
+  {id:"event",name:"Hackathon",kind:"event",start:"2099-10-20",end,sourceUrl:evidence.source_url,checkedAt},
+ ]}]});
+ const {confirm}=await eventSubscription();
+ await save(openEvent({discovery:discovery("2099-10-21","2026-10-01T12:00:00Z")}));
+ await updateAlertSubscription("confirm",confirm);
+ expect(await queueOpportunityChanges()).toBe(1);
+ const before=(await state.db!.query<{version:number}>("select version from opportunities")).rows[0].version;
+ expect(await save(openEvent({discovery:discovery("2099-10-21","2026-10-02T12:00:00Z")}))).toMatchObject({updated:0});
+ expect((await state.db!.query<{version:number}>("select version from opportunities")).rows[0].version).toBe(before);
+ expect(await queueOpportunityChanges()).toBe(0);
+ await save(openEvent({discovery:discovery("2099-10-22","2026-10-03T12:00:00Z")}));
+ expect(await queueOpportunityChanges()).toBe(1);
+ expect((await state.db!.query<{payload:{text:string}}>("select payload from opportunity_alert_outbox where kind='change' order by created_at desc limit 1")).rows[0].payload.text).toContain("22/10/2099");
+ expect(await queueOpportunityChanges()).toBe(0);
+});
 it("limita tentativas de Resend por dia, persiste falhas e expira confirmação",async()=>{
  const {confirm}=await eventSubscription();
  await state.db!.query("update opportunity_alert_subscriptions set confirm_expires_at=now()-interval '1 second'");
