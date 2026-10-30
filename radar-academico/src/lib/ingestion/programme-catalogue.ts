@@ -1,3 +1,4 @@
+import { FAPESC_CTI_ID, normalizeFapescCti } from "./normalize-fapesc-cti-2026";
 import { isDiscoveryCall, normalizeDiscoveryCall } from "./normalize-discovery-calls-20261030";
 import { sinterDiscoveryCall, normalizeSinterDiscoveryCall } from "./normalize-sinter-discovery-20261030";
 import { isAuditedYouthCall, normalizeAuditedYouthCall } from "./normalize-audited-youth-calls";
@@ -23,6 +24,7 @@ import { calendarSource } from "./calendar-sources";
 import { normalizeCalendarSource } from "./normalize-calendar-sources";
 
 export function programmeCataloguePageCount(id: string) {
+  if (id === FAPESC_CTI_ID) return 1;
   if (isDiscoveryCall(id)) return 1;
   if (sinterDiscoveryCall(id)) return 2;
   if (calendarSource(id)) return 1;
@@ -61,6 +63,7 @@ export function programmeCatalogueCanBeEmpty(id: string) {
 }
 
 export function normalizeProgrammeCatalogue(listing: string, application: string, source: OfficialSource) {
+  if (source.id === FAPESC_CTI_ID) return normalizeFapescCti(listing, source);
   if (isDiscoveryCall(source.id)) return normalizeDiscoveryCall(listing, source);
   if (sinterDiscoveryCall(source.id)) return normalizeSinterDiscoveryCall(listing, application, source);
   if (calendarSource(source.id)) return normalizeCalendarSource(listing, source);

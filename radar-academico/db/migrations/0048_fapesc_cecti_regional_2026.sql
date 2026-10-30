@@ -1,0 +1,9 @@
+-- Exact FAPESC edition found in the original 80-link backlog; stage until code is healthy.
+insert into official_sources(id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,audience_scope,geographic_scope,categories,priority,active,verification_status,crawl_interval_hours,robots_checked_at,verification_method,verification_evidence_url,verified_at,verified_by,notes)
+values('fapesc-cecti-regional-2026','8ª CECTI — etapas regionais de Santa Catarina 2026','Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina','FAPESC','government_foundation',
+'https://fapesc.sc.gov.br/governo-do-estado-realiza-conferencia-de-ciencia-tecnologia-e-inovacao-nas-seis-mesorregioes-de-santa-catarina-para-definir-prioridades-do-ecossistema/',
+array['fapesc.sc.gov.br'],array['/governo-do-estado-realiza-conferencia-de-ciencia-tecnologia-e-inovacao-nas-seis-mesorregioes-de-santa-catarina-para-definir-prioridades-do-ecossistema/'],
+array['https://fapesc.sc.gov.br/governo-do-estado-realiza-conferencia-de-ciencia-tecnologia-e-inovacao-nas-seis-mesorregioes-de-santa-catarina-para-definir-prioridades-do-ecossistema/'],'html',array['mixed'],array['Santa Catarina'],array['eventos'],60,false,'pending',24,now(),'operator_authorized_agent',
+'https://fapesc.sc.gov.br/governo-do-estado-realiza-conferencia-de-ciencia-tecnologia-e-inovacao-nas-seis-mesorregioes-de-santa-catarina-para-definir-prioridades-do-ecossistema/',now(),'codex:operator-authorized-agent',
+'Auditoria 30/10/2026: artigo oficial 58157, seis regionais futuras, inscrições até lotação. Site do organizador consultado só para confirmar CTA vigente. Uma edição; etapa estadual possui regras próprias. Não coletar HTTP nem formulário externo. Ativar somente após revisão validada saudável.')
+on conflict(id) do nothing;
