@@ -1,3 +1,4 @@
+import { FAPESC_CTI_ID, FAPESC_CTI_URL } from "@/lib/ingestion/normalize-fapesc-cti-2026";
 import { expect, it } from "vitest";
 import { DISCOVERY_CALLS } from "@/lib/ingestion/normalize-discovery-calls-20261030";
 import { SINTER_DISCOVERY_CALLS, SINTER_DISCOVERY_INDEX, sinterLeadAliases } from "@/lib/ingestion/normalize-sinter-discovery-20261030";
@@ -6,6 +7,7 @@ import type { OfficialSource } from "@/lib/ingestion/types";
 // Explicit, read-only operator audit. Normal CI must never query live sites.
 const audit = it.skipIf(process.env.RADAR_LIVE_AUDIT !== "true");
 const sources: OfficialSource[] = [
+  {id:FAPESC_CTI_ID,name:"CECTI",institutionName:"FAPESC",institutionAcronym:"FAPESC",sourceType:"government_foundation",baseUrl:FAPESC_CTI_URL,listingUrls:[FAPESC_CTI_URL],allowedDomains:["fapesc.sc.gov.br"],allowedPathPrefixes:[new URL(FAPESC_CTI_URL).pathname],extractionMode:"html",audienceScope:[],geographicScope:[],categories:[],priority:60,active:true},
   ...DISCOVERY_CALLS.map(call => ({
     id: call.id, name: call.title, institutionName: "Universidade Federal de Santa Catarina", institutionAcronym: "UFSC",
     sourceType: "federal_university" as const, baseUrl: call.url, allowedDomains: ["noticias.ufsc.br"],
