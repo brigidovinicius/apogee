@@ -7,6 +7,18 @@ const load=opportunityLoader({'next/navigation':{notFound:()=>{throw Error('NOT_
 const page=load('app/termos/page.tsx');
 const text=node=>typeof node==='string'?node:Array.isArray(node)?node.map(text).join(' '):node?.props?text(node.props.children):'';
 
+test('footer links follow legal-page availability and keep drafts accessible in the local preview',()=>scoped(()=>{
+  const footer=load('components/site/site-footer.tsx').SiteFooter;
+  const links=node=>Array.isArray(node)?node.flatMap(links):node?.props?[...(node.props.href?[node.props.href]:[]),...links(node.props.children)]:[];
+  const has=path=>links(footer()).includes(path);
+  assert.equal(has('/privacidade'),false);assert.equal(has('/termos'),false);
+  process.env.APOGEE_LOCAL_PREVIEW='1';assert.equal(has('/privacidade'),true);assert.equal(has('/termos'),true);
+  delete process.env.APOGEE_LOCAL_PREVIEW;
+  process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED='true';process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-10-30';
+  assert.equal(has('/privacidade'),true);assert.equal(has('/termos'),false);
+  process.env.APOGEE_TERMS_APPROVED_VERSION='2026-10-30';assert.equal(has('/termos'),true);
+}));
+
 test('terms draft is local only and states that viewing is not acceptance or a contract change',()=>scoped(()=>{
   assert.throws(()=>page.default(),/NOT_FOUND/);process.env.APOGEE_LOCAL_PREVIEW='1';
   const content=text(page.default());assert.match(content,/Minuta para revisão/);assert.match(content,/não constitui aceite/);assert.match(content,/(?:não|nem) altera contratos existentes/);
