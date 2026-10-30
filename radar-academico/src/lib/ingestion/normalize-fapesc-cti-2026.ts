@@ -9,7 +9,10 @@ export const FAPESC_CTI_URL = "https://fapesc.sc.gov.br/governo-do-estado-realiz
 const TITLE = "8ª Conferência Estadual de Ciência, Tecnologia e Inovação — etapas regionais SC 2026";
 const HEADING = "Governo do Estado realiza Conferência de Ciência, Tecnologia e Inovação nas seis mesorregiões de Santa Catarina para definir prioridades do ecossistema";
 const checks = [/8ª Conferência Estadual de Ciência, Tecnologia e Inovação/, /setores produtivo, governamental, acadêmico e sociedade civil organizada/,
-  /das 9h às 12h/, /03\/11\/2026/, /04\/11\/2026/, /05\/11\/2026/, /06\/11\/2026/, /11\/11\/2026/, /16\/11\/2026/,
+  /das 9h às 12h/, /Etapa Vale do Itajaí, em Blumenau, no CIB, no dia 03\/11\/2026/,
+  /Etapa Norte, em Joinville, na Univille, no dia 04\/11\/2026/, /Etapa Sul, em Criciúma, no Crio, no dia 05\/11\/2026/,
+  /Etapa Litoral, em Florianópolis, no UniSENAI, no dia 06\/11\/2026/, /Etapa Serrana, em Lages, no Órion \(Hall\), no dia 11\/11\/2026/,
+  /Etapa Oeste, em Chapecó, no Pollen Parque, no dia 16\/11\/2026/,
   /inscrições serão encerradas assim que a capacidade de cada local for atingida/i];
 
 export function normalizeFapescCti(html: string, source: OfficialSource, now = new Date()): OpportunityCandidate[] {

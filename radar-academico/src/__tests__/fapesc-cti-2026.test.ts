@@ -20,7 +20,7 @@ it("publishes one regional edition with capacity-based registration, without inv
  expect(normalizeFapescCti(html,source,new Date("2026-11-03T03:01:00Z"))[0].opportunityStatus).toBe("closed");
 });
 it("rejects changed capacity, date, public, CTA and article identity",()=>{
- for(const changed of [html.replace("03/11/2026","03/11/2027"),html.replace("capacidade de cada local for atingida","data final for anunciada"),
+ for(const changed of [html.replace("03/11/2026","03/11/2027"),html.replace("no CIB, no dia","em outro local, no dia"),html.replace("capacidade de cada local for atingida","data final for anunciada"),
    html.replace("setores produtivo, governamental, acadêmico e sociedade civil organizada","público indeterminado"),
    html.replaceAll("http://www.conferenciacti.sc.gov.br/","http://outside.example/"),html.replaceAll("post-58157","post-99999")])
    expect(()=>normalizeFapescCti(changed,source,now)).toThrow();
