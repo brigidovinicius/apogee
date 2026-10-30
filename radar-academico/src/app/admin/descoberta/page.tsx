@@ -5,6 +5,21 @@ import { addAnnualEventEdition, createDiscoveryTarget, reviewDiscoveryLead, togg
 
 export const dynamic = "force-dynamic";
 
+const processingName = { pending: "Na fila automática", processing: "Verificando", retry: "Nova tentativa agendada", blocked: "Não elegível para publicação automática", completed: "Processado", ignored: "Preservado sem publicação" };
+const reasonName: Record<string, string> = {
+  scope_unverified: "Fonte de destino ainda não verificada para publicação.",
+  listing_or_ambiguous: "O link reúne vários processos ou não identifica uma única oportunidade.",
+  candidate_unconfirmed: "As informações disponíveis não confirmam todos os critérios.",
+  invalid_deadline: "Prazo de inscrição ausente, vencido ou não confirmado.",
+  event_started: "O evento já começou.",
+  unsupported_content: "Documento sem extração automática validada.",
+  unsupported_source: "A fonte exige validação específica adicional.",
+  robots_unavailable_or_disallowed: "Consulta impedida pelas condições de acesso da fonte.",
+  tls_verification_failed: "O certificado de segurança da fonte precisa ser corrigido.",
+  request_timeout: "A fonte não respondeu no tempo disponível.",
+  deleted: "Ficha excluída pelo administrador; exclusão preservada.",
+  retry_exhausted: "As tentativas automáticas terminaram sem confirmação.",
+};
 const kindName = { site: "Site", program: "Programa", event_series: "Evento anual" };
 const statusName = { announced: "Anunciado", past: "Edição passada", cancelled: "Cancelado", unconfirmed: "A confirmar" };
 
@@ -64,7 +79,7 @@ export default async function DiscoveryPage() {
         </form>
       </section>
 
-      <section className="mt-12" aria-labelledby="leads-title"><h2 id="leads-title" className="text-2xl font-bold">Links ainda não mapeados</h2><p className="mt-2 text-slate-600">Até 100 candidatos recentes. A revisão aqui organiza a pesquisa; ela não publica fichas.</p><ul className="mt-4 grid gap-3">{leads.map((lead) => <li key={lead.id} className="rounded-xl border border-slate-200 bg-white p-5"><a href={lead.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-700 underline">{lead.title}</a><p className="mt-1 break-all text-xs text-slate-500">{lead.url}</p><p className="mt-1 text-xs text-slate-500">Encontrado em {targets.find((target) => target.id === lead.target_id)?.name ?? lead.target_id} · {lead.status === "new" ? "novo" : "em análise"}</p><div className="mt-3 flex gap-2"><form action={reviewDiscoveryLead}><input type="hidden" name="id" value={lead.id}/><input type="hidden" name="status" value="reviewing"/><button className="rounded border px-3 py-2 text-sm">Em análise</button></form><form action={reviewDiscoveryLead}><input type="hidden" name="id" value={lead.id}/><input type="hidden" name="status" value="dismissed"/><button className="rounded border px-3 py-2 text-sm">Descartar</button></form></div></li>)}</ul>{!leads.length ? <p className="mt-4 rounded-xl bg-white p-5 text-slate-500">Nenhum link novo registrado.</p> : null}</section>
+      <section className="mt-12" aria-labelledby="leads-title"><h2 id="leads-title" className="text-2xl font-bold">Links ainda não mapeados</h2><p className="mt-2 text-slate-600">Até 100 candidatos recentes. A verificação automática publica somente oportunidades elegíveis de fontes oficiais cadastradas. Cada link mostra o resultado e, quando necessário, o motivo da pendência.</p><ul className="mt-4 grid gap-3">{leads.map((lead) => <li key={lead.id} className="rounded-xl border border-slate-200 bg-white p-5"><a href={lead.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-700 underline">{lead.title}</a><p className="mt-1 break-all text-xs text-slate-500">{lead.url}</p><p className="mt-1 text-xs text-slate-500">Encontrado em {targets.find((target) => target.id === lead.target_id)?.name ?? lead.target_id} · {lead.status === "new" ? "novo" : "em análise"}</p><p className="mt-2 text-sm font-semibold text-slate-700">{processingName[lead.processing_status ?? "pending"]}</p>{lead.processing_reason ? <p className="mt-1 text-sm text-slate-600">{reasonName[lead.processing_reason] ?? "A verificação automática não confirmou a publicação; consulte a fonte oficial."}</p> : null}<div className="mt-3 flex gap-2"><form action={reviewDiscoveryLead}><input type="hidden" name="id" value={lead.id}/><input type="hidden" name="status" value="reviewing"/><button className="rounded border px-3 py-2 text-sm">Reavaliar</button></form><form action={reviewDiscoveryLead}><input type="hidden" name="id" value={lead.id}/><input type="hidden" name="status" value="dismissed"/><button className="rounded border px-3 py-2 text-sm">Descartar</button></form></div></li>)}</ul>{!leads.length ? <p className="mt-4 rounded-xl bg-white p-5 text-slate-500">Nenhum link novo registrado.</p> : null}</section>
     </section>
   </main>;
 }

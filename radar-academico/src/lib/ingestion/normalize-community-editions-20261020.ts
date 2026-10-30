@@ -68,8 +68,10 @@ export const COMMUNITY_EDITIONS: readonly Edition[] = [
     requirements: "Modalidade híbrida, de 10 a 12/11/2026: presencial na Enap, Brasília/DF, e online via YouTube e Zoom. Inscrição única com escolha da modalidade; vagas presenciais limitadas. Inscrição geral não garante vaga em cada atividade, que exige reserva própria conforme lotação. Menores de 18 anos devem estar acompanhados dos responsáveis. Certificado conforme participação. O prazo encerrado para propostas de atividades não é o prazo de inscrição do público.",
     conditions: "Participação gratuita. Serviço opcional de acolhimento de crianças é cobrado pelo prestador. Viagem, hospedagem, alimentação e remuneração não anunciadas como apoio ao participante nesta página." },
   { id: "recnplay-2026", url: "https://recnplay.pe/", title: "REC’n’Play — Festival 2026", institution: "Organização do REC’n’Play",
-    checks: [/REC’n’Play 2026: de 11 a 14 de novembro/, /festival gratuito de inovação/i, /centro histórico do Recife/], availability: /Inscrições abertas para o REC’n’Play 2026/,
-    registrationUrl: "https://register.jalanlive.com/recnplay2026/form?pos=415", registrationLabel: /Inscrições REC.n.Play/i,
+    // The organizer separated the edition title, date and enrollment CTA on 28/10.
+    // Preserve the audited facts and exact edition-specific enrollment URL.
+    checks: [/REC[’']n[’']Play\s+2026\b/i, /\b11 a 14 de novembro\b/i, /festival gratuito de inovação/i, /centro histórico do Recife/i],
+    registrationUrl: "https://register.jalanlive.com/recnplay2026/form?pos=415", registrationLabel: /Inscrições REC.n.Play|^Inscreva-se$/i,
     start: "2026-11-11", categories: ["eventos"], state: "PE", city: "Recife",
     requirements: "Modalidade presencial, de 11 a 14/11/2026, em espaços do centro histórico do Recife/PE. Festival de inovação, tecnologia, criatividade e cultura, com oficinas, experiências e networking. Inscrição de participante pela plataforma indicada no site oficial; confira lotação, programação e regras de cada atividade. Voluntariado é outra seleção e não é uma vaga implícita nesta ficha.",
     conditions: "Festival com participação gratuita. Viagem, hospedagem, alimentação e remuneração não informadas como benefícios do participante na página consultada." },
@@ -87,6 +89,10 @@ export function normalizeCommunityEdition(html: string, supplement: string, sour
   $("script,style,noscript,nav,aside").remove();
   $("p,div,h1,h2,h3,h4,li,td,a,button").append(" ");
   const text = clean($("body").text());
+  if (edition.id === "recnplay-2026" && $("h1").length &&
+    ($("h1").length !== 1 || !/^REC[’']n[’']Play\s+2026$/i.test(clean($("h1").text())))) {
+    throw new Error("Evidência da edição mudou; requer nova auditoria");
+  }
   // ENAP's expired call for speaker proposals is separate from public attendance.
   const statusText = edition.id === "enap-innovation-week-2026"
     ? text.replace(/Como posso submeter uma proposta de atividade\?[\s\S]*?primeiro semestre\./i, "") : text;

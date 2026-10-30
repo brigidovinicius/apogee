@@ -1,3 +1,5 @@
+import { isDiscoveryCall, normalizeDiscoveryCall } from "./normalize-discovery-calls-20261030";
+import { sinterDiscoveryCall, normalizeSinterDiscoveryCall } from "./normalize-sinter-discovery-20261030";
 import { isAuditedYouthCall, normalizeAuditedYouthCall } from "./normalize-audited-youth-calls";
 import { isCommunityEdition, communityEditionSupplement, normalizeCommunityEdition } from "./normalize-community-editions-20261020";
 import { AMAZONIA_ID, AMAZONIA_DOCUMENT_URL, isExtracurricularEdition, normalizeExtracurricularEdition } from "./normalize-extracurricular-20261017";
@@ -21,6 +23,8 @@ import { calendarSource } from "./calendar-sources";
 import { normalizeCalendarSource } from "./normalize-calendar-sources";
 
 export function programmeCataloguePageCount(id: string) {
+  if (isDiscoveryCall(id)) return 1;
+  if (sinterDiscoveryCall(id)) return 2;
   if (calendarSource(id)) return 1;
   if (id === ICIF_ID) return 2;
   if (id === IEG_ID) return 1;
@@ -37,6 +41,8 @@ export function programmeCataloguePageCount(id: string) {
 }
 
 export function programmeSupplementUrl(id: string) {
+  const sinterCall = sinterDiscoveryCall(id);
+  if (sinterCall) return sinterCall.supplement;
   if (id === ICIF_ID) return ICIF_DOCUMENT;
   const ufscCall = ufscAuditedCall(id);
   if (ufscCall) return ufscCall.supplement;
@@ -55,6 +61,8 @@ export function programmeCatalogueCanBeEmpty(id: string) {
 }
 
 export function normalizeProgrammeCatalogue(listing: string, application: string, source: OfficialSource) {
+  if (isDiscoveryCall(source.id)) return normalizeDiscoveryCall(listing, source);
+  if (sinterDiscoveryCall(source.id)) return normalizeSinterDiscoveryCall(listing, application, source);
   if (calendarSource(source.id)) return normalizeCalendarSource(listing, source);
   if (additionalCallUrl(source.id)) return normalizeAdditionalCall(listing, application, source);
   if (ufscAuditedCall(source.id)) return normalizeUfscAuditedCall(listing, application, source);

@@ -1,4 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
+vi.mock("@/lib/discovery/process-leads", () => ({ runScheduledLeadProcessing: vi.fn(async () => ({ leadsChecked: 0, published: 0 })) }));
 vi.mock("@/lib/db/client", () => ({ queryPublic: vi.fn(async () => ({ rows: [] })), withAdminTransaction: vi.fn() }));
 vi.mock("@/lib/ingestion", () => ({ runOfficialSourceIngestion: vi.fn(), runScheduledOfficialSourceIngestion: vi.fn() }));
 vi.mock("@/lib/discovery/daily-discovery", () => ({ runScheduledDiscovery: vi.fn(async () => ({ targetsChecked: 0, newLeads: 0, targets: [] })) }));
@@ -12,6 +13,7 @@ import { POST as cron } from "@/app/api/cron/ingest-official-sources/route";
 import { POST as csv } from "@/app/api/admin/import-csv/route";
 import { runOfficialSourceIngestion, runScheduledOfficialSourceIngestion } from "@/lib/ingestion";
 import { isAdmin } from "@/lib/auth/admin";
+import { runScheduledLeadProcessing } from "@/lib/discovery/process-leads";
 import Home from "@/app/page";
 import Detail from "@/app/oportunidades/[id]/page";
 beforeEach(() => { vi.clearAllMocks(); vi.unstubAllEnvs(); });
@@ -55,4 +57,17 @@ it("CSV requires admin and returns only generic parser errors", async () => {
   vi.mocked(isAdmin).mockResolvedValue(true);
   const response = await csv(new Request("https://radar.example/csv", { method: "POST", body: "csv" }));
   expect(response.status).toBe(400); expect(await response.text()).not.toMatch(/secret|connection/);
+});
+
+it("backlog mode requires the cron secret and excludes unrelated ingestion", async () => {
+  expect((await cron(new Request("https://radar.example/cron?leadsOnly=1"))).status).toBe(401);
+  expect(runScheduledLeadProcessing).not.toHaveBeenCalled();
+  vi.stubEnv("CRON_SECRET", "fixture");
+  const headers = { authorization: "Bearer fixture" };
+  expect((await cron(new Request("https://radar.example/cron?leadsOnly=1", { headers }))).status).toBe(200);
+  expect(runScheduledLeadProcessing).toHaveBeenCalledOnce();
+  expect(runScheduledOfficialSourceIngestion).not.toHaveBeenCalled();
+  for (const query of ["leadsOnly=2", "leadsOnly=1&sourceId=ufsc-propesq", "leadsOnly=1&maxPages=10"]) {
+    expect((await cron(new Request("https://radar.example/cron?" + query, { headers }))).status).toBe(400);
+  }
 });
