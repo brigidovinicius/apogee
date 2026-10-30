@@ -46,7 +46,7 @@ test('protected monitoring reports backlog as unhealthy and does not run sync',a
   try {
     assert.equal((await route.GET(new Request('http://localhost'))).status,401);
     const delayed=await route.GET(request());assert.equal(delayed.status,503);assert.equal((await delayed.json()).due,10);assert.equal(runs,0);
-    lag=0;assert.equal((await route.GET(request())).status,200);
+    lag=0;assert.equal((await route.GET(request())).status,503,'Errors/reconnections require attention even without lag');
     assert.equal((await (await route.POST(request())).json()).processed,3);assert.equal(runs,1);
   }finally{if(previous===undefined)delete process.env.GOOGLE_CALENDAR_SYNC_SECRET;else process.env.GOOGLE_CALENDAR_SYNC_SECRET=previous;}
 });

@@ -87,6 +87,7 @@ if(mode==='setup') {
   await verifyMarker();
   assert.ok((await sql`select tag from radar_local_migrations where tag='0008_radar_calendar'`).length);
   assert.ok((await sql`select tag from radar_local_migrations where tag='0010_supervised_registration'`).length,'Run local setup before supervised preview');
+  assert.ok((await sql`select tag from radar_local_migrations where tag='0011_google_calendar_retries'`).length,'Run local setup before retry preview');
   // These four fixed fictional identities are QA fixtures, never a real age check.
   await sql`update "user" set adult_declared=true where id in ('radar-local-vitalicio','radar-local-gratuito','radar-local-revogado','radar-local-admin') and email=replace(id,'radar-local-','')||'@radar.test'`;
   await sql`insert into member_adult_review(user_id,status,reviewed_at,evidence_reference)

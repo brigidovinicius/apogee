@@ -2,20 +2,32 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { requiredGoogleCalendarConfig, GOOGLE_CALENDAR_SCOPE } from "./google-calendar-config";
 import { publicOpportunityPath, type CalendarEntry } from "./discovery";
+import { retryAfterMilliseconds } from "./google-calendar-retry";
 
 export class GoogleCalendarError extends Error {
-  constructor(public code: "reconnect" | "permission" | "quota" | "unavailable" | "invalid_response", public status = 0) {
+  constructor(public code: "reconnect" | "permission" | "quota" | "unavailable" | "invalid_response", public status = 0,
+    public retryAfterMs=0,public quotaScope:"account"|"project"="account") {
     super(code);
   }
 }
 async function responseJson(response: Response): Promise<Record<string, unknown>> {
   const text = await response.text();
-  if (text.length > 1_000_000) throw new GoogleCalendarError("invalid_response");
+  if (text.length > 1_000_000) {if(!response.ok)return {};throw new GoogleCalendarError("invalid_response");}
   try {
     const value = text ? JSON.parse(text) : {};
     if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid response");
     return value;
-  } catch { throw new GoogleCalendarError("invalid_response"); }
+  } catch { if(!response.ok)return {};throw new GoogleCalendarError("invalid_response"); }
+}
+function providerError(response:Response,body:Record<string,unknown>,token=false) {
+  const detail=body.error && typeof body.error==='object' ? body.error as {errors?:{reason?:string}[]}:null;
+  const reasons=Array.isArray(detail?.errors)?detail.errors.map(item=>item?.reason):[];
+  const quota=response.status===429 || reasons.some(r=>['rateLimitExceeded','userRateLimitExceeded','quotaExceeded','dailyLimitExceeded'].includes(r??''));
+  const scope=reasons.includes('userRateLimitExceeded')?'account':'project';
+  const reconnect=token ? body.error==='invalid_grant' : response.status===401;
+  const code=quota?'quota':reconnect?'reconnect':
+    response.status===403?'permission':response.status>=500 || response.status===408?'unavailable':token?'unavailable':'invalid_response';
+  return new GoogleCalendarError(code,response.status,retryAfterMilliseconds(response.headers.get('retry-after')),scope);
 }
 export async function googleTokens(parameters: Record<string, string>, signal?: AbortSignal) {
   const config = requiredGoogleCalendarConfig();
@@ -26,7 +38,7 @@ export async function googleTokens(parameters: Record<string, string>, signal?: 
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(10_000)]) : AbortSignal.timeout(10_000),
   });
   const body = await responseJson(response);
-  if (!response.ok) throw new GoogleCalendarError(body.error === "invalid_grant" ? "reconnect" : "unavailable", response.status);
+  if (!response.ok) throw providerError(response,body,true);
   if (typeof body.access_token !== "string" || !body.access_token || body.token_type !== "Bearer") throw new GoogleCalendarError("invalid_response");
   if (typeof body.scope === "string" && !body.scope.split(" ").includes(GOOGLE_CALENDAR_SCOPE)) throw new GoogleCalendarError("permission");
   return { accessToken: body.access_token, refreshToken: typeof body.refresh_token === "string" ? body.refresh_token : null, scope: body.scope };
@@ -40,10 +52,7 @@ export async function googleApi(accessToken: string, path: string, method = "GET
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(10_000)]) : AbortSignal.timeout(10_000),
   });
   const result = await responseJson(response);
-  if (!response.ok) {
-    const quota = response.status === 429 || JSON.stringify(result).includes("rateLimitExceeded") || JSON.stringify(result).includes("userRateLimitExceeded");
-    throw new GoogleCalendarError(quota ? "quota" : response.status === 401 ? "reconnect" : response.status === 403 ? "permission" : "unavailable", response.status);
-  }
+  if (!response.ok) throw providerError(response,result);
   return result;
 }
 export function googleEventId(userId: string, calendarId: string, key: string, revision = 0) {

@@ -1,5 +1,7 @@
 # Google Agenda para usuários reais: situação e plano de liberação
 
+> Atualização posterior, ainda local: [retentativas, quotas e alertas implementados e testados](google-agenda-fila-retentativas-local-20261030.md). A lacuna técnica de espera fixa e transporte de alertas descrita nesta consulta foi tratada no candidato; instalação, destinatário e dimensionamento real de produção continuam pendentes. O inventário de migrações passa a incluir também `0011_google_calendar_retries`.
+
 **Conclusão em 30/10/2026: candidato local validado, produção ainda não liberada.** Esta rodada prepara procedimento e pendências; não autoriza deploy, push, migração, alteração OAuth, mensagens ou coleta de documentos reais.
 
 Código funcional auditado: `82a901c` na branch `feat/radar-calendarios-local-20261029`. [Procedimento de conferência proposto](procedimento-conferencia-responsaveis-20261030.md). [Validação local anterior](supervised-registration-local-20261030.md). [Runbook VPS](apogee-routine-vps-deploy.md).

@@ -15,7 +15,7 @@ function Submit({children}: {children:React.ReactNode}) {
   return <button className={styles.action} disabled={pending}>{pending?"Aguarde…":children}</button>;
 }
 export function GoogleCalendar({status,result}: {
-  status:{configured:boolean;connected:boolean;lastSync:string|null;error:string|null};
+  status:{configured:boolean;connected:boolean;lastSync:string|null;error:string|null;retryAt?:string|null;paused?:boolean};
   result?:string;
 }) {
   const message = status.error ? errors[status.error] : result === "synced" ? "Calendário atualizado." :
@@ -29,6 +29,8 @@ export function GoogleCalendar({status,result}: {
     {!status.configured ? <><p>A conexão com o Google Agenda ainda precisa ser configurada neste ambiente.</p><button className={styles.action} disabled>Conectar Google Agenda</button></> : <>
       <p>O Apogee solicita acesso somente aos calendários que ele cria.</p>
       {message && <p role="status">{message}</p>}
+      {status.connected && status.retryAt && <p>Atualização em espera até <time dateTime={status.retryAt}>{new Date(status.retryAt).toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo"})} (Brasília)</time>.</p>}
+      {status.connected && status.paused && <p>As tentativas automáticas foram pausadas. Após o horário indicado, use Sincronizar agora para tentar novamente. Se faltar permissão, reconecte sua conta.</p>}
       {status.connected ? <>
         <p>Conta conectada.{status.lastSync && <> Última atualização: <time dateTime={status.lastSync}>{new Date(status.lastSync).toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo"})} (Brasília).</time></>}</p>
         <form action={syncGoogleCalendarAction}><Submit>Sincronizar agora</Submit></form>

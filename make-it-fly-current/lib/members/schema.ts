@@ -335,12 +335,20 @@ export const radarGoogleCalendar = pgTable("radar_google_calendar", {
   lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
   nextSyncAt: timestamp("next_sync_at", { withTimezone: true }).notNull().defaultNow(),
   lastError: text("last_error"),
+  consecutiveFailures: integer("consecutive_failures").notNull().default(0),
+  retryNotBefore: timestamp("retry_not_before",{withTimezone:true}),
+  retryPaused: boolean("retry_paused").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, table => [
   check("radar_google_calendar_calendar_id_check",sql`${table.calendarId} is null or (${table.calendarId} <> 'primary' and length(${table.calendarId}) between 3 and 1024)`),
   check("radar_google_calendar_last_error_check",sql`${table.lastError} is null or ${table.lastError} in ('reconnect','permission','quota','unavailable','invalid_response','access')`),
+  check("radar_google_calendar_consecutive_failures_check",sql`${table.consecutiveFailures} between 0 and 1000000`),
   index("radar_google_calendar_due_idx").on(table.nextSyncAt).where(sql`${table.refreshTokenEncrypted} is not null`),
 ]);
+export const radarGoogleCalendarQueueState=pgTable("radar_google_calendar_queue_state",{
+  singleton:boolean("singleton").primaryKey().default(true),
+  cooldownUntil:timestamp("cooldown_until",{withTimezone:true}),
+},table=>[check("radar_google_calendar_queue_state_singleton_check",sql`${table.singleton}`)]);
 export const radarGoogleCalendarOAuth = pgTable("radar_google_calendar_oauth", {
   userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
   stateHash: text("state_hash").notNull().unique(),

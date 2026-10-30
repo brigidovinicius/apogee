@@ -15,7 +15,8 @@ function authorized(request: Request) {
 async function report(processed=0) {
   const queue=await googleQueueStatus();
   const policy=googleQueuePolicy();
-  return {processed,...queue,batchSize:policy.batchSize,healthy:queue.configured && queue.lagSeconds<=policy.maxLagSeconds};
+  return {processed,...queue,batchSize:policy.batchSize,healthy:queue.configured && queue.lagSeconds<=policy.maxLagSeconds &&
+    !queue.errors && !queue.reconnect && !queue.paused && !queue.cooldownUntil};
 }
 export async function POST(request: Request) {
   if(!authorized(request))return new Response(null,{status:401});

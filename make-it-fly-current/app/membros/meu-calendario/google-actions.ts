@@ -24,7 +24,7 @@ export async function disconnectGoogleCalendarAction() {
 }
 export async function syncGoogleCalendarAction(): Promise<void> {
   const member = await requireCalendarMember();
-  const result = await syncGoogleCalendar(member.id);
+  const result = await syncGoogleCalendar(member.id,{manual:true});
   revalidatePath(GOOGLE_CALENDAR_PATH);
   redirect(GOOGLE_CALENDAR_PATH+"?google="+result);
 }

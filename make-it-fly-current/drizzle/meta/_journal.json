@@ -78,6 +78,13 @@
       "when": 1793318400000,
       "tag": "0010_supervised_registration",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793376000000,
+      "tag": "0011_google_calendar_retries",
+      "breakpoints": true
     }
   ]
 }

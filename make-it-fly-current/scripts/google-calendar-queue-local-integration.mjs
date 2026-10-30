@@ -11,14 +11,14 @@ const sql=postgres(url.href,{ssl:false,max:2,prepare:false});
 const table='radar_google_queue_qa_'+randomBytes(6).toString('hex');
 let claim;
 const tagged=async(strings,...values)=>{
-  const text=strings.reduce((text,part,i)=>text+(i?'$'+i:'')+part,'').replaceAll('radar_google_calendar','"'+table+'"');
+  const text=strings.reduce((text,part,i)=>text+(i?'$'+i:'')+part,'').replace(/\bradar_google_calendar\b/g,'"'+table+'"');
   if(text.includes('with candidate'))claim=text;
   return sql.unsafe(text,values);
 };
 try {
   assert.equal((await sql`select marker from radar_local_environment`)[0].marker,'apogee-radar-calendar-local-v1');
-  await sql`create table ${sql(table)} (user_id text primary key,refresh_token_encrypted text,next_sync_at timestamptz,last_error text)`;
-  for(let n=0;n<7;n++)await sql`insert into ${sql(table)} values (${'synthetic-'+n},'not-a-token',now()-interval '1 minute',null)`;
+  await sql`create table ${sql(table)} (user_id text primary key,refresh_token_encrypted text,next_sync_at timestamptz,last_error text,retry_paused boolean default false,retry_not_before timestamptz)`;
+  for(let n=0;n<7;n++)await sql`insert into ${sql(table)} (user_id,refresh_token_encrypted,next_sync_at) values (${'synthetic-'+n},'not-a-token',now()-interval '1 minute')`;
   const sync=opportunityLoader({
     '@/lib/members/db':{getSql:()=>tagged},
     '@/lib/billing/store':{radarAccess:async()=>({active:false})},

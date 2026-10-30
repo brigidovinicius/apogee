@@ -39,28 +39,30 @@ export async function completeGoogleCalendarOAuth(userId: string, state: string,
     await tx`insert into radar_google_calendar (user_id,refresh_token_encrypted,connected_at)
       values (${userId},${sealGoogleSecret(tokens.refreshToken,userId)},now())
       on conflict (user_id) do update set refresh_token_encrypted=excluded.refresh_token_encrypted,
-      connected_at=now(),next_sync_at=now(),last_error=null,updated_at=now()`;
+      connected_at=now(),next_sync_at=now(),last_error=null,consecutive_failures=0,retry_not_before=null,retry_paused=false,updated_at=now()`;
   });
 }
 export async function disconnectGoogleCalendar(userId: string) {
   await getSql().begin(async tx => {
     await tx`select pg_advisory_xact_lock(hashtextextended(${'google-calendar:'+userId},0))`;
     // Serializes with an in-flight sync. Retain calendar ID so reconnect can reuse it.
-    await tx`update radar_google_calendar set refresh_token_encrypted=null,updated_at=now(),last_error=null where user_id=${userId}`;
+    await tx`update radar_google_calendar set refresh_token_encrypted=null,updated_at=now(),last_error=null,consecutive_failures=0,retry_not_before=null,retry_paused=false where user_id=${userId}`;
     await tx`delete from radar_google_calendar_oauth where user_id=${userId}`;
   });
   // Do not revoke the shared OAuth client: that could also disconnect Google login.
 }
 export async function googleCalendarStatus(userId: string) {
   if (!googleCalendarConfig()) return { configured: false, connected: false, lastSync: null, error: null };
-  const [row] = await getSql()`select refresh_token_encrypted is not null as connected,last_synced_at,last_error
+  const [row] = await getSql()`select refresh_token_encrypted is not null as connected,last_synced_at,last_error,retry_not_before,retry_paused
     from radar_google_calendar where user_id=${userId}`;
   return { configured: true, connected: !!row?.connected,
     lastSync: row?.last_synced_at ? new Date(row.last_synced_at).toISOString() : null,
-    error: row?.last_error ? String(row.last_error) : null };
+    error: row?.last_error ? String(row.last_error) : null,
+    retryAt:row?.retry_not_before?new Date(row.retry_not_before).toISOString():null,paused:!!row?.retry_paused };
 }
 export async function queueGoogleCalendarSync(userId: string) {
   if (!googleCalendarConfig()) return false;
-  const rows = await getSql()`update radar_google_calendar set next_sync_at=now() where user_id=${userId} and refresh_token_encrypted is not null returning user_id`;
+  const rows = await getSql()`update radar_google_calendar set next_sync_at=now() where user_id=${userId} and refresh_token_encrypted is not null
+    and retry_paused=false and (retry_not_before is null or retry_not_before<=now()) returning user_id`;
   return rows.length > 0;
 }

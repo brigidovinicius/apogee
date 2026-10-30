@@ -9,24 +9,36 @@ import { listRadarOpportunities } from "./radar-client";
 import { calendarEntries } from "./discovery";
 import { googleQueuePolicy } from "./google-calendar-queue";
 import { adultAccess } from "@/lib/members/protection";
+import { googleProjectCooldown,recordGoogleFailure,recordGoogleFailureOutsideTransaction } from "./google-calendar-failures";
 
-export async function syncGoogleCalendar(userId: string): Promise<"synced" | "pending" | "disconnected" | "failed"> {
+export async function syncGoogleCalendar(userId: string,options:{manual?:boolean}={}): Promise<"synced" | "pending" | "disconnected" | "failed"> {
   if (!googleCalendarConfig()) return "disconnected";
-  const [connection] = await getSql()`select user_id from radar_google_calendar where user_id=${userId} and refresh_token_encrypted is not null`;
+  const [connection] = await getSql()`select user_id,retry_not_before,retry_paused,last_error from radar_google_calendar where user_id=${userId} and refresh_token_encrypted is not null`;
   if (!connection) return "disconnected";
   // Access uses its own transaction; perform this before locking the connection.
   if (!(await adultAccess(userId)) || !(await radarAccess(userId,process.env.STRIPE_MODE !== "test")).active) {
     await getSql()`update radar_google_calendar set last_error='access',next_sync_at=now()+interval '15 minutes' where user_id=${userId}`;
     return "failed";
   }
+  if(await googleProjectCooldown())return "pending";
+  if(connection.retry_not_before && new Date(connection.retry_not_before).getTime()>Date.now())return "pending";
+  if(connection.retry_paused && (!options.manual || ['permission','invalid_response'].includes(String(connection.last_error))))return "failed";
   let live;
   try { live = await listRadarOpportunities(true); } catch {
-    await getSql()`update radar_google_calendar set last_error='unavailable',next_sync_at=now()+interval '5 minutes' where user_id=${userId}`;
+    await recordGoogleFailureOutsideTransaction(userId,new GoogleCalendarError('unavailable'));
     return "failed"; // Never interpret a catalogue outage as removal of all events.
   }
   return await getSql().begin(async tx => {
     const [row] = await tx`select * from radar_google_calendar where user_id=${userId} for update`;
     if (!row?.refresh_token_encrypted) return "disconnected" as const;
+    if(row.retry_not_before && new Date(row.retry_not_before).getTime()>Date.now())return "pending" as const;
+    if(row.retry_paused) {
+      if(!options.manual || ['permission','invalid_response'].includes(String(row.last_error)))return "failed" as const;
+      await tx`update radar_google_calendar set retry_paused=false,consecutive_failures=0 where user_id=${userId}`;
+    }
+    // Recheck after waiting for another sync's lock. Never bypass a quota hold.
+    const [queue]=await tx`select cooldown_until from radar_google_calendar_queue_state where singleton=true`;
+    if(queue?.cooldown_until && new Date(queue.cooldown_until).getTime()>Date.now())return "pending" as const;
     const signal = AbortSignal.timeout(40_000);
     const deadline = Date.now()+30_000;
     try {
@@ -83,15 +95,13 @@ export async function syncGoogleCalendar(userId: string): Promise<"synced" | "pe
         await tx`update radar_google_calendar_event set cancelled=true where user_id=${userId} and entry_key=${String(event.entry_key)}`;
         changed++;
       }
-      await tx`update radar_google_calendar set last_error=null,updated_at=now(),
+      await tx`update radar_google_calendar set last_error=null,consecutive_failures=0,retry_not_before=null,retry_paused=false,updated_at=now(),
         last_synced_at=case when ${pending} then last_synced_at else now() end,
         next_sync_at=now()+case when ${pending} then interval '1 minute' else interval '15 minutes' end where user_id=${userId}`;
       return pending ? "pending" as const : "synced" as const;
     } catch (error) {
-      const code = error instanceof GoogleCalendarError ? error.code : "unavailable";
       // Commit successful API operations/maps so a retry resumes without duplicating events.
-      await tx`update radar_google_calendar set last_error=${code},updated_at=now(),next_sync_at=now()+interval '5 minutes',
-        refresh_token_encrypted=case when ${code === "reconnect"} then null else refresh_token_encrypted end where user_id=${userId}`;
+      await recordGoogleFailure(tx,userId,error);
       return "failed" as const;
     }
   });
@@ -106,14 +116,16 @@ export async function syncDueGoogleCalendars() {
     // worker leaves a bounded lease, so the connection becomes eligible again.
     const [row]=await getSql()`with candidate as (
       select user_id from radar_google_calendar
-      where refresh_token_encrypted is not null and next_sync_at<=now()
+      where refresh_token_encrypted is not null and next_sync_at<=now() and retry_paused=false
+        and (retry_not_before is null or retry_not_before<=now())
+        and not exists(select 1 from radar_google_calendar_queue_state where cooldown_until>now())
       order by next_sync_at,user_id for update skip locked limit 1
     ) update radar_google_calendar c set next_sync_at=now()+interval '3 minutes'
       from candidate where c.user_id=candidate.user_id returning c.user_id`;
     if(!row)break;
     try {await syncGoogleCalendar(String(row.user_id));}
     catch {
-      await getSql()`update radar_google_calendar set last_error='unavailable',next_sync_at=now()+interval '5 minutes' where user_id=${String(row.user_id)}`;
+      await recordGoogleFailureOutsideTransaction(String(row.user_id),new GoogleCalendarError('unavailable'));
     }
     processed++;
   }
