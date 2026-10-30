@@ -1,0 +1,64 @@
+{
+  "checkedOn": "2026-10-29",
+  "status": "local_collectors_implemented_two_live_sources_verified_two_blocked",
+  "note": "Quatro adaptadores implementados e testados localmente. OBMEP e OBI passaram pelo fetch protegido e foram importadas apenas no PostgreSQL local. Comvest bloqueada por robots; Fuvest com robots indisponível. Nenhum deploy ou ativação em produção.",
+  "entries": [
+    {
+      "name": "OBMEP",
+      "url": "https://www.obmep.org.br/calendario.htm",
+      "subtype": "olimpiada",
+      "areas": [
+        "matematica"
+      ],
+      "edition": "2026",
+      "observation": "Inscrições encerradas; divulgação de premiados em 15/12/2026. Usar como acompanhamento, não como candidatura aberta.",
+      "nextChecks": [
+        "Revalidar a fonte antes de qualquer futura ativação em produção"
+      ],
+      "sourceId": "obmep-calendar-2026",
+      "localValidation": "live_fetch_parser_postgres_recheck_passed"
+    },
+    {
+      "name": "Olimpíada Brasileira de Informática",
+      "url": "https://olimpiada.ic.unicamp.br/calendario/datas_importantes",
+      "subtype": "olimpiada",
+      "areas": [
+        "tecnologia"
+      ],
+      "edition": "2026",
+      "observation": "Datas por modalidade; inscrição da escola é diferente da inscrição de competidores. Não condensar todos os prazos em uma única data.",
+      "nextChecks": [
+        "Revalidar a fonte antes de qualquer futura ativação em produção"
+      ],
+      "sourceId": "obi-calendar-2026",
+      "localValidation": "live_fetch_parser_postgres_recheck_passed"
+    },
+    {
+      "name": "Comvest Unicamp",
+      "url": "https://www.comvest.unicamp.br/ingresso-2027/vestibular-2027/",
+      "subtype": "vestibular",
+      "areas": [],
+      "edition": "2027",
+      "observation": "O robots.txt bloqueia /ingresso-2027/. Adaptador testado com marcação representativa e prorrogação explícita; não confundir vestibular com ENEM-Unicamp. Sem importação local da fonte bloqueada.",
+      "nextChecks": [
+        "Coleta real ainda bloqueada; não ativar nem importar snapshots de busca como substituto",
+        "Validar o adaptador com HTML oficial recebido pelo fetch protegido quando a fonte permitir"
+      ],
+      "sourceId": "comvest-vestibular-2027",
+      "localValidation": "representative_parser_tests_only_live_fetch_blocked"
+    },
+    {
+      "name": "Fuvest",
+      "url": "https://www.fuvest.br/vestibular-da-usp/",
+      "subtype": "vestibular",
+      "areas": [],
+      "observation": "robots.txt indisponível na coleta protegida local. Parser conservador testado somente com marcação representativa; não é homologação da fonte ao vivo.",
+      "nextChecks": [
+        "Coleta real ainda bloqueada; não ativar nem importar snapshots de busca como substituto",
+        "Validar o adaptador com HTML oficial recebido pelo fetch protegido quando a fonte permitir"
+      ],
+      "sourceId": "fuvest-vestibular-2027",
+      "localValidation": "representative_parser_tests_only_live_fetch_blocked"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+# Template only. Run on a separate host to detect loss of the application host.
+[Unit]
+Description=Apogee Google Calendar external read-only monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=apogee-monitor
+Group=apogee-monitor
+WorkingDirectory=/opt/apogee-calendar-monitor
+EnvironmentFile=/etc/apogee-calendar-monitor.env
+ExecStart=/usr/bin/node /opt/apogee-calendar-monitor/google-calendar-monitor.mjs
+Restart=on-failure
+RestartSec=15
+StateDirectory=apogee-calendar-monitor
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+MemoryMax=128M
+CPUQuota=25%
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,335 @@
+{
+  "date": "2026-10-30",
+  "timezone": "America/Sao_Paulo",
+  "codeRevision": "4c11f50",
+  "localOnly": true,
+  "productionChanged": false,
+  "deployed": false,
+  "implementationChangesThisRound": false,
+  "priorAutomatedTestsAtSameRevision": 984,
+  "newHttpAcceptanceChecks": 48,
+  "newLiveSourceChecks": 4,
+  "temporaryAccountsRemaining": 0,
+  "http": [
+    {
+      "check": "Public vestibular calendar",
+      "passed": true
+    },
+    {
+      "check": "paid real login",
+      "passed": true
+    },
+    {
+      "check": "Paid detail includes save action",
+      "passed": true
+    },
+    {
+      "check": "Save action works over real HTTP",
+      "passed": true
+    },
+    {
+      "check": "Repeated save is idempotent",
+      "passed": true
+    },
+    {
+      "check": "Personal calendar lists saved stages",
+      "passed": true
+    },
+    {
+      "check": "Feed generated via real server action",
+      "passed": true
+    },
+    {
+      "check": "ICS private feed loads and contains stages",
+      "passed": true
+    },
+    {
+      "check": "ICS security headers and local event links",
+      "passed": true
+    },
+    {
+      "check": "ICS does not expose protected requirements or official URL",
+      "passed": true
+    },
+    {
+      "check": "Removal cancels exported events",
+      "passed": true
+    },
+    {
+      "check": "Re-saving restores stable event IDs",
+      "passed": true
+    },
+    {
+      "check": "Token rotation revokes only the previous feed",
+      "passed": true
+    },
+    {
+      "check": "Entitlement revocation blocks feed",
+      "passed": true
+    },
+    {
+      "check": "Entitlement revocation gates personal page",
+      "passed": true
+    },
+    {
+      "check": "free real login",
+      "passed": true
+    },
+    {
+      "check": "Free account cannot use personal calendar",
+      "passed": true
+    },
+    {
+      "check": "Free GET does not expose protected detail",
+      "passed": true
+    },
+    {
+      "check": "Explicit free selection unlocks one detail",
+      "passed": true
+    },
+    {
+      "check": "Second free detail keeps the commercial gate",
+      "passed": true
+    },
+    {
+      "check": "Free selected detail can be reopened",
+      "passed": true
+    }
+  ],
+  "admin": [
+    {
+      "check": "Admin local login",
+      "passed": true
+    },
+    {
+      "check": "comvest-vestibular-2027 same record in admin",
+      "passed": true
+    },
+    {
+      "check": "comvest-vestibular-2027 classification and stages preserved",
+      "passed": true
+    },
+    {
+      "check": "fuvest-vestibular-2027 same record in admin",
+      "passed": true
+    },
+    {
+      "check": "fuvest-vestibular-2027 classification and stages preserved",
+      "passed": true
+    },
+    {
+      "check": "obi-calendar-2026 same record in admin",
+      "passed": true
+    },
+    {
+      "check": "obi-calendar-2026 classification and stages preserved",
+      "passed": true
+    },
+    {
+      "check": "obmep-calendar-2026 same record in admin",
+      "passed": true
+    },
+    {
+      "check": "obmep-calendar-2026 classification and stages preserved",
+      "passed": true
+    }
+  ],
+  "public": [
+    {
+      "path": "/oportunidades",
+      "status": 200,
+      "finalPath": "/oportunidades"
+    },
+    {
+      "path": "/calendarios",
+      "status": 200,
+      "finalPath": "/calendarios"
+    },
+    {
+      "path": "/calendarios/olimpiadas-cientificas",
+      "status": 200,
+      "finalPath": "/calendarios/olimpiadas-cientificas"
+    },
+    {
+      "path": "/calendarios/vestibulares",
+      "status": 200,
+      "finalPath": "/calendarios/vestibulares"
+    },
+    {
+      "path": "/calendarios/hackathons",
+      "status": 200,
+      "finalPath": "/calendarios/hackathons"
+    },
+    {
+      "path": "/calendarios/eventos",
+      "status": 200,
+      "finalPath": "/calendarios/eventos"
+    },
+    {
+      "path": "/calendarios/olimpiadas-cientificas?area=matematica",
+      "status": 200,
+      "finalPath": "/calendarios/olimpiadas-cientificas"
+    },
+    {
+      "path": "/calendarios/olimpiadas-cientificas?area=biologia",
+      "status": 200,
+      "finalPath": "/calendarios/olimpiadas-cientificas"
+    },
+    {
+      "path": "/oportunidades/olimpiada-de-matematica-demonstracao-local--radar-demo-olimpiada",
+      "status": 200,
+      "finalPath": "/oportunidades/olimpiada-de-matematica-demonstracao-local--radar-demo-olimpiada"
+    },
+    {
+      "path": "/oportunidades/vestibular-demonstracao-local--radar-demo-vestibular",
+      "status": 200,
+      "finalPath": "/oportunidades/vestibular-demonstracao-local--radar-demo-vestibular"
+    },
+    {
+      "path": "/oportunidades/hackathon-demonstracao-local--radar-demo-hackathon",
+      "status": 200,
+      "finalPath": "/oportunidades/hackathon-demonstracao-local--radar-demo-hackathon"
+    },
+    {
+      "path": "/oportunidades/titulo-antigo--radar-demo-olimpiada",
+      "status": 200,
+      "finalPath": "/oportunidades/titulo-antigo--radar-demo-olimpiada"
+    },
+    {
+      "path": "/calendarios/inexistente",
+      "status": 404,
+      "finalPath": "/calendarios/inexistente"
+    },
+    {
+      "path": "/oportunidades/inexistente--radar-missing",
+      "status": 200,
+      "finalPath": "/oportunidades/inexistente--radar-missing"
+    },
+    {
+      "path": "/meu-calendario/invalido.ics",
+      "status": 404,
+      "finalPath": "/meu-calendario/invalido.ics"
+    },
+    {
+      "path": "/membros/oportunidades/radar-demo-olimpiada",
+      "status": 200,
+      "finalPath": "/membros/entrar"
+    },
+    {
+      "path": "/membros/meu-calendario",
+      "status": 200,
+      "finalPath": "/membros/entrar"
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "finalPath": "/sitemap.xml"
+    }
+  ],
+  "liveSources": [
+    {
+      "sourceId": "obmep-calendar-2026",
+      "httpStatus": 200,
+      "report": {
+        "pagesChecked": 1,
+        "discovered": 1,
+        "published": 0,
+        "blocked": 1
+      },
+      "parsed": true
+    },
+    {
+      "sourceId": "obi-calendar-2026",
+      "httpStatus": 200,
+      "report": {
+        "pagesChecked": 1,
+        "discovered": 1,
+        "published": 0,
+        "blocked": 1
+      },
+      "parsed": true
+    },
+    {
+      "sourceId": "comvest-vestibular-2027",
+      "httpStatus": 200,
+      "report": {
+        "pagesChecked": 1,
+        "discovered": 1,
+        "published": 0,
+        "blocked": 1
+      },
+      "parsed": true
+    },
+    {
+      "sourceId": "fuvest-vestibular-2027",
+      "httpStatus": 200,
+      "report": {
+        "pagesChecked": 1,
+        "discovered": 1,
+        "published": 0,
+        "blocked": 1
+      },
+      "parsed": true
+    }
+  ],
+  "catalogueRecords": [
+    {
+      "id": "047b6345-17d9-4a6f-876a-cc056e401847",
+      "title": "Vestibular Unicamp 2027",
+      "official_source_id": "comvest-vestibular-2027",
+      "opportunity_status": "closed",
+      "type": "formacao",
+      "subtype": "vestibular",
+      "areas": [],
+      "stages": 13
+    },
+    {
+      "id": "d6832cd5-c798-48a4-8963-3afa3c57d7bf",
+      "title": "Vestibular FUVEST 2027",
+      "official_source_id": "fuvest-vestibular-2027",
+      "opportunity_status": "closed",
+      "type": "formacao",
+      "subtype": "vestibular",
+      "areas": [],
+      "stages": 8
+    },
+    {
+      "id": "e8ff1dbe-3120-4914-b29b-4df900da09a3",
+      "title": "Olimpíada Brasileira de Informática 2026",
+      "official_source_id": "obi-calendar-2026",
+      "opportunity_status": "closed",
+      "type": "competicoes",
+      "subtype": "olimpiada",
+      "areas": [
+        "tecnologia"
+      ],
+      "stages": 16
+    },
+    {
+      "id": "de88a7f8-c8ef-4236-ba05-e7ea3b767176",
+      "title": "OBMEP 2026",
+      "official_source_id": "obmep-calendar-2026",
+      "opportunity_status": "closed",
+      "type": "competicoes",
+      "subtype": "olimpiada",
+      "areas": [
+        "matematica"
+      ],
+      "stages": 8
+    }
+  ],
+  "browserChecks": [
+    "Radar filter Mathematics changes 3 cards to 2; clear restores 3",
+    "Cards show source and clean title; no horizontal overflow at viewport 1280",
+    "Readable detail URL, canonical, title and description",
+    "Existing local_vitalicio session opens protected details and save button",
+    "Olympiad Technology filter shows only OBI; fresh checked date after live collection"
+  ],
+  "limits": [
+    "Full detail access retains existing login/entitlement rules by user decision",
+    "Search indexing and SEO performance cannot be validated from localhost",
+    "No new real Google Calendar or macOS client synchronization in this round; ICS HTTP lifecycle validated",
+    "Legacy records without confirmed classifications remain without invented enrichment",
+    "New academic editions and newly published correction notices require their own source review"
+  ]
+}

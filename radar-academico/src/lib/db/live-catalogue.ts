@@ -1,5 +1,5 @@
 import { queryPublic, withAdminTransaction } from "./client";
-import { publishedOpportunityPredicate } from "./publication-filter";
+import { publishedOpportunityPredicate, calendarOpportunityPredicate } from "./publication-filter";
 import { admissionProcessFor } from "@/lib/ingestion/admission-process";
 import { alertsAvailable } from "@/lib/alerts/mail";
 
@@ -10,6 +10,7 @@ const liveQuery = `select
          o.verification_method as "verificationMethod",
          o.verified_at::text as "verifiedAt",
          o.title,
+         o.discovery,
          o.institution,
          o.benefit_type as "benefitType",
          o.categories,
@@ -41,9 +42,14 @@ const liveQuery = `select
        order by o.deadline_at nulls last`;
 export async function listLiveCatalogue(management = false) {
   const rows = management ? await withAdminTransaction(async (client) => (await client.query(
-    liveQuery.replace('o.id,', `o.id, o.version, o.official_source_id as "officialSourceId", o.application_route as "applicationRoute", o.evidence_json as evidence,`)
+    liveQuery.replace(publishedOpportunityPredicate, () => `(${publishedOpportunityPredicate}) or (${calendarOpportunityPredicate})`).replace('o.id,', `o.id, o.version, o.official_source_id as "officialSourceId", o.application_route as "applicationRoute", o.evidence_json as evidence,`)
   )).rows) : (await queryPublic(liveQuery)).rows;
   return rows.map(({ _sourceId, ...item }) => ({ ...item,
     admissionProcess: admissionProcessFor(_sourceId, item), alertsAvailable: alertsAvailable(),
   }));
+}
+
+export async function listCalendarCatalogue() {
+  const rows = (await queryPublic(liveQuery.replace(publishedOpportunityPredicate, () => `(${publishedOpportunityPredicate}) or (${calendarOpportunityPredicate})`))).rows;
+  return rows.map(({ _sourceId, ...item }) => ({ ...item, admissionProcess: admissionProcessFor(_sourceId, item), alertsAvailable: false }));
 }

@@ -6,6 +6,8 @@ import {
   customType,
   index,
   integer,
+  jsonb,
+  primaryKey,
   pgTable,
   text,
   timestamp,
@@ -27,6 +29,7 @@ export const user = pgTable("user", {
   bio: text("bio"),
   canManageAdmins: boolean("can_manage_admins").notNull().default(false),
   blocked: boolean("blocked").notNull().default(false),
+  adultDeclared: boolean("adult_declared").notNull().default(false),
   nameNeedsConfirmation: boolean("name_needs_confirmation").notNull().default(false),
   role: text("role", { enum: ["member", "admin"] }).notNull().default("member"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -309,3 +312,101 @@ export const storeDropSignup = pgTable("store_drop_signup", {
   check("store_drop_signup_phone_check", sql`${table.phone} ~ '^\\+?[0-9]{10,15}$'`),
   check("store_drop_signup_email_check", sql`${table.email} = lower(trim(${table.email})) and length(${table.email}) between 3 and 254`),
 ]);
+
+export const radarSavedOpportunity = pgTable("radar_saved_opportunity", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  opportunityId: text("opportunity_id").notNull(),
+  snapshot: jsonb("snapshot").notNull(),
+  feedHistory: jsonb("feed_history").notNull().default([]),
+  savedAt: timestamp("saved_at", { withTimezone: true }).notNull().defaultNow(),
+  removedAt: timestamp("removed_at", { withTimezone: true }),
+}, table => [primaryKey({columns:[table.userId,table.opportunityId]}),check("radar_saved_opportunity_opportunity_id_check",sql`${table.opportunityId} ~ '^[A-Za-z0-9_-]{1,200}$'`)]);
+export const radarCalendarFeed = pgTable("radar_calendar_feed", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [check("radar_calendar_feed_token_hash_check",sql`${table.tokenHash} ~ '^[a-f0-9]{64}$'`)]);
+
+export const radarGoogleCalendar = pgTable("radar_google_calendar", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  refreshTokenEncrypted: text("refresh_token_encrypted"),
+  calendarId: text("calendar_id"),
+  connectedAt: timestamp("connected_at", { withTimezone: true }),
+  lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
+  nextSyncAt: timestamp("next_sync_at", { withTimezone: true }).notNull().defaultNow(),
+  lastError: text("last_error"),
+  consecutiveFailures: integer("consecutive_failures").notNull().default(0),
+  retryNotBefore: timestamp("retry_not_before",{withTimezone:true}),
+  retryPaused: boolean("retry_paused").notNull().default(false),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  check("radar_google_calendar_calendar_id_check",sql`${table.calendarId} is null or (${table.calendarId} <> 'primary' and length(${table.calendarId}) between 3 and 1024)`),
+  check("radar_google_calendar_last_error_check",sql`${table.lastError} is null or ${table.lastError} in ('reconnect','permission','quota','unavailable','invalid_response','access')`),
+  check("radar_google_calendar_consecutive_failures_check",sql`${table.consecutiveFailures} between 0 and 1000000`),
+  index("radar_google_calendar_due_idx").on(table.nextSyncAt).where(sql`${table.refreshTokenEncrypted} is not null`),
+]);
+export const radarGoogleCalendarQueueState=pgTable("radar_google_calendar_queue_state",{
+  singleton:boolean("singleton").primaryKey().default(true),
+  cooldownUntil:timestamp("cooldown_until",{withTimezone:true}),
+  workerSeenAt:timestamp("worker_seen_at",{withTimezone:true}),workerState:text("worker_state"),
+},table=>[check("radar_google_calendar_queue_state_singleton_check",sql`${table.singleton}`),
+  check("radar_google_calendar_queue_state_worker_state_check",sql`${table.workerState} is null or ${table.workerState} in ('running','ok','failed')`)]);
+export const radarGoogleCalendarMetric=pgTable("radar_google_calendar_metric",{
+  id:bigint("id",{mode:"number"}).primaryKey().generatedAlwaysAsIdentity(),
+  finishedAt:timestamp("finished_at",{withTimezone:true}).notNull().default(sql`clock_timestamp()`),
+  durationMs:integer("duration_ms").notNull(),outcome:text("outcome").notNull(),googleCalls:integer("google_calls").notNull(),
+  httpErrors:integer("http_errors").notNull(),networkErrors:integer("network_errors").notNull(),quotaResponses:integer("quota_responses").notNull(),eventsChanged:integer("events_changed").notNull(),
+},table=>[index("radar_google_calendar_metric_finished_idx").on(table.finishedAt),
+  check("radar_google_calendar_metric_duration_ms_check",sql`${table.durationMs}>=0`),
+  check("radar_google_calendar_metric_outcome_check",sql`${table.outcome} in ('synced','pending','failed','disconnected','thrown')`),
+  check("radar_google_calendar_metric_google_calls_check",sql`${table.googleCalls}>=0`),
+  check("radar_google_calendar_metric_http_errors_check",sql`${table.httpErrors}>=0`),
+  check("radar_google_calendar_metric_network_errors_check",sql`${table.networkErrors}>=0`),
+  check("radar_google_calendar_metric_quota_responses_check",sql`${table.quotaResponses}>=0`),
+  check("radar_google_calendar_metric_events_changed_check",sql`${table.eventsChanged}>=0`)]);
+export const radarGoogleCalendarOAuth = pgTable("radar_google_calendar_oauth", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  stateHash: text("state_hash").notNull().unique(),
+  verifierEncrypted: text("verifier_encrypted").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+}, table => [check("radar_google_calendar_oauth_state_hash_check",sql`${table.stateHash} ~ '^[a-f0-9]{64}$'`)]);
+export const radarGoogleCalendarEvent = pgTable("radar_google_calendar_event", {
+  userId: text("user_id").notNull().references(() => radarGoogleCalendar.userId, { onDelete: "cascade" }),
+  entryKey: text("entry_key").notNull(),
+  eventId: text("event_id").notNull(),
+  revision: integer("revision").notNull().default(0),
+  contentHash: text("content_hash").notNull(),
+  cancelled: boolean("cancelled").notNull().default(false),
+}, table => [
+  primaryKey({columns:[table.userId,table.entryKey]}),
+  check("radar_google_calendar_event_event_id_check",sql`${table.eventId} ~ '^[a-f0-9]{64}$'`),
+  check("radar_google_calendar_event_revision_check",sql`${table.revision} >= 0`),
+]);
+
+export const memberAdultReview=pgTable("member_adult_review",{
+  userId:text("user_id").primaryKey().references(()=>user.id,{onDelete:"cascade"}),
+  status:text("status").notNull().default("pending"),
+  requestedAt:timestamp("requested_at",{withTimezone:true}).notNull().defaultNow(),
+  reviewedAt:timestamp("reviewed_at",{withTimezone:true}),
+  reviewerId:text("reviewer_id").references(()=>user.id,{onDelete:"set null"}),
+  evidenceReference:text("evidence_reference"),
+},table=>[check("member_adult_review_status_check",sql`${table.status} in ('pending','approved','rejected')`),
+  check("member_adult_review_check",sql`${table.status} <> 'approved' or (${table.reviewedAt} is not null and ${table.evidenceReference} is not null)`)]);
+export const memberDependent=pgTable("member_dependent",{
+  id:text("id").primaryKey(),guardianId:text("guardian_id").notNull().references(()=>user.id,{onDelete:"cascade"}),
+  nickname:text("nickname").notNull(),ageBand:text("age_band").notNull(),relationship:text("relationship").notNull(),
+  status:text("status").notNull().default("pending"),consentVersion:text("consent_version").notNull(),
+  consentAt:timestamp("consent_at",{withTimezone:true}).notNull().defaultNow(),
+  reviewedAt:timestamp("reviewed_at",{withTimezone:true}),reviewerId:text("reviewer_id").references(()=>user.id,{onDelete:"set null"}),
+  evidenceReference:text("evidence_reference"),
+},table=>[index("member_dependent_guardian_idx").on(table.guardianId,table.status),
+  check("member_dependent_nickname_check",sql`length(${table.nickname}) between 2 and 40`),
+  check("member_dependent_age_band_check",sql`${table.ageBand} in ('under_12','12_15','16_17')`),
+  check("member_dependent_relationship_check",sql`${table.relationship} in ('parent','legal_guardian')`),
+  check("member_dependent_status_check",sql`${table.status} in ('pending','approved','rejected','revoked')`),
+  check("member_dependent_check",sql`${table.status} <> 'approved' or (${table.reviewedAt} is not null and ${table.evidenceReference} is not null)`)]);
+export const memberProtectionAudit=pgTable("member_protection_audit",{
+  id:bigint("id",{mode:"number"}).primaryKey().generatedAlwaysAsIdentity(),
+  actorId:text("actor_id").references(()=>user.id,{onDelete:"set null"}),subjectId:text("subject_id").notNull(),action:text("action").notNull(),
+  occurredAt:timestamp("occurred_at",{withTimezone:true}).notNull().defaultNow(),
+});

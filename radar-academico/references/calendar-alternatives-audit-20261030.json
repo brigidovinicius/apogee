@@ -1,0 +1,149 @@
+{
+  "localOnly": true,
+  "databaseAccessDuringFetch": false,
+  "transportProtectionsChanged": false,
+  "sources": [
+    {
+      "sourceId": "comvest-vestibular-2027",
+      "url": "https://www.unicamp.br/noticias/2026/08/31/unicamp-prorroga-inscricoes-para-o-vestibular-2027-ate-8-de-setembro/",
+      "checkedAt": "2026-10-30T11:28:07.919Z",
+      "fetched": true,
+      "sha256": "0560db18d63ffa9c6c1307c3331c0f4afb01eb3a7cfa6e032e4870ae05ba451d",
+      "bytes": 174411,
+      "parsed": true,
+      "candidates": 1,
+      "stages": 13
+    },
+    {
+      "sourceId": "fuvest-vestibular-2027",
+      "url": "https://jornal.usp.br/universidade/guia-de-jornada-orienta-candidatos-sobre-etapas-do-vestibular-para-ingresso-na-usp/",
+      "checkedAt": "2026-10-30T11:28:10.538Z",
+      "fetched": true,
+      "sha256": "0e4bf491ed65ab8280274b73edc95a6a4d1d8cd7bc1cfc8635306def136e89f4",
+      "bytes": 352060,
+      "parsed": true,
+      "candidates": 1,
+      "stages": 8
+    }
+  ],
+  "integration": {
+    "checkedAt": "2026-10-30T11:29:12.102Z",
+    "localOnly": true,
+    "results": [
+      {
+        "sourceId": "comvest-vestibular-2027",
+        "opportunityId": "047b6345-17d9-4a6f-876a-cc056e401847",
+        "stages": 13,
+        "duplicateCount": 0,
+        "status": "closed",
+        "visibleInCalendar": true,
+        "visibleAsOpen": false
+      },
+      {
+        "sourceId": "fuvest-vestibular-2027",
+        "opportunityId": "d6832cd5-c798-48a4-8963-3afa3c57d7bf",
+        "stages": 8,
+        "duplicateCount": 0,
+        "status": "closed",
+        "visibleInCalendar": true,
+        "visibleAsOpen": false
+      }
+    ]
+  },
+  "otherSourceObservation": [
+    {
+      "sourceId": "obi-calendar-2026",
+      "url": "https://olimpiada.ic.unicamp.br/calendario/datas_importantes",
+      "checkedAt": "2026-10-30T11:27:52.856Z",
+      "fetched": false,
+      "parsed": false,
+      "reason": "Falha ao consultar fonte oficial"
+    }
+  ],
+  "notes": [
+    "Alternativas oficiais independentes; nenhum acesso aos hosts bloqueados nem utilização de resultados de busca como conteúdo de ingestão.",
+    "OBI teve falha de rede na checagem adicional desta rodada; dados previamente validados foram preservados."
+  ],
+  "validation": {
+    "tests": {
+      "apogee": 539,
+      "radar": 430,
+      "postgresRoles": 15,
+      "distinctTotal": 984
+    },
+    "checks": [
+      {
+        "check": "apogee-tests",
+        "exitCode": 0,
+        "seconds": 32.7,
+        "log": "/private/tmp/radar-alternatives-final-apogee-tests-20261029.log"
+      },
+      {
+        "check": "postgres-roles",
+        "exitCode": 0,
+        "seconds": 2.8,
+        "log": "/private/tmp/radar-alternatives-final-postgres-roles-20261029.log"
+      },
+      {
+        "check": "calendar-storage",
+        "exitCode": 0,
+        "seconds": 1.5,
+        "log": "/private/tmp/radar-alternatives-final-calendar-storage-20261029.log"
+      },
+      {
+        "check": "google-integration",
+        "exitCode": 0,
+        "seconds": 0.9,
+        "log": "/private/tmp/radar-alternatives-final-google-integration-20261029.log"
+      },
+      {
+        "check": "apogee-types",
+        "exitCode": 0,
+        "seconds": 9.2,
+        "log": "/private/tmp/radar-alternatives-final-apogee-types-20261029.log"
+      },
+      {
+        "check": "apogee-lint",
+        "exitCode": 0,
+        "seconds": 8.5,
+        "log": "/private/tmp/radar-alternatives-final-apogee-lint-20261029.log"
+      },
+      {
+        "check": "apogee-build",
+        "exitCode": 0,
+        "seconds": 23.7,
+        "log": "/private/tmp/radar-alternatives-final-apogee-build-20261029.log"
+      },
+      {
+        "check": "radar-tests",
+        "exitCode": 0,
+        "seconds": 28.1,
+        "log": "/private/tmp/radar-alternatives-final-radar-tests-20261029.log"
+      },
+      {
+        "check": "radar-types",
+        "exitCode": 0,
+        "seconds": 3.1,
+        "log": "/private/tmp/radar-alternatives-final-radar-types-20261029.log"
+      },
+      {
+        "check": "radar-lint",
+        "exitCode": 0,
+        "seconds": 3.1,
+        "log": "/private/tmp/radar-alternatives-final-radar-lint-20261029.log"
+      },
+      {
+        "check": "radar-build",
+        "exitCode": 0,
+        "seconds": 7.5,
+        "log": "/private/tmp/radar-alternatives-final-radar-build-20261029.log"
+      }
+    ],
+    "preview": {
+      "url": "http://127.0.0.1:4381/calendarios/vestibulares",
+      "browserVerified": true,
+      "screenshot": "comvest-fuvest-local-20261030.png"
+    },
+    "googleApiMocked": true
+  }
+}

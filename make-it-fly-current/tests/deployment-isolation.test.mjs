@@ -135,11 +135,13 @@ test("only the approved Apogee, blog, admin, community and Make It Fly surfaces 
   };
   await visit("app");
   assert.deepEqual(files.filter(path => /\/(?:page|layout|route)\.(?:tsx?|jsx?|mdx)$/.test(path)).sort(), [
+    "app/calendarios/[slug]/page.tsx", "app/calendarios/page.tsx", "app/membros/meu-calendario/page.tsx", "app/oportunidades/[slug]/page.tsx", "app/privacidade/page.tsx", "app/termos/page.tsx", "app/membros/protecao/page.tsx", "app/admin/protecao/page.tsx",
     "app/admin/acesso-negado/page.tsx",
     "app/admin/convites/page.tsx", "app/admin/curadoria/page.tsx", "app/admin/layout.tsx", "app/admin/loja/drops/page.tsx", "app/admin/page.tsx",
     "app/admin/posts/[id]/page.tsx", "app/admin/posts/novo/page.tsx", "app/admin/posts/page.tsx", "app/admin/radar/page.tsx", "app/admin/usuarios/page.tsx",
     "app/api/admin/loja/drops/exportar/route.ts", "app/api/admin/posts/[id]/media/route.ts", "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/auth/[...all]/route.ts", "app/api/checkout/route.ts",
     "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts", "app/api/loja/novidades/route.ts",
+    "app/api/integracoes/google-agenda/callback/route.ts", "app/api/internal/google-agenda/sync/route.ts",
     "app/api/members/invitations/route.ts", "app/api/members/verification/route.ts",
     "app/api/membros/avatar/[id]/route.ts", "app/api/membros/avatar/route.ts", "app/api/radar/alerts/route.ts",
     "app/api/radar/checkout/route.ts", "app/api/radar/verify-email/route.ts", "app/api/stripe/webhook/route.ts",
@@ -150,7 +152,7 @@ test("only the approved Apogee, blog, admin, community and Make It Fly surfaces 
     "app/membros/forum/[categoria]/[topico]/page.tsx", "app/membros/forum/[categoria]/novo/page.tsx",
     "app/membros/forum/[categoria]/page.tsx", "app/membros/layout.tsx", "app/membros/oportunidades/[id]/page.tsx", "app/membros/oportunidades/page.tsx", "app/membros/page.tsx",
     "app/membros/perfil/[username]/page.tsx", "app/membros/perfil/configurar/page.tsx", "app/membros/perfil/editar/page.tsx", "app/membros/radar/acesso/page.tsx", "app/oportunidades/avisos/page.tsx", "app/oportunidades/page.tsx", "app/page.tsx",
-  ]);
+  ].sort());
   for (const path of ["pages", "src/pages", "app/(publicado)/page.tsx", "app/(publicado)/layout.tsx", "app/(teste)/teste-terra/page.tsx", "app/(teste)/layout.tsx"]) {
     assert.equal(existsSync(new URL(path, root)), false, `${path} must not expose another page`);
   }

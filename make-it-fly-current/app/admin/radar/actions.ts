@@ -58,6 +58,11 @@ export async function saveRadarOpportunity(_state: CatalogueFormState, formData:
   const id = String(formData.get("id") ?? "");
   const fields = ["title", "institution", "officialSourceId", "officialUrl", "benefitType", "applicantType", "applicationRoute", "opportunityStatus", "deadlineAt", "deadlinePrecision", "eventStartsAt", "stateCode", "cityName", "requirementsText", "amountText", "evidenceExcerpt"];
   const input: Record<string, unknown> = Object.fromEntries(fields.map((field) => [field, String(formData.get(field) ?? "")]));
+  const discovery = formData.get("discovery");
+  if (typeof discovery === "string" && discovery) {
+    if (discovery.length > 40_000) return { error: "Calendário muito extenso." };
+    try { input.discovery = JSON.parse(discovery); } catch { return { error: "Calendário inválido." }; }
+  }
   input.isCourse = formData.get("isCourse") === "on";
   input.categories = formData.getAll("categories").map(String);
   input.nationallyEligible = formData.get("nationallyEligible") === "on";

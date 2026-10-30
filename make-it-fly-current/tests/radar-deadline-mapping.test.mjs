@@ -1,18 +1,7 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
-import ts from "typescript";
 
-const locationSource = await readFile(new URL("../lib/opportunities/location.ts", import.meta.url), "utf8");
-const logicSource = (await readFile(new URL("../lib/opportunities/types.ts", import.meta.url), "utf8"))
-  .replace(/^import \{[\s\S]*?\} from "@\/lib\/opportunities\/location";\s*/m, "");
-const clientSource = (await readFile(new URL("../lib/opportunities/radar-client.ts", import.meta.url), "utf8"))
-  .replace(/^import "server-only";\s*/m, "")
-  .replace(/^import \{[\s\S]*?\} from "@\/lib\/opportunities\/types";\s*/m, "")
-  .replace(/^import \{ normalizeBrazilianLocation \} from "@\/lib\/opportunities\/location";\s*/m, "");
-const output = ts.transpileModule(`${locationSource}\n${logicSource}\n${clientSource}`, {
-  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-}).outputText;
+import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
 test("Radar preserves the Brazilian calendar day for date-only and exact deadlines", async () => {
   const previousUrl = process.env.RADAR_ACADEMICO_API_URL;
@@ -22,7 +11,7 @@ test("Radar preserves the Brazilian calendar day for date-only and exact deadlin
   process.env.RADAR_ACADEMICO_API_TOKEN = "fixture-token";
 
   try {
-    const client = await import(`data:text/javascript;base64,${Buffer.from(output).toString("base64")}`);
+    const client = opportunityLoader()("lib/opportunities/radar-client.ts");
     const base = {
       title: "Bolsa verificada", institution: "Universidade",
       benefitType: "research_scholarship", applicantType: "undergraduate_student",
@@ -59,16 +48,29 @@ test("Radar preserves the Brazilian calendar day for date-only and exact deadlin
 });
 
 test("Radar accepts a confirmed open event with an unknown deadline without treating it as continuous flow",async()=>{
- const client=await import(`data:text/javascript;base64,${Buffer.from(output).toString("base64")}`);
+ const client=opportunityLoader()("lib/opportunities/radar-client.ts");
  const item={id:"event",title:"Encontro",institution:"Organizador",officialUrl:"https://event.example/edition",lastCheckedAt:"2026-10-14T15:00:00Z",benefitType:"other",applicantType:"mixed",categories:["eventos"],opportunityStatus:"open",deadlineAt:null,deadlinePrecision:"not_informed",eventStartsAt:"2026-10-21T09:00:00-03:00",alertsAvailable:true};
  const mapped=client.toOpportunity(item);assert.equal(mapped.deadline,null);assert.equal(mapped.deadlineLabel,"Prazo não informado");assert.equal(mapped.deadlineUnknown,true);assert.equal(mapped.alertsAvailable,true);
  for(const patch of [{categories:["formacao"]},{eventStartsAt:null},{deadlineAt:"2026-10-20"},{opportunityStatus:"upcoming"}])assert.equal(client.toOpportunity({...item,...patch}),null);
 });
 
 test("audited admission metadata survives the Radar bridge only for course options",async()=>{
- const client=await import(`data:text/javascript;base64,${Buffer.from(output).toString("base64")}`);
+ const client=opportunityLoader()("lib/opportunities/radar-client.ts");
  const item={id:"course",title:"Curso",institution:"IFSC",officialUrl:"https://www.ifsc.edu.br/tecnicos",lastCheckedAt:"2026-10-14T15:00:00Z",benefitType:"other",applicantType:"mixed",categories:["formacao"],isCourse:true,deadlineAt:"2099-10-20",deadlinePrecision:"date_only",admissionProcess:{id:"ifsc-technical-exam-2027-1",title:"IFSC 2027.1"}};
  assert.deepEqual(client.toOpportunity(item).admissionProcess,item.admissionProcess);
  assert.equal(client.toOpportunity({...item,isCourse:false}).admissionProcess,null);
  assert.equal(client.toOpportunity({...item,admissionProcess:{id:"",title:"Missing ID"}}).admissionProcess,null);
+});
+
+
+test("calendar-only opportunities without a legacy deadline preserve audited stages and closed registration", () => {
+  const client = opportunityLoader()("lib/opportunities/radar-client.ts");
+  const item = {id:"calendar-only",title:"Olimpíada",institution:"Organizador",officialUrl:"https://official.example/calendar",lastCheckedAt:"2026-10-14T15:00:00Z",benefitType:"other",applicantType:"mixed",categories:["competicoes"],opportunityStatus:"closed",deadlineAt:null,deadlinePrecision:"not_informed",discovery:{areas:[],editions:[{id:"2099",name:"2099",stages:[{id:"exam",name:"Prova",kind:"exam",start:"2099-11-10",checkedAt:"2026-10-14T15:00:00Z",sourceUrl:"https://official.example/calendar"}]}]}};
+  const mapped = client.toOpportunity(item);
+  assert.ok(mapped);
+  assert.equal(mapped.opportunityStatus,"closed");
+  assert.equal(mapped.deadline,null);
+  assert.equal(mapped.discovery.editions[0].stages.length,1);
+  assert.match(mapped.summary,/encerradas/);
+  assert.equal(client.toOpportunity({...item,discovery:undefined}),null);
 });

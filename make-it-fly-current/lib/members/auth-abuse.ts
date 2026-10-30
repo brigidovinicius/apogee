@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { APIError } from "better-auth";
 import { consumeRateLimit } from "./rate-limit";
 import { memberClientIp } from "./client-ip";
+import { supervisedRegistrationEnabled } from "./protection";
 
 export async function enforceMemberAuthAbuse(context: { path: string; headers?: Headers; body?: unknown }): Promise<void> {
   const field = context.path === "/sign-in/email" ? "email" : context.path === "/sign-in/username" ? "username" : null;
@@ -10,7 +11,12 @@ export async function enforceMemberAuthAbuse(context: { path: string; headers?: 
   if (!memberClientIp(context.headers ?? new Headers())) {
     throw new APIError("SERVICE_UNAVAILABLE", { message: "Autenticação temporariamente indisponível." });
   }
-  if (!field) return;
+  if (!field) {
+    if(supervisedRegistrationEnabled() && (!context.body||typeof context.body!=="object"||(context.body as Record<string,unknown>).adultDeclared!==true)) {
+      throw new APIError("BAD_REQUEST",{message:"O cadastro deve ser solicitado por um adulto. Menores devem ser vinculados ao responsável."});
+    }
+    return;
+  }
   const value = context.body && typeof context.body === "object" ? (context.body as Record<string, unknown>)[field] : undefined;
   if (typeof value !== "string" || !value.trim() || value.length > 320) {
     throw new APIError("BAD_REQUEST", { message: "Identificador de acesso inválido." });

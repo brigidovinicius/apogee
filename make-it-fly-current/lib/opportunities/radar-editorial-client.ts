@@ -1,3 +1,4 @@
+import { readDiscovery, type Discovery } from "./discovery";
 import "server-only";
 import { isOpportunityCategory, type OpportunityCategory } from "./types";
 
@@ -21,11 +22,12 @@ export type RadarEditorialSource = {
 type EditorialConfiguration = { url: string; token: string };
 
 export type RadarManagedOpportunity = {
+  discovery?: Discovery;
   categories: OpportunityCategory[];
   version: number;
   officialSourceId: string;
   benefitType: string;
-  opportunityStatus: "open" | "upcoming";
+  opportunityStatus: "open" | "upcoming" | "closed" | "result_published";
   requirementsText: string;
   amountText: string;
   lastCheckedAt: string;
@@ -145,7 +147,7 @@ function managedOpportunityFrom(value: unknown): RadarManagedOpportunity | null 
   const categories = Array.isArray(item.categories) && item.categories.every(isOpportunityCategory)
     ? [...new Set(item.categories)] : null;
   if (!Number.isInteger(item.version) || !stringValue(item.officialSourceId) || !stringValue(item.benefitType) ||
-      !["open", "upcoming"].includes(String(item.opportunityStatus)) || !stringValue(item.lastCheckedAt) ||
+      !["open", "upcoming", "closed", "result_published"].includes(String(item.opportunityStatus)) || !stringValue(item.lastCheckedAt) ||
       !id || !title || !institution || !applicantType || !applicationRoute || !deadlinePrecision || !categories ||
       typeof item.isCourse !== "boolean" || typeof item.nationallyEligible !== "boolean" ||
       (item.officialUrl !== null && !officialUrl) ||
@@ -162,9 +164,10 @@ function managedOpportunityFrom(value: unknown): RadarManagedOpportunity | null 
   }
   return {
     id, title, institution, applicantType, applicationRoute, deadlinePrecision, officialUrl, evidence,
+    discovery: readDiscovery(item.discovery),
     categories,
     version: Number(item.version), officialSourceId: String(item.officialSourceId), benefitType: String(item.benefitType),
-    opportunityStatus: item.opportunityStatus as "open" | "upcoming",
+    opportunityStatus: item.opportunityStatus as "open" | "upcoming" | "closed" | "result_published",
     requirementsText: String(item.requirementsText ?? ""), amountText: String(item.amountText ?? ""),
     lastCheckedAt: String(item.lastCheckedAt), verifiedAt: String(item.verifiedAt ?? item.lastCheckedAt), verificationMethod: item.verificationMethod === "admin" ? "admin" : "automatic",
     isCourse: item.isCourse, nationallyEligible: item.nationallyEligible,

@@ -46,7 +46,7 @@ test("the public page uses the same filtered login destination in its header and
   const tree = await Page({ searchParams: Promise.resolve({ categoria: "competicoes", pagina: "2" }) });
   const expected = "/membros/entrar?next=%2Fmembros%2Foportunidades%3Fcategoria%3Dcompeticoes%26pagina%3D2";
   assert.equal(nodes(tree, (node) => node.type === "SiteHeader")[0].props.memberHref, expected);
-  assert.equal(nodes(tree, (node) => node.type === "Link")[0].props.href, expected);
+  assert.equal(nodes(tree, (node) => node.type === "Link" && node.props.href.startsWith("/membros/entrar"))[0].props.href, expected);
 });
 
 test("member route and data guard keep Radar state when authentication or onboarding redirects", async () => {
@@ -83,7 +83,7 @@ test("every mobile admin destination closes the persistent details menu and rest
   });
   const { AdminNav } = adminLoad("components/admin/admin-nav.tsx");
   const links = nodes(AdminNav({ compact: true }), (node) => node.type === "Link");
-  assert.equal(links.length, 6);
+  assert.equal(links.length, 7);
   for (const link of links) {
     menu.open = true; focused = false;
     link.props.onNavigate();

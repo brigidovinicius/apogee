@@ -17,8 +17,11 @@ import { PDSE_SOURCE_ID, PDSE_NEWS_URL, normalizeCapesPdse } from "./normalize-c
 import { cnpqCall, cnpqDocumentUrl, normalizeCnpqAuditedCall } from "./normalize-cnpq-audited-calls";
 import { ufscAuditedCall, normalizeUfscAuditedCall } from "./normalize-ufsc-audited-calls";
 import { ICIF_ID, ICIF_DOCUMENT, IEG_ID, additionalCallUrl, normalizeAdditionalCall } from "./normalize-additional-calls-20261027";
+import { calendarSource } from "./calendar-sources";
+import { normalizeCalendarSource } from "./normalize-calendar-sources";
 
 export function programmeCataloguePageCount(id: string) {
+  if (calendarSource(id)) return 1;
   if (id === ICIF_ID) return 2;
   if (id === IEG_ID) return 1;
   if (ufscAuditedCall(id)) return 2;
@@ -52,6 +55,7 @@ export function programmeCatalogueCanBeEmpty(id: string) {
 }
 
 export function normalizeProgrammeCatalogue(listing: string, application: string, source: OfficialSource) {
+  if (calendarSource(source.id)) return normalizeCalendarSource(listing, source);
   if (additionalCallUrl(source.id)) return normalizeAdditionalCall(listing, application, source);
   if (ufscAuditedCall(source.id)) return normalizeUfscAuditedCall(listing, application, source);
   if (cnpqCall(source.id)) return normalizeCnpqAuditedCall(listing, application, source);

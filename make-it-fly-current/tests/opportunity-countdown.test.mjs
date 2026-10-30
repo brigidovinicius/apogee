@@ -9,14 +9,14 @@ const base = { categories: ["bolsas"], deadline: "2026-10-14" };
 const now = Date.parse("2026-10-13T15:00:00Z");
 test("scholarships count down to closure using the original exact timestamp", () => {
   const item = { ...base, deadlineAt: "2026-10-14T09:30:10-03:00" };
-  assert.equal(countdown(item, now).value, "21h 30min 10s");
-  assert.equal(countdown(item, now + 1000).value, "21h 30min 09s");
+  assert.equal(countdown(item, now).value, "Encerra amanhã às 09:30");
+  assert.equal(countdown(item, now + 1000).value, "Encerra amanhã às 09:30");
   assert.equal(countdown(item, now + 2000).label, "Encerramento das inscrições");
   assert.equal(countdown(item, now + 86_400_000).value, "Inscrições encerradas");
 });
 test("events target their confirmed start, independently of registration closure", () => {
   const item = { ...base, categories: ["eventos"], eventStartsAt: "2026-10-14T09:00:00-03:00", deadlineAt: "2026-10-13T16:00:00Z" };
-  assert.equal(countdown(item, now).value, "21h 00min 00s");
+  assert.equal(countdown(item, now).value, "Começa amanhã às 09:00");
   assert.equal(countdown(item, now).label, "Início do evento");
   assert.equal(countdown(item, Date.parse(item.eventStartsAt)).value, "Evento iniciado");
   assert.equal(countdown({ ...item, eventStartsAt: null }, now).value, "Data de início não informada");
@@ -38,10 +38,10 @@ test("missing dates, malformed dates and continuous flows never produce fake cou
 });
 test("time remaining handles rounding, zero, multi-day durations and tab-resume jumps", () => {
   const item = { ...base, deadlineAt: "2026-10-15T15:00:00Z" };
-  assert.equal(countdown(item, now).value, "2d 00h 00min 00s");
-  assert.equal(countdown(item, Date.parse(item.deadlineAt) - 1).value, "00h 00min 01s");
+  assert.equal(countdown(item, now).value, "Faltam 2 dias");
+  assert.equal(countdown(item, Date.parse(item.deadlineAt) - 1).value, "Encerra hoje às 12:00");
   assert.equal(countdown(item, Date.parse(item.deadlineAt) + 1).value, "Inscrições encerradas");
-  assert.equal(countdown(item, now + 10_000).value, "1d 23h 59min 50s");
+  assert.equal(countdown(item, now + 10_000).value, "Faltam 2 dias");
 });
 
 

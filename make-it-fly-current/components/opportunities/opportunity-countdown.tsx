@@ -14,7 +14,7 @@ function tick() { now = Date.now(); listeners.forEach((listener) => listener());
 function subscribe(listener: () => void) {
   listeners.add(listener);
   if (!timer) {
-    timer = setInterval(tick, 1000);
+    timer = setInterval(tick, 60_000);
     document.addEventListener("visibilitychange", tick);
     tick();
   }

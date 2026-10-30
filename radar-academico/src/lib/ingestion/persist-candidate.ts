@@ -1,9 +1,12 @@
+import { isDeepStrictEqual } from "node:util";
 import type { PoolClient } from "pg";
 import type { OfficialSource, OpportunityCandidate } from "./types";
 import { canonicalOpportunityKey } from "./revision-key";
 import { publicationIssue } from "./publication";
 import { categoriesFromEvidence } from "./categories";
+import { parseDiscovery, classifyDiscovery } from "./discovery";
 import { programmeCataloguePageCount } from "./programme-catalogue";
+import { calendarSource } from "./calendar-sources";
 
 export const candidateColumns = {
   title: "title", institution: "institution", applicantType: "applicant_type", applicationRoute: "application_route",
@@ -33,7 +36,7 @@ export async function findCandidate(client: PoolClient, candidate: OpportunityCa
       where os.opportunity_id=o.id and os.source_page_url=$2)
       and ($3::boolean=false or lower(btrim(o.title))=lower(btrim($4)))
     order by o.created_at limit 2 for update`,
-  [candidate.officialSourceId, candidate.sourcePageUrl, Boolean(programmeCataloguePageCount(candidate.officialSourceId)), candidate.title]);
+  [candidate.officialSourceId, candidate.sourcePageUrl, Boolean(programmeCataloguePageCount(candidate.officialSourceId)) && !calendarSource(candidate.officialSourceId), candidate.title]);
   if (foreign.rows.length>1) throw new Error("Página já pertence a outro catálogo; identidade ambígua");
   if (foreign.rows[0]) return foreign.rows[0];
   const result = await client.query<StoredOpportunity>(
@@ -83,10 +86,15 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
     content_hash: incoming.contentHash, management_overrides: overrides,
     has_retification: incoming.hasRetification === true,
   });
+  // Preserve curated stages when existing collectors do not supply enrichment.
+  const stored = existing?.discovery as OpportunityCandidate["discovery"];
+  const enrichment = candidate.discovery ?? (stored?.areas?.length || stored?.subtype || stored?.editions?.length ? stored : classifyDiscovery(candidate.title, candidate.categories));
+  candidate.discovery = parseDiscovery(enrichment, source);
+  values.discovery = candidate.discovery;
   const fields = Object.keys(values);
   const args: unknown[] = Object.values(values);
   const now = new Date().toISOString();
-  const changed = !existing || existing.content_hash !== incoming.contentHash || options.mode === "admin" || existing.publication_issue !== issue;
+  const changed = !existing || existing.content_hash !== incoming.contentHash || options.mode === "admin" || existing.publication_issue !== issue || !isDeepStrictEqual(existing.discovery, values.discovery);
   let id: string;
   if (existing) {
     args.push(now, options.mode, existing.id);

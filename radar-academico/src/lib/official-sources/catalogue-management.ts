@@ -1,3 +1,4 @@
+import { parseDiscovery } from "@/lib/ingestion/discovery";
 import crypto from "node:crypto";
 import { parseEventStart } from "@/lib/ingestion/event-start";
 import { withAdminTransaction } from "@/lib/db/client";
@@ -39,7 +40,7 @@ export function parseCatalogueCandidate(input: Record<string, unknown>): Opportu
     applicationRoute: choice(input, "applicationRoute", routes) as OpportunityCandidate["applicationRoute"],
     benefitType: choice(input, "benefitType", benefits) as OpportunityCandidate["benefitType"],
     categories: input.categories,
-    opportunityStatus: choice(input, "opportunityStatus", ["open", "upcoming"]) as OpportunityCandidate["opportunityStatus"],
+    opportunityStatus: choice(input, "opportunityStatus", ["open", "upcoming", "closed", "result_published"]) as OpportunityCandidate["opportunityStatus"],
     eventStartsAt,
     deadlinePrecision: choice(input, "deadlinePrecision", ["date_only", "exact_datetime", "continuous_flow", "not_informed"]) as OpportunityCandidate["deadlinePrecision"],
     deadlineAt: input.deadlineAt === null || input.deadlineAt === "" ? undefined : text(input, "deadlineAt", 50),
@@ -66,7 +67,15 @@ export async function manageCatalogue(method: "POST" | "PATCH" | "DELETE", input
   if (method !== "POST" && (typeof input.id !== "string" || !uuid.test(input.id) || !Number.isInteger(input.version) || Number(input.version) < 1)) throw new CatalogueError("Identificador ou versão inválida");
   const candidate = method === "DELETE" ? null : parseCatalogueCandidate(input);
   const source = candidate ? await loadOfficialSource(candidate.officialSourceId) : null;
-  if (candidate && (!source || publicationIssue(candidate, source))) throw new CatalogueError("Confira fonte ativa, evidência, localização, estado e prazo vigente");
+  if (candidate && source && input.discovery !== undefined) {
+    try { candidate.discovery = parseDiscovery(input.discovery, source); }
+    catch (error) { throw new CatalogueError(error instanceof Error ? error.message : "Calendário inválido"); }
+  }
+  if (candidate) {
+    const issue = source ? publicationIssue(candidate, source) : "invalid_source";
+    const future = candidate.discovery?.editions.some(e=>e.stages.some(st=>Date.parse((st.end??st.start).length===10 ? (st.end??st.start)+"T23:59:59-03:00" : st.end??st.start)>=Date.now()));
+    if (issue && !(source && future && ["closed","result_published"].includes(candidate.opportunityStatus) && ["status_unconfirmed","invalid_deadline"].includes(issue))) throw new CatalogueError("Confira fonte, evidência, estado e próximas etapas");
+  }
   return withAdminTransaction(async (client) => {
     let existing: StoredOpportunity | undefined;
     if (method !== "POST") {
@@ -106,6 +115,7 @@ export async function manageCatalogue(method: "POST" | "PATCH" | "DELETE", input
         field === "deadlineAt" && value && prior ? Date.parse(String(value)) === Date.parse(String(prior)) : value === prior;
       if (!same) Object.assign(overrides, { [field]: value });
     }
+    if (candidate.discovery !== undefined) overrides.discovery = candidate.discovery;
     // An edited title keeps its original ingestion identity. URL changes are explicit overrides too.
     const link = existing ? (await client.query("select source_page_url from opportunity_sources where opportunity_id=$1 and is_primary limit 1", [existing.id])).rows[0] : null;
     if (!existing || link?.source_page_url !== candidate.sourcePageUrl) overrides.sourcePageUrl = candidate.sourcePageUrl;

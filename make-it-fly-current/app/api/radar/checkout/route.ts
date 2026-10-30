@@ -1,5 +1,6 @@
 import { randomUUID, randomBytes } from "node:crypto";
 import { getMemberFromHeaders } from "@/lib/members/dal";
+import {adultAccess} from "@/lib/members/protection";
 import { getSql } from "@/lib/members/db";
 import { applicationOrigin } from "@/lib/members/mail";
 import { consumeRateLimit } from "@/lib/members/rate-limit";
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
     if (request.headers.get("origin") !== applicationOrigin() || request.headers.get("sec-fetch-site") === "cross-site") throw new BillingError(403, "Origem não permitida.");
     const member = await getMemberFromHeaders(request.headers);
     if (!member) throw new BillingError(401, "Entre na sua conta para continuar.");
+    if(!(await adultAccess(member.id)))throw new BillingError(403,"Conclua a verificação da conta adulta antes de continuar.");
     const next = radarDetailReturnPath(new URL(request.url).searchParams.get("next"));
     const returnQuery = next === "/membros/oportunidades" ? "" : `&next=${encodeURIComponent(next)}`;
     const config = billingConfig();

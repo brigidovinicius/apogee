@@ -31,6 +31,7 @@ export function validateStep(values: ApplicationValues, step: number): FieldErro
     if (!/^\+?[\d\s().-]+$/.test(values.phone.trim()) || digits.length < 10 || digits.length > 15) errors.phone = "Informe o telefone com DDD, com 10 a 15 dígitos.";
     const age = Number(values.age);
     if (!/^\d{1,3}$/.test(values.age.trim()) || !Number.isInteger(age) || age < 1 || age > 120) errors.age = "Informe sua idade em anos completos.";
+    else if(age<18)errors.age="Esta experiência recebe inscrições somente de adultos. Não envie dados de menores neste formulário.";
     if (values.profession.trim().length < 2 || values.profession.trim().length > 160) errors.profession = "Conte sua profissão ou área de atuação, com até 160 caracteres.";
   }
   if (step === 1) {

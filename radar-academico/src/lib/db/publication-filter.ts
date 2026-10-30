@@ -16,3 +16,15 @@ export const publishedOpportunityPredicate = `o.review_status='approved'
   and o.deleted_at is null and o.publication_issue is null
   and o.published_at is not null and ${openDeadlinePredicate}
   and exists (select 1 from official_sources s where s.id=o.official_source_id and s.active and s.verification_status='verified')`;
+
+export const calendarOpportunityPredicate = `o.verified_at is not null and o.verification_method in ('automatic','admin')
+  and o.deleted_at is null and not o.source_conflict
+  and o.opportunity_status in ('open','upcoming','closed','result_published')
+  and (o.publication_issue is null or o.publication_issue in ('invalid_deadline','status_unconfirmed'))
+  and o.review_status in ('approved','needs_information')
+  and exists (select 1 from official_sources s where s.id=o.official_source_id and s.active and s.verification_status='verified')
+  and exists (select 1 from jsonb_array_elements(coalesce(o.discovery->'editions','[]')) e,
+    jsonb_array_elements(coalesce(e->'stages','[]')) st
+    where case when length(coalesce(st->>'end',st->>'start'))=10
+      then (coalesce(st->>'end',st->>'start') || 'T23:59:59-03:00')::timestamptz
+      else coalesce(st->>'end',st->>'start')::timestamptz end >= now())`;

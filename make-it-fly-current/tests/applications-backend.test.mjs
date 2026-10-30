@@ -89,8 +89,8 @@ for (const hasIdea of [false, true]) {
   }
 }
 
-test("age eligibility is inclusive from 18 through 35 while every valid age is stored", async () => {
-  for (const [age, eligible] of [[17, false], [18, true], [35, true], [36, false]]) {
+test("age eligibility is inclusive from 18 through 35; adult ages outside the range remain ineligible", async () => {
+  for (const [age, eligible] of [[18, true], [35, true], [36, false]]) {
     const db = fakeDatabase();
     const response = await api.handleApplicationPost(request(payload({ age })), options(db));
     assert.equal(response.status, 201);
@@ -98,6 +98,12 @@ test("age eligibility is inclusive from 18 through 35 while every valid age is s
     assert.equal(record.age, age);
     assert.equal(record.eligible, eligible);
     assert.equal(record.status, eligible ? "APPROVED" : "NOT_ELIGIBLE");
+  }
+});
+test("underage applications are rejected before any data is persisted",async()=>{
+  for(const age of [1,11,15,16,17]){
+    const db=fakeDatabase();const response=await api.handleApplicationPost(request(payload({age})),options(db));
+    assert.equal(response.status,400);assert.equal(db.rows.size,0);
   }
 });
 

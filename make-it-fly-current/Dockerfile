@@ -35,10 +35,13 @@ COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-avatar-migrate.mj
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-invitations-migrate.mjs ./scripts/members-invitations-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/radar-billing-migrate.mjs ./scripts/radar-billing-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/radar-free-opportunity-migrate.mjs ./scripts/radar-free-opportunity-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/google-calendar-worker.mjs ./scripts/google-calendar-worker.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/google-calendar-alerts.mjs ./scripts/google-calendar-alerts.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/store-drops-migrate.mjs ./scripts/store-drops-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-grant-invitation-manager.mjs ./scripts/members-grant-invitation-manager.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/drizzle ./drizzle
 COPY --from=dependencies --chown=nextjs:nextjs /app/node_modules/postgres ./node_modules/postgres
+RUN mkdir -p /app/worker-state && chown nextjs:nextjs /app/worker-state
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]
