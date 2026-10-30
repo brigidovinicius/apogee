@@ -3,7 +3,6 @@ import Link from "next/link";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
-import { ShareButton } from "@/components/site/share-button";
 import styles from "@/components/opportunities/opportunities.module.css";
 import { listPublicOpportunityPage } from "@/lib/opportunities/access";
 import { memberRadarLoginHref } from "@/lib/opportunities/navigation";
@@ -50,10 +49,6 @@ export default async function OpportunitiesPage({ searchParams }: {
           <p className={styles.lead}>
             Descubra eventos, hackathons, projetos e experiências para o seu próximo passo
           </p>
-          <p className={styles.promise}>
-            Faça login e escolha uma oportunidade para acessar os detalhes grátis. A partir da segunda, acesso vitalício por R$ 49,00
-          </p>
-          <ShareButton title="Radar de oportunidades | Apogee" path="/oportunidades" />
         </section>
 
         <p><Link href="/calendarios">Explorar calendários de oportunidades →</Link></p>
