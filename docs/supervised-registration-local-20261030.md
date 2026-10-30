@@ -1,5 +1,7 @@
 # Cadastro supervisionado e privacidade: candidato local de 30/10/2026
 
+> Procedimento operacional detalhado e consulta posterior de produção: [conferência de responsáveis](procedimento-conferencia-responsaveis-20261030.md) e [pendências de liberação Google Agenda](google-agenda-liberacao-usuarios-reais-20261030.md). Este relatório preserva a evidência dos testes do candidato funcional.
+
 ## Escopo e decisão de acesso
 
 O usuário confirmou `contato@apogee.community`, Florianópolis e a inclusão de menores de 16 anos. O texto usa Florianópolis/SC, Brasil e o controlador informado: **62.858.706 ROSA MARIA PEREIRA MIRANDA - ME**, CNPJ **62.858.706/0001-46**. A confirmação do usuário não constitui consulta cadastral na Receita Federal nem comprova o funcionamento da caixa postal.
