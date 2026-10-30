@@ -1,5 +1,6 @@
 import { AvatarError, boundedAvatarForm, checkAvatarOrigin, convertAvatar, removeAvatar, saveAvatar } from "@/lib/members/avatar";
 import { getMemberFromHeaders } from "@/lib/members/dal";
+import { adultAccess } from "@/lib/members/protection";
 import { consumeRateLimit } from "@/lib/members/rate-limit";
 
 export const runtime = "nodejs";
@@ -18,6 +19,7 @@ function failure(error: unknown): Response {
 export async function POST(request: Request): Promise<Response> {
   const member = await getMemberFromHeaders(request.headers);
   if (!member) return Response.json({ error: "Entre para alterar sua foto." }, { status: 401, headers });
+  if(!(await adultAccess(member.id)))return Response.json({error:"Conclua a verificação da conta antes de enviar uma foto."},{status:403,headers});
   try {
     checkAvatarOrigin(request);
     if (!await consumeRateLimit(`avatar:${member.id}`, 10, 3600)) {

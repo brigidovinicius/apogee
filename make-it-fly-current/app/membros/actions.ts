@@ -9,6 +9,7 @@ import * as forum from "@/lib/members/forum";
 import { consumeRateLimit } from "@/lib/members/rate-limit";
 import { billingConfig, RADAR_ACCESS_PATH, radarBillingEnabled } from "@/lib/billing/config";
 import { radarPurchaseNeedsVerification } from "@/lib/billing/store";
+import { supervisedRegistrationEnabled } from "@/lib/members/protection";
 import {
   POSTS_PER_MINUTE,
   type FieldErrors,
@@ -64,12 +65,13 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
   const values = { name: text(form, "name"), username: text(form, "username"), email: text(form, "email") };
   const parsed = signUpSchema.safeParse({ ...values, password: text(form, "password") });
   if (!parsed.success) return { errors: fieldErrors(parsed.error), values };
+  if(supervisedRegistrationEnabled() && text(form,"adultDeclared")!=="on")return {message:"A conta deve pertencer a um adulto. O responsável poderá vincular menores após a verificação.",values};
 
   if (!(await consumeRateLimit(`signup:${await clientIp()}`, 5, 3600))) return { message: TOO_MANY, values };
 
   let needsVerification = false;
   try {
-    const result = await getAuth().api.signUpEmail({ body: parsed.data, headers: await headers() });
+    const result = await getAuth().api.signUpEmail({ body: {...parsed.data,adultDeclared:supervisedRegistrationEnabled()}, headers: await headers() });
     // Mostra a orientação também a quem iniciou o cadastro sem um next do Radar.
     try {
       needsVerification = radarBillingEnabled() && await radarPurchaseNeedsVerification(result.user.id, billingConfig().livemode);

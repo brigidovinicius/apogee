@@ -9,6 +9,7 @@ import { nameSchema } from "./validation";
 import { getAuth } from "./auth";
 import { isGeneratedGoogleUsername } from "./validation";
 import { memberClientIp } from "./client-ip";
+import { adultAccess } from "./protection";
 
 export type CurrentMember = {
   id: string;
@@ -50,6 +51,7 @@ export async function requireMember(next?: string): Promise<CurrentMember> {
     const destination = next ?? "/membros";
     redirect(`/membros/perfil/configurar?next=${encodeURIComponent(destination)}`);
   }
+  if(!(await adultAccess(member.id)))redirect("/membros/protecao");
   return member;
 }
 

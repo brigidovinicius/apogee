@@ -20,6 +20,7 @@ export function MemberBar({ member, current }: { member: CurrentMember; current?
         <Link href={`/membros/perfil/${member.username}`} aria-current={current === "perfil" ? "page" : undefined}>
           Meu perfil
         </Link>
+        <Link href="/membros/protecao">Cadastro protegido</Link>
       </nav>
       <div className={styles.memberIdentity}>
         <AvatarInitials name={member.name} userId={member.id} image={member.image} size="small" />

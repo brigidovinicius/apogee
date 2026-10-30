@@ -124,6 +124,7 @@ export async function getProfile(username: string) {
     .where(eq(user.username, username))
     .limit(1);
   if (!profile) return null;
+  if(!(await (await import("./protection")).adultAccess(profile.id)))return null;
 
   const [topics, replies, [{ topicCount }], [{ postCount }]] = await Promise.all([
     db

@@ -6,6 +6,7 @@ import { signIn, signUp, type FormState } from "@/app/membros/actions";
 import { createGoogleLoginFlow } from "@/lib/members/google-login-flow";
 import { Field, FormMessage } from "./form-field";
 import { NameInput } from "./name-input";
+import Link from "next/link";
 import styles from "./members.module.css";
 
 const initial: FormState = {};
@@ -19,15 +20,17 @@ type GoogleAuthProps = {
   next: string;
   errorMessage?: string;
   requestSignUp?: boolean;
+  allowed?:boolean;
 };
 
-function GoogleAuth({ next, errorMessage, requestSignUp = false }: GoogleAuthProps) {
+function GoogleAuth({ next, errorMessage, requestSignUp = false,allowed=true }: GoogleAuthProps) {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string>();
   const flow = useRef<ReturnType<typeof createGoogleLoginFlow> | null>(null);
   useEffect(() => () => { flow.current?.cancel(); }, []);
 
   function continueWithGoogle() {
+    if(!allowed){setMessage("Confirme que esta conta pertence a um adulto. Menores são vinculados pelo responsável.");return;}
     if (flow.current) return;
     setPending(true);
     setMessage(undefined);
@@ -104,13 +107,15 @@ export function SignInForm({ next, googleError }: { next: string; googleError?: 
   );
 }
 
-export function SignUpForm({ next, googleError }: { next: string; googleError?: string }) {
+export function SignUpForm({ next, googleError,supervised=false }: { next: string; googleError?: string;supervised?:boolean }) {
   const [state, action, pending] = useActionState(signUp, initial);
+  const [adultDeclared,setAdultDeclared]=useState(false);
   return (
     <form className={styles.form} action={action} noValidate>
       <FormMessage message={state.message} />
       <input type="hidden" name="next" value={next} />
       <p className={styles.hint}>Já comprou o Radar? Use o mesmo e-mail da compra. Ao criar a conta com e-mail e senha, enviaremos a confirmação automaticamente. Confirme esse e-mail para liberar seu acesso vitalício.</p>
+      {supervised && <><p className={styles.hint}>Esta conta pertence a um adulto e passa por verificação antes do acesso à comunidade. Crianças e adolescentes, inclusive menores de 16 anos, participam por cadastro privado vinculado ao responsável, sem login próprio.</p><label><input type="checkbox" name="adultDeclared" checked={adultDeclared} onChange={e=>setAdultDeclared(e.target.checked)} required/> Tenho 18 anos ou mais e estou criando minha própria conta.</label><p className={styles.hint}>A declaração não substitui a verificação. Leia a <Link href="/privacidade">Política de Privacidade</Link>.</p></>}
       <Field name="name" label="Nome" error={state.errors?.name}>
         {(props) => <NameInput {...props} defaultValue={state.values?.name} />}
       </Field>
@@ -150,7 +155,7 @@ export function SignUpForm({ next, googleError }: { next: string; googleError?: 
         </button>
       </div>
       <p className={styles.hint}>Ao criar conta com Google, você escolhe seu nome de usuário na próxima etapa.</p>
-      <GoogleAuth next={next} errorMessage={googleError} requestSignUp />
+      <GoogleAuth next={next} errorMessage={googleError} requestSignUp allowed={!supervised||adultDeclared}/>
     </form>
   );
 }

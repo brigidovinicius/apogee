@@ -8,13 +8,14 @@ import { googleApi, googleTokens, googleEventBody, googleEventId, upsertGoogleEv
 import { listRadarOpportunities } from "./radar-client";
 import { calendarEntries } from "./discovery";
 import { googleQueuePolicy } from "./google-calendar-queue";
+import { adultAccess } from "@/lib/members/protection";
 
 export async function syncGoogleCalendar(userId: string): Promise<"synced" | "pending" | "disconnected" | "failed"> {
   if (!googleCalendarConfig()) return "disconnected";
   const [connection] = await getSql()`select user_id from radar_google_calendar where user_id=${userId} and refresh_token_encrypted is not null`;
   if (!connection) return "disconnected";
   // Access uses its own transaction; perform this before locking the connection.
-  if (!(await radarAccess(userId,process.env.STRIPE_MODE !== "test")).active) {
+  if (!(await adultAccess(userId)) || !(await radarAccess(userId,process.env.STRIPE_MODE !== "test")).active) {
     await getSql()`update radar_google_calendar set last_error='access',next_sync_at=now()+interval '15 minutes' where user_id=${userId}`;
     return "failed";
   }

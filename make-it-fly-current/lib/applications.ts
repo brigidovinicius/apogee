@@ -120,6 +120,7 @@ export function validateApplication(value: unknown): ValidApplication {
   if (!/^\+?[\d\s().-]+$/.test(rawPhone) || !/^\d{10,15}$/.test(phone)) errors.phone = "Informe um telefone com DDD, de 10 a 15 dígitos.";
   const age = input.age;
   if (typeof age !== "number" || !Number.isInteger(age) || age < 1 || age > 120) errors.age = "Informe sua idade em anos completos.";
+  else if(age<18)errors.age="Esta experiência recebe inscrições somente de adultos. Não envie dados de menores neste formulário.";
   const profession = text("profession", 160).replace(/\s+/g, " ");
   if (profession.length < 2) errors.profession = "Informe sua profissão ou área de atuação.";
   if (typeof input.hasIdea !== "boolean") errors.hasIdea = "Escolha Sim ou Não.";

@@ -6,6 +6,7 @@ import styles from "@/components/members/members.module.css";
 import { getCurrentMember } from "@/lib/members/dal";
 import { googleOAuthErrorMessage } from "@/lib/members/social-auth";
 import { safeNextPath } from "@/lib/members/validation";
+import {supervisedRegistrationEnabled} from "@/lib/members/protection";
 
 export const metadata: Metadata = { title: "Criar conta" };
 
@@ -22,7 +23,7 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
         <p className={styles.lead}>Entre para a comunidade, participe do fórum e acompanhe o Radar de oportunidades</p>
       </header>
       <div className={`${styles.panel} ${styles.authPanel}`}>
-        <SignUpForm next={next} googleError={googleOAuthErrorMessage(params.error)} />
+        <SignUpForm next={next} googleError={googleOAuthErrorMessage(params.error)} supervised={supervisedRegistrationEnabled()}/>
       </div>
       <p className={styles.switchAuth}>
         Já tem conta? <Link href={`/membros/entrar?next=${encodeURIComponent(next)}`}>Entrar</Link>

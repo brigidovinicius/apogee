@@ -86,6 +86,13 @@ if(mode==='setup') {
 } else {
   await verifyMarker();
   assert.ok((await sql`select tag from radar_local_migrations where tag='0008_radar_calendar'`).length);
+  assert.ok((await sql`select tag from radar_local_migrations where tag='0010_supervised_registration'`).length,'Run local setup before supervised preview');
+  // These four fixed fictional identities are QA fixtures, never a real age check.
+  await sql`update "user" set adult_declared=true where id in ('radar-local-vitalicio','radar-local-gratuito','radar-local-revogado','radar-local-admin') and email=replace(id,'radar-local-','')||'@radar.test'`;
+  await sql`insert into member_adult_review(user_id,status,reviewed_at,evidence_reference)
+    select id,'approved',now(),'DADO FICTICIO: aprovacao apenas para testes locais'
+    from "user" where id in ('radar-local-vitalicio','radar-local-gratuito','radar-local-revogado','radar-local-admin') and email=replace(id,'radar-local-','')||'@radar.test'
+    on conflict(user_id) do nothing`;
   const editorial=process.argv[3]==='--editorial' ? JSON.parse(await readFile(new URL('editorial-config.json',state),'utf8')) : null;
   let google = null;
   try {
@@ -144,7 +151,7 @@ if(mode==='setup') {
     NODE_ENV:'production',NODE_OPTIONS:'--max-old-space-size=768',NEXT_TELEMETRY_DISABLED:'1',APOGEE_LOCAL_PREVIEW:'1',
     DATABASE_URL:dbUrl.href,DATABASE_SSL_MODE:'disable',DATABASE_POOL_MAX:'2',BETTER_AUTH_URL:'http://127.0.0.1:4381',BETTER_AUTH_SECRET:config.BETTER_AUTH_SECRET,
     APPLICATION_HOSTING_PROVIDER:'caddy',RADAR_ACADEMICO_API_URL:'http://127.0.0.1:48762/catalogue',RADAR_ACADEMICO_API_TOKEN:config.RADAR_ACADEMICO_API_TOKEN,
-    RADAR_CALENDAR_PERSONAL_ENABLED:'true',STRIPE_MODE:'test',RADAR_BILLING_ENABLED:'false',MEMBERS_EMAIL_ENABLED:'false',GOOGLE_CLIENT_ID:'',GOOGLE_CLIENT_SECRET:'',
+    RADAR_CALENDAR_PERSONAL_ENABLED:'true',MEMBERS_SUPERVISED_REGISTRATION_ENABLED:'true',STRIPE_MODE:'test',RADAR_BILLING_ENABLED:'false',MEMBERS_EMAIL_ENABLED:'false',GOOGLE_CLIENT_ID:'',GOOGLE_CLIENT_SECRET:'',
     ...(google?Object.fromEntries(['GOOGLE_CALENDAR_CLIENT_ID','GOOGLE_CALENDAR_CLIENT_SECRET','GOOGLE_CALENDAR_ENCRYPTION_KEY','GOOGLE_CALENDAR_SYNC_SECRET'].map(k=>[k,google[k]])):{}),
     RADAR_GOOGLE_CALENDAR_ENABLED:google?'true':'false',
     ...(editorial?{RADAR_LOCAL_EDITORIAL:'1',RADAR_ACADEMICO_ADMIN_API_URL:'http://radar-academico:3000/api/internal/editorial/sources',RADAR_ACADEMICO_ADMIN_API_TOKEN:editorial.ADMIN_API_TOKEN}:{}),

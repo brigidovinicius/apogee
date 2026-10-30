@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getMemberFromHeaders } from "@/lib/members/dal";
 import { radarAccess } from "@/lib/billing/store";
+import { adultAccess } from "@/lib/members/protection";
 import { applicationOrigin } from "@/lib/members/mail";
 import { completeGoogleCalendarOAuth } from "@/lib/opportunities/google-calendar-store";
 import { syncGoogleCalendar } from "@/lib/opportunities/google-calendar-sync";
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
   let result = "failed";
   try {
     const member = await getMemberFromHeaders(request.headers);
-    if (!googleCalendarConfig() || !member || !(await radarAccess(member.id,process.env.STRIPE_MODE !== "test")).active) result = "access";
+    if (!googleCalendarConfig() || !member || !(await adultAccess(member.id)) || !(await radarAccess(member.id,process.env.STRIPE_MODE !== "test")).active) result = "access";
     else if (request.nextUrl.searchParams.has("error")) result = "denied";
     else {
       await completeGoogleCalendarOAuth(member.id,request.nextUrl.searchParams.get("state") ?? "",

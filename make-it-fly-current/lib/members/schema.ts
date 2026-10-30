@@ -29,6 +29,7 @@ export const user = pgTable("user", {
   bio: text("bio"),
   canManageAdmins: boolean("can_manage_admins").notNull().default(false),
   blocked: boolean("blocked").notNull().default(false),
+  adultDeclared: boolean("adult_declared").notNull().default(false),
   nameNeedsConfirmation: boolean("name_needs_confirmation").notNull().default(false),
   role: text("role", { enum: ["member", "admin"] }).notNull().default("member"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -358,3 +359,31 @@ export const radarGoogleCalendarEvent = pgTable("radar_google_calendar_event", {
   check("radar_google_calendar_event_event_id_check",sql`${table.eventId} ~ '^[a-f0-9]{64}$'`),
   check("radar_google_calendar_event_revision_check",sql`${table.revision} >= 0`),
 ]);
+
+export const memberAdultReview=pgTable("member_adult_review",{
+  userId:text("user_id").primaryKey().references(()=>user.id,{onDelete:"cascade"}),
+  status:text("status").notNull().default("pending"),
+  requestedAt:timestamp("requested_at",{withTimezone:true}).notNull().defaultNow(),
+  reviewedAt:timestamp("reviewed_at",{withTimezone:true}),
+  reviewerId:text("reviewer_id").references(()=>user.id,{onDelete:"set null"}),
+  evidenceReference:text("evidence_reference"),
+},table=>[check("member_adult_review_status_check",sql`${table.status} in ('pending','approved','rejected')`),
+  check("member_adult_review_check",sql`${table.status} <> 'approved' or (${table.reviewedAt} is not null and ${table.evidenceReference} is not null)`)]);
+export const memberDependent=pgTable("member_dependent",{
+  id:text("id").primaryKey(),guardianId:text("guardian_id").notNull().references(()=>user.id,{onDelete:"cascade"}),
+  nickname:text("nickname").notNull(),ageBand:text("age_band").notNull(),relationship:text("relationship").notNull(),
+  status:text("status").notNull().default("pending"),consentVersion:text("consent_version").notNull(),
+  consentAt:timestamp("consent_at",{withTimezone:true}).notNull().defaultNow(),
+  reviewedAt:timestamp("reviewed_at",{withTimezone:true}),reviewerId:text("reviewer_id").references(()=>user.id,{onDelete:"set null"}),
+  evidenceReference:text("evidence_reference"),
+},table=>[index("member_dependent_guardian_idx").on(table.guardianId,table.status),
+  check("member_dependent_nickname_check",sql`length(${table.nickname}) between 2 and 40`),
+  check("member_dependent_age_band_check",sql`${table.ageBand} in ('under_12','12_15','16_17')`),
+  check("member_dependent_relationship_check",sql`${table.relationship} in ('parent','legal_guardian')`),
+  check("member_dependent_status_check",sql`${table.status} in ('pending','approved','rejected','revoked')`),
+  check("member_dependent_check",sql`${table.status} <> 'approved' or (${table.reviewedAt} is not null and ${table.evidenceReference} is not null)`)]);
+export const memberProtectionAudit=pgTable("member_protection_audit",{
+  id:bigint("id",{mode:"number"}).primaryKey().generatedAlwaysAsIdentity(),
+  actorId:text("actor_id").references(()=>user.id,{onDelete:"set null"}),subjectId:text("subject_id").notNull(),action:text("action").notNull(),
+  occurredAt:timestamp("occurred_at",{withTimezone:true}).notNull().defaultNow(),
+});

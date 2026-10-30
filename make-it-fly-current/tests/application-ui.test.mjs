@@ -28,8 +28,8 @@ test("profile validation requires contact, age and profession", () => {
   assert.deepEqual(Object.keys(validateStep({ ...values, name: " ", email: "invalid", phone: "123", age: "", profession: " " }, 0)), ["name", "email", "phone", "age", "profession"]);
   for (const phone of ["+12025550101", "(202) 555-0101", "+55 (48) 99999-0000", "123456789012345"]) assert.deepEqual(validateStep({ ...values, phone }, 0), {});
   for (const phone of ["123456789", "1234567890123456", "202abc5550101", "++12025550101"]) assert.ok(validateStep({ ...values, phone }, 0).phone);
-  for (const age of ["1", "18", "35", "120"]) assert.deepEqual(validateStep({ ...values, age }, 0), {});
-  for (const age of ["", "0", "12.5", "121", "abc"]) assert.ok(validateStep({ ...values, age }, 0).age);
+  for (const age of ["18", "35", "120"]) assert.deepEqual(validateStep({ ...values, age }, 0), {});
+  for (const age of ["", "0", "1", "15", "16", "17", "12.5", "121", "abc"]) assert.ok(validateStep({ ...values, age }, 0).age);
   assert.ok(validateStep({ ...values, profession: " " }, 0).profession);
   assert.ok(validateStep({ ...values, profession: "x".repeat(161) }, 0).profession);
 });

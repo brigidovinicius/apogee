@@ -1,5 +1,7 @@
 # Google Agenda exclusivo: preparação de produção e privacidade
 
+> Registro da etapa anterior. Contato, público etário, proteção de cadastro e validação posterior foram atualizados em [Cadastro supervisionado: validação local](supervised-registration-local-20261030.md). As contagens e pendências abaixo retratam o momento anterior àquela atualização.
+
 Decisão de 30/10/2026: manter o calendário pessoal do Radar e somente Google Agenda como integração externa. A assinatura `.ics` foi retirada da interface, das ações de geração de tokens, da rota pública e dos módulos de exportação. Migrações históricas e dados existentes foram preservados; não houve exclusão de tabelas de usuários.
 
 ## Sincronização e capacidade
