@@ -4,6 +4,12 @@ import type { OfficialSource } from './types';
 
 export type Stage = { id: string; name: string; kind: 'registration' | 'exam' | 'result' | 'enrollment' | 'event'; start: string; end?: string; sourceUrl: string; checkedAt: string };
 export type Discovery = { primaryType?: string; subtype?: string; areas: string[]; editions: { id: string; name: string; stages: Stage[] }[] };
+/** A successful recheck refreshes evidence timestamps without creating a revision. */
+export function discoveryContent(value: Discovery | undefined) {
+  if (!value) return value;
+  return { ...value, editions: value.editions.map(edition => ({ ...edition,
+    stages: edition.stages.map(({ id, name, kind, start, end, sourceUrl }) => ({ id, name, kind, start, end, sourceUrl })) })) };
+}
 const subtypes = ['olimpiada', 'vestibular', 'hackathon', 'curso_online', 'escola_de_verao', 'estagio'];
 const areas = ['matematica','fisica','quimica','biologia','astronomia','clima','ambiente','saude','neurociencia','tecnologia','ia','robotica','dados','humanas','geografia','linguas','educacao','artes','comunicacao','negocios','direito','relacoes-internacionais','esportes'];
 function object(value: unknown): Record<string, unknown> {

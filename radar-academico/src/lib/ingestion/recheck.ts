@@ -12,6 +12,7 @@ import { FULBRIGHT_SOURCE_ID, normalizeFulbright } from "./normalize-fulbright";
 import { PDAI_SOURCE_ID, capesPdaiTerminalEvidence } from "./normalize-capes-pdai";
 import { PDSE_SOURCE_ID, capesPdseTerminalEvidence } from "./normalize-capes-pdse";
 import { ingestionFailureReason } from "./failure-reason";
+import { sourceCheckHours } from "./source-check-policy";
 
 import { EVG_SOURCE_ID, normalizeEvgCourse, type EvgPolicy } from "./normalize-evg-courses";
 
@@ -128,7 +129,7 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
           [row.id, issue, terminalStatus, { opportunity_status: { source_url: statusEvidenceUrl, excerpt: statusEvidence } }]);
           await client.query("insert into opportunity_management_events (opportunity_id,actor,action,previous_data,new_data) values ($1,'radar:automatic','withdraw',$2,$3)", [row.id, current, { publicationIssue: issue, ...(terminalStatus ? { opportunityStatus: terminalStatus, evidence: statusEvidence } : {}) }]);
         }
-        await client.query("update opportunities set next_source_check_at=now()+interval '24 hours' where id=$1", [row.id]);
+        await client.query("update opportunities set next_source_check_at=now()+$2*interval '1 hour' where id=$1", [row.id, sourceCheckHours(source.id)]);
       });
     } catch (error) {
       failed += 1;

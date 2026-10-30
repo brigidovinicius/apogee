@@ -4,7 +4,8 @@ import type { OfficialSource, OpportunityCandidate } from "./types";
 import { canonicalOpportunityKey } from "./revision-key";
 import { publicationIssue } from "./publication";
 import { categoriesFromEvidence } from "./categories";
-import { parseDiscovery, classifyDiscovery } from "./discovery";
+import { parseDiscovery, classifyDiscovery, discoveryContent } from "./discovery";
+import { sourceCheckHours } from "./source-check-policy";
 import { programmeCataloguePageCount } from "./programme-catalogue";
 import { calendarSource } from "./calendar-sources";
 
@@ -66,6 +67,9 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
     return { id: existing.id, saved: 0, published: 0, blocked: 1, created: 0, updated: 0 };
   }
   if (existing?.deleted_at) return { id: existing.id, saved: 0, published: 0, blocked: 0, created: 0, updated: 0 };
+  if (options.mode === "automatic" && source.id === "nasa-space-apps-2026" && existing?.event_starts_at && !incoming.eventStartsAt) {
+    throw new Error("Calendário NASA não confirmado; dados anteriores preservados");
+  }
   const overrides = options.overrides ?? existing?.management_overrides ?? {};
   if (options.mode === "automatic" && overrides.sourcePageUrl && overrides.sourcePageUrl !== incoming.sourcePageUrl) return { id: existing?.id, saved: 0, published: 0, blocked: 0, created: 0, updated: 0 };
   const candidate = { ...incoming, categories: incoming.categories ?? categoriesFromEvidence(incoming.benefitType, incoming.isCourse === true), ...overrides };
@@ -94,13 +98,13 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
   const fields = Object.keys(values);
   const args: unknown[] = Object.values(values);
   const now = new Date().toISOString();
-  const changed = !existing || existing.content_hash !== incoming.contentHash || options.mode === "admin" || existing.publication_issue !== issue || !isDeepStrictEqual(existing.discovery, values.discovery);
+  const changed = !existing || existing.content_hash !== incoming.contentHash || options.mode === "admin" || existing.publication_issue !== issue || !isDeepStrictEqual(discoveryContent(existing.discovery as OpportunityCandidate["discovery"]), discoveryContent(candidate.discovery));
   let id: string;
   if (existing) {
     args.push(now, options.mode, existing.id);
     const dateIndex = args.length - 2;
     await client.query(`update opportunities set ${fields.map((field, index) => `${field}=$${index + 1}`).join(",")},
-      next_source_check_at=now()+interval '24 hours',
+      next_source_check_at=now()+interval '${sourceCheckHours(source.id)} hours',
       last_source_check_at=case when $${dateIndex+1}='automatic' then $${dateIndex}::timestamptz else last_source_check_at end,
       verified_at=$${dateIndex},verification_method=$${dateIndex+1},
       published_at=case when publication_issue is null and $${fields.indexOf("publication_issue")+1}::text is null then coalesce(published_at,$${dateIndex}::timestamptz) when $${fields.indexOf("publication_issue")+1}::text is null then $${dateIndex}::timestamptz else null end,
@@ -111,7 +115,7 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
     Object.assign(values, { ingestion_origin: incoming.extractionMethod === "manual_assisted" ? "manual" : "automatic", official_source_id: source.id, canonical_key: canonicalOpportunityKey(source.id, incoming.title, incoming.sourcePageUrl),
       target_academic_levels: [candidate.applicantType], verified_at: now, verification_method: options.mode,
       next_source_check_at: options.mode === "admin" || incoming.extractionMethod === "manual_assisted"
-        ? now : new Date(Date.parse(now) + 24 * 60 * 60 * 1000).toISOString(),
+        ? now : new Date(Date.parse(now) + sourceCheckHours(source.id) * 60 * 60 * 1000).toISOString(),
       last_source_check_at: options.mode === "automatic" ? now : null, published_at: issue ? null : now, extracted_at: now });
     const cols = Object.keys(values);
     const inserted = await client.query<{ id: string }>(`insert into opportunities (${cols.join(",")}) values (${cols.map((_, i) => `$${i+1}`).join(",")}) returning id`, Object.values(values));

@@ -5,9 +5,9 @@ import { useId, useRef, useState } from "react";
 import styles from "./share-button.module.css";
 
 // Callers provide a canonical public path, never the current URL (which may contain credentials).
-type ShareButtonProps = { title: string; path: string };
+type ShareButtonProps = { title: string; path: string; compact?: boolean };
 
-export function ShareButton({ title, path }: ShareButtonProps) {
+export function ShareButton({ title, path, compact = false }: ShareButtonProps) {
   const [status, setStatus] = useState("");
   const [copied, setCopied] = useState(false);
   const [manual, setManual] = useState(false);
@@ -47,12 +47,12 @@ export function ShareButton({ title, path }: ShareButtonProps) {
     }
   }
 
-  return <div className={styles.share}>
-    <button type="button" className={styles.button} onClick={share} disabled={busy} aria-describedby={feedbackId}>
+  return <div className={`${styles.share}${compact ? ` ${styles.compact}` : ""}`}>
+    <button type="button" className={styles.button} onClick={share} disabled={busy} aria-label={`Compartilhar ${title}`} aria-describedby={feedbackId}>
       {copied ? <Check size={18} aria-hidden="true" /> : <Share size={18} aria-hidden="true" />}
       {busy ? "Abrindo…" : copied ? "Link copiado" : "Compartilhar"}
     </button>
-    <p className={styles.feedback} id={feedbackId} role="status" aria-atomic="true">{status || "Compartilha o link público desta página"}</p>
+    <p className={styles.feedback} id={feedbackId} role="status" aria-atomic="true">{status || (compact ? "" : "Compartilha o link público desta página")}</p>
     {manual ? <label className={styles.manual}>Link público
       <input type="url" readOnly value={url} onFocus={(event) => event.currentTarget.select()} />
     </label> : null}

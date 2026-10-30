@@ -7,6 +7,7 @@ import { AdmissionProcessCard } from "./admission-process-card";
 import { groupAdmissionProcesses } from "@/lib/opportunities/admission-processes";
 import { OpportunityCountdown } from "./opportunity-countdown";
 import { OpportunityAlert } from "./opportunity-alert";
+import { ShareButton } from "@/components/site/share-button";
 import { LiveCatalogueRefresh } from "./live-refresh";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -411,7 +412,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
         </div>
       </div>
       <OpportunityCountdown opportunity={opportunity} />
-      {detailed && opportunity.deadline === null ? <OpportunityAlert id={opportunity.id} title={opportunity.title} available={opportunity.alertsAvailable === true}/> : null}
+      {detailed && isOpportunityOpen(opportunity) ? <OpportunityAlert id={opportunity.id} title={opportunity.title} available={opportunity.alertsAvailable === true}/> : null}
       <div className={styles.cardFooter}>
         <span>{opportunity.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={opportunity.verificationTimestamp ?? opportunity.verifiedAt} title="Horário de Brasília">{formatDate(opportunity.verificationTimestamp ?? opportunity.verifiedAt)}</time></span>
         <Link
@@ -425,6 +426,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
           {detailed ? "Ver página oficial e inscrição" : "Ver detalhes"} <ArrowUpRight size={16} aria-hidden />
         </Link>
       </div>
+      <ShareButton title={interfaceText(displayOpportunityTitle(opportunity.title))} path={publicOpportunityPath(opportunity)} compact />
       {management ? <Link className={styles.externalLink} href={`/admin/radar?editar=${encodeURIComponent(opportunity.id.replace(/^radar-/, ""))}`}>Editar ou excluir</Link> : null}
     </article>
   );

@@ -85,7 +85,7 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
           <EarthRadarScene progress={earthProgress} />
           <EarthSignature />
           <div className={styles["earth-message"]} data-earth-message data-visible="false" inert>
-            <h1>Descubra seu próximo salto</h1>
+            <h1>Encontre o seu próximo salto</h1>
             <p>Oportunidades, encontros e gente curiosa para construir o que vem a seguir</p>
             <Link prefetch={false} href="/oportunidades">Explorar o Radar</Link>
           </div>

@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
 import type { PoolClient } from "pg";
 import { withAdminTransaction } from "@/lib/db/client";
 import { publishedOpportunityPredicate } from "@/lib/db/publication-filter";
@@ -18,14 +19,30 @@ export function normalizedAlertEmail(value: unknown) {
 }
 type Snapshot = Record<string, unknown> & { title: string; state: string; officialUrl: string | null };
 type Row = Record<string, unknown> & { id: string; live: boolean; title: string; categories: string[]; event_starts_at: string | null; deadline_at: string | Date | null; source_page_url: string | null };
+function snapshotDate(value: unknown, dateOnly = false) {
+  if (value === undefined || value === null || value === "") return null;
+  const text = value instanceof Date ? value.toISOString() : String(value);
+  return dateOnly ? text.slice(0, 10) : text.length > 10 && Number.isFinite(Date.parse(text)) ? new Date(text).toISOString() : text;
+}
+function normalizedSnapshot(value: Snapshot): Snapshot {
+  return { ...value, deadline: snapshotDate(value.deadline, value.deadlinePrecision === "date_only"),
+    eventStartsAt: snapshotDate(value.eventStartsAt) };
+}
+function calendarSnapshot(value: unknown) {
+  const discovery = value as { editions?: { id: string; name: string; stages: { id: string; name: string; kind: string; start: string; end?: string }[] }[] } | null;
+  return (discovery?.editions ?? []).map(edition => ({ id: edition.id, name: edition.name,
+    stages: edition.stages.map(stage => ({ id: stage.id, name: stage.name, kind: stage.kind,
+      start: snapshotDate(stage.start), end: snapshotDate(stage.end) })).sort((a,b) => a.id.localeCompare(b.id)) })).sort((a,b) => a.id.localeCompare(b.id));
+}
 const opportunityQuery = `select o.*, ${publishedOpportunityPredicate} as live,
   (select source_page_url from opportunity_sources where opportunity_id=o.id and active order by is_primary desc,created_at desc limit 1) as source_page_url
   from opportunities o`;
 export function monitoringSnapshot(row: Row): Snapshot {
   const started = row.categories.includes("eventos") && row.event_starts_at && !eventHasNotStarted(row.event_starts_at);
-  return { title: row.title, state: started ? "event_started" : row.live || ["closed","cancelled","suspended","result_published"].includes(String(row.opportunity_status)) ? String(row.opportunity_status) : "withdrawn",
-    deadline: row.deadline_at instanceof Date ? row.deadline_at.toISOString() : row.deadline_at,
-    deadlinePrecision: row.deadline_precision, eventStartsAt: row.event_starts_at,
+  const terminal = ["cancelled","suspended","result_published"].includes(String(row.opportunity_status));
+  return { title: row.title, state: row.deleted_at ? "withdrawn" : terminal ? String(row.opportunity_status) : started ? "event_started" : row.live || row.opportunity_status === "closed" ? String(row.opportunity_status) : "withdrawn",
+    deadline: snapshotDate(row.deadline_at, row.deadline_precision === "date_only"),
+    deadlinePrecision: row.deadline_precision, eventStartsAt: snapshotDate(row.event_starts_at), calendar: calendarSnapshot(row.discovery),
     requirements: row.requirements_text, benefit: row.amount_text,
     categories: [...row.categories].sort(), stateCode: row.state_code, cityName: row.city_name,
     institution: row.institution, officialUrl: row.source_page_url };
@@ -52,7 +69,7 @@ export async function subscribeToOpportunity(input: Record<string, unknown>) {
     const address = await allowance(client,`subscribe:${tokenHash(email)}`,3,3600);
     if (!global || !address) return { ok: true }; // Non-enumerating response; no additional mail queued.
     const row = (await client.query<Row>(`${opportunityQuery} where o.id=$1`,[input.opportunityId])).rows[0];
-    if (!row?.live || row.deadline_at !== null) throw new AlertError("Acompanhamento indisponível para esta oportunidade",409);
+    if (!row?.live) throw new AlertError("Acompanhamento indisponível para esta oportunidade",409);
     const old = (await client.query("select id,status,confirm_expires_at from opportunity_alert_subscriptions where opportunity_id=$1 and email=$2 for update",[input.opportunityId,email])).rows[0];
     if (old?.status === "active" || old?.status === "pending" && new Date(old.confirm_expires_at) > new Date()) return { ok: true };
     const confirm = randomBytes(32).toString("hex"), unsubscribe = randomBytes(32).toString("hex");
@@ -83,15 +100,39 @@ export async function updateAlertSubscription(action: "confirm" | "unsubscribe",
       if (sub.status !== "pending" || new Date(sub.confirm_expires_at) <= new Date()) throw new AlertError("Link inválido ou expirado");
       const row = (await client.query<Row>(`${opportunityQuery} where o.id=$1`,[sub.opportunity_id])).rows[0];
       if (!row?.live) throw new AlertError("Esta oportunidade já saiu do catálogo",409);
-      await client.query("update opportunity_alert_subscriptions set status='active',confirmed_at=now(),last_snapshot=$2,updated_at=now() where id=$1",[sub.id,monitoringSnapshot(row)]);
+      // Keep the requested snapshot so changes published before confirmation are not lost.
+      await client.query("update opportunity_alert_subscriptions set status='active',confirmed_at=now(),updated_at=now() where id=$1",[sub.id]);
       await client.query("update opportunity_alert_outbox set status='cancelled',payload='{}' where subscription_id=$1 and kind='confirmation' and status in ('pending','sending')",[sub.id]);
     }
     return { ok:true };
   });
 }
-const labels: Record<string,string> = { title:"título",state:"situação das inscrições ou do evento",deadline:"prazo de inscrição",deadlinePrecision:"informação do prazo",eventStartsAt:"início do evento",requirements:"requisitos",benefit:"apoio ou benefício",categories:"categorias",stateCode:"estado",cityName:"cidade",institution:"organizador",officialUrl:"página oficial" };
+const labels: Record<string,string> = { title:"título",state:"situação das inscrições ou do evento",deadline:"prazo de inscrição",deadlinePrecision:"informação do prazo",eventStartsAt:"início do evento",calendar:"calendário e etapas",requirements:"requisitos",benefit:"apoio ou benefício",categories:"categorias",stateCode:"estado",cityName:"cidade",institution:"organizador",officialUrl:"página oficial" };
+function changedKeys(before: Snapshot, after: Snapshot) {
+  const previous = normalizedSnapshot(before), current = normalizedSnapshot(after);
+  return Object.keys(labels).filter(key => !(key === "calendar" && before.calendar === undefined) && !isDeepStrictEqual(previous[key],current[key]));
+}
 export function changedFields(before: Snapshot, after: Snapshot) {
-  return Object.keys(labels).filter(key=>JSON.stringify(before[key])!==JSON.stringify(after[key])).map(key=>labels[key]);
+  return changedKeys(before, after).map(key => labels[key]);
+}
+function displayValue(key: string, value: unknown): string {
+  if (value === null || value === undefined || value === "") return "não informado";
+  if (key === "calendar") return (value as ReturnType<typeof calendarSnapshot>).flatMap(edition => edition.stages.map(stage =>
+    `${stage.name}: ${displayValue("date", stage.start)}${stage.end ? ` a ${displayValue("date", stage.end)}` : ""}`)).join("; ") || "não informado";
+  if ((key === "deadline" || key === "eventStartsAt" || key === "date") && typeof value === "string" && Number.isFinite(Date.parse(value))) {
+    return new Intl.DateTimeFormat("pt-BR", { day:"2-digit",month:"2-digit",year:"numeric",timeZone:"America/Sao_Paulo",
+      ...(value.length > 10 ? { hour:"2-digit" as const,minute:"2-digit" as const } : {}) }).format(new Date(value.length === 10 ? `${value}T12:00:00Z` : value));
+  }
+  const translated: Record<string,string> = { open:"inscrições abertas",upcoming:"inscrições futuras",closed:"inscrições encerradas",cancelled:"cancelado",suspended:"suspenso",result_published:"resultado publicado",event_started:"evento iniciado",withdrawn:"fora do catálogo",date_only:"data sem horário informado",exact_datetime:"data e horário",not_informed:"não informado",continuous_flow:"fluxo contínuo" };
+  return (typeof value === "string" ? translated[value] ?? value : Array.isArray(value) ? value.join(", ") : String(value)).replace(/\s+/g," ").slice(0,1000);
+}
+export function changeDetails(before: Snapshot, after: Snapshot) {
+  const previous = normalizedSnapshot(before), current = normalizedSnapshot(after);
+  // Email confirmation does not grant access to protected opportunity details.
+  const publicFields = new Set(["title","state","deadline","deadlinePrecision","eventStartsAt","calendar","categories","stateCode","cityName","institution"]);
+  return changedKeys(before,after).map(key => publicFields.has(key)
+    ? `${labels[key]}: ${displayValue(key,previous[key])} → ${displayValue(key,current[key])}`
+    : `${labels[key]}: informação atualizada; consulte os detalhes no Radar.`).join("\n");
 }
 export async function pruneAlertData() {
   await withAdminTransaction(async (client) => {
@@ -107,6 +148,11 @@ export async function queueOpportunityChanges() {
       const row=(await client.query<Row>(`${opportunityQuery} where o.id=$1`,[sub.opportunity_id])).rows[0];
       if (!row) continue;
       const snapshot=monitoringSnapshot(row), fields=changedFields(sub.last_snapshot,snapshot);
+      // An inconclusive extraction is not a confirmed cancellation or withdrawal.
+      if (!row.live && !row.deleted_at && !["closed","cancelled","suspended","result_published"].includes(String(row.opportunity_status)) && snapshot.state !== "event_started") {
+        await client.query("update opportunity_alert_subscriptions set checked_at=now() where id=$1",[sub.id]);
+        continue;
+      }
       if (fields.length) {
         const urls=links("",sub.unsubscribe_token);
         const notices: Record<string,string> = { event_started:"O evento começou e saiu do catálogo de inscrições.",
@@ -116,7 +162,7 @@ export async function queueOpportunityChanges() {
           withdrawn:"A oportunidade saiu do catálogo. Confira a fonte oficial para saber a situação atual." };
         const state = notices[snapshot.state] ?? "A fonte oficial ou a equipe atualizou a oportunidade.";
         await client.query(`insert into opportunity_alert_outbox (subscription_id,fingerprint,kind,payload) values ($1,$2,'change',$3) on conflict do nothing`,
-          [sub.id,fingerprint([row.version,snapshot]),{subject:`Radar Apogee: atualização de ${snapshot.title.replace(/[\r\n]/g," ").slice(0,150)}`,text:`${snapshot.title}\n\n${state}\nMudanças: ${fields.join(", ")}.\nPrazo registrado: ${snapshot.deadline ?? "não informado"}.\nInício do evento: ${snapshot.eventStartsAt ?? "não informado"}.\n\nConsulte os dados atuais e a página oficial:\nhttps://www.apogee.community/oportunidades\n${snapshot.officialUrl ?? ""}\n\nCancelar avisos:\n${urls.unsubscribe}` }]);
+          [sub.id,fingerprint([row.version,snapshot]),{subject:`Radar Apogee: atualização de ${snapshot.title.replace(/[\r\n]/g," ").slice(0,150)}`,text:`${snapshot.title}\n\n${state}\n\nO que mudou:\n${changeDetails(sub.last_snapshot,snapshot)}\n\nPrazo registrado: ${displayValue("deadline",snapshot.deadline)}.\nInício do evento: ${displayValue("eventStartsAt",snapshot.eventStartsAt)}.\n\nConsulte os dados atuais no Radar:\nhttps://www.apogee.community/oportunidades/oportunidade--radar-${row.id}\n\nCancelar avisos:\n${urls.unsubscribe}` }]);
         queued++;
       }
       await client.query("update opportunity_alert_subscriptions set last_snapshot=$2,checked_at=now(),status=case when $3 then 'completed' else status end,updated_at=case when $3 then now() else updated_at end where id=$1",[sub.id,snapshot,["closed","cancelled","event_started","result_published"].includes(snapshot.state)]);

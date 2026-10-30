@@ -1,4 +1,7 @@
 .share { display: grid; justify-items: start; gap: .5rem; margin-block: 1.5rem; max-width: 100%; }
+.compact { gap: 0; margin-block: .75rem 0; }
+.compact .button { font-size: .875rem; }
+.compact .feedback:not(:empty) { margin-top: .5rem; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: .6rem; min-height: 2.75rem; padding: .65rem 1rem; border: 1px solid currentColor; border-radius: var(--apogee-control-radius, .625rem); color: inherit; background: transparent; font: inherit; font-size: .9375rem; font-weight: 550; cursor: pointer; transition: background-color 160ms ease; }
 .button:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
 .button:active { background: color-mix(in srgb, currentColor 16%, transparent); }

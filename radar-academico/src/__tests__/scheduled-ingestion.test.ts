@@ -146,7 +146,7 @@ it("extrai o hackathon global da página oficial mesmo quando o primeiro main é
   expect(report).toMatchObject({ pagesChecked: 2, discovered: 1, published: 1 });
   expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({
     title: "NASA Space Apps Challenge 2026", categories: ["competicoes", "eventos"],
-    deadlineAt: "2026-11-15", opportunityStatus: "open",
+    deadlineAt: "2026-11-15", eventStartsAt: "2026-11-14", opportunityStatus: "open",
     geographicScopeKind: "global", countryCode: null, stateCode: null, cityName: null,
   });
 });
