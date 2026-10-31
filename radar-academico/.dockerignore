@@ -4,7 +4,17 @@ node_modules
 npm-debug.log
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
+!**/.env.example
 coverage
+src/__tests__
+tests
 README.md
-references
+# Keep research/audit material out; these two catalogues are runtime imports.
+references/*
+!references/radar-expansion-20261030/
+references/radar-expansion-20261030/*
+!references/radar-expansion-20261030/editions.json
+!references/radar-expansion-20261030/luma-events.json
