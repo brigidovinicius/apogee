@@ -58,3 +58,11 @@ O instalador pode inserir **99 monitores ativos novos e 13 registros pendentes**
 Os detalhes estão em `research/radar-expansion-20261030/access-audit.md`; a evidência de máquina completa está em `radar-academico/references/radar-expansion-20261030/access-audit.json`. O hash dos dados/código coincide entre o workspace e a cópia isolada: `584ad11bcc5e55d86c66c691bd0a1ebd3bbe3adb1521ce24f3695b945f48b356`.
 
 Produção foi apenas consultada: site e Radar estavam em execução e saudáveis, com horários de início anteriores à rodada final; scheduler em execução. Não houve push, PR, merge, deploy, migração, alteração de dados de produção ou envio real de e-mail. O próximo gate é autorizar a publicação do candidato no repositório público, integração após CI, deploy do Radar e ativação dos registros qualificados, mantendo as pendências inativas. Antes da operação, revalidar revisão exata, saúde, backup e validade da auditoria; não usar autorização vencida para um pacote diferente.
+
+## Empacotamento Docker
+
+A PR #102 foi integrada após os seis jobs de CI. A primeira compilação de produção identificou que `.dockerignore` removia os JSON importados pelo normalizador; a reversão retornou ao SHA anterior `ac04696`, saudável, antes de qualquer instalação de fontes ou fichas. Nenhum dado da expansão foi ativado nessa tentativa.
+
+A correção permite somente `editions.json` e `luma-events.json` no contexto, exclui testes da imagem e mantém pesquisas, auditorias e `.env` (inclusive aninhados) fora dela. Os testes continuam no checkout do CI. Um teste de regressão usa o Docker real com `FROM scratch`, arquivos sintéticos e exportação tar para verificar inclusão e exclusão; ele faz parte de `test:runtime-compose`.
+
+Na área isolada, os dois testes de contexto/Compose e o lint passaram; a imagem Docker completa foi compilada com sucesso. Os dados e o código do coletor mantêm o hash auditado `584ad11bcc5e55d86c66c691bd0a1ebd3bbe3adb1521ce24f3695b945f48b356`. A correção de empacotamento segue para CI antes de nova tentativa de deploy.

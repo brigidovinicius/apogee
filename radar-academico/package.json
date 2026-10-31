@@ -11,7 +11,7 @@
     "test": "vitest run --maxWorkers=1",
     "test:watch": "vitest",
     "test:runtime-roles": "node scripts/test-runtime-roles.mjs",
-    "test:runtime-compose": "node --test tests/runtime-compose.test.mjs",
+    "test:runtime-compose": "node --test tests/runtime-compose.test.mjs tests/docker-context.test.mjs",
     "migrate": "node scripts/migrate.mjs",
     "typecheck": "tsc --noEmit --incremental false",
     "typegen": "next typegen --webpack"
