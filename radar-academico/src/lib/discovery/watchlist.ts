@@ -17,6 +17,7 @@ export type DiscoveryTarget = {
   next_check_at: Date | null;
   last_status: "not_checked" | "checked" | "blocked" | "failed";
   evidence_url: string;
+  last_changed_at?: Date | null;
 };
 
 export type DiscoveryLead = {
@@ -46,7 +47,11 @@ export type EventEdition = {
 
 export async function listDiscoveryWatchlist() {
   return withAdminTransaction(async (client) => {
-    const targets = await client.query<DiscoveryTarget>("select id,name,organizer,kind,official_url,topics,priority,enabled,official_verified_at,official_verified_url,official_review_note,last_checked_at,next_check_at,last_status,evidence_url from discovery_targets order by priority desc,name");
+    const targets = await client.query<DiscoveryTarget>(`select id,name,organizer,kind,official_url,topics,priority,enabled,official_verified_at,official_verified_url,official_review_note,last_checked_at,next_check_at,last_status,evidence_url,observation.last_changed_at from discovery_targets target left join lateral (
+      select max(finished_at) as last_changed_at from ingestion_runs
+      where execution_metadata->>'component'='discovery-observation' and execution_metadata->>'target_id'=target.id
+        and execution_metadata->>'changed'='true'
+    ) observation on true order by priority desc,name`);
     const leads = await client.query<DiscoveryLead>("select id,target_id,url,title,status,first_seen_at,last_seen_at,processing_status,processing_reason,processing_attempts,processed_at from discovery_leads where status in ('new','reviewing') order by last_seen_at desc limit 100");
     const events = await client.query<EventEdition>("select id,target_id,edition_name,starts_on::text,ends_on::text,location_text,status,evidence_url from annual_event_editions order by starts_on nulls last,edition_name");
     return { targets: targets.rows, leads: leads.rows, events: events.rows };
@@ -117,4 +122,23 @@ export async function requeueDiscoveryLeads(client: PoolClient, options: {
     [options.leadId ?? options.targetId, options.reason],
   );
   return result.rowCount ?? 0;
+}
+
+/** An immutable check/change log; failures never replace the last successful observation. */
+export async function recordDiscoveryObservation(targetId: string, observation: { hash: string; excerpt: string }) {
+  return withAdminTransaction(async client => {
+    await client.query("select id from discovery_targets where id=$1 for update", [targetId]);
+    const previous = (await client.query<{ hash: string }>(
+      `select execution_metadata->>'hash' as hash from ingestion_runs
+       where execution_metadata->>'component'='discovery-observation' and execution_metadata->>'target_id'=$1
+       order by finished_at desc,id desc limit 1`, [targetId])).rows[0]?.hash;
+    const changed = Boolean(previous && previous !== observation.hash);
+    await client.query(`insert into ingestion_runs(started_at,finished_at,status,pages_checked,execution_metadata)
+      values(now(),now(),'completed',1,$1::jsonb)`, [JSON.stringify({ component: "discovery-observation", target_id: targetId,
+        hash: observation.hash, previous_hash: previous ?? null, changed, excerpt: observation.excerpt })]);
+    return changed;
+  });
+}
+export async function recordDiscoveryObservationChanged(targetId: string) {
+  return withAdminTransaction(client => requeueDiscoveryLeads(client, { targetId, reason: "configuration_changed" }));
 }

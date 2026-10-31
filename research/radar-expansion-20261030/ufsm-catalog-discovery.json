@@ -1,0 +1,758 @@
+[
+  {
+    "ufsm_id": 175,
+    "name": "Olimpíada do Tesouro Direto de Educação Financeira",
+    "acronym": "OLITEF",
+    "url": "https://www.olitef.com.br/"
+  },
+  {
+    "ufsm_id": 68,
+    "name": "Liga de Matemática",
+    "acronym": "LigMat",
+    "url": "https://www.ligmat.com/"
+  },
+  {
+    "ufsm_id": 180,
+    "name": "Olimpíada de Matemática Mandacaru",
+    "acronym": "OMM",
+    "url": "https://olimpiadamandacaru.com.br/?fbclid=PAZXh0bgNhZW0CMTEAAadSVGmKLH_qAK9DYJa6EaG91_69yU33sLzZUKvCVBYRaKw_BU0QQSlzswCo6g_aem_0W_sf_9vPPx2TpE9ERwV2g"
+  },
+  {
+    "ufsm_id": 44,
+    "name": "Olimpíada de Português",
+    "acronym": "OP",
+    "url": "https://www.olimpiadadeportugues.org/"
+  },
+  {
+    "ufsm_id": 33,
+    "name": "Olimpíada Brasileira de Neurociência - Brazilian Brain Bee",
+    "acronym": "OBN",
+    "url": "https://brazilianbrainbee.org/"
+  },
+  {
+    "ufsm_id": 233,
+    "name": "Olimpíada de Espanhol",
+    "acronym": "OE",
+    "url": "https://olimpiadadeespanhol.com/"
+  },
+  {
+    "ufsm_id": 232,
+    "name": "Olimpíada de inglês",
+    "acronym": "OI",
+    "url": "https://oingles.com/"
+  },
+  {
+    "ufsm_id": 56,
+    "name": "Olimpíada Brasileira de Biotecnologia",
+    "acronym": "OBBiotec",
+    "url": "https://www.obbiotec.com.br/"
+  },
+  {
+    "ufsm_id": 231,
+    "name": "Olimpíada Internacional de Lógica",
+    "acronym": "ILO",
+    "url": "https://www.logicolympiad.org/?utm_source=ig&utm_medium=social&utm_content=link_in_bio"
+  },
+  {
+    "ufsm_id": 28,
+    "name": "Concurso Internacional Canguru de Matemática Brasil",
+    "acronym": "Canguru",
+    "url": "https://concurso.cangurudematematicabrasil.com.br/#desafio"
+  },
+  {
+    "ufsm_id": 65,
+    "name": "Olimpíada Brasileira do Saber",
+    "acronym": "OBS",
+    "url": "https://obssaberes.org/"
+  },
+  {
+    "ufsm_id": 230,
+    "name": "Olimpíada Brasileira de Sociologia",
+    "acronym": "OBS",
+    "url": "https://olimpiadadesociologia.com.br/"
+  },
+  {
+    "ufsm_id": 53,
+    "name": "Olimpíada Nacional de Inteligência Artificial",
+    "acronym": "ONIA",
+    "url": "https://www.oniabrasil.com.br/"
+  },
+  {
+    "ufsm_id": 5,
+    "name": "Olimpíada Brasileira de Biologia",
+    "acronym": "OBB",
+    "url": "https://olimpiadasdebiologia.butantan.gov.br/"
+  },
+  {
+    "ufsm_id": 229,
+    "name": "Olimpíada de Tecnologia e Inovação do Instituto Polymathos",
+    "acronym": "OTI-Polymathos",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScs8gOi2yLnGGBNXPbQGc7YVrOXuUlb8-9dEmtffn7K33NGCA/viewform"
+  },
+  {
+    "ufsm_id": 71,
+    "name": "Movimento Meninas Olimpicas",
+    "acronym": "MMO",
+    "url": "https://tfcbr.inf.ufsm.br/"
+  },
+  {
+    "ufsm_id": 225,
+    "name": "Olimpíada Nacional de Astronomia",
+    "acronym": "ONA",
+    "url": "https://www.saberdaciencia.org/ona"
+  },
+  {
+    "ufsm_id": 216,
+    "name": "Torneio Brasil de Robótica",
+    "acronym": "TBR",
+    "url": "https://www.torneiobrasilderobotica.com.br/"
+  },
+  {
+    "ufsm_id": 226,
+    "name": "Olimpíada Nacional de Matemática",
+    "acronym": "ONM",
+    "url": "https://www.saberdaciencia.org/onm"
+  },
+  {
+    "ufsm_id": 227,
+    "name": "Olimpíada Nacional de Física",
+    "acronym": "ONF",
+    "url": "https://www.saberdaciencia.org/onf"
+  },
+  {
+    "ufsm_id": 195,
+    "name": "Olimpíada Brasileira de Africanidades e Povos Originários",
+    "acronym": "OBAPO",
+    "url": "https://olimpikei.com.br/obapo/"
+  },
+  {
+    "ufsm_id": 187,
+    "name": "Olimpíada Nacional de Ilustração Científica",
+    "acronym": "ONIC",
+    "url": "https://interdisciplinarpibid.ufv.br/olimpiadailustraciencia/"
+  },
+  {
+    "ufsm_id": 189,
+    "name": "Bilingual Minds Olympiad",
+    "acronym": "BMO",
+    "url": "https://olimpikei.com.br/bmo/"
+  },
+  {
+    "ufsm_id": 39,
+    "name": "Olimpíada de Literatura",
+    "acronym": "OL",
+    "url": "https://www.olimpiadadeliteratura.com.br/"
+  },
+  {
+    "ufsm_id": 185,
+    "name": "Torneio Brasileiro de Sustentabilidade",
+    "acronym": "TBS",
+    "url": "https://www.alphalumen.org.br/torneio-brasileiro-de-sustentabilidade/"
+  },
+  {
+    "ufsm_id": 190,
+    "name": "Torneio de Expressão em Linguagens Audiovisuais",
+    "acronym": "TELA",
+    "url": "https://olimpikei.com.br/tela/"
+  },
+  {
+    "ufsm_id": 47,
+    "name": "Olimpíada Brasileira de Língua Inglesa",
+    "acronym": "OBLI",
+    "url": "https://www.seletaeducacao.com.br/obli"
+  },
+  {
+    "ufsm_id": 206,
+    "name": "Olimpíada Brasileira de Geoinformação",
+    "acronym": "OBGeoinfo",
+    "url": "https://olimpiadadegeoinformacao.com.br/"
+  },
+  {
+    "ufsm_id": 66,
+    "name": "Olimpíada de Matemática das Américas",
+    "acronym": "AMO",
+    "url": "https://amo.sg/"
+  },
+  {
+    "ufsm_id": 186,
+    "name": "Olimpiada de Filmes",
+    "acronym": "OF",
+    "url": "https://www.google.com/url?q=https://drive.google.com/file/d/1YliZwjlQbNxeKAIlB4YO8rYVIxg_SLPL/view?pli%3D1&sa=D&source=editors&ust=1759084514308198&usg=AOvVaw38Act66JzndeVny35xhb1g"
+  },
+  {
+    "ufsm_id": 188,
+    "name": "Olimpíada Brasileira de Medicina",
+    "acronym": "OBMed",
+    "url": "https://olimpikei.com.br/obmed/"
+  },
+  {
+    "ufsm_id": 120,
+    "name": "Olimpíada do Bem Público",
+    "acronym": "OBP",
+    "url": "https://eppg.fgv.br/olimpiada-do-bem-publico"
+  },
+  {
+    "ufsm_id": 203,
+    "name": "Olimpíada Brasileira de Diplomacia e Relações Internacionais",
+    "acronym": "OBDIP",
+    "url": "https://obdip.ubiquejunior.com.br/"
+  },
+  {
+    "ufsm_id": 107,
+    "name": "Olimpíada Nacional de Eficiência Energética",
+    "acronym": "ONEE",
+    "url": "https://onee.org.br/"
+  },
+  {
+    "ufsm_id": 177,
+    "name": "Olimpíada do Conhecimento do SENAI",
+    "acronym": "OCS",
+    "url": "https://olimpiada.rn.senai.br/"
+  },
+  {
+    "ufsm_id": 202,
+    "name": "Olimpíada Cearense de Informática (estadual)",
+    "acronym": "OCI",
+    "url": "https://oci.org.br/"
+  },
+  {
+    "ufsm_id": 200,
+    "name": "Desafio Bebras Brasil",
+    "acronym": "Bebras",
+    "url": "https://www.bebrasbrasil.com.br"
+  },
+  {
+    "ufsm_id": 193,
+    "name": "Olimpíada Online de Informática",
+    "acronym": "OBOI",
+    "url": "https://noic.com.br/obo/informatica/"
+  },
+  {
+    "ufsm_id": 109,
+    "name": "Olimpíada do Oceano",
+    "acronym": "O2",
+    "url": "https://olimpiada.maredeciencia.eco.br"
+  },
+  {
+    "ufsm_id": 199,
+    "name": "Olimpíada Nacional GLOBE Brasil",
+    "acronym": "ONGB",
+    "url": "https://aebescolavirtual.aeb.gov.br/?redirect=0"
+  },
+  {
+    "ufsm_id": 13,
+    "name": "Olimpíada Nacional Feminina de Química",
+    "acronym": "Quimeninas",
+    "url": "https://quimeninas.obquimica.org/"
+  },
+  {
+    "ufsm_id": 209,
+    "name": "Olimpíada Brasileira Online de Ciências Humanas",
+    "acronym": "OBOCH",
+    "url": "https://noic.com.br/obo/humanas/"
+  },
+  {
+    "ufsm_id": 211,
+    "name": "Olimpíada Pernambucana de Foguetes (estadual)",
+    "acronym": "OPEFOG",
+    "url": "https://sites.google.com/recife.ifpe.edu.br/opefog-ifpe-olimpiada-foguetes/p%C3%A1gina-inicial?authuser=6"
+  },
+  {
+    "ufsm_id": 201,
+    "name": "Olimpíada Estadual em História de Sergipe (estadual)",
+    "acronym": "OEHSE",
+    "url": "https://oehse.com.br/"
+  },
+  {
+    "ufsm_id": 205,
+    "name": "Olimpíada Pernambucana de Astronomia e Astronáutica (estadual)",
+    "acronym": "OPA",
+    "url": "https://sites.google.com/recife.ifpe.edu.br/opa-olimpadaastronomia/p%C3%A1gina-inicial?authuser=7"
+  },
+  {
+    "ufsm_id": 207,
+    "name": "Olimpíada Pernambucana de Física (estadual)",
+    "acronym": "OPEF",
+    "url": "https://sites.google.com/recife.ifpe.edu.br/opef/p%C3%A1gina-inicial?authuser=7"
+  },
+  {
+    "ufsm_id": 208,
+    "name": "Olimpíada de Ciências Humanas do Estado do Ceará",
+    "acronym": "OCHE",
+    "url": "https://oche.ifce.edu.br/"
+  },
+  {
+    "ufsm_id": 192,
+    "name": "Olimpíada Brasileira de Estatística",
+    "acronym": "OBE",
+    "url": "https://obe.icmc.usp.br"
+  },
+  {
+    "ufsm_id": 69,
+    "name": "Maratona SBC de Programação (Superior)",
+    "acronym": "SBC",
+    "url": "https://maratona.sbc.org.br/"
+  },
+  {
+    "ufsm_id": 108,
+    "name": "Torneio Meninas na Matemática",
+    "acronym": "TM²",
+    "url": "https://www.tm2.org.br/"
+  },
+  {
+    "ufsm_id": 121,
+    "name": "Olimpíada Brasileira de Satélites",
+    "acronym": "OBSAT",
+    "url": "https://www.obsat.org.br/"
+  },
+  {
+    "ufsm_id": 31,
+    "name": "Olimpíada Brasileira de Medicina",
+    "acronym": "Vitalis",
+    "url": "https://olimpiadademedicina.org/"
+  },
+  {
+    "ufsm_id": 191,
+    "name": "Olimpíada Científica Ecoinovar",
+    "acronym": "Econoivar",
+    "url": "https://olimpiada.ecoinovar.com/#etapas"
+  },
+  {
+    "ufsm_id": 34,
+    "name": "Olimpíada Brasileira de Biologia Sintética",
+    "acronym": "OBBS",
+    "url": "https://olimpiadadebiologiasintetica.org/#:~:text=A%20Olimp%C3%ADada%20Brasileira%20de%20Biologia,Biologia%20Sint%C3%A9tica%20de%20forma%20l%C3%BAdica!"
+  },
+  {
+    "ufsm_id": 43,
+    "name": "Olimpíada Nacional de Astronomia Digital",
+    "acronym": "ONAD",
+    "url": "https://www.onad.com.br/"
+  },
+  {
+    "ufsm_id": 204,
+    "name": "Competicão de Robôs Autônomos",
+    "acronym": "CoRA",
+    "url": "http://cora.cpdee.ufmg.br"
+  },
+  {
+    "ufsm_id": 197,
+    "name": "Competição Jacob Palis Júnior de Matemática",
+    "acronym": "Jacob Palis",
+    "url": "https://www.obm.org.br/competicao-jacob-palis-junior-de-matematica/"
+  },
+  {
+    "ufsm_id": 194,
+    "name": "Olimpíada Brasileira Online de Química",
+    "acronym": "OBOQ",
+    "url": "https://noic.com.br/obo/quimica/"
+  },
+  {
+    "ufsm_id": 110,
+    "name": "Olimpíada Nacional de Nanotecnologia",
+    "acronym": "ONANO",
+    "url": "https://www.onanobrasil.com.br"
+  },
+  {
+    "ufsm_id": 111,
+    "name": "Torneio Feminino de Computação",
+    "acronym": "TFC",
+    "url": "https://tfcbr.inf.ufsm.br/olimpiadas/computacao-tfc"
+  },
+  {
+    "ufsm_id": 12,
+    "name": "Torneio de Física para Meninas",
+    "acronym": "TFM",
+    "url": "https://tfcbr.inf.ufsm.br/fisica"
+  },
+  {
+    "ufsm_id": 218,
+    "name": "Maratona Tech",
+    "acronym": "Maratona Tech",
+    "url": "https://maratona.tech/"
+  },
+  {
+    "ufsm_id": 14,
+    "name": "Olimpíada Nacional de Ciências",
+    "acronym": "ONC",
+    "url": "https://www.onciencias.org/"
+  },
+  {
+    "ufsm_id": 178,
+    "name": "Olimpíada de Empreendedorismo",
+    "acronym": "OE",
+    "url": "https://olimpiadaempreendedorismo.com.br/"
+  },
+  {
+    "ufsm_id": 62,
+    "name": "Olimpíada Internacional de Matemática e do Conhecimento",
+    "acronym": "OIMC",
+    "url": "https://oimc.olimpiadas.org.br/"
+  },
+  {
+    "ufsm_id": 17,
+    "name": "Olimpíada Brasileira de Química Junior",
+    "acronym": "OBQJr",
+    "url": "https://obquimica.org/olimpiadas/index/olimpiada-brasileira-de-quimica-junior"
+  },
+  {
+    "ufsm_id": 116,
+    "name": "Olimpíada Brasileira de Educação Financeira",
+    "acronym": "OBEF",
+    "url": "https://prh.uem.br/edfin/obef-olimpiada-brasileira-de-educacao-financeira"
+  },
+  {
+    "ufsm_id": 220,
+    "name": "Olimpíada de Redação da Rede Estadual de Minas Gerais (estadual)",
+    "acronym": "Olimpíada de Redação MG",
+    "url": "https://www.educacao.mg.gov.br/wp-content/uploads/2025/06/SEI_114116013_Edital_01-1.pdf"
+  },
+  {
+    "ufsm_id": 54,
+    "name": "Torneio Brasileiro de Ciências",
+    "acronym": "TBC",
+    "url": "https://www.seletaeducacao.com.br/tbc"
+  },
+  {
+    "ufsm_id": 183,
+    "name": "Olimpíada Nacional Sobre Ambientes Marinhos e Polares",
+    "acronym": "PolarOn",
+    "url": "https://www.uergs.edu.br/4-polaron"
+  },
+  {
+    "ufsm_id": 70,
+    "name": "Mostra Nacional de Robótica",
+    "acronym": "MNR",
+    "url": "https://mnr.robocup.org.br/"
+  },
+  {
+    "ufsm_id": 48,
+    "name": "Torneio Nacional de Biologia",
+    "acronym": "TNBio",
+    "url": "https://www.seletaeducacao.com.br/tnbio"
+  },
+  {
+    "ufsm_id": 223,
+    "name": "Olimpíada Titãs da Matemática",
+    "acronym": "Olimpíada Titãs",
+    "url": "https://titasdamatematica.com.br"
+  },
+  {
+    "ufsm_id": 7,
+    "name": "Olimpíada Brasileira de Física",
+    "acronym": "OBF",
+    "url": "https://www.sbfisica.org.br/v1/olimpiada/2024/"
+  },
+  {
+    "ufsm_id": 221,
+    "name": "Olimpíada Brasileira de Matemática das Escolas Públicas e Privadas Mirim",
+    "acronym": "OBMEP Mirim",
+    "url": "https://olimpiadamirim.obmep.org.br"
+  },
+  {
+    "ufsm_id": 198,
+    "name": "Competição Elon Lages Lima de Matemática",
+    "acronym": "Elon Lages",
+    "url": "https://www.obm.org.br/competicao-elon-lages-lima-de-matematica/"
+  },
+  {
+    "ufsm_id": 210,
+    "name": "Olimpíada do Conhecimento Jurídico",
+    "acronym": "ABDC",
+    "url": "https://www.abdireitocivil.com.br/xii-olimpiada-do-conhecimento-juridico-abdc-2025/"
+  },
+  {
+    "ufsm_id": 106,
+    "name": "Olimpíada Brasileira de Administração",
+    "acronym": "OBAdm",
+    "url": "https://www.obadm.org.br/"
+  },
+  {
+    "ufsm_id": 113,
+    "name": "Olimpíada Cearense do Ensino Superior de Química (Estadual)",
+    "acronym": "OCESQ",
+    "url": "https://ceara.obquimica.org/"
+  },
+  {
+    "ufsm_id": 117,
+    "name": "Olimpíada Brasileira de Empreendedorismo Social",
+    "acronym": "OBES",
+    "url": "https://obes.olimpiadas.org.br/"
+  },
+  {
+    "ufsm_id": 179,
+    "name": "Olimpíada Brasileira de Cristianismo",
+    "acronym": "OBC",
+    "url": "https://obcristianismo.org/"
+  },
+  {
+    "ufsm_id": 38,
+    "name": "Olimpíada Sertaneja de Matemática (Estadual)",
+    "acronym": "OSM",
+    "url": "https://www.osmsertao.com.br"
+  },
+  {
+    "ufsm_id": 45,
+    "name": "Olimpíada Brasileira de Matemática Financeira",
+    "acronym": "OBMF",
+    "url": "https://www.seletaeducacao.com.br/obmf"
+  },
+  {
+    "ufsm_id": 24,
+    "name": "Torneio Virtual de Química",
+    "acronym": "TVQ",
+    "url": "https://sites.google.com/unicamp.br/torneio-virtual-de-quimica"
+  },
+  {
+    "ufsm_id": 40,
+    "name": "Olimpíada Internacional Matemática Sem Fronteiras",
+    "acronym": "OIMSF",
+    "url": "http://www.matematicasemfronteiras.org/"
+  },
+  {
+    "ufsm_id": 55,
+    "name": "Olimpíada Brasileira de Restauração de Ecossistemas",
+    "acronym": "Restaura",
+    "url": "https://restauranatureza.org.br"
+  },
+  {
+    "ufsm_id": 224,
+    "name": "Competição Internacional de Pensamento Computacional",
+    "acronym": "Dr.CT",
+    "url": "https://olimpiadasinternacionais.org/drct24/"
+  },
+  {
+    "ufsm_id": 3,
+    "name": "Olimpíada Brasileira de Astronomia e Astronáutica",
+    "acronym": "OBA",
+    "url": "http://www.oba.org.br/site/"
+  },
+  {
+    "ufsm_id": 74,
+    "name": "Olimpíada Brasileira de Foguetes",
+    "acronym": "OBAFOG",
+    "url": "http://www.oba.org.br/site/?idcat=29&p=conteudo&pag=conteudo"
+  },
+  {
+    "ufsm_id": 11,
+    "name": "Olimpíada Brasileira de Robótica",
+    "acronym": "OBR",
+    "url": "https://obr.robocup.org.br/"
+  },
+  {
+    "ufsm_id": 52,
+    "name": "Olimpíada Brasileira de GeoPolítica",
+    "acronym": "OBGP",
+    "url": "https://www.seletaeducacao.com.br/obgp"
+  },
+  {
+    "ufsm_id": 59,
+    "name": "Olimpíada Brasileira de Tecnologia",
+    "acronym": "OBT",
+    "url": "https://www.alphalumen.org.br/olimpiada-brasileira-de-tecnologia-obt/"
+  },
+  {
+    "ufsm_id": 26,
+    "name": "Olimpíada Brasileira de Ciências",
+    "acronym": "OBC",
+    "url": "http://www.obciencias.com.br/"
+  },
+  {
+    "ufsm_id": 32,
+    "name": "Olimpíada Nacional de Filosofia",
+    "acronym": "ONFil",
+    "url": "https://onfilbr.org/"
+  },
+  {
+    "ufsm_id": 75,
+    "name": "Olimpíada de Matemática das Instituições Federais",
+    "acronym": "OMIF",
+    "url": "https://omif.com.br"
+  },
+  {
+    "ufsm_id": 42,
+    "name": "Olimpíada Brasileira de Inovação, Ciência e Tecnologia",
+    "acronym": "OBICT",
+    "url": "https://www.obict.com.br/"
+  },
+  {
+    "ufsm_id": 25,
+    "name": "Olimpíada de Matemática da Unicamp (Estadual)",
+    "acronym": "OMU",
+    "url": "https://www.olimpiada.ime.unicamp.br/?abc"
+  },
+  {
+    "ufsm_id": 213,
+    "name": "Olimpíada Brasileira de Fisiologia",
+    "acronym": "OBFis",
+    "url": "https://obfis.cienciasecognicao.org"
+  },
+  {
+    "ufsm_id": 212,
+    "name": "Olimpíada Brasileira de Neurociências para Graduandos",
+    "acronym": "OBNG",
+    "url": "https://obng.cienciasecognicao.org"
+  },
+  {
+    "ufsm_id": 222,
+    "name": "Olimpíada Starboard Science de Matemática",
+    "acronym": "OSSM",
+    "url": "https://projetocqd.com.br/ossm2025/"
+  },
+  {
+    "ufsm_id": 35,
+    "name": "Olimpíada Virtual de Física",
+    "acronym": "OVF",
+    "url": "https://www.villaloboseducacao.com.br/olimpiada-virtual-de-fisica/"
+  },
+  {
+    "ufsm_id": 6,
+    "name": "Olimpíada Brasileira de Linguística",
+    "acronym": "OBL",
+    "url": "https://obling.org/"
+  },
+  {
+    "ufsm_id": 215,
+    "name": "Olimpíada Camaleão da Química",
+    "acronym": "OCQ",
+    "url": "https://sites.google.com/view/olimpiadacamaleao?usp=sharing"
+  },
+  {
+    "ufsm_id": 49,
+    "name": "Torneio Nacional de Física",
+    "acronym": "TNF",
+    "url": "https://www.seletaeducacao.com.br/tnf"
+  },
+  {
+    "ufsm_id": 21,
+    "name": "Olimpíadas Brasileiras ONLINE do NOIC",
+    "acronym": "NOIC",
+    "url": "https://noic.com.br/obo/"
+  },
+  {
+    "ufsm_id": 119,
+    "name": "Olimpíada Brasileira de Investimento",
+    "acronym": "OBInvest",
+    "url": "https://obinvest.org/"
+  },
+  {
+    "ufsm_id": 22,
+    "name": "Olimpíada Brasileira de Raciocínio Lógico",
+    "acronym": "OBRL",
+    "url": "https://www.obrl.com.br/"
+  },
+  {
+    "ufsm_id": 50,
+    "name": "Olimpíada Paulista de Matemática (Estadual)",
+    "acronym": "OPM",
+    "url": "https://www.opm.mat.br/var/www/html/opm.mat.br/web/provas"
+  },
+  {
+    "ufsm_id": 36,
+    "name": "Olimpíada Matemáticos por Diversão",
+    "acronym": "OMpD",
+    "url": "https://matematicopordiversao.wordpress.com/5a-olimpiada-matematicos-por-diversao-ompd-2024/"
+  },
+  {
+    "ufsm_id": 15,
+    "name": "Olimpíada Brasileira de Geografia",
+    "acronym": "OBG",
+    "url": "https://obgeografia.com.br/"
+  },
+  {
+    "ufsm_id": 2,
+    "name": "Olimpíada Brasileira de Química",
+    "acronym": "OBQ",
+    "url": "https://www.obquimica.org/"
+  },
+  {
+    "ufsm_id": 30,
+    "name": "Olimpíada Itabirana de Matemática (Estadual)",
+    "acronym": "OIM",
+    "url": "https://olimpiadaitabirana.com.br/"
+  },
+  {
+    "ufsm_id": 118,
+    "name": "Olimpíada Brasileira de Relações Ético-Raciais",
+    "acronym": "OBERERI",
+    "url": "https://abpn.org.br/olimpiada-brasileira-de-relacoes-etnico-raciais-afro-brasileiras-africanas-e-indigenas-obereri/"
+  },
+  {
+    "ufsm_id": 27,
+    "name": "Olimpíada Brasileira de Física das Escolas Públicas",
+    "acronym": "OBFEP",
+    "url": "https://www.sbfisica.org.br/~obfep/"
+  },
+  {
+    "ufsm_id": 37,
+    "name": "Olimpíada Nacional de Aplicativos",
+    "acronym": "ONDA",
+    "url": "https://olimpiadaonda.com/"
+  },
+  {
+    "ufsm_id": 51,
+    "name": "Olimpíada Brasileira de Empreendedorismo",
+    "acronym": "OBE",
+    "url": "https://obempreende.com.br/"
+  },
+  {
+    "ufsm_id": 67,
+    "name": "Desafio Nacional Acadêmico",
+    "acronym": "DNA",
+    "url": "http://www.desafionacional.com.br/dna_em/index.html"
+  },
+  {
+    "ufsm_id": 41,
+    "name": "Olimpíada Científica de Língua Portuguesa do Piau  (Estadual)",
+    "acronym": "OCLIPI",
+    "url": "https://bento.me/oclipi"
+  },
+  {
+    "ufsm_id": 18,
+    "name": "Olimpíada Brasileira de Agropecuária",
+    "acronym": "OBAP",
+    "url": "https://obap.ifsuldeminas.edu.br/"
+  },
+  {
+    "ufsm_id": 23,
+    "name": "Olimpíada Brasileira de Economia",
+    "acronym": "OBECON",
+    "url": "https://obecon.org/"
+  },
+  {
+    "ufsm_id": 10,
+    "name": "Olimpíada Brasileira de Matemática das Escolas Públicas",
+    "acronym": "OBMEP",
+    "url": "https://www.obmep.org.br/"
+  },
+  {
+    "ufsm_id": 1,
+    "name": "Olimpíada Brasileira de Matemática",
+    "acronym": "OBM",
+    "url": "https://www.obm.org.br/"
+  },
+  {
+    "ufsm_id": 29,
+    "name": "Torneio Brasileiro de Jovens Físicos",
+    "acronym": "IYPT",
+    "url": "https://www.iyptbrasil.com/"
+  },
+  {
+    "ufsm_id": 114,
+    "name": "OBCH- Olimpíada Brasileira de Ciências Humanas",
+    "acronym": "OBCH",
+    "url": "https://www.ifmg.edu.br/piumhi/noticias/participe-da-olimpiada-brasileira-de-ciencias-humanas"
+  },
+  {
+    "ufsm_id": 115,
+    "name": "Olimpíada Brasileira de Ciências Políticas",
+    "acronym": "OBCPD",
+    "url": "https://www.olimpiadasdivinoitu.com.br/olimp%C3%ADadas/obcpd-olimp%C3%ADada-brasileira-de-ci%C3%AAncias-pol%C3%ADticas-e-debates"
+  },
+  {
+    "ufsm_id": 217,
+    "name": "Olimpíada Brasileira de Matemática Associada a Ciências Sociais",
+    "acronym": "OBMACS",
+    "url": "https://podemos.mat.br/obmacs"
+  }
+]

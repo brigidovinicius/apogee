@@ -1,3 +1,6 @@
+import crypto from "node:crypto";
+import { asObject, publicText, structuredEvents } from "@/lib/ingestion/structured-events";
+import { eventHasNotStarted } from "@/lib/ingestion/event-start";
 import { isIP } from "node:net";
 import * as cheerio from "cheerio";
 import { loadActiveOfficialSources } from "@/lib/ingestion/official-source-registry";
@@ -5,9 +8,9 @@ import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { parseHtml } from "@/lib/ingestion/parse-html";
 import { isAllowedHostname, isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
 import type { OfficialSource } from "@/lib/ingestion/types";
-import { claimDueDiscoveryTargets, completeDiscoveryTarget, saveDiscoveryLeads, type DiscoveryTarget } from "./watchlist";
+import { claimDueDiscoveryTargets, completeDiscoveryTarget, saveDiscoveryLeads, recordDiscoveryObservation, recordDiscoveryObservationChanged, type DiscoveryTarget } from "./watchlist";
 
-const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|oportunidade|curso|oficina|formação|prêmio|premiaç|competição|hackathon|desafio|edital|seleção|inscriç|chamada|programa|evento|workshop|conferência|congresso|seminário|encontro|feira|palestra|webinar|extensão|empreendedorismo|incuba|acelera/i;
+const relevant = /olimp[ií]ada|torneio|maratona|pitch|build(?:ers)? day|platform|\bia\b|bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|oportunidade|curso|oficina|formação|prêmio|premiaç|competição|hackathon|desafio|edital|seleção|inscriç|chamada|programa|evento|workshop|conferência|congresso|seminário|encontro|feira|palestra|webinar|extensão|empreendedorismo|incuba|acelera/i;
 const tracking = /^(utm_.+|fbclid|gclid)$/i;
 const navigationLabel = /^(?:[«»\s]*(?:anterior|próximo)[«»\s]*|cursos|eventos e cursos|calendário de inscrições|inscrições e acompanhamento|chamadas (?:abertas|andamento)|ver todos os palestrantes|programação|destaques|a feira|acesso à informação)$/i;
 
@@ -22,13 +25,20 @@ export function candidateUrl(input: string): string | null {
   } catch { return null; }
 }
 
-export function discoveryLinks(html: string, target: DiscoveryTarget, mappedSources: OfficialSource[]) {
+export function discoveryLinks(html: string, target: DiscoveryTarget, mappedSources: OfficialSource[], now = new Date()) {
   const seen = new Set<string>();
   const $ = cheerio.load(html);
   $("header,aside").remove();
-  return parseHtml($.html(), target.official_url).flatMap((item) => {
+  const structured = structuredEvents(html);
+  const unavailable = new Set(structured.filter(event => typeof event.startDate === "string" && (!eventHasNotStarted(event.startDate, now) || event.eventStatus === "https://schema.org/EventCancelled")).map(event => event.url));
+  const metadata = structured.flatMap(event => {
+    if (typeof event.url !== "string" || typeof event.name !== "string" || typeof event.startDate !== "string" ||
+      !eventHasNotStarted(event.startDate, now) || event.eventStatus === "https://schema.org/EventCancelled") return [];
+    return [{ url: event.url, title: event.name, excerpt: `${event.name}; ${event.startDate}` }];
+  });
+  return [...metadata, ...parseHtml($.html(), target.official_url)].flatMap((item) => {
     const url = candidateUrl(item.url);
-    if (!url || url === target.official_url || seen.has(url) || navigationLabel.test(item.title)) return [];
+    if (!url || unavailable.has(url) || url === target.official_url || seen.has(url) || navigationLabel.test(item.title)) return [];
     const path = new URL(url).pathname;
     if (path.includes("@@search") || isOfficialSourceUrl(url, mappedSources) ||
       !relevant.test(`${item.title} ${path}`)) return [];
@@ -47,6 +57,22 @@ function asCrawlSource(target: DiscoveryTarget): OfficialSource {
   };
 }
 
+/** Content changes are private discovery signals, never opportunity updates or user alerts. */
+export function discoveryObservation(html: string, target: DiscoveryTarget) {
+  const $ = cheerio.load(html);
+  $("[class*=countdown],[class*=timer],svg,button").remove();
+  const events = structuredEvents(html);
+  const luma = new URL(target.official_url).hostname === "luma.com";
+  const content = luma
+    ? JSON.stringify(events.map(event => ({ url: event.url, name: event.name, startDate: event.startDate, endDate: event.endDate,
+      eventStatus: event.eventStatus, offers: (Array.isArray(event.offers) ? event.offers : [event.offers]).flatMap(raw => {
+        const offer = asObject(raw);
+        return offer ? [{ price: offer.price, priceCurrency: offer.priceCurrency, availability: offer.availability }] : [];
+      }) })).sort((a,b) => String(a.url).localeCompare(String(b.url))))
+    : publicText($.html());
+  return { hash: crypto.createHash("sha256").update(content).digest("hex"), excerpt: content.slice(0, 500) };
+}
+
 export async function runScheduledDiscovery() {
   const targets = await claimDueDiscoveryTargets(2);
   const mappedSources = await loadActiveOfficialSources();
@@ -61,7 +87,14 @@ export async function runScheduledDiscovery() {
       if (!/text\/html|application\/xhtml/i.test(resource.contentType)) {
         status = "blocked";
       } else {
-        const leads = discoveryLinks(resource.body.toString("utf8"), target, mappedSources);
+        const html = resource.body.toString("utf8");
+        const observation = discoveryObservation(html, target);
+        const changed = await recordDiscoveryObservation(target.id, observation);
+        const leads = discoveryLinks(html, target, mappedSources);
+        if (target.id.startsWith("exp-") && !isOfficialSourceUrl(target.official_url, mappedSources)) {
+          leads.unshift({ url: target.official_url, title: target.name, excerpt: observation.excerpt });
+        }
+        if (changed) await recordDiscoveryObservationChanged(target.id);
         links = leads.length;
         newLeads = await saveDiscoveryLeads(target.id, leads);
         status = "checked";

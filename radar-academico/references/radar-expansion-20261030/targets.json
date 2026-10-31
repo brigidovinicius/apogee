@@ -1,0 +1,2516 @@
+[
+  {
+    "id": "exp-obc-ciencias",
+    "name": "Olimpíada Brasileira de Ciências",
+    "organizer": "B8 Projetos Educacionais",
+    "kind": "event_series",
+    "url": "https://www.obciencias.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.obciencias.com.br/inscriccedilotildees.html",
+    "identity_reviewed": true,
+    "review_note": "Página oficial de inscrições declara encerramento da OBC 2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Ciências",
+      "OBC"
+    ]
+  },
+  {
+    "id": "exp-obe-empreendedorismo",
+    "name": "Olimpíada Brasileira de Empreendedorismo",
+    "organizer": "Organizador não confirmado",
+    "kind": "event_series",
+    "url": "https://obempreende.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://obempreende.com.br/",
+    "identity_reviewed": false,
+    "review_note": "Organizador não identificado",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Empreendedorismo",
+      "OBE"
+    ]
+  },
+  {
+    "id": "exp-obe-estatistica",
+    "name": "Olimpíada Brasileira de Estatística",
+    "organizer": "Instituto de Ciências Matemáticas e de Computação / USP",
+    "kind": "event_series",
+    "url": "https://obe.icmc.usp.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://obe.icmc.usp.br/",
+    "identity_reviewed": true,
+    "review_note": "Resultado de busca da página oficial informa inscrições fechadas e calendário.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Estatística",
+      "OBE"
+    ]
+  },
+  {
+    "id": "exp-obereri",
+    "name": "Olimpíada Brasileira de Relações Étnico-Raciais Afro-Brasileiras, Africanas e Indígenas",
+    "organizer": "Associação Brasileira de Pesquisadores Negros / ABPN",
+    "kind": "event_series",
+    "url": "https://abpn.org.br/olimpiada-brasileira-de-relacoes-etnico-raciais-afro-brasileiras-africanas-e-indigenas-obereri/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://abpn.org.br/olimpiada-brasileira-de-relacoes-etnico-raciais-afro-brasileiras-africanas-e-indigenas-obereri/",
+    "identity_reviewed": true,
+    "review_note": "Página da entidade organizadora confirma identidade; calendário 2026 não verificado.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Relações Étnico-Raciais Afro-Brasileiras, Africanas e Indígenas",
+      "OBERERI"
+    ]
+  },
+  {
+    "id": "exp-obi",
+    "name": "Olimpíada Brasileira de Informática",
+    "organizer": "Sociedade Brasileira de Computação e Instituto de Computação da Unicamp",
+    "kind": "event_series",
+    "url": "https://olimpiada.ic.unicamp.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiada.ic.unicamp.br/",
+    "identity_reviewed": true,
+    "review_note": "Datas oficiais distinguem Iniciação, Programação e competição feminina.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Informática",
+      "OBI"
+    ]
+  },
+  {
+    "id": "exp-obmacs",
+    "name": "Olimpíada Brasileira de Matemática Aplicada às Ciências Sociais",
+    "organizer": "Programa PODEMOS / Clube de Ciências Onze de Agosto",
+    "kind": "event_series",
+    "url": "https://podemos.mat.br/obmacs",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://podemos.mat.br/obmacs",
+    "identity_reviewed": true,
+    "review_note": "Página do organizador confirma nome e regulamento; séries referem-se a 2021.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Matemática Aplicada às Ciências Sociais",
+      "OBMACS"
+    ]
+  },
+  {
+    "id": "exp-obmed-olimpikei",
+    "name": "Olimpíada Brasileira de Medicina",
+    "organizer": "Olimpikei / RT Serviços de Consultoria Educacional",
+    "kind": "event_series",
+    "url": "https://olimpikei.com.br/olimpiada-brasileira-de-medicina/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpikei.com.br/olimpiada-brasileira-de-medicina/",
+    "identity_reviewed": true,
+    "review_note": "Página oficial atual comprova evento educacional distinto da Vitalis; edição/prazos não validados.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Medicina",
+      "OBMed"
+    ]
+  },
+  {
+    "id": "exp-oboa",
+    "name": "Olimpíada Brasileira Online de Astronomia",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/astronomia/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/astronomia/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Astronomia",
+      "OBOA"
+    ]
+  },
+  {
+    "id": "exp-oboart",
+    "name": "Olimpíada Brasileira Online de Arte",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/artes/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/artes/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Arte",
+      "OBOArt"
+    ]
+  },
+  {
+    "id": "exp-obob",
+    "name": "Olimpíada Brasileira Online de Biologia",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/biologia/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/biologia/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Biologia",
+      "OBOB"
+    ]
+  },
+  {
+    "id": "exp-oboc",
+    "name": "Olimpíada Brasileira Online de Ciências",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/ciencias/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/ciencias/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Ciências",
+      "OBOC"
+    ]
+  },
+  {
+    "id": "exp-oboch",
+    "name": "Olimpíada Brasileira Online de Ciências Humanas",
+    "organizer": "NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/humanas/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/humanas/",
+    "identity_reviewed": true,
+    "review_note": "Calendário oficial NOIC define fim da inscrição antes da primeira fase.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Ciências Humanas",
+      "OBOCH"
+    ]
+  },
+  {
+    "id": "exp-oboecon",
+    "name": "Olimpíada Brasileira Online de Economia",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/economia/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/economia/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Economia",
+      "OBOEcon"
+    ]
+  },
+  {
+    "id": "exp-obof",
+    "name": "Olimpíada Brasileira Online de Física",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC; parceria Fisicadu",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/fisica/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/fisica/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Física",
+      "OBOF"
+    ]
+  },
+  {
+    "id": "exp-obofe",
+    "name": "Olimpíada Brasileira Online de Física Experimental",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/fisica-experimental/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/fisica-experimental/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Física Experimental",
+      "OBOFE"
+    ]
+  },
+  {
+    "id": "exp-obofog",
+    "name": "Olimpíada Brasileira Online de Foguetes",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/foguetes/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/foguetes/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Foguetes",
+      "OBOFog"
+    ]
+  },
+  {
+    "id": "exp-oboi",
+    "name": "Olimpíada Brasileira Online de Informática",
+    "organizer": "NOIC, em parceria com Neps Academy",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/informatica/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/informatica/",
+    "identity_reviewed": true,
+    "review_note": "Calendário oficial NOIC define fim da inscrição antes da primeira fase.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Informática",
+      "OBOI"
+    ]
+  },
+  {
+    "id": "exp-oboia",
+    "name": "Olimpíada Brasileira Online de Inteligência Artificial",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/ia/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/ia/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Inteligência Artificial",
+      "OBOIA"
+    ]
+  },
+  {
+    "id": "exp-obol",
+    "name": "Olimpíada Brasileira Online de Linguística",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/linguistica/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/linguistica/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Linguística",
+      "OBOL"
+    ]
+  },
+  {
+    "id": "exp-obom",
+    "name": "Olimpíada Brasileira Online de Matemática",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/matematica/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/matematica/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Matemática",
+      "OBOM"
+    ]
+  },
+  {
+    "id": "exp-oboq",
+    "name": "Olimpíada Brasileira Online de Química",
+    "organizer": "NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/quimica/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/quimica/",
+    "identity_reviewed": true,
+    "review_note": "Calendário oficial NOIC define fim da inscrição antes da primeira fase.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Química",
+      "OBOQ"
+    ]
+  },
+  {
+    "id": "exp-obor",
+    "name": "Olimpíada Brasileira Online de Robótica",
+    "organizer": "Núcleo Olímpico de Incentivo ao Conhecimento / NOIC",
+    "kind": "event_series",
+    "url": "https://noic.com.br/obo/robotica/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://noic.com.br/obo/robotica/",
+    "identity_reviewed": true,
+    "review_note": "Identidade confirmada no portfólio e página próprios do NOIC.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira Online de Robótica",
+      "OBOR"
+    ]
+  },
+  {
+    "id": "exp-obrac",
+    "name": "Olimpíada Brasileira de Cartografia",
+    "organizer": "Universidade Federal Fluminense / UFF e instituições parceiras",
+    "kind": "event_series",
+    "url": "https://olimpiadadecartografia.uff.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiadadecartografia.uff.br/sobre-obrac/",
+    "identity_reviewed": true,
+    "review_note": "Página da coordenação UFF confirma olimpíada nacional por equipes.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Cartografia",
+      "OBRAC"
+    ]
+  },
+  {
+    "id": "exp-obs-saber",
+    "name": "Olimpíada Brasileira do Saber",
+    "organizer": "LODIBECS",
+    "kind": "event_series",
+    "url": "https://obssaberes.org/web-site/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://obssaberes.org/web-site/",
+    "identity_reviewed": true,
+    "review_note": "Site confirma identidade, organização e edição; prazo atual não validado.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira do Saber",
+      "OBS"
+    ]
+  },
+  {
+    "id": "exp-obs-sociologia",
+    "name": "Olimpíada Brasileira de Sociologia",
+    "organizer": "Comissão Organizadora da OBS, com UFRJ e Colégio Pedro II",
+    "kind": "event_series",
+    "url": "https://olimpiadadesociologia.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiadadesociologia.com.br/",
+    "identity_reviewed": true,
+    "review_note": "Calendário prevê inscrição individual até 11/03 e de equipes até 16/03.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Sociologia",
+      "OBS"
+    ]
+  },
+  {
+    "id": "exp-obsma",
+    "name": "Olimpíada Brasileira de Saúde e Meio Ambiente",
+    "organizer": "Fundação Oswaldo Cruz / Fiocruz",
+    "kind": "event_series",
+    "url": "https://olimpiada.fiocruz.br/edicao-atual",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiada.fiocruz.br/",
+    "identity_reviewed": true,
+    "review_note": "Página oficial atual fixa envio de projetos até 20/07/2026 às 23h59.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Saúde e Meio Ambiente",
+      "OBSMA"
+    ]
+  },
+  {
+    "id": "exp-oclipi",
+    "name": "Olimpíada Científica de Língua Portuguesa do Piauí – Dizeres e Saberes do Nosso Povo",
+    "organizer": "Seduc-PI e Universidade Estadual do Piauí / Uespi",
+    "kind": "event_series",
+    "url": "https://seduc.pi.gov.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://seduc.pi.gov.br/noticias/noticia/11758/seduc-desenvolve-plano-de-modernizacao-da-educacao",
+    "identity_reviewed": true,
+    "review_note": "Seduc e governo estadual documentam olimpíada própria e projeto; edição 2026 não confirmada. O monitor é o portal geral da instituição organizadora, pois a edição atual não foi confirmada; não exigir a sigla da olimpíada na página inicial.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Seduc",
+      "Secretaria de Educação"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-administracao",
+    "name": "Olimpíada Brasileira de Administração",
+    "organizer": "Conselho Regional de Administração do Rio de Janeiro / CRA-RJ",
+    "kind": "event_series",
+    "url": "https://www.obadm.org.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.obadm.org.br/",
+    "identity_reviewed": true,
+    "review_note": "Cronograma oficial e notícias de premiação de 2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Administração",
+      "OBAdm"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-africanidades-e-povos-originarios",
+    "name": "Olimpíada Brasileira de Africanidades e Povos Originários",
+    "organizer": "Olimpikei / RT Serviços de Consultoria Educacional",
+    "kind": "event_series",
+    "url": "https://olimpikei.com.br/obapo/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 75,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpikei.com.br/obapo-2027-renovacao/",
+    "identity_reviewed": true,
+    "review_note": "Janela atual é renovação exclusiva para escolas participantes de 2025/2026.",
+    "registration_status": "open",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Africanidades e Povos Originários",
+      "OBAPO"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-agropecuaria",
+    "name": "Olimpíada Brasileira de Agropecuária",
+    "organizer": "Instituto Federal do Sul de Minas Gerais / IFSULDEMINAS",
+    "kind": "event_series",
+    "url": "https://portal.ifsuldeminas.edu.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://coronavirus.muz.ifsuldeminas.edu.br/noticias/7050-ifsuldeminas-conquista-medalha-de-bronze-na-15-obap-com-equipe-do-campus-muzambinho",
+    "identity_reviewed": true,
+    "review_note": "Instituição organizadora documenta participação e medalha; calendário de inscrição atual não validado. O monitor é o portal geral da instituição organizadora, pois a edição atual não foi confirmada; não exigir a sigla da olimpíada na página inicial.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "IFSULDEMINAS"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-astronomia-e-astronautica",
+    "name": "Olimpíada Brasileira de Astronomia e Astronáutica",
+    "organizer": "OBA Eventos Educacionais e Comissão OBA/OBAFOG",
+    "kind": "event_series",
+    "url": "https://site.oba.org.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://site.oba.org.br/",
+    "identity_reviewed": true,
+    "review_note": "Página oficial de inscrição informa prorrogação até 08/05/2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Astronomia e Astronáutica",
+      "OBA"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-biologia",
+    "name": "Olimpíada Brasileira de Biologia",
+    "organizer": "Instituto Butantan",
+    "kind": "event_series",
+    "url": "https://olimpiadasdebiologia.butantan.gov.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiadasdebiologia.butantan.gov.br/fases-e-inscricoes",
+    "identity_reviewed": true,
+    "review_note": "Página oficial de fases e inscrições fornece prazo de 2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Biologia",
+      "OBB"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-biologia-sintetica",
+    "name": "Olimpíada Brasileira de Biologia Sintética",
+    "organizer": "Associação Brasileira de Biologia Sintética / SynBioBR",
+    "kind": "event_series",
+    "url": "https://synbiobr.org/olimpiada/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://synbiobr.org/olimpiada/",
+    "identity_reviewed": true,
+    "review_note": "Página atual informa expressamente encerramento em 14/08/2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Biologia Sintética",
+      "OBBS"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-biotecnologia",
+    "name": "Olimpíada Brasileira de Biotecnologia",
+    "organizer": "Equipe coordenadora e executora da OBBiotec",
+    "kind": "event_series",
+    "url": "https://www.obbiotec.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.obbiotec.com.br/",
+    "identity_reviewed": true,
+    "review_note": "Calendário de 2026 publicado no site oficial.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Biotecnologia",
+      "OBBiotec"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-diplomacia-e-relacoes-internacionais",
+    "name": "Olimpíada Brasileira de Diplomacia e Relações Internacionais",
+    "organizer": "Ubique Júnior, Grupo Ubique e Instituto Recria.AI",
+    "kind": "event_series",
+    "url": "https://www.ubiquejunior.com.br/obdip",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.ubiquejunior.com.br/obdip",
+    "identity_reviewed": true,
+    "review_note": "Edital e aviso de inscrições encerradas constam na página atual do organizador.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Diplomacia e Relações Internacionais",
+      "OBDIP"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-economia",
+    "name": "Olimpíada Brasileira de Economia",
+    "organizer": "Equipe da Olimpíada Brasileira de Economia",
+    "kind": "event_series",
+    "url": "https://www.obecon.org.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.obecon.org.br/",
+    "identity_reviewed": true,
+    "review_note": "Calendário 2026 supera chamada genérica de inscrições abertas no mesmo site.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Economia",
+      "OBECON"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-educacao-financeira",
+    "name": "Olimpíada Brasileira de Educação Financeira",
+    "organizer": "Universidade Federal da Paraíba; coordenações regionais parceiras",
+    "kind": "event_series",
+    "url": "https://csa.uem.br/edfin",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://csa.uem.br/edfin",
+    "identity_reviewed": true,
+    "review_note": "UEM, parceira executora, publica cronograma da edição de 2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Educação Financeira",
+      "OBEF"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-fisica",
+    "name": "Olimpíada Brasileira de Física",
+    "organizer": "Sociedade Brasileira de Física",
+    "kind": "event_series",
+    "url": "https://www1.fisica.org.br/olimpiada/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www1.fisica.org.br/olimpiada/2025/index.php/coordenacao-nacional/16-obf/395-informes-sobre-a-edicao-2026-da-obf.html",
+    "identity_reviewed": true,
+    "review_note": "Informe oficial confirma edição e primeira fase em junho; inscrições iniciais já superadas.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Física",
+      "OBF"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-fisica-das-escolas-publicas",
+    "name": "Olimpíada Brasileira de Física das Escolas Públicas",
+    "organizer": "Sociedade Brasileira de Física",
+    "kind": "event_series",
+    "url": "https://www1.fisica.org.br/~obfep/inscricoes-2026/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www1.fisica.org.br/~obfep/inscricoes-2026/",
+    "identity_reviewed": true,
+    "review_note": "Página oficial de inscrições de 2026 fornece as duas datas.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Física das Escolas Públicas",
+      "OBFEP"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-fisiologia",
+    "name": "Olimpíada Brasileira de Fisiologia",
+    "organizer": "Sociedade Brasileira de Fisiologia",
+    "kind": "event_series",
+    "url": "https://obfis.cienciasecognicao.org/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://obfis.cienciasecognicao.org",
+    "identity_reviewed": true,
+    "review_note": "Cabeçalho oficial de 2026 fixa inscrições até 05/05; parte inferior mantém datas antigas.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Fisiologia",
+      "OBFis"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-foguetes",
+    "name": "Olimpíada Brasileira de Foguetes",
+    "organizer": "OBA Eventos Educacionais e Comissão OBA/OBAFOG",
+    "kind": "event_series",
+    "url": "https://site.oba.org.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://site.oba.org.br/",
+    "identity_reviewed": true,
+    "review_note": "Página oficial de inscrição informa prorrogação até 08/05/2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Foguetes",
+      "OBAFOG"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-geografia",
+    "name": "Olimpíada Brasileira de Geografia",
+    "organizer": "Comissão de professores de universidades, incluindo UNIFAL-MG e Unicamp",
+    "kind": "event_series",
+    "url": "https://obgeografia.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://obgeografia.com.br/",
+    "identity_reviewed": true,
+    "review_note": "Calendário oficial informa prorrogação até 20/07/2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Geografia",
+      "OBG"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-geopolitica",
+    "name": "Olimpíada Brasileira de GeoPolítica",
+    "organizer": "Seleta Educação",
+    "kind": "event_series",
+    "url": "https://www.seletaeducacao.com.br/obgp",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.seletaeducacao.com.br/obgp",
+    "identity_reviewed": true,
+    "review_note": "Detalhamento da edição fixa prazos 2026, apesar de erro de ano no resumo do site.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de GeoPolítica",
+      "OBGP"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-inovacao-ciencia-e-tecnologia",
+    "name": "Olimpíada Brasileira de Inovação, Ciência e Tecnologia",
+    "organizer": "EDUSPACE",
+    "kind": "event_series",
+    "url": "https://www.obict.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.obict.com.br/",
+    "identity_reviewed": true,
+    "review_note": "Regulamento na página oficial fixa inscrições até 05/04/2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Inovação, Ciência e Tecnologia",
+      "OBICT"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-investimento",
+    "name": "Olimpíada Brasileira de Investimento",
+    "organizer": "Equipe OBInvest, originada no CEFET-RJ",
+    "kind": "event_series",
+    "url": "https://obinvest.org/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://obinvest.org/",
+    "identity_reviewed": true,
+    "review_note": "Página atual anuncia novidades futuras; não comprova inscrições abertas.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Investimento",
+      "OBInvest"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-lingua-inglesa",
+    "name": "Olimpíada Brasileira de Língua Inglesa",
+    "organizer": "Seleta Educação",
+    "kind": "event_series",
+    "url": "https://www.seletaeducacao.com.br/obli",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.seletaeducacao.com.br/obli",
+    "identity_reviewed": true,
+    "review_note": "Calendário da edição 2026.2 publicado na página oficial.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Língua Inglesa",
+      "OBLI"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-linguistica",
+    "name": "Olimpíada Brasileira de Linguística",
+    "organizer": "Comissão Organizadora da OBL, com suporte do Instituto Vertere e ABRALIN",
+    "kind": "event_series",
+    "url": "https://obling.org/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://obling.org/",
+    "identity_reviewed": true,
+    "review_note": "Comunicado anuncia nova edição em fevereiro; torneio aberto de outubro não foi contado separadamente.",
+    "registration_status": "upcoming",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Linguística",
+      "OBL"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-matematica",
+    "name": "Olimpíada Brasileira de Matemática",
+    "organizer": "Associação Olimpíada Brasileira de Matemática / AOBM",
+    "kind": "event_series",
+    "url": "https://www.obm.org.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.obm.org.br/",
+    "identity_reviewed": true,
+    "review_note": "Notícia oficial convoca classificados para preencher formulário até 02/10.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Matemática",
+      "OBM"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-matematica-das-escolas-publicas",
+    "name": "Olimpíada Brasileira de Matemática das Escolas Públicas",
+    "organizer": "Instituto de Matemática Pura e Aplicada / IMPA",
+    "kind": "event_series",
+    "url": "https://www.obmep.org.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.obmep.org.br/",
+    "identity_reviewed": true,
+    "review_note": "Regulamento e calendário oficiais da 21ª OBMEP.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Matemática das Escolas Públicas",
+      "OBMEP"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-matematica-das-escolas-publicas-e-privadas-mirim",
+    "name": "Olimpíada Brasileira de Matemática das Escolas Públicas e Privadas Mirim",
+    "organizer": "Instituto de Matemática Pura e Aplicada / IMPA",
+    "kind": "event_series",
+    "url": "https://olimpiadamirim.obmep.org.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiadamirim.obmep.org.br/regulamento",
+    "identity_reviewed": true,
+    "review_note": "Regulamento oficial informa calendário; versão indexada apresenta variáveis de título sem renderizar.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Mirim",
+      "OBMEP",
+      "IMPA"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-matematica-financeira",
+    "name": "Olimpíada Brasileira de Matemática Financeira",
+    "organizer": "Seleta Educação",
+    "kind": "event_series",
+    "url": "https://www.seletaeducacao.com.br/obmf",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.seletaeducacao.com.br/obmf",
+    "identity_reviewed": true,
+    "review_note": "Calendário oficial da edição 2026.2.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Matemática Financeira",
+      "OBMF"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-neurociencia-brazilian-brain-bee",
+    "name": "Olimpíada Brasileira de Neurociência - Brazilian Brain Bee",
+    "organizer": "Organização Ciências e Cognição e Comitê Nacional da OBN",
+    "kind": "event_series",
+    "url": "https://brazilianbrainbee.org/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://brazilianbrainbee.org/",
+    "identity_reviewed": true,
+    "review_note": "Site publica resultado da OBN 2026; etapas locais não são novas olimpíadas.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Neurociência - Brazilian Brain Bee",
+      "OBN"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-neurociencias-para-graduandos",
+    "name": "Olimpíada Brasileira de Neurociências para Graduandos",
+    "organizer": "NuDCEN/IBCCF/UFRJ e Organização Ciências e Cognição",
+    "kind": "event_series",
+    "url": "https://obng.cienciasecognicao.org/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://obng.cienciasecognicao.org",
+    "identity_reviewed": true,
+    "review_note": "Página do organizador fornece período e programação 2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Neurociências para Graduandos",
+      "OBNG"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-quimica",
+    "name": "Olimpíada Brasileira de Química",
+    "organizer": "Associação Brasileira de Química, UFC e UFPI / PNOQ",
+    "kind": "event_series",
+    "url": "https://obquimica.org/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://obquimica.org/olimpiada/olimpiada-brasileira-de-quimica",
+    "identity_reviewed": true,
+    "review_note": "Portal publica regulamento e gabaritos de 2026; classificação nacional não é inscrição livre atual.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Química",
+      "OBQ"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-quimica-junior",
+    "name": "Olimpíada Brasileira de Química Junior",
+    "organizer": "Programa Nacional Olimpíadas de Química / ABQ, com coordenação UFC",
+    "kind": "event_series",
+    "url": "https://obquimica.org/olimpiada/olimpiada-brasileira-de-quimica-junior",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://obquimica.org/olimpiada/olimpiada-brasileira-de-quimica-junior",
+    "identity_reviewed": true,
+    "review_note": "Regulamento e gabaritos de 2026 confirmados no PNOQ; segunda fase já realizada em agosto.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Química Junior",
+      "OBQJr"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-raciocinio-logico",
+    "name": "Olimpíada Brasileira de Raciocínio Lógico",
+    "organizer": "Comissão Organizadora da OBRL",
+    "kind": "event_series",
+    "url": "https://www.obrl.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.obrl.com.br/",
+    "identity_reviewed": true,
+    "review_note": "Calendário oficial 2026 distingue inscrição, provas e resultados.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Raciocínio Lógico",
+      "OBRL"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-robotica",
+    "name": "Olimpíada Brasileira de Robótica",
+    "organizer": "Comitê Nacional da Olimpíada Brasileira de Robótica",
+    "kind": "event_series",
+    "url": "https://obr.robocup.org.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://obr.robocup.org.br/",
+    "identity_reviewed": true,
+    "review_note": "Organizador já publica resultados estaduais e etapa nacional de novembro de 2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Robótica",
+      "OBR"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-satelites",
+    "name": "Olimpíada Brasileira de Satélites",
+    "organizer": "Universidade Federal de São Carlos, iniciativa do MCTI",
+    "kind": "event_series",
+    "url": "https://wiki.obsat.org.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://wiki.obsat.org.br/books/modalidade-teorica/page/cronograma",
+    "identity_reviewed": true,
+    "review_note": "Wiki oficial fornece cronograma da modalidade teórica de 2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Satélites",
+      "OBSAT"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-tecnologia",
+    "name": "Olimpíada Brasileira de Tecnologia",
+    "organizer": "Instituto Alpha Lumen, em parceria com MIT Brazil",
+    "kind": "event_series",
+    "url": "https://www.alphalumen.org.br/olimpiada-brasileira-de-tecnologia-obt/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.alphalumen.org.br/olimpiada-brasileira-de-tecnologia-obt/",
+    "identity_reviewed": true,
+    "review_note": "Página do organizador comprova identidade; corpo do texto continua na edição inaugural.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Tecnologia",
+      "OBT"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-camaleao-da-quimica",
+    "name": "Olimpíada Camaleão da Química",
+    "organizer": "Equipe OCQ, fundada por estudantes Samuel e Breno do IFBA",
+    "kind": "event_series",
+    "url": "https://sites.google.com/view/olimpiadacamaleao",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://sites.google.com/view/olimpiadacamaleao",
+    "identity_reviewed": true,
+    "review_note": "Site da competição confirma origem e identidade, sem janela 2026 verificada.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Camaleão da Química",
+      "OCQ"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-cearense-de-informatica",
+    "name": "Olimpíada Cearense de Informática",
+    "organizer": "PET Computação e PET Teleinformática da UFC",
+    "kind": "event_series",
+    "url": "https://oci.dc.ufc.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://oci.dc.ufc.br/",
+    "identity_reviewed": true,
+    "review_note": "Página da UFC confirma identidade e organizadores; edição/prazos atuais não validados.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Cearense de Informática",
+      "OCI"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-cientifica-ecoinovar",
+    "name": "Olimpíada Científica Ecoinovar",
+    "organizer": "Universidade Federal de Santa Maria / Ecoinovar",
+    "kind": "event_series",
+    "url": "https://olimpiada.ecoinovar.com/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiada.ecoinovar.com/",
+    "identity_reviewed": true,
+    "review_note": "Cronograma oficial da segunda edição publicado no portal Ecoinovar.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Científica Ecoinovar",
+      "Econoivar"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-de-ciencias-humanas-do-estado-do-ceara",
+    "name": "Olimpíada de Ciências Humanas do Estado do Ceará",
+    "organizer": "Coordenação Geral de Olimpíadas do Conhecimento / IFCE",
+    "kind": "event_series",
+    "url": "https://oche.ifce.edu.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://oche.ifce.edu.br/",
+    "identity_reviewed": true,
+    "review_note": "FAQ oficial fixa inscrições até 04/09/2026 às 17h.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada de Ciências Humanas do Estado do Ceará",
+      "OCHE"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-de-espanhol",
+    "name": "Olimpíada de Espanhol",
+    "organizer": "Instituto Philotimia e Embaixada da Espanha no Brasil",
+    "kind": "event_series",
+    "url": "https://olimpiadadeespanhol.com/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiadadeespanhol.com/storage/regulations/regulamento-olimpiada-de-espanhol-3a-edicao1783436018.pdf",
+    "identity_reviewed": true,
+    "review_note": "Regulamento encerra inscrições em 23/10, apesar de banner aberto.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada de Espanhol"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-de-ingles",
+    "name": "Olimpíada de inglês",
+    "organizer": "Instituto Philotimia",
+    "kind": "event_series",
+    "url": "https://oingles.com/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://oingles.com/storage/regulations/regulamento-olimpiada-de-ingles-3a-edicao1783436003.pdf",
+    "identity_reviewed": true,
+    "review_note": "Regulamento encerra inscrições em 23/10, apesar de banner aberto.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada de inglês"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-de-literatura",
+    "name": "Olimpíada de Literatura",
+    "organizer": "Centro Brasileiro de Olimpíadas Científicas",
+    "kind": "event_series",
+    "url": "https://www.olimpiadadeliteratura.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 75,
+    "interval_hours": 24,
+    "evidence_url": "https://www.olimpiadadeliteratura.com.br/",
+    "identity_reviewed": true,
+    "review_note": "Página oficial lista quatro provas e inscrição até 30/10/2026 às 23h59.",
+    "registration_status": "open",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada de Literatura"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-de-matematica-da-unicamp",
+    "name": "Olimpíada de Matemática da Unicamp",
+    "organizer": "Universidade Estadual de Campinas / Unicamp",
+    "kind": "event_series",
+    "url": "https://www.olimpiada.ime.unicamp.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.olimpiada.ime.unicamp.br/",
+    "identity_reviewed": true,
+    "review_note": "Página atual confirma alcance a alunos de todo o Brasil; calendário visível não explicita ano.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada de Matemática da Unicamp",
+      "OMU"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-de-matematica-das-instituicoes-federais",
+    "name": "Olimpíada de Matemática das Instituições Federais",
+    "organizer": "Comissão Organizadora da OMIF / Rede Federal",
+    "kind": "event_series",
+    "url": "https://omif.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://omif.com.br",
+    "identity_reviewed": true,
+    "review_note": "Organizador publica prazo de inscrição de campi; convite atual é para evento da segunda fase.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada de Matemática das Instituições Federais",
+      "OMIF"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-de-matematica-mandacaru",
+    "name": "Olimpíada de Matemática Mandacaru",
+    "organizer": "Equipe Mandacaru",
+    "kind": "event_series",
+    "url": "https://olimpiadamandacaru.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiadamandacaru.com.br/",
+    "identity_reviewed": true,
+    "review_note": "Página de resultados e regulamento vigentes da edição 2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Mandacaru"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-de-portugues",
+    "name": "Olimpíada de Português",
+    "organizer": "Instituto Philotimia",
+    "kind": "event_series",
+    "url": "https://olimpiadadeportugues.org/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiadadeportugues.org/",
+    "identity_reviewed": true,
+    "review_note": "Site já disponibiliza o resultado da OP 2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada de Português"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-de-redacao-da-rede-estadual-de-minas-gerais",
+    "name": "Olimpíada de Redação da Rede Estadual de Minas Gerais",
+    "organizer": "Secretaria de Estado de Educação de Minas Gerais",
+    "kind": "event_series",
+    "url": "https://www.educacao.mg.gov.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.educacao.mg.gov.br/wp-content/uploads/2025/06/SEI_114116013_Edital_01-1.pdf",
+    "identity_reviewed": true,
+    "review_note": "Edital institucional comprova identidade; não comprova inscrições ou edição 2026. O monitor é o portal geral da instituição organizadora, pois a edição atual não foi confirmada; não exigir a sigla da olimpíada na página inicial.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Secretaria de Estado de Educação",
+      "Educação MG"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-de-tecnologia-e-inovacao-do-instituto-polymathos",
+    "name": "Olimpíada de Tecnologia e Inovação do Instituto Polymathos",
+    "organizer": "Instituto Polymathos",
+    "kind": "event_series",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScs8gOi2yLnGGBNXPbQGc7YVrOXuUlb8-9dEmtffn7K33NGCA/closedform",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://docs.google.com/forms/d/e/1FAIpQLScs8gOi2yLnGGBNXPbQGc7YVrOXuUlb8-9dEmtffn7K33NGCA/closedform",
+    "identity_reviewed": false,
+    "review_note": "Formulário não é monitor institucional estável",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada de Tecnologia e Inovação do Instituto Polymathos",
+      "OTI-Polymathos"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-do-bem-publico",
+    "name": "Olimpíada do Bem Público",
+    "organizer": "FGV EPPG",
+    "kind": "event_series",
+    "url": "https://eppg.fgv.br/olimpiada-do-bem-publico",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://eppg.fgv.br/sites/default/files/2026-04/guia_6_obp_28.04.pdf",
+    "identity_reviewed": true,
+    "review_note": "Guia oficial de 2026 fixa prazo; página oficial já lista medalhistas.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada do Bem Público",
+      "OBP"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-do-conhecimento-do-senai",
+    "name": "Olimpíada do Conhecimento do SENAI",
+    "organizer": "SENAI",
+    "kind": "event_series",
+    "url": "https://olimpiada.rn.senai.br/",
+    "topics": [
+      "competicoes",
+      "tecnologia"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiada.rn.senai.br/",
+    "identity_reviewed": true,
+    "review_note": "Competição técnica SENAI: acompanhar como competição; permanece fora da contagem de olimpíadas acadêmicas. Portal do próprio organizador; nenhuma janela atual de inscrição foi confirmada.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "SENAI"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-do-conhecimento-juridico",
+    "name": "Olimpíada do Conhecimento Jurídico",
+    "organizer": "Academia Brasileira de Direito Civil / ABDC",
+    "kind": "event_series",
+    "url": "https://www.abdireitocivil.com.br/xii-olimpiada-do-conhecimento-juridico-abdc-2025/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.abdireitocivil.com.br/xii-olimpiada-do-conhecimento-juridico-abdc-2025/",
+    "identity_reviewed": true,
+    "review_note": "Organizador mantém página 2025; não usar o convite antigo como abertura atual.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada do Conhecimento Jurídico",
+      "ABDC"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-do-oceano",
+    "name": "Olimpíada do Oceano",
+    "organizer": "Programa Maré de Ciência, Unifesp e UFPA",
+    "kind": "event_series",
+    "url": "https://olimpiada.maredeciencia.eco.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 75,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiada.maredeciencia.eco.br",
+    "identity_reviewed": true,
+    "review_note": "Modalidades Educadores que Inspiram e Desafio WOA têm prazos vigentes.",
+    "registration_status": "open",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada do Oceano"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-do-tesouro-direto-de-educacao-financeira",
+    "name": "Olimpíada do Tesouro Direto de Educação Financeira",
+    "organizer": "Programa Tesouro Direto",
+    "kind": "event_series",
+    "url": "https://www.olitef.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.olitef.com.br/",
+    "identity_reviewed": true,
+    "review_note": "Calendário oficial de 2026 encerra inscrições em setembro.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada do Tesouro Direto de Educação Financeira",
+      "OLITEF"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-estadual-em-historia-de-sergipe",
+    "name": "Olimpíada Estadual em História de Sergipe",
+    "organizer": "Adinagruber da Conceição Lima / PROFHISTÓRIA-UFS, com Seduc-SE e Fapitec",
+    "kind": "event_series",
+    "url": "https://seduc.se.gov.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://seduc.se.gov.br/estudantes-e-educadores-celebram-historia-sergipana-na-1a-olimpiada-estadual-de-historia/",
+    "identity_reviewed": true,
+    "review_note": "Secretaria estadual e dissertação da idealizadora comprovam identidade e organização; edição atual não confirmada.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Estadual em História de Sergipe",
+      "OEHSE"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-itabirana-de-matematica",
+    "name": "Olimpíada Itabirana de Matemática",
+    "organizer": "Equipe Gestora da Olimpíada Itabirana de Matemática",
+    "kind": "event_series",
+    "url": "https://olimpiadaitabirana.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiadaitabirana.com.br/",
+    "identity_reviewed": true,
+    "review_note": "Cronograma oficial prorroga inscrição de alunos até 08/06; escolas até 25/05.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Itabirana de Matemática",
+      "OIM"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-matematicos-por-diversao",
+    "name": "Olimpíada Matemáticos por Diversão",
+    "organizer": "Professor Davi Lopes / Matemático por Diversão",
+    "kind": "event_series",
+    "url": "https://matematicopordiversao.wordpress.com/5a-olimpiada-matematicos-por-diversao-ompd-2024/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://matematicopordiversao.wordpress.com/5a-olimpiada-matematicos-por-diversao-ompd-2024/",
+    "identity_reviewed": true,
+    "review_note": "Blog oficial do criador comprova identidade; inscrições 2026 não confirmadas.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Matemáticos por Diversão",
+      "OMpD"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-nacional-de-astronomia",
+    "name": "Olimpíada Nacional de Astronomia",
+    "organizer": "Instituto Saber da Ciência",
+    "kind": "event_series",
+    "url": "https://www.saberdaciencia.org/ona",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.saberdaciencia.org/ona",
+    "identity_reviewed": true,
+    "review_note": "Regulamento de 2026 consta na própria página do organizador.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional de Astronomia",
+      "ONA"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-nacional-de-ciencias",
+    "name": "Olimpíada Nacional de Ciências",
+    "organizer": "SBF, ABQ, Instituto Butantan, SAB e Unicamp",
+    "kind": "event_series",
+    "url": "https://www.onciencias.org/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.onciencias.org/",
+    "identity_reviewed": true,
+    "review_note": "Página oficial divulga resultado definitivo e certificados em outubro de 2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional de Ciências",
+      "ONC"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-nacional-de-eficiencia-energetica",
+    "name": "Olimpíada Nacional de Eficiência Energética",
+    "organizer": "ANEEL e distribuidoras de energia parceiras",
+    "kind": "event_series",
+    "url": "https://onee.org.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://onee.org.br/",
+    "identity_reviewed": true,
+    "review_note": "Site já divulga resultados da ONEE 2026 e fases realizadas em setembro.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional de Eficiência Energética",
+      "ONEE"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-nacional-de-filosofia",
+    "name": "Olimpíada Nacional de Filosofia",
+    "organizer": "Universidade Federal de Santa Maria e instituições parceiras",
+    "kind": "event_series",
+    "url": "https://onfilbr.org/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://onfilbr.org/",
+    "identity_reviewed": true,
+    "review_note": "Site confirma ONFIL 2026 e organização; janela exata não validada.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional de Filosofia",
+      "ONFil"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-nacional-de-fisica",
+    "name": "Olimpíada Nacional de Física",
+    "organizer": "Instituto Saber da Ciência",
+    "kind": "event_series",
+    "url": "https://www.saberdaciencia.org/onf",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.saberdaciencia.org/onf",
+    "identity_reviewed": true,
+    "review_note": "Regulamento de 2026 consta na própria página do organizador.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional de Física",
+      "ONF"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-nacional-de-ilustracao-cientifica",
+    "name": "Olimpíada Nacional de Ilustração Científica",
+    "organizer": "Universidade Federal de Viçosa, Campus Florestal",
+    "kind": "event_series",
+    "url": "https://ilustraciencia.ufv.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://ilustraciencia.ufv.br/",
+    "identity_reviewed": true,
+    "review_note": "Portal atual divulga resultado final de 22/10/2026 e certificados de 28/10/2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional de Ilustração Científica",
+      "ONIC"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-nacional-de-inteligencia-artificial",
+    "name": "Olimpíada Nacional de Inteligência Artificial",
+    "organizer": "EDUSPACE, H2IA/UFPel e Instituto IA/LNCC",
+    "kind": "event_series",
+    "url": "https://www.oniabrasil.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.oniabrasil.com.br/",
+    "identity_reviewed": true,
+    "review_note": "Página vigente fixa primeira fase em setembro/outubro de 2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional de Inteligência Artificial",
+      "ONIA"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-nacional-de-matematica",
+    "name": "Olimpíada Nacional de Matemática",
+    "organizer": "Instituto Saber da Ciência",
+    "kind": "event_series",
+    "url": "https://www.saberdaciencia.org/onm",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.saberdaciencia.org/onm",
+    "identity_reviewed": true,
+    "review_note": "Regulamento de 2026 consta na própria página do organizador.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional de Matemática",
+      "ONM"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-nacional-de-nanotecnologia",
+    "name": "Olimpíada Nacional de Nanotecnologia",
+    "organizer": "Equipe ONANO; realização identificada no site pela marca Medalhei",
+    "kind": "event_series",
+    "url": "https://www.onanobrasil.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.onanobrasil.com.br",
+    "identity_reviewed": true,
+    "review_note": "Página oficial anuncia terceira edição encerrada e resultados.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional de Nanotecnologia",
+      "ONANO"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-nacional-feminina-de-quimica",
+    "name": "Olimpíada Nacional Feminina de Química",
+    "organizer": "Programa Nacional Olimpíadas de Química / ABQ",
+    "kind": "event_series",
+    "url": "https://quimeninas.obquimica.org/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://quimeninas.obquimica.org/",
+    "identity_reviewed": true,
+    "review_note": "Portal PNOQ publica gabarito final Quimeninas 2026 em 28/10/2026.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional Feminina de Química",
+      "Quimeninas"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-nacional-sobre-ambientes-marinhos-e-polares",
+    "name": "Olimpíada Nacional Sobre Ambientes Marinhos e Polares",
+    "organizer": "Universidade Estadual do Rio Grande do Sul / Uergs",
+    "kind": "event_series",
+    "url": "https://www.uergs.edu.br/4-polaron",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.uergs.edu.br/4-polaron",
+    "identity_reviewed": true,
+    "review_note": "Página da organizadora ainda descreve provas e prazos de 2025.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional Sobre Ambientes Marinhos e Polares",
+      "PolarOn"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-paulista-de-matematica",
+    "name": "Olimpíada Paulista de Matemática",
+    "organizer": "Comissão Organizadora da Olimpíada Paulista de Matemática",
+    "kind": "event_series",
+    "url": "https://www.opm.mat.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.opm.mat.br/opm2025/conteudo",
+    "identity_reviewed": true,
+    "review_note": "AOBM reconhece competição própria; site oficial apresenta falha de acesso e prova atual não validada.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Paulista de Matemática",
+      "OPM"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-pernambucana-de-astronomia-e-astronautica",
+    "name": "Olimpíada Pernambucana de Astronomia e Astronáutica",
+    "organizer": "Instituto Federal de Pernambuco, Campus Recife",
+    "kind": "event_series",
+    "url": "https://sites.google.com/recife.ifpe.edu.br/opa-olimpadaastronomia/p%C3%A1gina-inicial",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://sites.google.com/recife.ifpe.edu.br/opa-olimpadaastronomia/p%C3%A1gina-inicial?authuser=7",
+    "identity_reviewed": true,
+    "review_note": "Organizador informa que não realizará OPA em 2026 por reestruturação.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Pernambucana de Astronomia e Astronáutica",
+      "OPA"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-pernambucana-de-fisica",
+    "name": "Olimpíada Pernambucana de Física",
+    "organizer": "Instituto Federal de Pernambuco, Campus Recife",
+    "kind": "event_series",
+    "url": "https://sites.google.com/recife.ifpe.edu.br/opef/p%C3%A1gina-inicial",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://sites.google.com/recife.ifpe.edu.br/opef/p%C3%A1gina-inicial?authuser=7",
+    "identity_reviewed": true,
+    "review_note": "Organizador informa que não realizará OPEF em 2026 por reestruturação.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Pernambucana de Física",
+      "OPEF"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-pernambucana-de-foguetes",
+    "name": "Olimpíada Pernambucana de Foguetes",
+    "organizer": "Instituto Federal de Pernambuco, Campus Recife",
+    "kind": "event_series",
+    "url": "https://sites.google.com/recife.ifpe.edu.br/opefog-ifpe-olimpiada-foguetes/p%C3%A1gina-inicial",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://sites.google.com/recife.ifpe.edu.br/opefog-ifpe-olimpiada-foguetes/p%C3%A1gina-inicial?authuser=6",
+    "identity_reviewed": true,
+    "review_note": "Organizador informa que não realizará OPEFOG em 2026 por reestruturação.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Pernambucana de Foguetes",
+      "OPEFOG"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-sertaneja-de-matematica",
+    "name": "Olimpíada Sertaneja de Matemática",
+    "organizer": "Organizador não confirmado",
+    "kind": "event_series",
+    "url": "https://www.osmsertao.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.osmsertao.com.br",
+    "identity_reviewed": false,
+    "review_note": "Organizador não identificado",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Sertaneja de Matemática",
+      "OSM"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-starboard-science-de-matematica",
+    "name": "Olimpíada Starboard Science de Matemática",
+    "organizer": "Instituto Dream Art Science, com Projeto CQD",
+    "kind": "event_series",
+    "url": "https://projetocqd.com.br/ossm2025/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://projetocqd.com.br/ossm2025/",
+    "identity_reviewed": true,
+    "review_note": "Organizador publica referência à OSSM 2026; prazos atuais não foram validados.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Starboard Science de Matemática",
+      "OSSM"
+    ]
+  },
+  {
+    "id": "exp-olimpiada-virtual-de-fisica",
+    "name": "Olimpíada Virtual de Física",
+    "organizer": "Colégio Villa Lobos",
+    "kind": "event_series",
+    "url": "https://www.villaloboseducacao.com.br/olimpiada-virtual-de-fisica-2024-ovf/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.villaloboseducacao.com.br/olimpiada-virtual-de-fisica-2024-ovf/",
+    "identity_reviewed": true,
+    "review_note": "Página do próprio colégio informa regras de 2024, insuficientes para inscrição 2026.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Virtual de Física",
+      "OVF"
+    ]
+  },
+  {
+    "id": "exp-onhb",
+    "name": "Olimpíada Nacional em História do Brasil",
+    "organizer": "Universidade Estadual de Campinas / Unicamp",
+    "kind": "event_series",
+    "url": "https://www.olimpiadadehistoria.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://www.olimpiadadehistoria.com.br/noticias/ler/394",
+    "identity_reviewed": true,
+    "review_note": "Comunicado oficial 002/2026 fixa inscrição e início da edição.",
+    "registration_status": "closed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Nacional em História do Brasil",
+      "ONHB"
+    ]
+  },
+  {
+    "id": "exp-vitalis-olimpiada-de-medicina",
+    "name": "Olimpíada Brasileira de Medicina",
+    "organizer": "Instituto Vertere",
+    "kind": "event_series",
+    "url": "https://olimpiadademedicina.org/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 50,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpiadademedicina.org/",
+    "identity_reviewed": true,
+    "review_note": "Site oficial confirma Vitalis, mas apresenta regulamento 2025; não prova abertura 2026.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Medicina",
+      "Vitalis"
+    ]
+  },
+  {
+    "id": "exp-obvc",
+    "name": "Olimpíada Brasileira de Vibe Coding",
+    "organizer": "Organização da OBVC",
+    "kind": "event_series",
+    "url": "https://obvc.com.br/",
+    "topics": [
+      "competicoes",
+      "olimpiada"
+    ],
+    "priority": 75,
+    "interval_hours": 24,
+    "evidence_url": "https://obvc.com.br/",
+    "identity_reviewed": true,
+    "review_note": "Inscrição até 31/10; entrega de projeto em 01/11 é outro prazo. Já existe no Radar: obvc-2026.",
+    "registration_status": "open",
+    "scientific_olympiad": true,
+    "identity_hints": [
+      "Olimpíada Brasileira de Vibe Coding",
+      "OBVC"
+    ]
+  },
+  {
+    "id": "exp-luma-sp",
+    "name": "Luma — descoberta São Paulo",
+    "organizer": "Luma",
+    "kind": "event_series",
+    "url": "https://luma.com/saopaulo",
+    "topics": [
+      "eventos",
+      "tecnologia"
+    ],
+    "priority": 55,
+    "interval_hours": 24,
+    "evidence_url": "https://luma.com/saopaulo",
+    "identity_reviewed": true,
+    "review_note": "Agenda pública; cada evento e organizador exigem verificação própria. Não concede autoridade a todo luma.com.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "São Paulo"
+    ]
+  },
+  {
+    "id": "exp-luma-rio",
+    "name": "Luma — descoberta Rio de Janeiro",
+    "organizer": "Luma",
+    "kind": "event_series",
+    "url": "https://luma.com/rio",
+    "topics": [
+      "eventos",
+      "tecnologia"
+    ],
+    "priority": 55,
+    "interval_hours": 24,
+    "evidence_url": "https://luma.com/rio",
+    "identity_reviewed": true,
+    "review_note": "Agenda pública; excluir eventos já iniciados e sem relação com o portfólio.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "Rio de Janeiro"
+    ]
+  },
+  {
+    "id": "exp-hackbr",
+    "name": "Hack Brasil",
+    "organizer": "Hack Brasil",
+    "kind": "event_series",
+    "url": "https://hackbrasil.com/",
+    "topics": [
+      "competicoes",
+      "eventos",
+      "tecnologia"
+    ],
+    "priority": 55,
+    "interval_hours": 24,
+    "evidence_url": "https://hackbrasil.com/",
+    "identity_reviewed": true,
+    "review_note": "Acompanhar novas edições; inscrição não presumida a partir da existência da série.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "Hack Brasil"
+    ]
+  },
+  {
+    "id": "exp-unisoma",
+    "name": "Desafio UniSoma",
+    "organizer": "UniSoma",
+    "kind": "event_series",
+    "url": "https://unisoma.com.br/desafio/",
+    "topics": [
+      "competicoes",
+      "eventos",
+      "tecnologia"
+    ],
+    "priority": 55,
+    "interval_hours": 24,
+    "evidence_url": "https://unisoma.com.br/desafio/",
+    "identity_reviewed": true,
+    "review_note": "Acompanhar novas edições; inscrição não presumida a partir da existência da série.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "Desafio UniSoma"
+    ]
+  },
+  {
+    "id": "exp-womakers",
+    "name": "Agenda WoMakersCode",
+    "organizer": "WoMakersCode",
+    "kind": "event_series",
+    "url": "https://luma.com/womakerscode",
+    "topics": [
+      "competicoes",
+      "eventos",
+      "tecnologia"
+    ],
+    "priority": 55,
+    "interval_hours": 24,
+    "evidence_url": "https://luma.com/womakerscode",
+    "identity_reviewed": true,
+    "review_note": "Acompanhar novas edições; inscrição não presumida a partir da existência da série.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "WoMakersCode"
+    ]
+  },
+  {
+    "id": "exp-gama",
+    "name": "Agenda Gama House",
+    "organizer": "Gama House",
+    "kind": "event_series",
+    "url": "https://luma.com/gamahouse",
+    "topics": [
+      "competicoes",
+      "eventos",
+      "tecnologia"
+    ],
+    "priority": 55,
+    "interval_hours": 24,
+    "evidence_url": "https://luma.com/gamahouse",
+    "identity_reviewed": true,
+    "review_note": "Acompanhar novas edições; inscrição não presumida a partir da existência da série.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "GAMA HOUSE"
+    ]
+  },
+  {
+    "id": "exp-founders",
+    "name": "Agenda Founders Live",
+    "organizer": "Founders Live",
+    "kind": "event_series",
+    "url": "https://luma.com/founders-live",
+    "topics": [
+      "competicoes",
+      "eventos",
+      "tecnologia"
+    ],
+    "priority": 55,
+    "interval_hours": 24,
+    "evidence_url": "https://luma.com/founders-live",
+    "identity_reviewed": true,
+    "review_note": "Acompanhar novas edições; inscrição não presumida a partir da existência da série.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "Founders Live"
+    ]
+  },
+  {
+    "id": "exp-builders",
+    "name": "Agenda 1565.io",
+    "organizer": "1565.io",
+    "kind": "event_series",
+    "url": "https://luma.com/1565",
+    "topics": [
+      "competicoes",
+      "eventos",
+      "tecnologia"
+    ],
+    "priority": 55,
+    "interval_hours": 24,
+    "evidence_url": "https://luma.com/1565",
+    "identity_reviewed": true,
+    "review_note": "Acompanhar novas edições; inscrição não presumida a partir da existência da série.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "1565.io"
+    ]
+  },
+  {
+    "id": "exp-obapo-2027-watch",
+    "name": "OBAPO 2027 — inscrições e renovação",
+    "organizer": "Olimpikei",
+    "kind": "event_series",
+    "url": "https://olimpikei.com.br/obapo-2027-renovacao/",
+    "topics": [
+      "competicoes"
+    ],
+    "priority": 70,
+    "interval_hours": 24,
+    "evidence_url": "https://olimpikei.com.br/obapo-2027-renovacao/",
+    "identity_reviewed": true,
+    "review_note": "Edição identificada em página do próprio organizador; fonte de publicação tem validação separada.",
+    "registration_status": "open",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "OBAPO 2027"
+    ]
+  },
+  {
+    "id": "exp-pucpr-ia-2026-watch",
+    "name": "Hackathon de IA na Educação — PUCPR 2026",
+    "organizer": "Pontifícia Universidade Católica do Paraná",
+    "kind": "event_series",
+    "url": "https://www.pucpr.br/noticias/destaque/pucpr-abre-inscricoes-para-hackathon-de-inteligencia-artificial-em-parceria-com-o-google/",
+    "topics": [
+      "competicoes",
+      "eventos"
+    ],
+    "priority": 70,
+    "interval_hours": 24,
+    "evidence_url": "https://www.pucpr.br/noticias/destaque/pucpr-abre-inscricoes-para-hackathon-de-inteligencia-artificial-em-parceria-com-o-google/",
+    "identity_reviewed": true,
+    "review_note": "Edição identificada em página do próprio organizador; fonte de publicação tem validação separada.",
+    "registration_status": "open",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "PUCPR"
+    ]
+  },
+  {
+    "id": "exp-ufms-cidada-2026-watch",
+    "name": "2º Hackathon do Núcleo de Formação Cidadã — UFMS",
+    "organizer": "Universidade Federal de Mato Grosso do Sul",
+    "kind": "event_series",
+    "url": "https://www.ufms.br/inscricoes-para-o-2o-hackathon-do-nucleo-de-formacao-cidada-vao-ate-9-de-novembro/",
+    "topics": [
+      "competicoes",
+      "eventos"
+    ],
+    "priority": 70,
+    "interval_hours": 24,
+    "evidence_url": "https://www.ufms.br/inscricoes-para-o-2o-hackathon-do-nucleo-de-formacao-cidada-vao-ate-9-de-novembro/",
+    "identity_reviewed": true,
+    "review_note": "Edição identificada em página do próprio organizador; fonte de publicação tem validação separada.",
+    "registration_status": "open",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "Núcleo de Formação Cidadã"
+    ]
+  },
+  {
+    "id": "exp-pmi-impacto-2026-watch",
+    "name": "Hackathon Impacto Social, IA e Gestão de Projetos 2026",
+    "organizer": "PMI-DF e capítulos parceiros do PMI Brasil",
+    "kind": "event_series",
+    "url": "https://www.sympla.com.br/evento-online/lgc/3618075",
+    "topics": [
+      "competicoes",
+      "eventos"
+    ],
+    "priority": 70,
+    "interval_hours": 24,
+    "evidence_url": "https://www.sympla.com.br/evento-online/lgc/3618075",
+    "identity_reviewed": true,
+    "review_note": "Edição identificada em página do próprio organizador; fonte de publicação tem validação separada.",
+    "registration_status": "open",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "PMI-DF"
+    ]
+  },
+  {
+    "id": "exp-wolfram",
+    "name": "Hackathon Wolfram Brasil",
+    "organizer": "Wolfram Research",
+    "kind": "event_series",
+    "url": "https://www.wolfram.com/events/user-conference-brazil/2026/hackathon/",
+    "topics": [
+      "competicoes",
+      "eventos"
+    ],
+    "priority": 60,
+    "interval_hours": 24,
+    "evidence_url": "https://www.wolfram.com/events/user-conference-brazil/2026/hackathon/",
+    "identity_reviewed": true,
+    "review_note": "Entrega de projetos em 16/11 não prova prazo de inscrição. Agenda tem divergência de dia da semana; não publicar prazo inferido.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "Wolfram"
+    ]
+  },
+  {
+    "id": "exp-cianorte",
+    "name": "Hackathon GovTech Cianorte",
+    "organizer": "Prefeitura de Cianorte",
+    "kind": "event_series",
+    "url": "https://www.cianorte.pr.gov.br/noticiasView/11190_Inscricoes-abertas-para-o-Hackathon-GovTech-2026-.html",
+    "topics": [
+      "competicoes",
+      "eventos"
+    ],
+    "priority": 60,
+    "interval_hours": 24,
+    "evidence_url": "https://www.cianorte.pr.gov.br/noticiasView/11190_Inscricoes-abertas-para-o-Hackathon-GovTech-2026-.html",
+    "identity_reviewed": true,
+    "review_note": "Inscrição até 03/11 segundo notícia oficial indexada. Acesso direto falhou; aguardar confirmação pelo coletor.",
+    "registration_status": "unconfirmed",
+    "scientific_olympiad": false,
+    "identity_hints": [
+      "GovTech"
+    ]
+  }
+]
