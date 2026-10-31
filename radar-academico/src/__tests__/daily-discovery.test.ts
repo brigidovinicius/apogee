@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import type { OfficialSource } from "@/lib/ingestion/types";
 import type { DiscoveryTarget } from "@/lib/discovery/watchlist";
 
-vi.mock("@/lib/discovery/watchlist", () => ({ claimDueDiscoveryTargets: vi.fn(), completeDiscoveryTarget: vi.fn(), saveDiscoveryLeads: vi.fn() }));
+vi.mock("@/lib/discovery/watchlist", () => ({ claimDueDiscoveryTargets: vi.fn(), completeDiscoveryTarget: vi.fn(), saveDiscoveryLeads: vi.fn(), recordDiscoveryObservation: vi.fn(), recordDiscoveryObservationChanged: vi.fn() }));
 vi.mock("@/lib/ingestion/official-source-registry", () => ({ loadActiveOfficialSources: vi.fn() }));
 vi.mock("@/lib/ingestion/fetch-source", () => ({ fetchOfficialResource: vi.fn() }));
 
@@ -73,4 +73,19 @@ it("does not fill the review queue with navigation while retaining concrete call
   expect(discoveryLinks(html,target,[])).toEqual([expect.objectContaining({
     url:"https://events.example.org/chamadas/produtividade-33-2026",
   })]);
+});
+
+it("discovers future academic Luma events from public JSON-LD even when card anchors are blank", () => {
+ const html = '<script type="application/ld+json">'+JSON.stringify({"@type":"ItemList",itemListElement:[
+  {"@type":"ListItem",item:{"@type":"Event",url:"https://luma.com/new-builders",name:"Builders Day",startDate:"2099-11-01T09:00:00-03:00",eventStatus:"https://schema.org/EventScheduled"}},
+  {"@type":"ListItem",item:{"@type":"Event",url:"https://luma.com/past-hack",name:"Hackathon anterior",startDate:"2020-11-01T09:00:00-03:00",eventStatus:"https://schema.org/EventScheduled"}},
+  {"@type":"ListItem",item:{"@type":"Event",url:"https://127.0.0.1/private",name:"Hackathon inseguro",startDate:"2099-11-01T09:00:00-03:00",eventStatus:"https://schema.org/EventScheduled"}}
+ ]})+'</script>';
+ expect(discoveryLinks(html,target,[])).toEqual([expect.objectContaining({url:"https://luma.com/new-builders"})]);
+ expect(discoveryLinks('<a href="/edicao-2027">Olimpíada de Astronomia 2027</a>',target,[])).toHaveLength(1);
+});
+
+it("retains a future concrete HTML link when optional JSON-LD status is missing", () => {
+ const html='<a href="https://luma.com/future-hack">Hackathon futuro</a><script type="application/ld+json">'+JSON.stringify({'@type':'Event',url:'https://luma.com/future-hack',name:'Hackathon futuro',startDate:'2099-11-01T09:00:00-03:00'})+'</script>';
+ expect(discoveryLinks(html,target,[])).toHaveLength(1);
 });

@@ -10,6 +10,13 @@ const evgRobotsCache = new BoundedCache<ReturnType<typeof robotsParser>>(8, 1024
 const lastRequestByDomain = new BoundedCache<number>(256, 256, 60_000);
 const responseCache = new BoundedCache<{ etag?: string; modified?: string; contentType: string; body: Buffer }>(32, 32 * 1024 * 1024, 15 * 60_000);
 export const MAX_REDIRECTS = 5;
+// These exact discovery homepages were audited on 30/10/2026: they send gzip
+// despite Accept-Encoding: identity. Encoded AND decoded byte limits still apply.
+const expansionGzipHosts: Record<string, string> = {
+  "exp-olimpiada-brasileira-de-fisiologia": "obfis.cienciasecognicao.org",
+  "exp-olimpiada-brasileira-de-neurociencia-brazilian-brain-bee": "brazilianbrainbee.org",
+  "exp-olimpiada-brasileira-de-neurociencias-para-graduandos": "obng.cienciasecognicao.org",
+};
 
 export function boundedInteger(value: string | undefined, fallback: number, min: number, max: number) {
   if (value === undefined) return fallback;
@@ -41,12 +48,14 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
       parsed.hostname === "dae.ufsc.br" && parsed.pathname === "/admissao-por-transferencias-e-retornos-edital/" ||
       parsed.hostname === "noticias.ufsc.br" && parsed.pathname === "/2026/10/ufsc-lanca-edital-de-transferencias-e-retornos-com-5-139-vagas/"
     );
+    const allowGzip = ufscGzipCompatibility ||
+      expansionGzipHosts[source.id] === parsed.hostname && parsed.pathname === "/";
     const robotsUrl = `${parsed.origin}/robots.txt`;
     const robotsKey = source.id === "evg-enap-open-courses" && parsed.hostname === "www.escolavirtual.gov.br" ? `${robotsUrl}|${agent}` : null;
     let robots = robotsKey ? evgRobotsCache.get(robotsKey) : undefined;
     if (!robots) {
       await rateLimit(parsed.hostname);
-      const robotsResponse = await safeRequest(robotsUrl, { "User-Agent": agent }, 128 * 1024, "GET", seaOfficialHeaderCompatibility, ufscGzipCompatibility);
+      const robotsResponse = await safeRequest(robotsUrl, { "User-Agent": agent }, 128 * 1024, "GET", seaOfficialHeaderCompatibility, allowGzip);
       // Only a real 404 permits absence; errors are never cached or reused after expiry.
       if (!robotsResponse.ok && robotsResponse.status !== 404) throw new Error("robots.txt indisponível para revisão");
       const body = robotsResponse.ok ? await robotsResponse.text() : "";
@@ -64,7 +73,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     const headers: Record<string, string> = { "User-Agent": agent, Accept: "text/html,application/rss+xml,application/pdf;q=0.9" };
     if (cached?.etag) headers["If-None-Match"] = cached.etag;
     if (cached?.modified) headers["If-Modified-Since"] = cached.modified;
-    const response = await safeRequest(url, headers, maxBytes, "GET", seaOfficialHeaderCompatibility, ufscGzipCompatibility);
+    const response = await safeRequest(url, headers, maxBytes, "GET", seaOfficialHeaderCompatibility, allowGzip);
     // 304 is a cache response, not a redirect.
     if (response.status === 304 && cached) {
       return { body: cached.body, contentType: cached.contentType, hash: crypto.createHash("sha256").update(cached.body).digest("hex"), cached: true };

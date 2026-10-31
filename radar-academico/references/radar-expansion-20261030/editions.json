@@ -1,0 +1,301 @@
+[
+  {
+    "id": "exp-literatura-16-2026",
+    "name": "Olimpíada de Literatura — 16ª edição",
+    "organizer": "Centro Brasileiro de Olimpíadas Científicas",
+    "url": "https://www.olimpiadadeliteratura.com.br/",
+    "items": [
+      {
+        "title": "Olimpíada de Literatura — 16ª edição (Ouro e Candura)",
+        "checks": [
+          "16ª Edição",
+          "Inscrições até 30 de outubro de 2026 23h59",
+          "Hamlet",
+          "O Gato de Botas"
+        ],
+        "requirements": "Competição de leitura: Ouro 8 (Hamlet), Ouro 9 (Razão e Sensibilidade), Candura 17 (O Gato de Botas) e Candura 18 (Fábulas selecionadas). A categoria Ouro não tem limite de idade; Candura é destinada a crianças de até 9 anos. Inscrição individual ou por escola. Provas Ouro em 11/11 e Candura em 12/11/2026. Confira a obra, categoria, taxa e regulamento antes da inscrição.",
+        "conditions": "Inscrição paga; o calendário da página informa R$ 38 por inscrição individual no segundo período. Medalhas físicas e demais condições seguem o regulamento. Sem prêmio em dinheiro confirmado.",
+        "deadline": "2026-10-30",
+        "start": "2026-11-11",
+        "opens": null,
+        "application": null,
+        "applicant": "mixed",
+        "areas": [
+          "humanas",
+          "linguas"
+        ],
+        "status_terms": []
+      }
+    ],
+    "categories": [
+      "competicoes"
+    ],
+    "state": null,
+    "city": null,
+    "subtype": "olimpiada"
+  },
+  {
+    "id": "exp-oceano-2026",
+    "name": "Olimpíada do Oceano 2026",
+    "organizer": "Programa Maré de Ciência — Unifesp e UFPA",
+    "url": "https://olimpiada.maredeciencia.eco.br/",
+    "items": [
+      {
+        "title": "Olimpíada do Oceano 2026 — Educadores que Inspiram",
+        "checks": [
+          "O2 2026",
+          "Inscrições com envio dos relatos até 20/11/2026",
+          "exclusiva para professore(a)s e educadore(a)s"
+        ],
+        "requirements": "Modalidade exclusiva para professores e educadores, com relato de prática pedagógica em cultura oceânica. Autoria individual ou em grupo. Inscrição inclui envio do relato até 20/11/2026. As modalidades Conhecimento, Projetos e Produções já encerraram inscrições; esta ficha não as inclui.",
+        "conditions": "Taxa, remuneração e apoio financeiro não confirmados nesta página. Consulte as condições oficiais.",
+        "deadline": "2026-11-20",
+        "start": null,
+        "opens": null,
+        "application": "https://olimpiada.maredeciencia.eco.br/inscricoes/educadores/",
+        "applicant": "professor",
+        "areas": [
+          "ambiente",
+          "educacao"
+        ],
+        "status_terms": [
+          "Educadores que Inspiram"
+        ]
+      },
+      {
+        "title": "Olimpíada do Oceano 2026 — Desafio WOA",
+        "checks": [
+          "O2 2026",
+          "Inscrições com envio do material até 10/12/2026",
+          "5 a 15 estudantes",
+          "9 e 18 anos"
+        ],
+        "requirements": "Equipes de 5 a 15 estudantes de 9 a 18 anos, orientadas por pelo menos dois professores. Investigar problema oceânico da comunidade com evidências do WOA III da ONU e apresentar proposta de ação. Inscrição inclui envio do material até 10/12/2026. Consulte o edital para documentação e critérios.",
+        "conditions": "Taxa, remuneração e apoio financeiro não confirmados nesta página. Consulte as condições oficiais.",
+        "deadline": "2026-12-10",
+        "start": null,
+        "opens": null,
+        "application": "https://olimpiada.maredeciencia.eco.br/inscricoes/desafiowoa/",
+        "applicant": "mixed",
+        "areas": [
+          "ambiente",
+          "educacao"
+        ],
+        "status_terms": [
+          "Desafio WOA"
+        ]
+      }
+    ],
+    "categories": [
+      "competicoes"
+    ],
+    "state": null,
+    "city": null,
+    "subtype": "olimpiada"
+  },
+  {
+    "id": "exp-obapo-2027",
+    "name": "OBAPO 2027 — inscrições e renovação",
+    "organizer": "Olimpikei",
+    "url": "https://olimpikei.com.br/obapo-2027-renovacao/",
+    "items": [
+      {
+        "title": "OBAPO 2027 — renovação de escolas participantes",
+        "checks": [
+          "EXCLUSIVO PARA ESCOLAS QUE PARTICIPARAM EM 2025 OU 2026",
+          "27/10/2026",
+          "20/11/2026",
+          "19/04/2027"
+        ],
+        "requirements": "Renovação exclusiva de escolas que participaram da OBAPO em 2025 ou 2026. Uma taxa por escola, com estudantes ilimitados. Níveis do 2º ano do fundamental ao ensino médio. Aplicação online ou impressa de 19 a 30/04/2027. A janela atual não é inscrição individual nem inscrição geral de novas escolas.",
+        "conditions": "Taxa de renovação anunciada: R$ 290 para escola pública e R$ 580 para privada, sujeita a lotes e pagamento. Medalhas físicas são opcionais e vendidas separadamente. Confira disponibilidade e regulamento.",
+        "deadline": "2026-11-20",
+        "start": "2027-04-19",
+        "opens": "2026-10-27",
+        "application": null,
+        "applicant": "institution",
+        "areas": [
+          "humanas",
+          "educacao"
+        ],
+        "status_terms": [
+          "renovação"
+        ]
+      },
+      {
+        "title": "OBAPO 2027 — inscrições gerais de escolas",
+        "checks": [
+          "inscrições gerais",
+          "21/11/2026",
+          "31/03/2027",
+          "Abertas a todas as escolas"
+        ],
+        "requirements": "Inscrições gerais de escolas de 21/11/2026 a 31/03/2027; aplicar provas entre 19 e 30/04/2027. Antes de 21/11, apenas monitorar esta janela futura. Consulte o regulamento e valores para novas escolas; os preços de renovação não se aplicam automaticamente.",
+        "conditions": "Inscrição paga. Valor geral não confirmado nesta página de renovação; consultar a organização. Medalhas físicas opcionais, cobradas separadamente.",
+        "deadline": "2027-03-31",
+        "start": "2027-04-19",
+        "opens": "2026-11-21",
+        "application": null,
+        "applicant": "institution",
+        "areas": [
+          "humanas",
+          "educacao"
+        ],
+        "status_terms": [
+          "inscrições gerais"
+        ]
+      }
+    ],
+    "categories": [
+      "competicoes"
+    ],
+    "state": null,
+    "city": null,
+    "subtype": "olimpiada"
+  },
+  {
+    "id": "exp-hack-brasil-2026",
+    "name": "Hack Brasil 2026",
+    "organizer": "Hack Brasil",
+    "url": "https://hackbrasil.com/",
+    "items": [
+      {
+        "title": "Hack Brasil 2026 — hackathon nacional",
+        "checks": [
+          "Inscrições abertas",
+          "04 nov — 30 nov 2026",
+          "Times de 1 a 4",
+          "submissão do projeto encerra em 30 de novembro",
+          "Firecrawl, Resend e Devin"
+        ],
+        "requirements": "Fase online de 04 a 30/11/2026, de qualquer cidade brasileira; final presencial em 12/12, no Google Brasil, São Paulo, para equipes selecionadas. Times de 1 a 4 pessoas, uma submissão por time, repositório público no GitHub e demo. Projetos devem usar Firecrawl, Resend e Devin. Inscrição disponível durante o hackathon; entrega encerra em 30/11. Encontros locais têm RSVP separado. Viagem e hospedagem dos finalistas por conta do time.",
+        "conditions": "Inscrição gratuita. Valores divulgados como prêmios e benefícios incluem créditos de serviços, cupons e processos de visto sujeitos a condições. Não equivalem a R$ 1 milhão em dinheiro. Fast-track não garante vaga. Consulte os termos.",
+        "deadline": "2026-11-30",
+        "start": "2026-11-04",
+        "opens": null,
+        "application": "https://hackbrasil.com/inscricao",
+        "applicant": "mixed",
+        "areas": [
+          "tecnologia",
+          "ia"
+        ],
+        "status_terms": []
+      }
+    ],
+    "categories": [
+      "competicoes",
+      "eventos"
+    ],
+    "state": null,
+    "city": null,
+    "subtype": "hackathon"
+  },
+  {
+    "id": "exp-pucpr-ia-2026",
+    "name": "Hackathon de IA na Educação — PUCPR 2026",
+    "organizer": "Pontifícia Universidade Católica do Paraná",
+    "url": "https://www.pucpr.br/noticias/destaque/pucpr-abre-inscricoes-para-hackathon-de-inteligencia-artificial-em-parceria-com-o-google/",
+    "items": [
+      {
+        "title": "Hackathon de IA na Educação — PUCPR 2026",
+        "checks": [
+          "28 de outubro a 13 de novembro de 2026",
+          "28 e 29 de novembro de 2026",
+          "14 equipes de três integrantes",
+          "não estejam no último ano"
+        ],
+        "requirements": "Exclusivo a estudantes de graduação da PUCPR, presencial ou EAD, que não estejam no último ano do curso. São 42 vagas em 14 equipes de três. Presencial no Câmpus Curitiba, em 28 e 29/11/2026, das 9h às 9h do dia seguinte. Inscrição de equipe pela rota indicada na notícia oficial, até 13/11. Conferir regras e seleção.",
+        "conditions": "A notícia anuncia três vagas de estágio em projetos de IA da PUCPR. Remuneração e taxa de participação não confirmadas; não presumir prêmio em dinheiro ou contratação de todos os participantes.",
+        "deadline": "2026-11-13",
+        "start": "2026-11-28",
+        "opens": null,
+        "application": null,
+        "applicant": "undergraduate_student",
+        "areas": [
+          "ia",
+          "educacao"
+        ],
+        "status_terms": []
+      }
+    ],
+    "categories": [
+      "competicoes",
+      "eventos"
+    ],
+    "state": "PR",
+    "city": "Curitiba",
+    "subtype": "hackathon"
+  },
+  {
+    "id": "exp-ufms-cidada-2026",
+    "name": "2º Hackathon do Núcleo de Formação Cidadã — UFMS",
+    "organizer": "Universidade Federal de Mato Grosso do Sul",
+    "url": "https://www.ufms.br/inscricoes-para-o-2o-hackathon-do-nucleo-de-formacao-cidada-vao-ate-9-de-novembro/",
+    "items": [
+      {
+        "title": "2º Hackathon do Núcleo de Formação Cidadã — UFMS 2026",
+        "checks": [
+          "até 9 de novembro",
+          "matriculados na UFMS no semestre 2026.2",
+          "três a cinco integrantes",
+          "25 de novembro"
+        ],
+        "requirements": "Para estudantes de graduação regularmente matriculados na UFMS em 2026.2, de todos os câmpus e UFMS Digital. Equipes de 3 a 5, com solução de IA para sustentabilidade vinculada a ODS. Inscrição pelo SigProj com perfil institucional até 09/11. Treinamento online em 25/11; apresentações e premiação previstas de 30/11 a 04/12/2026. Conferir edital.",
+        "conditions": "Certificado de 20 horas e kit para vencedores; participação por adesão na imersão Viva UFMS em 23 e 24/02/2027. A notícia não garante bolsa, prêmio em dinheiro, viagem custeada ou implementação dos projetos.",
+        "deadline": "2026-11-09",
+        "start": "2026-11-25",
+        "opens": null,
+        "application": "https://sigproj.ufms.br/",
+        "applicant": "undergraduate_student",
+        "areas": [
+          "ia",
+          "ambiente"
+        ],
+        "status_terms": []
+      }
+    ],
+    "categories": [
+      "competicoes",
+      "eventos"
+    ],
+    "state": null,
+    "city": null,
+    "subtype": "hackathon"
+  },
+  {
+    "id": "exp-pmi-impacto-2026",
+    "name": "Hackathon Impacto Social, IA e Gestão de Projetos 2026",
+    "organizer": "PMI-DF e capítulos parceiros do PMI Brasil",
+    "url": "https://www.sympla.com.br/evento-online/lgc/3618075",
+    "items": [
+      {
+        "title": "Hackathon Impacto Social, IA e Gestão de Projetos — PMI 2026",
+        "checks": [
+          "PMI-DF",
+          "19/10 a 09/11/2026",
+          "Maiores de 18 anos",
+          "12/12/2026 (das 8h30 às 18h)"
+        ],
+        "requirements": "Online e gratuito, para maiores de 18 anos matriculados na graduação ou pós-graduação no Brasil. Equipes de 4 a 5, limitadas às primeiras 15 elegíveis conforme edital. Inscrição até 09/11; cada integrante deve se cadastrar e informar equipe e líder. Webinares preparatórios em novembro; hackathon principal em 12/12/2026, das 8h30 às 18h. Prototipar soluções com IA para organizações da sociedade civil.",
+        "conditions": "Participação gratuita; sem premiação em dinheiro confirmada nesta ficha. Aprovação e certificado dependem do edital. O prazo informado termina às 23h59, sem fuso explícito; a ficha conserva a data.",
+        "deadline": "2026-11-09",
+        "start": "2026-12-12",
+        "opens": null,
+        "application": null,
+        "applicant": "mixed",
+        "areas": [
+          "ia",
+          "negocios"
+        ],
+        "status_terms": []
+      }
+    ],
+    "categories": [
+      "competicoes",
+      "eventos"
+    ],
+    "state": null,
+    "city": null,
+    "subtype": "hackathon"
+  }
+]

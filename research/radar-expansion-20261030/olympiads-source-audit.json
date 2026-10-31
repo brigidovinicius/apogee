@@ -1,0 +1,902 @@
+[
+  {
+    "id": "obc-ciencias",
+    "official_url": "https://www.obciencias.com.br/",
+    "identity_evidence_url": "https://www.obciencias.com.br/inscriccedilotildees.html",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página oficial de inscrições declara encerramento da OBC 2026."
+  },
+  {
+    "id": "obe-empreendedorismo",
+    "official_url": "https://obempreende.com.br/",
+    "identity_evidence_url": "https://obempreende.com.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Regulamento na página oficial fixa inscrições até 17/06/2026; banner de 2025 está desatualizado."
+  },
+  {
+    "id": "obe-estatistica",
+    "official_url": "https://obe.icmc.usp.br/",
+    "identity_evidence_url": "https://obe.icmc.usp.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "closed",
+    "evidence_note": "Resultado de busca da página oficial informa inscrições fechadas e calendário."
+  },
+  {
+    "id": "obereri",
+    "official_url": "https://abpn.org.br/olimpiada-brasileira-de-relacoes-etnico-raciais-afro-brasileiras-africanas-e-indigenas-obereri/",
+    "identity_evidence_url": "https://abpn.org.br/olimpiada-brasileira-de-relacoes-etnico-raciais-afro-brasileiras-africanas-e-indigenas-obereri/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Página da entidade organizadora confirma identidade; calendário 2026 não verificado."
+  },
+  {
+    "id": "obi",
+    "official_url": "https://olimpiada.ic.unicamp.br/",
+    "identity_evidence_url": "https://olimpiada.ic.unicamp.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Datas oficiais distinguem Iniciação, Programação e competição feminina."
+  },
+  {
+    "id": "obmacs",
+    "official_url": "https://podemos.mat.br/obmacs",
+    "identity_evidence_url": "https://podemos.mat.br/obmacs",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Página do organizador confirma nome e regulamento; séries referem-se a 2021."
+  },
+  {
+    "id": "obmed-olimpikei",
+    "official_url": "https://olimpikei.com.br/olimpiada-brasileira-de-medicina/",
+    "identity_evidence_url": "https://olimpikei.com.br/olimpiada-brasileira-de-medicina/",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Página oficial atual comprova evento educacional distinto da Vitalis; edição/prazos não validados."
+  },
+  {
+    "id": "oboa",
+    "official_url": "https://noic.com.br/obo/astronomia/",
+    "identity_evidence_url": "https://noic.com.br/obo/astronomia/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "oboart",
+    "official_url": "https://noic.com.br/obo/artes/",
+    "identity_evidence_url": "https://noic.com.br/obo/artes/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "obob",
+    "official_url": "https://noic.com.br/obo/biologia/",
+    "identity_evidence_url": "https://noic.com.br/obo/biologia/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "oboc",
+    "official_url": "https://noic.com.br/obo/ciencias/",
+    "identity_evidence_url": "https://noic.com.br/obo/ciencias/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "oboch",
+    "official_url": "https://noic.com.br/obo/humanas/",
+    "identity_evidence_url": "https://noic.com.br/obo/humanas/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Calendário oficial NOIC define fim da inscrição antes da primeira fase."
+  },
+  {
+    "id": "oboecon",
+    "official_url": "https://noic.com.br/obo/economia/",
+    "identity_evidence_url": "https://noic.com.br/obo/economia/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "obof",
+    "official_url": "https://noic.com.br/obo/fisica/",
+    "identity_evidence_url": "https://noic.com.br/obo/fisica/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "obofe",
+    "official_url": "https://noic.com.br/obo/fisica-experimental/",
+    "identity_evidence_url": "https://noic.com.br/obo/fisica-experimental/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "obofog",
+    "official_url": "https://noic.com.br/obo/foguetes/",
+    "identity_evidence_url": "https://noic.com.br/obo/foguetes/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "oboi",
+    "official_url": "https://noic.com.br/obo/informatica/",
+    "identity_evidence_url": "https://noic.com.br/obo/informatica/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Calendário oficial NOIC define fim da inscrição antes da primeira fase."
+  },
+  {
+    "id": "oboia",
+    "official_url": "https://noic.com.br/obo/ia/",
+    "identity_evidence_url": "https://noic.com.br/obo/ia/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "obol",
+    "official_url": "https://noic.com.br/obo/linguistica/",
+    "identity_evidence_url": "https://noic.com.br/obo/linguistica/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "obom",
+    "official_url": "https://noic.com.br/obo/matematica/",
+    "identity_evidence_url": "https://noic.com.br/obo/matematica/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "oboq",
+    "official_url": "https://noic.com.br/obo/quimica/",
+    "identity_evidence_url": "https://noic.com.br/obo/quimica/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Calendário oficial NOIC define fim da inscrição antes da primeira fase."
+  },
+  {
+    "id": "obor",
+    "official_url": "https://noic.com.br/obo/robotica/",
+    "identity_evidence_url": "https://noic.com.br/obo/robotica/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Identidade confirmada no portfólio e página próprios do NOIC."
+  },
+  {
+    "id": "obrac",
+    "official_url": "https://olimpiadadecartografia.uff.br/",
+    "identity_evidence_url": "https://olimpiadadecartografia.uff.br/sobre-obrac/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Página da coordenação UFF confirma olimpíada nacional por equipes."
+  },
+  {
+    "id": "obs-saber",
+    "official_url": "https://obssaberes.org/web-site/",
+    "identity_evidence_url": "https://obssaberes.org/web-site/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Site confirma identidade, organização e edição; prazo atual não validado."
+  },
+  {
+    "id": "obs-sociologia",
+    "official_url": "https://olimpiadadesociologia.com.br/",
+    "identity_evidence_url": "https://olimpiadadesociologia.com.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Calendário prevê inscrição individual até 11/03 e de equipes até 16/03."
+  },
+  {
+    "id": "obsma",
+    "official_url": "https://olimpiada.fiocruz.br/",
+    "identity_evidence_url": "https://olimpiada.fiocruz.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página oficial atual fixa envio de projetos até 20/07/2026 às 23h59."
+  },
+  {
+    "id": "oclipi",
+    "official_url": "https://seduc.pi.gov.br/noticias/noticia/11758/seduc-desenvolve-plano-de-modernizacao-da-educacao",
+    "identity_evidence_url": "https://seduc.pi.gov.br/noticias/noticia/11758/seduc-desenvolve-plano-de-modernizacao-da-educacao",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Seduc e governo estadual documentam olimpíada própria e projeto; edição 2026 não confirmada."
+  },
+  {
+    "id": "olimpiada-brasileira-de-administracao",
+    "official_url": "https://www.obadm.org.br/",
+    "identity_evidence_url": "https://www.obadm.org.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Cronograma oficial e notícias de premiação de 2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-africanidades-e-povos-originarios",
+    "official_url": "https://olimpikei.com.br/obapo-2027-renovacao/",
+    "identity_evidence_url": "https://olimpikei.com.br/obapo-2027-renovacao/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "open",
+    "evidence_note": "Janela atual é renovação exclusiva para escolas participantes de 2025/2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-agropecuaria",
+    "official_url": "https://obap.ifsuldeminas.edu.br/",
+    "identity_evidence_url": "https://coronavirus.muz.ifsuldeminas.edu.br/noticias/7050-ifsuldeminas-conquista-medalha-de-bronze-na-15-obap-com-equipe-do-campus-muzambinho",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Instituição organizadora documenta participação e medalha; calendário de inscrição atual não validado."
+  },
+  {
+    "id": "olimpiada-brasileira-de-astronomia-e-astronautica",
+    "official_url": "https://site.oba.org.br/",
+    "identity_evidence_url": "https://site.oba.org.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página oficial de inscrição informa prorrogação até 08/05/2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-biologia",
+    "official_url": "https://olimpiadasdebiologia.butantan.gov.br/",
+    "identity_evidence_url": "https://olimpiadasdebiologia.butantan.gov.br/fases-e-inscricoes",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página oficial de fases e inscrições fornece prazo de 2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-biologia-sintetica",
+    "official_url": "https://synbiobr.org/olimpiada/",
+    "identity_evidence_url": "https://synbiobr.org/olimpiada/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página atual informa expressamente encerramento em 14/08/2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-biotecnologia",
+    "official_url": "https://www.obbiotec.com.br/",
+    "identity_evidence_url": "https://www.obbiotec.com.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Calendário de 2026 publicado no site oficial."
+  },
+  {
+    "id": "olimpiada-brasileira-de-diplomacia-e-relacoes-internacionais",
+    "official_url": "https://www.ubiquejunior.com.br/obdip",
+    "identity_evidence_url": "https://www.ubiquejunior.com.br/obdip",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Edital e aviso de inscrições encerradas constam na página atual do organizador."
+  },
+  {
+    "id": "olimpiada-brasileira-de-economia",
+    "official_url": "https://www.obecon.org.br/",
+    "identity_evidence_url": "https://www.obecon.org.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Calendário 2026 supera chamada genérica de inscrições abertas no mesmo site."
+  },
+  {
+    "id": "olimpiada-brasileira-de-educacao-financeira",
+    "official_url": "https://csa.uem.br/edfin",
+    "identity_evidence_url": "https://csa.uem.br/edfin",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "UEM, parceira executora, publica cronograma da edição de 2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-fisica",
+    "official_url": "https://www1.fisica.org.br/olimpiada/",
+    "identity_evidence_url": "https://www1.fisica.org.br/olimpiada/2025/index.php/coordenacao-nacional/16-obf/395-informes-sobre-a-edicao-2026-da-obf.html",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "closed",
+    "evidence_note": "Informe oficial confirma edição e primeira fase em junho; inscrições iniciais já superadas."
+  },
+  {
+    "id": "olimpiada-brasileira-de-fisica-das-escolas-publicas",
+    "official_url": "https://www1.fisica.org.br/~obfep/inscricoes-2026/",
+    "identity_evidence_url": "https://www1.fisica.org.br/~obfep/inscricoes-2026/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página oficial de inscrições de 2026 fornece as duas datas."
+  },
+  {
+    "id": "olimpiada-brasileira-de-fisiologia",
+    "official_url": "https://obfis.cienciasecognicao.org",
+    "identity_evidence_url": "https://obfis.cienciasecognicao.org",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Cabeçalho oficial de 2026 fixa inscrições até 05/05; parte inferior mantém datas antigas."
+  },
+  {
+    "id": "olimpiada-brasileira-de-foguetes",
+    "official_url": "https://site.oba.org.br/",
+    "identity_evidence_url": "https://site.oba.org.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página oficial de inscrição informa prorrogação até 08/05/2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-geografia",
+    "official_url": "https://obgeografia.com.br/",
+    "identity_evidence_url": "https://obgeografia.com.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Calendário oficial informa prorrogação até 20/07/2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-geopolitica",
+    "official_url": "https://www.seletaeducacao.com.br/obgp",
+    "identity_evidence_url": "https://www.seletaeducacao.com.br/obgp",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Detalhamento da edição fixa prazos 2026, apesar de erro de ano no resumo do site."
+  },
+  {
+    "id": "olimpiada-brasileira-de-inovacao-ciencia-e-tecnologia",
+    "official_url": "https://www.obict.com.br/",
+    "identity_evidence_url": "https://www.obict.com.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Regulamento na página oficial fixa inscrições até 05/04/2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-investimento",
+    "official_url": "https://obinvest.org/",
+    "identity_evidence_url": "https://obinvest.org/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Página atual anuncia novidades futuras; não comprova inscrições abertas."
+  },
+  {
+    "id": "olimpiada-brasileira-de-lingua-inglesa",
+    "official_url": "https://www.seletaeducacao.com.br/obli",
+    "identity_evidence_url": "https://www.seletaeducacao.com.br/obli",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Calendário da edição 2026.2 publicado na página oficial."
+  },
+  {
+    "id": "olimpiada-brasileira-de-linguistica",
+    "official_url": "https://obling.org/",
+    "identity_evidence_url": "https://obling.org/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "upcoming",
+    "evidence_note": "Comunicado anuncia nova edição em fevereiro; torneio aberto de outubro não foi contado separadamente."
+  },
+  {
+    "id": "olimpiada-brasileira-de-matematica",
+    "official_url": "https://www.obm.org.br/",
+    "identity_evidence_url": "https://www.obm.org.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Notícia oficial convoca classificados para preencher formulário até 02/10."
+  },
+  {
+    "id": "olimpiada-brasileira-de-matematica-das-escolas-publicas",
+    "official_url": "https://www.obmep.org.br/",
+    "identity_evidence_url": "https://www.obmep.org.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Regulamento e calendário oficiais da 21ª OBMEP."
+  },
+  {
+    "id": "olimpiada-brasileira-de-matematica-das-escolas-publicas-e-privadas-mirim",
+    "official_url": "https://olimpiadamirim.obmep.org.br/",
+    "identity_evidence_url": "https://olimpiadamirim.obmep.org.br/regulamento",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "closed",
+    "evidence_note": "Regulamento oficial informa calendário; versão indexada apresenta variáveis de título sem renderizar."
+  },
+  {
+    "id": "olimpiada-brasileira-de-matematica-financeira",
+    "official_url": "https://www.seletaeducacao.com.br/obmf",
+    "identity_evidence_url": "https://www.seletaeducacao.com.br/obmf",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Calendário oficial da edição 2026.2."
+  },
+  {
+    "id": "olimpiada-brasileira-de-neurociencia-brazilian-brain-bee",
+    "official_url": "https://brazilianbrainbee.org/",
+    "identity_evidence_url": "https://brazilianbrainbee.org/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Site publica resultado da OBN 2026; etapas locais não são novas olimpíadas."
+  },
+  {
+    "id": "olimpiada-brasileira-de-neurociencias-para-graduandos",
+    "official_url": "https://obng.cienciasecognicao.org",
+    "identity_evidence_url": "https://obng.cienciasecognicao.org",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página do organizador fornece período e programação 2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-quimica",
+    "official_url": "https://obquimica.org/",
+    "identity_evidence_url": "https://obquimica.org/olimpiada/olimpiada-brasileira-de-quimica",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "closed",
+    "evidence_note": "Portal publica regulamento e gabaritos de 2026; classificação nacional não é inscrição livre atual."
+  },
+  {
+    "id": "olimpiada-brasileira-de-quimica-junior",
+    "official_url": "https://obquimica.org/olimpiada/olimpiada-brasileira-de-quimica-junior",
+    "identity_evidence_url": "https://obquimica.org/olimpiada/olimpiada-brasileira-de-quimica-junior",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Regulamento e gabaritos de 2026 confirmados no PNOQ; segunda fase já realizada em agosto."
+  },
+  {
+    "id": "olimpiada-brasileira-de-raciocinio-logico",
+    "official_url": "https://www.obrl.com.br/",
+    "identity_evidence_url": "https://www.obrl.com.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Calendário oficial 2026 distingue inscrição, provas e resultados."
+  },
+  {
+    "id": "olimpiada-brasileira-de-robotica",
+    "official_url": "https://obr.robocup.org.br/",
+    "identity_evidence_url": "https://obr.robocup.org.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Organizador já publica resultados estaduais e etapa nacional de novembro de 2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-satelites",
+    "official_url": "https://obsat.org.br/",
+    "identity_evidence_url": "https://wiki.obsat.org.br/books/modalidade-teorica/page/cronograma",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Wiki oficial fornece cronograma da modalidade teórica de 2026."
+  },
+  {
+    "id": "olimpiada-brasileira-de-tecnologia",
+    "official_url": "https://www.alphalumen.org.br/olimpiada-brasileira-de-tecnologia-obt/",
+    "identity_evidence_url": "https://www.alphalumen.org.br/olimpiada-brasileira-de-tecnologia-obt/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Página do organizador comprova identidade; corpo do texto continua na edição inaugural."
+  },
+  {
+    "id": "olimpiada-camaleao-da-quimica",
+    "official_url": "https://sites.google.com/view/olimpiadacamaleao",
+    "identity_evidence_url": "https://sites.google.com/view/olimpiadacamaleao",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Site da competição confirma origem e identidade, sem janela 2026 verificada."
+  },
+  {
+    "id": "olimpiada-cearense-de-informatica",
+    "official_url": "https://oci.dc.ufc.br/",
+    "identity_evidence_url": "https://oci.dc.ufc.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Página da UFC confirma identidade e organizadores; edição/prazos atuais não validados."
+  },
+  {
+    "id": "olimpiada-cientifica-ecoinovar",
+    "official_url": "https://olimpiada.ecoinovar.com/",
+    "identity_evidence_url": "https://olimpiada.ecoinovar.com/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Cronograma oficial da segunda edição publicado no portal Ecoinovar."
+  },
+  {
+    "id": "olimpiada-de-ciencias-humanas-do-estado-do-ceara",
+    "official_url": "https://oche.ifce.edu.br/",
+    "identity_evidence_url": "https://oche.ifce.edu.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "FAQ oficial fixa inscrições até 04/09/2026 às 17h."
+  },
+  {
+    "id": "olimpiada-de-espanhol",
+    "official_url": "https://olimpiadadeespanhol.com/",
+    "identity_evidence_url": "https://olimpiadadeespanhol.com/storage/regulations/regulamento-olimpiada-de-espanhol-3a-edicao1783436018.pdf",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Regulamento encerra inscrições em 23/10, apesar de banner aberto."
+  },
+  {
+    "id": "olimpiada-de-ingles",
+    "official_url": "https://oingles.com/",
+    "identity_evidence_url": "https://oingles.com/storage/regulations/regulamento-olimpiada-de-ingles-3a-edicao1783436003.pdf",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "closed",
+    "evidence_note": "Regulamento encerra inscrições em 23/10, apesar de banner aberto."
+  },
+  {
+    "id": "olimpiada-de-literatura",
+    "official_url": "https://www.olimpiadadeliteratura.com.br/",
+    "identity_evidence_url": "https://www.olimpiadadeliteratura.com.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "open",
+    "evidence_note": "Página oficial lista quatro provas e inscrição até 30/10/2026 às 23h59."
+  },
+  {
+    "id": "olimpiada-de-matematica-da-unicamp",
+    "official_url": "https://www.olimpiada.ime.unicamp.br/",
+    "identity_evidence_url": "https://www.olimpiada.ime.unicamp.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Página atual confirma alcance a alunos de todo o Brasil; calendário visível não explicita ano."
+  },
+  {
+    "id": "olimpiada-de-matematica-das-instituicoes-federais",
+    "official_url": "https://omif.com.br",
+    "identity_evidence_url": "https://omif.com.br",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Organizador publica prazo de inscrição de campi; convite atual é para evento da segunda fase."
+  },
+  {
+    "id": "olimpiada-de-matematica-mandacaru",
+    "official_url": "https://olimpiadamandacaru.com.br/",
+    "identity_evidence_url": "https://olimpiadamandacaru.com.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página de resultados e regulamento vigentes da edição 2026."
+  },
+  {
+    "id": "olimpiada-de-portugues",
+    "official_url": "https://olimpiadadeportugues.org/",
+    "identity_evidence_url": "https://olimpiadadeportugues.org/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Site já disponibiliza o resultado da OP 2026."
+  },
+  {
+    "id": "olimpiada-de-redacao-da-rede-estadual-de-minas-gerais",
+    "official_url": "https://www.educacao.mg.gov.br/wp-content/uploads/2025/06/SEI_114116013_Edital_01-1.pdf",
+    "identity_evidence_url": "https://www.educacao.mg.gov.br/wp-content/uploads/2025/06/SEI_114116013_Edital_01-1.pdf",
+    "checked_on": "2026-10-30",
+    "verification_method": "web_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Edital institucional comprova identidade; não comprova inscrições ou edição 2026."
+  },
+  {
+    "id": "olimpiada-de-tecnologia-e-inovacao-do-instituto-polymathos",
+    "official_url": "https://docs.google.com/forms/d/e/1FAIpQLScs8gOi2yLnGGBNXPbQGc7YVrOXuUlb8-9dEmtffn7K33NGCA/closedform",
+    "identity_evidence_url": "https://docs.google.com/forms/d/e/1FAIpQLScs8gOi2yLnGGBNXPbQGc7YVrOXuUlb8-9dEmtffn7K33NGCA/closedform",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Formulário oficial identifica olimpíada e instituto; está sem aceitar respostas, mas edição/data atual não confirmadas."
+  },
+  {
+    "id": "olimpiada-do-bem-publico",
+    "official_url": "https://eppg.fgv.br/olimpiada-do-bem-publico",
+    "identity_evidence_url": "https://eppg.fgv.br/sites/default/files/2026-04/guia_6_obp_28.04.pdf",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "closed",
+    "evidence_note": "Guia oficial de 2026 fixa prazo; página oficial já lista medalhistas."
+  },
+  {
+    "id": "olimpiada-do-conhecimento-do-senai",
+    "official_url": "https://olimpiada.rn.senai.br/",
+    "identity_evidence_url": "https://olimpiada.rn.senai.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Site institucional confirma competição de educação profissional; não comprova janela 2026."
+  },
+  {
+    "id": "olimpiada-do-conhecimento-juridico",
+    "official_url": "https://www.abdireitocivil.com.br/xii-olimpiada-do-conhecimento-juridico-abdc-2025/",
+    "identity_evidence_url": "https://www.abdireitocivil.com.br/xii-olimpiada-do-conhecimento-juridico-abdc-2025/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Organizador mantém página 2025; não usar o convite antigo como abertura atual."
+  },
+  {
+    "id": "olimpiada-do-oceano",
+    "official_url": "https://olimpiada.maredeciencia.eco.br",
+    "identity_evidence_url": "https://olimpiada.maredeciencia.eco.br",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "open",
+    "evidence_note": "Modalidades Educadores que Inspiram e Desafio WOA têm prazos vigentes."
+  },
+  {
+    "id": "olimpiada-do-tesouro-direto-de-educacao-financeira",
+    "official_url": "https://www.olitef.com.br/",
+    "identity_evidence_url": "https://www.olitef.com.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Calendário oficial de 2026 encerra inscrições em setembro."
+  },
+  {
+    "id": "olimpiada-estadual-em-historia-de-sergipe",
+    "official_url": "https://oehse.com.br/",
+    "identity_evidence_url": "https://seduc.se.gov.br/estudantes-e-educadores-celebram-historia-sergipana-na-1a-olimpiada-estadual-de-historia/",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Secretaria estadual e dissertação da idealizadora comprovam identidade e organização; edição atual não confirmada."
+  },
+  {
+    "id": "olimpiada-itabirana-de-matematica",
+    "official_url": "https://olimpiadaitabirana.com.br/",
+    "identity_evidence_url": "https://olimpiadaitabirana.com.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Cronograma oficial prorroga inscrição de alunos até 08/06; escolas até 25/05."
+  },
+  {
+    "id": "olimpiada-matematicos-por-diversao",
+    "official_url": "https://matematicopordiversao.wordpress.com/5a-olimpiada-matematicos-por-diversao-ompd-2024/",
+    "identity_evidence_url": "https://matematicopordiversao.wordpress.com/5a-olimpiada-matematicos-por-diversao-ompd-2024/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Blog oficial do criador comprova identidade; inscrições 2026 não confirmadas."
+  },
+  {
+    "id": "olimpiada-nacional-de-astronomia",
+    "official_url": "https://www.saberdaciencia.org/ona",
+    "identity_evidence_url": "https://www.saberdaciencia.org/ona",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Regulamento de 2026 consta na própria página do organizador."
+  },
+  {
+    "id": "olimpiada-nacional-de-ciencias",
+    "official_url": "https://www.onciencias.org/",
+    "identity_evidence_url": "https://www.onciencias.org/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página oficial divulga resultado definitivo e certificados em outubro de 2026."
+  },
+  {
+    "id": "olimpiada-nacional-de-eficiencia-energetica",
+    "official_url": "https://onee.org.br/",
+    "identity_evidence_url": "https://onee.org.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Site já divulga resultados da ONEE 2026 e fases realizadas em setembro."
+  },
+  {
+    "id": "olimpiada-nacional-de-filosofia",
+    "official_url": "https://onfilbr.org/",
+    "identity_evidence_url": "https://onfilbr.org/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Site confirma ONFIL 2026 e organização; janela exata não validada."
+  },
+  {
+    "id": "olimpiada-nacional-de-fisica",
+    "official_url": "https://www.saberdaciencia.org/onf",
+    "identity_evidence_url": "https://www.saberdaciencia.org/onf",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Regulamento de 2026 consta na própria página do organizador."
+  },
+  {
+    "id": "olimpiada-nacional-de-ilustracao-cientifica",
+    "official_url": "https://ilustraciencia.ufv.br/",
+    "identity_evidence_url": "https://ilustraciencia.ufv.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Portal atual divulga resultado final de 22/10/2026 e certificados de 28/10/2026."
+  },
+  {
+    "id": "olimpiada-nacional-de-inteligencia-artificial",
+    "official_url": "https://www.oniabrasil.com.br/",
+    "identity_evidence_url": "https://www.oniabrasil.com.br/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página vigente fixa primeira fase em setembro/outubro de 2026."
+  },
+  {
+    "id": "olimpiada-nacional-de-matematica",
+    "official_url": "https://www.saberdaciencia.org/onm",
+    "identity_evidence_url": "https://www.saberdaciencia.org/onm",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Regulamento de 2026 consta na própria página do organizador."
+  },
+  {
+    "id": "olimpiada-nacional-de-nanotecnologia",
+    "official_url": "https://www.onanobrasil.com.br",
+    "identity_evidence_url": "https://www.onanobrasil.com.br",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Página oficial anuncia terceira edição encerrada e resultados."
+  },
+  {
+    "id": "olimpiada-nacional-feminina-de-quimica",
+    "official_url": "https://quimeninas.obquimica.org/",
+    "identity_evidence_url": "https://quimeninas.obquimica.org/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Portal PNOQ publica gabarito final Quimeninas 2026 em 28/10/2026."
+  },
+  {
+    "id": "olimpiada-nacional-sobre-ambientes-marinhos-e-polares",
+    "official_url": "https://www.uergs.edu.br/4-polaron",
+    "identity_evidence_url": "https://www.uergs.edu.br/4-polaron",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Página da organizadora ainda descreve provas e prazos de 2025."
+  },
+  {
+    "id": "olimpiada-paulista-de-matematica",
+    "official_url": "https://www.opm.mat.br/",
+    "identity_evidence_url": "https://www.opm.mat.br/opm2025/conteudo",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "AOBM reconhece competição própria; site oficial apresenta falha de acesso e prova atual não validada."
+  },
+  {
+    "id": "olimpiada-pernambucana-de-astronomia-e-astronautica",
+    "official_url": "https://sites.google.com/recife.ifpe.edu.br/opa-olimpadaastronomia/p%C3%A1gina-inicial?authuser=7",
+    "identity_evidence_url": "https://sites.google.com/recife.ifpe.edu.br/opa-olimpadaastronomia/p%C3%A1gina-inicial?authuser=7",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Organizador informa que não realizará OPA em 2026 por reestruturação."
+  },
+  {
+    "id": "olimpiada-pernambucana-de-fisica",
+    "official_url": "https://sites.google.com/recife.ifpe.edu.br/opef/p%C3%A1gina-inicial?authuser=7",
+    "identity_evidence_url": "https://sites.google.com/recife.ifpe.edu.br/opef/p%C3%A1gina-inicial?authuser=7",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Organizador informa que não realizará OPEF em 2026 por reestruturação."
+  },
+  {
+    "id": "olimpiada-pernambucana-de-foguetes",
+    "official_url": "https://sites.google.com/recife.ifpe.edu.br/opefog-ifpe-olimpiada-foguetes/p%C3%A1gina-inicial?authuser=6",
+    "identity_evidence_url": "https://sites.google.com/recife.ifpe.edu.br/opefog-ifpe-olimpiada-foguetes/p%C3%A1gina-inicial?authuser=6",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Organizador informa que não realizará OPEFOG em 2026 por reestruturação."
+  },
+  {
+    "id": "olimpiada-sertaneja-de-matematica",
+    "official_url": "https://www.osmsertao.com.br",
+    "identity_evidence_url": "https://www.osmsertao.com.br",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "closed",
+    "evidence_note": "Site oficial já disponibiliza provas e resultados da edição de 2026."
+  },
+  {
+    "id": "olimpiada-starboard-science-de-matematica",
+    "official_url": "https://projetocqd.com.br/ossm2025/",
+    "identity_evidence_url": "https://projetocqd.com.br/ossm2025/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Organizador publica referência à OSSM 2026; prazos atuais não foram validados."
+  },
+  {
+    "id": "olimpiada-virtual-de-fisica",
+    "official_url": "https://www.villaloboseducacao.com.br/olimpiada-virtual-de-fisica-2024-ovf/",
+    "identity_evidence_url": "https://www.villaloboseducacao.com.br/olimpiada-virtual-de-fisica-2024-ovf/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Página do próprio colégio informa regras de 2024, insuficientes para inscrição 2026."
+  },
+  {
+    "id": "onhb",
+    "official_url": "https://www.olimpiadadehistoria.com.br/",
+    "identity_evidence_url": "https://www.olimpiadadehistoria.com.br/noticias/ler/394",
+    "checked_on": "2026-10-30",
+    "verification_method": "search_primary",
+    "registration_status": "closed",
+    "evidence_note": "Comunicado oficial 002/2026 fixa inscrição e início da edição."
+  },
+  {
+    "id": "vitalis-olimpiada-de-medicina",
+    "official_url": "https://olimpiadademedicina.org/",
+    "identity_evidence_url": "https://olimpiadademedicina.org/",
+    "checked_on": "2026-10-30",
+    "verification_method": "curl_primary",
+    "registration_status": "unconfirmed",
+    "evidence_note": "Site oficial confirma Vitalis, mas apresenta regulamento 2025; não prova abertura 2026."
+  }
+]

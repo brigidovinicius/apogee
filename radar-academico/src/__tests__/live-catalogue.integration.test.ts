@@ -1,3 +1,4 @@
+import { expansionSources } from "@/lib/ingestion/normalize-expansion";
 import { readFile, readdir } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { pgcrypto } from "@electric-sql/pglite/contrib/pgcrypto";
@@ -825,4 +826,57 @@ it("persists editorial classification and all calendar stages, preserves curatio
  expect(await listCalendarCatalogue()).toHaveLength(1);
  await state.db!.query("update official_sources set active=false where id=$1",[source.id]);
  expect(await listCalendarCatalogue()).toHaveLength(0);
+});
+
+
+it("ingests and rechecks a Luma edition without duplicates, queues one date update and preserves curation/failures/tombstones", async () => {
+ vi.useFakeTimers({toFake:["Date"]}); vi.setSystemTime(new Date("2026-10-30T18:00:00Z"));
+ try {
+  const s={...expansionSources().find(s=>s.id==='exp-luma-womakers-2026')!,active:true};
+  await state.db!.query(`insert into official_sources(id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,active,verification_status)
+    values($1,$2,$3,'','official_reference',$4,$5,$6,$7,'html',true,'verified')`,[s.id,s.name,s.institutionName,s.baseUrl,s.allowedDomains,s.allowedPathPrefixes,s.listingUrls]);
+  const html=await readFile(new URL('./fixtures/expansion/'+s.id+'.html',import.meta.url),'utf8');
+  const respond=(body:string)=>vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from(body),contentType:'text/html',hash:'fixture',cached:false});
+  respond(html);
+  expect(await runOfficialSourceIngestion({sourceId:s.id,maxPages:3})).toMatchObject({discovered:1,published:1});
+  await runOfficialSourceIngestion({sourceId:s.id,maxPages:3});
+  const rows=()=>state.db!.query<{id:string;event_starts_at:string;requirements_text:string;deleted_at:string|null}>("select id,event_starts_at,requirements_text,deleted_at from opportunities where official_source_id=$1",[s.id]);
+  expect((await rows()).rows).toHaveLength(1); const id=(await rows()).rows[0].id;
+  await state.db!.query("update opportunities set requirements_text='Curadoria preservada',management_overrides=$2,next_source_check_at=null where id=$1",[id,{requirementsText:'Curadoria preservada'}]);
+  await subscribeToOpportunity({opportunityId:id,email:'isolated-student@example.test',consent:true});
+  const payload=(await state.db!.query<{payload:{text:string}}>("select payload from opportunity_alert_outbox where kind='confirmation' order by created_at desc limit 1")).rows[0].payload;
+  await updateAlertSubscription('confirm',/acao=confirmar&token=([a-f0-9]{64})/.exec(payload.text)![1]);
+  respond(html.replaceAll('2026-12-03','2026-12-04'));
+  expect(await recheckKnownOpportunities(s,2,async()=>'' )).toMatchObject({failed:0,pagesChecked:1});
+  expect((await rows()).rows[0]).toMatchObject({id,requirements_text:'Curadoria preservada'});
+  expect(String((await rows()).rows[0].event_starts_at)).toContain('2026-12-04');
+  expect(await queueOpportunityChanges()).toBe(1); expect(await queueOpportunityChanges()).toBe(0);
+  await state.db!.query('update opportunities set next_source_check_at=null where id=$1',[id]);
+  respond('<main>Access denied</main>');
+  expect(await recheckKnownOpportunities(s,2,async()=>'' )).toMatchObject({failed:1});
+  expect(String((await rows()).rows[0].event_starts_at)).toContain('2026-12-04');
+  expect(await queueOpportunityChanges()).toBe(0);
+  await state.db!.query('update opportunities set deleted_at=now() where id=$1',[id]);
+  respond(html); await runOfficialSourceIngestion({sourceId:s.id,maxPages:3});
+  expect((await rows()).rows).toHaveLength(1); expect((await rows()).rows[0].deleted_at).not.toBeNull();
+  expect(sendAlertMail).not.toHaveBeenCalled();
+ } finally {vi.useRealTimers();}
+});
+it("persists two ocean modalities on one URL and closes only the named modality",async()=>{
+ vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date('2026-10-30T18:00:00Z'));
+ try {
+  const s={...expansionSources().find(s=>s.id==='exp-oceano-2026')!,active:true};
+  await state.db!.query(`insert into official_sources(id,name,institution_name,institution_acronym,source_type,base_url,allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,active,verification_status)
+    values($1,$2,$3,'','official_reference',$4,$5,$6,$7,'html',true,'verified')`,[s.id,s.name,s.institutionName,s.baseUrl,s.allowedDomains,s.allowedPathPrefixes,s.listingUrls]);
+  const html=await readFile(new URL('./fixtures/expansion/'+s.id+'.html',import.meta.url),'utf8');
+  const respond=(body:string)=>vi.mocked(fetchOfficialResource).mockResolvedValue({body:Buffer.from(body),contentType:'text/html',hash:'fixture',cached:false});
+  respond(html);
+  expect(await runOfficialSourceIngestion({sourceId:s.id,maxPages:3})).toMatchObject({discovered:2,published:2});
+  await runOfficialSourceIngestion({sourceId:s.id,maxPages:3});
+  expect((await state.db!.query("select id from opportunities where official_source_id=$1",[s.id])).rows).toHaveLength(2);
+  await state.db!.query('update opportunities set next_source_check_at=null where official_source_id=$1',[s.id]);
+  respond(html.replace('</article>','<p>Educadores que Inspiram: inscrições encerradas.</p></article>'));
+  expect(await recheckKnownOpportunities(s,3,async()=>'' )).toMatchObject({failed:0,pagesChecked:1});
+  const live=await listLiveCatalogue(); expect(live).toHaveLength(1); expect(live[0].title).toContain('Desafio WOA');
+ } finally {vi.useRealTimers();}
 });

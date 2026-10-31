@@ -149,3 +149,21 @@ it("follows the audited CPS canonical redirect but rejects any other path on the
  vi.mocked(safeRequest).mockImplementation(async url=>url.endsWith("/robots.txt") ? new Response("") : new Response(null,{status:301,headers:{location:"https://arinter.cps.sp.gov.br/unaudited/"}}));
  await expect(fetchOfficialResource(alias,cps)).rejects.toThrow("registro oficial");
 });
+
+it.each([
+ ["exp-olimpiada-brasileira-de-fisiologia","obfis.cienciasecognicao.org"],
+ ["exp-olimpiada-brasileira-de-neurociencia-brazilian-brain-bee","brazilianbrainbee.org"],
+ ["exp-olimpiada-brasileira-de-neurociencias-para-graduandos","obng.cienciasecognicao.org"],
+])("bounds the new gzip compatibility to audited target %s and its exact homepage",async(id,host)=>{
+ vi.stubEnv('INGESTION_REQUEST_DELAY_MS','100');
+ const s={...source,id,baseUrl:`https://${host}/`,allowedDomains:[host,'other.example.org']};
+ vi.mocked(safeRequest).mockImplementation(async requested=>requested.endsWith('/robots.txt')?new Response(''):new Response('Official public page'));
+ vi.mocked(safeRequest).mockClear(); await fetchOfficialResource(s.baseUrl,s);
+ expect(vi.mocked(safeRequest).mock.calls.every(call=>call[5]===true)).toBe(true);
+ for(const [url,configured] of [[s.baseUrl,{...s,id:'other-source'}],[s.baseUrl+'other-page',s],['https://other.example.org/',s]] as const){
+  vi.mocked(safeRequest).mockClear(); await fetchOfficialResource(url,configured);
+  expect(vi.mocked(safeRequest).mock.calls.every(call=>call[5]===false)).toBe(true);
+ }
+ vi.mocked(safeRequest).mockImplementation(async()=>new Response('User-agent: *\nDisallow: /'));
+ await expect(fetchOfficialResource(s.baseUrl,s)).rejects.toThrow('robots');
+});

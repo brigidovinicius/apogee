@@ -1,0 +1,902 @@
+{
+  "complete": true,
+  "manifestHash": "584ad11bcc5e55d86c66c691bd0a1ebd3bbe3adb1521ce24f3695b945f48b356",
+  "checkedAt": "2026-10-31T01:25:55.960Z",
+  "results": [
+    {
+      "kind": "source",
+      "id": "exp-literatura-16-2026",
+      "url": "https://www.olimpiadadeliteratura.com.br/",
+      "candidates": [
+        {
+          "title": "Olimpíada de Literatura — 16ª edição (Ouro e Candura)",
+          "status": "open",
+          "deadline": "2026-10-30",
+          "start": "2026-11-11"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-oceano-2026",
+      "url": "https://olimpiada.maredeciencia.eco.br/",
+      "candidates": [
+        {
+          "title": "Olimpíada do Oceano 2026 — Educadores que Inspiram",
+          "status": "open",
+          "deadline": "2026-11-20",
+          "start": null
+        },
+        {
+          "title": "Olimpíada do Oceano 2026 — Desafio WOA",
+          "status": "open",
+          "deadline": "2026-12-10",
+          "start": null
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-obapo-2027",
+      "url": "https://olimpikei.com.br/obapo-2027-renovacao/",
+      "candidates": [
+        {
+          "title": "OBAPO 2027 — renovação de escolas participantes",
+          "status": "open",
+          "deadline": "2026-11-20",
+          "start": "2027-04-19"
+        },
+        {
+          "title": "OBAPO 2027 — inscrições gerais de escolas",
+          "status": "unknown",
+          "deadline": "2027-03-31",
+          "start": "2027-04-19"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-hack-brasil-2026",
+      "url": "https://hackbrasil.com/",
+      "candidates": [
+        {
+          "title": "Hack Brasil 2026 — hackathon nacional",
+          "status": "open",
+          "deadline": "2026-11-30",
+          "start": "2026-11-04"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-pucpr-ia-2026",
+      "url": "https://www.pucpr.br/noticias/destaque/pucpr-abre-inscricoes-para-hackathon-de-inteligencia-artificial-em-parceria-com-o-google/",
+      "candidates": [
+        {
+          "title": "Hackathon de IA na Educação — PUCPR 2026",
+          "status": "open",
+          "deadline": "2026-11-13",
+          "start": "2026-11-28"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-ufms-cidada-2026",
+      "url": "https://www.ufms.br/inscricoes-para-o-2o-hackathon-do-nucleo-de-formacao-cidada-vao-ate-9-de-novembro/",
+      "candidates": [
+        {
+          "title": "2º Hackathon do Núcleo de Formação Cidadã — UFMS 2026",
+          "status": "open",
+          "deadline": "2026-11-09",
+          "start": "2026-11-25"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-pmi-impacto-2026",
+      "url": "https://www.sympla.com.br/evento-online/lgc/3618075",
+      "candidates": [
+        {
+          "title": "Hackathon Impacto Social, IA e Gestão de Projetos — PMI 2026",
+          "status": "open",
+          "deadline": "2026-11-09",
+          "start": "2026-12-12"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-luma-hackbr-2026",
+      "url": "https://luma.com/11obbloe",
+      "candidates": [
+        {
+          "title": "Hack Brasil · Encontro de lançamento em São Paulo",
+          "status": "open",
+          "deadline": null,
+          "start": "2026-11-05T18:00:00.000-03:00"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-luma-womakers-2026",
+      "url": "https://luma.com/gb0prlff",
+      "candidates": [
+        {
+          "title": "Construindo IA em Escala: da Engenharia ao Impacto no Cliente",
+          "status": "open",
+          "deadline": null,
+          "start": "2026-12-03T09:30:00.000-03:00"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-luma-shiva-2026",
+      "url": "https://luma.com/447n4gsd",
+      "candidates": [
+        {
+          "title": "Shiva Hack #9 – Empowering Women w/ Endeavor + Sororitê",
+          "status": "open",
+          "deadline": null,
+          "start": "2026-11-07T09:00:00.000-03:00"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-luma-platform-2026",
+      "url": "https://luma.com/8nmknjda",
+      "candidates": [
+        {
+          "title": "PlatformCon Live Day - São Paulo",
+          "status": "closed",
+          "deadline": null,
+          "start": "2026-11-07T08:00:00.000-03:00"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-luma-founders-2026",
+      "url": "https://luma.com/founderslive-rio-de-janeiro-2026-11",
+      "candidates": [
+        {
+          "title": "Founders Live Rio de Janeiro",
+          "status": "open",
+          "deadline": null,
+          "start": "2026-11-17T19:00:00.000-03:00"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "source",
+      "id": "exp-luma-builders-2026",
+      "url": "https://luma.com/1u8q55ta",
+      "candidates": [
+        {
+          "title": "Builders Day · 1565 × Taicor",
+          "status": "open",
+          "deadline": null,
+          "start": "2026-11-28T09:00:00.000-03:00"
+        }
+      ],
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obc-ciencias",
+      "url": "https://www.obciencias.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obe-empreendedorismo",
+      "url": "https://obempreende.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obe-estatistica",
+      "url": "https://obe.icmc.usp.br/",
+      "outcome": "blocked",
+      "reason": "source_request_failed"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obereri",
+      "url": "https://abpn.org.br/olimpiada-brasileira-de-relacoes-etnico-raciais-afro-brasileiras-africanas-e-indigenas-obereri/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obi",
+      "url": "https://olimpiada.ic.unicamp.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obmacs",
+      "url": "https://podemos.mat.br/obmacs",
+      "outcome": "blocked",
+      "reason": "tls_verification_failed"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obmed-olimpikei",
+      "url": "https://olimpikei.com.br/olimpiada-brasileira-de-medicina/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-oboa",
+      "url": "https://noic.com.br/obo/astronomia/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-oboart",
+      "url": "https://noic.com.br/obo/artes/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obob",
+      "url": "https://noic.com.br/obo/biologia/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-oboc",
+      "url": "https://noic.com.br/obo/ciencias/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-oboch",
+      "url": "https://noic.com.br/obo/humanas/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-oboecon",
+      "url": "https://noic.com.br/obo/economia/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obof",
+      "url": "https://noic.com.br/obo/fisica/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obofe",
+      "url": "https://noic.com.br/obo/fisica-experimental/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obofog",
+      "url": "https://noic.com.br/obo/foguetes/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-oboi",
+      "url": "https://noic.com.br/obo/informatica/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-oboia",
+      "url": "https://noic.com.br/obo/ia/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obol",
+      "url": "https://noic.com.br/obo/linguistica/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obom",
+      "url": "https://noic.com.br/obo/matematica/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-oboq",
+      "url": "https://noic.com.br/obo/quimica/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obor",
+      "url": "https://noic.com.br/obo/robotica/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obrac",
+      "url": "https://olimpiadadecartografia.uff.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obs-saber",
+      "url": "https://obssaberes.org/web-site/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obs-sociologia",
+      "url": "https://olimpiadadesociologia.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obsma",
+      "url": "https://olimpiada.fiocruz.br/edicao-atual",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-oclipi",
+      "url": "https://seduc.pi.gov.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-administracao",
+      "url": "https://www.obadm.org.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-africanidades-e-povos-originarios",
+      "url": "https://olimpikei.com.br/obapo/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-agropecuaria",
+      "url": "https://portal.ifsuldeminas.edu.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-astronomia-e-astronautica",
+      "url": "https://site.oba.org.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-biologia",
+      "url": "https://olimpiadasdebiologia.butantan.gov.br/",
+      "outcome": "blocked",
+      "reason": "robots_unavailable_or_disallowed"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-biologia-sintetica",
+      "url": "https://synbiobr.org/olimpiada/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-biotecnologia",
+      "url": "https://www.obbiotec.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-diplomacia-e-relacoes-internacionais",
+      "url": "https://www.ubiquejunior.com.br/obdip",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-economia",
+      "url": "https://www.obecon.org.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-educacao-financeira",
+      "url": "https://csa.uem.br/edfin",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-fisica",
+      "url": "https://www1.fisica.org.br/olimpiada/",
+      "outcome": "blocked",
+      "reason": "unsupported_content"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-fisica-das-escolas-publicas",
+      "url": "https://www1.fisica.org.br/~obfep/inscricoes-2026/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-fisiologia",
+      "url": "https://obfis.cienciasecognicao.org/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-foguetes",
+      "url": "https://site.oba.org.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-geografia",
+      "url": "https://obgeografia.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-geopolitica",
+      "url": "https://www.seletaeducacao.com.br/obgp",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-inovacao-ciencia-e-tecnologia",
+      "url": "https://www.obict.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-investimento",
+      "url": "https://obinvest.org/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-lingua-inglesa",
+      "url": "https://www.seletaeducacao.com.br/obli",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-linguistica",
+      "url": "https://obling.org/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-matematica",
+      "url": "https://www.obm.org.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-matematica-das-escolas-publicas",
+      "url": "https://www.obmep.org.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-matematica-das-escolas-publicas-e-privadas-mirim",
+      "url": "https://olimpiadamirim.obmep.org.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-matematica-financeira",
+      "url": "https://www.seletaeducacao.com.br/obmf",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-neurociencia-brazilian-brain-bee",
+      "url": "https://brazilianbrainbee.org/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-neurociencias-para-graduandos",
+      "url": "https://obng.cienciasecognicao.org/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-quimica",
+      "url": "https://obquimica.org/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-quimica-junior",
+      "url": "https://obquimica.org/olimpiada/olimpiada-brasileira-de-quimica-junior",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-raciocinio-logico",
+      "url": "https://www.obrl.com.br/",
+      "outcome": "blocked",
+      "reason": "request_timeout"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-robotica",
+      "url": "https://obr.robocup.org.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-satelites",
+      "url": "https://wiki.obsat.org.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-brasileira-de-tecnologia",
+      "url": "https://www.alphalumen.org.br/olimpiada-brasileira-de-tecnologia-obt/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-camaleao-da-quimica",
+      "url": "https://sites.google.com/view/olimpiadacamaleao",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-cearense-de-informatica",
+      "url": "https://oci.dc.ufc.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-cientifica-ecoinovar",
+      "url": "https://olimpiada.ecoinovar.com/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-de-ciencias-humanas-do-estado-do-ceara",
+      "url": "https://oche.ifce.edu.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-de-espanhol",
+      "url": "https://olimpiadadeespanhol.com/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-de-ingles",
+      "url": "https://oingles.com/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-de-literatura",
+      "url": "https://www.olimpiadadeliteratura.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-de-matematica-da-unicamp",
+      "url": "https://www.olimpiada.ime.unicamp.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-de-matematica-das-instituicoes-federais",
+      "url": "https://omif.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-de-matematica-mandacaru",
+      "url": "https://olimpiadamandacaru.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-de-portugues",
+      "url": "https://olimpiadadeportugues.org/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-de-redacao-da-rede-estadual-de-minas-gerais",
+      "url": "https://www.educacao.mg.gov.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-de-tecnologia-e-inovacao-do-instituto-polymathos",
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLScs8gOi2yLnGGBNXPbQGc7YVrOXuUlb8-9dEmtffn7K33NGCA/closedform",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-do-bem-publico",
+      "url": "https://eppg.fgv.br/olimpiada-do-bem-publico",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-do-conhecimento-do-senai",
+      "url": "https://olimpiada.rn.senai.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-do-conhecimento-juridico",
+      "url": "https://www.abdireitocivil.com.br/xii-olimpiada-do-conhecimento-juridico-abdc-2025/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-do-oceano",
+      "url": "https://olimpiada.maredeciencia.eco.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-do-tesouro-direto-de-educacao-financeira",
+      "url": "https://www.olitef.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-estadual-em-historia-de-sergipe",
+      "url": "https://seduc.se.gov.br/",
+      "outcome": "blocked",
+      "reason": "request_timeout"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-itabirana-de-matematica",
+      "url": "https://olimpiadaitabirana.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-matematicos-por-diversao",
+      "url": "https://matematicopordiversao.wordpress.com/5a-olimpiada-matematicos-por-diversao-ompd-2024/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-nacional-de-astronomia",
+      "url": "https://www.saberdaciencia.org/ona",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-nacional-de-ciencias",
+      "url": "https://www.onciencias.org/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-nacional-de-eficiencia-energetica",
+      "url": "https://onee.org.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-nacional-de-filosofia",
+      "url": "https://onfilbr.org/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-nacional-de-fisica",
+      "url": "https://www.saberdaciencia.org/onf",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-nacional-de-ilustracao-cientifica",
+      "url": "https://ilustraciencia.ufv.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-nacional-de-inteligencia-artificial",
+      "url": "https://www.oniabrasil.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-nacional-de-matematica",
+      "url": "https://www.saberdaciencia.org/onm",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-nacional-de-nanotecnologia",
+      "url": "https://www.onanobrasil.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-nacional-feminina-de-quimica",
+      "url": "https://quimeninas.obquimica.org/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-nacional-sobre-ambientes-marinhos-e-polares",
+      "url": "https://www.uergs.edu.br/4-polaron",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-paulista-de-matematica",
+      "url": "https://www.opm.mat.br/",
+      "outcome": "blocked",
+      "reason": "tls_verification_failed"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-pernambucana-de-astronomia-e-astronautica",
+      "url": "https://sites.google.com/recife.ifpe.edu.br/opa-olimpadaastronomia/p%C3%A1gina-inicial",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-pernambucana-de-fisica",
+      "url": "https://sites.google.com/recife.ifpe.edu.br/opef/p%C3%A1gina-inicial",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-pernambucana-de-foguetes",
+      "url": "https://sites.google.com/recife.ifpe.edu.br/opefog-ifpe-olimpiada-foguetes/p%C3%A1gina-inicial",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-sertaneja-de-matematica",
+      "url": "https://www.osmsertao.com.br/",
+      "outcome": "blocked",
+      "reason": "robots_unavailable_or_disallowed"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-starboard-science-de-matematica",
+      "url": "https://projetocqd.com.br/ossm2025/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-olimpiada-virtual-de-fisica",
+      "url": "https://www.villaloboseducacao.com.br/olimpiada-virtual-de-fisica-2024-ovf/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-onhb",
+      "url": "https://www.olimpiadadehistoria.com.br/",
+      "outcome": "blocked",
+      "reason": "response_limit_exceeded"
+    },
+    {
+      "kind": "target",
+      "id": "exp-vitalis-olimpiada-de-medicina",
+      "url": "https://olimpiadademedicina.org/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obvc",
+      "url": "https://obvc.com.br/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-luma-sp",
+      "url": "https://luma.com/saopaulo",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-luma-rio",
+      "url": "https://luma.com/rio",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-hackbr",
+      "url": "https://hackbrasil.com/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-unisoma",
+      "url": "https://unisoma.com.br/desafio/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-womakers",
+      "url": "https://luma.com/womakerscode",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-gama",
+      "url": "https://luma.com/gamahouse",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-founders",
+      "url": "https://luma.com/founders-live",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-builders",
+      "url": "https://luma.com/1565",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-obapo-2027-watch",
+      "url": "https://olimpikei.com.br/obapo-2027-renovacao/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-pucpr-ia-2026-watch",
+      "url": "https://www.pucpr.br/noticias/destaque/pucpr-abre-inscricoes-para-hackathon-de-inteligencia-artificial-em-parceria-com-o-google/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-ufms-cidada-2026-watch",
+      "url": "https://www.ufms.br/inscricoes-para-o-2o-hackathon-do-nucleo-de-formacao-cidada-vao-ate-9-de-novembro/",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-pmi-impacto-2026-watch",
+      "url": "https://www.sympla.com.br/evento-online/lgc/3618075",
+      "outcome": "checked"
+    },
+    {
+      "kind": "target",
+      "id": "exp-wolfram",
+      "url": "https://www.wolfram.com/events/user-conference-brazil/2026/hackathon/",
+      "outcome": "blocked",
+      "reason": "http_406"
+    },
+    {
+      "kind": "target",
+      "id": "exp-cianorte",
+      "url": "https://www.cianorte.pr.gov.br/noticiasView/11190_Inscricoes-abertas-para-o-Hackathon-GovTech-2026-.html",
+      "outcome": "blocked",
+      "reason": "robots_unavailable_or_disallowed"
+    }
+  ]
+}

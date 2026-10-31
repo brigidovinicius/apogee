@@ -1,0 +1,99 @@
+[
+  {
+    "id": "exp-luma-hackbr-2026",
+    "url": "https://luma.com/11obbloe",
+    "title": "Hack Brasil · Encontro de lançamento em São Paulo",
+    "organizer": "Hack Brasil",
+    "organizer_name": "Hack Brasil",
+    "organizer_url": "https://luma.com/hackbr",
+    "checks": [
+      "lançamento presencial",
+      "RSVP"
+    ],
+    "requirements": "Encontro de lançamento do Hack Brasil na FIAP Paulista. Networking e formação de times; o RSVP deste encontro não inscreve o time na competição. A inscrição do hackathon é separada, no site Hack Brasil.",
+    "conditions": "Evento gratuito. Os benefícios anunciados para a competição não são prêmio pela presença neste encontro.",
+    "state": "SP",
+    "city": "São Paulo",
+    "competition": false
+  },
+  {
+    "id": "exp-luma-womakers-2026",
+    "url": "https://luma.com/gb0prlff",
+    "title": "Construindo IA em Escala: da Engenharia ao Impacto no Cliente",
+    "organizer": "WoMakersCode",
+    "organizer_name": "WoMakersCode",
+    "organizer_url": "https://luma.com/womakerscode",
+    "checks": [
+      "exclusivamente para mulheres"
+    ],
+    "requirements": "Encontro presencial direcionado exclusivamente a mulheres da tecnologia, no Cubo Itaú, com casos de IA, liderança e produtividade. Solicitação de participação sujeita à aprovação da organização.",
+    "conditions": "Não há prêmio, emprego ou bolsa individual garantidos pela presença.",
+    "state": "SP",
+    "city": "São Paulo",
+    "competition": false
+  },
+  {
+    "id": "exp-luma-shiva-2026",
+    "url": "https://luma.com/447n4gsd",
+    "title": "Shiva Hack #9 – Empowering Women w/ Endeavor + Sororitê",
+    "organizer": "Gama House",
+    "organizer_name": "GAMA HOUSE | powered by Monashees, Google for Startups & B3",
+    "organizer_url": "https://luma.com/gamahouse",
+    "checks": [
+      "Não tem competição, não tem prêmio",
+      "notebook e carregador"
+    ],
+    "requirements": "Dia de construção de projetos com IA para a comunidade de mulheres, com Endeavor e Sororitê. Levar notebook e carregador. Sujeito à aprovação da organização e à lotação. O endereço exato é liberado aos inscritos. A página informa que não há disputa, banca ou premiação.",
+    "conditions": "Atividade de aprendizagem e construção; sem prêmio.",
+    "state": "SP",
+    "city": "São Paulo",
+    "competition": false
+  },
+  {
+    "id": "exp-luma-platform-2026",
+    "url": "https://luma.com/8nmknjda",
+    "title": "PlatformCon Live Day - São Paulo",
+    "organizer": "Platform Engineering",
+    "organizer_name": "Platform Engineering",
+    "organizer_url": "https://luma.com/user/usr-RYmVKHaX7C0TEbH",
+    "checks": [],
+    "requirements": "Conferência presencial sobre Platform Engineering em São Paulo, no Nubank Spark. Confira a agenda, as condições do ingresso e a disponibilidade diretamente na página do evento.",
+    "conditions": "Lotes gratuitos anteriores não tornam gratuito o ingresso atual. Sem prêmio ou remuneração anunciados nesta ficha.",
+    "state": "SP",
+    "city": "São Paulo",
+    "competition": false
+  },
+  {
+    "id": "exp-luma-founders-2026",
+    "url": "https://luma.com/founderslive-rio-de-janeiro-2026-11",
+    "title": "Founders Live Rio de Janeiro",
+    "organizer": "Founders Live",
+    "organizer_name": "Founders Live",
+    "organizer_url": "https://luma.com/founders-live",
+    "checks": [
+      "competição de pitches"
+    ],
+    "requirements": "Encontro presencial de networking e apresentações de startups no Rio de Janeiro. Este RSVP é para participar como público. A candidatura de startup para apresentar pitch usa outra rota indicada pela organização e não é garantida por este cadastro.",
+    "conditions": "Pacotes, créditos e descontos divulgados para startups vencedoras não equivalem a dinheiro nem são benefícios garantidos ao público.",
+    "state": "RJ",
+    "city": "Rio de Janeiro",
+    "competition": false
+  },
+  {
+    "id": "exp-luma-builders-2026",
+    "url": "https://luma.com/1u8q55ta",
+    "title": "Builders Day · 1565 × Taicor",
+    "organizer": "1565.io",
+    "organizer_name": "1565.io",
+    "organizer_url": "https://luma.com/1565",
+    "checks": [
+      "Times de até 4 pessoas",
+      "Cada inscrição é aprovada mediante avaliação"
+    ],
+    "requirements": "Hackathon presencial de 1565 e Taicor no Rio de Janeiro. Times de até quatro; pessoas inscritas individualmente podem formar equipe no evento. Resolver problemas reais da cidade e apresentar o projeto ao final. Vagas limitadas, com inscrição sujeita à avaliação.",
+    "conditions": "A organização anuncia R$ 25 mil em prêmios, além de almoço e jantar. A natureza e divisão dos prêmios dependem das regras; não tratar esse total como dinheiro garantido para cada participante.",
+    "state": "RJ",
+    "city": "Rio de Janeiro",
+    "competition": true
+  }
+]
