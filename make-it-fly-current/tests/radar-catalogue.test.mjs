@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -133,6 +134,15 @@ test("an announced prize total with unconfirmed nature remains outside financial
   assert.ok(financials.notes.some(note => note.includes("25 mil")));
   const confirmed = radar.financialsFromRadar({ benefitType: "prize", amountText: "Premiação em dinheiro de R$ 25.000 para a equipe vencedora." });
   assert.equal(confirmed.benefits[0].label, "PREMIAÇÃO");
+});
+
+test("all eleven reviewed event records keep absent awards out of financial labels", () => {
+  const batch = JSON.parse(readFileSync(new URL("../../research/tech-business-events-20261101/publication-batch.json", import.meta.url), "utf8"));
+  assert.equal(batch.items.length, 11);
+  for (const entry of batch.items) assert.deepEqual(radar.financialsFromRadar(entry.opportunity).benefits, [], entry.id);
+  for (const amountText of ["Sem prêmio em dinheiro confirmado.", "Não há prêmios financeiros.", "Mentorias restritas; sem prêmio financeiro ao participante confirmado."]) {
+    assert.deepEqual(radar.financialsFromRadar({ benefitType: "prize", amountText }).benefits, [], amountText);
+  }
 });
 
 test("nearby event dates break ties without becoming registration deadlines or overriding a requested subject", () => {
