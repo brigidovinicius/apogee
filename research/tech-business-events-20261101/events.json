@@ -1,0 +1,371 @@
+{
+  "version": 1,
+  "researchedOn": "2026-11-01",
+  "timezone": "America/Sao_Paulo",
+  "purpose": "Editorial research from the user’s examples; no automatic import or publication.",
+  "ownerThread": "01a1972e-f3bb-7002-87da-050e3bfc5b5a",
+  "integrationOwnerThread": "01a1971b-d83f-7863-90b5-ae96af985a43",
+  "items": [
+    {
+      "id": "convergencia-summit-2026",
+      "title": "Convergência Summit 2026",
+      "organizer": "StartSe",
+      "startsOn": "2026-11-03",
+      "endsOn": "2026-11-04",
+      "city": "São Paulo",
+      "state": "SP",
+      "format": "presencial",
+      "areas": [
+        "tecnologia",
+        "ia",
+        "negocios"
+      ],
+      "officialUrl": "https://pages.startse.com/convergencia-summit",
+      "evidenceUrls": [
+        "https://pages.startse.com/convergencia-summit"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "cta_presente",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Pago, voltado a empresários e C-levels. O valor do primeiro lote anunciado tinha validade até 12/10; confirmar lote atual. Não há premiação individual confirmada.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "bootcamp-deep-tech-2026",
+      "title": "Bootcamp Deep Tech | 11/2026",
+      "organizer": "Sebrae for Startups / IPT",
+      "startsOn": "2026-11-03",
+      "endsOn": "2026-11-05",
+      "city": "São Paulo",
+      "state": "SP",
+      "format": "presencial",
+      "areas": [
+        "tecnologia",
+        "negocios"
+      ],
+      "officialUrl": "https://www.sympla.com.br/evento/bootcamp-deep-tech-11-2026/3551399",
+      "evidenceUrls": [
+        "https://www.sympla.com.br/evento/bootcamp-deep-tech-11-2026/3551399",
+        "https://www.sympla.com.br/evento/bootcamp-deep-tech-11-2026/3551399?lang=pt"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "disponibilidade_a_confirmar",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Participação geral e processo seletivo de mentorias/DMT são fluxos separados. Prazo de candidatura às mentorias: 08/10/2026; inscrição apenas no Sympla não habilita para essa seleção. Não anunciar mentorias abertas.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "dcd-connect-brasil-2026",
+      "title": "DCD Connect Brasil 2026",
+      "organizer": "DatacenterDynamics",
+      "startsOn": "2026-11-04",
+      "endsOn": "2026-11-05",
+      "city": "São Paulo",
+      "state": "SP",
+      "format": "presencial",
+      "areas": [
+        "tecnologia",
+        "ia",
+        "negocios"
+      ],
+      "officialUrl": "https://www.datacenterdynamics.com/br/dcd-connect-live/brasil/2026/",
+      "evidenceUrls": [
+        "https://www.datacenterdynamics.com/br/dcd-connect-live/brasil/2026/"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "solicitacao_de_entrada",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Entrada gratuita somente para perfis End-User/Specifier elegíveis. Há passes pagos para outros perfis. Solicitação não garante aprovação. Sem premiação ao participante confirmada.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "hsm-mais-2026",
+      "title": "HSM+ 2026",
+      "organizer": "HSM",
+      "startsOn": "2026-11-04",
+      "endsOn": "2026-11-05",
+      "city": "São Paulo",
+      "state": "SP",
+      "format": "presencial",
+      "areas": [
+        "tecnologia",
+        "ia",
+        "negocios"
+      ],
+      "officialUrl": "https://hsmmais.com.br/",
+      "evidenceUrls": [
+        "https://hsmmais.com.br/"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "cta_presente",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Ingresso pago; evento de liderança, estratégia, IA e inovação no Distrito Anhembi. Página anuncia lote 3 válido até 03/11/2026; revalidar valor e estoque antes da ficha.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "semana-ia-serpro-2026",
+      "title": "Semana de IA Serpro 2026",
+      "organizer": "Serpro",
+      "startsOn": "2026-11-04",
+      "endsOn": "2026-11-06",
+      "city": "Brasília",
+      "state": "DF",
+      "format": "hibrido",
+      "areas": [
+        "tecnologia",
+        "ia",
+        "dados"
+      ],
+      "officialUrl": "https://campanhas.serpro.gov.br/semana-de-ia-serpro/",
+      "evidenceUrls": [
+        "https://campanhas.serpro.gov.br/semana-de-ia-serpro/"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "cta_presente",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Participação gratuita com inscrição obrigatória. A página anuncia 100 vagas presenciais e transmissão online. Capacidade anunciada não prova vagas remanescentes.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "sebrae-rio-summit-2026",
+      "title": "Sebrae Rio Summit 2026",
+      "organizer": "Sebrae Rio",
+      "startsOn": "2026-11-10",
+      "endsOn": "2026-11-12",
+      "city": "Rio de Janeiro",
+      "state": "RJ",
+      "format": "presencial",
+      "areas": [
+        "tecnologia",
+        "negocios"
+      ],
+      "officialUrl": "https://sebraeriosummit.com.br/",
+      "evidenceUrls": [
+        "https://sebraeriosummit.com.br/",
+        "https://rj.agenciasebrae.com.br/cultura-empreendedora/sebrae-rio-summit-2026-reunira-conteudo-inovacao-networking-e-experiencias-praticas-para-empreendedores/"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "cta_presente",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Inscrição gratuita anunciada no site oficial; Riocentro, 10h às 19h. Empreendedorismo, startups, soluções e networking.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "semana-inovacao-2026",
+      "title": "Semana de Inovação 2026",
+      "organizer": "Enap e instituições parceiras",
+      "startsOn": "2026-11-10",
+      "endsOn": "2026-11-12",
+      "city": "Brasília",
+      "state": "DF",
+      "format": "hibrido",
+      "areas": [
+        "tecnologia",
+        "ia",
+        "dados"
+      ],
+      "officialUrl": "https://semanadeinovacao.enap.gov.br/",
+      "evidenceUrls": [
+        "https://semanadeinovacao.enap.gov.br/",
+        "https://enap.gov.br/acontece/noticias/semana-de-inova%C3%A7%C3%A3o-2026-j%C3%A1-est%C3%A1-com-inscri%C3%A7%C3%B5es-abertas-vagas-na-enap-s%C3%A3o-limitadas/",
+        "https://semanadeinovacao.enap.gov.br/programacao/"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "inscricoes_anunciadas_pagina_indisponivel",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Notícia oficial da Enap confirma inscrições e programação gratuita online/presencial. A página do evento expirou por timeout nesta pesquisa; requer nova leitura operacional. Vagas presenciais limitadas.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "red-hat-connect-sp-2026",
+      "title": "Red Hat Summit: Connect 2026 São Paulo",
+      "organizer": "Red Hat",
+      "startsOn": "2026-11-10",
+      "endsOn": "2026-11-10",
+      "city": "São Paulo",
+      "state": "SP",
+      "format": "presencial",
+      "areas": [
+        "tecnologia",
+        "ia"
+      ],
+      "officialUrl": "https://www.redhat.com/en/summit/connect/latam/sao-paulo-2026",
+      "evidenceUrls": [
+        "https://www.redhat.com/en/summit/connect/latam/sao-paulo-2026"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "solicitacao_de_vaga",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Página oficial oferece solicitação de vaga com ou sem conta Red Hat; Transamerica Expo Center. Custo e aprovação devem ser confirmados no fluxo oficial.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "pucsp-congresso-ia-2026",
+      "title": "7º Congresso de Inteligência Artificial da PUC-SP",
+      "organizer": "PUC-SP / PUC-Campinas / PUC-Rio",
+      "startsOn": "2026-11-10",
+      "endsOn": "2026-11-11",
+      "city": null,
+      "state": null,
+      "format": "online",
+      "areas": [
+        "tecnologia",
+        "ia"
+      ],
+      "officialUrl": "https://eventos.pucsp.br/7-congresso-ia/",
+      "evidenceUrls": [
+        "https://eventos.pucsp.br/7-congresso-ia/",
+        "https://j.pucsp.br/agenda/7o-congresso-de-inteligencia-artificial-da-puc-sp"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "cta_presente_disponibilidade_dinamica",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Congresso online, síncrono e gratuito. A submissão de projetos encerrava em 25/09/2026. Bolsas para projetos selecionados não são premiação garantida a ouvintes. Lotes/inscrições dependem de interface dinâmica.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "tdc-experience-recife-2026",
+      "title": "TDC Experience Recife 2026",
+      "organizer": "The Developer’s Conference",
+      "startsOn": "2026-11-11",
+      "endsOn": "2026-11-12",
+      "city": "Recife",
+      "state": "PE",
+      "format": "presencial",
+      "areas": [
+        "tecnologia"
+      ],
+      "officialUrl": "https://www.thedevconf.com/tdc/2026/datas-e-locais",
+      "evidenceUrls": [
+        "https://www.thedevconf.com/tdc/2026/datas-e-locais"
+      ],
+      "eventDateEvidence": "official_index_only",
+      "registrationStatus": "acesso_bloqueado",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Resultado indexado da página oficial confirma 11 e 12/11/2026 e Moinho Recife no REC’n’Play. Leitura direta bloqueada por robots; confirmar edição, disponibilidade e inscrição por meio permitido antes de incorporar.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "recnplay-2026",
+      "title": "REC’n’Play 2026",
+      "organizer": "Porto Digital / Sebrae e parceiros",
+      "startsOn": "2026-11-11",
+      "endsOn": "2026-11-14",
+      "city": "Recife",
+      "state": "PE",
+      "format": "presencial",
+      "areas": [
+        "tecnologia",
+        "negocios"
+      ],
+      "officialUrl": "https://recnplay.pe/",
+      "evidenceUrls": [
+        "https://recnplay.pe/",
+        "https://recnplay.pe/programacao/"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "cta_presente",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Festival gratuito no Bairro do Recife. Página oficial oferece inscrição; atividades específicas podem ter capacidade e inscrição próprias.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "brasil-global-summit-2026",
+      "title": "Brasil Global Summit 2026",
+      "organizer": "Brasil Global",
+      "startsOn": "2026-11-24",
+      "endsOn": "2026-11-26",
+      "city": "Brasília",
+      "state": "DF",
+      "format": "presencial",
+      "areas": [
+        "tecnologia",
+        "ia",
+        "negocios"
+      ],
+      "officialUrl": "https://brasilglobalsummit.com/",
+      "evidenceUrls": [
+        "https://brasilglobalsummit.com/"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "cta_presente",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Evento gratuito na Arena Mané Garrincha. Inscrição de visitantes é separada do edital Brasil Global Startups, cujo prazo informado era 24/10. Não anunciar a seleção de 30 startups como aberta.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "case-2026",
+      "title": "CASE 2026",
+      "organizer": "ABStartups",
+      "startsOn": "2026-11-26",
+      "endsOn": "2026-11-27",
+      "city": "São Paulo",
+      "state": "SP",
+      "format": "presencial",
+      "areas": [
+        "tecnologia",
+        "negocios"
+      ],
+      "officialUrl": "https://case.abstartups.com.br/",
+      "evidenceUrls": [
+        "https://case.abstartups.com.br/"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "cta_presente",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "Conferência de startups na FEA-USP. Site oferece ingresso via Sympla. Assistir à cerimônia Startup Awards não equivale a concorrer nem garante prêmio; candidatura/hosts são fluxos próprios.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    },
+    {
+      "id": "frontin-floripa-2026",
+      "title": "Front in Floripa 2026",
+      "organizer": "Front in Floripa",
+      "startsOn": "2026-11-28",
+      "endsOn": "2026-11-28",
+      "city": "Florianópolis",
+      "state": "SC",
+      "format": "presencial",
+      "areas": [
+        "tecnologia",
+        "ia"
+      ],
+      "officialUrl": "https://frontin.floripa.br/",
+      "evidenceUrls": [
+        "https://frontin.floripa.br/"
+      ],
+      "eventDateEvidence": "official_page",
+      "registrationStatus": "esgotado",
+      "registrationDeadline": null,
+      "confirmedCashPrizeForAttendees": false,
+      "notes": "O site oficial informa todos os lotes esgotados. Não incluir entre inscrições abertas da home ou Radar. Monitorar eventual reabertura. Sorteios de brindes não constituem premiação em dinheiro por competição.",
+      "sourceActivation": "pending_transport_scope_and_duplicate_audit",
+      "researchState": "research_only"
+    }
+  ]
+}

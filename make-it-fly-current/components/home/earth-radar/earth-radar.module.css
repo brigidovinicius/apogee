@@ -284,45 +284,10 @@
     }
 
     .preview .radar-product {
-      display: grid;
-      grid-template-columns: 190px minmax(0, 1fr);
       width: var(--page);
       margin: 0 auto;
       padding-bottom: var(--apogee-section-space);
       border-top: 1px solid var(--line);
-    }
-
-    /* Menu lateral apenas com texto, sem desenhos decorativos. */
-    .preview .radar-sidebar {
-      position: sticky;
-      top: 96px;
-      align-self: start;
-      padding: 28px 32px 28px 0;
-    }
-
-    .preview .radar-sidebar strong {
-      display: block;
-      margin-bottom: 21px;
-      font-size: 13px;
-    }
-
-    .preview .radar-sidebar nav {
-      display: grid;
-      gap: 4px;
-    }
-
-    .preview .radar-sidebar button {
-      padding: 9px 0;
-      color: #637083;
-      background: transparent;
-      border: 0;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .preview .radar-sidebar button.active,
-    .preview .radar-sidebar button:hover {
-      color: var(--ink);
     }
 
     .preview .saved-count {
@@ -338,8 +303,7 @@
 
     .preview .radar-main {
       min-width: 0;
-      padding: 28px 0 0 42px;
-      border-left: 1px solid var(--line);
+      padding-top: 28px;
     }
 
     .preview .return-note {
@@ -487,6 +451,14 @@
       color: #516073;
       font-size: 13px;
       line-height: 1.45;
+    }
+
+    .preview .opportunity-benefits {
+      margin-top: 14px;
+    }
+
+    .preview .opportunity-benefits span {
+      color: var(--muted);
     }
 
     .preview .opportunity-meta strong,
@@ -772,36 +744,6 @@
         display: none;
       }
 
-      .preview .radar-product {
-        grid-template-columns: 1fr;
-      }
-
-      .preview .radar-sidebar {
-        position: static;
-        display: flex;
-        overflow-x: auto;
-        padding: 18px 0;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .preview .radar-sidebar strong {
-        display: none;
-      }
-
-      .preview .radar-sidebar nav {
-        display: flex;
-        gap: 20px;
-      }
-
-      .preview .radar-sidebar button {
-        flex: 0 0 auto;
-      }
-
-      .preview .radar-main {
-        padding-left: 0;
-        border-left: 0;
-      }
-
       .preview .habit-grid,
       .preview .community-inner {
         grid-template-columns: 1fr;
@@ -952,9 +894,8 @@
 .preview .global-nav.is-visible { visibility: visible; }
 .preview .earth-message p { margin-top: 26px; }
 .preview .search-bar input:focus-visible { outline: 2px solid #4d7393; outline-offset: 5px; }
-.preview .nav-access, .preview .quick-filter, .preview .radar-sidebar button, .preview .opportunity-action { min-height: 44px; }
+.preview .nav-access, .preview .quick-filter, .preview .opportunity-action { min-height: 44px; }
 .preview .nav-access { display: inline-flex; align-items: center; }
-.preview .radar-sidebar button { white-space: nowrap; }
 .preview .quick-filters { scrollbar-width: thin; }
 .preview .opportunity-action { min-width: 88px; }
 .preview .result-count { margin: 0 20px 18px; color: #637083; font-size: 12px; }

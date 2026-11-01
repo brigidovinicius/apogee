@@ -3,9 +3,9 @@ import type { StudentOpportunity } from "@/lib/opportunities/types";
 import { formatMoneyText, moneyTextParts } from "@/lib/opportunities/money";
 import styles from "./opportunities.module.css";
 
-export function OpportunityBenefits({ opportunity }: { opportunity: StudentOpportunity }) {
+export function OpportunityBenefits({ opportunity, className }: { opportunity: StudentOpportunity; className?: string }) {
   if (!opportunity.financials?.benefits.length) return null;
-  return <div className={styles.financialBenefits} aria-label="Benefício financeiro confirmado">
+  return <div className={[styles.financialBenefits, className].filter(Boolean).join(" ")} aria-label="Benefício financeiro confirmado">
     {opportunity.financials.benefits.map((benefit, index) => <div key={index}>
       <span className={styles.financialLabel}>{benefit.label}</span>
       <p>{moneyTextParts(interfaceText(benefit.text)).map((part, i) => part.money

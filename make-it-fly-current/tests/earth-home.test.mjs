@@ -6,6 +6,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import ts from "typescript";
 import { interfaceText } from "../lib/presentation-text.mjs";
+import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
 const require = createRequire(import.meta.url);
 async function load(path, mocks = {}) {
@@ -22,7 +23,18 @@ const { EarthRadarList } = await load("components/home/earth-radar/earth-radar-l
   "@/lib/home-opportunities": helpers,
   "@/lib/opportunities/detail-path": { opportunityDetailPath },
   "@/lib/presentation-text.mjs": { interfaceText },
+  "@/components/opportunities/opportunity-financials": opportunityLoader()("components/opportunities/opportunity-financials.tsx"),
   "./earth-radar.module.css": { __esModule: true, default: new Proxy({}, { get: (_, key) => key }) },
+});
+
+test("homepage displays confirmed prize conditions without treating attendance or unverified prose as a prize", () => {
+  const prize = { ...item, financials: { benefits: [{ label: "PREMIAÇÃO TOTAL", text: "R$ 5000 distribuídos entre as equipes vencedoras" }], costs: [], notes: [] } };
+  const html = renderToStaticMarkup(createElement(EarthRadarList, { capturedAt, opportunities: [prize] }));
+  assert.match(html, /PREMIAÇÃO TOTAL/);
+  assert.match(html, /5\.000,00/);
+  assert.match(html, /equipes vencedoras/);
+  const attendance = renderToStaticMarkup(createElement(EarthRadarList, { capturedAt, opportunities: [{ ...item, benefit: "Cerimônia de premiação" }] }));
+  assert.doesNotMatch(attendance, /PREMIAÇÃO/);
 });
 const capturedAt = "2026-10-24T15:00:00.000Z";
 const item = { id: "verified-fixture", title: "Oportunidade da fonte", organization: "Organização", kind: "Programa", location: "Brasil", deadline: "2026-10-25", deadlineLabel: "25 de outubro", categories: ["eventos"] };
