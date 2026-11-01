@@ -1,22 +1,13 @@
-import { createHash, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
-import type { PoolClient } from "pg";
 import { withAdminTransaction } from "@/lib/db/client";
 import { publishedOpportunityPredicate } from "@/lib/db/publication-filter";
 import { eventHasNotStarted } from "@/lib/ingestion/event-start";
 import { alertMailConfiguration, alertsAvailable, sendAlertMail } from "./mail";
 
-export class AlertError extends Error { constructor(message: string, public status = 400) { super(message); } }
-const idPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const tokenPattern = /^[a-f0-9]{64}$/;
-export const fingerprint = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
-const tokenHash = (value: string) => createHash("sha256").update(value).digest("hex");
-export function normalizedAlertEmail(value: unknown) {
-  if (typeof value !== "string") throw new AlertError("Informe um e-mail válido");
-  const email = value.trim().toLowerCase();
-  if (email.length > 254 || !/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\.[a-z]{2,}$/i.test(email)) throw new AlertError("Informe um e-mail válido");
-  return email;
-}
+import { AlertError,idPattern,tokenPattern,fingerprint,tokenHash,normalizedAlertEmail,links,allowance } from "./subscription-core";
+import { queueSeriesChange,seriesIsAvailable } from "./series";
+export { AlertError,fingerprint,normalizedAlertEmail } from "./subscription-core";
 type Snapshot = Record<string, unknown> & { title: string; state: string; officialUrl: string | null };
 type Row = Record<string, unknown> & { id: string; live: boolean; title: string; categories: string[]; event_starts_at: string | null; deadline_at: string | Date | null; source_page_url: string | null };
 function snapshotDate(value: unknown, dateOnly = false) {
@@ -46,17 +37,6 @@ export function monitoringSnapshot(row: Row): Snapshot {
     requirements: row.requirements_text, benefit: row.amount_text,
     categories: [...row.categories].sort(), stateCode: row.state_code, cityName: row.city_name,
     institution: row.institution, officialUrl: row.source_page_url };
-}
-function links(confirm: string, unsubscribe: string) {
-  // Fixed public destination; never accept callback URLs from subscription requests.
-  const base = "https://www.apogee.community/oportunidades/avisos";
-  return { confirm: `${base}?acao=confirmar&token=${confirm}`, unsubscribe: `${base}?acao=cancelar&token=${unsubscribe}` };
-}
-async function allowance(client: PoolClient, key: string, max: number, seconds: number) {
-  const result = await client.query<{ count: number }>(`insert into opportunity_alert_limits (key,count,resets_at) values ($1,1,now()+$2*interval '1 second')
-    on conflict (key) do update set count=case when opportunity_alert_limits.resets_at<=now() then 1 else opportunity_alert_limits.count+1 end,
-    resets_at=case when opportunity_alert_limits.resets_at<=now() then excluded.resets_at else opportunity_alert_limits.resets_at end returning count`, [key,seconds]);
-  return result.rows[0].count <= max;
 }
 export async function subscribeToOpportunity(input: Record<string, unknown>) {
   if (!alertsAvailable()) throw new AlertError("Avisos por e-mail ainda não estão disponíveis",503);
@@ -98,8 +78,12 @@ export async function updateAlertSubscription(action: "confirm" | "unsubscribe",
       await client.query("update opportunity_alert_outbox set status='cancelled',payload='{}' where subscription_id=$1 and status in ('pending','sending')",[sub.id]);
     } else if (sub.status !== "active") {
       if (sub.status !== "pending" || new Date(sub.confirm_expires_at) <= new Date()) throw new AlertError("Link inválido ou expirado");
-      const row = (await client.query<Row>(`${opportunityQuery} where o.id=$1`,[sub.opportunity_id])).rows[0];
-      if (!row?.live) throw new AlertError("Esta oportunidade já saiu do catálogo",409);
+      if(sub.target_id) {
+        if(!await seriesIsAvailable(client,sub.target_id))throw new AlertError("Acompanhamento indisponível para esta competição",409);
+      } else {
+        const row = (await client.query<Row>(`${opportunityQuery} where o.id=$1`,[sub.opportunity_id])).rows[0];
+        if (!row?.live) throw new AlertError("Esta oportunidade já saiu do catálogo",409);
+      }
       // Keep the requested snapshot so changes published before confirmation are not lost.
       await client.query("update opportunity_alert_subscriptions set status='active',confirmed_at=now(),updated_at=now() where id=$1",[sub.id]);
       await client.query("update opportunity_alert_outbox set status='cancelled',payload='{}' where subscription_id=$1 and kind='confirmation' and status in ('pending','sending')",[sub.id]);
@@ -145,6 +129,7 @@ export async function queueOpportunityChanges() {
     const subs = (await client.query(`select * from opportunity_alert_subscriptions where status='active' order by checked_at nulls first limit 100 for update skip locked`)).rows;
     let queued=0;
     for (const sub of subs) {
+      if(sub.target_id) {queued+=await queueSeriesChange(client,sub);continue;}
       const row=(await client.query<Row>(`${opportunityQuery} where o.id=$1`,[sub.opportunity_id])).rows[0];
       if (!row) continue;
       const snapshot=monitoringSnapshot(row), fields=changedFields(sub.last_snapshot,snapshot);

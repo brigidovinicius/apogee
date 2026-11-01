@@ -14,5 +14,6 @@ export default async function CalendarsPage() {
     <div className={styles.hero}><Link href="/oportunidades">← Radar de oportunidades</Link><h1>Seu próximo passo tem uma data.</h1><p>Explore calendários e acompanhe inscrições, provas e resultados com informações verificadas.</p></div>
     {items ? <div className={styles.grid}>{CALENDARS.map(c=>{const count=new Set(calendarEntries(items.filter(c.matches)).map(e=>e.item.id)).size;return <Link className={styles.tile} key={c.slug} href={`/calendarios/${c.slug}`}><span>Calendário Apogee</span><h2>{c.name}</h2><p>{c.description}</p><small>{count} {count===1?"oportunidade":"oportunidades"} com próximas datas</small></Link>})}</div> : <p role="alert">Calendários temporariamente indisponíveis. Tente novamente em instantes.</p>}
     {personalCalendarEnabled() && <Link className={styles.action} href="/membros/meu-calendario">Meu calendário</Link>}
+    <Link className={styles.action} href="/competicoes">Acompanhar próximas edições de competições</Link>
   </main><SiteFooter/></div>;
 }

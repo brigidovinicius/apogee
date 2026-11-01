@@ -3,8 +3,7 @@ import { calendarEntries, displayOpportunityTitle, publicOpportunityPath, type C
 import type { StudentOpportunity } from "@/lib/opportunities/types";
 import styles from "./calendar.module.css";
 
-export function CalendarList({ items, allStages = false }: { items: readonly StudentOpportunity[]; allStages?: boolean }) {
-  const entries = calendarEntries(items);
+export function CalendarList({ items, allStages = false, entries = calendarEntries(items) }: { items: readonly StudentOpportunity[]; allStages?: boolean; entries?: readonly CalendarEntry[] }) {
   const seen = new Set<string>();
   const groups = new Map<string, CalendarEntry[]>();
   for (const entry of entries) {

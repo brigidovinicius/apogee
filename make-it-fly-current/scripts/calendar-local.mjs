@@ -9,12 +9,14 @@ import postgres from 'postgres';
 import { hashPassword } from 'better-auth/crypto';
 import { previewHeaders } from '../lib/navigation/local-preview.mjs';
 const app = new URL('../', import.meta.url);
-const state = new URL('../../.local/radar-calendar/', import.meta.url);
+const completion=process.argv.includes('--completion');
+const localDbPort=completion?'48931':'48763';
+const state = new URL(completion?'../../.local/radar-completion-calendar/':'../../.local/radar-calendar/', import.meta.url);
 const config = JSON.parse(await readFile(new URL('config.json', state), 'utf8'));
 const dbUrl = new URL(config.DATABASE_URL);
 assert.equal(dbUrl.protocol, 'postgresql:');
 assert.equal(dbUrl.hostname, '127.0.0.1');
-assert.equal(dbUrl.port, '48763');
+assert.equal(dbUrl.port,localDbPort);
 assert.equal(dbUrl.pathname, '/apogee_radar_calendar_local');
 assert.equal(dbUrl.username, 'radar_calendar_local');
 // Next loads .env itself: refuse files that might contain unrelated credentials.
@@ -26,7 +28,7 @@ const identity = (await sql`select current_database() as db, current_user as rol
 assert.equal(identity.db,'apogee_radar_calendar_local');
 assert.equal(identity.role,'radar_calendar_local');
 assert.match(identity.host,/^127\.0\.0\.1(?:\/32)?$/);
-assert.equal(identity.port,48763);
+assert.equal(identity.port,Number(localDbPort));
 const marker = 'apogee-radar-calendar-local-v1';
 const accounts = [{key:'vitalicio',name:'Teste Vitalício',access:true},{key:'gratuito',name:'Teste Gratuito',access:false},{key:'revogado',name:'Teste Revogado',access:false}];
 function fixtures() {
@@ -125,7 +127,11 @@ if(mode==='setup') {
   }
   const catalogue=createServer(async(req,res)=>{
     const url=new URL(req.url,'http://127.0.0.1:48762');
-    if(url.pathname!=='/catalogue'||req.headers.authorization!==`Bearer ${config.RADAR_ACADEMICO_API_TOKEN}`){res.writeHead(404).end();return;}
+    if(req.headers.authorization!==`Bearer ${config.RADAR_ACADEMICO_API_TOKEN}`){res.writeHead(404).end();return;}
+    if(url.pathname==='/api/public/series') {
+      res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'}).end(JSON.stringify({series:[{id:'demo-olimpiada',name:'Olimpíada de Matemática — Demonstração local',organizer:'Demonstração local — dados fictícios',lastCheckedAt:new Date().toISOString(),checkStatus:'checked',alertsAvailable:false}]}));return;
+    }
+    if(url.pathname!=='/catalogue'){res.writeHead(404).end();return;}
     try{
       const rows=await sql`select payload from radar_local_catalogue order by id`;
       const items=rows.map(r=>r.payload).filter(i=>url.searchParams.get('view')==='calendar'||['open','upcoming'].includes(i.opportunityStatus));

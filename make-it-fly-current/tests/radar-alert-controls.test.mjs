@@ -46,6 +46,15 @@ test("100 malformed subscriptions cannot exhaust the next legitimate subscriptio
   assert.equal(f.counts.get("radar-alerts:subscribe"), 1);
   assert.deepEqual(f.forwarded, [valid()]);
 });
+test('recurring subscriptions require separate explicit scope and share recipient protections',async t=>{
+  const f=fixture(t);
+  const payload={action:'subscribeSeries',targetId:'nasa-space-apps',email:'person@example.test',consent:true};
+  assert.equal((await f.post(payload)).status,200);
+  assert.deepEqual(f.forwarded,[payload]);
+  assert.deepEqual(f.budgets.map(b=>b.limit),[10,3,100]);
+  for(const invalid of [{...payload,consent:false},{...payload,opportunityId:id},{...payload,targetId:'../other'}])assert.equal((await f.post(invalid)).status,400);
+  assert.equal(f.forwarded.length,1);
+});
 test("invalid fields and injected properties fail before any quota or upstream access", async t => {
   const f = fixture(t);
   for (const body of [null, [], {}, { action: "delete" },

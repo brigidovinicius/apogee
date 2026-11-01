@@ -36,6 +36,17 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const radarCalendarFilter=pgTable('radar_calendar_filter',{
+  id:text('id').primaryKey(),
+  userId:text('user_id').notNull().references(()=>user.id,{onDelete:'cascade'}),
+  name:text('name').notNull(),filterQuery:text('filter_query').notNull(),
+  updatedAt:timestamp('updated_at',{withTimezone:true}).notNull().defaultNow(),
+},table=>[
+  uniqueIndex('radar_calendar_filter_owner_name').on(table.userId,sql`lower(${table.name})`),
+  check('radar_calendar_filter_name_check',sql`length(btrim(${table.name})) between 1 and 80`),
+  check('radar_calendar_filter_query_check',sql`length(${table.filterQuery}) <= 2048`),
+]);
+
 // A foto é armazenada no banco: o container da aplicação não possui volume
 // persistente para uploads. user.image guarda apenas a URL interna versionada.
 export const memberAvatar = pgTable(

@@ -9,10 +9,11 @@ import subprocess
 import sys
 
 root = Path(__file__).resolve().parents[2]
-state = root / '.local' / 'radar-calendar'
+completion = '--completion' in sys.argv
+state = root / '.local' / ('radar-completion-calendar' if completion else 'radar-calendar')
 data = state / 'pgdata'
 config_file = state / 'config.json'
-port = '48763'
+port = '48931' if completion else '48763'
 mode = sys.argv[1] if len(sys.argv) > 1 else 'start'
 if mode not in ('start', 'status', 'stop'):
     raise SystemExit('Use start, status or stop')
@@ -45,7 +46,7 @@ if not (data / 'PG_VERSION').exists():
                     '--auth-local=scram-sha-256', '--auth-host=scram-sha-256', '--pwfile=' + str(password_file)], env=env, check=True, stdout=subprocess.DEVNULL)
     password_file.unlink()
     with (data / 'postgresql.conf').open('a') as handle:
-        handle.write("\nlisten_addresses='127.0.0.1'\nport=48763\nunix_socket_directories=''\nmax_connections=20\nshared_buffers='32MB'\nwork_mem='1MB'\nmaintenance_work_mem='16MB'\nmax_wal_size='128MB'\nmin_wal_size='32MB'\n")
+        handle.write("\nlisten_addresses='127.0.0.1'\nport=" + port + "\nunix_socket_directories=''\nmax_connections=20\nshared_buffers='32MB'\nwork_mem='1MB'\nmaintenance_work_mem='16MB'\nmax_wal_size='128MB'\nmin_wal_size='32MB'\n")
 running = subprocess.run([pg_ctl, '-D', str(data), 'status'], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
 if not running:
     subprocess.run([pg_ctl, '-D', str(data), '-l', str(state / 'postgres.log'), '-w', 'start'], env=env, check=True)
@@ -60,4 +61,4 @@ if not exists:
     assert url.password.isalnum()
     sql = "CREATE ROLE radar_calendar_local LOGIN PASSWORD '" + url.password + "';\nCREATE DATABASE apogee_radar_calendar_local OWNER radar_calendar_local;\n"
     subprocess.run(args, input=sql, text=True, env=admin_env, check=True, stdout=subprocess.DEVNULL)
-print('PostgreSQL isolado pronto: 127.0.0.1:48763 / apogee_radar_calendar_local')
+print('PostgreSQL isolado pronto: 127.0.0.1:' + port + ' / apogee_radar_calendar_local')

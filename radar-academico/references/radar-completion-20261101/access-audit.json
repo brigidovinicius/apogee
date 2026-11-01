@@ -1,0 +1,323 @@
+{
+  "complete": true,
+  "checkedAt": "2026-11-01T11:46:32.359Z",
+  "manifestHash": "108d38a13e24250e82e0e0968adfa524885b4e7b3b09abf0a9ae7fd34439774e",
+  "results": [
+    {
+      "id": "exp-obe-empreendedorismo",
+      "url": "https://obempreende.com.br/",
+      "hints": [
+        "Olimpíada Brasileira de Empreendedorismo",
+        "OBE"
+      ],
+      "original": true,
+      "outcome": "checked",
+      "hash": "8b586c1337871bcf99340f75c6f4ae60f8e39c5b6a7e012b4fc4857613fc32ec",
+      "bytes": 196937,
+      "title": "OBE – Olimpíada Brasileira de Empreendedorismo – O maior evento nacional de empreendedorismo para escolas do Ensino Fundamental e Médio do Brasil. Competição destinada a alunos do 6º ano do Ensino Fun"
+    },
+    {
+      "id": "exp-obe-estatistica",
+      "url": "https://obe.icmc.usp.br/",
+      "hints": [
+        "Olimpíada Brasileira de Estatística",
+        "OBE"
+      ],
+      "original": true,
+      "outcome": "blocked",
+      "reason": "source_request_failed"
+    },
+    {
+      "id": "exp-obmacs",
+      "url": "https://podemos.mat.br/obmacs",
+      "hints": [
+        "Olimpíada Brasileira de Matemática Aplicada às Ciências Sociais",
+        "OBMACS"
+      ],
+      "original": true,
+      "outcome": "blocked",
+      "reason": "tls_verification_failed"
+    },
+    {
+      "id": "exp-olimpiada-brasileira-de-agropecuaria",
+      "url": "https://portal.ifsuldeminas.edu.br/",
+      "hints": [
+        "IFSULDEMINAS"
+      ],
+      "original": true,
+      "outcome": "blocked",
+      "reason": "url_or_network_disallowed"
+    },
+    {
+      "id": "exp-olimpiada-brasileira-de-biologia",
+      "url": "https://olimpiadasdebiologia.butantan.gov.br/",
+      "hints": [
+        "Olimpíada Brasileira de Biologia",
+        "OBB"
+      ],
+      "original": true,
+      "outcome": "blocked",
+      "reason": "robots_unavailable_or_disallowed"
+    },
+    {
+      "id": "exp-olimpiada-brasileira-de-fisica",
+      "url": "https://www1.fisica.org.br/olimpiada/",
+      "hints": [
+        "Olimpíada Brasileira de Física",
+        "OBF"
+      ],
+      "original": true,
+      "outcome": "blocked",
+      "reason": "identity_unconfirmed"
+    },
+    {
+      "id": "exp-olimpiada-brasileira-de-raciocinio-logico",
+      "url": "https://www.obrl.com.br/",
+      "hints": [
+        "Olimpíada Brasileira de Raciocínio Lógico",
+        "OBRL"
+      ],
+      "original": true,
+      "outcome": "checked",
+      "hash": "ef3132e4cd169a4768467c1a1eb193d7119c2d63c09bb2018c8c3e76dbb6871c",
+      "bytes": 58946,
+      "title": "OBRL - Olimpíada Brasileira de Raciocínio Lógico"
+    },
+    {
+      "id": "exp-olimpiada-de-tecnologia-e-inovacao-do-instituto-polymathos",
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLScs8gOi2yLnGGBNXPbQGc7YVrOXuUlb8-9dEmtffn7K33NGCA/closedform",
+      "hints": [
+        "Olimpíada de Tecnologia e Inovação do Instituto Polymathos",
+        "OTI-Polymathos"
+      ],
+      "original": true,
+      "outcome": "checked",
+      "hash": "4a5f8c3d9f0b725bc086b23b089333111bc8fa26f9026b893666c84a6221b172",
+      "bytes": 79580,
+      "title": "Olimpíada de Tecnologia e Inovação do Instituto Polymathos "
+    },
+    {
+      "id": "exp-olimpiada-estadual-em-historia-de-sergipe",
+      "url": "https://seduc.se.gov.br/",
+      "hints": [
+        "Olimpíada Estadual em História de Sergipe",
+        "OEHSE"
+      ],
+      "original": true,
+      "outcome": "blocked",
+      "reason": "identity_unconfirmed"
+    },
+    {
+      "id": "exp-olimpiada-paulista-de-matematica",
+      "url": "https://www.opm.mat.br/",
+      "hints": [
+        "Olimpíada Paulista de Matemática",
+        "OPM"
+      ],
+      "original": true,
+      "outcome": "blocked",
+      "reason": "tls_verification_failed"
+    },
+    {
+      "id": "exp-olimpiada-sertaneja-de-matematica",
+      "url": "https://www.osmsertao.com.br/",
+      "hints": [
+        "Olimpíada Sertaneja de Matemática",
+        "OSM"
+      ],
+      "original": true,
+      "outcome": "checked",
+      "hash": "f3d806c9350e6424fdf34a9a4286dfcd4d80f62b2a5e097d2971d6796b68a681",
+      "bytes": 83228,
+      "title": "OSM Sert�o - P�gina Inicial"
+    },
+    {
+      "id": "exp-onhb",
+      "url": "https://www.olimpiadadehistoria.com.br/",
+      "hints": [
+        "Olimpíada Nacional em História do Brasil",
+        "ONHB"
+      ],
+      "original": true,
+      "outcome": "blocked",
+      "reason": "response_limit_exceeded"
+    },
+    {
+      "id": "exp-wolfram",
+      "url": "https://www.wolfram.com/events/user-conference-brazil/2026/hackathon/",
+      "hints": [
+        "Wolfram"
+      ],
+      "original": true,
+      "outcome": "blocked",
+      "reason": "http_406"
+    },
+    {
+      "id": "exp-cianorte",
+      "url": "https://www.cianorte.pr.gov.br/noticiasView/11190_Inscricoes-abertas-para-o-Hackathon-GovTech-2026-.html",
+      "hints": [
+        "GovTech"
+      ],
+      "original": true,
+      "outcome": "blocked",
+      "reason": "robots_unavailable_or_disallowed"
+    },
+    {
+      "id": "exp-olimpiada-brasileira-de-fisica",
+      "url": "https://www1.fisica.org.br/olimpiada/2026/index.php",
+      "hints": [
+        "Olimpíada Brasileira de Física"
+      ],
+      "original": false,
+      "outcome": "checked",
+      "hash": "6195b1455529c93c8c5c81680496560352169129d7425e88df18ed914652accd",
+      "bytes": 25055,
+      "title": "Olimpiada Brasileira de Física"
+    },
+    {
+      "id": "exp-obmacs",
+      "url": "https://www.podemos.mat.br/obmacs",
+      "hints": [
+        "OBMACS"
+      ],
+      "original": false,
+      "outcome": "blocked",
+      "reason": "tls_verification_failed"
+    },
+    {
+      "id": "exp-onhb",
+      "url": "https://www.olimpiadadehistoria.com.br/?lang=pt",
+      "hints": [
+        "ONHB"
+      ],
+      "original": false,
+      "outcome": "blocked",
+      "reason": "response_limit_exceeded"
+    },
+    {
+      "id": "exp-olimpiada-paulista-de-matematica",
+      "url": "https://opm.mat.br/",
+      "hints": [
+        "Olimpíada Paulista"
+      ],
+      "original": false,
+      "outcome": "blocked",
+      "reason": "tls_verification_failed"
+    },
+    {
+      "id": "exp-olimpiada-sertaneja-de-matematica",
+      "url": "https://cdmc.fgv.br/noticia/fgv-cdmc-apoia-terceira-edicao-da-olimpiada-sertaneja-de-matematica",
+      "hints": [
+        "Olimpíada Sertaneja"
+      ],
+      "original": false,
+      "outcome": "checked",
+      "hash": "a84c9df9528f2a92248efd2cb6bf31be5830dc82257dfadc4ad5d93810cecfdf",
+      "bytes": 38006,
+      "title": "FGV CDMC apoia terceira edição da Olimpíada Sertaneja de Matemática | FGV CDMC"
+    },
+    {
+      "id": "exp-olimpiada-de-tecnologia-e-inovacao-do-instituto-polymathos",
+      "url": "https://linktr.ee/_polymathos",
+      "hints": [
+        "Polymathos",
+        "Tecnologia e Inovação"
+      ],
+      "original": false,
+      "outcome": "blocked",
+      "reason": "url_or_network_disallowed"
+    },
+    {
+      "id": "exp-obe-estatistica",
+      "url": "https://interacao.sc.usp.br/aex/olimpiada-brasileira-de-estatistica/",
+      "hints": [
+        "Olimpíada Brasileira de Estatística"
+      ],
+      "original": false,
+      "outcome": "blocked",
+      "reason": "request_timeout"
+    },
+    {
+      "id": "exp-olimpiada-brasileira-de-biologia",
+      "url": "https://escolasuperior.butantan.gov.br/outros-programas/olimpiada-brasileira-de-biologia",
+      "hints": [
+        "Olimpíada Brasileira de Biologia"
+      ],
+      "original": false,
+      "outcome": "blocked",
+      "reason": "robots_unavailable_or_disallowed"
+    },
+    {
+      "id": "exp-olimpiada-estadual-em-historia-de-sergipe",
+      "url": "https://seduc.se.gov.br/sergipe-promove-1a-olimpiada-estadual-de-historia-para-estudantes-do-ensino-basico/",
+      "hints": [
+        "OEHSE"
+      ],
+      "original": false,
+      "outcome": "checked",
+      "hash": "0c84241623902c057de90093076cf68976d8d299d4ff352fce0486e0d0f30b94",
+      "bytes": 538439,
+      "title": "Sergipe promove 1ª Olimpíada Estadual de História para estudantes do ensino básico - Portal da Educação - Secretaria de Estado da Educação de Sergipe"
+    },
+    {
+      "id": "exp-cianorte",
+      "url": "https://cianorte.pr.gov.br/noticias/?secretaria=27",
+      "hints": [
+        "GovTech"
+      ],
+      "original": false,
+      "outcome": "blocked",
+      "reason": "robots_unavailable_or_disallowed"
+    },
+    {
+      "id": "exp-obe-empreendedorismo",
+      "url": "https://obempreende.com.br/patrocinio/",
+      "hints": [
+        "Expacer"
+      ],
+      "original": false,
+      "outcome": "checked",
+      "hash": "2d3233764a55421797488a055faefeab6bc97758a5344f4a1100975c09165cb1",
+      "bytes": 204340,
+      "title": "Patrocinio – OBE – Olimpíada Brasileira de Empreendedorismo"
+    },
+    {
+      "id": "exp-obe-estatistica",
+      "url": "https://www.icmc.usp.br/noticias/7379-oportunidade-alunos-da-usp-podem-integrar-a-equipe-organizadora-da-olimpiada-brasileira-de-estatistica",
+      "hints": [
+        "Olimpíada Brasileira de Estatística"
+      ],
+      "original": false,
+      "outcome": "checked",
+      "hash": "1ef76abeaf81b37a80a7c3ee54e34047ca2038cd9e03be0ef461eb62307a0649",
+      "bytes": 43707,
+      "title": "Oportunidade: alunos da USP podem integrar a equipe organizadora da Olimpíada Brasileira de Estatística"
+    },
+    {
+      "id": "exp-obe-estatistica",
+      "url": "https://www.icmc.usp.br/noticias",
+      "hints": [
+        "ICMC",
+        "Instituto de Ciências Matemáticas"
+      ],
+      "original": false,
+      "outcome": "checked",
+      "hash": "4a991812bc4c3b4fd02b72baeebdfa3feed068492cbdfce50a55c0c04cd50c68",
+      "bytes": 42216,
+      "title": "Notícias"
+    },
+    {
+      "id": "exp-olimpiada-estadual-em-historia-de-sergipe",
+      "url": "https://seduc.se.gov.br/",
+      "hints": [
+        "Portal da Educação",
+        "Secretaria de Estado da Educação"
+      ],
+      "original": false,
+      "outcome": "checked",
+      "hash": "fd26de6f1ab6eb56d6235e26007064e314eb3d5566a853bdddeb09834eb868d5",
+      "bytes": 625789,
+      "title": "Secretaria de Estado da Educação de Sergipe - SEED"
+    }
+  ]
+}

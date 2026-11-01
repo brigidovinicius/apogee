@@ -1,0 +1,240 @@
+[
+  {
+    "id": "exp-obe-empreendedorismo",
+    "url": "https://obempreende.com.br/",
+    "hints": [
+      "Olimpíada Brasileira de Empreendedorismo",
+      "OBE"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-obe-estatistica",
+    "url": "https://obe.icmc.usp.br/",
+    "hints": [
+      "Olimpíada Brasileira de Estatística",
+      "OBE"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-obmacs",
+    "url": "https://podemos.mat.br/obmacs",
+    "hints": [
+      "Olimpíada Brasileira de Matemática Aplicada às Ciências Sociais",
+      "OBMACS"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-agropecuaria",
+    "url": "https://portal.ifsuldeminas.edu.br/",
+    "hints": [
+      "IFSULDEMINAS"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-biologia",
+    "url": "https://olimpiadasdebiologia.butantan.gov.br/",
+    "hints": [
+      "Olimpíada Brasileira de Biologia",
+      "OBB"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-fisica",
+    "url": "https://www1.fisica.org.br/olimpiada/",
+    "hints": [
+      "Olimpíada Brasileira de Física",
+      "OBF"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-raciocinio-logico",
+    "url": "https://www.obrl.com.br/",
+    "hints": [
+      "Olimpíada Brasileira de Raciocínio Lógico",
+      "OBRL"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-olimpiada-de-tecnologia-e-inovacao-do-instituto-polymathos",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScs8gOi2yLnGGBNXPbQGc7YVrOXuUlb8-9dEmtffn7K33NGCA/closedform",
+    "hints": [
+      "Olimpíada de Tecnologia e Inovação do Instituto Polymathos",
+      "OTI-Polymathos"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-olimpiada-estadual-em-historia-de-sergipe",
+    "url": "https://seduc.se.gov.br/",
+    "hints": [
+      "Olimpíada Estadual em História de Sergipe",
+      "OEHSE"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-olimpiada-paulista-de-matematica",
+    "url": "https://www.opm.mat.br/",
+    "hints": [
+      "Olimpíada Paulista de Matemática",
+      "OPM"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-olimpiada-sertaneja-de-matematica",
+    "url": "https://www.osmsertao.com.br/",
+    "hints": [
+      "Olimpíada Sertaneja de Matemática",
+      "OSM"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-onhb",
+    "url": "https://www.olimpiadadehistoria.com.br/",
+    "hints": [
+      "Olimpíada Nacional em História do Brasil",
+      "ONHB"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-wolfram",
+    "url": "https://www.wolfram.com/events/user-conference-brazil/2026/hackathon/",
+    "hints": [
+      "Wolfram"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-cianorte",
+    "url": "https://www.cianorte.pr.gov.br/noticiasView/11190_Inscricoes-abertas-para-o-Hackathon-GovTech-2026-.html",
+    "hints": [
+      "GovTech"
+    ],
+    "original": true
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-fisica",
+    "url": "https://www1.fisica.org.br/olimpiada/2026/index.php",
+    "hints": [
+      "Olimpíada Brasileira de Física"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-obmacs",
+    "url": "https://www.podemos.mat.br/obmacs",
+    "hints": [
+      "OBMACS"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-onhb",
+    "url": "https://www.olimpiadadehistoria.com.br/?lang=pt",
+    "hints": [
+      "ONHB"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-olimpiada-paulista-de-matematica",
+    "url": "https://opm.mat.br/",
+    "hints": [
+      "Olimpíada Paulista"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-olimpiada-sertaneja-de-matematica",
+    "url": "https://cdmc.fgv.br/noticia/fgv-cdmc-apoia-terceira-edicao-da-olimpiada-sertaneja-de-matematica",
+    "hints": [
+      "Olimpíada Sertaneja"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-olimpiada-de-tecnologia-e-inovacao-do-instituto-polymathos",
+    "url": "https://linktr.ee/_polymathos",
+    "hints": [
+      "Polymathos",
+      "Tecnologia e Inovação"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-obe-estatistica",
+    "url": "https://interacao.sc.usp.br/aex/olimpiada-brasileira-de-estatistica/",
+    "hints": [
+      "Olimpíada Brasileira de Estatística"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-biologia",
+    "url": "https://escolasuperior.butantan.gov.br/outros-programas/olimpiada-brasileira-de-biologia",
+    "hints": [
+      "Olimpíada Brasileira de Biologia"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-olimpiada-estadual-em-historia-de-sergipe",
+    "url": "https://seduc.se.gov.br/sergipe-promove-1a-olimpiada-estadual-de-historia-para-estudantes-do-ensino-basico/",
+    "hints": [
+      "OEHSE"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-cianorte",
+    "url": "https://cianorte.pr.gov.br/noticias/?secretaria=27",
+    "hints": [
+      "GovTech"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-obe-empreendedorismo",
+    "url": "https://obempreende.com.br/patrocinio/",
+    "hints": [
+      "Expacer"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-obe-estatistica",
+    "url": "https://www.icmc.usp.br/noticias/7379-oportunidade-alunos-da-usp-podem-integrar-a-equipe-organizadora-da-olimpiada-brasileira-de-estatistica",
+    "hints": [
+      "Olimpíada Brasileira de Estatística"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-obe-estatistica",
+    "url": "https://www.icmc.usp.br/noticias",
+    "hints": [
+      "ICMC",
+      "Instituto de Ciências Matemáticas"
+    ],
+    "original": false
+  },
+  {
+    "id": "exp-olimpiada-estadual-em-historia-de-sergipe",
+    "url": "https://seduc.se.gov.br/",
+    "hints": [
+      "Portal da Educação",
+      "Secretaria de Estado da Educação"
+    ],
+    "original": false
+  }
+]
