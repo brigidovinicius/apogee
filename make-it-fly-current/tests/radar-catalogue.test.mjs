@@ -145,6 +145,15 @@ test("all eleven reviewed event records keep absent awards out of financial labe
   }
 });
 
+test("verified technology and business themes fill the feed after prizes without inferring themes from an organizer", () => {
+  const summit = item("z-summit", { organization: "A", title: "Convergência Summit", discovery: { areas: ["tecnologia", "negocios"], editions: [] } });
+  const technical = item("a-tech", { organization: "B", title: "Evento de tecnologia", discovery: { areas: ["tecnologia"], editions: [] } });
+  const prize = item("prize", { organization: "C", kind: "Prêmio", categories: ["competicoes"] });
+  assert.deepEqual(rankOpportunities([technical, summit, prize], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime()), [prize, summit, technical]);
+  const formal = exam("formal", { discovery: summit.discovery });
+  assert.equal(rankOpportunities([formal, technical], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], technical);
+});
+
 test("nearby event dates break ties without becoming registration deadlines or overriding a requested subject", () => {
   const week = item("Tecnologia nesta semana", { organization: "A", deadline: null, eventStartsAt: "2026-10-20" });
   const month = item("Tecnologia neste mês", { organization: "B", deadline: null, eventStartsAt: "2026-11-10" });

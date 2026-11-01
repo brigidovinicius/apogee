@@ -14,7 +14,7 @@ O executor `scripts/publish-image-events-20261101.py` apenas planeja por padrão
 
 ## Ranking
 
-Premiações classificadas e auditadas como `Prêmio` recebem prioridade mesmo quando consistem em produtos/serviços. Isso não cria benefício financeiro, valor em dinheiro nem direito a prêmio para ouvintes. Os benefícios financeiros continuam sujeitos ao parser conservador, agora também excluindo totais cuja natureza é explicitamente incerta, como a ficha do Builders Day. Entre eventos com pontuação e prazo iguais, a realização mais próxima desempata antes do ID aleatório, considerando fuso.
+Premiações classificadas e auditadas como `Prêmio` recebem prioridade mesmo quando consistem em produtos/serviços. Isso não cria benefício financeiro, valor em dinheiro nem direito a prêmio para ouvintes. Os benefícios financeiros continuam sujeitos ao parser conservador, agora também excluindo totais cuja natureza é explicitamente incerta, como a ficha do Builders Day. Temas estruturados de tecnologia e negócios recebem um desempate adicional, abaixo do peso de premiações confirmadas. Entre eventos com pontuação e prazo iguais, a realização mais próxima desempata antes do ID aleatório, considerando fuso.
 
 Publicar primeiro o site com essa proteção, depois executar o lote com `--apply --site-sha=<merge-exato>`. O executor confirma o SHA da imagem antes de classificar o Builders Day como premiação. Assim o total anunciado não recebe rótulo financeiro durante a transição.
 
@@ -22,7 +22,7 @@ A home mantém seis destaques e as categorias horizontais existentes. Os demais 
 
 ## Validação e operação
 
-Validação local: 601/601 testes antes do rebase; 610/610 após incorporar a publicação concorrente da Agenda Google e cobrir o lote inteiro contra rótulos financeiros indevidos, com lint e TypeScript aprovados. Inclui a regressão com o texto real do Builders Day e a preservação de premiação em dinheiro explicitamente confirmada. A validação final, CI, cadastro efetivo e deploy serão registrados após execução. Backup restrito anterior ao lote criado em `/opt/apogee-backups/image-events-20261101/radar-before.dump`, legível pelo `pg_restore` e com checksum confirmado. Identidades históricas foram consultadas antes de preparar o lote; os 11 eventos não estavam publicados nem encontrados entre exclusões.
+Validação local: 601/601 testes antes do rebase; 611/611 após incorporar a publicação concorrente da Agenda Google e cobrir o lote inteiro contra rótulos financeiros indevidos, com lint e TypeScript aprovados. Inclui a regressão com o texto real do Builders Day e a preservação de premiação em dinheiro explicitamente confirmada. A validação final, CI, cadastro efetivo e deploy serão registrados após execução. Backup restrito anterior ao lote criado em `/opt/apogee-backups/image-events-20261101/radar-before.dump`, legível pelo `pg_restore` e com checksum confirmado. Identidades históricas foram consultadas antes de preparar o lote; os 11 eventos não estavam publicados nem encontrados entre exclusões.
 
 Não houve cadastro de Front in Floripa, que informa ingressos esgotados. Não houve inscrição em evento, compra, aceitação de termos ou envio de mensagens.
 
@@ -31,3 +31,5 @@ Não houve cadastro de Front in Floripa, que informa ingressos esgotados. Não h
 O PR #109 da Agenda Google entrou em `main` durante a preparação. O primeiro preflight parou antes de alterar o checkout ou aplicar dados, pois a revisão de produção havia mudado. O lote foi rebased em `6f92cca`, preservando as 29 alterações daquele PR. A imagem observada em produção era o head testado `3859a86`. O corte deste lote aguardará a conclusão operacional do outro chat e usará snapshot atualizado do ambiente e dos containers, incluindo eventual worker de calendário.
 
 A simulação anterior à gravação identificou que frases negativas com a palavra “prêmio” no singular escapavam de uma regra legada. A negação foi corrigida e as 11 fichas reais do lote foram adicionadas à regressão. Não houve aplicação de cadastros antes dessa correção.
+
+Seleção simulada com os dados reais e o lote proposto: GovTech Cianorte, Builders Day, Wolfram Brasil, Bootcamp Deep Tech, Convergência Summit e DCD Connect Brasil. Os três primeiros têm premiações confirmadas ou anunciadas nas fontes, com natureza preservada; nenhum ganhou benefício financeiro inventado. A conferência pública após a aplicação determinará a seleção efetivamente exibida.

@@ -5,7 +5,7 @@ import { primaryOpportunityCategory, type OpportunityFilters, type StudentOpport
 // Admissions never receive these boosts; source amounts do not determine relevance.
 export const DEFAULT_RANKING = Object.freeze({
   focusedActivity: 400, extracurricular: 300, unclassified: 100, formalAdmission: 0,
-  preferredActivity: 200, confirmedPrize: 100, thisWeekEvent: 10, upcomingEvent: 5,
+  preferredActivity: 200, confirmedPrize: 100, technologyBusiness: 8, thisWeekEvent: 10, upcomingEvent: 5,
   confirmedBenefit: 6, open: 4, usefulDeadline: 3, recentVerification: 2,
   organizationRepeat: 4, organizationPenaltyCap: 40,
   categoryRepeat: 1, categoryPenaltyCap: 12,
@@ -23,7 +23,7 @@ function eventTime(item: StudentOpportunity) {
 
 function editorialHighlights(item: StudentOpportunity) {
   if (item.admissionProcess || item.entranceExam || item.editorialNature === "formal_admission") {
-    return { preferred: false, prize: false };
+    return { preferred: false, prize: false, business: false };
   }
   const categories = item.categories ?? [];
   const competition = categories.includes("competicoes") || item.discovery?.primaryType === "competicoes";
@@ -34,7 +34,9 @@ function editorialHighlights(item: StudentOpportunity) {
   const prize = event && (item.kind === "Prêmio" || Boolean(item.financials?.benefits.some(benefit => ["PREMIAÇÃO", "PREMIAÇÃO TOTAL"].includes(benefit.label))));
   const title = (item.title ?? "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
   const theme = item.discovery?.areas.some(area => preferredAreas.has(area)) || preferredTheme.test(title);
-  return { preferred: event && (competition || hackathon || theme || prize), prize };
+  const business = event && item.discovery?.areas.includes("negocios") === true &&
+    item.discovery.areas.some(area => ["tecnologia", "ia", "robotica", "dados"].includes(area));
+  return { preferred: event && (competition || hackathon || theme || prize), prize, business };
 }
 
 export function opportunityScore(item: StudentOpportunity, filters: OpportunityFilters,
@@ -51,6 +53,7 @@ export function opportunityScore(item: StudentOpportunity, filters: OpportunityF
   return (prioritizeActivities ? nature : 0) +
     (prioritizeHighlights && highlights.preferred ? config.preferredActivity : 0) +
     (prioritizeHighlights && highlights.prize ? config.confirmedPrize : 0) +
+    (prioritizeHighlights && highlights.business ? config.technologyBusiness : 0) +
     (prioritizeHighlights && highlights.preferred && startsIn >= 0 && startsIn <= 30 ? startsIn <= 7 ? config.thisWeekEvent : config.upcomingEvent : 0) +
     (item.financials?.benefits.length ? config.confirmedBenefit : 0) +
     (item.opportunityStatus === "open" ? config.open : 0) +
