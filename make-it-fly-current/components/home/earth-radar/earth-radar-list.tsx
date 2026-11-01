@@ -6,6 +6,7 @@ import type { StudentOpportunity } from "@/lib/opportunities/types";
 import { selectHomeOpportunities, type HomeOpportunityCategory } from "@/lib/home-opportunities";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 import { interfaceText } from "@/lib/presentation-text.mjs";
+import { OpportunityBenefits } from "@/components/opportunities/opportunity-financials";
 import styles from "./earth-radar.module.css";
 
 const categories: [HomeOpportunityCategory, string][] = [
@@ -47,6 +48,7 @@ export function EarthRadarList({ opportunities, capturedAt }: { opportunities: S
             <p className={styles["opportunity-kicker"]}>{item.kind}</p>
             <h3><Link prefetch={false} href={opportunityDetailPath(item.id)}>{interfaceText(item.title)}</Link></h3>
             <p className={styles["opportunity-org"]}>{interfaceText(item.organization)}</p>
+            <OpportunityBenefits opportunity={item} className={styles["opportunity-benefits"]} />
           </div>
           <div className={styles["opportunity-meta"]}><strong>{interfaceText(item.deadlineLabel)}</strong><span>{interfaceText(item.location)}</span></div>
           <Link prefetch={false} className={styles["opportunity-action"]} href={opportunityDetailPath(item.id)} aria-label={`Ver detalhes: ${item.title}`}>Explorar</Link>

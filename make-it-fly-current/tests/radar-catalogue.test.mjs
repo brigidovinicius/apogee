@@ -34,7 +34,7 @@ test("A/C: default, Todas, search, geography and education never opt into vestib
   }
   assert.equal(page().total, 3);
   assert.equal(page("categoria=vestibular").total, 1);
-  assert.deepEqual(page().opportunities.map(i => i.id), ["Conferência", "Hackathon", "Curso livre"]);
+  assert.deepEqual(page().opportunities.map(i => i.id), ["Hackathon", "Conferência", "Curso livre"]);
   assert.equal(dataset.length, 6);
 });
 
@@ -82,6 +82,60 @@ test("ranking diversifies organizations within nature tiers and cash never promo
   assert.ok(new Set(ordered.slice(0, 6).map(i => i.organization)).size >= 4);
   assert.deepEqual(rankOpportunities([...events].reverse(), logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime()).map(i => i.id), ordered.slice(0, -1).map(i => i.id));
   assert.equal(Object.isFrozen(DEFAULT_RANKING), true);
+});
+
+test("technology, business and competitions lead the feed, with confirmed prizes first even after diversity penalties", () => {
+  const general = item("Encontro de virologia", { deadline: "2026-10-17" });
+  const tech = item("DCD Connect", { discovery: { areas: ["tecnologia"], editions: [] } });
+  const business = item("Summit de empreendedorismo");
+  const hackathon = item("Hackathon de IA", { categories: ["competicoes"] });
+  const prize = { benefits: [{ label: "PREMIAÇÃO TOTAL", text: "R$ 5.000 para equipes vencedoras" }], costs: [], notes: [] };
+  const awarded = Array.from({ length: 15 }, (_, index) => item(`Hackathon premiado ${index}`, { categories: ["competicoes"], financials: prize }));
+  const data = [general, tech, business, hackathon, ...awarded];
+  const original = structuredClone(data);
+  const ordered = rankOpportunities(data, logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime());
+  assert.deepEqual(new Set(ordered.slice(0, 15).map(entry => entry.id)), new Set(awarded.map(entry => entry.id)));
+  assert.equal(ordered.at(-1), general);
+  assert.deepEqual(data, original);
+  for (const category of ["eventos", "competicoes"]) {
+    assert.equal(rankOpportunities([hackathon, awarded[0]], { ...logic.EMPTY_OPPORTUNITY_FILTERS, category }, now.getTime())[0], awarded[0]);
+  }
+});
+
+test("only activity facts establish a preferred theme; university names, prose promises and attendance do not establish prizes", () => {
+  const general = item("Encontro de saúde", { organization: "Universidade de Tecnologia e Negócios", benefit: "Talvez tenha premiação de R$ 1 milhão" });
+  const tech = item("Encontro de inovação", { organization: "Outro organizador" });
+  const ceremony = item("Evento de startups com cerimônia de premiação", { financials: { benefits: [], costs: [], notes: ["Cerimônia Startup Awards; presença não é inscrição em competição."] } });
+  const awarded = item("Hackathon", { financials: { benefits: [{ label: "PREMIAÇÃO", text: "Premiação em dinheiro · Valor não divulgado" }], costs: [], notes: [] } });
+  assert.equal(rankOpportunities([general, tech], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], tech);
+  assert.equal(rankOpportunities([ceremony, awarded], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], awarded);
+  const admission = exam("Seleção em tecnologia", { financials: awarded.financials });
+  assert.equal(rankOpportunities([admission, general], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], general);
+});
+
+test("nearby event dates break ties without becoming registration deadlines or overriding a requested subject", () => {
+  const week = item("Tecnologia nesta semana", { organization: "A", deadline: null, eventStartsAt: "2026-10-20" });
+  const month = item("Tecnologia neste mês", { organization: "B", deadline: null, eventStartsAt: "2026-11-10" });
+  const later = item("Tecnologia depois", { organization: "C", deadline: null, eventStartsAt: "2027-01-10" });
+  assert.deepEqual(rankOpportunities([later, month, week], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime()), [week, month, later]);
+  assert.equal(week.deadline, null);
+  const biology = item("Biologia", { deadline: "2026-10-17" });
+  const preferred = item("Hackathon", { deadline: "2026-10-30" });
+  for (const filters of [{ query: "Biologia" }, { area: "biologia" }, { category: "pesquisa" }, { kind: "Programa" }]) {
+    assert.equal(rankOpportunities([preferred, biology], { ...logic.EMPTY_OPPORTUNITY_FILTERS, ...filters }, now.getTime())[0], biology);
+  }
+});
+
+test("homepage snapshots preserve the same editorial leaders as the public and member Radar", () => {
+  const { homeOpportunitySnapshot, selectHomeOpportunities } = load("lib/home-opportunities.ts");
+  const general = Array.from({ length: 30 }, (_, index) => item(`Congresso de virologia ${index}`, { organization: `Instituição ${index}` }));
+  const tech = item("REC'n'Play", { discovery: { areas: ["tecnologia", "negocios"], editions: [] } });
+  const awarded = item("Hackathon de IA", { categories: ["competicoes"], financials: { benefits: [{ label: "PREMIAÇÃO", text: "R$ 5.000" }], costs: [], notes: [] } });
+  const ordered = rankOpportunities([...general, tech, awarded], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime());
+  const { opportunityCardData } = load("lib/opportunities/card-data.ts");
+  const snapshot = homeOpportunitySnapshot(ordered.map(opportunityCardData), now);
+  assert.deepEqual(selectHomeOpportunities(snapshot, now).slice(0, 2).map(entry => entry.id), [awarded.id, tech.id]);
+  assert.deepEqual(buildOpportunityPage([...general, tech, awarded], new URLSearchParams(), now).opportunities.slice(0, 2).map(entry => entry.id), [awarded.id, tech.id]);
 });
 
 test("entrance classification handles real punctuated rules, preserves workshops and negative statements", () => {

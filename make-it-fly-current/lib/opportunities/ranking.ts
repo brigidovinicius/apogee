@@ -1,24 +1,49 @@
 import "server-only";
 import { primaryOpportunityCategory, type OpportunityFilters, type StudentOpportunity } from "./types";
 
-// Nature tiers exceed the sum of every secondary factor and diversity penalty.
-// Cash is a small signal and never establishes the quality/nature of an activity.
+// Preferred activities and confirmed prizes exceed tie-breakers and diversity penalties.
+// Admissions never receive these boosts; source amounts do not determine relevance.
 export const DEFAULT_RANKING = Object.freeze({
   focusedActivity: 400, extracurricular: 300, unclassified: 100, formalAdmission: 0,
+  preferredActivity: 200, confirmedPrize: 100, thisWeekEvent: 10, upcomingEvent: 5,
   confirmedBenefit: 6, open: 4, usefulDeadline: 3, recentVerification: 2,
   organizationRepeat: 4, organizationPenaltyCap: 40,
   categoryRepeat: 1, categoryPenaltyCap: 12,
 });
 export type RankingConfig = { [Key in keyof typeof DEFAULT_RANKING]: number };
 
+const preferredAreas = new Set(["tecnologia", "ia", "robotica", "dados", "negocios"]);
+const preferredTheme = /\b(?:tecnolog(?:ia|ias|ico|ica|icos|icas)|empreendedor(?:ismo|a|as|es)?|inovacao|innovation|startups?|negocios?|business|deep\s*tech|data\s*centers?|inteligencia artificial|ia|robotica|software|programacao|computacao|ciberseguranca|fintech|edtech|govtech|web3|blockchain|machine learning)\b/u;
+
+function editorialHighlights(item: StudentOpportunity) {
+  if (item.admissionProcess || item.entranceExam || item.editorialNature === "formal_admission") {
+    return { preferred: false, prize: false };
+  }
+  const categories = item.categories ?? [];
+  const competition = categories.includes("competicoes") || item.discovery?.primaryType === "competicoes";
+  const hackathon = item.discovery?.subtype === "hackathon" || /\bhacka(?:thon|ton)s?\b/iu.test(item.title ?? "");
+  const event = competition || hackathon || categories.includes("eventos") || item.discovery?.primaryType === "eventos";
+  const prize = event && Boolean(item.financials?.benefits.some(benefit => ["PREMIAÇÃO", "PREMIAÇÃO TOTAL"].includes(benefit.label)));
+  const title = (item.title ?? "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+  const theme = item.discovery?.areas.some(area => preferredAreas.has(area)) || preferredTheme.test(title);
+  return { preferred: event && (competition || hackathon || theme || prize), prize };
+}
+
 export function opportunityScore(item: StudentOpportunity, filters: OpportunityFilters,
   now: number, config: RankingConfig = DEFAULT_RANKING) {
-  const prioritizeActivities = !filters.category && !filters.kind && !filters.query?.trim();
+  const explicitSubject = Boolean(filters.area || filters.kind || filters.query?.trim());
+  const prioritizeActivities = !filters.category && !explicitSubject;
+  const prioritizeHighlights = !explicitSubject && (!filters.category || ["eventos", "competicoes"].includes(filters.category));
+  const highlights = editorialHighlights(item);
   const nature = item.admissionProcess || item.editorialNature === "formal_admission" ? config.formalAdmission
     : item.editorialNature === "extracurricular" ? item.editorialFocus ? config.focusedActivity : config.extracurricular
       : config.unclassified;
   const days = item.deadline ? (Date.parse(`${item.deadline}T23:59:59-03:00`) - now) / 86_400_000 : Infinity;
+  const startsIn = item.eventStartsAt ? (Date.parse(item.eventStartsAt.length === 10 ? `${item.eventStartsAt}T00:00:00-03:00` : item.eventStartsAt) - now) / 86_400_000 : Infinity;
   return (prioritizeActivities ? nature : 0) +
+    (prioritizeHighlights && highlights.preferred ? config.preferredActivity : 0) +
+    (prioritizeHighlights && highlights.prize ? config.confirmedPrize : 0) +
+    (prioritizeHighlights && highlights.preferred && startsIn >= 0 && startsIn <= 30 ? startsIn <= 7 ? config.thisWeekEvent : config.upcomingEvent : 0) +
     (item.financials?.benefits.length ? config.confirmedBenefit : 0) +
     (item.opportunityStatus === "open" ? config.open : 0) +
     (days >= 0 && days <= 30 ? config.usefulDeadline : 0) +

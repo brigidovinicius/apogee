@@ -453,6 +453,14 @@
       line-height: 1.45;
     }
 
+    .preview .opportunity-benefits {
+      margin-top: 14px;
+    }
+
+    .preview .opportunity-benefits span {
+      color: var(--muted);
+    }
+
     .preview .opportunity-meta strong,
     .preview .opportunity-meta span {
       display: block;
