@@ -83,6 +83,33 @@ test("source stipend confirms payment without inventing value, currency or perio
   assert.equal(opportunity({ benefitType: "academic_scholarship", amountText: "Desconto de 50% na mensalidade." }).financials.benefits.length, 0);
 });
 
+test("negated awards never become confirmed prizes or receive a prize ranking boost", () => {
+  const descriptions = [
+    "A notícia não garante bolsa, prêmio em dinheiro, viagem custeada ou implementação dos projetos.",
+    "Certificado de 20 horas e kit para vencedores; participação por adesão na imersão Viva UFMS em 23 e 24/02/2027. A notícia não garante bolsa, prêmio em dinheiro, viagem custeada ou implementação dos projetos.",
+    "O edital não anuncia premiação em dinheiro.",
+    "Não há garantia de prêmio em dinheiro.",
+    "Sem garantia de premiação em dinheiro.",
+    "Não existe confirmação de premiação de R$ 5000.",
+    "Nenhuma premiação em dinheiro confirmada.",
+    "A participação não assegura premiação financeira.",
+    "Premiação em dinheiro não garantida.",
+    "Premiação em dinheiro não é garantida.",
+    "Não foi anunciada premiação em dinheiro.",
+  ];
+  for (const amountText of descriptions) {
+    for (const benefitType of ["other", "prize", "extension_scholarship"]) {
+      const candidate = opportunity({ benefitType, amountText });
+      assert.equal(candidate.financials.benefits.length, 0, `${benefitType}: ${amountText}`);
+      assert.doesNotMatch(markup(candidate), /Benefício financeiro confirmado|<strong>/);
+    }
+  }
+  const actualPrize = opportunity({ id: "confirmed", benefitType: "prize", amountText: "Não há bolsa. Premiação de R$ 5000 para as equipes vencedoras.", deadlineAt: "2099-11-30" });
+  assert.deepEqual(actualPrize.financials.benefits, [{ label: "PREMIAÇÃO", text: "Premiação de R$ 5000 para as equipes vencedoras." }]);
+  const denied = opportunity({ id: "denied", amountText: descriptions[0] });
+  assert.equal(orderOpportunityFeed([denied, actualPrize], logic.EMPTY_OPPORTUNITY_FILTERS)[0], actualPrize);
+});
+
 test("money formatter keeps conditions, decimal cents, long values and currencies", () => {
   for (const [value, expected] of [[500, "R$ 500,00"], [2000, "R$ 2.000,00"], [10500.5, "R$ 10.500,50"]]) assert.equal(money.formatMoney(value), expected);
   assert.equal(money.formatMoneyText("Até R$ 10500,50 / mês."), "Até R$ 10.500,50 / mês.");
