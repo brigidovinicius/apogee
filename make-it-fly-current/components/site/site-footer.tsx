@@ -1,11 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { privacyPolicyReady } from "@/lib/privacy-policy";
-import { termsOfUseReady } from "@/lib/terms-of-use";
+import { useSiteLegalLinks } from "./site-legal-links";
 import styles from "./site-shell.module.css";
 
 export function SiteFooter() {
-  const preview = process.env.APOGEE_LOCAL_PREVIEW === "1";
+  const legalLinks = useSiteLegalLinks();
   return (
     <footer className={styles.footer}>
       <div className={styles.footerInner}>
@@ -27,8 +28,8 @@ export function SiteFooter() {
           <Link href="/loja">Loja</Link>
           <Link href="/makeitfly">Make It Fly</Link>
           <Link href="/membros">Membros</Link>
-          {(preview || privacyPolicyReady()) && <Link href="/privacidade">Privacidade</Link>}
-          {(preview || termsOfUseReady()) && <Link href="/termos">Termos de Uso</Link>}
+          {legalLinks.privacy && <Link href="/privacidade">Privacidade</Link>}
+          {legalLinks.terms && <Link href="/termos">Termos de Uso</Link>}
         </nav>
       </div>
     </footer>

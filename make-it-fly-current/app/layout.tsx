@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { connection } from "next/server";
 import type { ReactNode } from "react";
 import { JourneyTracker } from "@/components/analytics/JourneyTracker";
 import { ApogeeDesignSystem } from "@/components/site/apogee-design-system";
 import { MakeItFlyScrollRestoration } from "@/components/site/make-it-fly-scroll-restoration";
 import { SkipLink } from "@/components/site/skip-link";
+import { SiteLegalLinksProvider } from "@/components/site/site-legal-links";
+import { getSiteLegalLinks } from "@/lib/site-legal-links";
 import "./globals.css";
 
 const inter = localFont({
@@ -74,7 +77,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  // Legal approvals are runtime configuration, absent from the build image.
+  await connection();
   return (
     <html
       lang="pt-BR"
@@ -93,7 +98,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <JourneyTracker />
         <MakeItFlyScrollRestoration />
         <SkipLink />
-        <ApogeeDesignSystem>{children}</ApogeeDesignSystem>
+        <SiteLegalLinksProvider value={getSiteLegalLinks()}>
+          <ApogeeDesignSystem>{children}</ApogeeDesignSystem>
+        </SiteLegalLinksProvider>
       </body>
     </html>
   );
