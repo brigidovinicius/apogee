@@ -1,7 +1,9 @@
 import Link from "next/link";
 import {notFound,redirect} from "next/navigation";
 import {getCurrentMember} from "@/lib/members/dal";
-import {adultAccess,protectionOverview,supervisedRegistrationEnabled} from "@/lib/members/protection";
+import {adultAccess,calendarAdultAccess,protectionOverview,supervisedRegistrationEnabled} from "@/lib/members/protection";
+import {googleCalendarStatus} from "@/lib/opportunities/google-calendar-store";
+import {disconnectGoogleCalendarAction} from "../meu-calendario/google-actions";
 import {MemberBar} from "@/components/members/member-bar";
 import {requestAdultAction,requestDependentAction,revokeDependentAction,sendProtectionVerificationAction} from "./actions";
 import styles from "./protection.module.css";
@@ -12,13 +14,15 @@ const ages:Record<string,string>={under_12:'Menor de 12 anos','12_15':'De 12 a 1
 export default async function ProtectionPage({searchParams}:{searchParams:Promise<{resultado?:string}>}) {
   if(!supervisedRegistrationEnabled())notFound();
   const member=await getCurrentMember();if(!member)redirect('/membros/entrar?next=%2Fmembros%2Fprotecao');
-  const overview=await protectionOverview(member.id);const approved=await adultAccess(member.id);const query=await searchParams;
+  const overview=await protectionOverview(member.id);const approved=await calendarAdultAccess(member.id);const access=await adultAccess(member.id);const query=await searchParams;
+  const google=await googleCalendarStatus(member.id);
   return <div className={styles.page}><MemberBar member={member}/><h1>Cadastro protegido</h1>
     <p>A conta de acesso pertence a um adulto. Menores de 18 anos, inclusive menores de 16, participam por vínculo privado com o responsável. O menor não recebe login próprio, perfil público ou acesso ao fórum.</p>
     <p><Link href="/privacidade#menores">Privacidade de crianças e adolescentes</Link></p>
     {query.resultado && <p role="status">{query.resultado==='ok'?'Solicitação registrada.':'Não foi possível concluir. Confira os dados e a confirmação de e-mail ou procure a equipe.'}</p>}
     {!overview.emailVerified && <section><h2>Confirme seu e-mail</h2><p>Antes da conferência da conta, confirme o endereço de e-mail. Isso comprova o controle da caixa, não sua idade ou vínculo com um menor.</p><form action={sendProtectionVerificationAction}><button>Enviar confirmação de e-mail</button></form></section>}
-    {!approved ? <section><h2>Verificação da conta adulta</h2><p>Situação: {overview.status?statuses[overview.status]:'Ainda não solicitada'}.</p><p>A equipe fará a conferência de maioridade pelo atendimento em <a href="mailto:contato@apogee.community">contato@apogee.community</a>. Não envie documentos pelo formulário. A comunidade e a sincronização Google ficam disponíveis após aprovação.</p>
+    {!approved ? <section><h2>Verificação da conta adulta</h2><p>Situação: {overview.status?statuses[overview.status]:'Ainda não solicitada'}.</p><p>A equipe fará a conferência de maioridade pelo atendimento em <a href="mailto:contato@apogee.community">contato@apogee.community</a>. Não envie documentos pelo formulário. A conexão Google e novos vínculos dependem da conferência.</p>
+      {access ? <p>Seu acesso existente está preservado durante a transição. Isso não representa aprovação de maioridade. <Link href="/membros/meu-calendario">Abrir meu calendário</Link></p> : <p>A liberação da comunidade também depende da aprovação.</p>}
       {overview.emailVerified && overview.status!=='pending' && <form action={requestAdultAction}><label><input type="checkbox" name="adultDeclared" required/> Tenho 18 anos ou mais e solicito a verificação da minha conta.</label><button>Solicitar verificação da conta</button></form>}
     </section>:<><section><h2>Vincular criança ou adolescente</h2><p>Use apenas um apelido e a faixa etária. Não informe nome completo, CPF, documentos, escola ou data de nascimento. A equipe verificará também sua condição de pai, mãe ou responsável legal antes de aprovar o vínculo.</p>
       <form action={requestDependentAction}>
@@ -28,6 +32,7 @@ export default async function ProtectionPage({searchParams}:{searchParams:Promis
         <label><input type="checkbox" name="consent" required/> Sou pai, mãe ou responsável legal, li a Política de Privacidade e autorizo este cadastro privado e o acompanhamento de oportunidades em benefício do menor.</label>
         <button>Solicitar vínculo protegido</button>
       </form></section><p>As oportunidades salvas e a conexão Google Agenda permanecem na sua conta. O vínculo não concede acesso pago, não compartilha sua senha e pode ser revogado aqui.</p><Link href="/membros/meu-calendario">Abrir meu calendário</Link></>}
+    {google.connected && <section><h2>Conexão Google</h2><p>Você pode interromper as atualizações mesmo enquanto sua conta aguarda conferência ou está sem acesso pago.</p><form action={disconnectGoogleCalendarAction}><button>Desconectar Google Agenda</button></form></section>}
     <section><h2>Meus vínculos</h2>{!overview.dependents.length?<p>Nenhum vínculo registrado.</p>:<ul>{overview.dependents.map(row=><li key={String(row.id)}><strong>{String(row.nickname)}</strong> · {ages[String(row.age_band)]} · {statuses[String(row.status)]}{row.status!=='revoked' && <form action={revokeDependentAction}><input type="hidden" name="dependentId" value={String(row.id)}/><button>Revogar autorização de {String(row.nickname)}</button></form>}</li>)}</ul>}</section>
   </div>;
 }

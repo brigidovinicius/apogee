@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp,readFile,rm,stat} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {createAlertMonitor,webhookSender} from '../scripts/google-calendar-alerts.mjs';
+import {createAlertMonitor,webhookSender,resendAlertSender} from '../scripts/google-calendar-alerts.mjs';
 const good={status:'ok',due:0,connected:10,lagSeconds:0,errors:0,reconnect:0,quota:0,paused:0};
 const bad={...good,status:'warning',errors:1,quota:1};
 async function fixture(fn) {const dir=await mkdtemp(join(tmpdir(),'google-alert-'));try{await fn(join(dir,'state.json'));}finally{await rm(dir,{recursive:true});}}
@@ -58,4 +58,26 @@ test('enabling delivery after an unreported incident does not send an orphan rec
   await createAlertMonitor({file,log:()=>{}})(bad);
   const sent=[];await createAlertMonitor({file,deliver:async e=>sent.push(e),log:()=>{}})(good);
   assert.equal(sent.length,0);
+}));
+test('email transport uses a fixed provider and sender, sanitized content and stable idempotency',async()=>{
+  const calls=[],key='re_SYNTHETIC_SECRET_ONLY';
+  const send=resendAlertSender({apiKey:key,recipient:'operator@example.invalid',fetcher:async(url,init)=>{calls.push({url,init});return new Response('{}');}});
+  const payload={type:'opened',eventId:'12345678-1234-1234-1234-123456789abc',reasons:['quota','PRIVATE_DATA'],metrics:{due:3,email:'private@example.invalid'},privateToken:'DO_NOT_SEND'};
+  await send(payload);await send(payload);
+  assert.equal(calls[0].url,'https://api.resend.com/emails');assert.equal(calls[0].init.redirect,'error');
+  assert.equal(calls[0].init.headers.Authorization,'Bearer '+key);
+  assert.equal(calls[0].init.headers['Idempotency-Key'],calls[1].init.headers['Idempotency-Key']);
+  const body=JSON.parse(calls[0].init.body);assert.equal(body.from,'Apogee <contato@apogee.community>');assert.deepEqual(body.to,['operator@example.invalid']);
+  assert.match(body.text,/due: 3/);assert.doesNotMatch(calls[0].init.body,/PRIVATE_DATA|private@example|DO_NOT_SEND|SYNTHETIC_SECRET/);
+});
+test('email transport rejects partial configuration, header injection and unexpected events',async()=>{
+  assert.equal(resendAlertSender({}),null);
+  for(const config of [{apiKey:'re_SYNTHETIC_SECRET_ONLY'},{recipient:'operator@example.invalid'},{apiKey:'re_SYNTHETIC_SECRET_ONLY',recipient:'a@example.invalid\nBcc: victim@example.invalid'}])assert.throws(()=>resendAlertSender(config));
+  let calls=0;const send=resendAlertSender({apiKey:'re_SYNTHETIC_SECRET_ONLY',recipient:'operator@example.invalid',fetcher:async()=>{calls++;return new Response('{}');}});
+  await assert.rejects(send({type:'arbitrary',eventId:'12345678-1234-1234-1234-123456789abc'}));assert.equal(calls,0);
+});
+test('pending alert delivery stays visible after target recovery and monitor restart',()=>fixture(async file=>{
+  const options={file,now:()=>1000,log:()=>{},deliver:async()=>{throw Error('receiver down');}};
+  assert.equal((await createAlertMonitor(options)(bad)).pendingDeliveries,1);
+  assert.equal((await createAlertMonitor(options)(good)).pendingDeliveries,2);
 }));

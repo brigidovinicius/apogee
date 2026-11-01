@@ -8,7 +8,7 @@ import { googleApi, googleTokens, googleEventBody, googleEventId, upsertGoogleEv
 import { listRadarOpportunities } from "./radar-client";
 import { calendarEntries } from "./discovery";
 import { googleQueuePolicy } from "./google-calendar-queue";
-import { adultAccess } from "@/lib/members/protection";
+import { calendarAdultAccess } from "@/lib/members/protection";
 import { googleProjectCooldown,recordGoogleFailure,recordGoogleFailureOutsideTransaction } from "./google-calendar-failures";
 import {measureGoogleCalendarSync} from "./google-calendar-metrics";
 
@@ -20,7 +20,7 @@ async function performGoogleCalendarSync(userId:string,options:{manual?:boolean}
   const [connection] = await getSql()`select user_id,retry_not_before,retry_paused,last_error from radar_google_calendar where user_id=${userId} and refresh_token_encrypted is not null`;
   if (!connection) return "disconnected";
   // Access uses its own transaction; perform this before locking the connection.
-  if (!(await adultAccess(userId)) || !(await radarAccess(userId,process.env.STRIPE_MODE !== "test")).active) {
+  if (!(await calendarAdultAccess(userId)) || !(await radarAccess(userId,process.env.STRIPE_MODE !== "test")).active) {
     await getSql()`update radar_google_calendar set last_error='access',next_sync_at=now()+interval '15 minutes' where user_id=${userId}`;
     return "failed";
   }
@@ -32,9 +32,13 @@ async function performGoogleCalendarSync(userId:string,options:{manual?:boolean}
     await recordGoogleFailureOutsideTransaction(userId,new GoogleCalendarError('unavailable'));
     return "failed"; // Never interpret a catalogue outage as removal of all events.
   }
-  return await getSql().begin(async tx => {
+  return await getSql().begin('isolation level read committed',async tx => {
     const [row] = await tx`select * from radar_google_calendar where user_id=${userId} for update`;
     if (!row?.refresh_token_encrypted) return "disconnected" as const;
+    if (!(await calendarAdultAccess(userId,tx))) {
+      await tx`update radar_google_calendar set last_error='access',next_sync_at=now()+interval '15 minutes' where user_id=${userId}`;
+      return "failed" as const;
+    }
     if(row.retry_not_before && new Date(row.retry_not_before).getTime()>Date.now())return "pending" as const;
     if(row.retry_paused) {
       if(!options.manual || ['permission','invalid_response'].includes(String(row.last_error)))return "failed" as const;

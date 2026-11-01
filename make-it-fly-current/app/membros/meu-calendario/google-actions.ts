@@ -7,9 +7,12 @@ import { beginGoogleCalendarOAuth, disconnectGoogleCalendar } from "@/lib/opport
 import { syncGoogleCalendar } from "@/lib/opportunities/google-calendar-sync";
 import { GOOGLE_CALENDAR_COOKIE, GOOGLE_CALENDAR_CALLBACK, GOOGLE_CALENDAR_PATH } from "@/lib/opportunities/google-calendar-config";
 import { applicationOrigin } from "@/lib/members/mail";
+import { getCurrentMember } from "@/lib/members/dal";
+import { calendarAdultAccess } from "@/lib/members/protection";
 
 export async function connectGoogleCalendarAction() {
   const member = await requireCalendarMember();
+  if (!(await calendarAdultAccess(member.id))) redirect('/membros/protecao');
   const result = await beginGoogleCalendarOAuth(member.id);
   (await cookies()).set(GOOGLE_CALENDAR_COOKIE,result.state,{
     httpOnly:true,secure:applicationOrigin().startsWith("https:"),sameSite:"lax",
@@ -18,9 +21,11 @@ export async function connectGoogleCalendarAction() {
   redirect(result.url);
 }
 export async function disconnectGoogleCalendarAction() {
-  const member = await requireCalendarMember();
+  const member = await getCurrentMember();
+  if (!member) redirect('/membros/entrar?next=%2Fmembros%2Fprotecao');
   await disconnectGoogleCalendar(member.id);
   revalidatePath(GOOGLE_CALENDAR_PATH);
+  revalidatePath('/membros/protecao');
 }
 export async function syncGoogleCalendarAction(): Promise<void> {
   const member = await requireCalendarMember();

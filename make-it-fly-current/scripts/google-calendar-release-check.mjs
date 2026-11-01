@@ -23,6 +23,9 @@ export function evaluateGoogleRelease({env={},evidence={},candidateSha='',checko
     'Arquivos locais inventariados; aplicação no banco real é evidência separada.');
   add('httpsOrigin',origin,'Origem HTTPS de produção esperada, sem caminho ou parâmetros.');
   add('supervisedRegistration',enabled('MEMBERS_SUPERVISED_REGISTRATION_ENABLED'),'Proteção de conta ativa na configuração pretendida.');
+  const cutoff=env.MEMBERS_PROTECTION_EXISTING_ACCOUNTS_BEFORE??'',cutoffTime=Date.parse(cutoff);
+  add('existingAccountTransition',/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(cutoff)&&Number.isFinite(cutoffTime)&&new Date(cutoffTime).toISOString()===cutoff&&cutoffTime<=Date.now(),
+    'Corte UTC fixo para preservar contas existentes sem aprovar maioridade ou conceder Google.');
   add('privacyVersion',approvals.privacy,'Aprovação editorial da versão exata de privacidade.');
   add('termsVersion',approvals.terms,'Aprovação editorial da versão exata dos termos.');
   add('calendarFlags',enabled('RADAR_CALENDAR_PERSONAL_ENABLED')&&enabled('RADAR_GOOGLE_CALENDAR_ENABLED'),'Calendário e integração habilitados na configuração pretendida.');
@@ -33,7 +36,9 @@ export function evaluateGoogleRelease({env={},evidence={},candidateSha='',checko
   add('emailConfiguration',enabled('MEMBERS_EMAIL_ENABLED')&&enabled('MEMBERS_RESEND_DOMAIN_VERIFIED')&&/^re_[A-Za-z0-9_-]{10,}$/.test(env.MEMBERS_RESEND_API_KEY??'')&&env.MEMBERS_RESEND_FROM==='contato@apogee.community',
     'Configuração do remetente; entrega e atendimento exigem evidência própria.');
   let webhook=false;try{const url=new URL(env.GOOGLE_CALENDAR_MONITOR_ALERT_WEBHOOK_URL||env.GOOGLE_CALENDAR_ALERT_WEBHOOK_URL);webhook=url.protocol==='https:'&&!url.username&&!url.password&&!url.hash;}catch{}
-  add('alertDestination',webhook,'Destino HTTPS configurado; não envia alertas nem valida o receptor.');
+  const email=/^re_[A-Za-z0-9_-]{10,}$/.test(env.GOOGLE_CALENDAR_MONITOR_RESEND_API_KEY??'')&&(/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/).test(env.GOOGLE_CALENDAR_MONITOR_ALERT_EMAIL??'');
+  const hasEmail=!!env.GOOGLE_CALENDAR_MONITOR_RESEND_API_KEY||!!env.GOOGLE_CALENDAR_MONITOR_ALERT_EMAIL;
+  add('alertDestination',hasEmail?email&&!webhook:webhook,'Um destino configurado: webhook HTTPS ou e-mail do monitor independente; entrega exige evidência própria.');
   const integer=(name,fallback,max)=>{const value=Number(env[name]??fallback);return Number.isInteger(value)&&value>=1&&value<=max;};
   add('queueLimits',integer('GOOGLE_CALENDAR_SYNC_BATCH_SIZE',3,20)&&integer('GOOGLE_CALENDAR_SYNC_BUDGET_SECONDS',90,120)&&integer('GOOGLE_CALENDAR_SYNC_MAX_LAG_SECONDS',900,86400),
     'Limites técnicos da fila; não representam capacidade de usuários medida.');

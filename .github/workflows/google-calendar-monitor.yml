@@ -1,0 +1,78 @@
+name: Google Calendar external monitor
+
+on:
+  schedule:
+    - cron: '3-58/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: apogee-google-calendar-external-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    if: vars.APOGEE_GOOGLE_CALENDAR_MONITOR_ENABLED == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Locate state from this workflow on main
+        id: previous
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const result = await github.rest.actions.listWorkflowRuns({
+              owner, repo, workflow_id: 'google-calendar-monitor.yml', branch: 'main',
+              status: 'completed', per_page: 30,
+            });
+            let previous;
+            for (const run of result.data.workflow_runs) {
+              if (run.id === context.runId || run.conclusion === 'skipped' ||
+                  !['schedule','workflow_dispatch'].includes(run.event) ||
+                  run.head_repository?.full_name !== `${owner}/${repo}`) continue;
+              const jobs = await github.rest.actions.listJobsForWorkflowRun({owner, repo, run_id: run.id});
+              if (jobs.data.jobs.some(job => job.name === 'monitor' && job.conclusion !== 'skipped')) {
+                previous = run;
+                break;
+              }
+            }
+            core.setOutput('run-id', previous?.id ?? '');
+      - name: Restore durable alert state
+        id: restore
+        if: steps.previous.outputs.run-id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: google-calendar-monitor-state
+          path: ${{ runner.temp }}/calendar-monitor
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.previous.outputs.run-id }}
+          github-token: ${{ github.token }}
+      - name: Check service and deliver incident changes
+        id: poll
+        env:
+          GOOGLE_CALENDAR_MONITOR_ORIGIN: https://www.apogee.community
+          GOOGLE_CALENDAR_MONITOR_REQUIRE_DELIVERY: 'true'
+          GOOGLE_CALENDAR_MONITOR_SECRET: ${{ secrets.APOGEE_CALENDAR_MONITOR_READ_SECRET }}
+          GOOGLE_CALENDAR_MONITOR_RESEND_API_KEY: ${{ secrets.APOGEE_CALENDAR_MONITOR_RESEND_KEY }}
+          GOOGLE_CALENDAR_MONITOR_ALERT_EMAIL: ${{ secrets.APOGEE_CALENDAR_MONITOR_ALERT_EMAIL }}
+          GOOGLE_CALENDAR_MONITOR_STATE_FILE: ${{ runner.temp }}/calendar-monitor/alerts.json
+          GOOGLE_CALENDAR_MONITOR_SNAPSHOT_FILE: ${{ runner.temp }}/calendar-monitor/status.json
+        run: node make-it-fly-current/scripts/google-calendar-monitor.mjs --once
+      - name: Persist state and pending deliveries even when service is unhealthy
+        if: always() && steps.poll.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: google-calendar-monitor-state
+          path: ${{ runner.temp }}/calendar-monitor/*.json
+          if-no-files-found: error
+          retention-days: 7

@@ -1,14 +1,38 @@
 import "server-only";
 import {randomUUID} from "node:crypto";
 import {getSql} from "./db";
+import type {TransactionSql} from "postgres";
 
 export const PROTECTION_POLICY_VERSION="2026-10-30";
 export const supervisedRegistrationEnabled=()=>process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED==="true";
+// A fixed, reviewed cutoff preserves existing access without approving anyone's age.
+export function existingAccountCutoff() {
+  const value=process.env.MEMBERS_PROTECTION_EXISTING_ACCOUNTS_BEFORE??'';
+  if(!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(value))return null;
+  const date=new Date(value);
+  return Number.isFinite(date.getTime())&&date.toISOString()===value&&date.getTime()<=Date.now()?date:null;
+}
 export async function adultAccess(userId:string) {
   if(!supervisedRegistrationEnabled())return true;
-  const [row]=await getSql()`select u.role,u.blocked,u.email_verified,r.status from "user" u
+  const [row]=await getSql()`select u.role,u.blocked,u.email_verified,u.created_at,r.status,r.reviewed_at from "user" u
     left join member_adult_review r on r.user_id=u.id where u.id=${userId}`;
-  return !!row && !row.blocked && (row.role==='admin' || row.email_verified && row.status==='approved');
+  if(!row||row.blocked)return false;
+  if(row.role==='admin'||row.email_verified&&row.status==='approved')return true;
+  const cutoff=existingAccountCutoff(),created=new Date(row.created_at);
+  return !!cutoff&&Number.isFinite(created.getTime())&&created<cutoff&&!row.reviewed_at&&(!row.status||row.status==='pending');
+}
+// Google never inherits the transition exception. The optional transaction holds
+// the user's lock through token exchange/sync, serializing a review revocation.
+export async function calendarAdultAccess(userId:string,sql?:TransactionSql):Promise<boolean> {
+  if(!supervisedRegistrationEnabled())return false;
+  if(!sql)return getSql().begin('isolation level read committed',tx=>calendarAdultAccess(userId,tx));
+  const [row]=await sql`select role,blocked,email_verified from "user" where id=${userId} for share`;
+  if(!row||row.blocked||!row.email_verified)return false;
+  if(row.role==='admin')return true;
+  // Separate READ COMMITTED statement: a join could retain the old review
+  // snapshot while waiting for the account lock held by a revoking reviewer.
+  const [review]=await sql`select status from member_adult_review where user_id=${userId}`;
+  return review?.status==='approved';
 }
 export async function protectionOverview(userId:string) {
   const [row]=await getSql()`select u.email_verified,u.adult_declared,r.status from "user" u

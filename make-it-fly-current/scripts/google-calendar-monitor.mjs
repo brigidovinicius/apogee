@@ -1,7 +1,7 @@
 import {readFile,writeFile,mkdir,rename} from 'node:fs/promises';
 import {dirname} from 'node:path';
 import {pathToFileURL} from 'node:url';
-import {createAlertMonitor,webhookSender} from './google-calendar-alerts.mjs';
+import {createAlertMonitor,webhookSender,resendAlertSender} from './google-calendar-alerts.mjs';
 
 function integer(value,fallback,min,max) {
   const n=Number(value??fallback);if(!Number.isInteger(n)||n<min||n>max)throw Error('Invalid monitor configuration');return n;
@@ -63,15 +63,20 @@ async function main() {
   if(process.argv.includes('--healthcheck')){process.exitCode=await checkMonitorSnapshot(file,interval*2+40)?0:1;return;}
   if(process.argv.slice(2).some(arg=>arg!=='--once'))throw Error('Invalid monitor arguments');
   const config=monitorConfig();
+  const email=resendAlertSender({apiKey:process.env.GOOGLE_CALENDAR_MONITOR_RESEND_API_KEY,recipient:process.env.GOOGLE_CALENDAR_MONITOR_ALERT_EMAIL});
+  if(email&&config.webhook)throw Error('Choose one calendar monitor alert destination');
+  const deliver=email??webhookSender({url:config.webhook,local:config.local});
+  if(process.env.GOOGLE_CALENDAR_MONITOR_REQUIRE_DELIVERY==='true'&&!deliver)throw Error('Calendar monitor delivery is required');
   const observe=createAlertMonitor({file:process.env.GOOGLE_CALENDAR_MONITOR_STATE_FILE??'/tmp/apogee-google-calendar-monitor-alerts.json',
-    component:'google-calendar-external-monitor',deliver:webhookSender({url:config.webhook,local:config.local})});
+    component:'google-calendar-external-monitor',deliver});
   let stopped=false,wake;
   for(const signal of ['SIGTERM','SIGINT'])process.on(signal,()=>{stopped=true;wake?.();});
   while(!stopped) {
-    const status=await pollGoogleCalendar(config);await observe(status);
+    const status=await pollGoogleCalendar(config);const delivery=await observe(status);
+    status.alertDeliveriesPending=delivery.pendingDeliveries;
     await mkdir(dirname(file),{recursive:true,mode:0o700});await writeFile(file+'.tmp',JSON.stringify(status),{mode:0o600});await rename(file+'.tmp',file);
     console.log(JSON.stringify(status));
-    if(process.argv.includes('--once')){process.exitCode=status.status==='ok'?0:1;return;}
+    if(process.argv.includes('--once')){process.exitCode=status.status==='ok'&&delivery.pendingDeliveries===0?0:1;return;}
     await new Promise(resolve=>{const timer=setTimeout(resolve,config.intervalSeconds*1000);wake=()=>{clearTimeout(timer);resolve();};});
   }
 }

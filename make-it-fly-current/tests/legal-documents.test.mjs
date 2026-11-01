@@ -14,19 +14,20 @@ test('footer links follow legal-page availability and keep drafts accessible in 
   assert.equal(has('/privacidade'),false);assert.equal(has('/termos'),false);
   process.env.APOGEE_LOCAL_PREVIEW='1';assert.equal(has('/privacidade'),true);assert.equal(has('/termos'),true);
   delete process.env.APOGEE_LOCAL_PREVIEW;
-  process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED='true';process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-11-01';
+  process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED='true';process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-11-01.2';
   assert.equal(has('/privacidade'),true);assert.equal(has('/termos'),false);
-  process.env.APOGEE_TERMS_APPROVED_VERSION='2026-10-30';assert.equal(has('/termos'),true);
+  process.env.APOGEE_TERMS_APPROVED_VERSION='2026-11-01.2';assert.equal(has('/termos'),true);
 }));
 
 test('terms draft is local only and states that viewing is not acceptance or a contract change',()=>scoped(()=>{
   assert.throws(()=>page.default(),/NOT_FOUND/);process.env.APOGEE_LOCAL_PREVIEW='1';
   const content=text(page.default());assert.match(content,/Minuta para revisão/);assert.match(content,/não constitui aceite/);assert.match(content,/(?:não|nem) altera contratos existentes/);
+  assert.match(content,/Versão\s+2026-11-01\.2/);
   assert.match(content,/contato@apogee.community/);assert.equal(page.generateMetadata().robots.index,false);
 }));
 test('publishing terms requires both exact document approvals and the actual protection flag',()=>scoped(()=>{
-  process.env.APOGEE_TERMS_APPROVED_VERSION='2026-10-30';assert.throws(()=>page.default(),/NOT_FOUND/);
-  process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-11-01';assert.throws(()=>page.default(),/NOT_FOUND/);
+  process.env.APOGEE_TERMS_APPROVED_VERSION='2026-11-01.2';assert.throws(()=>page.default(),/NOT_FOUND/);
+  process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-11-01.2';assert.throws(()=>page.default(),/NOT_FOUND/);
   process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED='true';assert.ok(page.default());assert.equal(page.generateMetadata().robots.index,true);
   process.env.APOGEE_TERMS_APPROVED_VERSION='old-version';assert.throws(()=>page.default(),/NOT_FOUND/);
 }));
@@ -34,8 +35,8 @@ test('sitemap omits drafts and local previews; only approved public documents ar
   const sitemap=load('app/sitemap.ts').default;
   const urls=async()=>(await sitemap()).map(item=>item.url);
   assert.ok(!(await urls()).some(url=>/\/(termos|privacidade)$/.test(url)));
-  process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED='true';process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-11-01';
+  process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED='true';process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-11-01.2';
   assert.ok((await urls()).includes('https://www.apogee.community/privacidade'));assert.ok(!(await urls()).includes('https://www.apogee.community/termos'));
-  process.env.APOGEE_TERMS_APPROVED_VERSION='2026-10-30';assert.ok((await urls()).includes('https://www.apogee.community/termos'));
+  process.env.APOGEE_TERMS_APPROVED_VERSION='2026-11-01.2';assert.ok((await urls()).includes('https://www.apogee.community/termos'));
   process.env.APOGEE_LOCAL_PREVIEW='1';assert.ok(!(await urls()).some(url=>/\/(termos|privacidade)$/.test(url)));
 }));

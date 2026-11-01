@@ -12,7 +12,7 @@ test('privacy requires explicit approval of the exact version as well as supervi
     process.env.APOGEE_LOCAL_PREVIEW='1';assert.ok(page.default());
     delete process.env.APOGEE_LOCAL_PREVIEW;process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED='true';assert.throws(()=>page.default(),/NOT_FOUND/);
     process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-10-29';assert.throws(()=>page.default(),/NOT_FOUND/);
-    process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-11-01';assert.ok(page.default());assert.equal(page.generateMetadata().robots.index,true);
+    process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-11-01.2';assert.ok(page.default());assert.equal(page.generateMetadata().robots.index,true);
     process.env.APOGEE_LOCAL_PREVIEW='1';assert.equal(page.generateMetadata().robots.index,false);
   }finally{if(previous===undefined)delete process.env.APOGEE_LOCAL_PREVIEW;else process.env.APOGEE_LOCAL_PREVIEW=previous;if(enabled===undefined)delete process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED;else process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED=enabled;if(approved===undefined)delete process.env.APOGEE_PRIVACY_APPROVED_VERSION;else process.env.APOGEE_PRIVACY_APPROVED_VERSION=approved;}
 });
