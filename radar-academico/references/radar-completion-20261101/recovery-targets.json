@@ -1,0 +1,62 @@
+[
+  {
+    "id": "exp-obe-empreendedorismo",
+    "expectedOriginalUrl": "https://obempreende.com.br/",
+    "expectedOrganizer": "Organizador não confirmado",
+    "expectedReviewNote": "Organizador não identificado",
+    "expectedNotes": "Expansão 30/10/2026. Situação pesquisada: closed. Pendente: autoria ou acesso não confirmado. Não se apresenta como monitor ativo.",
+    "url": "https://obempreende.com.br/",
+    "organizer": "Expacer",
+    "reviewNote": "Autoria identificada em https://obempreende.com.br/patrocinio/. Página menciona edição 2026 com prazo já passado; monitorar sem criar inscrição aberta."
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-raciocinio-logico",
+    "expectedOriginalUrl": "https://www.obrl.com.br/",
+    "expectedOrganizer": "Comissão Organizadora da OBRL",
+    "expectedReviewNote": "Calendário oficial 2026 distingue inscrição, provas e resultados.",
+    "expectedNotes": "Expansão 30/10/2026. Situação pesquisada: closed. Pendente: autoria ou acesso não confirmado. Não se apresenta como monitor ativo.",
+    "url": "https://www.obrl.com.br/",
+    "organizer": "Comissão Organizadora da OBRL",
+    "reviewNote": "Falha anterior de tempo de resposta não se repetiu; leitura pública e robots conferidos novamente."
+  },
+  {
+    "id": "exp-olimpiada-sertaneja-de-matematica",
+    "expectedOriginalUrl": "https://www.osmsertao.com.br/",
+    "expectedOrganizer": "Organizador não confirmado",
+    "expectedReviewNote": "Organizador não identificado",
+    "expectedNotes": "Expansão 30/10/2026. Situação pesquisada: closed. Pendente: autoria ou acesso não confirmado. Não se apresenta como monitor ativo.",
+    "url": "https://www.osmsertao.com.br/",
+    "organizer": "Escola Municipal Cândido de Assis Queiroga / coordenação Jonilda Alves Ferreira",
+    "reviewNote": "Autoria corroborada pela FGV CDMC: https://cdmc.fgv.br/noticia/fgv-cdmc-apoia-terceira-edicao-da-olimpiada-sertaneja-de-matematica. A página própria voltou a responder; manter estado de inscrição separado."
+  },
+  {
+    "id": "exp-olimpiada-brasileira-de-fisica",
+    "expectedOriginalUrl": "https://www1.fisica.org.br/olimpiada/",
+    "expectedOrganizer": "Sociedade Brasileira de Física",
+    "expectedReviewNote": "Informe oficial confirma edição e primeira fase em junho; inscrições iniciais já superadas.",
+    "expectedNotes": "Expansão 30/10/2026. Situação pesquisada: closed. Pendente: autoria ou acesso não confirmado. Não se apresenta como monitor ativo.",
+    "url": "https://www1.fisica.org.br/olimpiada/2026/index.php",
+    "organizer": "Sociedade Brasileira de Física",
+    "reviewNote": "Página oficial de 2026 validada; raiz genérica não contém identidade suficiente. Este monitor cobre a edição conhecida e não comprova descoberta automática de 2027."
+  },
+  {
+    "id": "exp-obe-estatistica",
+    "expectedOriginalUrl": "https://obe.icmc.usp.br/",
+    "expectedOrganizer": "Instituto de Ciências Matemáticas e de Computação / USP",
+    "expectedReviewNote": "Resultado de busca da página oficial informa inscrições fechadas e calendário.",
+    "expectedNotes": "Expansão 30/10/2026. Situação pesquisada: closed. Pendente: autoria ou acesso não confirmado. Não se apresenta como monitor ativo.",
+    "url": "https://www.icmc.usp.br/noticias",
+    "organizer": "Instituto de Ciências Matemáticas e de Computação / USP",
+    "reviewNote": "Contingência no portal de notícias do organizador ICMC/USP, cuja própria notícia confirma organização da OBE (https://www.icmc.usp.br/noticias/7379-oportunidade-alunos-da-usp-podem-integrar-a-equipe-organizadora-da-olimpiada-brasileira-de-estatistica). A homepage própria da OBE continua falhando no TLS/SNI; monitorar notícias do organizador não comprova extração do calendário próprio."
+  },
+  {
+    "id": "exp-olimpiada-estadual-em-historia-de-sergipe",
+    "expectedOriginalUrl": "https://seduc.se.gov.br/",
+    "expectedOrganizer": "Adinagruber da Conceição Lima / PROFHISTÓRIA-UFS, com Seduc-SE e Fapitec",
+    "expectedReviewNote": "Secretaria estadual e dissertação da idealizadora comprovam identidade e organização; edição atual não confirmada.",
+    "expectedNotes": "Expansão 30/10/2026. Situação pesquisada: unconfirmed. Pendente: autoria ou acesso não confirmado. Não se apresenta como monitor ativo.",
+    "url": "https://seduc.se.gov.br/",
+    "organizer": "Adinagruber da Conceição Lima / PROFHISTÓRIA-UFS, com Seduc-SE e Fapitec",
+    "reviewNote": "Portal institucional SEED/Seduc como descoberta diária de novas notícias; relação com OEHSE comprovada em https://seduc.se.gov.br/sergipe-promove-1a-olimpiada-estadual-de-historia-para-estudantes-do-ensino-basico/. A homepage não precisa conter a sigla de uma edição antiga; nenhum prazo atual foi inferido."
+  }
+]

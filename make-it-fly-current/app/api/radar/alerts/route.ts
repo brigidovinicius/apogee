@@ -14,6 +14,11 @@ const payloadSchema = z.discriminatedUnion("action", [
     email: z.string().trim().toLowerCase().max(254).regex(/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\.[a-z]{2,}$/i),
     consent: z.literal(true),
   }),
+  z.strictObject({
+    action:z.literal("subscribeSeries"),targetId:z.string().regex(/^[a-z0-9][a-z0-9-]{0,79}$/),
+    email:z.string().trim().toLowerCase().max(254).regex(/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\.[a-z]{2,}$/i),
+    consent:z.literal(true),
+  }),
   z.strictObject({ action: z.literal("confirm"), token: z.string().regex(/^[a-f0-9]{64}$/) }),
   z.strictObject({ action: z.literal("unsubscribe"), token: z.string().regex(/^[a-f0-9]{64}$/) }),
 ]);
@@ -32,7 +37,7 @@ export async function POST(request: Request) {
     try { payload = payloadSchema.parse(await readAlertBody(request)); }
     catch { return Response.json({ error: "Solicitação inválida" }, { status: 400, headers }); }
 
-    if (payload.action === "subscribe") {
+    if (payload.action === "subscribe" || payload.action === "subscribeSeries") {
       const ip = memberClientIp(request.headers);
       const secret = process.env.BETTER_AUTH_SECRET ?? "";
       if (!ip || secret.length < 32) return unavailable();

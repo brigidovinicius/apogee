@@ -22,6 +22,7 @@ vi.mock("@/lib/ingestion/fetch-source", async importOriginal => ({
 vi.mock("@/lib/alerts/mail", () => ({ alertsAvailable:()=>true, alertMailConfiguration:vi.fn(()=>({dailyLimit:50})), sendAlertMail:vi.fn() }));
 import { alertMailConfiguration, sendAlertMail } from "@/lib/alerts/mail";
 import { subscribeToOpportunity, updateAlertSubscription, queueOpportunityChanges, runOpportunityAlerts } from "@/lib/alerts/monitoring";
+import { subscribeToSeries,listPublicSeries } from "@/lib/alerts/series";
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { recheckKnownOpportunities } from "@/lib/ingestion/recheck";
 import { saveReviewItems } from "@/lib/ingestion/save-review-item";
@@ -879,4 +880,146 @@ it("persists two ocean modalities on one URL and closes only the named modality"
   expect(await recheckKnownOpportunities(s,3,async()=>'' )).toMatchObject({failed:0,pagesChecked:1});
   const live=await listLiveCatalogue(); expect(live).toHaveLength(1); expect(live[0].title).toContain('Desafio WOA');
  } finally {vi.useRealTimers();}
+});
+
+async function seriesSubscription() {
+ await state.db!.query(`insert into discovery_targets(id,name,organizer,kind,official_url,evidence_url,enabled,official_verified_at,official_verified_url,mapped_source_id,official_verified_by,official_review_note) values('test-series','Competição de Astronomia','Instituto','event_series',$1,$1,true,now(),$1,$2,'test-reviewer','Synthetic verified series')`,[source.baseUrl,source.id]);
+ await subscribeToSeries({targetId:'test-series',email:'series@example.test',consent:true});
+ const job=(await state.db!.query<{payload:{text:string}}>("select payload from opportunity_alert_outbox where kind='confirmation' order by created_at desc limit 1")).rows[0];
+ return {confirm:/acao=confirmar&token=([a-f0-9]{64})/.exec(job.payload.text)![1],unsubscribe:/acao=cancelar&token=([a-f0-9]{64})/.exec(job.payload.text)![1]};
+}
+it('accompanies a verified series while closed and notifies one validated new edition after confirmation',async()=>{
+ const {confirm}=await seriesSubscription();
+ expect(await queueOpportunityChanges()).toBe(0);
+ await save(candidate({contentHash:'new-edition'}));
+ await updateAlertSubscription('confirm',confirm);
+ expect(await queueOpportunityChanges()).toBe(1);
+ expect(await queueOpportunityChanges()).toBe(0);
+ const jobs=(await state.db!.query<{payload:{text:string}}>("select payload from opportunity_alert_outbox where kind='change'")).rows;
+ expect(jobs).toHaveLength(1);
+ expect(jobs[0].payload.text).toContain('Curso de pesquisa 2099');
+ expect(jobs[0].payload.text).not.toContain('Para estudantes');
+ expect((await state.db!.query("select status from opportunity_alert_subscriptions where target_id='test-series'")).rows).toEqual([{status:'active'}]);
+});
+it('series cancellation prevents later mail and source failures do not announce or forget editions',async()=>{
+ const {confirm,unsubscribe}=await seriesSubscription();await updateAlertSubscription('confirm',confirm);
+ await save();expect(await queueOpportunityChanges()).toBe(1);
+ await state.db!.exec("update official_sources set active=false");
+ expect(await queueOpportunityChanges()).toBe(0);
+ await state.db!.exec("update official_sources set active=true");
+ expect(await queueOpportunityChanges()).toBe(0);
+ await updateAlertSubscription('unsubscribe',unsubscribe);
+ await save(candidate({title:'Nova edição 2100',sourcePageUrl:'https://example.edu.br/next',contentHash:'next'}));
+ expect(await queueOpportunityChanges()).toBe(0);
+ expect((await state.db!.query<{n:number}>("select count(*)::int as n from opportunity_alert_outbox where kind='change' and status='pending'")).rows[0].n).toBe(0);
+});
+it('series enrollment cannot broaden, reactivate or overwrite an existing edition subscription',async()=>{
+ const {confirm}=await eventSubscription();await updateAlertSubscription('confirm',confirm);
+ const before=(await state.db!.query<{id:string;status:string;opportunity_id:string;consent_at:Date;last_snapshot:unknown}>("select id,status,opportunity_id,consent_at,last_snapshot from opportunity_alert_subscriptions")).rows[0];
+ await seriesSubscription();
+ expect((await state.db!.query("select id,status,opportunity_id,consent_at,last_snapshot from opportunity_alert_subscriptions where id=$1",[before.id])).rows[0]).toEqual(before);
+ expect((await state.db!.query<{n:number}>("select count(*)::int as n from opportunity_alert_subscriptions")).rows[0].n).toBe(2);
+ await expect(subscribeToSeries({targetId:'test-series',email:'bad@example.test',consent:false})).rejects.toThrow('Confirme');
+ await state.db!.exec("update discovery_targets set enabled=false");
+ await expect(subscribeToSeries({targetId:'test-series',email:'other@example.test',consent:true})).rejects.toThrow('indisponível');
+});
+
+it('recovers only unchanged pending targets with a current matching audit, preserving later operator decisions',async()=>{
+ const moduleUrl=new URL('../../scripts/radar-completion-recovery.mjs',import.meta.url).href;
+ const {installRecoveryPackage}=await import(moduleUrl);
+ const target={id:'pending-series',expectedOriginalUrl:'https://example.edu.br/old',expectedOrganizer:'Unconfirmed',expectedReviewNote:'Pending review',expectedNotes:'Original pending',url:'https://example.edu.br/current',organizer:'Instituto',reviewNote:'Current official page checked'};
+ await state.db!.query(`insert into discovery_targets(id,name,organizer,kind,official_url,evidence_url,enabled,notes,official_review_note) values($1,'Série pendente',$2,'event_series',$3,$3,false,$4,$5)`,[target.id,target.expectedOrganizer,target.expectedOriginalUrl,target.expectedNotes,target.expectedReviewNote]);
+ const pkg={manifestHash:'isolated-package',targets:[target]};
+ const audit={complete:true,manifestHash:'isolated-package',checkedAt:new Date().toISOString(),results:[{id:target.id,url:target.url,outcome:'checked'}]};
+ await expect(withAdminTransaction(c=>installRecoveryPackage(c,pkg,{...audit,manifestHash:'wrong'}))).rejects.toThrow('Auditoria');
+ await state.db!.query("update discovery_targets set notes='Operator changed decision' where id=$1",[target.id]);
+ expect(await withAdminTransaction(c=>installRecoveryPackage(c,pkg,audit))).toMatchObject({activated:0,preserved:1});
+ await state.db!.query('update discovery_targets set notes=$2 where id=$1',[target.id,target.expectedNotes]);
+ expect(await withAdminTransaction(c=>installRecoveryPackage(c,pkg,audit))).toMatchObject({activated:1,preserved:0});
+ expect((await state.db!.query('select official_url,organizer,enabled from discovery_targets where id=$1',[target.id])).rows).toEqual([{official_url:target.url,organizer:'Instituto',enabled:true}]);
+ expect(await withAdminTransaction(c=>installRecoveryPackage(c,pkg,audit))).toMatchObject({activated:0,preserved:1});
+});
+
+it('does not treat an unrelated opportunity from an organizer portal as a new series edition',async()=>{
+ const {confirm}=await seriesSubscription();await updateAlertSubscription('confirm',confirm);
+ await state.db!.exec("update discovery_targets set mapped_source_id=null where id='test-series'");
+ await save(candidate({title:'Bolsa sem relação com a competição',contentHash:'unrelated-portal-call'}));
+ expect(await queueOpportunityChanges()).toBe(0);
+ expect((await state.db!.query<{n:number}>("select count(*)::int as n from opportunity_alert_outbox where kind='change'")).rows[0].n).toBe(0);
+});
+it('does not offer or accept alerts until the verified series has an active verified source mapping',async()=>{
+ await seriesSubscription();
+ for(const mutation of ["update discovery_targets set mapped_source_id=null where id='test-series'","update discovery_targets set mapped_source_id='test-source' where id='test-series'; update official_sources set active=false"]){
+  await state.db!.exec(mutation);
+  expect((await listPublicSeries()).find(s=>s.id==='test-series')?.alertsAvailable).toBe(false);
+  await expect(subscribeToSeries({targetId:'test-series',email:'not-ready@example.test',consent:true})).rejects.toThrow('indisponível');
+ }
+});
+it('remembers a closed edition and only announces a different explicit edition on the same opportunity UUID',async()=>{
+ const discovery=(id:string,end='2099-10-20'):NonNullable<OpportunityCandidate['discovery']>=>({areas:[],editions:[{id,name:'Edição '+id,stages:[{id:'registration',name:'Inscrições',kind:'registration',start:'2026-01-01',end,sourceUrl:evidence.source_url,checkedAt:'2026-10-28T12:00:00Z'}]}]});
+ await save(candidate({discovery:discovery('2099')}));
+ const original=(await listLiveCatalogue())[0].id;
+ await save(candidate({opportunityStatus:'closed',contentHash:'closed',discovery:discovery('2099')}));
+ const {confirm}=await seriesSubscription();await updateAlertSubscription('confirm',confirm);
+ await save(candidate({contentHash:'reopened',discovery:discovery('2099')}));
+ expect(await queueOpportunityChanges()).toBe(0);
+ await save(candidate({contentHash:'corrected-date',discovery:discovery('2099','2099-10-21')}));
+ expect(await queueOpportunityChanges()).toBe(0);
+ await save(candidate({contentHash:'new-explicit-edition',discovery:discovery('2100')}));
+ expect((await listLiveCatalogue())[0].id).toBe(original);
+ expect(await queueOpportunityChanges()).toBe(1);
+ expect(await queueOpportunityChanges()).toBe(0);
+ const text=(await state.db!.query<{payload:{text:string}}>("select payload from opportunity_alert_outbox where kind='change'")).rows[0].payload.text;
+ expect(text).toContain('Edição 2100');
+});
+it('does not announce a new edition merely because the existing ficha gained explicit edition metadata',async()=>{
+ await save();
+ const {confirm}=await seriesSubscription();await updateAlertSubscription('confirm',confirm);
+ await save(candidate({discovery:{areas:[],editions:[{id:'2099',name:'Edição já conhecida',stages:[]}]}}));
+ expect(await queueOpportunityChanges()).toBe(0);
+ await save(candidate({discovery:{areas:[],editions:[{id:'2100',name:'Nova edição validada',stages:[]}]}}));
+ expect(await queueOpportunityChanges()).toBe(1);
+});
+it('waits for public validation before remembering and announcing a newly discovered edition',async()=>{
+ const {confirm}=await seriesSubscription();await updateAlertSubscription('confirm',confirm);
+ await save(candidate({evidenceJson:{},contentHash:'incomplete-edition'}));
+ expect(await queueOpportunityChanges()).toBe(0);
+ await save(candidate({contentHash:'validated-edition'}));
+ expect(await queueOpportunityChanges()).toBe(1);
+ expect(await queueOpportunityChanges()).toBe(0);
+});
+it.each([false,true,'closed'])('keeps a future edition pending until registration opens (already present at enrollment: %s)',async(existing)=>{
+ vi.useFakeTimers({toFake:['Date']});vi.setSystemTime(new Date('2026-11-01T12:00:00Z'));
+ try {
+  const edition=(id:string,start:string,end:string)=>({id,name:'Edição '+id,stages:[{id:'registration',name:'Inscrições',kind:'registration' as const,start,end,sourceUrl:evidence.source_url,checkedAt:'2026-10-28T12:00:00Z'}]});
+  const discovery={areas:[],editions:[edition('A','2026-01-01','2026-12-31'),edition('B','2027-01-01','2027-12-31')]};
+  if(existing)await save(candidate({discovery,...(existing==='closed'?{opportunityStatus:'closed' as const}:{})}));
+  const {confirm}=await seriesSubscription();await updateAlertSubscription('confirm',confirm);
+  if(!existing)await save(candidate({discovery}));
+  expect(await queueOpportunityChanges()).toBe(existing?0:1);
+  vi.setSystemTime(new Date('2027-11-01T12:00:00Z'));
+  if(existing==='closed')expect(await queueOpportunityChanges()).toBe(0);
+  if(existing==='closed')await save(candidate({discovery,contentHash:'opening-next-edition'}));
+  expect(await queueOpportunityChanges()).toBe(1);
+  expect(await queueOpportunityChanges()).toBe(0);
+  const jobs=(await state.db!.query<{payload:{text:string}}>("select payload from opportunity_alert_outbox where kind='change' order by created_at desc")).rows;
+  expect(jobs.some(job=>job.payload.text.includes('Edição B'))).toBe(true);
+ }finally{vi.useRealTimers();}
+});
+it('announces a publicly open single edition whose registration uses a single date without end',async()=>{
+ const {confirm}=await seriesSubscription();await updateAlertSubscription('confirm',confirm);
+ await save(candidate({discovery:{areas:[],editions:[{id:'2099',name:'Data única',stages:[{id:'registration',name:'Inscrições',kind:'registration',start:'2099-10-20',sourceUrl:evidence.source_url,checkedAt:'2026-10-28T12:00:00Z'}]}]}}));
+ expect(await queueOpportunityChanges()).toBe(1);
+ expect(await queueOpportunityChanges()).toBe(0);
+});
+it('announces the pending future edition even when it supplied the first explicit edition metadata',async()=>{
+ vi.useFakeTimers({toFake:['Date']});vi.setSystemTime(new Date('2026-11-01T12:00:00Z'));
+ try {
+  await save();const {confirm}=await seriesSubscription();await updateAlertSubscription('confirm',confirm);
+  const discovery={areas:[],editions:[{id:'next',name:'Próxima edição',stages:[{id:'registration',name:'Inscrições',kind:'registration' as const,start:'2027-01-01',end:'2027-12-31',sourceUrl:evidence.source_url,checkedAt:'2026-10-28T12:00:00Z'}]}]};
+  await save(candidate({opportunityStatus:'closed',discovery}));expect(await queueOpportunityChanges()).toBe(0);
+  vi.setSystemTime(new Date('2027-11-01T12:00:00Z'));expect(await queueOpportunityChanges()).toBe(0);
+  await save(candidate({discovery,contentHash:'confirmed-opening'}));expect(await queueOpportunityChanges()).toBe(1);
+  expect(await queueOpportunityChanges()).toBe(0);
+ }finally{vi.useRealTimers();}
 });

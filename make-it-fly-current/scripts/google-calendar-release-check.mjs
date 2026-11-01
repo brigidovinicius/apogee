@@ -19,7 +19,7 @@ export function evaluateGoogleRelease({env={},evidence={},candidateSha='',checko
   const overrides=!!env.GOOGLE_CALENDAR_CLIENT_ID===!!env.GOOGLE_CALENDAR_CLIENT_SECRET;
   const pair=overrides&&!!(env.GOOGLE_CALENDAR_CLIENT_ID||env.GOOGLE_CLIENT_ID)&&!!(env.GOOGLE_CALENDAR_CLIENT_SECRET||env.GOOGLE_CLIENT_SECRET);
   add('candidate',/^[a-f0-9]{40}$/.test(candidateSha)&&checkoutClean,'Revisão Git exata e árvore local limpa; não comprova publicação.');
-  add('localMigrations',['0008_radar_calendar','0009_google_calendar','0010_supervised_registration','0011_google_calendar_retries','0012_google_calendar_observability'].every(tag=>manifest.some(m=>m.tag===tag&&/^[a-f0-9]{64}$/.test(m.sha256))),
+  add('localMigrations',['0008_radar_calendar','0009_google_calendar','0010_supervised_registration','0011_google_calendar_retries','0012_google_calendar_observability','0013_radar_calendar_filters'].every(tag=>manifest.some(m=>m.tag===tag&&/^[a-f0-9]{64}$/.test(m.sha256))),
     'Arquivos locais inventariados; aplicação no banco real é evidência separada.');
   add('httpsOrigin',origin,'Origem HTTPS de produção esperada, sem caminho ou parâmetros.');
   add('supervisedRegistration',enabled('MEMBERS_SUPERVISED_REGISTRATION_ENABLED'),'Proteção de conta ativa na configuração pretendida.');
