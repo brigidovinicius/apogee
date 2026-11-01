@@ -28,12 +28,6 @@ export function EarthRadarList({ opportunities, capturedAt }: { opportunities: S
   const visible = current.filter((item) => words.every((word) => normalize(`${item.title} ${item.organization} ${item.location} ${item.kind}`).includes(word))).slice(0, 6);
 
   return <div className={styles["radar-product"]}>
-    <aside className={styles["radar-sidebar"]} aria-label="Áreas do Radar">
-      <strong>Explorar</strong><nav aria-label="Filtrar oportunidades">
-        {categories.map(([id, label]) => <button key={id} type="button" aria-pressed={category === id} className={category === id ? styles.active : undefined} onClick={() => setCategory(id)}>{label}</button>)}
-        <Link prefetch={false} className={styles["all-link"]} href="/membros/oportunidades">Meu Radar</Link>
-      </nav>
-    </aside>
     <div className={styles["radar-main"]}>
       <div className={styles["return-note"]}><strong>Há novas possibilidades esperando por você</strong><span>Oportunidades do Radar</span></div>
       <div className={styles["search-wrap"]}>
