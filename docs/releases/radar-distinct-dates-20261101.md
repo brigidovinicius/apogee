@@ -25,6 +25,8 @@ git diff --check
 
 Resultados: **66 testes aprovados**, lint e TypeScript sem erros. Cobertura inclui datas distintas, dados ausentes, datas inválidas, fuso, virada de ano, fluxo contínuo e renderização da home e dos cards públicos/detalhados.
 
+Validação ampliada após autorização: **599/599 testes do site aprovados** com `npm test`; lint do teste de processos seletivos aprovado. O carregador explícito desse teste foi atualizado para importar o componente real de datas. A primeira execução do CI identificou essa dependência ausente; o comportamento do produto permaneceu igual à prévia revisada.
+
 Preview exclusivamente local, com três oportunidades sintéticas identificadas como teste: inscrições em 09/11 e evento em 25/11; evento sem prazo divulgado; competição sem realização informada. Home verificada em 1440, 900, 390 e 320 px; Radar público em 900 e 320 px; detalhe público em 900 px. Sem rolagem horizontal ou erros/avisos no console. O card detalhado de membros foi verificado por renderização automatizada, sem autenticar uma conta real. O servidor temporário foi encerrado após as verificações.
 
 Evidências locais em `/Users/viniciusbrigido/.codex/visualizations/2026/11/01/01a1972e-f3bb-7002-87da-050e3bfc5b5a/`:
@@ -35,4 +37,4 @@ Evidências locais em `/Users/viniciusbrigido/.codex/visualizations/2026/11/01/0
 
 ## Publicação
 
-Este candidato está somente no branch local `fix/radar-distinct-dates-20261101`, baseado em `2b2c0b9a4c6849dce5fa813c6503e6c10b991f1d`. Não houve push, PR, deploy, preview hospedado ou gravação de dados reais nesta alteração. Publicação depende de autorização explícita após revisão, conforme `make-it-fly-current/AGENTS.md:3`.
+O usuário autorizou envio e publicação após revisar a prévia. Branch `fix/radar-distinct-dates-20261101`, baseado em `2b2c0b9a4c6849dce5fa813c6503e6c10b991f1d`, enviado no [PR #108](https://github.com/brigidovinicius/apogee/pull/108). A publicação permanece condicionada ao CI completo aprovado. Até este registro, não houve deploy, preview hospedado ou gravação de dados reais desta alteração.
