@@ -173,7 +173,7 @@ test("member board renders extracurriculars first, a shared 24-card page, distin
   assert.doesNotMatch(html, /Vestibular agrupado/);
   assert.ok(!html.includes(event.eligibility));
   assert.match(html, /Ver detalhes/);
-  assert.match(html, /Realização/); assert.match(html, /Janela de inscrição/); assert.match(html, /Início do evento/);
+  assert.match(html, /Data do evento/); assert.match(html, /Inscrições até/); assert.match(html, /Início do evento/);
   assert.match(html, /<time dateTime="2099-10-28"/);
   const lots = orderOpportunityFeed([...exams, ...Array.from({ length: 25 }, (_, i) => ({ ...event, id: `event-${i}`, title: `Encontro ${i}` }))], logic.EMPTY_OPPORTUNITY_FILTERS);
   const first = renderToStaticMarkup(React.createElement(OpportunitiesBoard, { opportunities: lots, editorialFeed: true }));

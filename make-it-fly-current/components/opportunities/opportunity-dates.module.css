@@ -1,0 +1,13 @@
+.dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  width: 100%;
+  margin: 0;
+}
+
+.dates > div { min-width: 0; }
+.single { grid-template-columns: 1fr; }
+.dates dt { margin: 0 0 .3rem; font-size: .75rem; font-weight: 500; line-height: 1.4; }
+.dates dd { margin: 0; font-size: .85rem; font-weight: 550; line-height: 1.5; overflow-wrap: anywhere; }
+.dates small { display: block; margin-top: .25rem; font-size: .7rem; font-weight: 400; }

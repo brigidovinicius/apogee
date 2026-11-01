@@ -7,6 +7,7 @@ import { selectHomeOpportunities, type HomeOpportunityCategory } from "@/lib/hom
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 import { interfaceText } from "@/lib/presentation-text.mjs";
 import { OpportunityBenefits } from "@/components/opportunities/opportunity-financials";
+import { OpportunityDates } from "@/components/opportunities/opportunity-dates";
 import styles from "./earth-radar.module.css";
 
 const categories: [HomeOpportunityCategory, string][] = [
@@ -41,7 +42,7 @@ export function EarthRadarList({ opportunities, capturedAt }: { opportunities: S
         {categories.map(([id, label]) => <button key={id} type="button" aria-pressed={category === id} className={`${styles["quick-filter"]} ${category === id ? styles.active : ""}`} onClick={() => setCategory(id)}>{label}</button>)}
       </nav>
       <p className={styles["result-count"]} role="status">{visible.length} {visible.length === 1 ? "oportunidade em destaque" : "oportunidades em destaque"}</p>
-      <div className={styles["list-head"]} aria-hidden="true"><span>Oportunidade</span><span>Prazo e local</span><span /></div>
+      <div className={styles["list-head"]} aria-hidden="true"><span>Oportunidade</span><span>Datas e local</span><span /></div>
       <div className={styles.opportunities}>
         {visible.map((item) => <article key={item.id} className={styles.opportunity}>
           <div className={styles["opportunity-copy"]}>
@@ -50,7 +51,10 @@ export function EarthRadarList({ opportunities, capturedAt }: { opportunities: S
             <p className={styles["opportunity-org"]}>{interfaceText(item.organization)}</p>
             <OpportunityBenefits opportunity={item} className={styles["opportunity-benefits"]} />
           </div>
-          <div className={styles["opportunity-meta"]}><strong>{interfaceText(item.deadlineLabel)}</strong><span>{interfaceText(item.location)}</span></div>
+          <div className={styles["opportunity-meta"]}>
+            <OpportunityDates opportunity={item} className={styles["opportunity-dates"]} />
+            <span>Local: {interfaceText(item.location)}</span>
+          </div>
           <Link prefetch={false} className={styles["opportunity-action"]} href={opportunityDetailPath(item.id)} aria-label={`Ver detalhes: ${item.title}`}>Explorar</Link>
         </article>)}
       </div>

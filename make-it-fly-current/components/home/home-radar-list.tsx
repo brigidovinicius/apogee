@@ -8,6 +8,7 @@ import type { StudentOpportunity } from "@/lib/opportunities/types";
 import { selectHomeOpportunities, type HomeOpportunityCategory } from "@/lib/home-opportunities";
 import styles from "./editorial-home.module.css";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
+import { OpportunityDates } from "@/components/opportunities/opportunity-dates";
 
 const categories: ReadonlyArray<{ id: HomeOpportunityCategory; label: string; href: string }> = [
   { id: "all", label: "Em destaque", href: "/oportunidades" },
@@ -41,7 +42,7 @@ export function HomeRadarList({ opportunities, capturedAt }: { opportunities: St
             <div>
               <p className={styles.opportunityOrganization}>{interfaceText(item.organization)} · {item.kind}</p>
               <h3>{interfaceText(item.title)}</h3>
-              <p>{interfaceText(item.deadlineLabel)}</p>
+              <OpportunityDates opportunity={item} />
             </div>
             <p className={styles.opportunityBenefit}>{interfaceText(item.benefit)}</p>
             <span className={styles.rowArrow} aria-hidden="true"><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span>
