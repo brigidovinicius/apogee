@@ -113,6 +113,28 @@ test("only activity facts establish a preferred theme; university names, prose p
   assert.equal(rankOpportunities([admission, general], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], general);
 });
 
+test("audited noncash prizes lead without manufacturing money and nearby conferences break ties by event date", () => {
+  const noCash = { benefits: [], costs: [], notes: ["Assinaturas de software para a equipe vencedora."] };
+  const awarded = item("z-awarded", { kind: "Prêmio", categories: ["competicoes", "eventos"], financials: noCash });
+  const conference = item("a-conference", { title: "Summit de tecnologia", organization: "Outro organizador" });
+  assert.equal(rankOpportunities([conference, awarded], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], awarded);
+  assert.deepEqual(awarded.financials.benefits, []);
+  const first = item("z-first", { title: "Conferência de negócios", organization: "A", deadline: null, eventStartsAt: "2026-10-18" });
+  const second = item("a-second", { title: "Conferência de tecnologia", organization: "B", deadline: null, eventStartsAt: "2026-10-19" });
+  assert.deepEqual(rankOpportunities([second, first], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime()), [first, second]);
+  const admission = exam("admission", { kind: "Prêmio" });
+  assert.equal(rankOpportunities([admission, conference], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], conference);
+});
+
+test("an announced prize total with unconfirmed nature remains outside financial-benefit labels", () => {
+  const amountText = "Inscrição gratuita no lote disponível. A organização anuncia R$ 25 mil em prêmios, além de almoço e jantar. A natureza e divisão dos prêmios dependem das regras; não tratar esse total como dinheiro garantido para cada participante.";
+  const financials = radar.financialsFromRadar({ benefitType: "prize", amountText });
+  assert.deepEqual(financials.benefits, []);
+  assert.ok(financials.notes.some(note => note.includes("25 mil")));
+  const confirmed = radar.financialsFromRadar({ benefitType: "prize", amountText: "Premiação em dinheiro de R$ 25.000 para a equipe vencedora." });
+  assert.equal(confirmed.benefits[0].label, "PREMIAÇÃO");
+});
+
 test("nearby event dates break ties without becoming registration deadlines or overriding a requested subject", () => {
   const week = item("Tecnologia nesta semana", { organization: "A", deadline: null, eventStartsAt: "2026-10-20" });
   const month = item("Tecnologia neste mês", { organization: "B", deadline: null, eventStartsAt: "2026-11-10" });

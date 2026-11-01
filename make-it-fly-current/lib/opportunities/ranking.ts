@@ -15,6 +15,12 @@ export type RankingConfig = { [Key in keyof typeof DEFAULT_RANKING]: number };
 const preferredAreas = new Set(["tecnologia", "ia", "robotica", "dados", "negocios"]);
 const preferredTheme = /\b(?:tecnolog(?:ia|ias|ico|ica|icos|icas)|empreendedor(?:ismo|a|as|es)?|inovacao|innovation|startups?|negocios?|business|deep\s*tech|data\s*centers?|inteligencia artificial|ia|robotica|software|programacao|computacao|ciberseguranca|fintech|edtech|govtech|web3|blockchain|machine learning)\b/u;
 
+function eventTime(item: StudentOpportunity) {
+  const value = item.eventStartsAt;
+  const time = value ? Date.parse(value.length === 10 ? `${value}T00:00:00-03:00` : value) : NaN;
+  return Number.isFinite(time) ? time : Infinity;
+}
+
 function editorialHighlights(item: StudentOpportunity) {
   if (item.admissionProcess || item.entranceExam || item.editorialNature === "formal_admission") {
     return { preferred: false, prize: false };
@@ -23,7 +29,9 @@ function editorialHighlights(item: StudentOpportunity) {
   const competition = categories.includes("competicoes") || item.discovery?.primaryType === "competicoes";
   const hackathon = item.discovery?.subtype === "hackathon" || /\bhacka(?:thon|ton)s?\b/iu.test(item.title ?? "");
   const event = competition || hackathon || categories.includes("eventos") || item.discovery?.primaryType === "eventos";
-  const prize = event && Boolean(item.financials?.benefits.some(benefit => ["PREMIAÇÃO", "PREMIAÇÃO TOTAL"].includes(benefit.label)));
+  // An audited prize may be products or services. Its ranking boost does not
+  // turn it into a cash benefit or change the separately verified financials.
+  const prize = event && (item.kind === "Prêmio" || Boolean(item.financials?.benefits.some(benefit => ["PREMIAÇÃO", "PREMIAÇÃO TOTAL"].includes(benefit.label))));
   const title = (item.title ?? "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
   const theme = item.discovery?.areas.some(area => preferredAreas.has(area)) || preferredTheme.test(title);
   return { preferred: event && (competition || hackathon || theme || prize), prize };
@@ -59,7 +67,8 @@ export function rankOpportunities(items: readonly StudentOpportunity[], filters:
   type Bucket = { candidates: Candidate[]; index: number };
   const groups = new Map<string, Bucket>();
   const compare = (left: Candidate, right: Candidate) => right.score - left.score ||
-    (left.item.deadline ?? "9999-12-31").localeCompare(right.item.deadline ?? "9999-12-31") || left.item.id.localeCompare(right.item.id);
+    (left.item.deadline ?? "9999-12-31").localeCompare(right.item.deadline ?? "9999-12-31") ||
+    eventTime(left.item) - eventTime(right.item) || left.item.id.localeCompare(right.item.id);
   for (const item of items) {
     const organization = item.organization.split(/;\s*conteúdo:/iu)[0].trim().toLocaleLowerCase("pt-BR");
     const category = primaryOpportunityCategory(item) ?? "";
