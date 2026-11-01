@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {notFound} from "next/navigation";
 import {privacyIdentity,privacyPolicyReady,privacySections} from "@/lib/privacy-policy";
+import {legalDocumentVersions} from "@/lib/legal-documents.mjs";
 import styles from "./privacy.module.css";
 
 export const dynamic="force-dynamic";
@@ -14,7 +15,7 @@ export default function PrivacyPage() {
   if(!ready && process.env.APOGEE_LOCAL_PREVIEW!=="1")notFound();
   return <main id="experiencia" className={styles.page}>
     <Link href="/">Apogee · Voltar ao início</Link>
-    <header><p>Privacidade e proteção de dados</p><h1>Política de Privacidade</h1><p>Versão de 1º de novembro de 2026</p></header>
+    <header><p>Privacidade e proteção de dados</p><h1>Política de Privacidade</h1><p>Versão {legalDocumentVersions.privacy}</p></header>
     {!ready && <aside role="note" className={styles.draft}><strong>Minuta para revisão</strong><p>Identificação e contato já foram informados. O texto e os procedimentos de atendimento e proteção de menores ainda precisam de revisão e aprovação antes da publicação.</p></aside>}
     <p><Link href="/termos">Termos de Uso</Link></p>
     <section aria-labelledby="controlador"><h2 id="controlador">Quem é responsável pelos dados</h2>

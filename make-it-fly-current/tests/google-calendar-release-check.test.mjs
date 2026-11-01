@@ -6,7 +6,7 @@ import {evaluateGoogleRelease,launchEvidenceGates} from '../scripts/google-calen
 const sha='a'.repeat(40),secret='SENSITIVE_SYNTHETIC_SECRET_ONLY';
 function fixture() {
   return {candidateSha:sha,checkoutClean:true,
-    env:{BETTER_AUTH_URL:'https://www.apogee.community',MEMBERS_SUPERVISED_REGISTRATION_ENABLED:'true',APOGEE_PRIVACY_APPROVED_VERSION:'2026-11-01',APOGEE_TERMS_APPROVED_VERSION:'2026-10-30',RADAR_CALENDAR_PERSONAL_ENABLED:'true',RADAR_GOOGLE_CALENDAR_ENABLED:'true',GOOGLE_CLIENT_ID:'synthetic-client',GOOGLE_CLIENT_SECRET:secret,GOOGLE_CALENDAR_ENCRYPTION_KEY:'ab'.repeat(32),GOOGLE_CALENDAR_SYNC_SECRET:secret.repeat(2),GOOGLE_CALENDAR_MONITOR_SECRET:'m'.repeat(32),MEMBERS_EMAIL_ENABLED:'true',MEMBERS_RESEND_DOMAIN_VERIFIED:'true',MEMBERS_RESEND_API_KEY:'re_synthetic_test_only',MEMBERS_RESEND_FROM:'contato@apogee.community',GOOGLE_CALENDAR_ALERT_WEBHOOK_URL:'https://example.invalid/'+secret},
+    env:{BETTER_AUTH_URL:'https://www.apogee.community',MEMBERS_SUPERVISED_REGISTRATION_ENABLED:'true',MEMBERS_PROTECTION_EXISTING_ACCOUNTS_BEFORE:'2026-01-01T00:00:00.000Z',APOGEE_PRIVACY_APPROVED_VERSION:'2026-11-01.2',APOGEE_TERMS_APPROVED_VERSION:'2026-11-01.2',RADAR_CALENDAR_PERSONAL_ENABLED:'true',RADAR_GOOGLE_CALENDAR_ENABLED:'true',GOOGLE_CLIENT_ID:'synthetic-client',GOOGLE_CLIENT_SECRET:secret,GOOGLE_CALENDAR_ENCRYPTION_KEY:'ab'.repeat(32),GOOGLE_CALENDAR_SYNC_SECRET:secret.repeat(2),GOOGLE_CALENDAR_MONITOR_SECRET:'m'.repeat(32),MEMBERS_EMAIL_ENABLED:'true',MEMBERS_RESEND_DOMAIN_VERIFIED:'true',MEMBERS_RESEND_API_KEY:'re_synthetic_test_only',MEMBERS_RESEND_FROM:'contato@apogee.community',GOOGLE_CALENDAR_ALERT_WEBHOOK_URL:'https://example.invalid/'+secret},
     manifest:['0008_radar_calendar','0009_google_calendar','0010_supervised_registration','0011_google_calendar_retries','0012_google_calendar_observability','0013_radar_calendar_filters'].map(tag=>({tag,sha256:'c'.repeat(64)})),
     evidence:{candidateSha:sha,gates:Object.fromEntries(launchEvidenceGates.map(id=>[id,{status:'recorded',reference:'FICTITIOUS_REF_ONLY',checkedAt:'2026-01-01T00:00:00Z'}]))}};
 }
@@ -35,6 +35,19 @@ test('future dates or empty references do not satisfy operational evidence',()=>
   for(const patch of [{checkedAt:'2999-01-01T00:00:00Z'},{reference:''},{status:'pending'}]){
     const input=fixture();Object.assign(input.evidence.gates.guardianReviewProcess,patch);assert.equal(evaluateGoogleRelease(input).evidenceComplete,false);
   }
+});
+test('transition rejects future or invalid cutoffs and email alerts require a complete exclusive destination',()=>{
+  for(const cutoff of ['', '2999-01-01T00:00:00.000Z','2026-02-30T00:00:00.000Z']){
+    const input=fixture();input.env.MEMBERS_PROTECTION_EXISTING_ACCOUNTS_BEFORE=cutoff;
+    assert.equal(evaluateGoogleRelease(input).configurationReady,false);
+  }
+  const input=fixture();delete input.env.GOOGLE_CALENDAR_ALERT_WEBHOOK_URL;
+  input.env.GOOGLE_CALENDAR_MONITOR_RESEND_API_KEY='re_synthetic_alert_only';
+  assert.equal(evaluateGoogleRelease(input).configurationReady,false);
+  input.env.GOOGLE_CALENDAR_MONITOR_ALERT_EMAIL='operator@example.invalid';
+  assert.equal(evaluateGoogleRelease(input).configurationReady,true);
+  input.env.GOOGLE_CALENDAR_ALERT_WEBHOOK_URL='https://example.invalid/alerts';
+  assert.equal(evaluateGoogleRelease(input).configurationReady,false);
 });
 test('report cannot expose config values, private webhook or raw evidence references',()=>{
   const text=JSON.stringify(evaluateGoogleRelease(fixture()));assert.ok(!text.includes(secret));assert.ok(!text.includes('FICTITIOUS_REF_ONLY'));assert.ok(!text.includes('synthetic-client'));assert.ok(!text.includes('re_synthetic_test_only'));

@@ -9,12 +9,13 @@ export const termsSections=[
   ]},
   {id:'conta',title:'Conta e participação de menores',paragraphs:[
     'A conta de acesso deve pertencer a um adulto, com informações corretas e credenciais mantidas em sigilo. A liberação da comunidade e dos recursos protegidos depende da confirmação do e-mail, da revisão da conta e das permissões aplicáveis. Login Google ou pagamento, isoladamente, não substituem a revisão.',
+    'Durante a transição, contas existentes abrangidas pelo plano de revisão mantêm o acesso anterior enquanto aguardam conferência. Essa preservação não aprova maioridade nem novos vínculos de dependentes. Para conectar e sincronizar o Google Agenda, a conta precisa de e-mail confirmado e conferência, inclusive durante a transição; administradores identificados pela equipe utilizam suas permissões administrativas.',
     'Crianças e adolescentes, inclusive menores de 16 anos, podem ser vinculados de forma privada à conta de pai, mãe ou responsável legal. O vínculo depende de autorização e conferência específicas; o menor não recebe senha, login próprio, perfil público ou acesso ao fórum. O responsável pode revogar a autorização pelo portal e solicitar atendimento pelo canal de privacidade.',
     'Não compartilhe sua senha com o menor. Experiências específicas, como o Make It Fly, têm critérios independentes de idade e participação. O vínculo não inscreve o dependente em uma instituição externa nem concede acesso pago.',
   ]},
   {id:'acesso',title:'Ofertas e direitos de acesso',paragraphs:[
     'Conteúdo público, área de membros e funcionalidades pagas podem ter níveis de acesso distintos. Preço, forma de pagamento, duração e recursos incluídos devem estar claros na oferta antes da contratação. Estas condições não ampliam nem reduzem o acesso que você já adquiriu.',
-    'Condições de uma oferta identificada como vitalícia devem ser definidas na oferta e respeitar o que foi contratado. Esta minuta não define nova duração para compras existentes, não cria assinatura recorrente e não substitui a revisão das condições comerciais antes da liberação.',
+    'Ofertas identificadas como vitalícias respeitam as condições apresentadas na contratação. Estes termos não criam assinatura recorrente nem alteram a duração ou os recursos de compras existentes. Em caso de dúvida sobre a sua oferta, solicite as condições pelo canal de atendimento.',
   ]},
   {id:'google',title:'Conexão opcional com o Google Agenda',paragraphs:[
     'Conectar o Google Agenda é uma autorização adicional ao login Google e depende das permissões da conta Apogee. O aplicativo solicita calendar.app.created para criar uma agenda secundária e gerenciar os eventos das oportunidades salvas. Não solicita leitura da agenda principal, e-mails ou contatos; a integração atual não envia convites.',

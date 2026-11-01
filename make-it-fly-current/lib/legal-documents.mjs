@@ -1,5 +1,5 @@
 // Version-specific editorial approval; never a declaration of legal compliance.
-export const legalDocumentVersions=Object.freeze({privacy:'2026-11-01',terms:'2026-10-30'});
+export const legalDocumentVersions=Object.freeze({privacy:'2026-11-01.2',terms:'2026-11-01.2'});
 /** @param {Record<string,string|undefined>} [env] */
 export function legalApprovals(env=process.env) {
   return {privacy:env.APOGEE_PRIVACY_APPROVED_VERSION===legalDocumentVersions.privacy,

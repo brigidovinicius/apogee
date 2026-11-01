@@ -25,6 +25,22 @@ export function webhookSender({url,local=false,fetcher=fetch}) {
     if(!response.ok)throw Error('Alert delivery failed');
   };
 }
+export function resendAlertSender({apiKey,recipient,fetcher=fetch}) {
+  if(!apiKey&&!recipient)return null;
+  if(!/^re_[A-Za-z0-9_-]{10,}$/.test(apiKey??'')||!(/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/).test(recipient??''))throw Error('Invalid calendar email alert configuration');
+  return async payload=>{
+    if(!['opened','recovered'].includes(payload.type)||!/^[-a-f0-9]{36}$/.test(payload.eventId??''))throw Error('Invalid calendar alert event');
+    const reasons=(payload.reasons??[]).filter(reason=>['endpoint_unavailable','worker_unavailable','queue_unhealthy','worker_stale','capacity_pressure','quota','reconnect','retries_paused','sync_errors'].includes(reason));
+    const state=payload.type==='opened'?'Incidente detectado':'Serviço recuperado';
+    const text=['Google Agenda — Apogee',state,'Motivos: '+reasons.join(', '),
+      ...Object.entries(safeMetrics(payload.metrics??{})).map(([key,value])=>key+': '+value),
+      'Verifique o monitor e a fila antes de intervir. Este aviso não contém dados de membros.'].join('\n');
+    const response=await fetcher('https://api.resend.com/emails',{method:'POST',redirect:'error',signal:AbortSignal.timeout(10000),
+      headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json','Idempotency-Key':'apogee-calendar-'+payload.eventId},
+      body:JSON.stringify({from:'Apogee <contato@apogee.community>',to:[recipient],subject:'[Apogee Google Agenda] '+state,text})});
+    if(!response.ok)throw Error('Calendar email alert delivery failed');
+  };
+}
 export function createAlertMonitor({file,deliver=null,log=console.log,now=Date.now,random=Math.random,component='google-calendar-alert'}) {
   if(!['google-calendar-alert','google-calendar-external-monitor'].includes(component))throw Error('Invalid calendar alert component');
   let state,loaded=false;
@@ -78,5 +94,6 @@ export function createAlertMonitor({file,deliver=null,log=console.log,now=Date.n
       }
       await persist();
     }
+    return {pendingDeliveries:state.outbox.length};
   };
 }

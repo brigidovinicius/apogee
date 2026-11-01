@@ -12,9 +12,9 @@ import {syncBatch} from './google-calendar-worker.mjs';
 import {createAlertMonitor,webhookSender} from './google-calendar-alerts.mjs';
 import {exerciseMonitorAndCapacity} from './google-calendar-monitor-local-checks.mjs';
 
-const config=JSON.parse(await readFile(new URL('../../.local/radar-calendar/config.json',import.meta.url),'utf8'));
+const config=JSON.parse(await readFile(new URL((process.argv.includes('--completion')?'../../.local/radar-completion-calendar/config.json':'../../.local/radar-calendar/config.json'),import.meta.url),'utf8'));
 const dbUrl=new URL(config.DATABASE_URL);
-assert.equal(dbUrl.hostname,'127.0.0.1');assert.equal(dbUrl.port,'48763');assert.equal(dbUrl.pathname,'/apogee_radar_calendar_local');
+assert.equal(dbUrl.hostname,'127.0.0.1');assert.equal(dbUrl.port,process.argv.includes('--completion')?'48931':'48763');assert.equal(dbUrl.pathname,'/apogee_radar_calendar_local');
 const sql=postgres(dbUrl.href,{ssl:false,max:3,prepare:false,onnotice:()=>{}});
 const schema='calendar_retry_qa_'+randomBytes(6).toString('hex');
 const tables=['radar_google_calendar_metric','radar_google_calendar_queue_state','radar_google_calendar_event','radar_google_calendar_oauth','radar_google_calendar','radar_saved_opportunity'];
@@ -71,7 +71,7 @@ try {
   process.env.GOOGLE_CALENDAR_ENCRYPTION_KEY='ab'.repeat(32);process.env.GOOGLE_CALENDAR_SYNC_SECRET='s'.repeat(32);
   const raw=(await sql`select payload from radar_local_catalogue where id='demo-olimpiada'`)[0].payload;
   const load=opportunityLoader({'@/lib/members/db':{getSql:()=>qa},'@/lib/members/mail':{applicationOrigin:()=>origin},
-    '@/lib/billing/store':{radarAccess:async()=>({active:true})},'@/lib/members/protection':{adultAccess:async()=>true},
+    '@/lib/billing/store':{radarAccess:async()=>({active:true})},'@/lib/members/protection':{calendarAdultAccess:async()=>true},
     './radar-client':{listRadarOpportunities:async()=>[opportunityLoader()('lib/opportunities/radar-client.ts').toOpportunity(raw)]}});
   const sync=load('lib/opportunities/google-calendar-sync.ts'),store=load('lib/opportunities/google-calendar-store.ts');
   const encryption=load('lib/opportunities/google-calendar-config.ts');route=load('app/api/internal/google-agenda/sync/route.ts');

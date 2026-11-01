@@ -40,10 +40,78 @@ test('pending members cannot exchange Google Calendar OAuth credentials',async()
   let exchanges=0;
   const route=opportunityLoader({
     '@/lib/members/dal':{getMemberFromHeaders:async()=>({id:'pending'})},
-    '@/lib/members/protection':{adultAccess:async()=>false},
+    '@/lib/members/protection':{calendarAdultAccess:async()=>false},
     '@/lib/opportunities/google-calendar-config':{googleCalendarConfig:()=>({}),GOOGLE_CALENDAR_PATH:'/membros/meu-calendario',GOOGLE_CALENDAR_COOKIE:'state',GOOGLE_CALENDAR_CALLBACK:'/callback'},
     '@/lib/members/mail':{applicationOrigin:()=> 'http://127.0.0.1:4381'},
     '@/lib/opportunities/google-calendar-store':{completeGoogleCalendarOAuth:async()=>{exchanges++;}},
   })('app/api/integracoes/google-agenda/callback/route.ts');
   const response=await route.GET({headers:new Headers()});assert.match(response.headers.get('location'),/google=access/);assert.equal(exchanges,0);
+});
+
+test('existing account transition preserves access without granting Google or dependent privileges',async()=>{
+  const keys=['MEMBERS_SUPERVISED_REGISTRATION_ENABLED','MEMBERS_PROTECTION_EXISTING_ACCOUNTS_BEFORE'];
+  const prior=keys.map(k=>process.env[k]);let row;
+  const sql=async()=>row?[row]:[];sql.begin=async(...args)=>args.at(-1)(sql);
+  const protection=opportunityLoader({'./db':{getSql:()=>sql}})('lib/members/protection.ts');
+  try {
+    process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED='true';
+    process.env.MEMBERS_PROTECTION_EXISTING_ACCOUNTS_BEFORE='2026-01-01T00:00:00.000Z';
+    row={role:'member',email_verified:true,created_at:'2025-01-01T00:00:00Z',status:null};
+    assert.equal(await protection.adultAccess('existing'),true);
+    assert.equal(await protection.calendarAdultAccess('existing'),false);
+    row.status='pending';assert.equal(await protection.adultAccess('existing'),true);assert.equal(await protection.calendarAdultAccess('existing'),false);
+    row.status='rejected';row.reviewed_at='2026-01-02T00:00:00Z';assert.equal(await protection.adultAccess('existing'),false);
+    row.status='pending';assert.equal(await protection.adultAccess('existing'),false);
+    row.status='approved';assert.equal(await protection.calendarAdultAccess('existing'),true);
+    row.email_verified=false;assert.equal(await protection.calendarAdultAccess('existing'),false);
+    row.blocked=true;assert.equal(await protection.adultAccess('existing'),false);
+    row={role:'member',email_verified:true,created_at:'2026-01-01T00:00:00Z',status:null};
+    assert.equal(await protection.adultAccess('new'),false);
+    row.created_at='2025-01-01T00:00:00Z';
+    for(const cutoff of ['', 'invalid','2999-01-01T00:00:00.000Z','2026-02-30T00:00:00.000Z','2026-01-01']) {
+      process.env.MEMBERS_PROTECTION_EXISTING_ACCOUNTS_BEFORE=cutoff;
+      assert.equal(await protection.adultAccess('existing'),false);
+    }
+    process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED='false';
+    assert.equal(await protection.calendarAdultAccess('existing'),false);
+  }finally{keys.forEach((k,i)=>{if(prior[i]===undefined)delete process.env[k];else process.env[k]=prior[i];});}
+});
+test('Google OAuth is refused before storing state or exchanging a token when review is missing',async()=>{
+  let queries=0,exchanges=0;
+  const sql=async()=>{queries++;return [];};sql.begin=async(...args)=>args.at(-1)(sql);
+  const store=opportunityLoader({
+    '@/lib/members/protection':{calendarAdultAccess:async()=>false},
+    '@/lib/members/db':{getSql:()=>sql},
+    './google-calendar-config':{requiredGoogleCalendarConfig:()=>({})},
+    './google-calendar-client':{GoogleCalendarError:class extends Error {},googleTokens:async()=>{exchanges++;}},
+  })('lib/opportunities/google-calendar-store.ts');
+  await assert.rejects(store.beginGoogleCalendarOAuth('existing'));
+  assert.equal(queries,0);
+  const state='ab'.repeat(32);
+  await assert.rejects(store.completeGoogleCalendarOAuth('existing',state,state,'qa-code'));
+  assert.equal(exchanges,0);assert.equal(queries,1);
+});
+test('Google disconnect is available to the authenticated account without entitlement or review',async()=>{
+  const calls=[];
+  const actions=opportunityLoader({
+    '@/lib/members/dal':{getCurrentMember:async()=>({id:'session-user'})},
+    '@/lib/opportunities/personal-calendar':{requireCalendarMember:async()=>{throw Error('Must not require paid access');}},
+    '@/lib/opportunities/google-calendar-store':{disconnectGoogleCalendar:async id=>calls.push(id)},
+    'next/cache':{revalidatePath:()=>{}},
+  })('app/membros/meu-calendario/google-actions.ts');
+  await actions.disconnectGoogleCalendarAction();assert.deepEqual(calls,['session-user']);
+});
+
+test('Google interface routes pending accounts to review and still offers disconnect for a retained connection',()=>{
+  const disconnect=()=>{};
+  const Google=opportunityLoader({
+    '@/app/membros/meu-calendario/google-actions':{connectGoogleCalendarAction:()=>{},disconnectGoogleCalendarAction:disconnect,syncGoogleCalendarAction:()=>{}},
+  })('components/opportunities/google-calendar.tsx').GoogleCalendar;
+  const nodes=node=>Array.isArray(node)?node.flatMap(nodes):node?.props?[node,...nodes(node.props.children)]:[];
+  const status={configured:true,connected:false,reviewRequired:true,lastSync:null,error:null};
+  const pending=nodes(Google({status}));
+  assert.ok(pending.some(node=>node.props.href==='/membros/protecao'));
+  assert.equal(pending.filter(node=>node.type==='form').length,0);
+  const connected=nodes(Google({status:{...status,connected:true}}));
+  assert.deepEqual(connected.filter(node=>node.type==='form').map(node=>node.props.action),[disconnect]);
 });

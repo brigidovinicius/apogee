@@ -79,6 +79,7 @@ test("callback denies anonymous/unpaid accounts and uses only session identity",
   let member=null,active=false,exchanges=0,actor;
   const route=opportunityLoader({
     "@/lib/members/dal":{getMemberFromHeaders:async()=>member},
+    "@/lib/members/protection":{calendarAdultAccess:async()=>true},
     "@/lib/billing/store":{radarAccess:async()=>({active})},
     "@/lib/members/mail":{applicationOrigin:()=>"http://127.0.0.1:4381"},
     "@/lib/opportunities/google-calendar-store":{completeGoogleCalendarOAuth:async id=>{exchanges++;actor=id;}},
