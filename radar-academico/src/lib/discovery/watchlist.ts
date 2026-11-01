@@ -71,6 +71,14 @@ export async function claimDueDiscoveryTargets(limit: number): Promise<Discovery
   )).rows);
 }
 
+export async function knownOpportunityUrls(): Promise<Set<string>> {
+  const rows = await withAdminTransaction(async client =>
+    (await client.query<{ source_page_url: string }>("select distinct source_page_url from opportunity_sources")).rows);
+  // Include inactive links and tombstones. Their rechecks belong to the source
+  // scheduler; discovery must not spend its limited queue recreating them.
+  return new Set(rows.map(row => row.source_page_url));
+}
+
 export async function completeDiscoveryTarget(id: string, status: DiscoveryTarget["last_status"]) {
   await withAdminTransaction((client) => client.query(
     `update discovery_targets set last_checked_at=now(),last_status=$2,

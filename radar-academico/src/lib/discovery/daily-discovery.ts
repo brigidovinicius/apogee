@@ -8,7 +8,7 @@ import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { parseHtml } from "@/lib/ingestion/parse-html";
 import { isAllowedHostname, isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
 import type { OfficialSource } from "@/lib/ingestion/types";
-import { claimDueDiscoveryTargets, completeDiscoveryTarget, saveDiscoveryLeads, recordDiscoveryObservation, recordDiscoveryObservationChanged, type DiscoveryTarget } from "./watchlist";
+import { claimDueDiscoveryTargets, completeDiscoveryTarget, saveDiscoveryLeads, recordDiscoveryObservation, recordDiscoveryObservationChanged, knownOpportunityUrls, type DiscoveryTarget } from "./watchlist";
 
 const relevant = /olimp[ií]ada|torneio|maratona|pitch|build(?:ers)? day|platform|\bia\b|bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|oportunidade|curso|oficina|formação|prêmio|premiaç|competição|hackathon|desafio|edital|seleção|inscriç|chamada|programa|evento|workshop|conferência|congresso|seminário|encontro|feira|palestra|webinar|extensão|empreendedorismo|incuba|acelera/i;
 const tracking = /^(utm_.+|fbclid|gclid)$/i;
@@ -25,7 +25,10 @@ export function candidateUrl(input: string): string | null {
   } catch { return null; }
 }
 
-export function discoveryLinks(html: string, target: DiscoveryTarget, mappedSources: OfficialSource[], now = new Date()) {
+export function discoveryLinks(html: string, target: DiscoveryTarget, mappedSources: OfficialSource[], now = new Date(), knownUrls: ReadonlySet<string> = new Set()) {
+  // A known source can expose a new call; persistence, rather than source scope,
+  // decides whether an opportunity already exists.
+  void mappedSources;
   const seen = new Set<string>();
   const $ = cheerio.load(html);
   $("header,aside").remove();
@@ -38,9 +41,9 @@ export function discoveryLinks(html: string, target: DiscoveryTarget, mappedSour
   });
   return [...metadata, ...parseHtml($.html(), target.official_url)].flatMap((item) => {
     const url = candidateUrl(item.url);
-    if (!url || unavailable.has(url) || url === target.official_url || seen.has(url) || navigationLabel.test(item.title)) return [];
+    if (!url || knownUrls.has(url) || unavailable.has(url) || url === target.official_url || seen.has(url) || navigationLabel.test(item.title)) return [];
     const path = new URL(url).pathname;
-    if (path.includes("@@search") || isOfficialSourceUrl(url, mappedSources) ||
+    if (path.includes("@@search") ||
       !relevant.test(`${item.title} ${path}`)) return [];
     seen.add(url);
     return [{ url, title: item.title.slice(0, 240), excerpt: item.excerpt.slice(0, 500) }];
@@ -76,6 +79,7 @@ export function discoveryObservation(html: string, target: DiscoveryTarget) {
 export async function runScheduledDiscovery() {
   const targets = await claimDueDiscoveryTargets(2);
   const mappedSources = await loadActiveOfficialSources();
+  const knownUrls = targets.length ? await knownOpportunityUrls() : new Set<string>();
   const results: { targetId: string; status: DiscoveryTarget["last_status"]; links: number; newLeads: number }[] = [];
   for (const target of targets) {
     let status: DiscoveryTarget["last_status"] = "failed";
@@ -90,7 +94,7 @@ export async function runScheduledDiscovery() {
         const html = resource.body.toString("utf8");
         const observation = discoveryObservation(html, target);
         const changed = await recordDiscoveryObservation(target.id, observation);
-        const leads = discoveryLinks(html, target, mappedSources);
+        const leads = discoveryLinks(html, target, mappedSources, new Date(), knownUrls);
         if (target.id.startsWith("exp-") && !isOfficialSourceUrl(target.official_url, mappedSources)) {
           leads.unshift({ url: target.official_url, title: target.name, excerpt: observation.excerpt });
         }

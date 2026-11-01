@@ -40,6 +40,7 @@ export function isOfficialSourceUrl(
 
     return registry.some((source) =>
       source.active &&
+      (!source.id?.startsWith("auto-page-") || url.href === source.baseUrl) &&
       source.allowedDomains.some((domain) => normalizedHost(domain) === host) &&
       source.allowedPathPrefixes.some((prefix) => url.pathname.startsWith(prefix)),
     );

@@ -6,8 +6,8 @@ import { lockSource, persistCandidate } from "@/lib/ingestion/persist-candidate"
 import { publicationIssue } from "@/lib/ingestion/publication";
 import { ingestionFailureReason } from "@/lib/ingestion/failure-reason";
 import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
-import type { OfficialSource, OpportunityCandidate } from "@/lib/ingestion/types";
 import { prepareLeadCandidate } from "./lead-candidate";
+import { prepareSourceExpansion, registerDiscoveredSource, type PreparedDiscoveryCandidate } from "./source-expansion";
 
 export type ProcessingLead = {
   id: string; target_id: string; url: string; title: string; excerpt: string;
@@ -15,6 +15,7 @@ export type ProcessingLead = {
   processing_lease_token: string; processing_attempts: number; processing_run_id: string;
   target_official_url: string; target_verified_at: string | null;
   target_enabled: boolean; target_verified_url: string | null;
+  target_name?: string; target_organizer?: string; target_priority?: number;
 };
 
 export const LEAD_PROCESSING_REASONS = new Set([
@@ -26,6 +27,7 @@ export const LEAD_PROCESSING_REASONS = new Set([
   "robots_unavailable_or_disallowed", "url_or_network_disallowed", "redirect_disallowed_or_exhausted",
   "response_limit_exceeded", "evidence_changed_or_unconfirmed", "request_timeout", "dns_failure",
   "tls_verification_failed", "source_request_failed", "http_400", "http_401", "http_403", "http_404",
+  "source_authority_unverified", "source_link_missing", "source_registration_conflict",
   "http_408", "http_410", "http_429", "http_500", "http_502", "http_503", "http_504",
 ]);
 
@@ -55,19 +57,25 @@ export async function claimDueDiscoveryLeads(): Promise<ProcessingLead[]> {
       `with due as (
          select lead.id,lead.processing_run_id as previous_run_id,
            target.official_url as target_official_url,target.official_verified_at::text as target_verified_at,
-           target.enabled as target_enabled,target.official_verified_url as target_verified_url
+           target.enabled as target_enabled,target.official_verified_url as target_verified_url,
+           target.name as target_name,target.organizer as target_organizer,target.priority as target_priority
          from discovery_leads lead join discovery_targets target on target.id=lead.target_id
          where lead.status in ('new','reviewing')
            and lead.processing_attempts < $1
            and ((lead.processing_status in ('pending','retry') and lead.processing_next_at<=now())
-             or (lead.processing_status='processing' and lead.processing_lease_until<=now()))
-         order by lead.processing_next_at,lead.first_seen_at,lead.id
+             or (lead.processing_status='processing' and lead.processing_lease_until<=now())
+             or (lead.processing_status='blocked' and lead.processing_reason='scope_unverified'
+               and not exists(select 1 from ingestion_runs run where run.execution_metadata->>'lead_id'=lead.id::text
+                 and run.execution_metadata->>'source_expansion_version'='1')))
+         order by case when lead.processing_status='blocked' then 1 else 0 end,
+           lead.processing_next_at,lead.first_seen_at,lead.id
          limit 2 for update of lead skip locked
        ) update discovery_leads lead set processing_status='processing',
          processing_lease_until=now()+interval '10 minutes',processing_lease_token=$2,
          processing_attempts=lead.processing_attempts+1,processing_reason=null
        from due where lead.id=due.id
-       returning lead.*,due.target_official_url,due.target_verified_at,due.target_enabled,due.target_verified_url,due.previous_run_id`,
+       returning lead.*,due.target_official_url,due.target_verified_at,due.target_enabled,due.target_verified_url,
+         due.target_name,due.target_organizer,due.target_priority,due.previous_run_id`,
       [MAX_ATTEMPTS, randomUUID()],
     );
     for (const lead of rows) {
@@ -77,7 +85,7 @@ export async function claimDueDiscoveryLeads(): Promise<ProcessingLead[]> {
          where id=$1 and status='running'`, [lead.previous_run_id]);
       const run = await client.query<{ id: string }>(
         `insert into ingestion_runs(started_at,status,execution_metadata) values(now(),'running',$1) returning id`,
-        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token }],
+        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 1 }],
       );
       lead.processing_run_id = run.rows[0].id;
       await client.query("update discovery_leads set processing_run_id=$2 where id=$1", [lead.id, lead.processing_run_id]);
@@ -86,8 +94,8 @@ export async function claimDueDiscoveryLeads(): Promise<ProcessingLead[]> {
   });
 }
 
-type Prepared = { source: OfficialSource; candidate: OpportunityCandidate } | { reason: string; retry?: boolean };
-type Outcome = { reason: string; state: "retry" | "blocked" | "completed" | "ignored"; created: number; updated: number; published: number; opportunityId?: string; sourceId?: string };
+type Prepared = PreparedDiscoveryCandidate;
+type Outcome = { reason: string; state: "retry" | "blocked" | "completed" | "ignored"; created: number; updated: number; published: number; opportunityId?: string; sourceId?: string; sourcesRegistered?: number };
 
 function blocked(reason: string, retry: boolean, attempt: number): Outcome {
   const shouldRetry = retry && RETRYABLE_REASONS.has(reason);
@@ -115,7 +123,8 @@ async function recordOutcome(client: PoolClient, lead: ProcessingLead, outcome: 
       outcome.sourceId ? 1 : 0, outcome.opportunityId ? 1 : 0, outcome.created, outcome.updated,
       outcome.state === "ignored" ? 1 : 0, outcome.state === "retry" ? 1 : 0,
       ["retry", "blocked"].includes(outcome.state) ? outcome.reason : null,
-      { outcome: outcome.state, reason: outcome.reason, published: outcome.published, opportunity_id: outcome.opportunityId ?? null }],
+      { outcome: outcome.state, reason: outcome.reason, published: outcome.published, opportunity_id: outcome.opportunityId ?? null,
+        sources_registered: outcome.sourcesRegistered ?? 0 }],
   );
   return outcome;
 }
@@ -124,7 +133,8 @@ export async function finishDiscoveryLead(lead: ProcessingLead, prepared: Prepar
   return withAdminTransaction(async (client) => {
     const current = await client.query<ProcessingLead & { target_enabled: boolean; target_current_url: string; target_current_verified_url: string | null; target_current_verified_at: string | null }>(
       `select lead.*,target.enabled as target_enabled,target.official_url as target_current_url,
-         target.official_verified_url as target_current_verified_url,target.official_verified_at::text as target_current_verified_at
+         target.official_verified_url as target_current_verified_url,target.official_verified_at::text as target_current_verified_at,
+         target.organizer as target_organizer,target.priority as target_priority
        from discovery_leads lead join discovery_targets target on target.id=lead.target_id
        where lead.id=$1 and lead.processing_lease_token=$2 and lead.processing_status='processing'
          and lead.processing_lease_until>now() for update of lead for share of target`,
@@ -145,6 +155,18 @@ export async function finishDiscoveryLead(lead: ProcessingLead, prepared: Prepar
     }
     if ("reason" in prepared) return recordOutcome(client, lead, blocked(prepared.reason, prepared.retry === true, lead.processing_attempts));
     const { source, candidate } = prepared;
+    let sourcesRegistered = 0;
+    if (prepared.registration) {
+      const issue = publicationIssue(candidate, source);
+      if (issue || candidate.requiresManualReview) return recordOutcome(client, lead,
+        blocked(issue ?? "candidate_unconfirmed", false, lead.processing_attempts));
+      const registered = await registerDiscoveredSource(client, { ...lead,
+        target_organizer: row.target_organizer, target_priority: row.target_priority }, prepared);
+      if ("reason" in registered) return recordOutcome(client, lead, blocked(registered.reason, false, lead.processing_attempts));
+      sourcesRegistered = registered.added;
+      await client.query("update ingestion_runs set execution_metadata=execution_metadata || $2::jsonb where id=$1",
+        [lead.processing_run_id, { source_registration: prepared.registration }]);
+    }
     // Advisory source lock and the shared row lock protect the last check through persistence.
     try { await lockSource(client, source); }
     catch (error) {
@@ -195,19 +217,20 @@ export async function finishDiscoveryLead(lead: ProcessingLead, prepared: Prepar
       return recordOutcome(client, lead, { ...blocked("manual_override", false, lead.processing_attempts), sourceId: source.id });
     }
     return recordOutcome(client, lead, { state: "completed", reason: result.created ? "published" : result.updated ? "updated" : "unchanged",
-      created: result.created, updated: result.updated, published: result.published, opportunityId: result.id, sourceId: source.id });
+      created: result.created, updated: result.updated, published: result.published, opportunityId: result.id, sourceId: source.id, sourcesRegistered });
   });
 }
 
 export async function runScheduledLeadProcessing() {
   const leads = await claimDueDiscoveryLeads();
   const sources = await loadActiveOfficialSources();
-  const report = { leadsChecked: leads.length, created: 0, updated: 0, published: 0, blocked: 0, retried: 0, ignored: 0, leaseLost: 0, failed: 0, reasons: {} as Record<string, number> };
+  const report = { leadsChecked: leads.length, sourcesRegistered: 0, created: 0, updated: 0, published: 0, blocked: 0, retried: 0, ignored: 0, leaseLost: 0, failed: 0, reasons: {} as Record<string, number> };
   for (const lead of leads) {
     let prepared: Prepared;
     try {
       prepared = !lead.target_enabled || !lead.target_verified_at || lead.target_verified_url !== lead.target_official_url
         ? { reason: "target_unavailable" } : await prepareLeadCandidate(lead, sources);
+      if ("reason" in prepared && prepared.reason === "scope_unverified") prepared = await prepareSourceExpansion(lead);
     }
     catch (error) { prepared = { reason: ingestionFailureReason(error), retry: true }; }
     let outcome: Outcome | null;
@@ -218,6 +241,8 @@ export async function runScheduledLeadProcessing() {
     }
     if (!outcome) { report.leaseLost += 1; continue; }
     report.created += outcome.created; report.updated += outcome.updated; report.published += outcome.published;
+    report.sourcesRegistered += outcome.sourcesRegistered ?? 0;
+    if ((outcome.sourcesRegistered ?? 0) > 0 && "source" in prepared) sources.push(prepared.source);
     if (outcome.state === "blocked") report.blocked += 1;
     if (outcome.state === "retry") report.retried += 1;
     if (outcome.state === "ignored") report.ignored += 1;
