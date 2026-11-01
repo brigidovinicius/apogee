@@ -34,6 +34,7 @@ async function run() {
       discoveryFailed: report.discovery?.failed === true,
       discoveryBlocked,
       leadsChecked: report.leadProcessing?.leadsChecked ?? 0,
+      sourcesRegistered: report.leadProcessing?.sourcesRegistered ?? 0,
       leadsCreated: report.leadProcessing?.created ?? 0,
       leadsUpdated: report.leadProcessing?.updated ?? 0,
       leadsPublished: report.leadProcessing?.published ?? 0,

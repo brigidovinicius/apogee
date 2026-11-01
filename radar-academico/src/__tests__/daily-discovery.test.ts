@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import type { OfficialSource } from "@/lib/ingestion/types";
 import type { DiscoveryTarget } from "@/lib/discovery/watchlist";
 
-vi.mock("@/lib/discovery/watchlist", () => ({ claimDueDiscoveryTargets: vi.fn(), completeDiscoveryTarget: vi.fn(), saveDiscoveryLeads: vi.fn(), recordDiscoveryObservation: vi.fn(), recordDiscoveryObservationChanged: vi.fn() }));
+vi.mock("@/lib/discovery/watchlist", () => ({ claimDueDiscoveryTargets: vi.fn(), completeDiscoveryTarget: vi.fn(), saveDiscoveryLeads: vi.fn(), recordDiscoveryObservation: vi.fn(), recordDiscoveryObservationChanged: vi.fn(), knownOpportunityUrls: vi.fn(async () => new Set<string>()) }));
 vi.mock("@/lib/ingestion/official-source-registry", () => ({ loadActiveOfficialSources: vi.fn() }));
 vi.mock("@/lib/ingestion/fetch-source", () => ({ fetchOfficialResource: vi.fn() }));
 
@@ -27,7 +27,7 @@ const mapped: OfficialSource = {
 
 afterEach(() => vi.clearAllMocks());
 
-it("collects bounded unmapped leads without fetching their destinations or publishing opportunities", async () => {
+it("retains new calls in both existing and new source scopes without fetching or publishing them", async () => {
   vi.mocked(claimDueDiscoveryTargets).mockResolvedValue([target]);
   vi.mocked(loadActiveOfficialSources).mockResolvedValue([mapped]);
   vi.mocked(fetchOfficialResource).mockResolvedValue({
@@ -40,14 +40,14 @@ it("collects bounded unmapped leads without fetching their destinations or publi
       <a href="https://new.example.org/about">Saiba mais</a><p>Inscrições em programas</p>
     </main>`), contentType: "text/html", hash: "fixture", cached: false,
   });
-  vi.mocked(saveDiscoveryLeads).mockResolvedValue(1);
+  vi.mocked(saveDiscoveryLeads).mockResolvedValue(2);
   const result = await runScheduledDiscovery();
   expect(fetchOfficialResource).toHaveBeenCalledExactlyOnceWith(target.official_url, expect.any(Object), 2 * 1024 * 1024);
   expect(saveDiscoveryLeads).toHaveBeenCalledWith(target.id, [{
     url: "https://new.example.org/hackathon", title: "Inscrições hackathon 2026", excerpt: expect.any(String),
-  }]);
+  }, { url: "https://mapped.example.org/bolsa", title: "Edital de bolsa", excerpt: expect.any(String) }]);
   expect(completeDiscoveryTarget).toHaveBeenCalledWith(target.id, "checked");
-  expect(result).toMatchObject({ targetsChecked: 1, newLeads: 1 });
+  expect(result).toMatchObject({ targetsChecked: 1, newLeads: 2 });
 });
 
 it("blocks unsafe URLs and leaves failed pages unpublished", async () => {
@@ -61,6 +61,12 @@ it("blocks unsafe URLs and leaves failed pages unpublished", async () => {
   expect(await runScheduledDiscovery()).toMatchObject({ targetsChecked: 1, newLeads: 0 });
   expect(saveDiscoveryLeads).not.toHaveBeenCalled();
   expect(completeDiscoveryTarget).toHaveBeenCalledWith(target.id, "blocked");
+});
+
+it("skips previously stored pages while retaining new calls within a verified source", () => {
+  const html = '<a href="https://mapped.example.org/old">Edital de bolsa anterior</a><a href="https://mapped.example.org/new">Novo edital de bolsa</a>';
+  expect(discoveryLinks(html, target, [mapped], new Date(), new Set(["https://mapped.example.org/old"])))
+    .toEqual([expect.objectContaining({ url: "https://mapped.example.org/new" })]);
 });
 
 it("does not fill the review queue with navigation while retaining concrete calls", () => {

@@ -8,6 +8,9 @@ export const dynamic = "force-dynamic";
 const processingName = { pending: "Na fila automática", processing: "Verificando", retry: "Nova tentativa agendada", blocked: "Não elegível para publicação automática", completed: "Processado", ignored: "Preservado sem publicação" };
 const reasonName: Record<string, string> = {
   scope_unverified: "Fonte de destino ainda não verificada para publicação.",
+  source_authority_unverified: "O destino precisa de uma página oficial verificada no seu próprio domínio.",
+  source_link_missing: "O link não aparece mais na página oficial consultada.",
+  source_registration_conflict: "Uma configuração de fonte existente impede o cadastro automático; decisão preservada.",
   listing_or_ambiguous: "O link reúne vários processos ou não identifica uma única oportunidade.",
   candidate_unconfirmed: "As informações disponíveis não confirmam todos os critérios.",
   invalid_deadline: "Prazo de inscrição ausente, vencido ou não confirmado.",

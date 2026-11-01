@@ -8,6 +8,7 @@ import { publicationIssue } from "@/lib/ingestion/publication";
 import { eventHasNotStarted } from "@/lib/ingestion/event-start";
 import { parsePdf } from "@/lib/ingestion/parse-pdf";
 import type { OfficialSource, OpportunityCandidate } from "@/lib/ingestion/types";
+import { isDiscoveredPageSource, normalizeDiscoveredPage } from "@/lib/ingestion/discovered-page";
 
 type Lead = { id: string; target_id: string; url: string; title: string; excerpt?: string };
 type Prepared = { source: OfficialSource; candidate: OpportunityCandidate } | { reason: string; retry?: boolean };
@@ -30,7 +31,11 @@ export async function prepareLeadCandidate(lead: Lead, sources: OfficialSource[]
   if (!["html", "rss"].includes(source.extractionMode)) return { reason: "unsupported_source" };
   const pages = programmeCataloguePageCount(source.id);
   let candidate: OpportunityCandidate | null = null;
-  if (pages) {
+  if (isDiscoveredPageSource(source)) {
+    const page = await fetchOfficialResource(lead.url, source, 2 * 1024 * 1024);
+    if (!/text\/html|application\/xhtml/i.test(page.contentType)) return { reason: "unsupported_content" };
+    candidate = normalizeDiscoveredPage(page.body.toString("utf8"), source);
+  } else if (pages) {
     const supplementUrl = pages === 2 ? programmeSupplementUrl(source.id) : null;
     if (source.listingUrls.length !== 1 ||
       ![source.baseUrl, source.listingUrls[0], supplementUrl, ...sinterLeadAliases(source.id)].includes(lead.url)) {

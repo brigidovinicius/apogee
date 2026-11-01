@@ -15,6 +15,7 @@ import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupp
 import { isAuditedAcateEventUrl, normalizeAcateEvent } from "./normalize-acate-events";
 import { FULBRIGHT_SOURCE_ID, normalizeFulbright } from "./normalize-fulbright";
 import { ingestionFailureReason } from "./failure-reason";
+import { isDiscoveredPageSource, normalizeDiscoveredPage } from "./discovered-page";
 
 import { EVG_SOURCE_ID, EVG_POLICY_URL, normalizeEvgPolicy, normalizeEvgCourse, isEvgCourseUrl, parseEvgListing, type EvgPolicy } from "./normalize-evg-courses";
 
@@ -74,6 +75,15 @@ async function ingestSource(
   try {
     const resource = await fetchOfficialResource(listingUrl, source);
     result.pagesChecked += 1;
+    if (isDiscoveredPageSource(source)) {
+      if (!/text\/html|application\/xhtml/i.test(resource.contentType)) throw new Error("Conteúdo da oportunidade não confirmado");
+      const candidate = normalizeDiscoveredPage(resource.body.toString("utf8"), source);
+      if (candidate) result.discovered.push(candidate);
+      else result.ignored += 1;
+      result.nextListingIndex = 0;
+      result.nextLinkOffset = 0;
+      return result;
+    }
     if (cataloguePages) {
       let applicationHtml = "";
       if (cataloguePages === 2) {

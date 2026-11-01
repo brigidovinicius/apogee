@@ -90,7 +90,7 @@ export function normalizeExpansion(html: string, source: OfficialSource, now = n
     return candidate;
   });
 }
-function normalizeLuma(html: string, source: OfficialSource, call: typeof lumaEvents[number], now: Date): OpportunityCandidate {
+export function normalizeLuma(html: string, source: OfficialSource, call: typeof lumaEvents[number], now: Date): OpportunityCandidate {
   scope(source, call.url);
   const events = structuredEvents(html);
   if (events.length !== 1 || events[0].url !== call.url || clean(String(events[0].name)) !== call.title) throw Error("Evento Luma ausente ou ambíguo");
