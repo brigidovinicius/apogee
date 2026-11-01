@@ -232,7 +232,10 @@ export function financialsFromRadar(value: Record<string, unknown>): NonNullable
   const text = stringValue(value.amountText) ?? "";
   const benefitType = stringValue(value.benefitType);
   const stipend = ["research_scholarship", "extension_scholarship", "monitor_scholarship"].includes(benefitType ?? "");
-  const deniesCash = (statement: string) => /a confirmar|estimad|não (?:(?:é|são|foi|foram|será|serão|está|estão) )?(?:há|haverá|tem|terá|oferece|prevê|inclui|existe|garante|assegura|promete|anuncia|divulga|confirma|informa|garantid[oa]|assegurad[oa]|anunciad[oa]|divulgad[oa]|confirmad[oa]|informad[oa]).*?(?:premia|prêmio|remunera|bolsa|pagamento)/iu.test(statement) ||
+  // A total denominated in currency may still describe products/services.
+  // Keep an explicitly unconfirmed prize nature out of cash-benefit labels.
+  const prizeNatureUnconfirmed = /natureza[^.!?]{0,100}(?:prêmios?|premiação)[^.!?]{0,100}(?:depend|não (?:confirmad|informad|especificad))|(?:prêmios?|premiação)[^.!?]{0,100}natureza[^.!?]{0,100}(?:depend|não (?:confirmad|informad|especificad))/iu.test(text);
+  const deniesCash = (statement: string) => /\b(?:sem|não há|não haverá)\s+(?:premiação|prêmios?|remuneração|bolsa|pagamento)\b/iu.test(statement) || /a confirmar|estimad|não (?:(?:é|são|foi|foram|será|serão|está|estão) )?(?:há|haverá|tem|terá|oferece|prevê|inclui|existe|garante|assegura|promete|anuncia|divulga|confirma|informa|garantid[oa]|assegurad[oa]|anunciad[oa]|divulgad[oa]|confirmad[oa]|informad[oa]).*?(?:premia|prêmio|remunera|bolsa|pagamento)/iu.test(statement) ||
     /(?:premia|prêmio|remunera|bolsa|pagamento).*?não (?:(?:é|são|foi|foram|será|serão|está|estão) )?(?:oferecid|em dinheiro|garantid|confirmad|comprovad|informad|anunciad)|(?:sem (?:garantia|previsão|confirmação|informação) (?:de|sobre)|nenhum[ao]?).*?(?:premia|prêmio|remunera|bolsa|pagamento)/iu.test(statement);
   // Split sentences, preserving decimals, ranges, periodicity, recipients and total-prize conditions.
   const clauses = text.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý])|[;\n]\s*(?=(?:Inscriç|Ingresso|Taxa|Participaç|Premiaç|Remuneraç|Bolsa))|\s+e\s+(?=inscrição|ingresso|taxa de inscrição)|,\s+(?=inscrição|ingresso|taxa de inscrição)/iu).filter(Boolean);
@@ -242,7 +245,7 @@ export function financialsFromRadar(value: Record<string, unknown>): NonNullable
     const denied = deniesCash(clause) || /(?:premiação|remuneração|bolsa|pagamento|apoio financeiro).*?(?:não (?:confirmad|comprovad|informad)|sem (?:confirmação|comprovação))|(?:sem|não há) (?:premiação|remuneração|bolsa)/iu.test(clause);
     const nonCash = /\b(?:desconto|reembolso|isenção|produtos?|equipamentos?|troféu|crédito|custeio|passagens|hospedagem)\b/iu.test(clause);
     const hasMoney = /(?:R\$|US\$|USD|EUR|BRL|GBP|€|£)\s*\d/u.test(clause);
-    const moneyPrize = /(?:premiação|prêmio) (?:financeir[oa]|em dinheiro)/iu.test(clause) || hasMoney && /^(?:premiação|prêmio)(?: total)?(?: em dinheiro)?(?: de|:)?\s/iu.test(clause) || benefitType === "prize" && hasMoney;
+    const moneyPrize = !prizeNatureUnconfirmed && (/(?:premiação|prêmio) (?:financeir[oa]|em dinheiro)/iu.test(clause) || hasMoney && /^(?:premiação|prêmio)(?: total)?(?: em dinheiro)?(?: de|:)?\s/iu.test(clause) || benefitType === "prize" && hasMoney);
     const salary = /^(?:remuneração|remunerad[oa]|salário|pagamento)\b/iu.test(clause);
     const scholarship = (scholarshipBenefits.has(benefitType ?? "") || benefitType === "internship") && /^(?:(?:até|de|entre|a partir de)\s+)?(?:bolsa|R\$|BRL|US\$|USD|EUR|GBP|€|£)/iu.test(clause);
     const mixedCost = !cost && /\b(?:inscrição|ingresso|taxa)\b/iu.test(clause);

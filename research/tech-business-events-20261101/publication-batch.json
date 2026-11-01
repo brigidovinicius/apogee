@@ -1,0 +1,743 @@
+{
+  "version": 1,
+  "authorization": "User explicitly authorized registering the 11 missing events and publishing homepage highlights on 2026-11-01.",
+  "sourcesMode": "reference_only",
+  "items": [
+    {
+      "id": "convergencia-summit-2026",
+      "source": {
+        "id": "images-convergencia-summit-2026",
+        "name": "Convergência Summit 2026 — referência editorial",
+        "institution": "StartSe",
+        "url": "https://pages.startse.com/convergencia-summit",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "categories": [
+          "eventos"
+        ],
+        "notes": "Cadastro manual autorizado em 01/11/2026, com revisão de fonte oficial. reference_only: sem coleta automática ou alteração dos coletores da tarefa paralela."
+      },
+      "opportunity": {
+        "actor": "codex:authorized-image-events-20261101",
+        "title": "Convergência Summit 2026",
+        "institution": "StartSe",
+        "officialSourceId": "images-convergencia-summit-2026",
+        "officialUrl": "https://pages.startse.com/convergencia-summit",
+        "benefitType": "other",
+        "applicantType": "mixed",
+        "applicationRoute": "direct_application",
+        "opportunityStatus": "open",
+        "deadlineAt": null,
+        "deadlinePrecision": "not_informed",
+        "eventStartsAt": "2026-11-03T09:00:00-03:00",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "requirementsText": "Para empresários, lideranças e C-levels. Encontro presencial de IA, estratégia e negócios em São Paulo, em 3 e 4/11, das 9h às 18h. O site oferece compra de ingresso; confirmar lote e disponibilidade.",
+        "amountText": "Inscrição paga. Preço e disponibilidade do lote atual no site oficial. Sem premiação ao participante confirmada.",
+        "evidenceExcerpt": "Revisão manual em 01/11/2026. Evento confirmado de 2026-11-03T09:00:00-03:00 a 2026-11-04T18:00:00-03:00; inscrição de participante oferecida pela organização, sujeita às condições e disponibilidade. Prazo final não divulgado. Fontes: https://pages.startse.com/convergencia-summit.",
+        "isCourse": false,
+        "nationallyEligible": false,
+        "categories": [
+          "eventos"
+        ],
+        "discovery": {
+          "primaryType": "eventos",
+          "areas": [
+            "tecnologia",
+            "ia",
+            "negocios"
+          ],
+          "editions": [
+            {
+              "id": "convergencia-summit-2026",
+              "name": "Convergência Summit 2026",
+              "stages": [
+                {
+                  "id": "event",
+                  "name": "Realização",
+                  "kind": "event",
+                  "start": "2026-11-03T09:00:00-03:00",
+                  "end": "2026-11-04T18:00:00-03:00",
+                  "sourceUrl": "https://pages.startse.com/convergencia-summit",
+                  "checkedAt": "2026-11-01T17:02:13.371Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "evidenceUrls": [
+        "https://pages.startse.com/convergencia-summit"
+      ]
+    },
+    {
+      "id": "bootcamp-deep-tech-2026",
+      "source": {
+        "id": "images-bootcamp-deep-tech-2026",
+        "name": "Bootcamp Deep Tech | 11/2026 — referência editorial",
+        "institution": "Sebrae for Startups / IPT",
+        "url": "https://www.sympla.com.br/evento/bootcamp-deep-tech-11-2026/3551399",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "categories": [
+          "eventos"
+        ],
+        "notes": "Cadastro manual autorizado em 01/11/2026, com revisão de fonte oficial. reference_only: sem coleta automática ou alteração dos coletores da tarefa paralela."
+      },
+      "opportunity": {
+        "actor": "codex:authorized-image-events-20261101",
+        "title": "Bootcamp Deep Tech | 11/2026",
+        "institution": "Sebrae for Startups / IPT",
+        "officialSourceId": "images-bootcamp-deep-tech-2026",
+        "officialUrl": "https://www.sympla.com.br/evento/bootcamp-deep-tech-11-2026/3551399",
+        "benefitType": "other",
+        "applicantType": "mixed",
+        "applicationRoute": "direct_application",
+        "opportunityStatus": "open",
+        "deadlineAt": null,
+        "deadlinePrecision": "not_informed",
+        "eventStartsAt": "2026-11-03T08:00:00-03:00",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "requirementsText": "Imersão de tecnologia e negócios para startups, pesquisadores, estudantes, empreendedores e interessados. Em 3/11 na sede do Sebrae e 4–5/11 no IPT, São Paulo, das 8h às 18h. Inscrição individual pelo Sympla. A seleção de mentorias e DMT para startups encerrava em 8/10; ingresso de público não habilita para essa seleção.",
+        "amountText": "Participação geral gratuita, conforme notícia da FAPESP de 20/10/2026. Sujeita à disponibilidade no Sympla. Mentorias restritas a startups selecionadas; sem prêmio em dinheiro confirmado.",
+        "evidenceExcerpt": "Revisão manual em 01/11/2026. Evento confirmado de 2026-11-03T08:00:00-03:00 a 2026-11-05T18:00:00-03:00; inscrição de participante oferecida pela organização, sujeita às condições e disponibilidade. Prazo final não divulgado. Fontes: https://www.sympla.com.br/evento/bootcamp-deep-tech-11-2026/3551399 ; https://www.sympla.com.br/evento/bootcamp-deep-tech-11-2026/3551399?lang=pt ; https://pesquisaparainovacao.fapesp.br/imersao_de_tres_dias_para_interessados_no_ecossistema_de_inovacao/4167.",
+        "isCourse": false,
+        "nationallyEligible": false,
+        "categories": [
+          "eventos"
+        ],
+        "discovery": {
+          "primaryType": "eventos",
+          "areas": [
+            "tecnologia",
+            "negocios"
+          ],
+          "editions": [
+            {
+              "id": "bootcamp-deep-tech-2026",
+              "name": "Bootcamp Deep Tech | 11/2026",
+              "stages": [
+                {
+                  "id": "event",
+                  "name": "Realização",
+                  "kind": "event",
+                  "start": "2026-11-03T08:00:00-03:00",
+                  "end": "2026-11-05T18:00:00-03:00",
+                  "sourceUrl": "https://www.sympla.com.br/evento/bootcamp-deep-tech-11-2026/3551399",
+                  "checkedAt": "2026-11-01T17:02:13.371Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "evidenceUrls": [
+        "https://www.sympla.com.br/evento/bootcamp-deep-tech-11-2026/3551399",
+        "https://www.sympla.com.br/evento/bootcamp-deep-tech-11-2026/3551399?lang=pt",
+        "https://pesquisaparainovacao.fapesp.br/imersao_de_tres_dias_para_interessados_no_ecossistema_de_inovacao/4167"
+      ]
+    },
+    {
+      "id": "dcd-connect-brasil-2026",
+      "source": {
+        "id": "images-dcd-connect-brasil-2026",
+        "name": "DCD Connect Brasil 2026 — referência editorial",
+        "institution": "DatacenterDynamics",
+        "url": "https://www.datacenterdynamics.com/br/dcd-connect-live/brasil/2026/",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "categories": [
+          "eventos"
+        ],
+        "notes": "Cadastro manual autorizado em 01/11/2026, com revisão de fonte oficial. reference_only: sem coleta automática ou alteração dos coletores da tarefa paralela."
+      },
+      "opportunity": {
+        "actor": "codex:authorized-image-events-20261101",
+        "title": "DCD Connect Brasil 2026",
+        "institution": "DatacenterDynamics",
+        "officialSourceId": "images-dcd-connect-brasil-2026",
+        "officialUrl": "https://www.datacenterdynamics.com/br/dcd-connect-live/brasil/2026/",
+        "benefitType": "other",
+        "applicantType": "mixed",
+        "applicationRoute": "direct_application",
+        "opportunityStatus": "open",
+        "deadlineAt": null,
+        "deadlinePrecision": "not_informed",
+        "eventStartsAt": "2026-11-04",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "requirementsText": "Encontro presencial de data centers, infraestrutura digital, IA e negócios, em 4–5/11 no Sheraton São Paulo WTC. Solicitação de ingresso pela organização; aprovação e condições dependem do perfil profissional.",
+        "amountText": "Há entrada gratuita para perfis End-User/Specifier elegíveis e passes pagos para outros perfis. Solicitação não garante aprovação. Sem premiação individual confirmada.",
+        "evidenceExcerpt": "Revisão manual em 01/11/2026. Evento confirmado de 2026-11-04 a 2026-11-05; inscrição de participante oferecida pela organização, sujeita às condições e disponibilidade. Prazo final não divulgado. Fontes: https://www.datacenterdynamics.com/br/dcd-connect-live/brasil/2026/.",
+        "isCourse": false,
+        "nationallyEligible": false,
+        "categories": [
+          "eventos"
+        ],
+        "discovery": {
+          "primaryType": "eventos",
+          "areas": [
+            "tecnologia",
+            "ia",
+            "negocios"
+          ],
+          "editions": [
+            {
+              "id": "dcd-connect-brasil-2026",
+              "name": "DCD Connect Brasil 2026",
+              "stages": [
+                {
+                  "id": "event",
+                  "name": "Realização",
+                  "kind": "event",
+                  "start": "2026-11-04",
+                  "end": "2026-11-05",
+                  "sourceUrl": "https://www.datacenterdynamics.com/br/dcd-connect-live/brasil/2026/",
+                  "checkedAt": "2026-11-01T17:02:13.371Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "evidenceUrls": [
+        "https://www.datacenterdynamics.com/br/dcd-connect-live/brasil/2026/"
+      ]
+    },
+    {
+      "id": "hsm-mais-2026",
+      "source": {
+        "id": "images-hsm-mais-2026",
+        "name": "HSM+ 2026 — referência editorial",
+        "institution": "HSM",
+        "url": "https://hsmmais.com.br/",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "categories": [
+          "eventos"
+        ],
+        "notes": "Cadastro manual autorizado em 01/11/2026, com revisão de fonte oficial. reference_only: sem coleta automática ou alteração dos coletores da tarefa paralela."
+      },
+      "opportunity": {
+        "actor": "codex:authorized-image-events-20261101",
+        "title": "HSM+ 2026",
+        "institution": "HSM",
+        "officialSourceId": "images-hsm-mais-2026",
+        "officialUrl": "https://hsmmais.com.br/",
+        "benefitType": "other",
+        "applicantType": "mixed",
+        "applicationRoute": "direct_application",
+        "opportunityStatus": "open",
+        "deadlineAt": null,
+        "deadlinePrecision": "not_informed",
+        "eventStartsAt": "2026-11-04",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "requirementsText": "Evento de liderança, gestão, negócios, inovação e IA, em 4–5/11 no Distrito Anhembi, São Paulo. Compra de ingresso na rota oficial; conferir disponibilidade e regras do lote vigente.",
+        "amountText": "Inscrição paga. Valor e estoque atuais no site oficial; não reutilizar preço de lote encerrado. Sem prêmio em dinheiro ao participante confirmado.",
+        "evidenceExcerpt": "Revisão manual em 01/11/2026. Evento confirmado de 2026-11-04 a 2026-11-05; inscrição de participante oferecida pela organização, sujeita às condições e disponibilidade. Prazo final não divulgado. Fontes: https://hsmmais.com.br/.",
+        "isCourse": false,
+        "nationallyEligible": false,
+        "categories": [
+          "eventos"
+        ],
+        "discovery": {
+          "primaryType": "eventos",
+          "areas": [
+            "tecnologia",
+            "ia",
+            "negocios"
+          ],
+          "editions": [
+            {
+              "id": "hsm-mais-2026",
+              "name": "HSM+ 2026",
+              "stages": [
+                {
+                  "id": "event",
+                  "name": "Realização",
+                  "kind": "event",
+                  "start": "2026-11-04",
+                  "end": "2026-11-05",
+                  "sourceUrl": "https://hsmmais.com.br/",
+                  "checkedAt": "2026-11-01T17:02:13.371Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "evidenceUrls": [
+        "https://hsmmais.com.br/"
+      ]
+    },
+    {
+      "id": "semana-ia-serpro-2026",
+      "source": {
+        "id": "images-semana-ia-serpro-2026",
+        "name": "Semana de IA Serpro 2026 — referência editorial",
+        "institution": "Serpro",
+        "url": "https://campanhas.serpro.gov.br/semana-de-ia-serpro/",
+        "stateCode": "DF",
+        "cityName": "Brasília",
+        "categories": [
+          "eventos"
+        ],
+        "notes": "Cadastro manual autorizado em 01/11/2026, com revisão de fonte oficial. reference_only: sem coleta automática ou alteração dos coletores da tarefa paralela."
+      },
+      "opportunity": {
+        "actor": "codex:authorized-image-events-20261101",
+        "title": "Semana de IA Serpro 2026",
+        "institution": "Serpro",
+        "officialSourceId": "images-semana-ia-serpro-2026",
+        "officialUrl": "https://campanhas.serpro.gov.br/semana-de-ia-serpro/",
+        "benefitType": "other",
+        "applicantType": "mixed",
+        "applicationRoute": "direct_application",
+        "opportunityStatus": "open",
+        "deadlineAt": null,
+        "deadlinePrecision": "not_informed",
+        "eventStartsAt": "2026-11-04",
+        "stateCode": "DF",
+        "cityName": "Brasília",
+        "requirementsText": "Semana de IA, dados e soberania tecnológica, em 4–6/11. Presencial na sede do Serpro, Brasília, e com transmissão online. Inscrição obrigatória. A capacidade anunciada de 100 vagas presenciais não comprova vagas remanescentes.",
+        "amountText": "Participação gratuita. Certificado anunciado para participação presencial e online. Sem premiação financeira confirmada.",
+        "evidenceExcerpt": "Revisão manual em 01/11/2026. Evento confirmado de 2026-11-04 a 2026-11-06; inscrição de participante oferecida pela organização, sujeita às condições e disponibilidade. Prazo final não divulgado. Fontes: https://campanhas.serpro.gov.br/semana-de-ia-serpro/.",
+        "isCourse": false,
+        "nationallyEligible": false,
+        "categories": [
+          "eventos"
+        ],
+        "discovery": {
+          "primaryType": "eventos",
+          "areas": [
+            "tecnologia",
+            "ia",
+            "dados"
+          ],
+          "editions": [
+            {
+              "id": "semana-ia-serpro-2026",
+              "name": "Semana de IA Serpro 2026",
+              "stages": [
+                {
+                  "id": "event",
+                  "name": "Realização",
+                  "kind": "event",
+                  "start": "2026-11-04",
+                  "end": "2026-11-06",
+                  "sourceUrl": "https://campanhas.serpro.gov.br/semana-de-ia-serpro/",
+                  "checkedAt": "2026-11-01T17:02:13.371Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "evidenceUrls": [
+        "https://campanhas.serpro.gov.br/semana-de-ia-serpro/"
+      ]
+    },
+    {
+      "id": "sebrae-rio-summit-2026",
+      "source": {
+        "id": "images-sebrae-rio-summit-2026",
+        "name": "Sebrae Rio Summit 2026 — referência editorial",
+        "institution": "Sebrae Rio",
+        "url": "https://sebraeriosummit.com.br/",
+        "stateCode": "RJ",
+        "cityName": "Rio de Janeiro",
+        "categories": [
+          "eventos"
+        ],
+        "notes": "Cadastro manual autorizado em 01/11/2026, com revisão de fonte oficial. reference_only: sem coleta automática ou alteração dos coletores da tarefa paralela."
+      },
+      "opportunity": {
+        "actor": "codex:authorized-image-events-20261101",
+        "title": "Sebrae Rio Summit 2026",
+        "institution": "Sebrae Rio",
+        "officialSourceId": "images-sebrae-rio-summit-2026",
+        "officialUrl": "https://sebraeriosummit.com.br/",
+        "benefitType": "other",
+        "applicantType": "mixed",
+        "applicationRoute": "direct_application",
+        "opportunityStatus": "open",
+        "deadlineAt": null,
+        "deadlinePrecision": "not_informed",
+        "eventStartsAt": "2026-11-10T10:00:00-03:00",
+        "stateCode": "RJ",
+        "cityName": "Rio de Janeiro",
+        "requirementsText": "Evento de empreendedorismo, startups, inovação, negócios e networking, em 10–12/11 no Riocentro, Rio de Janeiro, das 10h às 19h. Inscrição individual pelo site oficial, sujeita à disponibilidade e às regras das atividades.",
+        "amountText": "Participação gratuita anunciada pela organização. Sem premiação em dinheiro ao público confirmada.",
+        "evidenceExcerpt": "Revisão manual em 01/11/2026. Evento confirmado de 2026-11-10T10:00:00-03:00 a 2026-11-12T19:00:00-03:00; inscrição de participante oferecida pela organização, sujeita às condições e disponibilidade. Prazo final não divulgado. Fontes: https://sebraeriosummit.com.br/ ; https://rj.agenciasebrae.com.br/cultura-empreendedora/sebrae-rio-summit-2026-reunira-conteudo-inovacao-networking-e-experiencias-praticas-para-empreendedores/.",
+        "isCourse": false,
+        "nationallyEligible": false,
+        "categories": [
+          "eventos"
+        ],
+        "discovery": {
+          "primaryType": "eventos",
+          "areas": [
+            "tecnologia",
+            "negocios"
+          ],
+          "editions": [
+            {
+              "id": "sebrae-rio-summit-2026",
+              "name": "Sebrae Rio Summit 2026",
+              "stages": [
+                {
+                  "id": "event",
+                  "name": "Realização",
+                  "kind": "event",
+                  "start": "2026-11-10T10:00:00-03:00",
+                  "end": "2026-11-12T19:00:00-03:00",
+                  "sourceUrl": "https://sebraeriosummit.com.br/",
+                  "checkedAt": "2026-11-01T17:02:13.371Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "evidenceUrls": [
+        "https://sebraeriosummit.com.br/",
+        "https://rj.agenciasebrae.com.br/cultura-empreendedora/sebrae-rio-summit-2026-reunira-conteudo-inovacao-networking-e-experiencias-praticas-para-empreendedores/"
+      ]
+    },
+    {
+      "id": "red-hat-connect-sp-2026",
+      "source": {
+        "id": "images-red-hat-connect-sp-2026",
+        "name": "Red Hat Summit: Connect 2026 São Paulo — referência editorial",
+        "institution": "Red Hat",
+        "url": "https://www.redhat.com/en/summit/connect/latam/sao-paulo-2026",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "categories": [
+          "eventos"
+        ],
+        "notes": "Cadastro manual autorizado em 01/11/2026, com revisão de fonte oficial. reference_only: sem coleta automática ou alteração dos coletores da tarefa paralela."
+      },
+      "opportunity": {
+        "actor": "codex:authorized-image-events-20261101",
+        "title": "Red Hat Summit: Connect 2026 São Paulo",
+        "institution": "Red Hat",
+        "officialSourceId": "images-red-hat-connect-sp-2026",
+        "officialUrl": "https://www.redhat.com/en/summit/connect/latam/sao-paulo-2026",
+        "benefitType": "other",
+        "applicantType": "mixed",
+        "applicationRoute": "direct_application",
+        "opportunityStatus": "open",
+        "deadlineAt": null,
+        "deadlinePrecision": "not_informed",
+        "eventStartsAt": "2026-11-10",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "requirementsText": "Encontro de IA, cloud e open source em 10/11 no Transamerica Expo Center, São Paulo. O site oferece solicitação de vaga com ou sem conta Red Hat. Pedido de vaga não garante aprovação ou entrada.",
+        "amountText": "Custos não confirmados na página consultada; conferir as condições da solicitação oficial. Sem prêmio financeiro confirmado.",
+        "evidenceExcerpt": "Revisão manual em 01/11/2026. Evento confirmado de 2026-11-10 a 2026-11-10; inscrição de participante oferecida pela organização, sujeita às condições e disponibilidade. Prazo final não divulgado. Fontes: https://www.redhat.com/en/summit/connect/latam/sao-paulo-2026.",
+        "isCourse": false,
+        "nationallyEligible": false,
+        "categories": [
+          "eventos"
+        ],
+        "discovery": {
+          "primaryType": "eventos",
+          "areas": [
+            "tecnologia",
+            "ia"
+          ],
+          "editions": [
+            {
+              "id": "red-hat-connect-sp-2026",
+              "name": "Red Hat Summit: Connect 2026 São Paulo",
+              "stages": [
+                {
+                  "id": "event",
+                  "name": "Realização",
+                  "kind": "event",
+                  "start": "2026-11-10",
+                  "end": "2026-11-10",
+                  "sourceUrl": "https://www.redhat.com/en/summit/connect/latam/sao-paulo-2026",
+                  "checkedAt": "2026-11-01T17:02:13.371Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "evidenceUrls": [
+        "https://www.redhat.com/en/summit/connect/latam/sao-paulo-2026"
+      ]
+    },
+    {
+      "id": "pucsp-congresso-ia-2026",
+      "source": {
+        "id": "images-pucsp-congresso-ia-2026",
+        "name": "7º Congresso de Inteligência Artificial da PUC-SP — referência editorial",
+        "institution": "PUC-SP / PUC-Campinas / PUC-Rio",
+        "url": "https://eventos.pucsp.br/7-congresso-ia/",
+        "stateCode": null,
+        "cityName": null,
+        "categories": [
+          "eventos"
+        ],
+        "notes": "Cadastro manual autorizado em 01/11/2026, com revisão de fonte oficial. reference_only: sem coleta automática ou alteração dos coletores da tarefa paralela."
+      },
+      "opportunity": {
+        "actor": "codex:authorized-image-events-20261101",
+        "title": "7º Congresso de Inteligência Artificial da PUC-SP",
+        "institution": "PUC-SP / PUC-Campinas / PUC-Rio",
+        "officialSourceId": "images-pucsp-congresso-ia-2026",
+        "officialUrl": "https://eventos.pucsp.br/7-congresso-ia/",
+        "benefitType": "other",
+        "applicantType": "mixed",
+        "applicationRoute": "direct_application",
+        "opportunityStatus": "open",
+        "deadlineAt": null,
+        "deadlinePrecision": "not_informed",
+        "eventStartsAt": "2026-11-10T09:00:00-03:00",
+        "stateCode": null,
+        "cityName": null,
+        "requirementsText": "Congresso de IA online e síncrono, em 10–11/11. A página oferece inscrição de participante. Submissão de projetos para estudantes/docentes das PUCs parceiras encerrava em 25/9. Participar como ouvinte não é candidatura à seleção de projetos.",
+        "amountText": "Participação gratuita. Bolsas de R$ 10 mil para oito projetos selecionados são destinadas à pesquisa, com submissão encerrada; não constituem prêmio disponível ao ouvinte.",
+        "evidenceExcerpt": "Revisão manual em 01/11/2026. Evento confirmado de 2026-11-10T09:00:00-03:00 a 2026-11-11T18:00:00-03:00; inscrição de participante oferecida pela organização, sujeita às condições e disponibilidade. Prazo final não divulgado. Fontes: https://eventos.pucsp.br/7-congresso-ia/ ; https://j.pucsp.br/agenda/7o-congresso-de-inteligencia-artificial-da-puc-sp.",
+        "isCourse": false,
+        "nationallyEligible": false,
+        "categories": [
+          "eventos"
+        ],
+        "discovery": {
+          "primaryType": "eventos",
+          "areas": [
+            "tecnologia",
+            "ia"
+          ],
+          "editions": [
+            {
+              "id": "pucsp-congresso-ia-2026",
+              "name": "7º Congresso de Inteligência Artificial da PUC-SP",
+              "stages": [
+                {
+                  "id": "event",
+                  "name": "Realização",
+                  "kind": "event",
+                  "start": "2026-11-10T09:00:00-03:00",
+                  "end": "2026-11-11T18:00:00-03:00",
+                  "sourceUrl": "https://eventos.pucsp.br/7-congresso-ia/",
+                  "checkedAt": "2026-11-01T17:02:13.371Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "evidenceUrls": [
+        "https://eventos.pucsp.br/7-congresso-ia/",
+        "https://j.pucsp.br/agenda/7o-congresso-de-inteligencia-artificial-da-puc-sp"
+      ]
+    },
+    {
+      "id": "tdc-experience-recife-2026",
+      "source": {
+        "id": "images-tdc-experience-recife-2026",
+        "name": "TDC Experience Recife 2026 — referência editorial",
+        "institution": "The Developer’s Conference",
+        "url": "https://www.thedevconf.com/tdc/2026/stage/recife/",
+        "stateCode": "PE",
+        "cityName": "Recife",
+        "categories": [
+          "eventos"
+        ],
+        "notes": "Cadastro manual autorizado em 01/11/2026, com revisão de fonte oficial. reference_only: sem coleta automática ou alteração dos coletores da tarefa paralela."
+      },
+      "opportunity": {
+        "actor": "codex:authorized-image-events-20261101",
+        "title": "TDC Experience Recife 2026",
+        "institution": "The Developer’s Conference",
+        "officialSourceId": "images-tdc-experience-recife-2026",
+        "officialUrl": "https://www.thedevconf.com/tdc/2026/stage/recife/",
+        "benefitType": "other",
+        "applicantType": "mixed",
+        "applicationRoute": "direct_application",
+        "opportunityStatus": "open",
+        "deadlineAt": null,
+        "deadlinePrecision": "not_informed",
+        "eventStartsAt": "2026-11-11",
+        "stateCode": "PE",
+        "cityName": "Recife",
+        "requirementsText": "TDC Stage at REC’n’Play, também listado como TDC Experience Recife: palco de desenvolvimento de software em 11–12/11 no Moinho Recife. A participação integra o festival REC’n’Play; acompanhar a inscrição do festival em recnplay.pe e as regras de acesso/capacidade da programação. Inscrição no festival não garante vaga em atividade específica.",
+        "amountText": "Festival REC’n’Play gratuito. Condições específicas do palco TDC e capacidade devem ser conferidas na programação oficial. Sem premiação financeira confirmada.",
+        "evidenceExcerpt": "Revisão manual em 01/11/2026: palco TDC dentro do REC’n’Play, em Recife, 11–12/11/2026. Inscrição de público pelo festival em recnplay.pe; acesso ao palco depende da programação/capacidade. Prazo final não divulgado. Fontes: https://www.thedevconf.com/tdc/2026/datas-e-locais ; https://www.thedevconf.com/tdc/2026/stage/recife/ ; https://recnplay.pe/.",
+        "isCourse": false,
+        "nationallyEligible": false,
+        "categories": [
+          "eventos"
+        ],
+        "discovery": {
+          "primaryType": "eventos",
+          "areas": [
+            "tecnologia"
+          ],
+          "editions": [
+            {
+              "id": "tdc-experience-recife-2026",
+              "name": "TDC Experience Recife 2026",
+              "stages": [
+                {
+                  "id": "event",
+                  "name": "Realização",
+                  "kind": "event",
+                  "start": "2026-11-11",
+                  "end": "2026-11-12",
+                  "sourceUrl": "https://www.thedevconf.com/tdc/2026/stage/recife/",
+                  "checkedAt": "2026-11-01T17:02:13.371Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "evidenceUrls": [
+        "https://www.thedevconf.com/tdc/2026/datas-e-locais",
+        "https://www.thedevconf.com/tdc/2026/stage/recife/",
+        "https://recnplay.pe/"
+      ]
+    },
+    {
+      "id": "brasil-global-summit-2026",
+      "source": {
+        "id": "images-brasil-global-summit-2026",
+        "name": "Brasil Global Summit 2026 — referência editorial",
+        "institution": "Brasil Global",
+        "url": "https://brasilglobalsummit.com/",
+        "stateCode": "DF",
+        "cityName": "Brasília",
+        "categories": [
+          "eventos"
+        ],
+        "notes": "Cadastro manual autorizado em 01/11/2026, com revisão de fonte oficial. reference_only: sem coleta automática ou alteração dos coletores da tarefa paralela."
+      },
+      "opportunity": {
+        "actor": "codex:authorized-image-events-20261101",
+        "title": "Brasil Global Summit 2026",
+        "institution": "Brasil Global",
+        "officialSourceId": "images-brasil-global-summit-2026",
+        "officialUrl": "https://brasilglobalsummit.com/",
+        "benefitType": "other",
+        "applicantType": "mixed",
+        "applicationRoute": "direct_application",
+        "opportunityStatus": "open",
+        "deadlineAt": null,
+        "deadlinePrecision": "not_informed",
+        "eventStartsAt": "2026-11-24",
+        "stateCode": "DF",
+        "cityName": "Brasília",
+        "requirementsText": "Evento presencial de tecnologia, inovação, negócios e cultura, em 24–26/11 na Arena Mané Garrincha, Brasília. Inscrição de visitante pelo site oficial. O edital Brasil Global Startups, com prazo anunciado em 24/10, é uma seleção separada e não está sendo anunciado como aberto.",
+        "amountText": "Participação de visitante gratuita. Seleção de startups, benefícios e condições não se transferem automaticamente ao público. Sem prêmio financeiro confirmado para visitantes.",
+        "evidenceExcerpt": "Revisão manual em 01/11/2026. Evento confirmado de 2026-11-24 a 2026-11-26; inscrição de participante oferecida pela organização, sujeita às condições e disponibilidade. Prazo final não divulgado. Fontes: https://brasilglobalsummit.com/.",
+        "isCourse": false,
+        "nationallyEligible": false,
+        "categories": [
+          "eventos"
+        ],
+        "discovery": {
+          "primaryType": "eventos",
+          "areas": [
+            "tecnologia",
+            "ia",
+            "negocios"
+          ],
+          "editions": [
+            {
+              "id": "brasil-global-summit-2026",
+              "name": "Brasil Global Summit 2026",
+              "stages": [
+                {
+                  "id": "event",
+                  "name": "Realização",
+                  "kind": "event",
+                  "start": "2026-11-24",
+                  "end": "2026-11-26",
+                  "sourceUrl": "https://brasilglobalsummit.com/",
+                  "checkedAt": "2026-11-01T17:02:13.371Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "evidenceUrls": [
+        "https://brasilglobalsummit.com/"
+      ]
+    },
+    {
+      "id": "case-2026",
+      "source": {
+        "id": "images-case-2026",
+        "name": "CASE 2026 — referência editorial",
+        "institution": "ABStartups",
+        "url": "https://case.abstartups.com.br/",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "categories": [
+          "eventos"
+        ],
+        "notes": "Cadastro manual autorizado em 01/11/2026, com revisão de fonte oficial. reference_only: sem coleta automática ou alteração dos coletores da tarefa paralela."
+      },
+      "opportunity": {
+        "actor": "codex:authorized-image-events-20261101",
+        "title": "CASE 2026",
+        "institution": "ABStartups",
+        "officialSourceId": "images-case-2026",
+        "officialUrl": "https://case.abstartups.com.br/",
+        "benefitType": "other",
+        "applicantType": "mixed",
+        "applicationRoute": "direct_application",
+        "opportunityStatus": "open",
+        "deadlineAt": null,
+        "deadlinePrecision": "not_informed",
+        "eventStartsAt": "2026-11-26",
+        "stateCode": "SP",
+        "cityName": "São Paulo",
+        "requirementsText": "Conferência de startups e empreendedorismo da ABStartups, em 26–27/11 na FEA-USP, São Paulo. O site oferece ingresso pelo Sympla. Rodadas, hosts, candidatura e participação na cerimônia Startup Awards são modalidades distintas.",
+        "amountText": "Inscrição com ingresso; conferir lote, preço e disponibilidade no Sympla. Assistir ao Startup Awards não habilita a concorrer nem garante prêmio.",
+        "evidenceExcerpt": "Revisão manual em 01/11/2026. Evento confirmado de 2026-11-26 a 2026-11-27; inscrição de participante oferecida pela organização, sujeita às condições e disponibilidade. Prazo final não divulgado. Fontes: https://case.abstartups.com.br/.",
+        "isCourse": false,
+        "nationallyEligible": false,
+        "categories": [
+          "eventos"
+        ],
+        "discovery": {
+          "primaryType": "eventos",
+          "areas": [
+            "tecnologia",
+            "negocios"
+          ],
+          "editions": [
+            {
+              "id": "case-2026",
+              "name": "CASE 2026",
+              "stages": [
+                {
+                  "id": "event",
+                  "name": "Realização",
+                  "kind": "event",
+                  "start": "2026-11-26",
+                  "end": "2026-11-27",
+                  "sourceUrl": "https://case.abstartups.com.br/",
+                  "checkedAt": "2026-11-01T17:02:13.371Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "evidenceUrls": [
+        "https://case.abstartups.com.br/"
+      ]
+    }
+  ]
+}

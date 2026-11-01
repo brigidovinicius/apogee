@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -111,6 +112,59 @@ test("only activity facts establish a preferred theme; university names, prose p
   assert.equal(rankOpportunities([ceremony, awarded], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], awarded);
   const admission = exam("Seleção em tecnologia", { financials: awarded.financials });
   assert.equal(rankOpportunities([admission, general], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], general);
+});
+
+test("audited noncash prizes lead without manufacturing money and nearby conferences break ties by event date", () => {
+  const noCash = { benefits: [], costs: [], notes: ["Assinaturas de software para a equipe vencedora."] };
+  const awarded = item("z-awarded", { kind: "Prêmio", categories: ["competicoes", "eventos"], financials: noCash });
+  const conference = item("a-conference", { title: "Summit de tecnologia", organization: "Outro organizador" });
+  assert.equal(rankOpportunities([conference, awarded], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], awarded);
+  assert.deepEqual(awarded.financials.benefits, []);
+  const first = item("z-first", { title: "Conferência de negócios", organization: "A", deadline: null, eventStartsAt: "2026-10-18" });
+  const second = item("a-second", { title: "Conferência de tecnologia", organization: "B", deadline: null, eventStartsAt: "2026-10-19" });
+  assert.deepEqual(rankOpportunities([second, first], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime()), [first, second]);
+  const admission = exam("admission", { kind: "Prêmio" });
+  assert.equal(rankOpportunities([admission, conference], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], conference);
+});
+
+test("an announced prize total with unconfirmed nature remains outside financial-benefit labels", () => {
+  const amountText = "Inscrição gratuita no lote disponível. A organização anuncia R$ 25 mil em prêmios, além de almoço e jantar. A natureza e divisão dos prêmios dependem das regras; não tratar esse total como dinheiro garantido para cada participante.";
+  const financials = radar.financialsFromRadar({ benefitType: "prize", amountText });
+  assert.deepEqual(financials.benefits, []);
+  assert.ok(financials.notes.some(note => note.includes("25 mil")));
+  const confirmed = radar.financialsFromRadar({ benefitType: "prize", amountText: "Premiação em dinheiro de R$ 25.000 para a equipe vencedora." });
+  assert.equal(confirmed.benefits[0].label, "PREMIAÇÃO");
+});
+
+test("all eleven reviewed event records keep absent awards out of financial labels", () => {
+  const batch = JSON.parse(readFileSync(new URL("../../research/tech-business-events-20261101/publication-batch.json", import.meta.url), "utf8"));
+  assert.equal(batch.items.length, 11);
+  for (const entry of batch.items) assert.deepEqual(radar.financialsFromRadar(entry.opportunity).benefits, [], entry.id);
+  for (const amountText of ["Sem prêmio em dinheiro confirmado.", "Não há prêmios financeiros.", "Mentorias restritas; sem prêmio financeiro ao participante confirmado."]) {
+    assert.deepEqual(radar.financialsFromRadar({ benefitType: "prize", amountText }).benefits, [], amountText);
+  }
+});
+
+test("reviewed event stages conform to the existing Radar date contract before publication", () => {
+  const { calendarDate } = opportunityLoader({ "./categories": {}, "./validate-url": {} })("../radar-academico/src/lib/ingestion/discovery.ts");
+  const batch = JSON.parse(readFileSync(new URL("../../research/tech-business-events-20261101/publication-batch.json", import.meta.url), "utf8"));
+  for (const { opportunity } of batch.items) {
+    assert.equal(opportunity.deadlineAt, null);
+    assert.equal(opportunity.deadlinePrecision, "not_informed");
+    for (const edition of opportunity.discovery.editions) for (const stage of edition.stages) {
+      for (const key of ["start", "end", "checkedAt"]) assert.equal(calendarDate(stage[key]), stage[key]);
+      assert.equal(stage.sourceUrl, opportunity.officialUrl);
+    }
+  }
+});
+
+test("verified technology and business themes fill the feed after prizes without inferring themes from an organizer", () => {
+  const summit = item("z-summit", { organization: "A", title: "Convergência Summit", discovery: { areas: ["tecnologia", "negocios"], editions: [] } });
+  const technical = item("a-tech", { organization: "B", title: "Evento de tecnologia", discovery: { areas: ["tecnologia"], editions: [] } });
+  const prize = item("prize", { organization: "C", kind: "Prêmio", categories: ["competicoes"] });
+  assert.deepEqual(rankOpportunities([technical, summit, prize], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime()), [prize, summit, technical]);
+  const formal = exam("formal", { discovery: summit.discovery });
+  assert.equal(rankOpportunities([formal, technical], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], technical);
 });
 
 test("nearby event dates break ties without becoming registration deadlines or overriding a requested subject", () => {
