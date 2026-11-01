@@ -17,7 +17,14 @@ await new Promise((done) => probe.close(done));
 const server = spawn(process.execPath, [resolve(standalone, "server.js")], {
   cwd: standalone,
   // Do not inherit developer credentials or connect to any real backend.
-  env: { PATH: process.env.PATH, NODE_ENV: "production", HOSTNAME: "127.0.0.1", PORT: String(port), NEXT_TELEMETRY_DISABLED: "1", ADMIN_SESSION_SECRET: "synthetic-smoke-key-only-".repeat(3) },
+  env: { PATH: process.env.PATH, NODE_ENV: "production", HOSTNAME: "127.0.0.1", PORT: String(port), NEXT_TELEMETRY_DISABLED: "1", ADMIN_SESSION_SECRET: "synthetic-smoke-key-only-".repeat(3),
+    // Synthetic runtime-only approvals must survive a build without these flags.
+    ...(app === "make-it-fly-current" ? {
+      MEMBERS_SUPERVISED_REGISTRATION_ENABLED: "true",
+      APOGEE_PRIVACY_APPROVED_VERSION: "2026-11-01.2",
+      APOGEE_TERMS_APPROVED_VERSION: "2026-11-01.2",
+    } : {}),
+  },
   stdio: ["ignore", "pipe", "pipe"],
 });
 let logs = "";
@@ -57,6 +64,11 @@ try {
     assert.ok(asset, "page includes a JavaScript asset");
     assert.equal((await get(asset[1])).status, 200);
     if (app === "make-it-fly-current") {
+      for (const [path, body] of [["/", html], ["/home-robonauta", await (await get("/home-robonauta")).text()]]) {
+        const footer = body.match(/<footer\b[^>]*>[\s\S]*?<\/footer>/)?.[0] ?? "";
+        assert.match(footer, /href="\/privacidade"/, `${path}: privacy link uses runtime approval`);
+        assert.match(footer, /href="\/termos"/, `${path}: terms link uses runtime approval`);
+      }
       assert.equal((await get("/oportunidades")).status, 200);
       const member = await get("/membros/oportunidades");
       assert.ok([302, 303, 307, 308].includes(member.status));

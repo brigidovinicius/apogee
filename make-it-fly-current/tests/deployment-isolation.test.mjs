@@ -56,18 +56,24 @@ test("the single root layout preserves the approved visual wrapper and relocated
   const file = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const visual = file.statements.filter(statement => !(ts.isVariableStatement(statement)
     && statement.declarationList.declarations.some(declaration => declaration.name.getText(file) === "metadata"))
-    && !(ts.isImportDeclaration(statement) && ["next/link", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link"].includes(statement.moduleSpecifier.text)))
+    && !(ts.isImportDeclaration(statement) && ["next/link", "next/server", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link", "@/components/site/site-legal-links", "@/lib/site-legal-links"].includes(statement.moduleSpecifier.text)))
     .map(statement => statement.getText(file)).join("\n").replaceAll("../fonts/", "./fonts/")
     // On-demand font fetching changes network priority, not typography.
     .replaceAll("  preload: false,\n", "")
     .replace("        <JourneyTracker />\n", "")
     .replace("        <MakeItFlyScrollRestoration />\n", "")
     .replace("        <SkipLink />\n", '        <a className="skip-link" href="#experiencia">\n          Pular para o conteúdo\n        </a>\n')
+    // Waiting for runtime configuration changes no rendered DOM.
+    .replace("async function RootLayout", "function RootLayout")
+    .replace("  // Legal approvals are runtime configuration, absent from the build image.\n  await connection();\n", "")
     // The skip link keeps the same rendered anchor; only history handling changes.
     .replace('<Link className="skip-link" href="#experiencia">', '<a className="skip-link" href="#experiencia">')
     .replace("        </Link>\n", "        </a>\n")
     // The scoped boundary returns the original children on all /makeitfly routes.
-    .replace("<ApogeeDesignSystem>{children}</ApogeeDesignSystem>", "{children}");
+    .replace("        <SiteLegalLinksProvider value={getSiteLegalLinks()}>\n", "")
+    .replace("        </SiteLegalLinksProvider>\n", "")
+    // The context provider adds no DOM, including on the legacy event route.
+    .replace("          <ApogeeDesignSystem>{children}</ApogeeDesignSystem>", "        {children}");
   assert.equal(sha256(visual), "bb2dbfad30652ec73ab9929b3732b448473f74112cbcb0cdaac56663c16f2cc0",
     "the event wrapper stays identical after removing metadata, analytics and the tested route-aware boundary");
   assert.ok(visual.includes("<html") && visual.includes("<body"));
