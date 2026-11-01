@@ -6,6 +6,7 @@ import { OpportunityBenefits, OpportunityCosts } from "./opportunity-financials"
 import { AdmissionProcessCard } from "./admission-process-card";
 import { groupAdmissionProcesses } from "@/lib/opportunities/admission-processes";
 import { OpportunityCountdown } from "./opportunity-countdown";
+import { OpportunityDates } from "./opportunity-dates";
 import { OpportunityAlert } from "./opportunity-alert";
 import { ShareButton } from "@/components/site/share-button";
 import { LiveCatalogueRefresh } from "./live-refresh";
@@ -388,10 +389,6 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
           <dt>Localização</dt>
           <dd className={styles.locationValue}><MapPin size={15} aria-hidden />{interfaceText(opportunity.location)}</dd>
         </div>}
-        {opportunity.eventStartsAt && Number.isFinite(Date.parse(opportunity.eventStartsAt)) ? <div>
-          <dt>Realização</dt>
-          <dd><time dateTime={opportunity.eventStartsAt}>{formatDate(opportunity.eventStartsAt)}</time></dd>
-        </div> : null}
       </dl>
       {detailed ? <details className={styles.cardDisclosure} open>
         <summary>Requisitos e condições</summary>
@@ -405,11 +402,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
       </details> : null}
       <div className={styles.launchWindow}>
         <CalendarDays size={17} aria-hidden />
-        <div>
-          <span>Janela de inscrição</span>
-          <strong>{interfaceText(opportunity.deadlineLabel)}</strong>
-          {detailed && opportunity.deadline && !opportunity.deadlineAt ? <small>Horário de encerramento não informado.</small> : null}
-        </div>
+        <OpportunityDates opportunity={opportunity} detailed={detailed} />
       </div>
       <OpportunityCountdown opportunity={opportunity} />
       {detailed && isOpportunityOpen(opportunity) ? <OpportunityAlert id={opportunity.id} title={opportunity.title} available={opportunity.alertsAvailable === true}/> : null}

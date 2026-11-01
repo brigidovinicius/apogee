@@ -24,6 +24,7 @@ const { EarthRadarList } = await load("components/home/earth-radar/earth-radar-l
   "@/lib/opportunities/detail-path": { opportunityDetailPath },
   "@/lib/presentation-text.mjs": { interfaceText },
   "@/components/opportunities/opportunity-financials": opportunityLoader()("components/opportunities/opportunity-financials.tsx"),
+  "@/components/opportunities/opportunity-dates": opportunityLoader()("components/opportunities/opportunity-dates.tsx"),
   "./earth-radar.module.css": { __esModule: true, default: new Proxy({}, { get: (_, key) => key }) },
 });
 
