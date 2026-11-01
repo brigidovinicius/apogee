@@ -145,6 +145,19 @@ test("all eleven reviewed event records keep absent awards out of financial labe
   }
 });
 
+test("reviewed event stages conform to the existing Radar date contract before publication", () => {
+  const { calendarDate } = opportunityLoader({ "./categories": {}, "./validate-url": {} })("../radar-academico/src/lib/ingestion/discovery.ts");
+  const batch = JSON.parse(readFileSync(new URL("../../research/tech-business-events-20261101/publication-batch.json", import.meta.url), "utf8"));
+  for (const { opportunity } of batch.items) {
+    assert.equal(opportunity.deadlineAt, null);
+    assert.equal(opportunity.deadlinePrecision, "not_informed");
+    for (const edition of opportunity.discovery.editions) for (const stage of edition.stages) {
+      for (const key of ["start", "end", "checkedAt"]) assert.equal(calendarDate(stage[key]), stage[key]);
+      assert.equal(stage.sourceUrl, opportunity.officialUrl);
+    }
+  }
+});
+
 test("verified technology and business themes fill the feed after prizes without inferring themes from an organizer", () => {
   const summit = item("z-summit", { organization: "A", title: "Convergência Summit", discovery: { areas: ["tecnologia", "negocios"], editions: [] } });
   const technical = item("a-tech", { organization: "B", title: "Evento de tecnologia", discovery: { areas: ["tecnologia"], editions: [] } });

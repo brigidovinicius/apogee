@@ -22,7 +22,7 @@ A home mantém seis destaques e as categorias horizontais existentes. Os demais 
 
 ## Validação e operação
 
-Validação local: 601/601 testes antes do rebase; 611/611 após incorporar a publicação concorrente da Agenda Google e cobrir o lote inteiro contra rótulos financeiros indevidos, com lint e TypeScript aprovados. Inclui a regressão com o texto real do Builders Day e a preservação de premiação em dinheiro explicitamente confirmada. A validação final, CI, cadastro efetivo e deploy serão registrados após execução. Backup restrito anterior ao lote criado em `/opt/apogee-backups/image-events-20261101/radar-before.dump`, legível pelo `pg_restore` e com checksum confirmado. Identidades históricas foram consultadas antes de preparar o lote; os 11 eventos não estavam publicados nem encontrados entre exclusões.
+Validação local: 601/601 testes antes do rebase; 612/612 após incorporar a publicação concorrente da Agenda Google e cobrir o lote inteiro contra rótulos financeiros indevidos, com lint e TypeScript aprovados. Inclui a regressão com o texto real do Builders Day e a preservação de premiação em dinheiro explicitamente confirmada. A validação final, CI, cadastro efetivo e deploy serão registrados após execução. Backup restrito anterior ao lote criado em `/opt/apogee-backups/image-events-20261101/radar-before.dump`, legível pelo `pg_restore` e com checksum confirmado. Identidades históricas foram consultadas antes de preparar o lote; os 11 eventos não estavam publicados nem encontrados entre exclusões.
 
 Não houve cadastro de Front in Floripa, que informa ingressos esgotados. Não houve inscrição em evento, compra, aceitação de termos ou envio de mensagens.
 
@@ -33,3 +33,5 @@ O PR #109 da Agenda Google entrou em `main` durante a preparação. O primeiro p
 A simulação anterior à gravação identificou que frases negativas com a palavra “prêmio” no singular escapavam de uma regra legada. A negação foi corrigida e as 11 fichas reais do lote foram adicionadas à regressão. Não houve aplicação de cadastros antes dessa correção.
 
 Seleção simulada com os dados reais e o lote proposto: GovTech Cianorte, Builders Day, Wolfram Brasil, Bootcamp Deep Tech, Convergência Summit e DCD Connect Brasil. Os três primeiros têm premiações confirmadas ou anunciadas nas fontes, com natureza preservada; nenhum ganhou benefício financeiro inventado. A conferência pública após a aplicação determinará a seleção efetivamente exibida.
+
+O calendário das 11 fichas foi validado pela função `calendarDate` real do backend, incluindo a precisão em milissegundos dos timestamps de conferência. Nenhum prazo final de inscrição foi criado a partir da data de realização.
