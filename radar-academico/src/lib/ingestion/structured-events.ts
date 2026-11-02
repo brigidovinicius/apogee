@@ -1,6 +1,9 @@
 import * as cheerio from "cheerio";
 
 type JsonObject = Record<string, unknown>;
+const eventTypes = new Set(["Event", "BusinessEvent", "EducationEvent", "SocialEvent", "ExhibitionEvent", "Hackathon",
+  "ConferenceEvent", "Festival", "SportsEvent", "MusicEvent", "LiteraryEvent", "ScreeningEvent", "PublicationEvent",
+  "ChildrensEvent", "ComedyEvent", "DanceEvent", "TheaterEvent", "VisualArtsEvent", "CourseInstance"]);
 export const asObject = (value: unknown): JsonObject | null => value !== null && typeof value === "object" && !Array.isArray(value) ? value as JsonObject : null;
 /** Only public schema.org events; never read hydration state, attendee lists or profiles. */
 export function structuredEvents(html: string): JsonObject[] {
@@ -11,7 +14,9 @@ export function structuredEvents(html: string): JsonObject[] {
     const data = asObject(value);
     if (!data) return;
     const types = Array.isArray(data["@type"]) ? data["@type"] : [data["@type"]];
-    if (types.includes("Event")) { events.push(data); return; }
+    if (types.some(type => typeof type === "string" && eventTypes.has(type.replace(/^https?:\/\/schema\.org\//, "")))) {
+      events.push(data); return;
+    }
     // Do not traverse arbitrary user data or unrelated page metadata.
     for (const key of ["@graph", "itemListElement", "item"]) if (data[key]) visit(data[key], depth + 1);
   }

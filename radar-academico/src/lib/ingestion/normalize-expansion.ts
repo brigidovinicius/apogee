@@ -8,6 +8,7 @@ import { eventHasNotStarted } from "./event-start";
 import { confirmedTerminalStatus } from "./publication";
 import type { ApplicantType, OfficialSource, OpportunityCandidate } from "./types";
 import type { OpportunityCategory } from "./categories";
+import { brazilianStateCode } from "@/lib/location";
 
 export const expansionEdition = (id: string) => editions.find(item => item.id === id);
 export const expansionLumaEvent = (id: string) => lumaEvents.find(item => item.id === id);
@@ -100,8 +101,7 @@ export function normalizeLuma(html: string, source: OfficialSource, call: typeof
   const description = typeof event.description === "string" ? publicText(event.description) : "";
   if (call.checks.some(check => !clean(description).includes(clean(check)))) throw Error("Condições do evento Luma mudaram");
   const address = asObject(asObject(event.location)?.address);
-  const stateName = call.state === "SP" ? "São Paulo" : "Rio de Janeiro";
-  if (address?.addressCountry !== "BR" || address.addressLocality !== call.city || ![call.state, stateName].includes(String(address.addressRegion))) {
+  if (address?.addressCountry !== "BR" || address.addressLocality !== call.city || brazilianStateCode(address.addressRegion) !== call.state) {
     throw Error("Localidade pública do evento mudou; confirmar nova localização");
   }
   const start = calendarDate(event.startDate), end = calendarDate(event.endDate);

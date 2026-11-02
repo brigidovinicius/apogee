@@ -1,53 +1,21 @@
 import crypto from "node:crypto";
 import { asObject, publicText, structuredEvents } from "@/lib/ingestion/structured-events";
-import { eventHasNotStarted } from "@/lib/ingestion/event-start";
-import { isIP } from "node:net";
 import * as cheerio from "cheerio";
 import { loadActiveOfficialSources } from "@/lib/ingestion/official-source-registry";
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
-import { parseHtml } from "@/lib/ingestion/parse-html";
-import { isAllowedHostname, isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
+import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
 import type { OfficialSource } from "@/lib/ingestion/types";
 import { claimDueDiscoveryTargets, completeDiscoveryTarget, saveDiscoveryLeads, recordDiscoveryObservation, recordDiscoveryObservationChanged, knownOpportunityUrls, type DiscoveryTarget } from "./watchlist";
-
-const relevant = /olimp[ií]ada|torneio|maratona|pitch|build(?:ers)? day|platform|\bia\b|bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|oportunidade|curso|oficina|formação|prêmio|premiaç|competição|hackathon|desafio|edital|seleção|inscriç|chamada|programa|evento|workshop|conferência|congresso|seminário|encontro|feira|palestra|webinar|extensão|empreendedorismo|incuba|acelera/i;
-const tracking = /^(utm_.+|fbclid|gclid)$/i;
-const navigationLabel = /^(?:[«»\s]*(?:anterior|próximo)[«»\s]*|cursos|eventos e cursos|calendário de inscrições|inscrições e acompanhamento|chamadas (?:abertas|andamento)|ver todos os palestrantes|programação|destaques|a feira|acesso à informação)$/i;
-
-export function candidateUrl(input: string): string | null {
-  try {
-    const url = new URL(input);
-    if (url.protocol !== "https:" || url.port && url.port !== "443" || url.username || url.password ||
-      isIP(url.hostname) !== 0 || !isAllowedHostname(url.hostname) || input.length > 2048) return null;
-    url.hash = "";
-    for (const key of [...url.searchParams.keys()]) if (tracking.test(key)) url.searchParams.delete(key);
-    return url.toString();
-  } catch { return null; }
-}
+import { candidateUrl, discoveryDocument } from "./documents";
+import { crawlDiscovery, type CrawlState } from "./crawl";
+export { candidateUrl } from "./documents";
 
 export function discoveryLinks(html: string, target: DiscoveryTarget, mappedSources: OfficialSource[], now = new Date(), knownUrls: ReadonlySet<string> = new Set()) {
   // A known source can expose a new call; persistence, rather than source scope,
   // decides whether an opportunity already exists.
   void mappedSources;
-  const seen = new Set<string>();
-  const $ = cheerio.load(html);
-  $("header,aside").remove();
-  const structured = structuredEvents(html);
-  const unavailable = new Set(structured.filter(event => typeof event.startDate === "string" && (!eventHasNotStarted(event.startDate, now) || event.eventStatus === "https://schema.org/EventCancelled")).map(event => event.url));
-  const metadata = structured.flatMap(event => {
-    if (typeof event.url !== "string" || typeof event.name !== "string" || typeof event.startDate !== "string" ||
-      !eventHasNotStarted(event.startDate, now) || event.eventStatus === "https://schema.org/EventCancelled") return [];
-    return [{ url: event.url, title: event.name, excerpt: `${event.name}; ${event.startDate}` }];
-  });
-  return [...metadata, ...parseHtml($.html(), target.official_url)].flatMap((item) => {
-    const url = candidateUrl(item.url);
-    if (!url || knownUrls.has(url) || unavailable.has(url) || url === target.official_url || seen.has(url) || navigationLabel.test(item.title)) return [];
-    const path = new URL(url).pathname;
-    if (path.includes("@@search") ||
-      !relevant.test(`${item.title} ${path}`)) return [];
-    seen.add(url);
-    return [{ url, title: item.title.slice(0, 240), excerpt: item.excerpt.slice(0, 500) }];
-  }).slice(0, 30);
+  return discoveryDocument({ body: Buffer.from(html), contentType: "text/html" }, target.official_url, target.official_url, now)
+    .links.filter(link => !knownUrls.has(link.url)).slice(0, 30);
 }
 
 function asCrawlSource(target: DiscoveryTarget): OfficialSource {
@@ -66,13 +34,18 @@ export function discoveryObservation(html: string, target: DiscoveryTarget) {
   $("[class*=countdown],[class*=timer],svg,button").remove();
   const events = structuredEvents(html);
   const luma = new URL(target.official_url).hostname === "luma.com";
+  $("nav,header,footer,aside,form").remove();
+  const urls = $("a[href],link[href]").toArray().flatMap(node => {
+    try { const url = candidateUrl(new URL($(node).attr("href")!, target.official_url).href); return url ? [url] : []; }
+    catch { return []; }
+  });
   const content = luma
     ? JSON.stringify(events.map(event => ({ url: event.url, name: event.name, startDate: event.startDate, endDate: event.endDate,
       eventStatus: event.eventStatus, offers: (Array.isArray(event.offers) ? event.offers : [event.offers]).flatMap(raw => {
         const offer = asObject(raw);
         return offer ? [{ price: offer.price, priceCurrency: offer.priceCurrency, availability: offer.availability }] : [];
       }) })).sort((a,b) => String(a.url).localeCompare(String(b.url))))
-    : publicText($.html());
+    : `${publicText($.html())}\n${JSON.stringify(urls)}`;
   return { hash: crypto.createHash("sha256").update(content).digest("hex"), excerpt: content.slice(0, 500) };
 }
 
@@ -80,24 +53,29 @@ export async function runScheduledDiscovery() {
   const targets = await claimDueDiscoveryTargets(2);
   const mappedSources = await loadActiveOfficialSources();
   const knownUrls = targets.length ? await knownOpportunityUrls() : new Set<string>();
-  const results: { targetId: string; status: DiscoveryTarget["last_status"]; links: number; newLeads: number }[] = [];
+  const results: { targetId: string; status: DiscoveryTarget["last_status"]; links: number; newLeads: number; pagesChecked: number; pageFailures: number; continued: boolean }[] = [];
   for (const target of targets) {
     let status: DiscoveryTarget["last_status"] = "failed";
     let links = 0;
     let newLeads = 0;
+    let pagesChecked = 0, pageFailures = 0;
+    let checkpoint: CrawlState | undefined;
     try {
       const source = asCrawlSource(target);
       const resource = await fetchOfficialResource(target.official_url, source, 2 * 1024 * 1024);
-      if (!/text\/html|application\/xhtml/i.test(resource.contentType)) {
-        status = "blocked";
-      } else {
+      const root = discoveryDocument(resource, target.official_url, target.official_url);
+      {
         const html = resource.body.toString("utf8");
-        const observation = discoveryObservation(html, target);
+        const observation = /text\/html|application\/xhtml/i.test(resource.contentType) ? discoveryObservation(html, target)
+          : { hash: crypto.createHash("sha256").update(JSON.stringify(root)).digest("hex"), excerpt: "Documento de descoberta oficial RSS/Atom/sitemap." };
         const changed = await recordDiscoveryObservation(target.id, observation);
-        const leads = discoveryLinks(html, target, mappedSources, new Date(), knownUrls);
-        if (target.id.startsWith("exp-") && !isOfficialSourceUrl(target.official_url, mappedSources)) {
-          leads.unshift({ url: target.official_url, title: target.name, excerpt: observation.excerpt });
-        }
+        const crawlHash = crypto.createHash("sha256").update(JSON.stringify(root)).digest("hex");
+        const crawled = await crawlDiscovery(target, source, resource, crawlHash, knownUrls,
+          target.id.startsWith("exp-") && !isOfficialSourceUrl(target.official_url, mappedSources));
+        const leads = crawled.leads;
+        pagesChecked = crawled.pagesChecked;
+        pageFailures = crawled.failures;
+        if (crawled.state.queue.length || asObject(target.discovery_crawl)?.queue) checkpoint = crawled.state;
         if (changed) await recordDiscoveryObservationChanged(target.id);
         links = leads.length;
         newLeads = await saveDiscoveryLeads(target.id, leads);
@@ -106,10 +84,14 @@ export async function runScheduledDiscovery() {
     } catch {
       // Robots, network limits and unavailable pages all fail closed. No lead is published.
       status = "blocked";
+      pageFailures++;
     } finally {
-      await completeDiscoveryTarget(target.id, status);
+      if (checkpoint) await completeDiscoveryTarget(target.id, status, checkpoint);
+      else await completeDiscoveryTarget(target.id, status);
     }
-    results.push({ targetId: target.id, status, links, newLeads });
+    results.push({ targetId: target.id, status, links, newLeads, pagesChecked, pageFailures, continued: Boolean(checkpoint?.queue.length) });
   }
-  return { targetsChecked: results.length, newLeads: results.reduce((sum, item) => sum + item.newLeads, 0), targets: results };
+  return { targetsChecked: results.length, newLeads: results.reduce((sum, item) => sum + item.newLeads, 0),
+    pagesChecked: results.reduce((sum, item) => sum + item.pagesChecked, 0),
+    pageFailures: results.reduce((sum, item) => sum + item.pageFailures, 0), targets: results };
 }

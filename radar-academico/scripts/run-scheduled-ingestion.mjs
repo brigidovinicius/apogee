@@ -21,7 +21,7 @@ async function run() {
     console.log(JSON.stringify({
       component: "radar-scheduler",
       startedAt,
-      status: report.failed > 0 || report.discovery?.failed || discoveryBlocked > 0 || report.leadProcessing?.failed > 0 ||
+      status: report.failed > 0 || report.discovery?.failed || report.discovery?.pageFailures > 0 || discoveryBlocked > 0 || report.leadProcessing?.failed > 0 ||
         report.leadProcessing?.blocked > 0 || report.leadProcessing?.retried > 0 ? "completed_with_warnings" : "completed",
       sourcesChecked: report.sourcesChecked,
       pagesChecked: report.pagesChecked,
@@ -31,6 +31,8 @@ async function run() {
       published: report.published,
       discoveryTargetsChecked: report.discovery?.targetsChecked ?? 0,
       discoveryNewLeads: report.discovery?.newLeads ?? 0,
+      discoveryPagesChecked: report.discovery?.pagesChecked ?? 0,
+      discoveryPageFailures: report.discovery?.pageFailures ?? 0,
       discoveryFailed: report.discovery?.failed === true,
       discoveryBlocked,
       leadsChecked: report.leadProcessing?.leadsChecked ?? 0,

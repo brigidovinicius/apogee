@@ -1,5 +1,6 @@
 import type { PoolClient } from "pg";
 import { withAdminTransaction } from "@/lib/db/client";
+import type { CrawlState } from "./crawl";
 
 export type DiscoveryTarget = {
   id: string;
@@ -18,6 +19,7 @@ export type DiscoveryTarget = {
   last_status: "not_checked" | "checked" | "blocked" | "failed";
   evidence_url: string;
   last_changed_at?: Date | null;
+  discovery_crawl?: unknown;
 };
 
 export type DiscoveryLead = {
@@ -79,27 +81,31 @@ export async function knownOpportunityUrls(): Promise<Set<string>> {
   return new Set(rows.map(row => row.source_page_url));
 }
 
-export async function completeDiscoveryTarget(id: string, status: DiscoveryTarget["last_status"]) {
+export async function completeDiscoveryTarget(id: string, status: DiscoveryTarget["last_status"], checkpoint?: CrawlState) {
   await withAdminTransaction((client) => client.query(
     `update discovery_targets set last_checked_at=now(),last_status=$2,
-       next_check_at=now() + case when $2='checked' then make_interval(hours => check_interval_hours)
-         else interval '24 hours' end,updated_at=now() where id=$1`,
-    [id, status],
+       next_check_at=now() + case when $4::boolean then interval '10 minutes'
+         when $2='checked' then make_interval(hours => check_interval_hours)
+         else interval '24 hours' end,
+       discovery_crawl=coalesce($3::jsonb,discovery_crawl),updated_at=now() where id=$1`,
+    [id, status, checkpoint ? JSON.stringify(checkpoint) : null, Boolean(checkpoint?.queue.length)],
   ));
 }
 
-export async function saveDiscoveryLeads(targetId: string, leads: { url: string; title: string; excerpt: string }[]) {
+export async function saveDiscoveryLeads(targetId: string, leads: { url: string; title: string; excerpt: string; discoveryPath?: string[] }[]) {
   return withAdminTransaction(async (client) => {
     let added = 0;
     for (const lead of leads) {
       const result = await client.query(
-        `insert into discovery_leads(target_id,url,title,excerpt) values($1,$2,$3,$4)
+        `insert into discovery_leads(target_id,url,title,excerpt,discovery_path) values($1,$2,$3,$4,$5)
          on conflict (target_id,url) do nothing returning id`,
-        [targetId, lead.url, lead.title, lead.excerpt],
+        [targetId, lead.url, lead.title, lead.excerpt, lead.discoveryPath ?? []],
       );
       if (result.rows[0]) added += 1;
       else {
-        const existing = await client.query<{ id: string }>("update discovery_leads set last_seen_at=now() where target_id=$1 and url=$2 returning id", [targetId, lead.url]);
+        const existing = await client.query<{ id: string }>(`update discovery_leads set last_seen_at=now(),
+          discovery_path=case when processing_status='processing' then discovery_path else $3 end
+          where target_id=$1 and url=$2 returning id`, [targetId, lead.url, lead.discoveryPath ?? []]);
         if (existing.rows[0]) await requeueDiscoveryLeads(client, { leadId: existing.rows[0].id, reason: "rediscovered" });
       }
     }

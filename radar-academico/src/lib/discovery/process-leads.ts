@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
 import type { PoolClient } from "pg";
 import { withAdminTransaction } from "@/lib/db/client";
 import { loadActiveOfficialSources } from "@/lib/ingestion/official-source-registry";
@@ -16,6 +17,7 @@ export type ProcessingLead = {
   target_official_url: string; target_verified_at: string | null;
   target_enabled: boolean; target_verified_url: string | null;
   target_name?: string; target_organizer?: string; target_priority?: number;
+  discovery_path?: string[];
 };
 
 export const LEAD_PROCESSING_REASONS = new Set([
@@ -64,9 +66,10 @@ export async function claimDueDiscoveryLeads(): Promise<ProcessingLead[]> {
            and lead.processing_attempts < $1
            and ((lead.processing_status in ('pending','retry') and lead.processing_next_at<=now())
              or (lead.processing_status='processing' and lead.processing_lease_until<=now())
-             or (lead.processing_status='blocked' and lead.processing_reason='scope_unverified'
+             or (lead.processing_status='blocked' and lead.processing_reason in
+                 ('scope_unverified','candidate_unconfirmed','source_authority_unverified','listing_or_ambiguous','unsupported_content')
                and not exists(select 1 from ingestion_runs run where run.execution_metadata->>'lead_id'=lead.id::text
-                 and run.execution_metadata->>'source_expansion_version'='1')))
+                 and run.execution_metadata->>'source_expansion_version'='2')))
          order by case when lead.processing_status='blocked' then 1 else 0 end,
            lead.processing_next_at,lead.first_seen_at,lead.id
          limit 2 for update of lead skip locked
@@ -85,7 +88,7 @@ export async function claimDueDiscoveryLeads(): Promise<ProcessingLead[]> {
          where id=$1 and status='running'`, [lead.previous_run_id]);
       const run = await client.query<{ id: string }>(
         `insert into ingestion_runs(started_at,status,execution_metadata) values(now(),'running',$1) returning id`,
-        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 1 }],
+        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 2 }],
       );
       lead.processing_run_id = run.rows[0].id;
       await client.query("update discovery_leads set processing_run_id=$2 where id=$1", [lead.id, lead.processing_run_id]);
@@ -144,7 +147,8 @@ export async function finishDiscoveryLead(lead: ProcessingLead, prepared: Prepar
     if (!row) return null; // A reclaimed lease owns any subsequent write.
     if (!["new", "reviewing"].includes(row.status)) return recordOutcome(client, lead,
       { ...blocked("previously_reviewed", false, lead.processing_attempts), state: "ignored" });
-    if (row.url !== lead.url || row.target_id !== lead.target_id || row.title !== lead.title) {
+    if (row.url !== lead.url || row.target_id !== lead.target_id || row.title !== lead.title ||
+      !isDeepStrictEqual(row.discovery_path ?? [], lead.discovery_path ?? [])) {
       return recordOutcome(client, lead, blocked("lead_changed", false, lead.processing_attempts));
     }
     if (!row.target_enabled || !row.target_current_verified_at || row.target_current_verified_url !== row.target_current_url) {

@@ -1,23 +1,25 @@
 import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
-import * as cheerio from "cheerio";
 import type { PoolClient } from "pg";
-import { candidateUrl } from "./daily-discovery";
+import { candidateUrl, discoveryEdge, sameDiscoveryScope } from "./documents";
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
 import { normalizeDiscoveredPage } from "@/lib/ingestion/discovered-page";
 import { publicationIssue } from "@/lib/ingestion/publication";
 import { structuredEvents } from "@/lib/ingestion/structured-events";
+import { eventOrganizerVerified } from "@/lib/ingestion/public-event";
 import type { OfficialSource, OpportunityCandidate } from "@/lib/ingestion/types";
 
 export type ExpansionLead = {
   url: string; title: string; target_id: string; target_official_url: string;
   target_verified_at: string | null; target_enabled: boolean; target_verified_url: string | null;
   target_name?: string; target_organizer?: string; target_priority?: number;
+  discovery_path?: string[];
 };
 export type SourceRegistration = {
   checkedAt: string; targetHash: string; pageHash: string;
   organizer: string; targetUrl: string; targetVerifiedAt: string; targetPriority: number;
+  discoveryPath: string[]; pathHashes: string[];
 };
 export type PreparedDiscoveryCandidate = { source: OfficialSource; candidate: OpportunityCandidate; registration?: SourceRegistration }
   | { reason: string; retry?: boolean };
@@ -38,8 +40,13 @@ function pageSource(lead: ExpansionLead): OfficialSource {
 export async function prepareSourceExpansion(lead: ExpansionLead): Promise<PreparedDiscoveryCandidate> {
   const url = candidateUrl(lead.url), parent = candidateUrl(lead.target_official_url);
   if (!lead.target_enabled || !lead.target_verified_at || lead.target_verified_url !== lead.target_official_url ||
-    !lead.target_organizer?.trim() || !url || url !== lead.url || !parent ||
-    new URL(url).origin !== new URL(parent).origin) return { reason: "source_authority_unverified" };
+    !lead.target_organizer?.trim() || !url || url !== lead.url || !parent) return { reason: "source_authority_unverified" };
+  const foreign = !sameDiscoveryScope(parent, url);
+  if (foreign && new URL(url).hostname !== "luma.com" &&
+    !/evento|hackathon|workshop|confer|congresso|summit|seminário|webinar|builders|pitch|encontro|\bia\b/i.test(lead.title)) return { reason: "source_authority_unverified" };
+  const path = lead.discovery_path?.length ? lead.discovery_path : [parent];
+  if (path.length > 4 || path[0] !== parent || new Set(path).size !== path.length || path.some(value =>
+    typeof value !== "string" || candidateUrl(value) !== value || !sameDiscoveryScope(parent, value))) return { reason: "source_authority_unverified" };
   // Profiles, forms and city aggregators are not independently verified organizers.
   const host = new URL(url).hostname;
   if (/^(?:www\.)?(?:youtube\.com|youtu\.be|forms\.gle|docs\.google\.com)$/.test(host) ||
@@ -47,23 +54,29 @@ export async function prepareSourceExpansion(lead: ExpansionLead): Promise<Prepa
   const source = pageSource(lead);
   // Preserve the target's audited ID for existing, narrowly scoped transport exceptions.
   const parentSource: OfficialSource = { ...source, id: lead.target_id, baseUrl: parent,
-    listingUrls: [parent], allowedPathPrefixes: [new URL(parent).pathname] };
+    listingUrls: [parent], allowedDomains: [new URL(parent).hostname], allowedPathPrefixes: ["/"] };
   const target = await fetchOfficialResource(parent, parentSource, 2 * 1024 * 1024);
-  if (!/text\/html|application\/xhtml/i.test(target.contentType)) return { reason: "unsupported_content" };
-  const $ = cheerio.load(target.body.toString("utf8"));
-  const linked = url === parent || structuredEvents(target.body.toString("utf8")).some(event => event.url === url) || $("a[href]").toArray().some(node => {
-    try { return candidateUrl(new URL($(node).attr("href")!, parent).href) === url; } catch { return false; }
-  });
-  if (!linked) return { reason: "source_link_missing" };
-  const resource = url === parent ? target : await fetchOfficialResource(url, source, 2 * 1024 * 1024);
+  let referring = target;
+  const pathHashes = [target.hash];
+  for (let i = 1; i < path.length; i++) {
+    if (!discoveryEdge(referring, path[i - 1], path[i], parent)) return { reason: "source_link_missing" };
+    referring = await fetchOfficialResource(path[i], parentSource, 2 * 1024 * 1024);
+    pathHashes.push(referring.hash);
+  }
+  if (url !== path.at(-1) && !discoveryEdge(referring, path.at(-1)!, url, parent)) return { reason: "source_link_missing" };
+  const resource = url === path.at(-1) ? referring : await fetchOfficialResource(url, source, 2 * 1024 * 1024);
   if (!/text\/html|application\/xhtml/i.test(resource.contentType)) return { reason: "unsupported_content" };
+  if (foreign) {
+    const events = structuredEvents(resource.body.toString("utf8"));
+    if (events.length !== 1 || !eventOrganizerVerified(events[0], source)) return { reason: "source_authority_unverified" };
+  }
   const candidate = normalizeDiscoveredPage(resource.body.toString("utf8"), source);
   if (!candidate || candidate.requiresManualReview) return { reason: "candidate_unconfirmed" };
   const issue = publicationIssue(candidate, source);
   if (issue) return { reason: issue };
   return { source, candidate, registration: { checkedAt: new Date().toISOString(), targetHash: target.hash,
     pageHash: resource.hash, organizer: source.institutionName, targetUrl: lead.target_official_url,
-    targetVerifiedAt: lead.target_verified_at, targetPriority: lead.target_priority ?? 0 } };
+    targetVerifiedAt: lead.target_verified_at, targetPriority: lead.target_priority ?? 0, discoveryPath: [...path], pathHashes } };
 }
 
 /** Called inside the same transaction as opportunity persistence and lead completion. */
@@ -74,6 +87,8 @@ export async function registerDiscoveredSource(client: PoolClient, lead: Expansi
     !/^[a-f0-9]{64}$/.test(proof.targetHash) || !/^[a-f0-9]{64}$/.test(proof.pageHash) ||
     proof.organizer !== lead.target_organizer || proof.targetUrl !== lead.target_official_url ||
     proof.targetVerifiedAt !== lead.target_verified_at || proof.targetPriority !== (lead.target_priority ?? 0) ||
+    !isDeepStrictEqual(proof.discoveryPath, lead.discovery_path?.length ? lead.discovery_path : [lead.target_official_url]) ||
+    proof.pathHashes.length !== proof.discoveryPath.length || !proof.pathHashes.every(hash => /^[a-f0-9]{64}$/.test(hash)) ||
     !isDeepStrictEqual(prepared.source, pageSource(lead)) || !isOfficialSourceUrl(lead.url, [prepared.source])) {
     return { reason: "source_changed" };
   }
