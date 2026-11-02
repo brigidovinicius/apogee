@@ -1,5 +1,5 @@
-// Teste manual real: somente sandbox, PostgreSQL novo e servidor em loopback.
-// Não confirma pagamento por API; o usuário paga com cartão fictício no Checkout.
+// Real hosted Checkout test: sandbox only, a fresh PostgreSQL and loopback server.
+// Complete the hosted form with a fictitious card; never use a real payment method.
 import assert from "node:assert/strict";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { randomBytes, createHash } from "node:crypto";
@@ -72,14 +72,15 @@ try {
     officialUrl: "https://example.com/sandbox", lastCheckedAt: new Date().toISOString(), applicantType: "mixed",
     benefitType: "other", categories: ["eventos"], deadlineAt: "2099-12-31", deadlinePrecision: "date_only",
     opportunityStatus: "open", requirementsText: "Oportunidade sintética para validar o acesso.", amountText: "Evento sintético.", stateCode: "SC", cityName: "Florianópolis" };
+  const second = { ...sample, id: "sandbox-second", title: "TESTE SANDBOX Segunda oportunidade" };
   bridge = createServer((request, response) => {
     if (request.headers.authorization !== "Bearer sandbox-radar-bridge-only") { response.writeHead(401).end(); return; }
-    response.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ version: 3, opportunities: [sample] }));
+    response.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ version: 3, opportunities: [sample, second] }));
   });
   await new Promise(done => bridge.listen(0, "127.0.0.1", done));
   listener = spawn("stripe", ["listen", "--color", "off", "--skip-update", "--latest", "--events",
     "checkout.session.completed,checkout.session.async_payment_succeeded,charge.refunded,charge.dispute.created,charge.dispute.closed",
-    "--forward-to", `${origin}/api/stripe/webhook`], { stdio: ["ignore", "pipe", "pipe"] });
+    "--forward-to", `${origin}/api/stripe/webhook`], { env: { ...process.env, STRIPE_API_KEY: credentials.key }, stdio: ["ignore", "pipe", "pipe"] });
   const captureListener = chunk => {
     const line = chunk.toString();
     signingSecret ??= line.match(/whsec_[A-Za-z0-9]+/)?.[0];
@@ -94,6 +95,8 @@ try {
     env: { PATH: process.env.PATH, NODE_ENV: "development", NEXT_TELEMETRY_DISABLED: "1", NODE_OPTIONS: "--max-old-space-size=3072",
       BETTER_AUTH_URL: origin, BETTER_AUTH_SECRET: randomBytes(32).toString("hex"), DATABASE_URL: databaseUrl,
       DATABASE_SSL_MODE: "disable", DATABASE_POOL_MAX: "3", RADAR_BILLING_ENABLED: "true", STRIPE_MODE: "test",
+      MEMBERS_SUPERVISED_REGISTRATION_ENABLED: "true",
+      RADAR_CALENDAR_PERSONAL_ENABLED: "true",
       STRIPE_SECRET_KEY: credentials.key, STRIPE_WEBHOOK_SECRET: signingSecret, STRIPE_RADAR_PRICE_ID: priceId, STRIPE_RADAR_PRODUCT_ID: productId,
       RADAR_ACADEMICO_API_URL: `http://127.0.0.1:${bridge.address().port}/api/public/opportunities`, RADAR_ACADEMICO_API_TOKEN: "sandbox-radar-bridge-only",
       MEMBERS_EMAIL_ENABLED: "false", GOOGLE_CLIENT_ID: "", GOOGLE_CLIENT_SECRET: "" },
@@ -109,11 +112,22 @@ try {
     await pause(500);
   }
   assert.ok(ready, "Servidor local não ficou pronto.");
+  const publicHtml = await (await get("/oportunidades")).text();
+  assert.match(publicHtml, /TESTE SANDBOX Radar vitalício/);
+  assert.doesNotMatch(publicHtml, /Oportunidade sintética para validar o acesso\.|https:\/\/example\.com\/sandbox/);
+  const firstPath = `/membros/oportunidades/radar-${sample.id}`;
+  const secondPath = `/membros/oportunidades/radar-${second.id}`;
+  const assertRedirect = async (response, destination) => {
+    const html = await response.text();
+    assert.ok(response.headers.get("location")?.includes(destination) || html.includes("NEXT_REDIRECT") && html.includes(destination), `redirect to ${destination}`);
+    return html;
+  };
+  await assertRedirect(await get(firstPath), "/membros/entrar");
   const username = `radar${Date.now()}`;
   const email = `${username}@example.com`;
   const password = "Sandbox-only-Radar-49-2026!";
   const signUp = await fetch(`${origin}/api/auth/sign-up/email`, { method: "POST", headers: { Origin: origin, "Content-Type": "application/json" },
-    body: JSON.stringify({ name: "Teste Radar Sandbox", username, email, password }) });
+    body: JSON.stringify({ adultDeclared: true, name: "Teste Radar Sandbox", username, email, password }) });
   assert.equal(signUp.status, 200, "Cadastro sintético com Better Auth real.");
   const user = (await signUp.json()).user;
   const cookie = signUp.headers.getSetCookie().map(value => value.split(";")[0]).join("; ");
@@ -123,7 +137,29 @@ try {
   assert.match(denied, /TESTE SANDBOX Radar vitalício/);
   assert.doesNotMatch(denied, /Oportunidade sintética para validar o acesso\./);
   assert.doesNotMatch(denied, /https:\/\/example\.com\/sandbox/);
-  const checkout = await fetch(`${origin}/api/radar/checkout`, { method: "POST", headers: { Origin: origin, Cookie: cookie }, redirect: "manual" });
+  assert.equal(user.emailVerified, false);
+  await assertRedirect(await get("/membros", cookie), "/membros/protecao");
+  const firstHtml = await (await get(firstPath, cookie)).text();
+  assert.match(firstHtml, /Sua primeira oportunidade é grátis/);
+  assert.doesNotMatch(firstHtml, /Oportunidade sintética para validar o acesso\./);
+  const markup = [...firstHtml.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match=>match[0]).find(form=>form.includes("Abrir esta oportunidade grátis"));
+  assert.ok(markup);
+  const decode = value => value.replace(/&quot;/g,'"').replace(/&#x27;/g,"'").replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+  const freeForm = new FormData();
+  for (const input of markup.matchAll(/<input\b[^>]*>/g)) {
+    const name=input[0].match(/name="([^"]*)"/)?.[1];
+    if(name)freeForm.append(decode(name),decode(input[0].match(/value="([^"]*)"/)?.[1]??''));
+  }
+  const free=await fetch(origin+firstPath,{method:"POST",headers:{Origin:origin,Cookie:cookie},body:freeForm,redirect:"manual"});
+  assert.equal(free.status,303);
+  assert.match(await (await get(firstPath,cookie)).text(),/Oportunidade sintética para validar o acesso\./);
+  assert.match(await (await get(firstPath,cookie)).text(),/Esta é sua oportunidade gratuita/);
+  const secondBefore=await assertRedirect(await get(secondPath,cookie),"/membros/radar/acesso");
+  assert.doesNotMatch(secondBefore,/Oportunidade sintética para validar o acesso\./);
+  const returnQuery=`next=${encodeURIComponent(secondPath)}`;
+  assert.match(await (await get(`/membros/radar/acesso?payment=cancelled&${returnQuery}`,cookie)).text(),/O checkout foi encerrado/);
+  assert.equal((await database`select count(*)::int as total from radar_purchase`)[0].total,0);
+  const checkout = await fetch(`${origin}/api/radar/checkout?${returnQuery}`, { method: "POST", headers: { Origin: origin, Cookie: cookie }, redirect: "manual" });
   assert.equal(checkout.status, 303, "Aplicação criou Checkout Session no sandbox.");
   const checkoutUrl = checkout.headers.get("location");
   assert.equal(new URL(checkoutUrl).origin, "https://checkout.stripe.com");
@@ -132,6 +168,10 @@ try {
   const session = await stripe.checkout.sessions.retrieve(sessionId);
   assert.equal(session.livemode, false); assert.equal(session.client_reference_id, user.id);
   assert.equal(session.amount_total, 4900); assert.equal(session.currency, "brl");
+  assert.equal(session.success_url,`${origin}/membros/radar/acesso?payment=received&${returnQuery}`);
+  assert.equal(session.cancel_url,`${origin}/membros/radar/acesso?payment=cancelled&${returnQuery}`);
+  assert.equal((await database`select count(*)::int as total from member_adult_review where user_id=${user.id}`)[0].total,0);
+  Object.assign(report,{publicCards:true,anonymousDetail:"login",firstDetail:"free",reopening:"free",secondDetail:"purchase",cancelledCheckout:"no_access",community:"review_required"});
   await writeFile(join(directory, "browser-fixture.json"), JSON.stringify({ origin, username, password, checkoutUrl }), { mode: 0o600 });
   console.log(JSON.stringify({ phase: "checkout_ready", checkoutUrl, origin, username, fixture: join(directory, "browser-fixture.json"), sessionId }));
   const paymentDeadline = Date.now() + 15 * 60 * 1000;
@@ -144,13 +184,17 @@ try {
   }
   assert.ok(purchase, "Pagamento de teste não foi confirmado dentro do prazo.");
   assert.equal(purchase.livemode, false);
-  const after = await get(`/membros/oportunidades/radar-${sample.id}`, cookie);
+  const after = await get(secondPath, cookie);
   assert.equal(after.status, 200);
   const html = await after.text();
-  assert.match(html, /Oportunidade sintética para validar o acesso\./); assert.match(html, /TESTE SANDBOX Radar vitalício/);
+  assert.match(html, /Oportunidade sintética para validar o acesso\./); assert.match(html, /TESTE SANDBOX Segunda oportunidade/);
+  assert.doesNotMatch(html,/Salvar no meu calendário/);assert.match(html,/conclua a verificação da conta/);
   const accessPage = await (await get("/membros/radar/acesso", cookie)).text();
   assert.match(accessPage, /Seu acesso ao Radar está liberado/);
   assert.equal((await database`select role from "user" where id = ${user.id}`)[0].role, "member");
+  const paidAgain=await fetch(`${origin}/api/radar/checkout?${returnQuery}`,{method:"POST",headers:{Origin:origin,Cookie:cookie},redirect:"manual"});
+  assert.equal(paidAgain.status,303);assert.equal(paidAgain.headers.get("location"),origin+secondPath);
+  await assertRedirect(await get("/membros",cookie),"/membros/protecao");
   const events = await stripe.events.list({ type: "checkout.session.completed", limit: 100 });
   const event = events.data.find(item => item.data.object.id === sessionId);
   assert.ok(event, "Evento real de checkout encontrado na Stripe.");

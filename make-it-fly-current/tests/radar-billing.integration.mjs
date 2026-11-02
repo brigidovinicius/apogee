@@ -20,6 +20,7 @@ Object.assign(process.env, {
   APPLICATION_HOSTING_PROVIDER: "caddy", BETTER_AUTH_URL: origin, BETTER_AUTH_SECRET: "radar-billing-isolated-test-secret-at-least-32-chars",
   RADAR_BILLING_ENABLED: "true", STRIPE_MODE: "test", STRIPE_SECRET_KEY: "sk_test_synthetic",
   STRIPE_WEBHOOK_SECRET: "whsec_synthetic", STRIPE_RADAR_PRICE_ID: "price_radar", STRIPE_RADAR_PRODUCT_ID: "prod_radar",
+  MEMBERS_SUPERVISED_REGISTRATION_ENABLED: "true",
   MEMBERS_EMAIL_ENABLED: "true", MEMBERS_RESEND_DOMAIN_VERIFIED: "true",
   MEMBERS_RESEND_API_KEY: "re_isolated_test_key_no_network", MEMBERS_RESEND_FROM: "contato@apogee.community",
 });
@@ -112,7 +113,7 @@ let eventCounter = 0;
 const headers = cookie => ({ Origin: origin, "Content-Type": "application/json", "x-apogee-client-ip": "127.0.0.1", ...(cookie ? { cookie } : {}) });
 async function signup(email, username) {
   const response = await auth.handler(new Request(`${origin}/api/auth/sign-up/email`, { method: "POST", headers: headers(),
-    body: JSON.stringify({ email, username, name: "Pessoa Teste", password: "Synthetic-password-123!", role: "admin", emailVerified: true }) }));
+    body: JSON.stringify({ adultDeclared: true, email, username, name: "Pessoa Teste", password: "Synthetic-password-123!", role: "admin", emailVerified: true }) }));
   assert.equal(response.status, 200, await response.clone().text());
   const { user } = await response.json();
   return { id: user.id, email, cookie: response.headers.get("set-cookie").split(";")[0] };
@@ -165,7 +166,7 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       assert.equal((await sql`select user_id from radar_purchase where session_id = ${session.id}`)[0].user_id, null);
       const pageLoad = opportunityLoader({
         "@/lib/members/db": { getSql: () => sql },
-        "@/lib/members/dal": { requireMember: async () => ({ id: owner.id }) },
+        "@/lib/members/dal": { requireSignedInMember: async () => ({ id: owner.id }) },
       });
       const Page = pageLoad("app/membros/radar/acesso/page.tsx").default;
       const beforeHtml = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
@@ -199,7 +200,7 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
         "next/navigation": { redirect: path => { throw new Error(`REDIRECT:${path}`); } },
       });
       const form = new FormData();
-      for (const [key, value] of Object.entries({ name: "Comprador Teste", username: "actionbuyer", email: "actionbuyer@example.test", password: "Synthetic-password-123!", next: "/membros" })) form.set(key, value);
+      for (const [key, value] of Object.entries({ adultDeclared: "on", name: "Comprador Teste", username: "actionbuyer", email: "actionbuyer@example.test", password: "Synthetic-password-123!", next: "/membros" })) form.set(key, value);
       const before = mails.length;
       await assert.rejects(actionLoad("app/membros/actions.ts").signUp({}, form), /REDIRECT:\/membros\/radar\/acesso$/);
       assert.equal(mails.length, before + 1, "mesmo hook cobre API server sem Request");
@@ -240,6 +241,8 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       assert.equal((await sql`select role from "user" where id = ${buyer.id}`)[0].role, "member");
     });
     await t.test("origem e sessão são obrigatórias; checkout não confia no destinatário do navegador", async () => {
+      assert.equal((await sql`select email_verified from "user" where id = ${buyer.id}`)[0].email_verified, false);
+      assert.equal(await load("lib/members/protection.ts").adultAccess(buyer.id), false, "new buyer has no community review");
       assert.equal((await buy()).status, 401);
       assert.equal((await checkout.POST(new Request(`${origin}/api/radar/checkout`, { method: "POST", headers: { ...headers(buyer.cookie), Origin: "https://evil.test" } }))).status, 403);
       const response = await buy(buyer, { userId: other.id, amount: 1, price: "price_wrong" });

@@ -207,7 +207,7 @@ test("member DAL authorizes, shares public priority and applies explicit queries
   const formal = opportunity({ id: "formal", title: "Seleção de mestrado", isCourse: true, categories: ["formacao"], deadlineAt: "2099-01-01" });
   const event = opportunity({ id: "event", categories: ["eventos"], deadlineAt: "2099-12-01" });
   const isolated = opportunityLoader({
-    "@/lib/members/dal": { requireMember: async (path) => { calls.push(path); return { id: "feed-test-member" }; } },
+    "@/lib/members/dal": { requireSignedInMember: async (path) => { calls.push(path); return { id: "feed-test-member" }; } },
     "@/lib/admin/access": { requireAdmin: async () => {} },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => [formal, event] },
   });
@@ -302,7 +302,7 @@ test("public page uses shared editorial order before pagination and respects URL
   const project = opportunity({ ...location, id: "project", title: "Projeto de extensão em robótica", categories: ["pesquisa"], benefitType: "extension_scholarship" });
   const event = opportunity({ ...location, id: "event", title: "Encontro extracurricular", categories: ["eventos"] });
   const isolated = opportunityLoader({
-    "@/lib/members/dal": { requireMember: async () => { throw new Error("Public catalogue must not require a member"); } },
+    "@/lib/members/dal": { requireSignedInMember: async () => { throw new Error("Public catalogue must not require a member"); } },
     "@/lib/admin/access": { requireAdmin: async () => { throw new Error("Public catalogue must not require an admin"); } },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => [formal, ...research, event, project] },
     "@/components/site/site-header": { SiteHeader: () => null },

@@ -1,6 +1,6 @@
 import "server-only";
 import { requireAdmin } from "@/lib/admin/access";
-import { requireMember } from "@/lib/members/dal";
+import { requireSignedInMember } from "@/lib/members/dal";
 import { opportunityCardData } from "./card-data";
 import { listRadarOpportunities } from "@/lib/opportunities/radar-client";
 import { buildOpportunityPage } from "./catalogue";
@@ -14,7 +14,7 @@ export async function listPublicOpportunities(filters: OpportunityFilters = EMPT
   return filterOpportunities(orderOpportunityFeed(opportunities, normalizedFilters), normalizedFilters, undefined, true).map(opportunityCardData);
 }
 export async function listMemberOpportunities(filters: OpportunityFilters = EMPTY_OPPORTUNITY_FILTERS): Promise<StudentOpportunity[]> {
-  await requireMember("/membros/oportunidades");
+  await requireSignedInMember("/membros/oportunidades");
   return listPublicOpportunities(filters);
 }
 export async function listAdminOpportunityCatalogue(): Promise<StudentOpportunity[]> {
@@ -27,6 +27,6 @@ export async function listPublicOpportunityPage(params: URLSearchParams) {
   return { ...page, opportunities: page.opportunities.map(opportunityCardData) };
 }
 export async function listMemberOpportunityPage(params: URLSearchParams) {
-  await requireMember(memberRadarPath(params));
+  await requireSignedInMember(memberRadarPath(params));
   return listPublicOpportunityPage(params);
 }

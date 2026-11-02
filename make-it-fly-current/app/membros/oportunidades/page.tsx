@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { MemberBar } from "@/components/members/member-bar";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
 import styles from "@/components/members/members.module.css";
-import { requireMember } from "@/lib/members/dal";
+import { requireSignedInMember } from "@/lib/members/dal";
 import { listMemberOpportunityPage } from "@/lib/opportunities/access";
 import { memberRadarPath } from "@/lib/opportunities/navigation";
 
@@ -21,7 +21,7 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
     if (typeof value === "string") params.set(key, value);
   }
   // A DAL repete a autenticação antes de ler o catálogo de cards.
-  const member = await requireMember(memberRadarPath(params));
+  const member = await requireSignedInMember(memberRadarPath(params));
   const catalogue = await listMemberOpportunityPage(params).catch(() => null);
 
   return (

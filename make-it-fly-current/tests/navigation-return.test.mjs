@@ -52,7 +52,7 @@ test("the public page uses the same filtered login destination in its header and
 test("member route and data guard keep Radar state when authentication or onboarding redirects", async () => {
   const destinations = [];
   const guards = {
-    "@/lib/members/dal": { requireMember: async (next) => { destinations.push(next); return { id: "local-fixture" }; } },
+    "@/lib/members/dal": { requireSignedInMember: async (next) => { destinations.push(next); return { id: "local-fixture" }; } },
     "@/lib/billing/access": { requireRadarAccess: async () => {} },
     "@/lib/admin/access": { requireAdmin: async () => {} },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => [] },
@@ -66,7 +66,7 @@ test("member route and data guard keep Radar state when authentication or onboar
 
   let catalogueRead = false;
   const denied = opportunityLoader({ ...guards,
-    "@/lib/members/dal": { requireMember: async () => { throw new Error("authentication-required"); } },
+    "@/lib/members/dal": { requireSignedInMember: async () => { throw new Error("authentication-required"); } },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => { catalogueRead = true; return []; } },
   });
   await assert.rejects(denied("lib/opportunities/access.ts").listMemberOpportunityPage(params), /authentication-required/);
