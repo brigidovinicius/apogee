@@ -11,13 +11,13 @@ export const products = [
   },
   {
     slug: "bone-made-to-create",
-    name: "Boné Made to Create",
+    name: "Boné Apogee",
     detail: "Bege",
-    description: "Made to Create na frente, assinatura Apogee na lateral e ajuste na parte de trás.",
+    description: "Estrela azul-marinho na frente, assinatura Apogee na lateral e ajuste na parte de trás.",
     photos: [
-      { src: "/images/loja/bone-frente.jpg", alt: "Boné Apogee bege visto de frente com a frase made to create", width: 1280, height: 1199 },
-      { src: "/images/loja/bone-lateral.jpg", alt: "Lateral do boné bege com a assinatura Apogee", width: 1280, height: 853 },
-      { src: "/images/loja/bone-costas.jpg", alt: "Parte de trás do boné bege com fecho de ajuste", width: 1280, height: 853 },
+      { src: "/images/loja/bone-apogee-tres-quartos-20261101.png", alt: "Boné Apogee bege em três quartos com estrela azul-marinho na frente e assinatura na lateral", width: 1254, height: 1254 },
+      { src: "/images/loja/bone-apogee-frente-20261101.png", alt: "Boné Apogee bege visto de frente com estrela azul-marinho bordada", width: 1254, height: 1254 },
+      { src: "/images/loja/bone-apogee-costas-20261101.png", alt: "Parte de trás do boné Apogee bege com tira de ajuste e fivela metálica", width: 1254, height: 1254 },
     ],
   },
   {
