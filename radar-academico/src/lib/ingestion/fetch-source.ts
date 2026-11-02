@@ -31,7 +31,8 @@ async function rateLimit(host: string) {
   lastRequestByDomain.set(host, Date.now(), 1);
 }
 
-export async function fetchOfficialResource(initialUrl: string, source: OfficialSource, maxBytesCap?: number) {
+export type OfficialResource = { body: Buffer; contentType: string; hash: string; cached: boolean; discoverySitemaps?: string[] };
+export async function fetchOfficialResource(initialUrl: string, source: OfficialSource, maxBytesCap?: number): Promise<OfficialResource> {
   const configuredMaxBytes = boundedInteger(process.env.INGESTION_MAX_FILE_SIZE_MB, 15, 1, 15) * 1024 * 1024;
   const maxBytes = maxBytesCap ? Math.min(configuredMaxBytes, maxBytesCap) : configuredMaxBytes;
   const agent = process.env.INGESTION_USER_AGENT ?? `RadarAcademicoBot/1.0 (+${process.env.INGESTION_CONTACT_EMAIL ?? "contato@radar-academico.local"})`;
@@ -76,7 +77,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     const response = await safeRequest(url, headers, maxBytes, "GET", seaOfficialHeaderCompatibility, allowGzip);
     // 304 is a cache response, not a redirect.
     if (response.status === 304 && cached) {
-      return { body: cached.body, contentType: cached.contentType, hash: crypto.createHash("sha256").update(cached.body).digest("hex"), cached: true };
+      return { body: cached.body, contentType: cached.contentType, hash: crypto.createHash("sha256").update(cached.body).digest("hex"), cached: true, discoverySitemaps: robots.getSitemaps() };
     }
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get("location");
@@ -89,7 +90,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     const body = Buffer.from(await response.arrayBuffer());
     const contentType = response.headers.get("content-type") ?? "";
     responseCache.set(url, { etag: response.headers.get("etag") ?? undefined, modified: response.headers.get("last-modified") ?? undefined, contentType, body }, body.byteLength);
-    return { body, contentType, hash: crypto.createHash("sha256").update(body).digest("hex"), cached: false };
+    return { body, contentType, hash: crypto.createHash("sha256").update(body).digest("hex"), cached: false, discoverySitemaps: robots.getSitemaps() };
   }
   throw new Error("Limite de redirecionamentos");
 }

@@ -1,0 +1,159 @@
+import { readFile, readdir } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { PGlite } from '@electric-sql/pglite';
+import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
+import { beforeAll, beforeEach, afterAll, expect, it, vi } from 'vitest';
+import type { PoolClient } from 'pg';
+const state = vi.hoisted(() => ({ db: null as PGlite | null }));
+vi.mock('@/lib/db/client', () => ({
+  withAdminTransaction: (work: (client: PoolClient) => Promise<unknown>) => state.db!.transaction(tx => work(tx as unknown as PoolClient)),
+  queryPublic: (sql: string, values: unknown[] = []) => state.db!.query(sql, values),
+}));
+vi.mock('@/lib/ingestion/fetch-source', () => ({ fetchOfficialResource: vi.fn() }));
+import { fetchOfficialResource } from '@/lib/ingestion/fetch-source';
+import { runScheduledDiscovery } from '@/lib/discovery/daily-discovery';
+import { runScheduledLeadProcessing } from '@/lib/discovery/process-leads';
+import { listPublicOpportunities } from '@/lib/db/read-models';
+const parent = 'https://official.example.org/';
+const target = 'coverage-test';
+const pages = new Map<string, { body: string; type: string; sitemaps?: string[] }>();
+const page = (url: string, body: string, type = 'text/html', sitemaps?: string[]) => pages.set(url, { body, type, sitemaps });
+const detail = (title = 'Bolsa de pesquisa em tecnologia') => `<main><h1>${title}</h1><p>Inscrições abertas até 31/12/2099.</p><p>Estudantes de graduação podem participar. Inscreva-se pelo formulário de inscrição.</p></main>`;
+beforeAll(async () => {
+  vi.stubEnv('DATABASE_EDITOR_URL', 'postgresql://isolated-test.invalid/unused');
+  vi.stubEnv('DATABASE_READER_URL', 'postgresql://isolated-test.invalid/unused');
+  state.db = new PGlite({ extensions: { pgcrypto } });
+  const dir = new URL('../../db/migrations/', import.meta.url);
+  for (const name of (await readdir(dir)).filter(n => n.endsWith('.sql')).sort()) await state.db.exec(await readFile(new URL(name, dir), 'utf8'));
+}, 30000);
+afterAll(async () => { await state.db?.close(); vi.unstubAllEnvs(); });
+beforeEach(async () => {
+  pages.clear();
+  await state.db!.exec("delete from discovery_leads; delete from ingestion_runs; delete from opportunity_management_events; delete from opportunity_revisions; delete from opportunity_sources; delete from opportunities; delete from official_sources where id like 'auto-page-%' or id='registered-html-test'; update discovery_targets set enabled=false; update official_sources set active=false;");
+  await state.db!.query('delete from discovery_targets where id=$1', [target]);
+  await state.db!.query(`insert into discovery_targets(id,name,organizer,kind,official_url,evidence_url,enabled,
+    official_verified_at,official_verified_url,official_verified_by,official_review_note)
+    values($1,'Chamadas','Instituto de Tecnologia','site',$2,$2,true,now(),$2,'test','Autoria de teste verificada.')`, [target, parent]);
+  vi.mocked(fetchOfficialResource).mockImplementation(async url => {
+    const p = pages.get(url);
+    if (!p) throw Error('Unexpected URL: ' + url);
+    const body = Buffer.from(p.body);
+    return { body, contentType: p.type, hash: createHash('sha256').update(body).digest('hex'), cached: false, discoverySitemaps: p.sitemaps };
+  });
+});
+const due = () => state.db!.query('update discovery_targets set next_check_at=now() where id=$1', [target]);
+
+it('registers an exact external event page only when its structured organizer matches the verified institution', async () => {
+  const external = 'https://conference.example.net/workshop';
+  page(parent, `<a href="${external}">Workshop de tecnologia</a>`);
+  page(external, `<script type="application/ld+json">${JSON.stringify({ '@type': 'EducationEvent',
+    name: 'Workshop de tecnologia', url: external, startDate: '2099-12-01T09:00:00-03:00',
+    organizer: { name: 'Instituto de Tecnologia', url: parent }, eventStatus: 'https://schema.org/EventScheduled',
+    location: { address: { addressCountry: 'BR', addressRegion: 'SC', addressLocality: 'Florianópolis' } },
+    offers: { url: external, price: 0, priceCurrency: 'BRL', availability: 'https://schema.org/InStock' },
+  })}</script><main><h1>Workshop de tecnologia</h1><a href="${external}">Inscreva-se</a></main>`);
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 1 });
+  expect(await runScheduledLeadProcessing()).toMatchObject({ created: 1, sourcesRegistered: 1, published: 1 });
+  expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ source_page_url: external, institution: 'Instituto de Tecnologia' })]);
+});
+
+it('keeps an external event private when it names another organizer', async () => {
+  const external = 'https://conference.example.net/workshop';
+  page(parent, `<a href="${external}">Workshop de tecnologia</a>`);
+  page(external, `<script type="application/ld+json">${JSON.stringify({ '@type': 'Event', name: 'Workshop de tecnologia',
+    url: external, organizer: { name: 'Unverified organizer', url: parent }, startDate: '2099-12-01T09:00:00-03:00' })}</script>`);
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 1 });
+  expect(await runScheduledLeadProcessing()).toMatchObject({ created: 0, sourcesRegistered: 0, published: 0 });
+  expect(await listPublicOpportunities()).toHaveLength(0);
+});
+
+it('advances beyond the first thirty links instead of checking the same blocked links forever', async () => {
+  page(parent, Array.from({ length: 60 }, (_, i) => `<a href="${parent}bolsa/${i}">Bolsa de pesquisa ${i}</a>`).join(''));
+  expect(await runScheduledDiscovery()).toMatchObject({ targetsChecked: 1, newLeads: 30 });
+  await due();
+  expect(await runScheduledDiscovery()).toMatchObject({ targetsChecked: 1, newLeads: 30 });
+  expect((await state.db!.query('select id from discovery_leads')).rows).toHaveLength(60);
+});
+it('discovers an RSS-only opportunity and revalidates the complete path before atomic publication', async () => {
+  page(parent, '<link rel="alternate" type="application/rss+xml" href="/feed">');
+  page(parent + 'feed', `<rss version="2.0"><channel><title>Chamadas</title><link>${parent}</link><description>Chamadas</description><item><title>Bolsa de pesquisa em tecnologia</title><link>${parent}bolsa</link></item></channel></rss>`, 'application/rss+xml');
+  page(parent + 'bolsa', detail());
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 1 });
+  expect(await runScheduledLeadProcessing()).toMatchObject({ sourcesRegistered: 1, created: 1, published: 1 });
+  expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ title: 'Bolsa de pesquisa em tecnologia', source_page_url: parent + 'bolsa' })]);
+  await due();
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 0 });
+  expect(await runScheduledLeadProcessing()).toMatchObject({ created: 0, published: 0 });
+  expect(await listPublicOpportunities()).toHaveLength(1);
+});
+it('uses the improved extractor for a new page within an already registered official source', async () => {
+  await state.db!.query(`insert into official_sources(id,name,institution_name,institution_acronym,source_type,base_url,
+    allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,active,verification_status)
+    values('registered-html-test','Chamadas','Instituto de Tecnologia','','official_reference',$1,
+    array['official.example.org'],array['/'],array[$1],'html',true,'verified')`, [parent]);
+  page(parent, `<a href="${parent}bolsa">Bolsa de pesquisa em tecnologia</a>`);
+  page(parent + 'bolsa', detail());
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 1 });
+  expect(await runScheduledLeadProcessing()).toMatchObject({ created: 1, sourcesRegistered: 0, published: 1 });
+  expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ source_page_url: parent + 'bolsa' })]);
+});
+it('uses a sitemap advertised by robots without fetching an unrelated host', async () => {
+  page(parent, '<main>Chamadas</main>', 'text/html', [parent + 'sitemap.xml', 'https://unverified.example.net/sitemap.xml']);
+  page(parent + 'sitemap.xml', `<sitemapindex><sitemap><loc>${parent}calls.xml</loc></sitemap></sitemapindex>`, 'application/xml');
+  page(parent + 'calls.xml', `<urlset><url><loc>${parent}bolsa-tecnologia</loc></url><url><loc>http://127.0.0.1/bolsa</loc></url></urlset>`, 'application/xml');
+  page(parent + 'bolsa-tecnologia', detail());
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 1 });
+  expect(await runScheduledLeadProcessing()).toMatchObject({ sourcesRegistered: 1, created: 1, published: 1 });
+  expect(await listPublicOpportunities()).toHaveLength(1);
+});
+it('blocks publication if the feed is no longer linked by the verified parent', async () => {
+  page(parent, '<link rel="alternate" type="application/rss+xml" href="/feed">');
+  page(parent + 'feed', `<rss version="2.0"><channel><title>Chamadas</title><link>${parent}</link><description>Chamadas</description><item><title>Bolsa de pesquisa</title><link>${parent}bolsa</link></item></channel></rss>`, 'application/rss+xml');
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 1 });
+  page(parent, '<main>Sem feed</main>');
+  expect(await runScheduledLeadProcessing()).toMatchObject({ sourcesRegistered: 0, published: 0 });
+  expect(await listPublicOpportunities()).toHaveLength(0);
+});
+it('re-evaluates an extraction block from the previous version once, without resetting a dismissal', async () => {
+  page(parent, `<a href="${parent}bolsa">Bolsa de pesquisa em tecnologia</a>`);
+  page(parent + 'bolsa', detail());
+  const lead = (await state.db!.query<{ id: string }>(`insert into discovery_leads(target_id,url,title,processing_status,processing_reason,processing_attempts)
+    values($1,$2,'Bolsa de pesquisa em tecnologia','blocked','candidate_unconfirmed',1) returning id`, [target, parent + 'bolsa'])).rows[0];
+  await state.db!.query(`insert into ingestion_runs(started_at,finished_at,status,execution_metadata) values(now(),now(),'completed_with_warnings',
+    jsonb_build_object('component','discovery-lead','lead_id',$1::text,'source_expansion_version',1))`, [lead.id]);
+  await state.db!.query(`insert into discovery_leads(target_id,url,title,status,processing_status,processing_reason)
+    values($1,$2,'Bolsa descartada','dismissed','ignored','previously_reviewed')`, [target, parent + 'dismissed']);
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, created: 1, published: 1 });
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, created: 0 });
+  expect((await state.db!.query('select status,processing_status from discovery_leads where url=$1', [parent + 'dismissed'])).rows)
+    .toEqual([{ status: 'dismissed', processing_status: 'ignored' }]);
+});
+it('does not repeatedly retry an unconfirmed candidate already checked by this extraction version', async () => {
+  page(parent, `<a href="${parent}bolsa">Bolsa de pesquisa</a>`);
+  page(parent + 'bolsa', '<main><h1>Bolsa de pesquisa</h1><p>Notícia sem inscrição ou prazo.</p></main>');
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 1 });
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, blocked: 1, published: 0 });
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, published: 0 });
+});
+it('reports an unavailable discovery feed while still retaining verified links from the main page', async () => {
+  page(parent, `<link rel="alternate" type="application/rss+xml" href="/unavailable"><a href="${parent}bolsa">Bolsa de pesquisa</a>`);
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 1, pageFailures: 1 });
+});
+it('retains pending sitemap work after its bounded visited history fills', async () => {
+  page(parent, '<main>Chamadas</main>', 'text/html', [parent + 'index.xml']);
+  page(parent + 'index.xml', '<sitemapindex>' + Array.from({ length: 70 }, (_, i) =>
+    `<sitemap><loc>${parent}map-${i}.xml</loc></sitemap>`).join('') + '</sitemapindex>', 'application/xml');
+  for (let i = 0; i < 70; i++) page(parent + `map-${i}.xml`, `<urlset><url><loc>${parent}bolsa-${i}</loc></url></urlset>`, 'application/xml');
+  for (let i = 0; i < 40; i++) { await due(); await runScheduledDiscovery(); }
+  expect((await state.db!.query('select id from discovery_leads')).rows).toHaveLength(70);
+});
+it('charges failed child requests to the same per-cycle document budget', async () => {
+  page(parent, '<main>Chamadas</main>', 'text/html', [parent + 'index.xml']);
+  page(parent + 'index.xml', '<sitemapindex>' + Array.from({ length: 70 }, (_, i) =>
+    `<sitemap><loc>${parent}unavailable-${i}.xml</loc></sitemap>`).join('') + '</sitemapindex>', 'application/xml');
+  const report = await runScheduledDiscovery();
+  expect(report.pageFailures).toBeLessThanOrEqual(2);
+  await due();
+  const next = await runScheduledDiscovery();
+  expect(next.pageFailures).toBeLessThanOrEqual(2);
+});

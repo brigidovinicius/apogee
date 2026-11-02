@@ -13,6 +13,19 @@ export type CanonicalBrazilianLocation = {
 const stateCodes = new Set<string>(BRAZILIAN_STATE_CODES);
 const emptyLocation: CanonicalBrazilianLocation = { stateCode: null, cityName: null };
 
+const stateNames = ["Acre", "Alagoas", "Amapá", "Amazonas", "Bahia", "Ceará", "Distrito Federal", "Espírito Santo", "Goiás",
+  "Maranhão", "Mato Grosso", "Mato Grosso do Sul", "Minas Gerais", "Pará", "Paraíba", "Paraná", "Pernambuco", "Piauí",
+  "Rio de Janeiro", "Rio Grande do Norte", "Rio Grande do Sul", "Rondônia", "Roraima", "Santa Catarina", "São Paulo", "Sergipe", "Tocantins"];
+const plain = (value: string) => value.normalize("NFD").replace(/\p{M}/gu, "").trim().toUpperCase();
+/** Normalize only an explicitly supplied Brazilian UF/name, never an inferred location. */
+export function brazilianStateCode(value: unknown): BrazilianStateCode | null {
+  if (typeof value !== "string") return null;
+  const code = plain(value);
+  if (stateCodes.has(code)) return code as BrazilianStateCode;
+  const index = stateNames.findIndex(name => plain(name) === code);
+  return index < 0 ? null : BRAZILIAN_STATE_CODES[index];
+}
+
 export function normalizeBrazilianLocation(input: {
   stateCode?: unknown;
   cityName?: unknown;

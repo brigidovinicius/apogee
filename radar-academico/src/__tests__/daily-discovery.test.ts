@@ -9,7 +9,7 @@ vi.mock("@/lib/ingestion/fetch-source", () => ({ fetchOfficialResource: vi.fn() 
 import { claimDueDiscoveryTargets, completeDiscoveryTarget, saveDiscoveryLeads } from "@/lib/discovery/watchlist";
 import { loadActiveOfficialSources } from "@/lib/ingestion/official-source-registry";
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
-import { candidateUrl, discoveryLinks, runScheduledDiscovery } from "@/lib/discovery/daily-discovery";
+import { candidateUrl, discoveryLinks, discoveryObservation, runScheduledDiscovery } from "@/lib/discovery/daily-discovery";
 
 const target: DiscoveryTarget = {
   id: "official-events", name: "Official events", organizer: "Institution", kind: "event_series",
@@ -26,6 +26,12 @@ const mapped: OfficialSource = {
 };
 
 afterEach(() => vi.clearAllMocks());
+
+it("detects a changed target URL even when the visible link text stays the same", () => {
+  const first = discoveryObservation('<main><a href="/edital/old">Nova bolsa de pesquisa</a></main>', target);
+  const second = discoveryObservation('<main><a href="/edital/new">Nova bolsa de pesquisa</a></main>', target);
+  expect(second.hash).not.toBe(first.hash);
+});
 
 it("retains new calls in both existing and new source scopes without fetching or publishing them", async () => {
   vi.mocked(claimDueDiscoveryTargets).mockResolvedValue([target]);
@@ -44,8 +50,8 @@ it("retains new calls in both existing and new source scopes without fetching or
   const result = await runScheduledDiscovery();
   expect(fetchOfficialResource).toHaveBeenCalledExactlyOnceWith(target.official_url, expect.any(Object), 2 * 1024 * 1024);
   expect(saveDiscoveryLeads).toHaveBeenCalledWith(target.id, [{
-    url: "https://new.example.org/hackathon", title: "Inscrições hackathon 2026", excerpt: expect.any(String),
-  }, { url: "https://mapped.example.org/bolsa", title: "Edital de bolsa", excerpt: expect.any(String) }]);
+    url: "https://new.example.org/hackathon", title: "Inscrições hackathon 2026", excerpt: expect.any(String), discoveryPath: [target.official_url],
+  }, { url: "https://mapped.example.org/bolsa", title: "Edital de bolsa", excerpt: expect.any(String), discoveryPath: [target.official_url] }]);
   expect(completeDiscoveryTarget).toHaveBeenCalledWith(target.id, "checked");
   expect(result).toMatchObject({ targetsChecked: 1, newLeads: 2 });
 });
