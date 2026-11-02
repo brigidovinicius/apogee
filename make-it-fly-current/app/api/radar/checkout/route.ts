@@ -5,7 +5,7 @@ import { applicationOrigin } from "@/lib/members/mail";
 import { consumeRateLimit } from "@/lib/members/rate-limit";
 import { billingConfig, BillingError, RADAR_ACCESS_PATH, RADAR_AMOUNT, RADAR_CHECKOUT_TAG, RADAR_CURRENCY } from "@/lib/billing/config";
 import { billingFailure } from "@/lib/billing/http";
-import { radarAccess } from "@/lib/billing/store";
+import { radarAccess, radarPurchaseNeedsVerification } from "@/lib/billing/store";
 import { stripeClient } from "@/lib/billing/stripe";
 import { radarDetailReturnPath } from "@/lib/opportunities/detail-path";
 
@@ -21,6 +21,11 @@ export async function POST(request: Request) {
     const returnQuery = next === "/membros/oportunidades" ? "" : `&next=${encodeURIComponent(next)}`;
     const config = billingConfig();
     if ((await radarAccess(member.id, config.livemode)).active) return Response.redirect(new URL(next, applicationOrigin()), 303);
+    if (await radarPurchaseNeedsVerification(member.id, config.livemode)) {
+      const verification = new URL(RADAR_ACCESS_PATH, applicationOrigin());
+      if (next !== "/membros/oportunidades") verification.searchParams.set("next", next);
+      return Response.redirect(verification, 303);
+    }
     if (!(await consumeRateLimit(`radar-checkout:${member.id}`, 5, 3600))) throw new BillingError(429, "Aguarde antes de tentar novamente.");
     const stripe = stripeClient();
     const price = await stripe.prices.retrieve(config.price);

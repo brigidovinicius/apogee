@@ -15,6 +15,7 @@ const expectedAccount = "acct_1R7iAjPOeMUj2lOm";
 const productId = "prod_VTcxn4KK0u6RoN";
 const priceId = "price_1USfhEPOeMUj2lOmJKEsaQNi";
 const pgBin = process.env.PG_BIN;
+const navigationOnly = process.argv.includes("--navigation-only");
 assert.ok(pgBin, "Informe PG_BIN com os binários PostgreSQL existentes.");
 const credentials = JSON.parse(execFileSync("python3", ["-c", [
   "import json,tomllib", "from pathlib import Path",
@@ -78,6 +79,8 @@ try {
     response.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ version: 3, opportunities: [sample, second] }));
   });
   await new Promise(done => bridge.listen(0, "127.0.0.1", done));
+  if (navigationOnly) signingSecret = "whsec_NavigationOnlyFixture";
+  else {
   listener = spawn("stripe", ["listen", "--color", "off", "--skip-update", "--latest", "--events",
     "checkout.session.completed,checkout.session.async_payment_succeeded,charge.refunded,charge.dispute.created,charge.dispute.closed",
     "--forward-to", `${origin}/api/stripe/webhook`], { env: { ...process.env, STRIPE_API_KEY: credentials.key }, stdio: ["ignore", "pipe", "pipe"] });
@@ -91,6 +94,7 @@ try {
   const listenerDeadline = Date.now() + 45000;
   while (!signingSecret && Date.now() < listenerDeadline && listener.exitCode === null) await pause(250);
   assert.ok(signingSecret, "Listener Stripe não ficou pronto.");
+  }
   server = spawn(process.execPath, [resolve("node_modules/next/dist/bin/next"), "dev", "--webpack", "--hostname", "127.0.0.1", "--port", "35441"], {
     env: { PATH: process.env.PATH, NODE_ENV: "development", NEXT_TELEMETRY_DISABLED: "1", NODE_OPTIONS: "--max-old-space-size=3072",
       BETTER_AUTH_URL: origin, BETTER_AUTH_SECRET: randomBytes(32).toString("hex"), DATABASE_URL: databaseUrl,
@@ -140,9 +144,57 @@ try {
   assert.equal(user.emailVerified, false);
   await assertRedirect(await get("/membros", cookie), "/membros/protecao");
   const firstHtml = await (await get(firstPath, cookie)).text();
-  assert.match(firstHtml, /Sua primeira oportunidade é grátis/);
+  assert.match(firstHtml, /data-radar-detail-opening/);
+  assert.doesNotMatch(firstHtml, /Sua primeira oportunidade|Use seu acesso gratuito|Abrir esta oportunidade grátis/);
   assert.doesNotMatch(firstHtml, /Oportunidade sintética para validar o acesso\./);
-  const markup = [...firstHtml.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match=>match[0]).find(form=>form.includes("Abrir esta oportunidade grátis"));
+  const prefetched = await fetch(origin + firstPath, {headers:{Cookie:cookie,RSC:"1","Next-Router-Prefetch":"1"}});
+  assert.equal(prefetched.status,200);
+  assert.equal((await database`select count(*)::int as total from radar_free_opportunity where user_id=${user.id}`)[0].total,0);
+  const assertAutomaticCheckout = html => {
+    assert.ok(html.includes(`/api/radar/checkout?next=${encodeURIComponent(secondPath)}`));
+    assert.match(html,/data-radar-detail-opening/);
+    assert.doesNotMatch(html,/Radar para a vida toda|Comprar acesso vitalício|Oportunidade sintética para validar o acesso\./);
+  };
+  if (navigationOnly) {
+    await writeFile(join(directory,"browser-fixture.json"),JSON.stringify({origin,username,email,password,firstPath,secondPath}),{mode:0o600});
+    console.log(JSON.stringify({phase:"navigation_ready",origin,username,email,firstPath,secondPath,fixture:join(directory,"browser-fixture.json")}));
+    const freeDeadline=Date.now()+4*60*1000;
+    let selected;
+    while(Date.now()<freeDeadline){
+      [selected]=await database`select opportunity_id from radar_free_opportunity where user_id=${user.id}`;
+      if(selected)break;
+      assert.equal(server.exitCode,null);await pause(500);
+    }
+    assert.equal(selected?.opportunity_id,`radar-${sample.id}`,"browser mounts the page and automatically opens the first detail");
+    const opened=await(await get(firstPath,cookie)).text();
+    assert.match(opened,/Oportunidade sintética para validar o acesso\./);
+    assert.doesNotMatch(opened,/Sua primeira oportunidade|Esta é sua oportunidade gratuita|Abrir esta oportunidade grátis/);
+    assertAutomaticCheckout(await(await get(secondPath,cookie)).text());
+    const existing=await stripe.checkout.sessions.list({limit:100});
+    assert.equal(existing.data.filter(s=>s.client_reference_id===user.id).length,0,"GET does not create a Checkout Session");
+    console.log(JSON.stringify({phase:"first_detail_opened",firstPath,secondPath}));
+    const checkoutDeadline=Date.now()+4*60*1000;
+    let sessionsForMember=[];
+    while(Date.now()<checkoutDeadline){
+      const list=await stripe.checkout.sessions.list({limit:100});
+      sessionsForMember=list.data.filter(s=>s.client_reference_id===user.id);
+      if(sessionsForMember.length)break;
+      assert.equal(server.exitCode,null);await pause(1500);
+    }
+    assert.equal(sessionsForMember.length,1,"automatic checkout creates exactly one session");
+    const checkoutSession=sessionsForMember[0];
+    assert.equal(checkoutSession.livemode,false);assert.equal(checkoutSession.amount_total,4900);assert.equal(checkoutSession.currency,"brl");
+    assert.equal(checkoutSession.status,"open");assert.equal(checkoutSession.payment_status,"unpaid");
+    assert.equal(checkoutSession.success_url,`${origin}/membros/radar/acesso?payment=received&next=${encodeURIComponent(secondPath)}`);
+    console.log(JSON.stringify({phase:"checkout_opened",sessionId:checkoutSession.id,amount:4900,currency:"brl",livemode:false}));
+    try { await pause(30000); }
+    finally { await stripe.checkout.sessions.expire(checkoutSession.id); }
+    assert.equal((await database`select count(*)::int as total from radar_purchase`)[0].total,0);
+    Object.assign(report,{result:"passed",navigationOnly:true,firstDetail:"automatic_free",secondDetail:"automatic_stripe_checkout",sessionId:checkoutSession.id,checkoutExpired:true,paymentMade:false});
+    await writeFile(join(directory,"result.json"),JSON.stringify(report,null,2),{mode:0o600});
+    console.log(JSON.stringify({phase:"navigation_verified",...report}));
+  } else {
+  const markup = [...firstHtml.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match=>match[0]).find(form=>form.includes("data-radar-detail-opening"));
   assert.ok(markup);
   const decode = value => value.replace(/&quot;/g,'"').replace(/&#x27;/g,"'").replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
   const freeForm = new FormData();
@@ -153,8 +205,9 @@ try {
   const free=await fetch(origin+firstPath,{method:"POST",headers:{Origin:origin,Cookie:cookie},body:freeForm,redirect:"manual"});
   assert.equal(free.status,303);
   assert.match(await (await get(firstPath,cookie)).text(),/Oportunidade sintética para validar o acesso\./);
-  assert.match(await (await get(firstPath,cookie)).text(),/Esta é sua oportunidade gratuita/);
-  const secondBefore=await assertRedirect(await get(secondPath,cookie),"/membros/radar/acesso");
+  assert.doesNotMatch(await (await get(firstPath,cookie)).text(),/Esta é sua oportunidade gratuita/);
+  const secondBefore=await (await get(secondPath,cookie)).text();
+  assertAutomaticCheckout(secondBefore);
   assert.doesNotMatch(secondBefore,/Oportunidade sintética para validar o acesso\./);
   const returnQuery=`next=${encodeURIComponent(secondPath)}`;
   assert.match(await (await get(`/membros/radar/acesso?payment=cancelled&${returnQuery}`,cookie)).text(),/O checkout foi encerrado/);
@@ -212,6 +265,7 @@ try {
   console.log(JSON.stringify({ phase: "paid_verified", ...report }));
   // Janela curta para conferir a mesma tela autenticada no Safari.
   await pause(30000);
+  }
 } catch (error) {
   report.result = "failed"; report.message = redact(error.message);
   await writeFile(join(directory, "result.json"), JSON.stringify(report, null, 2), { mode: 0o600 });
