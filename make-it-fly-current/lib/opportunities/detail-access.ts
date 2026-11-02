@@ -1,7 +1,7 @@
 import { calendarEntries } from "./discovery";
 import "server-only";
 import { notFound } from "next/navigation";
-import { requireMember } from "@/lib/members/dal";
+import { requireSignedInMember } from "@/lib/members/dal";
 import { radarAccess } from "@/lib/billing/store";
 import { listRadarOpportunities } from "@/lib/opportunities/radar-client";
 import { isOpportunityOpen } from "./types";
@@ -9,7 +9,7 @@ import { freeRadarOpportunity, claimFreeRadarOpportunity } from "./detail-store"
 import { opportunityDetailPath } from "./detail-path";
 
 export async function radarOpportunityDetail(id: string, claim = false) {
-  const member = await requireMember(opportunityDetailPath(id));
+  const member = await requireSignedInMember(opportunityDetailPath(id));
   if (!/^[A-Za-z0-9_-]{1,200}$/.test(id)) notFound();
   const opportunity = (await listRadarOpportunities(true)).find(item => item.id === id && (isOpportunityOpen(item) || calendarEntries([item]).length > 0));
   if (!opportunity) notFound();

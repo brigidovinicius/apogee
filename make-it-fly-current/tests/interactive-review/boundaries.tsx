@@ -9,6 +9,7 @@ export const redirect = blocked;
 export const revalidatePath = () => {};
 export const headers = async () => new Headers();
 export const requireMember = async () => actor;
+export const requireSignedInMember = async () => actor;
 export const getCurrentMember = async () => actor;
 export const requireAdmin = async () => actor;
 export const clientIp = async () => 'local-review';

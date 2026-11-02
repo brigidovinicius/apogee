@@ -12,14 +12,16 @@ const second = { ...first, id: "radar-second" };
 
 function fixture() {
   const state = { member: { id: "member-a", name: "Pessoa", username: "pessoa", role: "member" }, selected: null, active: false,
-    claims: 0, catalogueReads: 0, authenticatedPaths: [] };
+    claims: 0, catalogueReads: 0, authenticatedPaths: [], calendarEnabled: false, approved: false };
   const load = opportunityLoader({
-    "@/lib/members/dal": { requireMember: async path => {
+    "@/lib/members/dal": { requireSignedInMember: async path => {
       state.authenticatedPaths.push(path);
       if (!state.member) throw Error(`LOGIN:${path}`);
       return state.member;
     } },
     "@/lib/billing/store": { radarAccess: async () => ({ active: state.active }) },
+    "@/lib/members/protection": { adultAccess: async () => state.approved },
+    "@/lib/opportunities/personal-calendar": { personalCalendarEnabled: () => state.calendarEnabled, savedOpportunities: async () => [] },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => { state.catalogueReads++; return [first, second]; } },
     "./detail-store": { freeRadarOpportunity: async () => state.selected,
       claimFreeRadarOpportunity: async (_user, id) => { state.claims++; state.selected ??= id; return state.selected === id; } },
@@ -109,4 +111,18 @@ test("checkout return destination rejects external, unrelated, malformed and nes
   const expected = "/membros/oportunidades";
   for (const input of [null, ["x"], "https://evil.test", "//evil.test", "/membros/perfil", "/membros/oportunidades/../perfil", "/membros/oportunidades/a?next=evil", "/membros/oportunidades/a/b", "/membros/oportunidades/%2f%2fevil.test"]) assert.equal(radarDetailReturnPath(input), expected);
   assert.equal(radarDetailReturnPath("/membros/oportunidades/radar-first"), "/membros/oportunidades/radar-first");
+});
+
+test("paid details open before community approval while calendar controls retain their review requirement", async () => {
+  const { state, load } = fixture();
+  state.active = true;
+  state.calendarEnabled = true;
+  const Page = load("app/membros/oportunidades/[id]/page.tsx").default;
+  let html = renderToStaticMarkup(await Page({ params: Promise.resolve({ id: first.id }) }));
+  assert.match(html, /REQUISITO_PRIVADO/);
+  assert.doesNotMatch(html, /Salvar no meu calendário/);
+  assert.match(html, /conclua a verificação da conta/);
+  state.approved = true;
+  html = renderToStaticMarkup(await Page({ params: Promise.resolve({ id: first.id }) }));
+  assert.match(html, /Salvar no meu calendário/);
 });

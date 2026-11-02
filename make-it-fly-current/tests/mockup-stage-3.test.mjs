@@ -41,7 +41,8 @@ test("a navegação responsiva do membro só expõe os destinos já implementado
   assert.match(styles, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(styles, /@media \(max-width: 640px\)/);
 
-  for (const page of [memberPage, radarPage, profilePage, editPage]) {
+  assert.match(radarPage, /await requireSignedInMember\(/);
+  for (const page of [memberPage, profilePage, editPage]) {
     assert.match(page, /await requireMember\(/);
   }
 });

@@ -45,7 +45,7 @@ await cp(resolve("public"), resolve(standalone, "public"), { recursive: true });
 await cp(resolve(".next/static"), resolve(standalone, ".next/static"), { recursive: true });
 const server = spawn(process.execPath, [resolve(standalone, "server.js")], { cwd: standalone,
   env: { PATH: process.env.PATH, NODE_ENV: "production", NEXT_TELEMETRY_DISABLED: "1", PORT: String(port), HOSTNAME: "127.0.0.1",
-    APPLICATION_HOSTING_PROVIDER: "caddy", BETTER_AUTH_URL: authOrigin, BETTER_AUTH_SECRET: randomBytes(32).toString("hex"), DATABASE_URL: databaseUrl.href,
+    MEMBERS_SUPERVISED_REGISTRATION_ENABLED: "true", APPLICATION_HOSTING_PROVIDER: "caddy", BETTER_AUTH_URL: authOrigin, BETTER_AUTH_SECRET: randomBytes(32).toString("hex"), DATABASE_URL: databaseUrl.href,
     DATABASE_SSL_MODE: "disable", RADAR_ACADEMICO_API_URL: `http://127.0.0.1:${bridgePort}/api/public/opportunities`, RADAR_ACADEMICO_API_TOKEN: "synthetic-ci-radar-only" },
   stdio: ["ignore", "pipe", "pipe"] });
 let logs = ""; server.stdout.on("data", chunk => { logs = (logs + chunk).slice(-5000); }); server.stderr.on("data", chunk => { logs = (logs + chunk).slice(-5000); });
@@ -62,11 +62,15 @@ try {
   assert.equal(missingPeer.status, 503, "production auth rejects requests without the trusted edge header");
   assert.ok([302, 303, 307, 308].includes((await get("/membros/oportunidades")).status));
   const signUp = await fetch(origin + "/api/auth/sign-up/email", { method: "POST", headers: { ...edgeHeaders, "Content-Type": "application/json", Origin: authOrigin },
-    body: JSON.stringify({ name: "Synthetic Radar CI", username: "synthetic_radar_ci", email: "synthetic-radar@example.test", password: "Synthetic-CI-only-password-2026" }) });
+    body: JSON.stringify({ adultDeclared: true, name: "Synthetic Radar CI", username: "synthetic_radar_ci", email: "synthetic-radar@example.test", password: "Synthetic-CI-only-password-2026" }) });
   assert.equal(signUp.status, 200, "real Better Auth signup succeeds in the disposable database");
   const cookie = signUp.headers.getSetCookie().map(value => value.split(";")[0]).join("; ");
   assert.ok(cookie, "session cookie is issued");
   assert.equal((await database`select role from public."user" where email='synthetic-radar@example.test'`)[0].role, "member");
+  const community = await get("/membros", cookie);
+  const communityBody = await community.text();
+  assert.ok(community.headers.get("location")?.includes("/membros/protecao") || /NEXT_REDIRECT[\s\S]*\/membros\/protecao/.test(communityBody), "pending community review remains enforced");
+  assert.equal((await database`select email_verified from public."user" where email='synthetic-radar@example.test'`)[0].email_verified, false);
   const response = await get("/membros/oportunidades", cookie); assert.equal(response.status, 200);
   const initial = await response.text(); assert.match(initial, /Radar de oportunidades/); assert.equal(titles(initial).length, 24); assert.doesNotMatch(initial, /CI IFSC Ingresso|CI IFC Ingresso/);
   assert.doesNotMatch(initial, /Equipes de estudantes|https:\/\/example.edu\/notice/);
