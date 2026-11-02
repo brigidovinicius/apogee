@@ -76,10 +76,17 @@ try {
   assert.doesNotMatch(initial, /Equipes de estudantes|https:\/\/example.edu\/notice/);
   const detailPath = "/membros/oportunidades/radar-event-0";
   const firstDetail = await (await get(detailPath, cookie)).text();
-  assert.match(firstDetail, /Sua primeira oportunidade é grátis/);
+  assert.match(firstDetail, /Abrindo detalhes/);
+  assert.doesNotMatch(firstDetail, /Sua primeira oportunidade|Use seu acesso gratuito|Abrir esta oportunidade grátis/);
   assert.doesNotMatch(firstDetail, /Equipes de estudantes|https:\/\/example.edu\/notice/);
   assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "0", "GET never consumes the free choice");
-  const formMarkup = [...firstDetail.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match => match[0]).find(form => form.includes("Abrir esta oportunidade grátis"));
+  // Next 16 redirects RSC requests to the URL with its cache-busting _rsc param.
+  const prefetch = await fetch(origin + detailPath, { headers: { ...edgeHeaders, Cookie: cookie, RSC: "1", "Next-Router-Prefetch": "1" } });
+  assert.equal(prefetch.status, 200);
+  assert.equal(new URL(prefetch.url).pathname, detailPath);
+  assert.doesNotMatch(await prefetch.text(), /Equipes de estudantes|https:\/\/example.edu\/notice/);
+  assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "0", "prefetch never consumes the free choice");
+  const formMarkup = [...firstDetail.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match => match[0]).find(form => form.includes("data-radar-detail-opening"));
   assert.ok(formMarkup, "compiled Server Action form exists");
   const decode = value => value.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
   const actionBody = new FormData();
@@ -94,7 +101,10 @@ try {
   assert.match(await (await get(detailPath, cookie)).text(), /Equipes de estudantes/, "reopening stays free");
   const blockedSecond = await get("/membros/oportunidades/radar-event-1", cookie);
   const blockedSecondHtml = await blockedSecond.text();
-  assert.ok(blockedSecond.headers.get("location")?.includes("/membros/radar/acesso") || /NEXT_REDIRECT[\s\S]*\/membros\/radar\/acesso/.test(blockedSecondHtml));
+  assert.equal(blockedSecond.status, 200);
+  assert.match(blockedSecondHtml, /action="\/api\/radar\/checkout\?next=%2Fmembros%2Foportunidades%2Fradar-event-1"/);
+  assert.match(blockedSecondHtml, /Abrindo checkout/);
+  assert.doesNotMatch(blockedSecondHtml, /Radar para a vida toda|Comprar acesso vitalício/);
   assert.doesNotMatch(blockedSecondHtml, /Equipes de estudantes|https:\/\/example.edu\/notice/);
   assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "1");
   const second = await (await get("/membros/oportunidades?pagina=2", cookie)).text();

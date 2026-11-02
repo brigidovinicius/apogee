@@ -306,6 +306,11 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       assert.equal((await deliver(event(session))).status, 200);
       assert.equal((await radarAccess(other.id, false)).active, false);
       assert.equal((await radarAccess(owner.id, false)).active, false);
+      const beforeCheckout = createCount;
+      const pending = await checkout.POST(new Request(`${origin}/api/radar/checkout?next=%2Fmembros%2Foportunidades%2Fradar-second`, { method: "POST", headers: headers(owner.cookie) }));
+      assert.equal(pending.status, 303);
+      assert.equal(pending.headers.get("location"), `${origin}/membros/radar/acesso?next=%2Fmembros%2Foportunidades%2Fradar-second`);
+      assert.equal(createCount, beforeCheckout, "an already-paid Payment Link awaits email proof without another checkout");
       const response = await verification.POST(new Request(`${origin}/api/radar/verify-email`, { method: "POST", headers: headers(owner.cookie) }));
       assert.equal(response.status, 303);
       const target = mails.at(-1).text.match(/http:\/\/localhost:35441\/api\/auth\/verify-email\?\S+/)[0];

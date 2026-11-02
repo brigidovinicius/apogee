@@ -1,6 +1,6 @@
 # Fluxo de conta e pagamento do Radar
 
-Regra solicitada em 02/11/2026: cards públicos; conta autenticada para abrir uma oportunidade gratuita; outra oportunidade exige compra vitalícia de R$ 49,00. Reabrir a oportunidade escolhida continua grátis enquanto disponível. A confirmação explícita da primeira escolha evita consumir a gratuidade por prefetch.
+Regra solicitada em 02/11/2026: cards públicos; conta autenticada para abrir uma oportunidade gratuita; outra oportunidade exige compra vitalícia de R$ 49,00. Reabrir a oportunidade escolhida continua grátis enquanto disponível. Após o ajuste da navegação direta, a primeira abertura é automática por POST ao montar a página; GET e prefetch não consomem a gratuidade.
 
 O Radar usa `requireSignedInMember` para sessão válida, conta não bloqueada e cadastro concluído. A aprovação manual da comunidade continua em `requireMember`; Google Agenda e vínculos protegidos continuam com suas próprias verificações. O checkout exige sessão e origem confiável, preço fixado no servidor e liberação apenas após webhook assinado com pagamento confirmado. Compra por Payment Link continua exigindo comprovação do mesmo e-mail para vincular o direito.
 
@@ -8,7 +8,27 @@ Plano: separar os dois guardas na DAL; atualizar somente catálogo autenticado, 
 
 O retorno de um pagamento ainda em confirmação oculta a opção de nova compra. A URL de retorno não concede acesso. Ao chegar o webhook, a tela consulta o direito e oferece a continuação para a oportunidade escolhida.
 
-## Validação em 02/11/2026
+## Navegação direta — ajuste solicitado após a publicação
+
+Foram removidos o aviso da primeira oportunidade e o botão de confirmação. O botão “Ver detalhes” do card aponta diretamente ao detalhe protegido, enquanto o compartilhamento preserva a URL pública. A página abre o primeiro detalhe automaticamente pela Server Action existente. Para outra oportunidade, envia automaticamente um formulário POST ao endpoint de checkout já autenticado, sem apresentar a página de oferta intermediária. O destino da oportunidade é preservado no retorno da Stripe. Sem JavaScript, há um botão de continuação em `noscript`.
+
+A página `/membros/radar/acesso` continua tratando retorno, espera por webhook, cancelamento e comprovação de compras por Payment Link. A navegação normal a partir de um detalhe não passa por essa oferta. O teste `scripts/test-radar-stripe-sandbox.mjs --navigation-only` permite conferir no navegador a primeira abertura sem clique extra e o salto direto à Stripe, sem pagar, expirando a própria sessão de teste ao terminar.
+
+O endpoint de checkout confere também se já existe compra paga por Payment Link aguardando comprovação do mesmo e-mail. Nesse caso, encaminha para a confirmação do e-mail, preservando o detalhe desejado, e não cria outra sessão de pagamento.
+
+### Validação do ajuste de navegação direta
+
+- 621 testes gerais e 19 testes de integração de billing passaram.
+- Lint sem erros, mantendo apenas o aviso preexistente de imagem na galeria; tipos e build aprovados.
+- Aplicação compilada em PostgreSQL novo: GET e prefetch não consumiram a escolha; Server Action abriu o primeiro detalhe; outra oportunidade entregou formulário automático de POST ao checkout, sem dados privados e sem oferta intermediária. O teste segue o redirecionamento interno de cache `_rsc` do Next 16 antes de conferir o prefetch.
+- Navegador, conta nova sem e-mail verificado: o login abriu diretamente o primeiro detalhe, sem confirmação. Voltando ao Radar, um único clique em “Ver detalhes” de outra oportunidade chegou a `checkout.stripe.com`, com BRL 49,00, sem a página de oferta.
+- Sessão sandbox `cs_test_a1Tp2OzlTwGjBE5BDKozUHOOsfidTvEjbLHUStXLaqJhRZw8t21XsgVDVY`: criada uma única vez, sem pagamento e expirada pelo próprio roteiro. Nenhuma cobrança real e nenhuma alteração de produção.
+- Testes de regressão cobrem troca de oportunidade e mudança de abertura gratuita para compra após concorrência: o componente recebe nova identidade, evitando ficar preso no carregamento.
+- Evidências e capturas em `.local/radar-direct-navigation-20261102/` do checkout desta correção.
+
+O código de confirmação por webhook não foi alterado. A compra e liberação completas da integração anterior em sandbox estão registradas abaixo; o novo teste de navegação terminou antes do pagamento. Este ajuste ainda depende de autorização específica para publicação.
+
+## Validação anterior — integração inicial, em 02/11/2026
 
 | Verificação | Resultado |
 | --- | --- |

@@ -1,6 +1,7 @@
 "use client";
 
 import { AREAS, displayOpportunityTitle, publicOpportunityPath } from "@/lib/opportunities/discovery";
+import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 import { interfaceText } from "@/lib/presentation-text.mjs";
 import { OpportunityBenefits, OpportunityCosts } from "./opportunity-financials";
 import { AdmissionProcessCard } from "./admission-process-card";
@@ -409,7 +410,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
       <div className={styles.cardFooter}>
         <span>{opportunity.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={opportunity.verificationTimestamp ?? opportunity.verifiedAt} title="Horário de Brasília">{formatDate(opportunity.verificationTimestamp ?? opportunity.verifiedAt)}</time></span>
         <Link
-          href={detailed ? opportunity.officialUrl : detailHref ?? publicOpportunityPath(opportunity)}
+          href={detailed ? opportunity.officialUrl : detailHref ?? opportunityDetailPath(opportunity.id)}
           prefetch={false}
           className={styles.externalLink}
           target={detailed ? "_blank" : undefined}

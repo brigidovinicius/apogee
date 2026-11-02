@@ -28,6 +28,7 @@ function fixture() {
     "next/navigation": { notFound: () => { throw Error("NOT_FOUND"); }, redirect: path => { throw Error(`REDIRECT:${path}`); } },
     "@/components/members/member-bar": { MemberBar: () => null },
     "@/components/opportunities/opportunities-board": { OpportunityCard: ({ opportunity }) => React.createElement("p", null, opportunity.eligibility) },
+    "@/components/opportunities/automatic-detail-opening": { AutomaticDetailOpening: ({ action, checkout }) => React.createElement("form", { action: typeof action === "string" ? action : undefined, method: "post", "data-radar-detail-opening": true }, checkout ? "Abrindo checkout…" : "Abrindo detalhes…") },
     "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return React.createElement("a", props, children); } },
     "@/lib/admin/access": { requireAdmin: async () => {} },
   });
@@ -95,15 +96,54 @@ test("public/member/home card payloads exclude private fields and preserve serve
   assert.equal(first.eligibility, "REQUISITO_PRIVADO", "source object must stay intact");
 });
 
-test("detail route and server action send a second choice to purchase and retain its destination", async () => {
+test("first navigation opens automatically without a free-access notice, while GET remains read-only", async () => {
+  const { state, load } = fixture();
+  const Page = load("app/membros/oportunidades/[id]/page.tsx").default;
+  const html = renderToStaticMarkup(await Page({ params: Promise.resolve({ id: first.id }) }));
+  assert.match(html, /Abrindo detalhes…/);
+  assert.match(html, /data-radar-detail-opening/);
+  assert.doesNotMatch(html, /Sua primeira oportunidade|Use seu acesso gratuito|R\$ 49|Abrir esta oportunidade|REQUISITO_PRIVADO/);
+  assert.equal(state.claims, 0);
+  await assert.rejects(load("app/membros/oportunidades/[id]/actions.ts").openFreeOpportunity(first.id), /REDIRECT:\/membros\/oportunidades\/radar-first$/);
+  assert.equal(state.claims, 1);
+  const opened = renderToStaticMarkup(await Page({ params: Promise.resolve({ id: first.id }) }));
+  assert.match(opened, /REQUISITO_PRIVADO/);
+  assert.doesNotMatch(opened, /Sua primeira oportunidade|Esta é sua oportunidade gratuita|Abrindo detalhes/);
+});
+
+test("another detail opens checkout directly by POST and a concurrent free claim retains its destination", async () => {
   const { state, load } = fixture();
   state.selected = first.id;
   const page = load("app/membros/oportunidades/[id]/page.tsx").default;
-  await assert.rejects(page({ params: Promise.resolve({ id: second.id }) }), /REDIRECT:\/membros\/radar\/acesso\?next=%2Fmembros%2Foportunidades%2Fradar-second&from=detail/);
+  const checkoutHtml = renderToStaticMarkup(await page({ params: Promise.resolve({ id: second.id }) }));
+  assert.match(checkoutHtml, /action="\/api\/radar\/checkout\?next=%2Fmembros%2Foportunidades%2Fradar-second"/);
+  assert.match(checkoutHtml, /method="post"/);
+  assert.match(checkoutHtml, /Abrindo checkout…/);
+  assert.doesNotMatch(checkoutHtml, /Radar para a vida toda|Comprar acesso vitalício|R\$ 49|REQUISITO_PRIVADO/);
   const { openFreeOpportunity } = load("app/membros/oportunidades/[id]/actions.ts");
-  await assert.rejects(openFreeOpportunity(second.id), /REDIRECT:\/membros\/radar\/acesso/);
+  await assert.rejects(openFreeOpportunity(second.id), /REDIRECT:\/membros\/oportunidades\/radar-second$/);
   const html = renderToStaticMarkup(await page({ params: Promise.resolve({ id: first.id }) }));
   assert.ok(html.includes(first.eligibility));
+});
+
+test("a lost free-choice race and a different opportunity receive fresh opening state", async () => {
+  const { state, load } = fixture();
+  const Page = load("app/membros/oportunidades/[id]/page.tsx").default;
+  const opening = node => {
+    if (!node?.props) return null;
+    if ("checkout" in node.props && "action" in node.props) return node;
+    return [node.props.children].flat().map(opening).find(Boolean);
+  };
+  const available = opening(await Page({ params: Promise.resolve({ id: first.id }) }));
+  state.selected = second.id;
+  const purchase = opening(await Page({ params: Promise.resolve({ id: first.id }) }));
+  assert.equal(available.props.checkout, false);
+  assert.equal(purchase.props.checkout, true);
+  assert.notEqual(available.key, purchase.key, "checkout must not retain the already-submitted free-opening effect");
+  state.selected = null;
+  const another = opening(await Page({ params: Promise.resolve({ id: second.id }) }));
+  assert.notEqual(available.key, another.key, "a different opportunity must open on navigation");
+  assert.equal(state.claims, 0);
 });
 
 test("checkout return destination rejects external, unrelated, malformed and nested paths", () => {
@@ -125,4 +165,19 @@ test("paid details open before community approval while calendar controls retain
   state.approved = true;
   html = renderToStaticMarkup(await Page({ params: Promise.resolve({ id: first.id }) }));
   assert.match(html, /Salvar no meu calendário/);
+});
+
+test("Ver detalhes goes straight to the protected detail while sharing retains its public URL", () => {
+  const Card = opportunityLoader({
+    "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return React.createElement("a", props, children); } },
+    "@/components/site/share-button": { ShareButton: ({ path }) => React.createElement("button", { "data-share-path": path }, "Compartilhar") },
+    "./opportunity-countdown": { OpportunityCountdown: () => null },
+    "./opportunity-dates": { OpportunityDates: () => null },
+    "./opportunity-financials": { OpportunityBenefits: () => null, OpportunityCosts: () => null },
+    "./opportunity-alert": { OpportunityAlert: () => null },
+  })("components/opportunities/opportunities-board.tsx").OpportunityCard;
+  const html = renderToStaticMarkup(React.createElement(Card, { opportunity: first }));
+  assert.match(html, /href="\/membros\/oportunidades\/radar-first"/);
+  assert.match(html, /data-share-path="\/oportunidades\/evento-aberto--radar-first"/);
+  assert.doesNotMatch(html, /REQUISITO_PRIVADO|inscricao-privada/);
 });
