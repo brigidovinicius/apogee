@@ -24,7 +24,10 @@ if (ciUrl && !(process.env.CI === "true" && ciUrl === "postgres://gallery_test:s
   throw new Error("Bootstrap externo permitido somente no PostgreSQL sintético de CI.");
 }
 const standalone = resolve(".next/standalone");
-await access(join(standalone, "server.js"));
+const useNextStart = process.env.MEMBERS_AUTH_TEST_USE_NEXT_START === "1";
+const serverEntry = useNextStart ? resolve("node_modules/next/dist/bin/next") : join(standalone, "server.js");
+await access(serverEntry);
+await access(resolve(".next/BUILD_ID"));
 const root = await mkdtemp(join(tmpdir(), "members-sec02-"));
 const data = join(root, "data");
 const socket = join(root, "socket");
@@ -83,13 +86,14 @@ try {
   const proxyPort = await freePort();
   const direct = `http://127.0.0.1:${appPort}`;
   const proxied = `http://127.0.0.1:${proxyPort}`;
-  const server = startChild(process.execPath, [join(standalone, "server.js")], {
+  const server = startChild(process.execPath, useNextStart ? [serverEntry, "start", "--hostname", "127.0.0.1", "--port", String(appPort)] : [serverEntry], {
     PATH: process.env.PATH, NODE_ENV: "production", HOSTNAME: "127.0.0.1", PORT: String(appPort),
     NEXT_TELEMETRY_DISABLED: "1", APPLICATION_HOSTING_PROVIDER: "caddy",
     DATABASE_URL: testUrl, DATABASE_SSL_MODE: "disable",
     BETTER_AUTH_URL: origin, BETTER_AUTH_SECRET: "synthetic-auth-proxy-secret-at-least-32-characters",
     MEMBERS_EMAIL_ENABLED: "false",
-  }, "next.log", standalone);
+    ...(useNextStart ? { APOGEE_LOCAL_PREVIEW: "1", NODE_OPTIONS: "--max-old-space-size=768" } : {}),
+  }, "next.log", useNextStart ? process.cwd() : standalone);
   await waitHttp(`${direct}/`, server);
 
   // Preserva integralmente o bloco real do proxy; muda somente endereço de escuta/upstream.
@@ -103,7 +107,7 @@ try {
   const version = execFileSync(caddy, ["version"], { encoding: "utf8" });
   assert.match(version, /^v2\.10\.2\b/, "validar a mesma versão do Compose");
   const proxy = startChild(caddy, ["run", "--config", configPath, "--adapter", "caddyfile"], {
-    PATH: process.env.PATH, HOME: root, XDG_DATA_HOME: root, XDG_CONFIG_HOME: root,
+    PATH: process.env.PATH, XDG_DATA_HOME: root, XDG_CONFIG_HOME: root,
   }, "caddy.log", root);
   await waitHttp(`${proxied}/api/auth/get-session`, proxy);
 
@@ -114,6 +118,18 @@ try {
   const clearLimits = () => sql.unsafe("truncate rate_limit");
   const credentials = { email: "member@example.test", password: "synthetic-good-password" };
   await test("SEC-02: HTTP real Caddy -> Next/Better Auth -> PostgreSQL", async t => {
+    await t.test("proxy preserva no-referrer e no-store nos links de recuperação", async () => {
+      for (const path of ["/membros/esqueci-senha", "/membros/redefinir-senha?token=synthetic-token",
+        `/api/auth/reset-password/synthetic-token?callbackURL=${encodeURIComponent(`${origin}/membros/redefinir-senha`)}`]) {
+        const response = await fetch(`${proxied}${path}`, { redirect: "manual", signal: AbortSignal.timeout(5000) });
+        assert.equal(response.status, path.startsWith("/api/") ? 302 : 200);
+        assert.equal(response.headers.get("referrer-policy"), "no-referrer");
+        assert.match(response.headers.get("cache-control"), /no-store/);
+      }
+      const login = await fetch(`${proxied}/membros/entrar`, { signal: AbortSignal.timeout(5000) });
+      assert.equal(login.status, 200);
+      assert.equal(login.headers.get("referrer-policy"), "strict-origin-when-cross-origin");
+    });
     await t.test("cadastro, login por e-mail/username e consulta de sessão continuam funcionando", async () => {
       const signup = await post(proxied, "sign-up/email", { ...credentials, name: "Ana", username: "anapessoa" });
       assert.equal(signup.status, 200);

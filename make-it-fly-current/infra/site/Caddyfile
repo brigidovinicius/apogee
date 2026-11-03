@@ -17,7 +17,8 @@ www.apogee.community {
   encode zstd gzip
   header {
     X-Content-Type-Options "nosniff"
-    Referrer-Policy "strict-origin-when-cross-origin"
+    # Preserva políticas mais restritas enviadas pela aplicação (ex.: recuperação de senha).
+    ?Referrer-Policy "strict-origin-when-cross-origin"
     Permissions-Policy "camera=(), geolocation=(), microphone=()"
     -Server
   }

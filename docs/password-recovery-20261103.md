@@ -31,4 +31,14 @@ Todos os comandos npm/node de projeto passaram pela fila global, sem tarefas pes
 
 ## Estado da entrega
 
-Implementação e validação locais concluídas. Sem push, PR, merge ou publicação; sem alterações em produção. Nenhuma migração necessária. O e-mail foi interceptado nos testes: aceitação real pelo Resend e entrega à caixa de entrada ainda não foram verificadas. Após autorização, conferir configuração de envio existente, publicar o SHA aprovado e verificar comportamento/cabeçalhos públicos sem redefinir senhas de terceiros.
+Implementação e validação locais concluídas. Sem push, PR, merge ou publicação; sem alteração de contas/banco de produção. Nenhuma migração necessária. Após autorização, publicar o SHA aprovado e verificar comportamento/cabeçalhos públicos sem redefinir senhas de terceiros. O ajuste de Caddy abaixo também precisará integrar a publicação autorizada; somente reconstruir a aplicação deixaria o cabeçalho sobrescrito no proxy.
+
+## Teste adicional solicitado pelo usuário
+
+- Executado Caddy **2.10.2** real em loopback, com o bloco do Caddyfile de produção, Next.js compilado e PostgreSQL descartável. O binário temporário veio do release oficial e teve checksum conferido.
+- O teste encontrou o proxy sobrescrevendo `no-referrer` com o valor geral. O Caddyfile agora usa `?Referrer-Policy`, preservando a política explícita da aplicação e mantendo o valor padrão nas demais páginas. Referência: [semântica de cabeçalhos padrão no Caddy](https://caddyserver.com/docs/caddyfile/directives/header).
+- `CADDY_BIN=... MEMBERS_POSTGRES_BIN=/opt/homebrew/opt/postgresql@17/bin MEMBERS_AUTH_TEST_USE_NEXT_START=1 npm run test:auth-proxy`: **11/11 aprovados**. Inclui cabeçalhos das duas páginas e do callback, cadastro, login por e-mail/usuário, sessão, IP forjado, IPv6 e limites persistentes. A opção local usa `next start` sobre o build já validado; CI continua usando o servidor standalone.
+- `npm run lint -- scripts/test-auth-proxy.mjs`: aprovado.
+- Um e-mail real foi enviado ao endereço expressamente autorizado, com o conteúdo produzido pelo formulário e pelo `after` do candidato. O provedor aceitou com HTTP 200 e ID, e o usuário confirmou recebimento na caixa de entrada. A credencial permaneceu no container de produção; nenhuma cópia local foi feita. A consulta posterior do status de entrega não estava autorizada pelo provedor (HTTP 401), portanto a confirmação de recebimento veio do usuário.
+- O link enviado apontava para o ambiente local. O teste automático no Mac abriu esse mesmo link, redefiniu a senha da conta descartável e entrou com a senha nova. Depois, o ambiente foi encerrado. O link não era utilizável no celular, e o usuário relatou essa limitação. O usuário optou explicitamente por manter somente testes locais, sem endereço público temporário.
+- Servidores e bancos temporários foram encerrados. Nenhuma senha de conta real foi redefinida. Evidências adicionais em `.local/password-recovery-check/proxy-regression.log` e arquivos locais do envio autorizado, sem credenciais.
