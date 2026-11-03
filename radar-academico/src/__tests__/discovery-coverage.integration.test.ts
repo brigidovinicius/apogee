@@ -44,6 +44,18 @@ beforeEach(async () => {
 });
 const due = () => state.db!.query('update discovery_targets set next_check_at=now() where id=$1', [target]);
 
+it('preserves crawl progress and canonical evidence paths for an origin stored without its implicit slash', async () => {
+  const rawParent = parent.slice(0, -1);
+  await state.db!.query('update discovery_targets set official_url=$2,official_verified_url=$2 where id=$1', [target, rawParent]);
+  const body = Array.from({ length: 60 }, (_, i) => `<a href="${parent}bolsa/${i}">Bolsa de pesquisa ${i}</a>`).join('');
+  page(parent, body); page(rawParent, body);
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 30 });
+  await due();
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 30 });
+  expect((await state.db!.query('select discovery_path from discovery_leads')).rows)
+    .toEqual(Array.from({ length: 60 }, () => ({ discovery_path: [parent] })));
+});
+
 it('publishes an evidenced olympiad with its heading outside the nested article', async () => {
   await state.db!.query("update discovery_targets set topics=array['competicoes'] where id=$1", [target]);
   const url = parent + 'olimpiada-2026';

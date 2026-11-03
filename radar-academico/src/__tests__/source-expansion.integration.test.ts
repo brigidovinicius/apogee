@@ -40,7 +40,7 @@ beforeEach(async () => {
   url = parent + "calls/research"; title = "Bolsa de pesquisa em tecnologia";
   deadline = "31/12/2099"; parentHasLink = true; changeOrganizer = false;
   await state.db!.exec("delete from discovery_leads; delete from ingestion_runs; delete from opportunity_management_events; delete from opportunity_revisions; delete from opportunity_sources; delete from opportunities; delete from official_sources where id like 'auto-page-%' or id='disabled-test'");
-  await state.db!.query("update discovery_targets set organizer='Instituto oficial' where id=$1", [target]);
+  await state.db!.query("update discovery_targets set organizer='Instituto oficial',official_url=$2,official_verified_url=$2 where id=$1", [target, parent]);
   vi.mocked(fetchOfficialResource).mockImplementation(async requested => {
     if (requested === parent) return resource(parentHasLink ? `<main><a href="${url}">${title}</a></main>` : "<main>Sem chamada</main>");
     if (changeOrganizer) await state.db!.query("update discovery_targets set organizer='Operador alterou' where id=$1", [target]);
@@ -53,6 +53,34 @@ async function addLead(legacy = false) {
   await state.db!.query(`insert into discovery_leads(target_id,url,title,processing_status,processing_reason,processing_attempts)
     values($1,$2,$3,$4,$5,$6)`, [target, url, title, legacy ? "blocked" : "pending", legacy ? "scope_unverified" : null, legacy ? 1 : 0]);
 }
+
+it.each([{ path: [parent.slice(0, -1)] }, { path: [parent] }, { path: [] }])("revalidates and publishes a verified origin stored without its implicit slash ($path)", async ({ path }) => {
+  const rawParent = parent.slice(0, -1);
+  await state.db!.query('update discovery_targets set official_url=$2,official_verified_url=$2 where id=$1', [target, rawParent]);
+  await addLead(true);
+  await state.db!.query('update discovery_leads set discovery_path=$2 where target_id=$1', [target, path]);
+  await state.db!.query(`insert into ingestion_runs(started_at,finished_at,status,execution_metadata)
+    select now(),now(),'completed_with_warnings',jsonb_build_object('component','discovery-lead','lead_id',id::text,'source_expansion_version',3)
+    from discovery_leads where target_id=$1`, [target]);
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, sourcesRegistered: 1, created: 1, published: 1 });
+  const audit = (await state.db!.query<{ execution_metadata: Record<string, unknown> }>(
+    "select execution_metadata from ingestion_runs where execution_metadata->>'source_expansion_version'='4'" )).rows[0].execution_metadata;
+  expect(audit).toMatchObject({ source_registration: { targetUrl: rawParent, discoveryPath: [parent] } });
+  expect((await state.db!.query('select official_url,official_verified_url from discovery_targets where id=$1', [target])).rows)
+    .toEqual([{ official_url: rawParent, official_verified_url: rawParent }]);
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, published: 0 });
+});
+
+it.each(['https://other.example.org/', parent + '?other=1', parent.replace('https:', 'http:')])("does not treat another authority or document as the verified origin (%s)", async firstDocument => {
+  const rawParent = parent.slice(0, -1);
+  await state.db!.query('update discovery_targets set official_url=$2,official_verified_url=$2 where id=$1', [target, rawParent]);
+  await addLead();
+  await state.db!.query('update discovery_leads set discovery_path=$2 where target_id=$1', [target, [firstDocument]]);
+  vi.mocked(fetchOfficialResource).mockClear();
+  expect(await runScheduledLeadProcessing()).toMatchObject({ sourcesRegistered: 0, published: 0,
+    reasons: { source_authority_unverified: 1 } });
+  expect(fetchOfficialResource).not.toHaveBeenCalled();
+});
 
 it("recovers a legacy blocked link, registers one exact source and publishes atomically and idempotently", async () => {
   await addLead(true);
@@ -67,7 +95,7 @@ it("recovers a legacy blocked link, registers one exact source and publishes ato
     .toEqual([{ review_status: "approved", publication_issue: null, verification_method: "automatic" }]);
   const audit = (await state.db!.query<{ execution_metadata: Record<string, unknown> }>(
     "select execution_metadata from ingestion_runs where execution_metadata->>'component'='discovery-lead'" )).rows[0].execution_metadata;
-  expect(audit).toMatchObject({ sources_registered: 1, source_expansion_version: 3,
+  expect(audit).toMatchObject({ sources_registered: 1, source_expansion_version: 4,
     source_registration: { targetUrl: parent, organizer: "Instituto oficial", pageHash: expect.stringMatching(/^[a-f0-9]{64}$/) } });
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, sourcesRegistered: 0, published: 0 });
 });

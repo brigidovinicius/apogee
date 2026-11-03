@@ -25,6 +25,13 @@ export type SourceRegistration = {
 export type PreparedDiscoveryCandidate = { source: OfficialSource; candidate: OpportunityCandidate; registration?: SourceRegistration }
   | { reason: string; retry?: boolean };
 
+/** URL serialization adds the implicit root slash without changing the verified target. */
+function documentPath(lead: ExpansionLead): string[] | null {
+  const path = lead.discovery_path?.length ? lead.discovery_path : [lead.target_official_url];
+  try { return path.map(value => new URL(value).href); }
+  catch { return null; }
+}
+
 function pageSource(lead: ExpansionLead): OfficialSource {
   const url = new URL(lead.url);
   return {
@@ -45,8 +52,8 @@ export async function prepareSourceExpansion(lead: ExpansionLead): Promise<Prepa
   const foreign = !sameDiscoveryScope(parent, url);
   if (foreign && new URL(url).hostname !== "luma.com" &&
     !/evento|hackathon|workshop|confer|congresso|summit|seminário|webinar|builders|pitch|encontro|\bia\b/i.test(lead.title)) return { reason: "source_authority_unverified" };
-  const path = lead.discovery_path?.length ? lead.discovery_path : [parent];
-  if (path.length > 4 || path[0] !== parent || new Set(path).size !== path.length || path.some(value =>
+  const path = documentPath(lead);
+  if (!path || path.length > 4 || path[0] !== parent || new Set(path).size !== path.length || path.some(value =>
     typeof value !== "string" || candidateUrl(value) !== value || !sameDiscoveryScope(parent, value))) return { reason: "source_authority_unverified" };
   // Profiles, forms and city aggregators are not independently verified organizers.
   const host = new URL(url).hostname;
@@ -88,7 +95,7 @@ export async function registerDiscoveredSource(client: PoolClient, lead: Expansi
     !/^[a-f0-9]{64}$/.test(proof.targetHash) || !/^[a-f0-9]{64}$/.test(proof.pageHash) ||
     proof.organizer !== lead.target_organizer || proof.targetUrl !== lead.target_official_url ||
     proof.targetVerifiedAt !== lead.target_verified_at || proof.targetPriority !== (lead.target_priority ?? 0) ||
-    !isDeepStrictEqual(proof.discoveryPath, lead.discovery_path?.length ? lead.discovery_path : [lead.target_official_url]) ||
+    !isDeepStrictEqual(proof.discoveryPath, documentPath(lead)) ||
     proof.pathHashes.length !== proof.discoveryPath.length || !proof.pathHashes.every(hash => /^[a-f0-9]{64}$/.test(hash)) ||
     !isDeepStrictEqual(prepared.source, pageSource(lead)) || !isOfficialSourceUrl(lead.url, [prepared.source])) {
     return { reason: "source_changed" };
