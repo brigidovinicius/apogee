@@ -98,6 +98,9 @@ export function SignInForm({ next, googleError }: { next: string; googleError?: 
         {(props) => <input {...props} name="password" type="password" autoComplete="current-password" required />}
       </Field>
       <div className={styles.actions}>
+        <Link href={`/membros/esqueci-senha?next=${encodeURIComponent(next)}`}>Esqueci minha senha</Link>
+      </div>
+      <div className={styles.actions}>
         <button className={styles.primary} type="submit" disabled={!hydrated || pending}>
           {pending ? "Entrando…" : "Entrar"} <span aria-hidden>→</span>
         </button>

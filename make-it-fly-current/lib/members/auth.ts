@@ -3,8 +3,8 @@ import { APIError, betterAuth } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { after } from "next/server";
 import { username } from "better-auth/plugins";
-import { eq } from "drizzle-orm";
 import { applicationOrigin, sendMemberMail } from "./mail";
 import { getDb } from "./db";
 import { googleUsernameFromSubject } from "./google-oauth";
@@ -15,6 +15,7 @@ import { memberIpHeaders } from "./client-ip";
 import { billingConfig, RADAR_ACCESS_PATH, radarBillingEnabled } from "@/lib/billing/config";
 import { radarPurchaseNeedsVerification } from "@/lib/billing/store";
 import { supervisedRegistrationEnabled } from "./protection";
+import { PASSWORD_RESET_EXPIRES_IN } from "./password-recovery";
 
 function createAuth() {
   const secret = process.env.BETTER_AUTH_SECRET;
@@ -32,7 +33,8 @@ function createAuth() {
     secret,
     baseURL: applicationOrigin(),
     trustedOrigins: [applicationOrigin()],
-    database: drizzleAdapter(getDb(), { provider: "pg", schema }),
+    database: drizzleAdapter(getDb(), { provider: "pg", schema, transaction: true }),
+    verification: { storeIdentifier: { default: "plain", overrides: { "reset-password:": "hashed" } } },
     emailAndPassword: {
       enabled: true,
       // O acesso público existente é preservado. Convites exigem verificação no servidor.
@@ -40,6 +42,21 @@ function createAuth() {
       minPasswordLength: 8,
       maxPasswordLength: 128,
       autoSignIn: true,
+      resetPasswordTokenExpiresIn: PASSWORD_RESET_EXPIRES_IN,
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: async ({ user, url }) => {
+        const target = new URL(url);
+        if (target.origin !== applicationOrigin()) throw new Error("Origem inválida.");
+        // A latência/falha do provedor não pode revelar se a conta existe.
+        after(async () => {
+          try {
+            await sendMemberMail({ to: user.email, subject: "Redefina sua senha na Apogee",
+              text: `Recebemos uma solicitação para redefinir sua senha na Apogee.\n\nAbra este link para escolher uma nova senha: ${target.href}\n\nO link vale por 30 minutos e pode ser usado uma única vez. Se você não solicitou esta alteração, ignore este e-mail. Sua senha continua a mesma.` });
+          } catch {
+            console.error("[membros] envio de recuperação de senha indisponível");
+          }
+        });
+      },
     },
     emailVerification: {
       sendOnSignUp: false,
@@ -126,6 +143,8 @@ function createAuth() {
         "/sign-up/email": { window: 3600, max: 5 },
         "/send-verification-email": { window: 3600, max: 5 },
         "/verify-email": { window: 60, max: 10 },
+        "/request-password-reset": { window: 3600, max: 5 },
+        "/reset-password": { window: 600, max: 10 },
       },
     },
     advanced: {
@@ -159,9 +178,11 @@ function createAuth() {
       },
       session: {
         create: {
-          before: async (data) => {
-            const [account] = await getDb().select({ blocked: schema.user.blocked }).from(schema.user).where(eq(schema.user.id, data.userId));
-            if (!account || account.blocked) throw new APIError("FORBIDDEN", { message: "Conta indisponível." });
+          before: async (data, context) => {
+            // Usa o adapter do contexto para enxergar o usuário recém-criado
+            // na mesma transação do cadastro, ainda não visível em getDb().
+            const account = await context?.context.internalAdapter.findUserById(data.userId);
+            if (!account || (account as { blocked?: boolean }).blocked) throw new APIError("FORBIDDEN", { message: "Conta indisponível." });
           },
         },
       },
