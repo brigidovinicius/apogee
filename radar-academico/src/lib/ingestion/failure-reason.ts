@@ -10,6 +10,7 @@ export function ingestionFailureReason(error: unknown): string {
   if (http) return `http_${http[1]}`;
   let current: unknown = error;
   for (let depth = 0; current instanceof Error && depth < 4; depth += 1) {
+    if (current.name === 'TimeoutError' || current.name === 'AbortError') return 'request_timeout';
     const code = "code" in current ? current.code : null;
     if (code === "ABORT_ERR" || code === "ETIMEDOUT") return "request_timeout";
     if (code === "ENOTFOUND" || code === "EAI_AGAIN") return "dns_failure";

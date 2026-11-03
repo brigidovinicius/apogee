@@ -4,8 +4,8 @@ import { isAllowedHostname } from "@/lib/ingestion/validate-url";
 import { structuredEvents } from "@/lib/ingestion/structured-events";
 import { eventHasNotStarted } from "@/lib/ingestion/event-start";
 import { parseHtml } from "@/lib/ingestion/parse-html";
+import { discoveryLinkIssue } from "./link-selection";
 
-const relevant = /olimp[ií]ada|torneio|maratona|pitch|build(?:ers)? day|platform|\bia\b|bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|oportunidade|curso|oficina|formação|prêmio|premiaç|competição|hackathon|desafio|edital|seleção|inscriç|chamada|programa|evento|workshop|conferência|congresso|seminário|encontro|feira|palestra|webinar|extensão|empreendedorismo|incuba|acelera|scholarship|fellowship|conference|summit/i;
 const navigationLabel = /^(?:[«»\s]*(?:anterior|próximo)[«»\s]*|cursos|eventos e cursos|calendário de inscrições|inscrições e acompanhamento|chamadas (?:abertas|andamento)|ver todos os palestrantes|programação|destaques|a feira|acesso à informação)$/i;
 export type DiscoveredLink = { url: string; title: string; excerpt: string; discoveryPath?: string[] };
 export type DiscoveryResource = { body: Buffer; contentType: string; discoverySitemaps?: string[] };
@@ -74,7 +74,7 @@ export function discoveryDocument(resource: DiscoveryResource, url: string, root
           const safe = resolved(value, url);
           if (safe && sameDiscoveryScope(root, safe)) {
             let title = new URL(safe).pathname;
-            try { title = decodeURIComponent(title).replace(/[-_/]/g, " ").trim(); } catch { /* Keep encoded pathname. */ }
+            try { title = decodeURIComponent(title).split('/').filter(Boolean).at(-1)?.replace(/[-_]/g, " ").trim() || title; } catch { /* Keep encoded pathname. */ }
             links.push({ url: safe, title, excerpt: "URL presente no sitemap oficial." });
           }
         }
@@ -95,7 +95,7 @@ export function discoveryDocument(resource: DiscoveryResource, url: string, root
   const candidates = links.flatMap(link => {
     const safe = resolved(link.url, url);
     if (!safe || safe === url || seen.has(safe) || navigationLabel.test(link.title) ||
-      new URL(safe).pathname.includes("@@search") || !relevant.test(`${link.title} ${new URL(safe).pathname}`)) return [];
+      discoveryLinkIssue({ ...link, url: safe })) return [];
     seen.add(safe);
     return [{ url: safe, title: link.title.slice(0, 240), excerpt: link.excerpt.slice(0, 500) }];
   });

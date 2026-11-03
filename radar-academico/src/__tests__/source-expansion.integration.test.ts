@@ -67,7 +67,7 @@ it("recovers a legacy blocked link, registers one exact source and publishes ato
     .toEqual([{ review_status: "approved", publication_issue: null, verification_method: "automatic" }]);
   const audit = (await state.db!.query<{ execution_metadata: Record<string, unknown> }>(
     "select execution_metadata from ingestion_runs where execution_metadata->>'component'='discovery-lead'" )).rows[0].execution_metadata;
-  expect(audit).toMatchObject({ sources_registered: 1, source_expansion_version: 2,
+  expect(audit).toMatchObject({ sources_registered: 1, source_expansion_version: 3,
     source_registration: { targetUrl: parent, organizer: "Instituto oficial", pageHash: expect.stringMatching(/^[a-f0-9]{64}$/) } });
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, sourcesRegistered: 0, published: 0 });
 });

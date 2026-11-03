@@ -4,6 +4,7 @@ import type { OfficialSource } from "./types";
 import { isOfficialSourceUrl } from "./validate-url";
 import { safeRequest } from "./safe-request";
 import { BoundedCache } from "./bounded-cache";
+import { waitForOfficialRequest } from "./request-budget";
 
 // Only the individually audited EV.G host reuses robots for at most five minutes (RFC9309 section2.4).
 const evgRobotsCache = new BoundedCache<ReturnType<typeof robotsParser>>(8, 1024 * 1024, 5 * 60_000);
@@ -27,9 +28,10 @@ export function boundedInteger(value: string | undefined, fallback: number, min:
 async function rateLimit(host: string) {
   const delay = boundedInteger(process.env.INGESTION_REQUEST_DELAY_MS, 2000, 100, 60_000);
   const wait = Math.max(0, delay - (Date.now() - (lastRequestByDomain.get(host) ?? 0)));
-  if (wait) await new Promise((resolve) => setTimeout(resolve, wait));
+  if (wait) await waitForOfficialRequest(wait);
   lastRequestByDomain.set(host, Date.now(), 1);
 }
+
 
 export type OfficialResource = { body: Buffer; contentType: string; hash: string; cached: boolean; discoverySitemaps?: string[] };
 export async function fetchOfficialResource(initialUrl: string, source: OfficialSource, maxBytesCap?: number): Promise<OfficialResource> {

@@ -5,8 +5,12 @@ export type HomeOpportunityCategory = "all" | "competicoes" | "eventos";
 // Presentation only: keep the catalogue's relative order within each group.
 // The Radar's ranking, classification and access rules are unchanged.
 export function homeOpportunityIsCurrent(item: StudentOpportunity, now: Date) {
-  if (item.opportunityStatus === "upcoming") return false;
+  if (item.opportunityStatus && item.opportunityStatus !== "open") return false;
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(now);
+  if (item.eventStartsAt) {
+    const start = Date.parse(item.eventStartsAt.length === 10 ? `${item.eventStartsAt}T00:00:00-03:00` : item.eventStartsAt);
+    if (!Number.isFinite(start) || start <= now.getTime()) return false;
+  }
   if (item.deadline && item.deadline < today) return false;
   if (item.deadlineAt) {
     const end = Date.parse(item.deadlineAt);
@@ -14,7 +18,7 @@ export function homeOpportunityIsCurrent(item: StudentOpportunity, now: Date) {
   }
   if (item.deadlineUnknown) {
     if (!item.eventStartsAt) return false;
-    if (/^\d{4}-\d{2}-\d{2}$/.test(item.eventStartsAt)) return item.eventStartsAt >= today;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(item.eventStartsAt)) return item.eventStartsAt > today;
     const start = Date.parse(item.eventStartsAt);
     if (!Number.isFinite(start) || start <= now.getTime()) return false;
   }

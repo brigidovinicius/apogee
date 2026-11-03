@@ -9,6 +9,7 @@ export const DEFAULT_RANKING = Object.freeze({
   confirmedBenefit: 6, open: 4, usefulDeadline: 3, recentVerification: 2,
   organizationRepeat: 4, organizationPenaltyCap: 40,
   categoryRepeat: 1, categoryPenaltyCap: 12,
+  dailyRotation: 0.9,
 });
 export type RankingConfig = { [Key in keyof typeof DEFAULT_RANKING]: number };
 
@@ -19,6 +20,13 @@ function eventTime(item: StudentOpportunity) {
   const value = item.eventStartsAt;
   const time = value ? Date.parse(value.length === 10 ? `${value}T00:00:00-03:00` : value) : NaN;
   return Number.isFinite(time) ? time : Infinity;
+}
+
+const brazilDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' });
+function dailyRotation(id: string, now: number) {
+  let hash = 2166136261;
+  for (const character of `${brazilDay.format(now)}:${id}`) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+  return (hash >>> 0) / 0x100000000;
 }
 
 function editorialHighlights(item: StudentOpportunity) {
@@ -51,6 +59,7 @@ export function opportunityScore(item: StudentOpportunity, filters: OpportunityF
   const days = item.deadline ? (Date.parse(`${item.deadline}T23:59:59-03:00`) - now) / 86_400_000 : Infinity;
   const startsIn = item.eventStartsAt ? (Date.parse(item.eventStartsAt.length === 10 ? `${item.eventStartsAt}T00:00:00-03:00` : item.eventStartsAt) - now) / 86_400_000 : Infinity;
   return (prioritizeActivities ? nature : 0) +
+    (prioritizeHighlights && item.editorialFocus === 'event_or_competition' ? dailyRotation(item.id, now) * config.dailyRotation : 0) +
     (prioritizeHighlights && highlights.preferred ? config.preferredActivity : 0) +
     (prioritizeHighlights && highlights.prize ? config.confirmedPrize : 0) +
     (prioritizeHighlights && highlights.business ? config.technologyBusiness : 0) +

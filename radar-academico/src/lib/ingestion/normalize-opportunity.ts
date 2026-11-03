@@ -51,7 +51,7 @@ export function normalizeOpportunity(input: {
   const combined = `${input.title}\n${input.text}`.replace(/\s+/g, " ").trim();
   const normalizedLocation = normalizeBrazilianLocation(input.source.location ?? {});
   if (normalizedLocation.status === "invalid") return null;
-  if (!relevant.test(combined) || excluded.test(combined)) return null;
+  if (!(relevant.test(combined) || /olimp[ií]ada|torneio|maratona/i.test(input.title)) || excluded.test(combined)) return null;
   const applicantType = classifyAudience(combined);
   const applicationRoute = classifyApplicationRoute(combined);
   const deadline = detectDeadline(combined);

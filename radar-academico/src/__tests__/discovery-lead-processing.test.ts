@@ -42,8 +42,8 @@ let current: Record<string, unknown> | null;
 let live: Record<string, unknown> | null;
 let stored: Record<string, unknown> | null;
 let claimed: ProcessingLead[];
-const query = vi.fn(async (sql: string) => {
-  if (sql.includes("with due as")) return { rows: claimed };
+const query = vi.fn(async (sql: string, values?: unknown[]) => {
+  if (sql.includes("with due as")) return { rows: claimed.splice(0, Number(values?.[2] ?? 2)) };
   if (sql.includes("insert into ingestion_runs")) return { rows: [{ id: lead.processing_run_id }] };
   if (sql.includes("select lead.*")) return { rows: current ? [current] : [] };
   if (sql.includes("select allowed_domains")) return { rows: live ? [live] : [] };
@@ -143,4 +143,15 @@ it("does not fetch a lead whose discovery target is disabled", async () => {
   current!.target_enabled = false;
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, blocked: 1, published: 0, reasons: { target_unavailable: 1 } });
   expect(prepareLeadCandidate).not.toHaveBeenCalled();
+});
+
+it('stops claiming before the time budget expires without leasing unstarted candidates', async () => {
+  claimed = Array.from({ length: 5 }, () => ({ ...lead }));
+  vi.mocked(prepareLeadCandidate).mockResolvedValue({ source, candidate });
+  const base = Date.now();
+  const clock = vi.spyOn(Date, 'now').mockReturnValueOnce(base).mockReturnValueOnce(base).mockReturnValue(base + 90_000);
+  try {
+    expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, published: 1 });
+    expect(claimed).toHaveLength(4);
+  } finally { clock.mockRestore(); }
 });
