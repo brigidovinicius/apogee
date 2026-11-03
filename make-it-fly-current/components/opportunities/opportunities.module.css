@@ -620,10 +620,13 @@
 }
 
 .card {
+  --opportunity-ink: var(--apogee-surface-inverse);
+
   display: flex;
   flex-direction: column;
   min-height: 29rem;
   padding: clamp(1.25rem, 2.5vw, 1.8rem);
+  color: var(--apogee-content-primary);
   background: var(--apogee-black);
   transition: background-color 180ms ease;
 }
