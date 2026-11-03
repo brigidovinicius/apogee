@@ -3,6 +3,7 @@ import { request } from "node:https";
 import { BlockList, isIP } from "node:net";
 import type { LookupFunction } from "node:net";
 import { gunzipSync } from "node:zlib";
+import { officialRequestSignal } from "./request-budget";
 
 const blocked = new BlockList();
 for (const [network, prefix] of [
@@ -71,7 +72,7 @@ export function safeRequest(url: string, headers: Record<string, string>, maxByt
   return new Promise((resolve, reject) => {
     const req = request(target, {
       method, headers: { ...headers, "Accept-Encoding": "identity" },
-      agent: false, lookup: publicLookup, signal: AbortSignal.timeout(15_000),
+      agent: false, lookup: publicLookup, signal: officialRequestSignal(),
       // The official SEA host sends a multiline CSP header. This opt-in only
       // changes response-header parsing; DNS, TLS, body and redirect limits remain.
       insecureHTTPParser: allowMalformedResponseHeaders,

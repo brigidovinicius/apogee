@@ -29,6 +29,7 @@ beforeAll(async () => {
 afterAll(async () => { await state.db?.close(); vi.unstubAllEnvs(); });
 beforeEach(async () => {
   pages.clear();
+  vi.mocked(fetchOfficialResource).mockClear();
   await state.db!.exec("delete from discovery_leads; delete from ingestion_runs; delete from opportunity_management_events; delete from opportunity_revisions; delete from opportunity_sources; delete from opportunities; delete from official_sources where id like 'auto-page-%' or id='registered-html-test'; update discovery_targets set enabled=false; update official_sources set active=false;");
   await state.db!.query('delete from discovery_targets where id=$1', [target]);
   await state.db!.query(`insert into discovery_targets(id,name,organizer,kind,official_url,evidence_url,enabled,
@@ -42,6 +43,64 @@ beforeEach(async () => {
   });
 });
 const due = () => state.db!.query('update discovery_targets set next_check_at=now() where id=$1', [target]);
+
+it('publishes an evidenced olympiad with its heading outside the nested article', async () => {
+  await state.db!.query("update discovery_targets set topics=array['competicoes'] where id=$1", [target]);
+  const url = parent + 'olimpiada-2026';
+  page(parent, `<a href="${url}">Olimpíada de Matemática</a>`);
+  page(url, '<main><h1>Olimpíada de Matemática</h1><article><p>Inscrições abertas até 31/12/2099.</p><p>Estudantes do ensino médio podem participar. Inscreva-se pelo formulário de inscrição.</p></article></main>');
+  await runScheduledDiscovery();
+  expect(await runScheduledLeadProcessing()).toMatchObject({ created: 1, published: 1 });
+  expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ title: 'Olimpíada de Matemática' })]);
+  expect((await state.db!.query('select categories from opportunities')).rows).toEqual([
+    { categories: expect.arrayContaining(['competicoes']) },
+  ]);
+});
+
+it('drains more than two candidates in one native cycle while preserving atomic publication', async () => {
+  const urls = Array.from({ length: 5 }, (_, i) => parent + 'bolsa-' + i);
+  page(parent, urls.map((url, i) => `<a href="${url}">Bolsa de pesquisa ${i}</a>`).join(''));
+  urls.forEach((url, i) => page(url, detail('Bolsa de pesquisa ' + i)));
+  await runScheduledDiscovery();
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 5, created: 5, published: 5 });
+  expect(await listPublicOpportunities()).toHaveLength(5);
+  expect((await state.db!.query("select count(*)::int as count from discovery_leads where processing_status='processing'")).rows).toEqual([{ count: 0 }]);
+});
+
+it('publishes another target despite a large older backlog and leaves unstarted links pending at the batch limit', async () => {
+  await state.db!.query(`insert into discovery_targets(id,name,organizer,kind,official_url,evidence_url,enabled,
+    official_verified_at,official_verified_url,official_verified_by,official_review_note)
+    select 'second-target',name,organizer,kind,official_url,evidence_url,true,official_verified_at,official_verified_url,
+    official_verified_by,official_review_note from discovery_targets where id=$1`, [target]);
+  for (let i = 0; i < 25; i++) await state.db!.query(`insert into discovery_leads(target_id,url,title,processing_next_at,first_seen_at)
+    values($1,$2,'Bolsa de pesquisa',now()-interval '2 days',now()-interval '2 days')`, [target, parent + 'backlog-' + i + '.png']);
+  await state.db!.query(`insert into discovery_leads(target_id,url,title) values('second-target',$1,'Bolsa nova')`, [parent + 'new-call']);
+  page(parent, `<a href="${parent}new-call">Bolsa nova</a>`);
+  page(parent + 'new-call', detail('Bolsa nova'));
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 24, published: 1, blocked: 23 });
+  expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ title: 'Bolsa nova' })]);
+  expect((await state.db!.query("select count(*)::int as count from discovery_leads where processing_status='pending'")).rows).toEqual([{ count: 2 }]);
+  expect((await state.db!.query("select count(*)::int as count from discovery_leads where processing_status='processing'")).rows).toEqual([{ count: 0 }]);
+  await state.db!.query("delete from discovery_leads where target_id='second-target'");
+  await state.db!.query("delete from discovery_targets where id='second-target'");
+});
+
+it('rejects a legacy image candidate without making any public network request', async () => {
+  await state.db!.query(`insert into discovery_leads(target_id,url,title) values($1,$2,'Inscrições da olimpíada')`, [target, parent + 'cartaz.png']);
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, published: 0, reasons: { unsupported_content: 1 } });
+  expect(fetchOfficialResource).not.toHaveBeenCalled();
+});
+
+it('revisits corrected extraction blocks even while the same target still has pending links', async () => {
+  for (let i = 0; i < 26; i++) await state.db!.query(`insert into discovery_leads(target_id,url,title)
+    values($1,$2,'Inscrições')`, [target, parent + 'pending-' + i + '.png']);
+  await state.db!.query(`insert into discovery_leads(target_id,url,title,processing_status,processing_reason,processing_attempts)
+    values($1,$2,'Bolsa de pesquisa corrigida','blocked','candidate_unconfirmed',1)`, [target, parent + 'bolsa-corrigida']);
+  page(parent, `<a href="${parent}bolsa-corrigida">Bolsa de pesquisa corrigida</a>`);
+  page(parent + 'bolsa-corrigida', detail('Bolsa de pesquisa corrigida'));
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 24, published: 1 });
+  expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ title: 'Bolsa de pesquisa corrigida' })]);
+});
 
 it('registers an exact external event page only when its structured organizer matches the verified institution', async () => {
   const external = 'https://conference.example.net/workshop';

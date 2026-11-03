@@ -14,7 +14,8 @@ export function singleOpportunityArticle(html: string) {
   const $ = cheerio.load(html);
   $("script,style,noscript,nav,footer,aside,.entry-meta,.postmetadata").remove();
   const articles = $("article");
-  const article = articles.length ? articles : $("main,[role='main']");
+  const article = articles.length === 1 && articles.find("h1").length === 1 ? articles : $("main,[role='main']");
+  if (articles.length > 1) return null;
   if (article.length !== 1 || article.find("h1").length !== 1) return null;
   const title = clean(article.find("h1").first().text());
   article.find("p,div,h1,h2,h3,li,a").append(" ");

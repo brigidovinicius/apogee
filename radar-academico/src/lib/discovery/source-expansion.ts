@@ -14,6 +14,7 @@ export type ExpansionLead = {
   url: string; title: string; target_id: string; target_official_url: string;
   target_verified_at: string | null; target_enabled: boolean; target_verified_url: string | null;
   target_name?: string; target_organizer?: string; target_priority?: number;
+  target_topics?: string[];
   discovery_path?: string[];
 };
 export type SourceRegistration = {
@@ -31,7 +32,7 @@ function pageSource(lead: ExpansionLead): OfficialSource {
     name: lead.title, institutionName: lead.target_organizer!, institutionAcronym: "",
     sourceType: "official_reference", baseUrl: lead.url, allowedDomains: [url.hostname],
     allowedPathPrefixes: [url.pathname], listingUrls: [lead.url], extractionMode: "html",
-    audienceScope: [], geographicScope: [], categories: [], priority: Math.min(70, lead.target_priority ?? 0), active: true,
+    audienceScope: [], geographicScope: [], categories: lead.target_topics ?? [], priority: Math.min(70, lead.target_priority ?? 0), active: true,
     notes: `radar:discovery-page:v1; target=${lead.target_id}; authority=${lead.target_official_url}`,
   };
 }
@@ -97,8 +98,8 @@ export async function registerDiscoveredSource(client: PoolClient, lead: Expansi
   await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [`radar:page:${lead.url}`]);
   const existing = await client.query<{ id: string; active: boolean; verification_status: string; base_url: string;
     allowed_domains: string[]; allowed_path_prefixes: string[]; listing_urls: string[]; notes: string;
-    institution_name: string; extraction_mode: string }>(
-    `select id,active,verification_status,base_url,allowed_domains,allowed_path_prefixes,listing_urls,notes,institution_name,extraction_mode
+    institution_name: string; extraction_mode: string; categories: string[] }>(
+    `select id,active,verification_status,base_url,allowed_domains,allowed_path_prefixes,listing_urls,notes,institution_name,extraction_mode,categories
      from official_sources where id=$1 or base_url=$2 or $2=any(listing_urls)
        or ($3=any(allowed_domains) and exists(select 1 from unnest(allowed_path_prefixes) prefix
          where left($4,length(prefix))=prefix)) for share`, [source.id, lead.url, url.hostname, url.pathname]);
@@ -108,6 +109,7 @@ export async function registerDiscoveredSource(client: PoolClient, lead: Expansi
     if (existing.rows.length !== 1 || row.id !== source.id || !row.active || row.verification_status !== "verified" ||
       row.base_url !== source.baseUrl || row.institution_name !== source.institutionName || row.notes !== source.notes ||
       row.extraction_mode !== "html" || !isDeepStrictEqual(row.allowed_domains, source.allowedDomains) ||
+      !isDeepStrictEqual(row.categories, source.categories) ||
       !isDeepStrictEqual(row.allowed_path_prefixes, source.allowedPathPrefixes) || !isDeepStrictEqual(row.listing_urls, source.listingUrls)) {
       return { reason: "source_registration_conflict" };
     }
@@ -120,9 +122,9 @@ export async function registerDiscoveredSource(client: PoolClient, lead: Expansi
     allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,audience_scope,geographic_scope,categories,priority,
     active,verification_status,verification_method,verification_evidence_url,verified_at,verified_by,
     audit_evidence_url,audited_at,audited_by,robots_checked_at,notes,next_crawl_at)
-    values($1,$2,$3,'','official_reference',$4,$5,$6,$7,'html','{}','{}','{}',$8,
+    values($1,$2,$3,'','official_reference',$4,$5,$6,$7,'html','{}','{}',$11,$8,
       true,'verified','automatic',$9,now(),'radar:discovery', $9,now(),'radar:discovery',now(),$10,now()+interval '24 hours')`,
     [source.id, source.name, source.institutionName, source.baseUrl, source.allowedDomains, source.allowedPathPrefixes,
-      source.listingUrls, source.priority, proof.targetUrl, source.notes]);
+      source.listingUrls, source.priority, proof.targetUrl, source.notes, source.categories]);
   return { added: 1 };
 }

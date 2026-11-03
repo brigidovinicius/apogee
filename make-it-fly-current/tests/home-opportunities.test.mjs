@@ -21,10 +21,16 @@ test("unknown event deadlines never keep past events in the homepage preview", (
   const event = item({ deadline: null, deadlineUnknown: true });
   assert.equal(homeOpportunityIsCurrent(event, now), false);
   assert.equal(homeOpportunityIsCurrent({ ...event, eventStartsAt: "2026-10-15" }, now), false);
-  assert.equal(homeOpportunityIsCurrent({ ...event, eventStartsAt: "2026-10-16" }, now), true);
+  assert.equal(homeOpportunityIsCurrent({ ...event, eventStartsAt: "2026-10-16" }, now), false);
   assert.equal(homeOpportunityIsCurrent({ ...event, eventStartsAt: "2026-10-17T00:30:00Z" }, now), false);
   assert.equal(homeOpportunityIsCurrent({ ...event, eventStartsAt: "2026-10-17T03:00:00Z" }, now), true);
   assert.equal(homeOpportunityIsCurrent({ ...event, eventStartsAt: "invalid" }, now), false);
+});
+
+test('homepage automatically removes started events even with a later registration deadline', () => {
+  const event = item({ eventStartsAt: '2026-10-17T00:30:00Z', deadline: '2026-10-20' });
+  assert.equal(homeOpportunityIsCurrent(event, now), false);
+  assert.equal(homeOpportunityIsCurrent(item({ opportunityStatus: 'closed' }), now), false);
 });
 
 test("future registrations remain out of the open preview; continuous entries keep their existing treatment", () => {

@@ -62,6 +62,7 @@ test("public catalogue outages keep the catalogue link without inventing entries
     "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return createElement("a", props, children); } },
     "@/lib/opportunities/access": { listPublicOpportunities: async () => { throw new Error("offline"); } },
     "@/lib/home-opportunities": helpers,
+    "@/components/opportunities/live-refresh": opportunityLoader({ "next/navigation": { useRouter: () => ({ refresh() {} }) } })("components/opportunities/live-refresh.tsx"),
     "./earth-radar/earth-radar-list": { EarthRadarList },
     "./home-radar-list": { HomeRadarList: () => null },
     "./editorial-home.module.css": { __esModule: true, default: {} },

@@ -9,6 +9,9 @@ import { ingestionFailureReason } from "@/lib/ingestion/failure-reason";
 import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
 import { prepareLeadCandidate } from "./lead-candidate";
 import { prepareSourceExpansion, registerDiscoveredSource, type PreparedDiscoveryCandidate } from "./source-expansion";
+import { CALL_PRIORITY_PATTERN, discoveryLinkIssue } from "./link-selection";
+import { programmeCataloguePageCount, programmeSupplementUrl } from "@/lib/ingestion/programme-catalogue";
+import { withOfficialRequestDeadline } from "@/lib/ingestion/request-budget";
 
 export type ProcessingLead = {
   id: string; target_id: string; url: string; title: string; excerpt: string;
@@ -17,11 +20,12 @@ export type ProcessingLead = {
   target_official_url: string; target_verified_at: string | null;
   target_enabled: boolean; target_verified_url: string | null;
   target_name?: string; target_organizer?: string; target_priority?: number;
+  target_topics?: string[];
   discovery_path?: string[];
 };
 
 export const LEAD_PROCESSING_REASONS = new Set([
-  "scope_unverified", "source_unavailable", "source_changed", "target_unavailable", "target_changed", "lead_changed",
+  "scope_unverified", "source_unavailable", "source_changed", "target_unavailable", "target_changed", "lead_changed", "irrelevant_link",
   "candidate_unconfirmed", "unsupported_source", "unsupported_content", "listing_or_ambiguous", "expired", "event_started",
   "invalid_source", "source_conflict", "status_unconfirmed", "invalid_deadline", "application_route_unconfirmed",
   "missing_evidence", "national_scope_unconfirmed", "deleted", "identity_conflict", "manual_override",
@@ -44,7 +48,8 @@ export function leadRetryDelayMinutes(attempt: number) {
   return Math.min(24 * 60, 60 * 2 ** Math.max(0, attempt - 1));
 }
 
-export async function claimDueDiscoveryLeads(): Promise<ProcessingLead[]> {
+export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[] = [], preferReevaluation = false): Promise<ProcessingLead[]> {
+  const batchSize = Number.isInteger(limit) && limit >= 1 && limit <= 2 ? limit : 2;
   return withAdminTransaction(async (client) => {
     await client.query(
       `with exhausted as (
@@ -60,26 +65,30 @@ export async function claimDueDiscoveryLeads(): Promise<ProcessingLead[]> {
          select lead.id,lead.processing_run_id as previous_run_id,
            target.official_url as target_official_url,target.official_verified_at::text as target_verified_at,
            target.enabled as target_enabled,target.official_verified_url as target_verified_url,
-           target.name as target_name,target.organizer as target_organizer,target.priority as target_priority
+           target.name as target_name,target.organizer as target_organizer,target.priority as target_priority,target.topics as target_topics
          from discovery_leads lead join discovery_targets target on target.id=lead.target_id
          where lead.status in ('new','reviewing')
+           and not (lead.target_id=any($4::text[]))
+           and target.enabled and target.official_verified_at is not null and target.official_verified_url=target.official_url
            and lead.processing_attempts < $1
            and ((lead.processing_status in ('pending','retry') and lead.processing_next_at<=now())
              or (lead.processing_status='processing' and lead.processing_lease_until<=now())
              or (lead.processing_status='blocked' and lead.processing_reason in
                  ('scope_unverified','candidate_unconfirmed','source_authority_unverified','listing_or_ambiguous','unsupported_content')
                and not exists(select 1 from ingestion_runs run where run.execution_metadata->>'lead_id'=lead.id::text
-                 and run.execution_metadata->>'source_expansion_version'='2')))
-         order by case when lead.processing_status='blocked' then 1 else 0 end,
+                 and run.execution_metadata->>'source_expansion_version'='3')))
+         order by case when (lead.processing_status='blocked')=$6 then 0 else 1 end,
+           case when lead.first_seen_at<=now()-interval '48 hours' then 0 else 1 end,
+           case when lead.title ~* $5 then 0 else 1 end,
            lead.processing_next_at,lead.first_seen_at,lead.id
-         limit 2 for update of lead skip locked
+         limit $3 for update of lead skip locked
        ) update discovery_leads lead set processing_status='processing',
          processing_lease_until=now()+interval '10 minutes',processing_lease_token=$2,
          processing_attempts=lead.processing_attempts+1,processing_reason=null
        from due where lead.id=due.id
        returning lead.*,due.target_official_url,due.target_verified_at,due.target_enabled,due.target_verified_url,
-         due.target_name,due.target_organizer,due.target_priority,due.previous_run_id`,
-      [MAX_ATTEMPTS, randomUUID()],
+         due.target_name,due.target_organizer,due.target_priority,due.target_topics,due.previous_run_id`,
+      [MAX_ATTEMPTS, randomUUID(), batchSize, excludedTargets, CALL_PRIORITY_PATTERN, preferReevaluation],
     );
     for (const lead of rows) {
       if (lead.previous_run_id) await client.query(
@@ -88,7 +97,7 @@ export async function claimDueDiscoveryLeads(): Promise<ProcessingLead[]> {
          where id=$1 and status='running'`, [lead.previous_run_id]);
       const run = await client.query<{ id: string }>(
         `insert into ingestion_runs(started_at,status,execution_metadata) values(now(),'running',$1) returning id`,
-        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 2 }],
+        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 3 }],
       );
       lead.processing_run_id = run.rows[0].id;
       await client.query("update discovery_leads set processing_run_id=$2 where id=$1", [lead.id, lead.processing_run_id]);
@@ -137,7 +146,7 @@ export async function finishDiscoveryLead(lead: ProcessingLead, prepared: Prepar
     const current = await client.query<ProcessingLead & { target_enabled: boolean; target_current_url: string; target_current_verified_url: string | null; target_current_verified_at: string | null }>(
       `select lead.*,target.enabled as target_enabled,target.official_url as target_current_url,
          target.official_verified_url as target_current_verified_url,target.official_verified_at::text as target_current_verified_at,
-         target.organizer as target_organizer,target.priority as target_priority
+         target.organizer as target_organizer,target.priority as target_priority,target.topics as target_topics
        from discovery_leads lead join discovery_targets target on target.id=lead.target_id
        where lead.id=$1 and lead.processing_lease_token=$2 and lead.processing_status='processing'
          and lead.processing_lease_until>now() for update of lead for share of target`,
@@ -154,7 +163,8 @@ export async function finishDiscoveryLead(lead: ProcessingLead, prepared: Prepar
     if (!row.target_enabled || !row.target_current_verified_at || row.target_current_verified_url !== row.target_current_url) {
       return recordOutcome(client, lead, blocked("target_unavailable", false, lead.processing_attempts));
     }
-    if (row.target_current_url !== lead.target_official_url || row.target_current_verified_at !== lead.target_verified_at) {
+    if (row.target_current_url !== lead.target_official_url || row.target_current_verified_at !== lead.target_verified_at ||
+      !isDeepStrictEqual(row.target_topics ?? [], lead.target_topics ?? [])) {
       return recordOutcome(client, lead, blocked("target_changed", false, lead.processing_attempts));
     }
     if ("reason" in prepared) return recordOutcome(client, lead, blocked(prepared.reason, prepared.retry === true, lead.processing_attempts));
@@ -226,15 +236,32 @@ export async function finishDiscoveryLead(lead: ProcessingLead, prepared: Prepar
 }
 
 export async function runScheduledLeadProcessing() {
-  const leads = await claimDueDiscoveryLeads();
+  const started = Date.now();
+  const roundTargets = new Set<string>();
   const sources = await loadActiveOfficialSources();
-  const report = { leadsChecked: leads.length, sourcesRegistered: 0, created: 0, updated: 0, published: 0, blocked: 0, retried: 0, ignored: 0, leaseLost: 0, failed: 0, reasons: {} as Record<string, number> };
-  for (const lead of leads) {
+  const report = { leadsChecked: 0, sourcesRegistered: 0, created: 0, updated: 0, published: 0, blocked: 0, retried: 0, ignored: 0, leaseLost: 0, failed: 0, reasons: {} as Record<string, number> };
+  // Claim only the candidate about to start; the time budget leaves no unstarted leases.
+  while (report.leadsChecked < 24 && Date.now() - started < 90_000) {
+    const preferReevaluation = report.leadsChecked % 4 === 3;
+    let [lead] = await claimDueDiscoveryLeads(1, [...roundTargets], preferReevaluation);
+    if (!lead && roundTargets.size) {
+      roundTargets.clear();
+      [lead] = await claimDueDiscoveryLeads(1, [], preferReevaluation);
+    }
+    if (!lead) break;
+    roundTargets.add(lead.target_id);
+    report.leadsChecked++;
     let prepared: Prepared;
+    const authorizedPdf = sources.some(source => programmeCataloguePageCount(source.id) === 2 &&
+      programmeSupplementUrl(source.id) === lead.url && isOfficialSourceUrl(lead.url, [source]));
+    const selectionIssue = discoveryLinkIssue(lead) ??
+      (/\.pdf$/i.test(new URL(lead.url).pathname) && !authorizedPdf ? "unsupported_content" : null);
     try {
-      prepared = !lead.target_enabled || !lead.target_verified_at || lead.target_verified_url !== lead.target_official_url
-        ? { reason: "target_unavailable" } : await prepareLeadCandidate(lead, sources);
-      if ("reason" in prepared && prepared.reason === "scope_unverified") prepared = await prepareSourceExpansion(lead);
+      prepared = await withOfficialRequestDeadline(started + 90_000, async () => {
+        const result = !lead.target_enabled || !lead.target_verified_at || lead.target_verified_url !== lead.target_official_url
+          ? { reason: "target_unavailable" } : selectionIssue ? { reason: selectionIssue } : await prepareLeadCandidate(lead, sources);
+        return "reason" in result && result.reason === "scope_unverified" ? prepareSourceExpansion(lead) : result;
+      });
     }
     catch (error) { prepared = { reason: ingestionFailureReason(error), retry: true }; }
     let outcome: Outcome | null;

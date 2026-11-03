@@ -25,6 +25,18 @@ const dataset = [exam("Química"), exam("Informática"), exam("Administração",
   item("Hackathon"), item("Conferência", { categories: ["eventos", "pesquisa"] }),
   item("Curso livre", { kind: "Curso", categories: ["formacao"], editorialNature: "unclassified", editorialFocus: null })];
 const page = (query = "", data = dataset) => buildOpportunityPage(data, new URLSearchParams(query), now);
+
+test("highlights rotate across Brazilian days, remain stable within a day and preserve stronger editorial priorities", () => {
+  const options = Array.from({ length: 12 }, (_, i) => item(`rotation-${i}`, { organization: `Organizer ${i}` }));
+  const first = rankOpportunities(options, logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime());
+  assert.deepEqual(rankOpportunities([...options].reverse(), logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime() + 3600000), first);
+  const next = rankOpportunities(options, logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime() + 86400000);
+  assert.notDeepEqual(first.slice(0, 4).map(i => i.id), next.slice(0, 4).map(i => i.id));
+  const prize = item('Confirmed prize', { kind: 'Prêmio', organization: 'Prize organizer' });
+  for (const day of [now.getTime(), now.getTime() + 86400000]) {
+    assert.equal(rankOpportunities([...options, prize], logic.EMPTY_OPPORTUNITY_FILTERS, day)[0], prize);
+  }
+});
 const html = catalogue => renderToStaticMarkup(React.createElement(OpportunitiesBoard, { opportunities: catalogue.opportunities, catalogue, editorialFeed: true })).replace(/<!--.*?-->/g, "");
 
 test("A/C: default, Todas, search, geography and education never opt into vestibular; removing it restores feed", () => {
@@ -122,7 +134,7 @@ test("audited noncash prizes lead without manufacturing money and nearby confere
   assert.deepEqual(awarded.financials.benefits, []);
   const first = item("z-first", { title: "Conferência de negócios", organization: "A", deadline: null, eventStartsAt: "2026-10-18" });
   const second = item("a-second", { title: "Conferência de tecnologia", organization: "B", deadline: null, eventStartsAt: "2026-10-19" });
-  assert.deepEqual(rankOpportunities([second, first], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime()), [first, second]);
+  assert.deepEqual(rankOpportunities([second, first], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime(), { ...DEFAULT_RANKING, dailyRotation: 0 }), [first, second]);
   const admission = exam("admission", { kind: "Prêmio" });
   assert.equal(rankOpportunities([admission, conference], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], conference);
 });

@@ -25,3 +25,26 @@ it('rejects XML external entities instead of resolving local or network content'
   expect(() => discoveryDocument(resource('<!DOCTYPE rss [<!ENTITY secret SYSTEM "file:///etc/passwd">]><rss>&secret;</rss>', 'application/xml'),
     'https://official.example.org/feed', 'https://official.example.org/')).toThrow();
 });
+
+it('keeps calls without inheriting relevance from parent directories or queuing image assets', () => {
+  const parsed = discoveryDocument(resource(`<urlset>
+    <url><loc>https://official.example.org/olimpiada/uploads/cartaz-inscricoes.png</loc></url>
+    <url><loc>https://official.example.org/olimpiada/equipe-organizadora</loc></url>
+    <url><loc>https://official.example.org/olimpiada/inscricoes-2026</loc></url>
+    <url><loc>https://official.example.org/bolsa-pesquisa-2026</loc></url>
+  </urlset>`, 'application/xml'), 'https://official.example.org/sitemap.xml', 'https://official.example.org/');
+  expect(parsed.links.map(l => l.url)).toEqual([
+    'https://official.example.org/olimpiada/inscricoes-2026', 'https://official.example.org/bolsa-pesquisa-2026',
+  ]);
+});
+
+it('retains numbered calls in a specific collection and official PDF calls for adapter validation', () => {
+  const parsed = discoveryDocument(resource(`<urlset>
+    <url><loc>https://official.example.org/editais/2026/001</loc></url>
+    <url><loc>https://official.example.org/edital-bolsa.pdf</loc></url>
+    <url><loc>https://official.example.org/olimpiada/001</loc></url>
+  </urlset>`, 'application/xml'), 'https://official.example.org/sitemap.xml', 'https://official.example.org/');
+  expect(parsed.links.map(l => l.url)).toEqual([
+    'https://official.example.org/editais/2026/001', 'https://official.example.org/edital-bolsa.pdf',
+  ]);
+});
