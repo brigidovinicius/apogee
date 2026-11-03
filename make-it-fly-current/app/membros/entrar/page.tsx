@@ -9,7 +9,7 @@ import { safeNextPath } from "@/lib/members/validation";
 
 export const metadata: Metadata = { title: "Entrar" };
 
-export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
+export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string; senha?: string }> }) {
   const params = await searchParams;
   const next = safeNextPath(params.next);
   if (await getCurrentMember()) redirect(next);
@@ -22,6 +22,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
         <p className={styles.lead}>Acesse o fórum, seu perfil e o Radar de oportunidades da comunidade Apogee</p>
       </header>
       <div className={`${styles.panel} ${styles.authPanel}`}>
+        {params.senha === "redefinida" && <p role="status">Senha redefinida. Entre com sua nova senha.</p>}
         <SignInForm next={next} googleError={googleOAuthErrorMessage(params.error)} />
       </div>
       <p className={styles.switchAuth}>

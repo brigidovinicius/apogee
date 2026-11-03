@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Links de convite/verificação contêm segredos transitórios; omitir dos logs dev.
-  logging: { incomingRequests: { ignore: [/\/api\/integracoes\/google-agenda\/callback/, /\/meu-calendario\//, /\/membros\/convite/, /\/membros\/(cadastro|entrar)/, /\/api\/auth\/verify-email/] } },
+  logging: { incomingRequests: { ignore: [/\/api\/integracoes\/google-agenda\/callback/, /\/meu-calendario\//, /\/membros\/convite/, /\/membros\/(cadastro|entrar|esqueci-senha|redefinir-senha)/, /\/api\/auth\/(verify-email|reset-password)/] } },
   async headers() {
     return [{ source: "/:path*", headers: [
       { key: "X-Content-Type-Options", value: "nosniff" },
@@ -14,7 +14,12 @@ const nextConfig: NextConfig = {
       ...(process.env.NODE_ENV === "production" ? [{ key: "Strict-Transport-Security", value: "max-age=31536000" }] : []),
     ] }, { source: "/api/:path*", headers: [
       { key: "X-Robots-Tag", value: "noindex, nofollow" },
-    ] }, ...["mobile", "desktop"].map(device => ({
+    ] }, ...["/membros/esqueci-senha", "/membros/redefinir-senha", "/api/auth/reset-password/:path*"].map(source => ({
+      source, headers: [
+        { key: "Referrer-Policy", value: "no-referrer" },
+        { key: "Cache-Control", value: "no-store" },
+      ],
+    })), ...["mobile", "desktop"].map(device => ({
       // Versioned clips are never overwritten after publication.
       source: `/media/earth-v2/earth-${device}-scroll-v3.mp4`,
       headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
