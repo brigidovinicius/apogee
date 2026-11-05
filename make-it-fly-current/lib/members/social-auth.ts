@@ -10,9 +10,15 @@ const GOOGLE_OAUTH_ERRORS: Record<string, string> = {
   signup_disabled: "Crie sua conta com Google pela página de cadastro.",
 };
 
+export function googleOAuthErrorCode(error: unknown): string | undefined {
+  if (typeof error !== "string") return undefined;
+  return Object.hasOwn(GOOGLE_OAUTH_ERRORS, error) ? error : "authentication_failed";
+}
+
 // Nunca exibimos a descrição recebida do provedor ou da API: ela pode conter
 // detalhes operacionais que não ajudam a pessoa a concluir o login.
 export function googleOAuthErrorMessage(error: unknown): string | undefined {
-  if (typeof error !== "string") return undefined;
-  return GOOGLE_OAUTH_ERRORS[error] ?? "Não foi possível concluir a entrada com Google. Tente novamente.";
+  const code = googleOAuthErrorCode(error);
+  if (!code) return undefined;
+  return GOOGLE_OAUTH_ERRORS[code] ?? "Não foi possível concluir a entrada com Google. Tente novamente.";
 }

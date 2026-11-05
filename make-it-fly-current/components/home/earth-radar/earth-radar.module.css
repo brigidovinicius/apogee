@@ -990,3 +990,6 @@
 }
 
 .preview .earth-detail { object-fit: cover; object-position: 65% 50%; opacity: var(--earth-detail-progress, 0); }
+
+.preview .opportunity-action { color: #fff; background: var(--night); border-color: var(--night); font-size: .8125rem; font-weight: 600; }
+.preview .opportunity-action:hover { background: #234b75; border-color: #234b75; }

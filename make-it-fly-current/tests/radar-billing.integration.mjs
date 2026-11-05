@@ -197,12 +197,12 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
         "@/lib/members/forum": {},
         "next/headers": { headers: async () => new Headers({ Origin: origin }) },
         "next/cache": { revalidatePath() {} },
-        "next/navigation": { redirect: path => { throw new Error(`REDIRECT:${path}`); } },
+        "next/navigation": { RedirectType: { replace: "replace" }, redirect: path => { throw new Error(`REDIRECT:${path}`); } },
       });
       const form = new FormData();
       for (const [key, value] of Object.entries({ adultDeclared: "on", name: "Comprador Teste", username: "actionbuyer", email: "actionbuyer@example.test", password: "Synthetic-password-123!", next: "/membros" })) form.set(key, value);
       const before = mails.length;
-      await assert.rejects(actionLoad("app/membros/actions.ts").signUp({}, form), /REDIRECT:\/membros\/radar\/acesso$/);
+      await assert.rejects(actionLoad("app/membros/actions.ts").signUp({}, form), /REDIRECT:\/membros\/radar\/acesso\?next=%2Fmembros$/);
       assert.equal(mails.length, before + 1, "mesmo hook cobre API server sem Request");
     });
 
@@ -244,6 +244,15 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       assert.equal((await sql`select email_verified from "user" where id = ${buyer.id}`)[0].email_verified, false);
       assert.equal(await load("lib/members/protection.ts").adultAccess(buyer.id), false, "new buyer has no community review");
       assert.equal((await buy()).status, 401);
+      const beforeExpired = createCount;
+      const expired = await checkout.POST(new Request(`${origin}/api/radar/checkout?next=%2Fmembros%2Foportunidades%2Fradar-second`, {
+        method: "POST", headers: { ...headers(), Accept: "text/html", "sec-fetch-mode": "navigate" },
+      }));
+      assert.equal(expired.status, 303, "expired form session returns to login instead of a JSON page");
+      const login = new URL(expired.headers.get("location"));
+      assert.equal(login.pathname, "/membros/entrar");
+      assert.equal(login.searchParams.get("next"), "/membros/oportunidades/radar-second");
+      assert.equal(createCount, beforeExpired, "expired login cannot create a payment session");
       assert.equal((await checkout.POST(new Request(`${origin}/api/radar/checkout`, { method: "POST", headers: { ...headers(buyer.cookie), Origin: "https://evil.test" } }))).status, 403);
       const response = await buy(buyer, { userId: other.id, amount: 1, price: "price_wrong" });
       assert.equal(response.status, 303);
@@ -283,6 +292,14 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       assert.equal(response.status, 503);
       assert.equal((await response.text()).includes("private provider detail"), false);
       assert.equal((await sql`select event_id from radar_stripe_event where event_id = ${input.id}`).length, 0);
+      const recover = await checkout.POST(new Request(`${origin}/api/radar/checkout?next=%2Fmembros%2Foportunidades%2Fradar-second`, {
+        method: "POST", headers: { ...headers(buyer.cookie), Accept: "text/html" },
+      }));
+      assert.equal(recover.status, 303);
+      const retry = new URL(recover.headers.get("location"));
+      assert.equal(retry.pathname, "/membros/radar/acesso");
+      assert.equal(retry.searchParams.get("next"), "/membros/oportunidades/radar-second");
+      assert.equal(retry.searchParams.get("checkout"), "unavailable");
       failProvider = false;
       assert.equal((await deliver(input)).status, 200);
       assert.deepEqual(await radarAccess(buyer.id, false), { active: true, source: "stripe" });

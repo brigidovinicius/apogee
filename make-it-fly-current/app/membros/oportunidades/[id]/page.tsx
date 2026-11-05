@@ -22,7 +22,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   const saved = canSave ? (await savedOpportunities(result.member.id)).some(s=>s.id===id && !s.removedAt) : false;
   return <div className={styles.container}>
     <MemberBar member={result.member} current="radar" />
-    <div className={styles.narrow}>
+    <div className={styles.opportunityDetail}>
       <p><Link href="/membros/oportunidades">← Voltar ao Radar</Link></p>
       {result.opportunity ? <>
         <h1 className={styles.title}>{result.opportunity.title}</h1>

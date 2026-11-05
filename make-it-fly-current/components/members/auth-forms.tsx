@@ -3,7 +3,7 @@
 import { createAuthClient } from "better-auth/client";
 import { useActionState, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { signIn, signUp, type FormState } from "@/app/membros/actions";
-import { createGoogleLoginFlow } from "@/lib/members/google-login-flow";
+import { createGoogleLoginFlow, googleLoginChannel } from "@/lib/members/google-login-flow";
 import { Field, FormMessage } from "./form-field";
 import { NameInput } from "./name-input";
 import Link from "next/link";
@@ -27,6 +27,7 @@ function GoogleAuth({ next, errorMessage, requestSignUp = false,allowed=true }: 
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string>();
   const flow = useRef<ReturnType<typeof createGoogleLoginFlow> | null>(null);
+  const channel = useRef<BroadcastChannel | null>(null);
   useEffect(() => () => { flow.current?.cancel(); }, []);
 
   function continueWithGoogle() {
@@ -34,6 +35,13 @@ function GoogleAuth({ next, errorMessage, requestSignUp = false,allowed=true }: 
     if (flow.current) return;
     setPending(true);
     setMessage(undefined);
+    const attempt = crypto.randomUUID();
+    try {
+      channel.current = new BroadcastChannel(googleLoginChannel(attempt)!);
+      channel.current.onmessage = (event) => {
+        if (event.data?.type === "error") flow.current?.providerError(event.data.error);
+      };
+    } catch { /* Session polling still works when BroadcastChannel is unavailable. */ }
     flow.current = createGoogleLoginFlow({
       origin: window.location.origin,
       open: () => {
@@ -48,11 +56,11 @@ function GoogleAuth({ next, errorMessage, requestSignUp = false,allowed=true }: 
       },
       replace: (path) => window.location.replace(path),
       message: setMessage,
-      finish: () => { flow.current = null; setPending(false); },
+      finish: () => { channel.current?.close(); channel.current = null; flow.current = null; setPending(false); },
       now: Date.now,
       schedule: (callback, delay) => setTimeout(callback, delay),
       clear: (timer) => clearTimeout(timer),
-    }, next, requestSignUp);
+    }, next, requestSignUp, attempt);
     flow.current.start();
   }
 

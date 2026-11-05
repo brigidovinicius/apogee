@@ -374,7 +374,7 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
 
 export function OpportunityCard({ opportunity, management = false, detailed = management, detailHref }: { opportunity: StudentOpportunity; management?: boolean; detailed?: boolean; detailHref?: string }) {
   return (
-    <article className={styles.card}>
+    <article className={`${styles.card} ${detailed ? styles.detailedCard : ""}`}>
       <div className={styles.cardTopline}>
         <span className={styles.kind}>{OPPORTUNITY_CATEGORIES.find(category => category.id === primaryOpportunityCategory(opportunity))?.label ?? opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
         <span>{opportunity.level}</span>
@@ -407,20 +407,20 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
       </div>
       <OpportunityCountdown opportunity={opportunity} />
       {detailed && isOpportunityOpen(opportunity) ? <OpportunityAlert id={opportunity.id} title={opportunity.title} available={opportunity.alertsAvailable === true}/> : null}
+      <p className={styles.verifiedAt}>{opportunity.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={opportunity.verificationTimestamp ?? opportunity.verifiedAt} title="Horário de Brasília">{formatDate(opportunity.verificationTimestamp ?? opportunity.verifiedAt)}</time></p>
       <div className={styles.cardFooter}>
-        <span>{opportunity.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={opportunity.verificationTimestamp ?? opportunity.verifiedAt} title="Horário de Brasília">{formatDate(opportunity.verificationTimestamp ?? opportunity.verifiedAt)}</time></span>
         <Link
           href={detailed ? opportunity.officialUrl : detailHref ?? opportunityDetailPath(opportunity.id)}
           prefetch={false}
-          className={styles.externalLink}
+          className={`${styles.externalLink} ${styles.detailButton}`}
           target={detailed ? "_blank" : undefined}
           rel={detailed ? "noopener noreferrer" : undefined}
           aria-label={`Ver ${detailed ? "página oficial" : "detalhes"} de ${interfaceText(displayOpportunityTitle(opportunity.title))}`}
         >
           {detailed ? "Ver página oficial e inscrição" : "Ver detalhes"} <ArrowUpRight size={16} aria-hidden />
         </Link>
+        <ShareButton title={interfaceText(displayOpportunityTitle(opportunity.title))} path={publicOpportunityPath(opportunity)} compact />
       </div>
-      <ShareButton title={interfaceText(displayOpportunityTitle(opportunity.title))} path={publicOpportunityPath(opportunity)} compact />
       {management ? <Link className={styles.externalLink} href={`/admin/radar?editar=${encodeURIComponent(opportunity.id.replace(/^radar-/, ""))}`}>Editar ou excluir</Link> : null}
     </article>
   );

@@ -55,7 +55,7 @@ export function EarthRadarList({ opportunities, capturedAt }: { opportunities: S
             <OpportunityDates opportunity={item} className={styles["opportunity-dates"]} />
             <span>Local: {interfaceText(item.location)}</span>
           </div>
-          <Link prefetch={false} className={styles["opportunity-action"]} href={opportunityDetailPath(item.id)} aria-label={`Ver detalhes: ${item.title}`}>Explorar</Link>
+          <Link prefetch={false} className={styles["opportunity-action"]} href={opportunityDetailPath(item.id)} aria-label={`Ver detalhes: ${item.title}`}>Ver detalhes</Link>
         </article>)}
       </div>
       {!visible.length && <div className={`${styles["empty-state"]} ${styles.visible}`}>
