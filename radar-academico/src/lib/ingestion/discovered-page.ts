@@ -18,6 +18,18 @@ export function singleOpportunityArticle(html: string) {
   $("script,style,noscript,nav,footer,aside,.entry-meta,.postmetadata,[class*='related'],.post-navigation").remove();
   const articles = $("article");
   if (articles.length > 1) return null;
+  // Joomla keeps the title beside the body, without a semantic <article>.
+  // Read only that body; modules and publication metadata are not evidence.
+  const joomla = $('.com-content-article.item-page');
+  const joomlaBody = joomla.find('.com-content-article__body');
+  if (joomla.length) {
+    if (joomla.length !== 1 || joomlaBody.length !== 1 || joomla.find('h1').length !== 1) return null;
+    const heading = joomla.find('h1');
+    if (!joomlaBody.find('h1').length) joomlaBody.prepend(heading.clone());
+  }
+  // The institutional WordPress theme has a site h1 outside its detail block.
+  const institutional = $('body.wp-singular #conteudo > #artigos > .artigo');
+  if (institutional.length > 1) return null;
   // WordPress block themes may repeat the exact page title in a cover banner.
   const wpTitle = $('h1.wp-block-post-title'), wpContent = $('.wp-block-post-content');
   if (wpTitle.length === 1 && wpContent.length === 1) {
@@ -27,7 +39,8 @@ export function singleOpportunityArticle(html: string) {
     wpContent.prepend($('<h1>').text(title));
     if (wpTitle.closest('.wp-block-post-content').length === 0) wpTitle.remove();
   }
-  const article = wpContent.length === 1 && wpTitle.length === 1 ? wpContent :
+  const article = joomla.length === 1 ? joomlaBody : institutional.length === 1 ? institutional :
+    wpContent.length === 1 && wpTitle.length === 1 ? wpContent :
     articles.length === 1 && articles.find('h1').length === 1 ? articles :
       $('.cps-texto-conteudo').length === 1 ? $('.cps-texto-conteudo') : $('main,[role="main"]');
   if (article.length !== 1 || article.find("h1").length !== 1) return null;

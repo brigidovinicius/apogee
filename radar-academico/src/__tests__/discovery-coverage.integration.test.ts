@@ -134,6 +134,31 @@ it('rechecks version-four extraction failures once without retrying unchanged au
     .toEqual([{ url: parent + 'exhausted', processing_attempts: 4 }, { url: parent + 'unverified', processing_attempts: 1 }]);
 });
 
+it('rechecks version-five layout failures once while preserving other decisions and the attempt limit', async () => {
+  const inputs = [
+    { url: parent + 'curso-joomla', reason: 'detail_layout_unrecognized', attempts: 1 },
+    { url: parent + 'invalid-deadline', reason: 'invalid_deadline', attempts: 1 },
+    { url: parent + 'unconfirmed', reason: 'candidate_unconfirmed', attempts: 1 },
+    { url: parent + 'unverified', reason: 'source_authority_unverified', attempts: 1 },
+    { url: parent + 'exhausted', reason: 'detail_layout_unrecognized', attempts: 4 },
+  ];
+  for (const input of inputs) {
+    const row = (await state.db!.query<{ id: string }>(`insert into discovery_leads(target_id,url,title,processing_status,processing_reason,processing_attempts)
+      values($1,$2,'Instituto abre inscrições para curso de estatística','blocked',$3,$4) returning id`, [target, input.url, input.reason, input.attempts])).rows[0];
+    await state.db!.query(`insert into ingestion_runs(started_at,finished_at,status,execution_metadata)
+      values(now(),now(),'completed_with_warnings',jsonb_build_object('component','discovery-lead','lead_id',$1::text,'source_expansion_version',5))`, [row.id]);
+  }
+  page(parent, `<a href="${parent}curso-joomla">Instituto abre inscrições para curso de estatística</a>`);
+  page(parent + 'curso-joomla', '<div class="com-content-article item-page"><h1>Instituto abre inscrições para curso de estatística</h1>' +
+    '<div class="com-content-article__body"><p>Inscrições abertas. As inscrições podem ser feitas até 8 de novembro de 2099 pelo formulário de inscrição.</p></div></div>');
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, created: 1, published: 1 });
+  expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ title: 'Instituto abre inscrições para curso de estatística' })]);
+  expect((await state.db!.query('select categories,is_course from opportunities')).rows).toEqual([{ categories: ['formacao'], is_course: true }]);
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, published: 0 });
+  expect((await state.db!.query('select url,processing_attempts from discovery_leads where processing_status=\'blocked\' order by url')).rows)
+    .toEqual(inputs.slice(1).sort((a,b) => a.url.localeCompare(b.url)).map(input => ({ url: input.url, processing_attempts: input.attempts })));
+});
+
 it('registers an exact external event page only when its structured organizer matches the verified institution', async () => {
   const external = 'https://conference.example.net/workshop';
   page(parent, `<a href="${external}">Workshop de tecnologia</a>`);

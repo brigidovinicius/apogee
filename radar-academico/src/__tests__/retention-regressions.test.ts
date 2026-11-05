@@ -79,3 +79,33 @@ it('accepts a duplicated WordPress banner title only when it repeats the exact p
   expect(normalizeDiscoveredPage(html, source)?.title).toBe('Olimpíada de pesquisa');
   expect(singleOpportunityArticle(html.replace('<h1>Olimpíada de pesquisa</h1>', '<h1>Outra competição</h1>'))).toBeNull();
 });
+
+
+it('reads the bounded Joomla article body without borrowing deadlines from surrounding modules', () => {
+  const html = '<div class="com-content-article item-page"><div class="page-header"><h1>Instituto abre inscrições para curso on-line de estatística</h1></div>' +
+    '<dl class="article-info"><dd>Publicado em 01/11/2099</dd></dl><div class="com-content-article__body">' +
+    '<p>Inscrições seguem até 8 de novembro. O instituto está com inscrições abertas.</p>' +
+    '<p>As inscrições podem ser feitas até 8 de novembro de 2099, pelo formulário de inscrição. Curso pago.</p></div></div>' +
+    '<div class="module"><h1>Outra chamada</h1><p>Inscrições até 31/12/2100.</p></div>';
+  const article = singleOpportunityArticle(html);
+  expect(article?.text).not.toContain('2100');
+  const candidate = normalizeDiscoveredPage(html, source);
+  expect(candidate).toMatchObject({ deadlineAt: '2099-11-08', deadlinePrecision: 'date_only', isCourse: true,
+    categories: ['formacao'], opportunityStatus: 'open' });
+  expect(publicationIssue(candidate!, source)).toBeNull();
+});
+
+it('rejects ambiguous Joomla content rather than selecting one of several article bodies', () => {
+  const item = '<div class="com-content-article item-page"><h1>Bolsa de pesquisa</h1><div class="com-content-article__body">' + body + '</div></div>';
+  expect(singleOpportunityArticle(item + item)).toBeNull();
+  expect(singleOpportunityArticle(item.replace('</div></div>', '<div class="com-content-article__body">Outra chamada</div></div></div>'))).toBeNull();
+});
+
+it('isolates the institutional WordPress detail from its site heading and keeps closed registration closed', () => {
+  const html = '<body class="wp-singular page-template-default"><header><h1>Universidade</h1></header>' +
+    '<div id="conteudo"><div id="artigos"><div class="artigo"><h1>Inscrições</h1>' +
+    '<p>Olimpíada de ciência. Inscrições para participantes: encerradas.</p></div></div></div></body>';
+  expect(singleOpportunityArticle(html)?.title).toBe('Inscrições');
+  expect(normalizeDiscoveredPage(html, source)).toBeNull();
+  expect(singleOpportunityArticle(html.replace('</div></div></div>', '<div class="artigo"><h1>Outra olimpíada</h1></div></div></div></div>'))).toBeNull();
+});
