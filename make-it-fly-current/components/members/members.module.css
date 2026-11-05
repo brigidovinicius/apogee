@@ -819,3 +819,27 @@
   :global([data-apogee-design]) .googleButton { font-size: var(--apogee-text-label); line-height: 1.5; }
   :global([data-apogee-design]) .hint { margin: 0; color: var(--apogee-ink-muted); }
 }
+
+.opportunityDetail { width: min(100%, 52rem); margin-inline: auto; }
+.authPanel .primary { width: 100%; justify-content: center; }
+@media (prefers-color-scheme: dark) {
+  .authPanel {
+    --navy: #f4f8fc;
+    --muted: #b9cee3;
+    --line: #45617e;
+    --apogee-navy: #f4f8fc;
+    --apogee-white: #07182d;
+    --apogee-text-muted: #b9cee3;
+    --apogee-border: #45617e;
+    --apogee-danger: #fca5a5;
+    color-scheme: dark;
+    color: #f4f8fc;
+    background: #102a48;
+    border-color: #45617e;
+  }
+  .authPanel .primary { color: #07182d; background: #b9d3ee; border-color: #b9d3ee; }
+  .authPanel .primary:disabled { opacity: .65; }
+  .authPanel .googleButton { color: #f4f8fc; background: #173653; border-color: #45617e; }
+  .authPanel .googleButton:hover { background: #234b75; }
+  .authPanel [data-form-message] { background: #401b26; }
+}

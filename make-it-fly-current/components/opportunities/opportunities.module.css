@@ -600,7 +600,7 @@
 .locationValue svg {
   flex: 0 0 auto;
   margin-top: 0.18rem;
-  color: #b9d3ee;
+  color: var(--radar-card-accent);
 }
 
 .filterGroup button:hover,
@@ -614,25 +614,53 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1px;
-  overflow: hidden;
-  background: rgb(185 211 238 / 18%);
+  gap: 1rem;
+  align-items: stretch;
 }
 
 .card {
-  --opportunity-ink: var(--apogee-surface-inverse);
+  --radar-card-surface: #ffffff;
+  --radar-card-text: #07182d;
+  --radar-card-muted: #40566e;
+  --radar-card-accent: #234b75;
+  --radar-card-line: #cbd7e3;
+  --radar-card-subtle: #f0f5fa;
+  --radar-button-fill: #07182d;
+  --radar-button-text: #ffffff;
+  --radar-safe: #166534;
+  --radar-urgent: #a51d25;
 
   display: flex;
   flex-direction: column;
-  min-height: 29rem;
+  gap: 0;
+  min-width: 0;
   padding: clamp(1.25rem, 2.5vw, 1.8rem);
-  color: var(--apogee-content-primary);
-  background: var(--apogee-black);
-  transition: background-color 180ms ease;
+  color-scheme: light;
+  color: var(--radar-card-text);
+  background: var(--radar-card-surface);
+  border: 1px solid var(--radar-card-line);
+  border-radius: var(--apogee-group-radius);
+  transition: border-color 180ms ease;
 }
 
 .card:hover {
-  background: var(--opportunity-ink);
+  border-color: var(--radar-card-accent);
+}
+
+@media (prefers-color-scheme: dark) {
+  .card {
+    --radar-card-surface: #102a48;
+    --radar-card-text: #f4f8fc;
+    --radar-card-muted: #b9cee3;
+    --radar-card-accent: #b9d3ee;
+    --radar-card-line: #45617e;
+    --radar-card-subtle: #173653;
+    --radar-button-fill: #b9d3ee;
+    --radar-button-text: #07182d;
+    --radar-safe: #86efac;
+    --radar-urgent: #fca5a5;
+    color-scheme: dark;
+  }
 }
 
 .previewCard {
@@ -687,11 +715,20 @@
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  color: rgb(255 255 255 / 48%);
+  flex-wrap: wrap;
+  align-items: center;
+  color: var(--radar-card-muted);
+  font-size: .75rem;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .kind {
-  color: #b9d3ee;
+  padding: .3rem .6rem;
+  border-radius: .4rem;
+  background: var(--radar-card-subtle);
+  color: var(--radar-card-accent);
 }
 
 .cardMain {
@@ -699,22 +736,21 @@
 }
 
 .organization {
-  margin: 0 0 0.8rem;
-  color: #b9d3ee;
+  margin: 0 0 0.65rem;
+  color: var(--radar-card-muted);
   font-size: 0.79rem;
 }
 
 .card h3 {
-  max-width: 22ch;
   margin: 0;
-  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
-  line-height: 1.1;
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  line-height: 1.3;
 }
 
 .summary {
-  max-width: 38rem;
+  max-width: 65ch;
   margin: 1rem 0 0;
-  color: rgb(255 255 255 / 64%);
+  color: var(--radar-card-muted);
   font-size: 0.9rem;
   line-height: 1.55;
 }
@@ -732,13 +768,16 @@
 }
 
 .details dt {
-  color: rgb(255 255 255 / 42%);
+  color: var(--radar-card-muted);
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: .75rem;
 }
 
 .details dd {
   margin: 0;
-  color: rgb(255 255 255 / 78%);
-  font-size: 0.78rem;
+  color: var(--radar-card-text);
+  font-size: 0.875rem;
   line-height: 1.48;
 }
 
@@ -746,9 +785,10 @@
   display: flex;
   gap: 0.8rem;
   align-items: flex-start;
-  margin-top: auto;
-  padding-top: 2rem;
-  color: #b9d3ee;
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--radar-card-line);
+  color: var(--radar-card-accent);
 }
 
 .launchWindow > svg {
@@ -762,7 +802,7 @@
 }
 
 .launchWindow span {
-  color: rgb(185 211 238 / 64%);
+  color: var(--radar-card-muted);
 }
 
 .launchWindow strong {
@@ -771,20 +811,48 @@
   line-height: 1.35;
 }
 
-.cardFooter {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: center;
-  margin-top: 1.45rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgb(185 211 238 / 16%);
+.verifiedAt {
+  margin: 1rem 0;
+  color: var(--radar-card-muted);
+  font-size: .75rem;
+  line-height: 1.5;
 }
 
-.cardFooter span {
-  color: rgb(255 255 255 / 40%);
-  letter-spacing: 0.07em;
+.cardFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: .75rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--radar-card-line);
 }
+
+.cardFooter > div { margin: 0; }
+.cardFooter > a { flex: 1 1 12rem; }
+.cardFooter > div button { font-size: .8125rem; }
+
+.card .detailButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  min-height: 2.75rem;
+  padding: .75rem 1rem;
+  color: var(--radar-button-text);
+  background: var(--radar-button-fill);
+  border: 1px solid var(--radar-button-fill);
+  border-radius: var(--apogee-control-radius);
+  font-size: .875rem;
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  white-space: normal;
+}
+.card .detailButton:hover { filter: brightness(.9); color: var(--radar-button-text); }
+.card :is(a, button, summary, input):focus-visible, .board .card :is(a, button, summary, input):focus-visible { outline: 3px solid var(--radar-card-accent); outline-offset: 4px; }
+.card .detailButton svg { flex-shrink: 0; }
 
 .externalLink {
   display: inline-flex;
@@ -903,7 +971,6 @@
   }
 
   .boardHeading,
-  .cardFooter,
   .footer {
     align-items: flex-start;
     flex-direction: column;
@@ -961,12 +1028,10 @@
   }
 
   .cardMain {
-    margin-top: 2.5rem;
+    margin-top: 1.25rem;
   }
 
-  .launchWindow {
-    margin-top: 2rem;
-  }
+  .cardFooter > a { flex-basis: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -986,24 +1051,20 @@
   gap: 0.8rem;
   padding: 1rem;
   margin-top: 1rem;
-  border: 1px solid rgb(185 211 238 / 18%);
-  border-radius: 0.8rem;
-  background: rgb(185 211 238 / 5%);
-  color: #b9d3ee;
+  border: 1px solid var(--radar-card-line);
+  border-radius: .625rem;
+  background: var(--radar-card-subtle);
+  color: var(--radar-card-accent);
 }
 .countdown > svg { flex-shrink: 0; margin-top: 0.15rem; }
 .countdown > div { display: grid; gap: 0.35rem; min-width: 0; }
-.countdown span, .countdown time { font-size: 0.75rem; color: rgb(255 255 255 / 65%); }
+.countdown span, .countdown time { font-size: .75rem; color: var(--radar-card-muted); }
 .countdown strong { font-size: 0.95rem; line-height: 1.45; font-variant-numeric: tabular-nums; }
 .countdown[data-tone="safe"] {
-  border-color: rgb(74 222 128 / 45%);
-  background: rgb(74 222 128 / 7%);
-  color: #86efac;
+  color: var(--radar-safe);
 }
 .countdown[data-tone="urgent"] {
-  border-color: rgb(248 113 113 / 55%);
-  background: rgb(248 113 113 / 8%);
-  color: #fca5a5;
+  color: var(--radar-urgent);
 }
 .alertHint { font-size: .78rem; opacity: .75; }
 .alertForm { font-size: .85rem; margin: .75rem 0; }
@@ -1024,13 +1085,13 @@
 .admissionOptions summary { cursor: pointer; min-height: 2.75rem; padding: .5rem 0; font-weight: 600; }
 .admissionOptions summary:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
 .admissionOptions ul { list-style: none; padding: 0; }
-.admissionOptions li { border-top: 1px solid rgb(255 255 255 / 18%); padding: 1rem 0; overflow-wrap: anywhere; }
+.admissionOptions li { border-top: 1px solid var(--radar-card-line); padding: 1rem 0; overflow-wrap: anywhere; }
 .admissionOptions h4 { font-size: 1rem; line-height: 1.5; }
-.admissionOptions li p { margin: .65rem 0; font-size: .88rem; line-height: 1.6; color: rgb(255 255 255 / 75%); }
+.admissionOptions li p { margin: .65rem 0; font-size: .88rem; line-height: 1.6; color: var(--radar-card-muted); }
 
 /* Benefits and participation costs have distinct semantics, beyond color alone. */
 .financialBenefits { margin-top: 1.25rem; display: grid; gap: 1rem; overflow-wrap: anywhere; }
-.financialLabel { display: block; font-size: .7rem; font-weight: 600; letter-spacing: .08em; color: #b9d3ee; }
+.financialLabel { display: block; font-size: .7rem; font-weight: 600; letter-spacing: 0; color: var(--radar-card-accent, #b9d3ee); }
 .financialBenefits p { margin: .4rem 0 0; font-size: .92rem; line-height: 1.6; }
 .financialBenefits strong { font-size: clamp(1.05rem, 1.5vw, 1.2rem); font-weight: 700; }
 .participationCost, .participationCost p { font-weight: 400; }
@@ -1047,7 +1108,7 @@
 .searchBar form { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
 .searchBar label { grid-column: 1 / -1; }
 .coursePreview, .summary { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; line-height: 1.6; font-size: .88rem; }
-.coursePreview { margin: 1rem 0 0; color: #b9d3ee; }
+.coursePreview { margin: 1rem 0 0; color: var(--radar-card-muted); }
 .cardMain h3 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
 .admissionOptions ul { max-height: 22rem; overflow-y: auto; overscroll-behavior: contain; }
 .cardDisclosure summary { cursor: pointer; min-height: 2.75rem; padding-block: .75rem; font-size: .85rem; }
@@ -1061,8 +1122,6 @@
 .memberCta a { display: inline-block; padding-block: .65rem; text-underline-offset: .2em; }
 
 .cardMain { margin-top: 1.5rem; }
-.cardTopline, .details dt, .cardFooter span { color: rgb(255 255 255 / 68%); }
-.cardFooter { flex-wrap: wrap; }
 .launchWindow { padding-top: 1.25rem; }
 .organization { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 
@@ -1079,7 +1138,7 @@
 :global([data-apogee-design]) .launchWindow span,
 :global([data-apogee-design]) .cardFooter span { font-family: var(--apogee-font-sans); font-size: .8125rem; letter-spacing: 0; text-transform: none; }
 :global([data-apogee-design]) .card { border-radius: var(--apogee-group-radius); }
-:global([data-apogee-design]) .card h3 { font-family: var(--apogee-font-heading); font-size: 2.2rem; font-weight: 400; line-height: 1.1; }
+:global([data-apogee-design]) .card h3 { font-family: var(--apogee-font-heading); font-size: clamp(1.25rem, 2vw, 1.6rem); font-weight: 550; line-height: 1.3; }
 :global([data-apogee-design]) .filterTrigger,
 :global([data-apogee-design]) .filterGroup button { border-radius: var(--apogee-control-radius); }
 
@@ -1105,3 +1164,9 @@
   :global([data-apogee-design]) .count { color: var(--apogee-sky); white-space: normal; }
   :global([data-apogee-design]) .boardHeading { gap: 1rem; }
 }
+
+/* Detail content stays fully readable; catalogue truncation never hides requirements. */
+.detailedCard { margin-top: 1.5rem; }
+.detailedCard .cardMain h3, .detailedCard .summary { display: block; overflow: visible; -webkit-line-clamp: unset; }
+.detailedCard .cardDisclosure > dl { max-height: none; overflow: visible; }
+.card .externalLink:not(.detailButton) { color: var(--radar-card-accent); }

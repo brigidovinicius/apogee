@@ -13,11 +13,15 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const next = radarDetailReturnPath(new URL(request.url).searchParams.get("next"));
+  const navigating = request.headers.get("sec-fetch-mode") === "navigate" || request.headers.get("accept")?.includes("text/html");
   try {
     if (request.headers.get("origin") !== applicationOrigin() || request.headers.get("sec-fetch-site") === "cross-site") throw new BillingError(403, "Origem não permitida.");
     const member = await getMemberFromHeaders(request.headers);
-    if (!member) throw new BillingError(401, "Entre na sua conta para continuar.");
-    const next = radarDetailReturnPath(new URL(request.url).searchParams.get("next"));
+    if (!member) {
+      if (navigating) return Response.redirect(new URL(`/membros/entrar?next=${encodeURIComponent(next === "/membros/oportunidades" ? RADAR_ACCESS_PATH : next)}`, applicationOrigin()), 303);
+      throw new BillingError(401, "Entre na sua conta para continuar.");
+    }
     const returnQuery = next === "/membros/oportunidades" ? "" : `&next=${encodeURIComponent(next)}`;
     const config = billingConfig();
     if ((await radarAccess(member.id, config.livemode)).active) return Response.redirect(new URL(next, applicationOrigin()), 303);
@@ -44,5 +48,15 @@ export async function POST(request: Request) {
     }, { idempotencyKey: `radar-${member.id}-${randomUUID()}` });
     if (!checkout.url || new URL(checkout.url).origin !== "https://checkout.stripe.com") throw new Error("Checkout indisponível.");
     return Response.redirect(checkout.url, 303);
-  } catch (error) { return billingFailure(error); }
+  } catch (error) {
+    // Preserve JSON semantics for API callers; form navigations get a usable retry screen.
+    if (navigating && (!(error instanceof BillingError) || error.status === 429 || error.status === 503)) {
+      const retry = new URL(RADAR_ACCESS_PATH, applicationOrigin());
+      retry.searchParams.set("next", next);
+      retry.searchParams.set("checkout", error instanceof BillingError && error.status === 429 ? "rate-limited" : "unavailable");
+      if (!(error instanceof BillingError)) console.error("[radar-billing] checkout indisponível");
+      return Response.redirect(retry, 303);
+    }
+    return billingFailure(error);
+  }
 }

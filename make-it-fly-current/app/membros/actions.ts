@@ -79,7 +79,8 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
   } catch (error) {
     return { message: authErrorMessage(error, "Não foi possível criar sua conta agora."), values };
   }
-  redirect(needsVerification ? RADAR_ACCESS_PATH : safeNextPath(text(form, "next")));
+  const next = safeNextPath(text(form, "next"));
+  redirect(needsVerification ? `${RADAR_ACCESS_PATH}?next=${encodeURIComponent(next)}` : next, RedirectType.replace);
 }
 
 export async function completeUsername(_: FormState, form: FormData): Promise<FormState> {

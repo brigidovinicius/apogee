@@ -39,11 +39,35 @@ test("Google popup opens on the gesture; only a server-confirmed session replace
   assert.equal(f.events.filter(e => e[0] === "finish").length, 1);
 });
 
-test("blocked popup leaves login and history intact without contacting Google", async () => {
+test("blocked popup continues with Google in the same tab and preserves the selected detail", async () => {
   const f = fixture({ open: () => null });
-  createGoogleLoginFlow(f.ports, "/admin/posts").start(); await flush();
-  assert.equal(f.events.some(e => ["api", "replace"].includes(e[0])), false);
-  assert.match(f.events.find(e => e[0] === "message")[1], /Permita a janela/);
+  const next = "/membros/oportunidades/radar-first";
+  createGoogleLoginFlow(f.ports, next).start(); await flush();
+  const options = f.events.find(e => e[0] === "api")[1];
+  assert.equal(options.callbackURL, next);
+  assert.equal(new URL(options.errorCallbackURL, f.ports.origin).searchParams.get("next"), next);
+  assert.deepEqual(f.events.filter(e => e[0] === "replace"), [["replace", "https://accounts.google.com/o/oauth2/v2/auth"]]);
+  assert.equal(f.timers.length, 0);
+});
+
+test("completion errors release the original login immediately without granting access", async () => {
+  const f = fixture();
+  const flow = createGoogleLoginFlow(f.ports, "/membros/oportunidades/radar-first");
+  flow.start(); await flush();
+  flow.providerError("signup disabled");
+  assert.match(f.events.find(e => e[0] === "message")[1], /cadastro/);
+  assert.equal(f.events.filter(e => e[0] === "finish").length, 1);
+  f.setSession(true); f.timers.shift().callback(); await flush();
+  assert.equal(f.events.some(e => e[0] === "replace"), false);
+});
+
+test("each popup attempt has its own completion channel and retains the next path", async () => {
+  const attempt = "12345678-1234-1234-1234-123456789abc";
+  const f = fixture();
+  createGoogleLoginFlow(f.ports, "/membros/oportunidades/radar-first", false, attempt).start(); await flush();
+  const callback = new URL(f.events.find(e => e[0] === "api")[1].callbackURL, f.ports.origin);
+  assert.equal(callback.searchParams.get("attempt"), attempt);
+  assert.equal(callback.searchParams.get("next"), "/membros/oportunidades/radar-first");
 });
 
 test("cancellation ignores an API response that arrives later", async () => {

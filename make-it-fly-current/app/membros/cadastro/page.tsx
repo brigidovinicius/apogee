@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Criar conta" };
 export default async function SignUpPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
   const params = await searchParams;
   const next = safeNextPath(params.next);
-  if (await getCurrentMember()) redirect("/membros");
+  if (await getCurrentMember()) redirect(next);
 
   return (
     <div className={styles.narrow}>

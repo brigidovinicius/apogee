@@ -67,3 +67,39 @@ test("a safe admin return still refuses a signed-in member at the actual admin g
     return true;
   });
 });
+
+test("signup awaiting purchase verification preserves the selected opportunity and replaces login history", async () => {
+  const signUp = opportunityLoader({
+    "next/headers": { headers: async () => new Headers() },
+    "next/navigation": { ...navigation, redirect: (path, type = navigation.RedirectType.push) => navigation.redirect(path, type) },
+    "next/cache": {},
+    "@/lib/members/auth": { getAuth: () => ({ api: { signUpEmail: async () => ({ user: { id: "buyer" } }) } }) },
+    "@/lib/members/dal": { clientIp: async () => "127.0.0.1" },
+    "@/lib/members/rate-limit": { consumeRateLimit: async () => true },
+    "@/lib/members/forum": {},
+    "@/lib/members/protection": { supervisedRegistrationEnabled: () => false },
+    "@/lib/billing/config": { RADAR_ACCESS_PATH: "/membros/radar/acesso", radarBillingEnabled: () => true, billingConfig: () => ({ livemode: false }) },
+    "@/lib/billing/store": { radarPurchaseNeedsVerification: async () => true },
+  })("app/membros/actions.ts").signUp;
+  const form = new FormData();
+  for (const [key, value] of Object.entries({ name: "Pessoa Teste", username: "pessoa_teste", email: "buyer@example.test", password: "Synthetic-password-123!", next: "/membros/oportunidades/radar-second" })) form.set(key, value);
+  await assert.rejects(signUp({}, form), error => {
+    const target = new URL(getURLFromRedirectError(error), "https://apogee.test");
+    assert.equal(target.pathname, "/membros/radar/acesso");
+    assert.equal(target.searchParams.get("next"), "/membros/oportunidades/radar-second");
+    assert.equal(getRedirectTypeFromError(error), "replace");
+    return true;
+  });
+});
+
+test("a signed-in visitor on signup continues to the selected detail instead of the forum", async () => {
+  const Page = opportunityLoader({
+    "next/navigation": navigation,
+    "@/lib/members/dal": { getCurrentMember: async () => ({ id: "member" }) },
+    "@/components/members/auth-forms": { SignUpForm: "SignUpForm" },
+  })("app/membros/cadastro/page.tsx").default;
+  await assert.rejects(Page({ searchParams: Promise.resolve({ next: "/membros/oportunidades/radar-first" }) }), error => {
+    assert.equal(getURLFromRedirectError(error), "/membros/oportunidades/radar-first");
+    return true;
+  });
+});

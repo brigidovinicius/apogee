@@ -33,14 +33,14 @@ export function AdmissionProcessCard({ group, management = false }: { group: Adm
         <OpportunityBenefits opportunity={course} />
         {management ? <dl className={styles.details}><OpportunityCosts opportunity={course} /></dl> : null}
         {!sharedWindow ? <p>{interfaceText(course.deadlineLabel)}{course.opportunityStatus === "upcoming" ? " · Inscrições futuras" : ""}</p> : null}
-        {!management ? <Link prefetch={false} className={styles.externalLink} href={opportunityDetailPath(course.id)}>Ver detalhes deste curso</Link> : !sharedUrl ? <Link className={styles.externalLink} href={course.officialUrl} target="_blank" rel="noopener noreferrer">Ver fonte oficial deste curso</Link> : null}
+        {!management ? <Link prefetch={false} className={`${styles.externalLink} ${styles.detailButton}`} href={opportunityDetailPath(course.id)}>Ver detalhes deste curso</Link> : !sharedUrl ? <Link className={`${styles.externalLink} ${styles.detailButton}`} href={course.officialUrl} target="_blank" rel="noopener noreferrer">Ver fonte oficial deste curso</Link> : null}
         <ShareButton title={interfaceText(course.title)} path={publicOpportunityPath(course)} compact />
         <p>{course.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={course.verificationTimestamp ?? course.verifiedAt}>{course.verifiedAt.split("-").reverse().join("/")}</time></p>
-        {management ? <Link className={styles.externalLink} href={`/admin/radar?editar=${encodeURIComponent(course.id.replace(/^radar-/, ""))}`}>Editar ou excluir este curso</Link> : null}
+        {management ? <Link className={`${styles.externalLink} ${styles.detailButton}`} href={`/admin/radar?editar=${encodeURIComponent(course.id.replace(/^radar-/, ""))}`}>Editar ou excluir este curso</Link> : null}
       </li>)}</ul>
     </details>
     {management && sharedUrl ? <div className={styles.cardFooter}>
-      <Link className={styles.externalLink} href={first.officialUrl} target="_blank" rel="noopener noreferrer" aria-label={`Ver página oficial de ${interfaceText(group.title)}`}>
+      <Link className={`${styles.externalLink} ${styles.detailButton}`} href={first.officialUrl} target="_blank" rel="noopener noreferrer" aria-label={`Ver página oficial de ${interfaceText(group.title)}`}>
         Ver processo seletivo <ArrowUpRight size={16} aria-hidden />
       </Link>
     </div> : null}

@@ -11,8 +11,12 @@ export function googleLoginDestination(value: string) {
     ? "/membros" : next;
 }
 
-export function googleCompletionPath(next: string) {
-  return `${GOOGLE_COMPLETION_PATH}?next=${encodeURIComponent(googleLoginDestination(next))}`;
+export function googleLoginChannel(attempt?: string) {
+  return attempt && /^[a-f0-9-]{36}$/.test(attempt) ? `apogee-google-login:${attempt}` : null;
+}
+
+export function googleCompletionPath(next: string, attempt?: string) {
+  return `${GOOGLE_COMPLETION_PATH}?next=${encodeURIComponent(googleLoginDestination(next))}${googleLoginChannel(attempt) ? `&attempt=${attempt}` : ""}`;
 }
 
 type Popup = { location: { replace(url: string): void }; close(): void };
@@ -34,7 +38,7 @@ type Ports = {
 };
 
 /** Keep provider documents out of the originating tab's browser history. */
-export function createGoogleLoginFlow(ports: Ports, next: string, requestSignUp = false) {
+export function createGoogleLoginFlow(ports: Ports, next: string, requestSignUp = false, attempt?: string) {
   let active = true;
   let started = false;
   let popup: Popup | null = null;
@@ -73,24 +77,33 @@ export function createGoogleLoginFlow(ports: Ports, next: string, requestSignUp 
       if (started || !active) return;
       started = true;
       // Synchronous with the click, before the API request, to respect popup blockers.
-      popup = ports.open();
-      if (!popup) { stop("Permita a janela de entrada do Google e tente novamente."); return; }
+      try { popup = ports.open(); } catch { popup = null; }
       deadline = ports.now() + 5 * 60_000;
-      const completion = googleCompletionPath(destination);
+      // Mobile/in-app browsers may block popups. Continue in this tab instead.
+      const completion = popup ? googleCompletionPath(destination, attempt) : destination;
       void ports.signIn({
         provider: "google", disableRedirect: true, callbackURL: completion,
         newUserCallbackURL: requestSignUp ? completion : undefined,
-        errorCallbackURL: completion, requestSignUp,
+        errorCallbackURL: popup ? completion : `/membros/${requestSignUp ? "cadastro" : "entrar"}?next=${encodeURIComponent(destination)}`, requestSignUp,
       }).then(result => {
         if (!active) return;
         if (result.error) { stop(googleOAuthErrorMessage(result.error.code) ?? START_ERROR); return; }
         try {
           const url = new URL(result.data?.url ?? "");
           if (url.origin !== "https://accounts.google.com" && url.origin !== ports.origin) throw new Error("Invalid provider origin");
-          popup!.location.replace(url.href);
-          void poll();
+          if (popup) {
+            popup.location.replace(url.href);
+            void poll();
+          } else {
+            stop();
+            ports.replace(url.href);
+          }
         } catch { stop(START_ERROR); }
       }).catch(() => { stop(START_ERROR); });
+    },
+    // Only same-origin completion UI sends errors. A message never grants a session.
+    providerError(error: unknown) {
+      if (started) stop(googleOAuthErrorMessage(error) ?? START_ERROR);
     },
     cancel() { stop(); },
   };
