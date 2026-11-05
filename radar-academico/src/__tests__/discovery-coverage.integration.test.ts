@@ -159,6 +159,22 @@ it('rechecks version-five layout failures once while preserving other decisions 
     .toEqual(inputs.slice(1).sort((a,b) => a.url.localeCompare(b.url)).map(input => ({ url: input.url, processing_attempts: input.attempts })));
 });
 
+it('reaches a corrected layout within the native batch despite older broad extraction blocks', async () => {
+  for (let i = 0; i < 24; i++) await state.db!.query(`insert into discovery_leads(target_id,url,title)
+    values($1,$2,'Inscrições')`, [target, parent + 'pending-' + i + '.png']);
+  for (let i = 0; i < 12; i++) await state.db!.query(`insert into discovery_leads(target_id,url,title,processing_status,processing_reason,processing_attempts,first_seen_at)
+    values($1,$2,'Bolsa antiga','blocked','candidate_unconfirmed',1,now()-interval '3 days')`, [target, parent + 'old-block-' + i]);
+  const corrected = parent + 'curso-joomla';
+  await state.db!.query(`insert into discovery_leads(target_id,url,title,processing_status,processing_reason,processing_attempts)
+    values($1,$2,'Instituto abre inscrições para curso de estatística','blocked','detail_layout_unrecognized',1)`, [target, corrected]);
+  page(parent, `<a href="${corrected}">Instituto abre inscrições para curso de estatística</a>`);
+  page(corrected, '<div class="com-content-article item-page"><h1>Instituto abre inscrições para curso de estatística</h1>' +
+    '<div class="com-content-article__body"><p>Inscrições abertas até 8 de novembro de 2099 pelo formulário de inscrição.</p></div></div>');
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 24, created: 1, published: 1 });
+  expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ source_page_url: corrected })]);
+  expect((await state.db!.query("select count(*)::int as count from discovery_leads where processing_status='processing'")).rows).toEqual([{ count: 0 }]);
+});
+
 it('registers an exact external event page only when its structured organizer matches the verified institution', async () => {
   const external = 'https://conference.example.net/workshop';
   page(parent, `<a href="${external}">Workshop de tecnologia</a>`);

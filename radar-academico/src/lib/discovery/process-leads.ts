@@ -82,6 +82,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
                    (run.execution_metadata->>'source_expansion_version'='4' and lead.processing_reason in
                      ('scope_unverified','source_authority_unverified','unsupported_content'))))))
          order by case when (lead.processing_status='blocked')=$6 then 0 else 1 end,
+           case when lead.processing_status='blocked' and lead.processing_reason='detail_layout_unrecognized' then 0 else 1 end,
            case when lead.first_seen_at<=now()-interval '48 hours' then 0 else 1 end,
            case when lead.title ~* $5 then 0 else 1 end,
            lead.processing_next_at,lead.first_seen_at,lead.id
