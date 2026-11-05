@@ -56,7 +56,7 @@ export function normalizeOpportunity(input: {
   const applicationRoute = classifyApplicationRoute(combined);
   const deadline = detectDeadline(combined);
 
-  const isCourse = /^(?:curso|qualificação|capacitação|oficina|formação profissional)\b/iu.test(input.title.trim());
+  const isCourse = /^(?:curso|qualificação|capacitação|oficina|formação profissional)\b|\binscriç(?:ão|ões)\s+(?:abertas\s+)?(?:para|n[oa]|em|d[oa])\s+(?:(?:o|a|um|uma)\s+)?(?:curso|qualificação|capacitação|oficina|formação profissional)\b/iu.test(input.title.trim());
   const categories = categoriesFromContext({ title: input.title, text: input.text,
     sourceCategories: input.source.categories, benefitType: benefit(combined), isCourse });
   const event = categories.includes("eventos");
@@ -69,7 +69,7 @@ export function normalizeOpportunity(input: {
 
   const statusSignal = confirmedTerminalStatus(combined, input.title) ?? detectSuspension(combined);
   // Include normalization revision so corrected extraction receives a new audit event.
-  const contentHash = crypto.createHash("sha256").update(`v6\n${combined}`).digest("hex");
+  const contentHash = crypto.createHash("sha256").update(`v7\n${combined}`).digest("hex");
   const nationallyEligible = normalizedLocation.location.stateCode === null &&
     input.source.geographicScope.includes("Brasil") &&
     /em todo o Brasil|de todo o Brasil|todo o território nacional|de qualquer (?:estado|cidade) do Brasil|de todo o país/i.test(combined);
