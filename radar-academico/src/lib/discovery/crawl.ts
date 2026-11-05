@@ -21,7 +21,8 @@ function checkpoint(input: unknown, root: string, hash: string): CrawlState {
 /** At most three documents and thirty candidate positions per cycle, with durable progress. */
 export async function crawlDiscovery(target: { official_url: string; discovery_crawl?: unknown; id: string; name: string },
   source: OfficialSource, rootResource: DiscoveryResource, hash: string, known: ReadonlySet<string>, includeRoot: boolean) {
-  const state = checkpoint(target.discovery_crawl, target.official_url, hash);
+  const root = new URL(target.official_url).href;
+  const state = checkpoint(target.discovery_crawl, root, hash);
   const leads: DiscoveredLink[] = [];
   // The caller has already fetched the root to validate the checkpoint.
   let remaining = 30, pagesChecked = 1, failures = 0;
@@ -30,13 +31,13 @@ export async function crawlDiscovery(target: { official_url: string; discovery_c
     const current = state.queue.shift()!;
     if (state.visited.includes(current.url)) continue;
     let resource: DiscoveryResource;
-    if (current.url !== target.official_url) pagesChecked++;
-    try { resource = current.url === target.official_url ? rootResource : await fetchOfficialResource(current.url, source, 2 * 1024 * 1024); }
+    if (current.url !== root) pagesChecked++;
+    try { resource = current.url === root ? rootResource : await fetchOfficialResource(current.url, source, 2 * 1024 * 1024); }
     catch { failures++; visited(current.url); continue; }
     let parsed: ReturnType<typeof discoveryDocument>;
-    try { parsed = discoveryDocument(resource, current.url, target.official_url); }
+    try { parsed = discoveryDocument(resource, current.url, root); }
     catch { failures++; visited(current.url); continue; }
-    if (current.url === target.official_url && includeRoot) parsed.links.unshift({ url: target.official_url, title: target.name, excerpt: "Página oficial de origem." });
+    if (current.url === root && includeRoot) parsed.links.unshift({ url: root, title: target.name, excerpt: "Página oficial de origem." });
     const selected = parsed.links.slice(current.offset, current.offset + remaining);
     remaining -= selected.length;
     current.offset += selected.length;
