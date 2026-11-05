@@ -35,3 +35,11 @@ Duas regressões reproduziram o descarte dos formatos antes da alteração. Os t
 Validação final local concluída: **605 testes aprovados, 35 condicionados/ignorados**, lint, typegen, TypeScript e build standalone aprovados, incluindo o ajuste de prioridade. A análise dos bytes reais da USP passou sem nova consulta de rede. A entrega ainda está em andamento. O aceite de uma página real na extração local e os testes com banco isolado **não comprovam publicação em produção**. Essa confirmação exige um ciclo nativo, registro criado/publicado e novo ID no catálogo público.
 
 Evidências privadas ignoradas: `.local/retentions-20261105/`. A outra sessão de compra/login e o candidato regional permanecem em worktrees próprios. Esta alteração se limita aos arquivos do coletor e seus testes/documentação; os comandos npm respeitam a fila global.
+
+## Publicação nativa e correção de classificação
+
+O PR #122 foi integrado e `597cd29` implantado apenas no Radar às 11h45 de 05/11. O segundo ciclo nativo cadastrou uma fonte e criou/publicou a notícia do ICMC/USP, sem processamento manual de links. A API passou de 1.036 para 1.037 IDs; o novo ID público é `d5589ae9-0644-41c7-96a1-6867445c9a5f`, com prazo 08/11/2026 e verificação automática. A busca pública respondeu HTTP 200 com a nova ficha.
+
+A conferência dessa ficha revelou um defeito adicional: menções a pesquisa e a bolsas em outras etapas faziam o classificador genérico atribuir `research_scholarship` ao curso pago. O ramo genérico de cursos deixa de inferir bolsa por palavras sobre o conteúdo das aulas. Usa benefício `other` e categoria `formacao`, preservando auxílio financeiro explicitamente oferecido aos estudantes/participantes; concessões específicas de bolsas exigem uma oportunidade própria ou um adaptador específico. O hash da normalização é revisado para atualizar a classificação de conteúdo já conhecido. Valores ou gratuidade não são preenchidos por presunção.
+
+A regressão do corpo Joomla foi ampliada com menções incidentais a pesquisa/bolsas e reproduziu o rótulo errado antes da correção. A publicação nativa acima é evidência preservada; uma eventual atualização posterior da classificação da ficha existente deve ser registrada separadamente de criação/publicação de uma oportunidade nova.
