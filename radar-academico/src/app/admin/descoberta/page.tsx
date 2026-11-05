@@ -5,7 +5,7 @@ import { addAnnualEventEdition, createDiscoveryTarget, reviewDiscoveryLead, togg
 
 export const dynamic = "force-dynamic";
 
-const processingName = { pending: "Na fila automática", processing: "Verificando", retry: "Nova tentativa agendada", blocked: "Não elegível para publicação automática", completed: "Processado", ignored: "Preservado sem publicação" };
+const processingName = { pending: "Na fila automática", processing: "Verificando", retry: "Nova tentativa agendada", blocked: "Publicação automática retida", completed: "Processado", ignored: "Preservado sem publicação" };
 const reasonName: Record<string, string> = {
   scope_unverified: "Fonte de destino ainda não verificada para publicação.",
   source_authority_unverified: "O destino precisa de uma página oficial verificada no seu próprio domínio.",
@@ -13,7 +13,11 @@ const reasonName: Record<string, string> = {
   source_registration_conflict: "Uma configuração de fonte existente impede o cadastro automático; decisão preservada.",
   listing_or_ambiguous: "O link reúne vários processos ou não identifica uma única oportunidade.",
   candidate_unconfirmed: "As informações disponíveis não confirmam todos os critérios.",
+  detail_layout_unrecognized: "O formato da página não permite isolar uma única oportunidade com segurança.",
   invalid_deadline: "Prazo de inscrição ausente, vencido ou não confirmado.",
+  expired: "O prazo de inscrição informado pela fonte já terminou.",
+  application_route_unconfirmed: "Não foi possível confirmar como realizar a candidatura.",
+  status_unconfirmed: "O estado atual das inscrições não foi confirmado como aberto ou previsto.",
   event_started: "O evento já começou.",
   unsupported_content: "Documento sem extração automática validada.",
   unsupported_source: "A fonte exige validação específica adicional.",

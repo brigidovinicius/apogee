@@ -26,7 +26,7 @@ export type ProcessingLead = {
 
 export const LEAD_PROCESSING_REASONS = new Set([
   "scope_unverified", "source_unavailable", "source_changed", "target_unavailable", "target_changed", "lead_changed", "irrelevant_link",
-  "candidate_unconfirmed", "unsupported_source", "unsupported_content", "listing_or_ambiguous", "expired", "event_started",
+  "candidate_unconfirmed", "detail_layout_unrecognized", "unsupported_source", "unsupported_content", "listing_or_ambiguous", "expired", "event_started",
   "invalid_source", "source_conflict", "status_unconfirmed", "invalid_deadline", "application_route_unconfirmed",
   "missing_evidence", "national_scope_unconfirmed", "deleted", "identity_conflict", "manual_override",
   "unchanged", "published", "updated", "processing_failed", "retry_exhausted", "previously_reviewed", "lease_expired",
@@ -74,9 +74,11 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
            and ((lead.processing_status in ('pending','retry') and lead.processing_next_at<=now())
              or (lead.processing_status='processing' and lead.processing_lease_until<=now())
              or (lead.processing_status='blocked' and lead.processing_reason in
-                 ('scope_unverified','candidate_unconfirmed','source_authority_unverified','listing_or_ambiguous','unsupported_content')
+                 ('scope_unverified','candidate_unconfirmed','detail_layout_unrecognized','source_authority_unverified','listing_or_ambiguous','unsupported_content')
                and not exists(select 1 from ingestion_runs run where run.execution_metadata->>'lead_id'=lead.id::text
-                 and run.execution_metadata->>'source_expansion_version'='4')))
+                 and (run.execution_metadata->>'source_expansion_version'='5' or
+                   (run.execution_metadata->>'source_expansion_version'='4' and lead.processing_reason in
+                     ('scope_unverified','source_authority_unverified','unsupported_content'))))))
          order by case when (lead.processing_status='blocked')=$6 then 0 else 1 end,
            case when lead.first_seen_at<=now()-interval '48 hours' then 0 else 1 end,
            case when lead.title ~* $5 then 0 else 1 end,
@@ -97,7 +99,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
          where id=$1 and status='running'`, [lead.previous_run_id]);
       const run = await client.query<{ id: string }>(
         `insert into ingestion_runs(started_at,status,execution_metadata) values(now(),'running',$1) returning id`,
-        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 4 }],
+        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 5 }],
       );
       lead.processing_run_id = run.rows[0].id;
       await client.query("update discovery_leads set processing_run_id=$2 where id=$1", [lead.id, lead.processing_run_id]);

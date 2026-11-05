@@ -114,6 +114,26 @@ it('revisits corrected extraction blocks even while the same target still has pe
   expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ title: 'Bolsa de pesquisa corrigida' })]);
 });
 
+it('rechecks version-four extraction failures once without retrying unchanged authority blocks or exhausted attempts', async () => {
+  const inputs = [
+    { url: parent + 'bolsa-corrigida', reason: 'candidate_unconfirmed', attempts: 1 },
+    { url: parent + 'unverified', reason: 'source_authority_unverified', attempts: 1 },
+    { url: parent + 'exhausted', reason: 'candidate_unconfirmed', attempts: 4 },
+  ];
+  for (const input of inputs) {
+    const row = (await state.db!.query<{ id: string }>(`insert into discovery_leads(target_id,url,title,processing_status,processing_reason,processing_attempts)
+      values($1,$2,'Bolsa de pesquisa','blocked',$3,$4) returning id`, [target, input.url, input.reason, input.attempts])).rows[0];
+    await state.db!.query(`insert into ingestion_runs(started_at,finished_at,status,execution_metadata)
+      values(now(),now(),'completed_with_warnings',jsonb_build_object('component','discovery-lead','lead_id',$1::text,'source_expansion_version',4))`, [row.id]);
+  }
+  page(parent, `<a href="${parent}bolsa-corrigida">Bolsa de pesquisa</a>`);
+  page(parent + 'bolsa-corrigida', '<div class="cps-texto-conteudo"><h1>Bolsa de pesquisa</h1><p>Inscrições abertas até 10 de novembro de 2099 pelo formulário de inscrição.</p></div>');
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, published: 1 });
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, published: 0 });
+  expect((await state.db!.query('select url,processing_attempts from discovery_leads where processing_status=\'blocked\' order by url')).rows)
+    .toEqual([{ url: parent + 'exhausted', processing_attempts: 4 }, { url: parent + 'unverified', processing_attempts: 1 }]);
+});
+
 it('registers an exact external event page only when its structured organizer matches the verified institution', async () => {
   const external = 'https://conference.example.net/workshop';
   page(parent, `<a href="${external}">Workshop de tecnologia</a>`);

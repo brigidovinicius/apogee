@@ -1,6 +1,7 @@
 import type { OpportunityCandidate, OfficialSource } from "./types";
 import { isOfficialSourceUrl } from "./validate-url";
 import { eventHasNotStarted } from "./event-start";
+import { explicitDatesToNumeric } from './explicit-dates';
 
 export function deadlineIsCurrent(candidate: Pick<OpportunityCandidate, "deadlineAt" | "deadlinePrecision"> & Partial<OpportunityCandidate>, now = new Date()) {
   if (candidate.deadlinePrecision === "not_informed") return !candidate.deadlineAt && candidate.categories?.includes("eventos") === true &&
@@ -34,8 +35,9 @@ export function publicationIssue(candidate: OpportunityCandidate, source: Offici
 }
 
 export function detectOpportunityStatus(text: string, now = new Date()): OpportunityCandidate["opportunityStatus"] {
+  text = explicitDatesToNumeric(text);
   if (/inscriç(?:ão|ões).{0,35}(?:encerrad|finalizad)|prazo.{0,15}encerrad/i.test(text)) return "closed";
-  const range = /inscriç(?:ão|ões)\s*:\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s+a\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(text);
+  const range = /inscriç(?:ão|ões)\s*(?:(?:estarão|estão|seguem|continuam|permanecem)\s+)?(?:abertas\s+)?(?::|de)\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(?:a|até)\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(text);
   if (range) {
     const date = (day: string, month: string, year: string) => {
       const iso = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;

@@ -5,6 +5,9 @@ import { normalizeLuma } from "./normalize-expansion";
 import type { OfficialSource, OpportunityCandidate } from "./types";
 import { brazilianStateCode } from "@/lib/location";
 import { normalizePublicEvent } from "./public-event";
+import { detectDeadline } from './detect-deadline';
+import { classifyApplicationRoute } from './classify-application-route';
+import { deadlineIsCurrent } from './publication';
 
 export const isDiscoveredPageSource = (source: Pick<OfficialSource, "id">) => source.id.startsWith("auto-page-");
 const clean = (text: string) => text.normalize("NFC").replace(/\s+/gu, " ").trim();
@@ -12,10 +15,21 @@ const clean = (text: string) => text.normalize("NFC").replace(/\s+/gu, " ").trim
 /** Shared semantic HTML extraction; dedicated source normalizers keep their own policy. */
 export function singleOpportunityArticle(html: string) {
   const $ = cheerio.load(html);
-  $("script,style,noscript,nav,footer,aside,.entry-meta,.postmetadata").remove();
+  $("script,style,noscript,nav,footer,aside,.entry-meta,.postmetadata,[class*='related'],.post-navigation").remove();
   const articles = $("article");
-  const article = articles.length === 1 && articles.find("h1").length === 1 ? articles : $("main,[role='main']");
   if (articles.length > 1) return null;
+  // WordPress block themes may repeat the exact page title in a cover banner.
+  const wpTitle = $('h1.wp-block-post-title'), wpContent = $('.wp-block-post-content');
+  if (wpTitle.length === 1 && wpContent.length === 1) {
+    const title = clean(wpTitle.text());
+    if (!title || wpContent.find('h1').toArray().some(node => clean($(node).text()) !== title)) return null;
+    wpContent.find('h1').remove();
+    wpContent.prepend($('<h1>').text(title));
+    if (wpTitle.closest('.wp-block-post-content').length === 0) wpTitle.remove();
+  }
+  const article = wpContent.length === 1 && wpTitle.length === 1 ? wpContent :
+    articles.length === 1 && articles.find('h1').length === 1 ? articles :
+      $('.cps-texto-conteudo').length === 1 ? $('.cps-texto-conteudo') : $('main,[role="main"]');
   if (article.length !== 1 || article.find("h1").length !== 1) return null;
   const title = clean(article.find("h1").first().text());
   article.find("p,div,h1,h2,h3,li,a").append(" ");
@@ -58,4 +72,17 @@ export function normalizeDiscoveredPage(html: string, source: OfficialSource): O
   }
   const article = singleOpportunityArticle(html);
   return article ? normalizeOpportunity({ ...article, url: source.baseUrl, source }) : null;
+}
+
+/** Explain a failed generic extraction without turning incomplete text into a candidate. */
+export function discoveredPageFailureReason(html: string) {
+  if (structuredEvents(html).length) return 'candidate_unconfirmed';
+  const article = singleOpportunityArticle(html);
+  if (!article) return 'detail_layout_unrecognized';
+  const text = `${article.title} ${article.text}`;
+  const deadline = detectDeadline(text);
+  if (deadline.precision === 'not_informed') return 'invalid_deadline';
+  if (!deadlineIsCurrent({ deadlineAt: deadline.deadlineAt, deadlinePrecision: deadline.precision })) return 'expired';
+  if (classifyApplicationRoute(text) === 'unclear') return 'application_route_unconfirmed';
+  return 'candidate_unconfirmed';
 }

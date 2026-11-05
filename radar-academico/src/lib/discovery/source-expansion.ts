@@ -4,7 +4,7 @@ import type { PoolClient } from "pg";
 import { candidateUrl, discoveryEdge, sameDiscoveryScope } from "./documents";
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
-import { normalizeDiscoveredPage } from "@/lib/ingestion/discovered-page";
+import { normalizeDiscoveredPage, discoveredPageFailureReason } from "@/lib/ingestion/discovered-page";
 import { publicationIssue } from "@/lib/ingestion/publication";
 import { structuredEvents } from "@/lib/ingestion/structured-events";
 import { eventOrganizerVerified } from "@/lib/ingestion/public-event";
@@ -79,7 +79,8 @@ export async function prepareSourceExpansion(lead: ExpansionLead): Promise<Prepa
     if (events.length !== 1 || !eventOrganizerVerified(events[0], source)) return { reason: "source_authority_unverified" };
   }
   const candidate = normalizeDiscoveredPage(resource.body.toString("utf8"), source);
-  if (!candidate || candidate.requiresManualReview) return { reason: "candidate_unconfirmed" };
+  if (!candidate) return { reason: discoveredPageFailureReason(resource.body.toString('utf8')) };
+  if (candidate.requiresManualReview) return { reason: "candidate_unconfirmed" };
   const issue = publicationIssue(candidate, source);
   if (issue) return { reason: issue };
   return { source, candidate, registration: { checkedAt: new Date().toISOString(), targetHash: target.hash,
