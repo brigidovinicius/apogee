@@ -57,8 +57,11 @@ export function normalizeOpportunity(input: {
   const deadline = detectDeadline(combined);
 
   const isCourse = /^(?:curso|qualificação|capacitação|oficina|formação profissional)\b|\binscriç(?:ão|ões)\s+(?:abertas\s+)?(?:para|n[oa]|em|d[oa])\s+(?:(?:o|a|um|uma)\s+)?(?:curso|qualificação|capacitação|oficina|formação profissional)\b/iu.test(input.title.trim());
+  // A course may mention research or past scholarships without offering a grant.
+  const courseAid = /\b(?:estudantes|alunos|participantes)\s+(?:(?:selecionados|aprovados)\s+)?(?:receberão|recebem)\s+auxílio financeiro\b/iu.test(combined);
+  const benefitType = isCourse ? courseAid ? "financial_aid" : "other" : benefit(combined);
   const categories = categoriesFromContext({ title: input.title, text: input.text,
-    sourceCategories: input.source.categories, benefitType: benefit(combined), isCourse });
+    sourceCategories: input.source.categories, benefitType, isCourse });
   const event = categories.includes("eventos");
   const eventStartsAt = event ? eventStartFromText(combined) : null;
   const status = detectOpportunityStatus(combined);
@@ -69,7 +72,7 @@ export function normalizeOpportunity(input: {
 
   const statusSignal = confirmedTerminalStatus(combined, input.title) ?? detectSuspension(combined);
   // Include normalization revision so corrected extraction receives a new audit event.
-  const contentHash = crypto.createHash("sha256").update(`v7\n${combined}`).digest("hex");
+  const contentHash = crypto.createHash("sha256").update(`v8\n${combined}`).digest("hex");
   const nationallyEligible = normalizedLocation.location.stateCode === null &&
     input.source.geographicScope.includes("Brasil") &&
     /em todo o Brasil|de todo o Brasil|todo o território nacional|de qualquer (?:estado|cidade) do Brasil|de todo o país/i.test(combined);
@@ -80,7 +83,7 @@ export function normalizeOpportunity(input: {
     sourcePageUrl: input.url,
     applicantType,
     applicationRoute,
-    benefitType: benefit(combined),
+    benefitType,
     categories,
     ...(event ? { eventStartsAt } : {}),
     isCourse,

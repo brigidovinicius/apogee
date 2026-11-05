@@ -85,13 +85,13 @@ it('reads the bounded Joomla article body without borrowing deadlines from surro
   const html = '<div class="com-content-article item-page"><div class="page-header"><h1>Instituto abre inscrições para curso on-line de estatística</h1></div>' +
     '<dl class="article-info"><dd>Publicado em 01/11/2099</dd></dl><div class="com-content-article__body">' +
     '<p>Inscrições seguem até 8 de novembro. O instituto está com inscrições abertas.</p>' +
-    '<p>As inscrições podem ser feitas até 8 de novembro de 2099, pelo formulário de inscrição. Curso pago.</p></div></div>' +
+    '<p>As inscrições podem ser feitas até 8 de novembro de 2099, pelo formulário de inscrição. Curso pago. As aulas podem abrir possibilidades de pesquisa e de bolsas em etapas futuras.</p></div></div>' +
     '<div class="module"><h1>Outra chamada</h1><p>Inscrições até 31/12/2100.</p></div>';
   const article = singleOpportunityArticle(html);
   expect(article?.text).not.toContain('2100');
   const candidate = normalizeDiscoveredPage(html, source);
   expect(candidate).toMatchObject({ deadlineAt: '2099-11-08', deadlinePrecision: 'date_only', isCourse: true,
-    categories: ['formacao'], opportunityStatus: 'open' });
+    categories: ['formacao'], benefitType: 'other', opportunityStatus: 'open' });
   expect(publicationIssue(candidate!, source)).toBeNull();
 });
 
