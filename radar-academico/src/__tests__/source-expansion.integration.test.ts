@@ -54,6 +54,31 @@ async function addLead(legacy = false) {
     values($1,$2,$3,$4,$5,$6)`, [target, url, title, legacy ? "blocked" : "pending", legacy ? "scope_unverified" : null, legacy ? 1 : 0]);
 }
 
+it('publishes a verified page with a fully stated written deadline through the automatic transaction', async () => {
+  deadline = '10 de novembro de 2099';
+  await addLead(true);
+  expect(await runScheduledLeadProcessing()).toMatchObject({ sourcesRegistered: 1, created: 1, published: 1 });
+  expect((await state.db!.query('select deadline_at::date::text as deadline,publication_issue from opportunities')).rows)
+    .toEqual([{ deadline: '2099-11-10', publication_issue: null }]);
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, published: 0 });
+});
+
+it('records a missing deadline explicitly instead of reporting an undifferentiated candidate failure', async () => {
+  deadline = '';
+  await addLead();
+  expect(await runScheduledLeadProcessing()).toMatchObject({ published: 0, reasons: { invalid_deadline: 1 } });
+  expect((await state.db!.query("select id from official_sources where id like 'auto-page-%'")).rows).toHaveLength(0);
+});
+
+it('records an unrecognized layout without registering or publishing its page', async () => {
+  await addLead();
+  vi.mocked(fetchOfficialResource).mockImplementation(async requested => requested === parent
+    ? resource(`<a href="${url}">${title}</a>`)
+    : resource(`<div><h1>${title}</h1><p>Inscrições abertas até 31/12/2099 pelo formulário de inscrição.</p></div>`));
+  expect(await runScheduledLeadProcessing()).toMatchObject({ published: 0, reasons: { detail_layout_unrecognized: 1 } });
+  expect((await state.db!.query('select id from opportunities')).rows).toHaveLength(0);
+});
+
 it.each([{ path: [parent.slice(0, -1)] }, { path: [parent] }, { path: [] }])("revalidates and publishes a verified origin stored without its implicit slash ($path)", async ({ path }) => {
   const rawParent = parent.slice(0, -1);
   await state.db!.query('update discovery_targets set official_url=$2,official_verified_url=$2 where id=$1', [target, rawParent]);
@@ -64,7 +89,7 @@ it.each([{ path: [parent.slice(0, -1)] }, { path: [parent] }, { path: [] }])("re
     from discovery_leads where target_id=$1`, [target]);
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, sourcesRegistered: 1, created: 1, published: 1 });
   const audit = (await state.db!.query<{ execution_metadata: Record<string, unknown> }>(
-    "select execution_metadata from ingestion_runs where execution_metadata->>'source_expansion_version'='4'" )).rows[0].execution_metadata;
+    "select execution_metadata from ingestion_runs where execution_metadata->>'source_expansion_version'='5'" )).rows[0].execution_metadata;
   expect(audit).toMatchObject({ source_registration: { targetUrl: rawParent, discoveryPath: [parent] } });
   expect((await state.db!.query('select official_url,official_verified_url from discovery_targets where id=$1', [target])).rows)
     .toEqual([{ official_url: rawParent, official_verified_url: rawParent }]);
@@ -95,7 +120,7 @@ it("recovers a legacy blocked link, registers one exact source and publishes ato
     .toEqual([{ review_status: "approved", publication_issue: null, verification_method: "automatic" }]);
   const audit = (await state.db!.query<{ execution_metadata: Record<string, unknown> }>(
     "select execution_metadata from ingestion_runs where execution_metadata->>'component'='discovery-lead'" )).rows[0].execution_metadata;
-  expect(audit).toMatchObject({ sources_registered: 1, source_expansion_version: 4,
+  expect(audit).toMatchObject({ sources_registered: 1, source_expansion_version: 5,
     source_registration: { targetUrl: parent, organizer: "Instituto oficial", pageHash: expect.stringMatching(/^[a-f0-9]{64}$/) } });
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, sourcesRegistered: 0, published: 0 });
 });

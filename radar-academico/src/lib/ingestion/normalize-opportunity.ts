@@ -69,7 +69,7 @@ export function normalizeOpportunity(input: {
 
   const statusSignal = confirmedTerminalStatus(combined, input.title) ?? detectSuspension(combined);
   // Include normalization revision so corrected extraction receives a new audit event.
-  const contentHash = crypto.createHash("sha256").update(`v5\n${combined}`).digest("hex");
+  const contentHash = crypto.createHash("sha256").update(`v6\n${combined}`).digest("hex");
   const nationallyEligible = normalizedLocation.location.stateCode === null &&
     input.source.geographicScope.includes("Brasil") &&
     /em todo o Brasil|de todo o Brasil|todo o território nacional|de qualquer (?:estado|cidade) do Brasil|de todo o país/i.test(combined);
