@@ -17,7 +17,7 @@ async function load(path, mocks = {}) {
   return loadedModule.exports;
 }
 const helpers = await load("lib/home-opportunities.ts");
-const { opportunityDetailPath } = await load("lib/opportunities/detail-path.ts");
+const { opportunityDetailPath } = opportunityLoader()("lib/opportunities/detail-path.ts");
 const { EarthRadarList } = await load("components/home/earth-radar/earth-radar-list.tsx", {
   "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return createElement("a", props, children); } },
   "@/lib/home-opportunities": helpers,

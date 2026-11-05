@@ -1,3 +1,4 @@
+import { safeNextPath } from "@/lib/members/validation";
 import Link from "next/link";
 import {notFound,redirect} from "next/navigation";
 import {getCurrentMember} from "@/lib/members/dal";
@@ -11,19 +12,19 @@ export const dynamic='force-dynamic';
 export const metadata={title:'Cadastro protegido',robots:{index:false,follow:false}};
 const statuses:Record<string,string>={pending:'Em conferência',approved:'Aprovado',rejected:'Não aprovado',revoked:'Autorização revogada'};
 const ages:Record<string,string>={under_12:'Menor de 12 anos','12_15':'De 12 a 15 anos','16_17':'De 16 a 17 anos'};
-export default async function ProtectionPage({searchParams}:{searchParams:Promise<{resultado?:string}>}) {
+export default async function ProtectionPage({searchParams}:{searchParams:Promise<{resultado?:string;next?:string}>}) {
   if(!supervisedRegistrationEnabled())notFound();
   const member=await getCurrentMember();if(!member)redirect('/membros/entrar?next=%2Fmembros%2Fprotecao');
-  const overview=await protectionOverview(member.id);const approved=await calendarAdultAccess(member.id);const access=await adultAccess(member.id);const query=await searchParams;
+  const overview=await protectionOverview(member.id);const approved=await calendarAdultAccess(member.id);const access=await adultAccess(member.id);const query=await searchParams;const next=typeof query.next==='string'?safeNextPath(query.next):'/membros/meu-calendario';
   const google=await googleCalendarStatus(member.id);
   return <div className={styles.page}><MemberBar member={member}/><h1>Cadastro protegido</h1>
     <p>A conta de acesso pertence a um adulto. Menores de 18 anos, inclusive menores de 16, participam por vínculo privado com o responsável. O menor não recebe login próprio, perfil público ou acesso ao fórum.</p>
-    <p><Link href="/privacidade#menores">Privacidade de crianças e adolescentes</Link></p>
+    <p><Link href={next}>Voltar ao calendário ou catálogo</Link></p><p><Link href="/privacidade#menores">Privacidade de crianças e adolescentes</Link></p>
     {query.resultado && <p role="status">{query.resultado==='ok'?'Solicitação registrada.':'Não foi possível concluir. Confira os dados e a confirmação de e-mail ou procure a equipe.'}</p>}
-    {!overview.emailVerified && <section><h2>Confirme seu e-mail</h2><p>Antes da conferência da conta, confirme o endereço de e-mail. Isso comprova o controle da caixa, não sua idade ou vínculo com um menor.</p><form action={sendProtectionVerificationAction}><button>Enviar confirmação de e-mail</button></form></section>}
+    {!overview.emailVerified && <section><h2>Confirme seu e-mail</h2><p>Antes da conferência da conta, confirme o endereço de e-mail. Isso comprova o controle da caixa, não sua idade ou vínculo com um menor.</p><form action={sendProtectionVerificationAction}><input type="hidden" name="next" value={next}/><button>Enviar confirmação de e-mail</button></form></section>}
     {!approved ? <section><h2>Verificação da conta adulta</h2><p>Situação: {overview.status?statuses[overview.status]:'Ainda não solicitada'}.</p><p>A equipe fará a conferência de maioridade pelo atendimento em <a href="mailto:contato@apogee.community">contato@apogee.community</a>. Não envie documentos pelo formulário. A conexão Google e novos vínculos dependem da conferência.</p>
       {access ? <p>Seu acesso existente está preservado durante a transição. Isso não representa aprovação de maioridade. <Link href="/membros/meu-calendario">Abrir meu calendário</Link></p> : <p>A liberação da comunidade também depende da aprovação.</p>}
-      {overview.emailVerified && overview.status!=='pending' && <form action={requestAdultAction}><label><input type="checkbox" name="adultDeclared" required/> Tenho 18 anos ou mais e solicito a verificação da minha conta.</label><button>Solicitar verificação da conta</button></form>}
+      {overview.emailVerified && overview.status!=='pending' && <form action={requestAdultAction}><input type="hidden" name="next" value={next}/><label><input type="checkbox" name="adultDeclared" required/> Tenho 18 anos ou mais e solicito a verificação da minha conta.</label><button>Solicitar verificação da conta</button></form>}
     </section>:<><section><h2>Vincular criança ou adolescente</h2><p>Use apenas um apelido e a faixa etária. Não informe nome completo, CPF, documentos, escola ou data de nascimento. A equipe verificará também sua condição de pai, mãe ou responsável legal antes de aprovar o vínculo.</p>
       <form action={requestDependentAction}>
         <label>Apelido do dependente<input name="nickname" minLength={2} maxLength={40} required autoComplete="off"/></label>

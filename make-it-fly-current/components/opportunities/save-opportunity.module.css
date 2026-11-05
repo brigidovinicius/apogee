@@ -1,0 +1,5 @@
+.form {display:flex;flex-direction:column;gap:8px;max-width:100%;margin:0}
+.button {display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;background:#eef4fa;color:#173d63;border:1px solid #a9bdd1;border-radius:12px;font:inherit;font-size:.9rem;line-height:1.4;cursor:pointer;text-decoration:none;max-width:100%}
+.button[aria-pressed=true] {background:#e2f4e9;color:#174c32;border-color:#94bca3}
+.button:disabled {cursor:wait;opacity:.65}.button:focus-visible {outline:3px solid #2b60a1;outline-offset:3px}
+.message {font-size:.85rem;line-height:1.5;color:inherit;max-width:32ch}.message a{text-decoration:underline}

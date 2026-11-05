@@ -10,10 +10,11 @@ import sys
 
 root = Path(__file__).resolve().parents[2]
 completion = '--completion' in sys.argv
-state = root / '.local' / ('radar-completion-calendar' if completion else 'radar-calendar')
+collections = '--collections' in sys.argv
+state = root / '.local' / ('radar-collections-calendar' if collections else 'radar-completion-calendar' if completion else 'radar-calendar')
 data = state / 'pgdata'
 config_file = state / 'config.json'
-port = '48931' if completion else '48763'
+port = '48941' if collections else '48931' if completion else '48763'
 mode = sys.argv[1] if len(sys.argv) > 1 else 'start'
 if mode not in ('start', 'status', 'stop'):
     raise SystemExit('Use start, status or stop')

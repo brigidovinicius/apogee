@@ -1,3 +1,6 @@
+import { CalendarSaveProvider } from "@/components/opportunities/save-opportunity";
+import { calendarSaveState } from "@/lib/opportunities/personal-calendar";
+import { calendarReturnPath } from "@/lib/opportunities/calendar-navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
@@ -35,6 +38,9 @@ export default async function OpportunitiesPage({ searchParams }: {
   const catalogue = await listPublicOpportunityPage(params).catch(() => null);
   const memberHref = memberRadarLoginHref(params);
 
+  const returnTo=calendarReturnPath('/membros/oportunidades?'+params);
+  const saveState=await calendarSaveState(catalogue?.opportunities.map(item=>item.id)??[],returnTo);
+
   return (
     <div className={styles.page}>
       <SiteHeader
@@ -53,7 +59,7 @@ export default async function OpportunitiesPage({ searchParams }: {
 
         <p><Link href="/calendarios">Explorar calendários de oportunidades →</Link></p>
         <p className={styles.memberCta}><Link href={memberHref}>Entre na comunidade Apogee para explorar o Radar na área de membros →</Link></p>
-        {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
+        {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
       </main>
 
       <SiteFooter />

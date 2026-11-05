@@ -99,6 +99,20 @@
       "when": 1793491200000,
       "tag": "0013_radar_calendar_filters",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793912400000,
+      "tag": "0014_calendar_collections",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793912500000,
+      "tag": "0015_calendar_following",
+      "breakpoints": true
     }
   ]
 }

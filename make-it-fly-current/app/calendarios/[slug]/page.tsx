@@ -1,3 +1,6 @@
+import { CalendarSaveProvider } from "@/components/opportunities/save-opportunity";
+import { calendarSaveState } from "@/lib/opportunities/personal-calendar";
+import { calendarReturnPath } from "@/lib/opportunities/calendar-navigation";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site/site-header";
@@ -23,10 +26,12 @@ export default async function CalendarPage({params,searchParams}:Props) {
   const filters=readCalendarFilters(paramsQuery);
   const items=await listRadarOpportunities(true).catch(()=>null);
   const visible=items?filterCalendarItems(items,filters).map(opportunityCardData):null;
+  const returnTo=calendarReturnPath('/calendarios/'+slug+'?'+paramsQuery);
+  const saveState=await calendarSaveState(visible?.map(item=>item.id)??[],returnTo);
   return <div className={styles.page}><SiteHeader current="opportunities"/><main className={styles.main}>
     <div className={styles.hero}><Link href="/calendarios">← Todos os calendários</Link><h1>{calendar.name}</h1><p>{calendar.description}</p><p>As etapas de prova e resultado ajudam quem já participa. Confira a etapa de inscrição para saber quando se candidatar.</p></div>
     {items&&<CalendarFilters filters={filters} items={items} path={`/calendarios/${slug}`} hidden={{calendario:slug}}/>}
     <Link className={styles.action} href={`/membros/meu-calendario?catalogo=1&${calendarFilterQuery(paramsQuery)}`}>Salvar esta combinação na minha conta</Link>
-    {visible ? <CalendarView items={visible} filters={filters}/> : <p role="alert">Calendário temporariamente indisponível.</p>}
+    {visible ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><CalendarView items={visible} filters={filters} path={"/calendarios/"+slug} query={paramsQuery.toString()}/></CalendarSaveProvider> : <p role="alert">Calendário temporariamente indisponível.</p>}
   </main><SiteFooter/></div>;
 }
