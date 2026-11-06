@@ -5,6 +5,7 @@ import { applicationOrigin } from "@/lib/members/mail";
 export const GOOGLE_CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.app.created";
 export const GOOGLE_CALENDAR_CALLBACK = "/api/integracoes/google-agenda/callback";
 export const GOOGLE_CALENDAR_COOKIE = "apogee_google_calendar_state";
+export const GOOGLE_CALENDAR_RETURN_COOKIE = "apogee_google_calendar_return";
 export const GOOGLE_CALENDAR_PATH = "/membros/meu-calendario";
 
 export function googleCalendarConfig() {

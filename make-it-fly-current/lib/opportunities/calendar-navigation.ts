@@ -13,8 +13,13 @@ export function calendarReturnPath(value:unknown):string {
     if(/^\/membros\/oportunidades\/[A-Za-z0-9_-]+$/.test(url.pathname))return url.pathname;
     if(url.pathname==='/membros/meu-calendario'||/^\/calendarios\/[a-z-]+$/.test(url.pathname)) {
       if(url.pathname.startsWith('/calendarios/')) {url.searchParams.set('calendario',url.pathname.split('/')[2]);url.searchParams.set('catalogo','1');}
-      const query=calendarNavigationQuery(url.searchParams).toString();
-      return '/membros/meu-calendario'+(query?'?'+query:'');
+      const params=calendarNavigationQuery(url.searchParams);
+      // Fragments are not sent to the server: carry this allowlisted intent
+      // through login, account verification and the calendar page itself.
+      const google=url.searchParams.get('integracao')==='google'||url.hash==='#google-calendar-heading';
+      if(google)params.set('integracao','google');
+      const query=params.toString();
+      return '/membros/meu-calendario'+(query?'?'+query:'')+(google?'#google-calendar-heading':'');
     }
   }catch{}
   return '/membros/meu-calendario';

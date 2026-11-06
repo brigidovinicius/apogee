@@ -34,6 +34,7 @@ export default async function MyCalendarPage({searchParams}:{searchParams:Promis
   const saveState=await calendarSaveState(items.map(item=>item.id),returnTo);
   return <div className={styles.page}><main className={styles.main}><MemberBar member={member} current="radar"/>
     <div className={styles.hero}><h1>Meu calendário</h1><p>As próximas etapas das oportunidades que você salvou.</p><Link href="/calendarios">Explorar calendários</Link></div>
+    <GoogleCalendar status={googleStatus} result={typeof query.google==="string"?query.google:undefined} returnTo={returnTo}/>
     <nav aria-label="Origem do calendário"><Link className={styles.action} href="/membros/meu-calendario">Minhas oportunidades salvas</Link><Link className={styles.action} href="/membros/meu-calendario?catalogo=1">Explorar catálogo com filtros</Link></nav>
     {collectionsEnabled()&&<p><Link className={styles.action} href="/membros/colecoes">Minhas coleções →</Link></p>}
     <h2>Minhas combinações de filtros</h2>
@@ -44,6 +45,5 @@ export default async function MyCalendarPage({searchParams}:{searchParams:Promis
     <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><CalendarView items={items} filters={filters} query={paramsQuery.toString()}/></CalendarSaveProvider>
     {catalogue&&<p>Salve diretamente nas etapas da agenda. Se o Google Agenda estiver conectado, as oportunidades salvas serão sincronizadas.</p>}
     <h2>Oportunidades salvas</h2>{active.length ? <ul>{active.map(s=><li key={s.id}>{s.snapshot.title}{!live.some(i=>i.id===s.id)?" · Sem próximas etapas disponíveis":""}<form action={toggleSaved.bind(null,s.id,true)}><button className={styles.action}>Remover</button></form></li>)}</ul>:<p>Explore o catálogo e use Salvar na minha agenda.</p>}
-    <GoogleCalendar status={googleStatus} result={typeof query.google==="string"?query.google:undefined}/>
   </main></div>;
 }

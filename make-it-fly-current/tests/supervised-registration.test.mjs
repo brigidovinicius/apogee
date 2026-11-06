@@ -45,7 +45,7 @@ test('pending members cannot exchange Google Calendar OAuth credentials',async()
     '@/lib/members/mail':{applicationOrigin:()=> 'http://127.0.0.1:4381'},
     '@/lib/opportunities/google-calendar-store':{completeGoogleCalendarOAuth:async()=>{exchanges++;}},
   })('app/api/integracoes/google-agenda/callback/route.ts');
-  const response=await route.GET({headers:new Headers()});assert.match(response.headers.get('location'),/google=access/);assert.equal(exchanges,0);
+  const response=await route.GET({headers:new Headers(),cookies:{get:()=>undefined}});assert.match(response.headers.get('location'),/google=access/);assert.equal(exchanges,0);
 });
 
 test('existing account transition preserves access without granting Google or dependent privileges',async()=>{
@@ -110,7 +110,7 @@ test('Google interface routes pending accounts to review and still offers discon
   const nodes=node=>Array.isArray(node)?node.flatMap(nodes):node?.props?[node,...nodes(node.props.children)]:[];
   const status={configured:true,connected:false,reviewRequired:true,lastSync:null,error:null};
   const pending=nodes(Google({status}));
-  assert.ok(pending.some(node=>node.props.href==='/membros/protecao'));
+  assert.ok(pending.some(node=>node.props.href==='/membros/protecao?next=%2Fmembros%2Fmeu-calendario%3Fintegracao%3Dgoogle%23google-calendar-heading'));
   assert.equal(pending.filter(node=>node.type==='form').length,0);
   const connected=nodes(Google({status:{...status,connected:true}}));
   assert.deepEqual(connected.filter(node=>node.type==='form').map(node=>node.props.action),[disconnect]);
