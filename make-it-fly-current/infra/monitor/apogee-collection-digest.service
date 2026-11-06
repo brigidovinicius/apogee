@@ -1,0 +1,14 @@
+[Unit]
+Description=Apogee optional weekly collection digests
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker exec --env RADAR_COLLECTION_DIGEST_INTERNAL_ORIGIN=http://127.0.0.1:3000 apogee-site-web-1 node scripts/collection-digest-worker.mjs
+TimeoutStartSec=130
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true

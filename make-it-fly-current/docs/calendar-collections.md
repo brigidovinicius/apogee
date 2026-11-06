@@ -28,6 +28,8 @@ Para enviar, também são necessários:
 
 O executor de uma rodada é `node scripts/collection-digest-worker.mjs`. Agendá-lo a cada 15 minutos pelo timer/cron operacional do ambiente, somente após autorização. O script faz um POST autenticado, processa até cinco destinatários por rodada e imprime apenas métricas agregadas. Não colocar segredo na URL ou na linha de comando. O timer deve herdar variáveis de um arquivo protegido ou do serviço de segredos. No Mac, qualquer execução Node continua sujeita à fila global.
 
+Na VPS, o executor está incluído na imagem web. As unidades versionadas em `infra/monitor/apogee-collection-digest.{service,timer}` executam uma rodada no container existente, usando as variáveis já protegidas do serviço e a origem loopback interna. Não é necessário Node no host nem duplicar o segredo. Após instalar as unidades, usar `systemd-analyze verify`, `systemctl daemon-reload`, executar o serviço uma vez e só então habilitar o timer. Conferir o resultado agregado e a próxima execução. Desabilitar o timer faz parte da reversão.
+
 ## Garantias e limites dos resumos
 
 O banco persiste um job único por destinatário/período, com conteúdo e chave estáveis. A reserva de tentativa/orçamento é confirmada antes da chamada externa. Concorrência usa locks por destinatário e coleção; o envio mantém esses locks por até o timeout de 10 segundos do transporte. Opt-out e mudanças de consentimento cancelam e apagam o conteúdo de jobs pendentes. Compartilhamento e bloqueio são reavaliados antes do envio. Uma mensagem já aceita pelo provedor não pode ser recolhida.
