@@ -1,4 +1,5 @@
 "use server";
+import { safeNextPath } from "@/lib/members/validation";
 import {headers} from "next/headers";
 import {notFound,redirect} from "next/navigation";
 import {revalidatePath} from "next/cache";
@@ -9,7 +10,7 @@ import {consumeRateLimit} from "@/lib/members/rate-limit";
 import {getSql} from "@/lib/members/db";
 import {requestAdultReview,requestDependent,revokeDependent,supervisedRegistrationEnabled} from "@/lib/members/protection";
 
-async function perform(operation:(id:string)=>Promise<unknown>) {
+async function perform(operation:(id:string)=>Promise<unknown>,next?:unknown) {
   if(!supervisedRegistrationEnabled())notFound();
   const member=await getCurrentMember();if(!member)redirect('/membros/entrar');
   let result='ok';
@@ -18,10 +19,10 @@ async function perform(operation:(id:string)=>Promise<unknown>) {
     await operation(member.id);
   }catch{result='erro';}
   revalidatePath('/membros/protecao');revalidatePath('/admin/protecao');
-  redirect('/membros/protecao?resultado='+result);
+  redirect('/membros/protecao?resultado='+result+(typeof next==='string'?'&next='+encodeURIComponent(safeNextPath(next)):''));
 }
 export async function requestAdultAction(form:FormData) {
-  await perform(id=>requestAdultReview(id,form.get('adultDeclared')==='on'));
+  await perform(id=>requestAdultReview(id,form.get('adultDeclared')==='on'),form.get('next'));
 }
 export async function requestDependentAction(form:FormData) {
   await perform(id=>requestDependent(id,{nickname:String(form.get('nickname')??''),ageBand:String(form.get('ageBand')??''),relationship:String(form.get('relationship')??''),consent:form.get('consent')==='on'}));
@@ -29,10 +30,10 @@ export async function requestDependentAction(form:FormData) {
 export async function revokeDependentAction(form:FormData) {
   await perform(id=>revokeDependent(id,String(form.get('dependentId')??'')));
 }
-export async function sendProtectionVerificationAction() {
+export async function sendProtectionVerificationAction(form:FormData) {
   await perform(async id=>{
     const [user]=await getSql()`select email from "user" where id=${id}`;
     if(!user)throw Error('Account missing');
-    await getAuth().api.sendVerificationEmail({headers:await headers(),body:{email:String(user.email),callbackURL:applicationOrigin()+'/membros/protecao'}});
-  });
+    await getAuth().api.sendVerificationEmail({headers:await headers(),body:{email:String(user.email),callbackURL:applicationOrigin()+'/membros/protecao?next='+encodeURIComponent(safeNextPath(form.get('next')))}});
+  },form.get('next'));
 }

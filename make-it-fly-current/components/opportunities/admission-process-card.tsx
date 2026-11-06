@@ -1,3 +1,4 @@
+import { SaveOpportunityButton } from "./save-opportunity";
 import { interfaceText } from "@/lib/presentation-text.mjs";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
@@ -34,6 +35,7 @@ export function AdmissionProcessCard({ group, management = false }: { group: Adm
         {management ? <dl className={styles.details}><OpportunityCosts opportunity={course} /></dl> : null}
         {!sharedWindow ? <p>{interfaceText(course.deadlineLabel)}{course.opportunityStatus === "upcoming" ? " · Inscrições futuras" : ""}</p> : null}
         {!management ? <Link prefetch={false} className={`${styles.externalLink} ${styles.detailButton}`} href={opportunityDetailPath(course.id)}>Ver detalhes deste curso</Link> : !sharedUrl ? <Link className={`${styles.externalLink} ${styles.detailButton}`} href={course.officialUrl} target="_blank" rel="noopener noreferrer">Ver fonte oficial deste curso</Link> : null}
+        {!management&&<SaveOpportunityButton id={course.id} title={course.title}/>}
         <ShareButton title={interfaceText(course.title)} path={publicOpportunityPath(course)} compact />
         <p>{course.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={course.verificationTimestamp ?? course.verifiedAt}>{course.verifiedAt.split("-").reverse().join("/")}</time></p>
         {management ? <Link className={`${styles.externalLink} ${styles.detailButton}`} href={`/admin/radar?editar=${encodeURIComponent(course.id.replace(/^radar-/, ""))}`}>Editar ou excluir este curso</Link> : null}

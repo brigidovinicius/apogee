@@ -1,3 +1,6 @@
+import { CalendarSaveProvider } from "@/components/opportunities/save-opportunity";
+import { calendarSaveState } from "@/lib/opportunities/personal-calendar";
+import { calendarReturnPath } from "@/lib/opportunities/calendar-navigation";
 import type { Metadata } from "next";
 import { MemberBar } from "@/components/members/member-bar";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
@@ -24,6 +27,9 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
   const member = await requireSignedInMember(memberRadarPath(params));
   const catalogue = await listMemberOpportunityPage(params).catch(() => null);
 
+  const returnTo=calendarReturnPath('/membros/oportunidades?'+params);
+  const saveState=await calendarSaveState(catalogue?.opportunities.map(item=>item.id)??[],returnTo);
+
   return (
     <div className={styles.container}>
       <MemberBar member={member} current="radar" />
@@ -36,7 +42,7 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
           </p>
         </div>
       </header>
-      {catalogue ? <OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
+      {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
     </div>
   );
 }

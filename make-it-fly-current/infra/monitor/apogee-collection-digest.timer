@@ -1,0 +1,11 @@
+[Unit]
+Description=Check opted-in Apogee collection digests every 15 minutes
+
+[Timer]
+OnCalendar=*:0/15
+Persistent=true
+RandomizedDelaySec=20
+Unit=apogee-collection-digest.service
+
+[Install]
+WantedBy=timers.target

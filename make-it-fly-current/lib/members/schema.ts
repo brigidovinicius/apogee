@@ -4,6 +4,7 @@ import {
   boolean,
   check,
   customType,
+  date,
   index,
   integer,
   jsonb,
@@ -421,3 +422,55 @@ export const memberProtectionAudit=pgTable("member_protection_audit",{
   actorId:text("actor_id").references(()=>user.id,{onDelete:"set null"}),subjectId:text("subject_id").notNull(),action:text("action").notNull(),
   occurredAt:timestamp("occurred_at",{withTimezone:true}).notNull().defaultNow(),
 });
+
+export const radarCalendarCollection=pgTable('radar_calendar_collection',{
+  id:text('id').primaryKey(),userId:text('user_id').notNull().references(()=>user.id,{onDelete:'cascade'}),
+  name:text('name').notNull(),description:text('description').notNull().default(''),cover:text('cover').notNull().default('aurora'),
+  visibility:text('visibility').notNull().default('private'),shareToken:text('share_token').unique(),shareVersion:integer('share_version').notNull().default(0),
+  createdAt:timestamp('created_at',{withTimezone:true}).notNull().defaultNow(),updatedAt:timestamp('updated_at',{withTimezone:true}).notNull().defaultNow(),archivedAt:timestamp('archived_at',{withTimezone:true}),
+},table=>[
+  index('radar_calendar_collection_owner_idx').on(table.userId,table.updatedAt),
+  check('radar_calendar_collection_name_check',sql`length(btrim(${table.name})) between 1 and 80`),
+  check('radar_calendar_collection_description_check',sql`length(${table.description}) <= 500`),
+  check('radar_calendar_collection_cover_check',sql`${table.cover} in ('aurora','oceano','floresta','orbita')`),
+  check('radar_calendar_collection_visibility_check',sql`${table.visibility} in ('private','unlisted')`),
+  check('radar_calendar_collection_share_token_check',sql`${table.shareToken} is null or ${table.shareToken} ~ '^[a-f0-9]{48}$'`),
+  check('radar_calendar_collection_share_version_check',sql`${table.shareVersion}>=0`),
+  check('radar_calendar_collection_check',sql`(${table.visibility}='private' and ${table.shareToken} is null) or (${table.visibility}='unlisted' and ${table.shareToken} is not null)`),
+  check('radar_calendar_collection_check1',sql`${table.archivedAt} is null or ${table.visibility}='private'`),
+]);
+export const radarCalendarCollectionItem=pgTable('radar_calendar_collection_item',{
+  collectionId:text('collection_id').notNull().references(()=>radarCalendarCollection.id,{onDelete:'cascade'}),opportunityId:text('opportunity_id').notNull(),
+  title:text('title').notNull(),addedAt:timestamp('added_at',{withTimezone:true}).notNull().defaultNow(),
+},table=>[
+  primaryKey({columns:[table.collectionId,table.opportunityId]}),index('radar_calendar_collection_item_opportunity_idx').on(table.opportunityId),
+  check('radar_calendar_collection_item_opportunity_id_check',sql`${table.opportunityId} ~ '^radar-[A-Za-z0-9_-]{1,194}$'`),
+  check('radar_calendar_collection_item_title_check',sql`length(${table.title})<=500`),
+]);
+
+export const radarCalendarFollow=pgTable('radar_calendar_follow',{
+  userId:text('user_id').notNull().references(()=>user.id,{onDelete:'cascade'}),
+  collectionId:text('collection_id').notNull().references(()=>radarCalendarCollection.id,{onDelete:'cascade'}),
+  shareVersion:integer('share_version').notNull(),followedAt:timestamp('followed_at',{withTimezone:true}).notNull().defaultNow(),
+  digestEnabled:boolean('digest_enabled').notNull().default(false),consentedAt:timestamp('consented_at',{withTimezone:true}),
+  baseline:jsonb('baseline').notNull().default({}),
+},table=>[primaryKey({columns:[table.userId,table.collectionId]}),index('radar_calendar_follow_collection_idx').on(table.collectionId),
+  check('radar_calendar_follow_share_version_check',sql`${table.shareVersion}>=0`),
+  check('radar_calendar_follow_baseline_check',sql`jsonb_typeof(${table.baseline})='object'`),
+  check('radar_calendar_follow_check',sql`not ${table.digestEnabled} or ${table.consentedAt} is not null`)]);
+export const radarCalendarDigestState=pgTable('radar_calendar_digest_state',{
+  userId:text('user_id').primaryKey().references(()=>user.id,{onDelete:'cascade'}),generation:integer('generation').notNull().default(0),
+  unsubscribeToken:text('unsubscribe_token').notNull().unique(),nextDueAt:timestamp('next_due_at',{withTimezone:true}).notNull().default(sql`now()+interval '7 days'`),
+},table=>[index('radar_calendar_digest_due_idx').on(table.nextDueAt),check('radar_calendar_digest_state_generation_check',sql`${table.generation}>=0`),
+  check('radar_calendar_digest_state_unsubscribe_token_check',sql`${table.unsubscribeToken} ~ '^[a-f0-9]{48}$'`)]);
+export const radarCalendarDigestJob=pgTable('radar_calendar_digest_job',{
+  id:text('id').primaryKey(),userId:text('user_id').notNull().references(()=>user.id,{onDelete:'cascade'}),periodStart:timestamp('period_start',{withTimezone:true}).notNull(),
+  generation:integer('generation').notNull(),status:text('status').notNull().default('pending'),payload:jsonb('payload'),attempts:integer('attempts').notNull().default(0),
+  createdAt:timestamp('created_at',{withTimezone:true}).notNull().defaultNow(),nextAttemptAt:timestamp('next_attempt_at',{withTimezone:true}).notNull().defaultNow(),
+  leaseToken:text('lease_token'),finishedAt:timestamp('finished_at',{withTimezone:true}),
+},table=>[uniqueIndex('radar_calendar_digest_job_user_id_period_start_key').on(table.userId,table.periodStart),
+  check('radar_calendar_digest_job_status_check',sql`${table.status} in ('pending','accepted','cancelled','failed','empty')`),
+  check('radar_calendar_digest_job_attempts_check',sql`${table.attempts}>=0`)]);
+export const radarCalendarDigestBudget=pgTable('radar_calendar_digest_budget',{
+  day:date('day').primaryKey(),attempts:integer('attempts').notNull().default(0),
+},table=>[check('radar_calendar_digest_budget_attempts_check',sql`${table.attempts}>=0`)]);

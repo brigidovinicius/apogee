@@ -10,8 +10,9 @@ import { hashPassword } from 'better-auth/crypto';
 import { previewHeaders } from '../lib/navigation/local-preview.mjs';
 const app = new URL('../', import.meta.url);
 const completion=process.argv.includes('--completion');
-const localDbPort=completion?'48931':'48763';
-const state = new URL(completion?'../../.local/radar-completion-calendar/':'../../.local/radar-calendar/', import.meta.url);
+const collections=process.argv.includes('--collections');
+const localDbPort=collections?'48941':completion?'48931':'48763';
+const state = new URL(collections?'../../.local/radar-collections-calendar/':completion?'../../.local/radar-completion-calendar/':'../../.local/radar-calendar/', import.meta.url);
 const config = JSON.parse(await readFile(new URL('config.json', state), 'utf8'));
 const dbUrl = new URL(config.DATABASE_URL);
 assert.equal(dbUrl.protocol, 'postgresql:');
@@ -159,7 +160,7 @@ if(mode==='setup') {
     NODE_ENV:'production',NODE_OPTIONS:'--max-old-space-size=768',NEXT_TELEMETRY_DISABLED:'1',APOGEE_LOCAL_PREVIEW:'1',
     DATABASE_URL:dbUrl.href,DATABASE_SSL_MODE:'disable',DATABASE_POOL_MAX:'2',BETTER_AUTH_URL:'http://127.0.0.1:4381',BETTER_AUTH_SECRET:config.BETTER_AUTH_SECRET,
     APPLICATION_HOSTING_PROVIDER:'caddy',RADAR_ACADEMICO_API_URL:'http://127.0.0.1:48762/catalogue',RADAR_ACADEMICO_API_TOKEN:config.RADAR_ACADEMICO_API_TOKEN,
-    RADAR_CALENDAR_PERSONAL_ENABLED:'true',MEMBERS_SUPERVISED_REGISTRATION_ENABLED:'true',APOGEE_PRIVACY_APPROVED_VERSION:'',APOGEE_TERMS_APPROVED_VERSION:'',STRIPE_MODE:'test',RADAR_BILLING_ENABLED:'false',MEMBERS_EMAIL_ENABLED:'false',GOOGLE_CLIENT_ID:'',GOOGLE_CLIENT_SECRET:'',
+    RADAR_CALENDAR_PERSONAL_ENABLED:'true',...(collections?{RADAR_COLLECTIONS_ENABLED:'true',RADAR_COLLECTION_SHARING_ENABLED:'true',RADAR_COLLECTION_FOLLOWING_ENABLED:'true',RADAR_COLLECTION_DIGEST_ENABLED:'true'}:{}),MEMBERS_SUPERVISED_REGISTRATION_ENABLED:'true',APOGEE_PRIVACY_APPROVED_VERSION:'',APOGEE_TERMS_APPROVED_VERSION:'',STRIPE_MODE:'test',RADAR_BILLING_ENABLED:'false',MEMBERS_EMAIL_ENABLED:'false',GOOGLE_CLIENT_ID:'',GOOGLE_CLIENT_SECRET:'',
     ...(google?Object.fromEntries(['GOOGLE_CALENDAR_CLIENT_ID','GOOGLE_CALENDAR_CLIENT_SECRET','GOOGLE_CALENDAR_ENCRYPTION_KEY','GOOGLE_CALENDAR_SYNC_SECRET'].map(k=>[k,google[k]])):{}),
     RADAR_GOOGLE_CALENDAR_ENABLED:google?'true':'false',
     ...(editorial?{RADAR_LOCAL_EDITORIAL:'1',RADAR_ACADEMICO_ADMIN_API_URL:'http://radar-academico:3000/api/internal/editorial/sources',RADAR_ACADEMICO_ADMIN_API_TOKEN:editorial.ADMIN_API_TOKEN}:{}),

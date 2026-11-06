@@ -34,11 +34,11 @@
 .filters input {min-height:44px;padding:10px 12px;border:1px solid #c4ced8;border-radius:14px;background:white;color:#10263b;font:inherit;max-width:100%}
 .filters select {max-width:100%;width:100%}
 .filters label {min-width:0;max-width:100%;flex:1 1 180px}
-.calendarScroll {position:relative;overflow-x:auto;margin:24px 0}
-.monthGrid {width:100%;min-width:720px;border-collapse:collapse;table-layout:fixed;background:white}
-.monthGrid th,.monthGrid td {border:1px solid #dfe5eb;padding:10px;vertical-align:top;text-align:left}
+.monthGrid {width:100%;border-collapse:collapse;table-layout:fixed;background:white;margin:24px 0}
+.monthGrid th,.monthGrid td {border:1px solid #dfe5eb;padding:0;vertical-align:top;text-align:center}
 .monthGrid th {font-size:.8rem;background:#edf2f8}
-.monthGrid td {height:120px;overflow-wrap:anywhere}
+.monthGrid th {padding:10px 0}.monthGrid abbr {text-decoration:none}
+.monthGrid td {height:66px;overflow-wrap:anywhere}
 .monthGrid ul {list-style:none;padding:0;margin:8px 0}
 .monthGrid li {margin:10px 0;font-size:.8rem;line-height:1.4}
 .monthGrid small,.monthGrid a {display:block;color:inherit}
@@ -46,3 +46,32 @@
 .savedFilters {list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:12px}
 .savedFilters li {border:1px solid #dfe5eb;border-radius:14px;padding:12px;background:white}
 .savedFilters form {display:inline-block;margin-left:12px}
+
+.filterPanel {padding:20px;border:1px solid #dfe5eb;border-radius:20px;background:#fff;margin:24px 0}
+.filterPrimary,.filterAdvanced {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.filterForm label {display:grid;gap:6px;font-size:.9rem;min-width:0}
+.filterForm input,.filterForm select,.filterForm button {width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid #bdcbd7;border-radius:12px;background:#fff;color:#10263b;font:inherit}
+.filterForm .searchField {grid-column:span 2}
+.filterForm button {width:auto;background:#173d63;color:#fff;cursor:pointer}
+.advancedFilters {margin-top:20px;border-top:1px solid #e0e6ec;padding-top:8px}
+.advancedFilters summary {padding:12px 0;cursor:pointer;font-weight:600;min-height:44px}
+.filterAdvanced {padding:12px 0}
+.filterActions {display:flex;gap:20px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.filterChips {list-style:none;display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:16px 0 0}
+.filterChips a {display:inline-block;padding:10px 12px;background:#edf2f8;border-radius:12px;color:#173d63;text-decoration:none;overflow-wrap:anywhere}
+.filterHint {color:#516476;font-size:.9rem;line-height:1.6}
+.calendarToolbar {display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:24px 0}
+.viewSwitch {display:flex;border:1px solid #bdcbd7;border-radius:12px;overflow:hidden;background:#fff}
+.viewSwitch a {padding:12px 20px;text-decoration:none;color:#173d63}
+.viewSwitch a[aria-current] {background:#173d63;color:white}
+.monthNavigation {display:flex;gap:16px;align-items:center;margin-left:auto;flex-wrap:wrap}
+.monthNavigation a {min-height:44px;display:inline-flex;align-items:center;color:#173d63}
+.monthTitle {text-transform:capitalize}
+.dayLink {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:66px;text-decoration:none;color:#173d63}
+.dayLink[aria-current] {background:#173d63;color:#fff}
+.dayCount {font-size:.75rem}.today {font-weight:800;text-decoration:underline;text-underline-offset:4px}
+.rowContent {min-width:0;overflow-wrap:anywhere}.rowActions {display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+#agenda-do-dia {scroll-margin-top:24px}
+@media(max-width:600px) {.filterPanel{padding:16px}.filterPrimary,.filterAdvanced{grid-template-columns:1fr}.filterForm .searchField{grid-column:auto}.monthNavigation{margin-left:0;width:100%;justify-content:space-between;gap:8px}.dayCount{font-size:.62rem}.main{width:calc(100% - 24px)}.rowActions{width:100%}.row{padding:16px}.filters{gap:10px}}
+.monthGrid .dayLink {display:flex}
+.monthTitle {text-transform:none}.monthTitle::first-letter{text-transform:uppercase}

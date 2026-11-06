@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveOpportunityButton } from "./save-opportunity";
 import { AREAS, displayOpportunityTitle, publicOpportunityPath } from "@/lib/opportunities/discovery";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 import { interfaceText } from "@/lib/presentation-text.mjs";
@@ -419,6 +420,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
         >
           {detailed ? "Ver página oficial e inscrição" : "Ver detalhes"} <ArrowUpRight size={16} aria-hidden />
         </Link>
+        {!management&&!detailed&&<SaveOpportunityButton id={opportunity.id} title={opportunity.title}/>}
         <ShareButton title={interfaceText(displayOpportunityTitle(opportunity.title))} path={publicOpportunityPath(opportunity)} compact />
       </div>
       {management ? <Link className={styles.externalLink} href={`/admin/radar?editar=${encodeURIComponent(opportunity.id.replace(/^radar-/, ""))}`}>Editar ou excluir</Link> : null}

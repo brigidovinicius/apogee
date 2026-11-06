@@ -10,3 +10,4 @@ node_modules/
 infra/membros/certs/*.key
 infra/membros/certs/*.crt
 infra/membros/backups/
+/outputs/calendar-validation-*/
