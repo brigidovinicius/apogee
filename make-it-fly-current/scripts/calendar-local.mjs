@@ -11,6 +11,8 @@ import { previewHeaders } from '../lib/navigation/local-preview.mjs';
 const app = new URL('../', import.meta.url);
 const completion=process.argv.includes('--completion');
 const collections=process.argv.includes('--collections');
+const passwordFlow=process.argv.includes('--password');
+assert.ok(!passwordFlow||collections,'Password browser QA uses only the isolated collections database');
 const localDbPort=collections?'48941':completion?'48931':'48763';
 const state = new URL(collections?'../../.local/radar-collections-calendar/':completion?'../../.local/radar-completion-calendar/':'../../.local/radar-calendar/', import.meta.url);
 const config = JSON.parse(await readFile(new URL('config.json', state), 'utf8'));
@@ -163,9 +165,10 @@ if(mode==='setup') {
     RADAR_CALENDAR_PERSONAL_ENABLED:'true',...(collections?{RADAR_COLLECTIONS_ENABLED:'true',RADAR_COLLECTION_SHARING_ENABLED:'true',RADAR_COLLECTION_FOLLOWING_ENABLED:'true',RADAR_COLLECTION_DIGEST_ENABLED:'true'}:{}),MEMBERS_SUPERVISED_REGISTRATION_ENABLED:'true',APOGEE_PRIVACY_APPROVED_VERSION:'',APOGEE_TERMS_APPROVED_VERSION:'',STRIPE_MODE:'test',RADAR_BILLING_ENABLED:'false',MEMBERS_EMAIL_ENABLED:'false',GOOGLE_CLIENT_ID:'',GOOGLE_CLIENT_SECRET:'',
     ...(google?Object.fromEntries(['GOOGLE_CALENDAR_CLIENT_ID','GOOGLE_CALENDAR_CLIENT_SECRET','GOOGLE_CALENDAR_ENCRYPTION_KEY','GOOGLE_CALENDAR_SYNC_SECRET'].map(k=>[k,google[k]])):{}),
     RADAR_GOOGLE_CALENDAR_ENABLED:google?'true':'false',
+    ...(passwordFlow?{MEMBERS_EMAIL_ENABLED:'true',MEMBERS_RESEND_DOMAIN_VERIFIED:'true',MEMBERS_RESEND_API_KEY:'re_synthetic_calendar_password_only',MEMBERS_RESEND_FROM:'contato@apogee.community'}:{}),
     ...(editorial?{RADAR_LOCAL_EDITORIAL:'1',RADAR_ACADEMICO_ADMIN_API_URL:'http://radar-academico:3000/api/internal/editorial/sources',RADAR_ACADEMICO_ADMIN_API_TOKEN:editorial.ADMIN_API_TOKEN}:{}),
   };
-  const child=spawn(process.execPath,[...(editorial?['--import',fileURLToPath(new URL('./calendar-local-network.mjs',import.meta.url))]:[]),'node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port','48761'],{cwd:fileURLToPath(app),env,stdio:'inherit'});
+  const child=spawn(process.execPath,[...(editorial?['--import',fileURLToPath(new URL('./calendar-local-network.mjs',import.meta.url))]:[]),...(passwordFlow?['--import',fileURLToPath(new URL('./calendar-password-local-network.mjs',import.meta.url))]:[]),'node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port','48761'],{cwd:fileURLToPath(app),env,stdio:'inherit'});
   console.log('Homologação LOCAL: http://127.0.0.1:4381 — autenticação real, banco e catálogo isolados; sem deploy.');
   if(editorial)console.log('Painel integrado ao Radar real em 127.0.0.1:3000, usando somente o banco editorial local e fontes fictícias.');
   let syncing = false;

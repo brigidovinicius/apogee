@@ -5,12 +5,13 @@ import { calendarAdultAccess } from "@/lib/members/protection";
 import { applicationOrigin } from "@/lib/members/mail";
 import { completeGoogleCalendarOAuth } from "@/lib/opportunities/google-calendar-store";
 import { syncGoogleCalendar } from "@/lib/opportunities/google-calendar-sync";
-import { googleCalendarConfig, GOOGLE_CALENDAR_COOKIE, GOOGLE_CALENDAR_CALLBACK, GOOGLE_CALENDAR_PATH } from "@/lib/opportunities/google-calendar-config";
+import { googleCalendarConfig, GOOGLE_CALENDAR_COOKIE, GOOGLE_CALENDAR_RETURN_COOKIE, GOOGLE_CALENDAR_CALLBACK } from "@/lib/opportunities/google-calendar-config";
+import { googleCalendarReturnPath } from "@/lib/opportunities/google-calendar-navigation";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 export async function GET(request: NextRequest) {
-  const destination = new URL(GOOGLE_CALENDAR_PATH,applicationOrigin());
+  const destination = new URL(googleCalendarReturnPath(request.cookies.get(GOOGLE_CALENDAR_RETURN_COOKIE)?.value),applicationOrigin());
   let result = "failed";
   try {
     const member = await getMemberFromHeaders(request.headers);
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
   destination.searchParams.set("google",result);
   const response = NextResponse.redirect(destination,303);
   response.cookies.set(GOOGLE_CALENDAR_COOKIE,"",{path:GOOGLE_CALENDAR_CALLBACK,maxAge:0,httpOnly:true,sameSite:"lax",secure:destination.protocol==="https:"});
+  response.cookies.set(GOOGLE_CALENDAR_RETURN_COOKIE,"",{path:GOOGLE_CALENDAR_CALLBACK,maxAge:0,httpOnly:true,sameSite:"lax",secure:destination.protocol==="https:"});
   response.headers.set("Cache-Control","no-store");
   response.headers.set("Referrer-Policy","no-referrer");
   return response;

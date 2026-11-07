@@ -6,6 +6,7 @@ import { saveOpportunityFromCard } from '@/app/membros/meu-calendario/actions';
 import type { CalendarSaveState } from '@/lib/opportunities/calendar-save-types';
 import styles from './save-opportunity.module.css';
 import {AddToCollection} from './add-to-collection';
+import {googleCalendarReturnPath} from '@/lib/opportunities/google-calendar-navigation';
 
 type SaveContext = {state:CalendarSaveState;returnTo:string;saved:Set<string>;update:(id:string,value:boolean)=>void};
 const Context=createContext<SaveContext|null>(null);
@@ -32,6 +33,7 @@ function ReadySaveButton({context,id,title}:{context:SaveContext;id:string;title
   },'');
   return <div><form action={action} className={styles.form}>
     <button className={styles.button} type="submit" disabled={pending} aria-pressed={saved} aria-label={(saved?'Remover ':'Salvar ')+title+(saved?' da minha agenda':' na minha agenda')}>{pending?'Salvando…':saved?'Salvo · remover':'Salvar na minha agenda'}</button>
-    {message&&<span role="status" className={styles.message}>{message}{saved&&<> <Link href="/membros/meu-calendario">Ver minha agenda</Link></>}</span>}
+    {message&&<span role="status" className={styles.message}>{message}</span>}
+    {saved&&<span className={styles.message}><Link href="/membros/meu-calendario">Ver minha agenda</Link>{' · '}<Link href={googleCalendarReturnPath(context.returnTo)}>Configurar Google Agenda</Link></span>}
   </form>{context.state.kind==='ready'&&context.state.collections&&<AddToCollection id={id} collections={context.state.collections}/>}</div>;
 }

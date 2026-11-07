@@ -71,7 +71,7 @@ it("coleta a edição compartilhada em um ciclo, mantendo o limite manual de fic
   expect(manual.sources[0]).toMatchObject({ nextLinkOffset: 2 });
 });
 
-afterEach(() => { vi.clearAllMocks(); vi.unstubAllEnvs(); });
+afterEach(() => { vi.clearAllMocks(); vi.unstubAllEnvs(); vi.useRealTimers(); });
 
 it("varre várias fontes vencidas, lê páginas de detalhe e publica resultados válidos automaticamente", async () => {
   vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
@@ -151,7 +151,12 @@ it("extrai o hackathon global da página oficial mesmo quando o primeiro main é
   });
 });
 
-it("publica o edital de intercâmbio do MinC com país e prazo exato, sem inventar UF ou cidade", async () => {
+it.each([
+  ["2026-11-06T20:59:59Z", "open"],
+  ["2026-11-06T21:00:01Z", "closed"],
+])("preserva país e prazo exato do MinC em %s (%s), sem inventar UF ou cidade", async (now, status) => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date(now));
   vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   const url = "https://www.gov.br/cultura/pt-br/assuntos/editais/inscricoes-em-andamento/edital-de-intercambio-cultural-circulacao-e-participacao-audiovisual-no-exterior";
   const source: OfficialSource = {
@@ -179,7 +184,7 @@ it("publica o edital de intercâmbio do MinC com país e prazo exato, sem invent
   expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({
     title: "Edital de Intercâmbio Cultural MinC 2026 — Audiovisual no Exterior",
     categories: ["intercambios", "bolsas"], deadlineAt: "2026-11-06T18:00:00-03:00",
-    deadlinePrecision: "exact_datetime", opportunityStatus: "open", nationallyEligible: true,
+    deadlinePrecision: "exact_datetime", opportunityStatus: status, nationallyEligible: true,
     geographicScopeKind: "country", countryCode: "BR", stateCode: null, cityName: null,
   });
 });
