@@ -6,6 +6,16 @@ import {renderToStaticMarkup} from 'react-dom/server';
 
 const nav=opportunityLoader()('lib/opportunities/google-calendar-navigation.ts');
 const base='/membros/meu-calendario?integracao=google#google-calendar-heading';
+test('compiled header rules keep OAuth and verification callbacks private after global defaults',async()=>{
+ const config=opportunityLoader()('next.config.ts').default;
+ const rules=await config.headers();
+ for(const path of ['/api/integracoes/google-agenda/callback','/api/auth/verify-email']){
+  const headers=rules.filter(rule=>['/:path*','/api/:path*',path].includes(rule.source)).flatMap(rule=>rule.headers);
+  assert.equal(headers.filter(header=>header.key==='Referrer-Policy').at(-1)?.value,'no-referrer',path);
+  assert.equal(headers.filter(header=>header.key==='Cache-Control').at(-1)?.value,'no-store',path);
+  assert.ok(config.logging.incomingRequests.ignore.some(pattern=>pattern.test(path+'?code=PRIVATE&token=PRIVATE')));
+ }
+});
 test('saved cards retain the connection shortcut after a server refresh clears action messages',()=>{
  const view=opportunityLoader({
    'next/navigation':{useRouter:()=>({push:()=>{}})},
