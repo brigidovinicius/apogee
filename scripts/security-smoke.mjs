@@ -21,7 +21,7 @@ const server = spawn(process.execPath, [resolve(standalone, "server.js")], {
     // Synthetic runtime-only approvals must survive a build without these flags.
     ...(app === "make-it-fly-current" ? {
       MEMBERS_SUPERVISED_REGISTRATION_ENABLED: "true",
-      APOGEE_PRIVACY_APPROVED_VERSION: "2026-11-01.2",
+      APOGEE_PRIVACY_APPROVED_VERSION: "2026-11-08.1",
       APOGEE_TERMS_APPROVED_VERSION: "2026-11-01.2",
     } : {}),
   },
