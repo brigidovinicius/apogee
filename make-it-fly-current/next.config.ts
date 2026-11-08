@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
       ...(process.env.NODE_ENV === "production" ? [{ key: "Strict-Transport-Security", value: "max-age=31536000" }] : []),
     ] }, { source: "/api/:path*", headers: [
       { key: "X-Robots-Tag", value: "noindex, nofollow" },
-    ] }, ...["/colecoes/:path*", "/membros/colecoes/:path*", "/membros/esqueci-senha", "/membros/redefinir-senha", "/api/auth/reset-password/:path*"].map(source => ({
+    ] }, ...["/colecoes/:path*", "/membros/colecoes/:path*", "/membros/esqueci-senha", "/membros/redefinir-senha", "/api/auth/reset-password/:path*", "/api/auth/verify-email", "/api/integracoes/google-agenda/callback"].map(source => ({
       source, headers: [
         { key: "Referrer-Policy", value: "no-referrer" },
         { key: "Cache-Control", value: "no-store" },
