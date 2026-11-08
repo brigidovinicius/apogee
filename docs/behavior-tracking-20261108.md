@@ -1,5 +1,7 @@
 # Medição de comportamento — site inteiro e Radar
 
+Atualização: publicado e ativado em 08/11/2026, após autorização. Ver [registro de ativação](releases/behavior-tracking-activation-20261108.md) para revisão, CI, migração e validação em produção.
+
 Pedido: medir comportamento sem armazenar dados sensíveis. Escopo confirmado em 08/11/2026: site inteiro e Radar.
 
 ## Contrato e implementação
@@ -54,4 +56,4 @@ Validação local em 08/11/2026:
 - Artefatos de navegador em `make-it-fly-current/outputs/behavior-validation/`: `browser-events.json` (4 lotes, 15 eventos sintéticos), `desktop-consent.png` (1280×800), `mobile-consent.png` (390×844), `preview.log`. A gravação do JSON ocorre somente após todas as asserções. Capturas conferidas visualmente. O servidor e o navegador temporários foram encerrados; fila vazia após a execução.
 - `BEHAVIOR_PLAYWRIGHT_MODULE` aponta somente no teste para o módulo Playwright já instalado pelo conector. Nenhuma dependência foi instalada para esta tarefa.
 
-Todos os comandos pesados foram executados sequencialmente pela fila FIFO. Sem push, publicação, migração em produção ou coleta de pessoas reais.
+Na etapa local descrita acima, os comandos pesados foram executados sequencialmente pela fila FIFO, sem push, publicação, migração em produção ou coleta de pessoas reais. A ativação posterior está documentada no registro de release vinculado no início deste documento.
