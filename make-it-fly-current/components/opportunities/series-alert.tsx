@@ -6,7 +6,7 @@ export function SeriesAlert({id,name,available}:{id:string;name:string;available
   if(!available)return <p>Avisos por e-mail em preparação.</p>;
   return <details className={styles.alertForm}><summary>Avisar sobre próximas edições</summary>
     <p>Receba um aviso quando uma nova edição com inscrições abertas for validada no Radar, inclusive se a edição atual já terminou.</p>
-    <form onSubmit={async event=>{event.preventDefault();const form=event.currentTarget,data=new FormData(form);setBusy(true);setMessage('');
+    <form data-behavior-action="series_alert_request" onSubmit={async event=>{event.preventDefault();const form=event.currentTarget,data=new FormData(form);setBusy(true);setMessage('');
       try {
         const response=await fetch('/api/radar/alerts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'subscribeSeries',targetId:id,email:data.get('email'),consent:data.get('consent')==='on'})});
         const result=await response.json();

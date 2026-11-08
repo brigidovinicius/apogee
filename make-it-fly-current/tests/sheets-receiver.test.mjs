@@ -79,11 +79,11 @@ test("journey batches validate every item before touching Sheets and reject extr
     const receiver = sheetsReceiver(); assert.equal(receiver.post({ kind: "journey_events", webhookSecret: SHEETS_SECRET, events }).received, false); noAccess(receiver);
   }
 });
-test("journey events deduplicate within batch and across retries, including UUID casing", () => {
+test("retired journey events cannot write to Sheets, including retries", () => {
   const receiver = sheetsReceiver(); const item = journey();
   const body = { kind: "journey_events", webhookSecret: SHEETS_SECRET, events: [item, { ...item, eventId: item.eventId.toUpperCase() }] };
-  assert.equal(receiver.post(body).received, true); assert.equal(receiver.post(body).received, true);
-  assert.equal(receiver.rows.journey.length, 1); assert.equal(receiver.calls.releases, 2);
+  assert.equal(receiver.post(body).received, false); assert.equal(receiver.post(body).received, false);
+  assert.equal(receiver.rows.journey.length, 0); noAccess(receiver);
 });
 test("lock/Sheets failures return a sanitized negative acknowledgement and release acquired locks", () => {
   for (const options of [{ lockFailure: true }, { sheetFailure: true }]) {
@@ -118,10 +118,10 @@ for (const configuredSecret of [SHEETS_SECRET, "wrong-but-valid-server-secret-12
     assert.equal(result.status, 201); assert.deepEqual(await result.json(), { received: true });
     const item = journey(); delete item.receivedAt;
     const tracked = await events.handleJourneyPost(post("/api/journey", { events: [item] }), { env, fetcher, rateLimiter: () => true });
-    assert.equal(tracked.status, 202); assert.deepEqual(await tracked.json(), { received: true });
-    assert.equal(databaseCalls, 2); assert.equal(sheetCalls, 2);
+    assert.equal(tracked.status, 410);
+    assert.equal(databaseCalls, 1); assert.equal(sheetCalls, 1);
     const expected = configuredSecret === SHEETS_SECRET ? 1 : 0;
-    assert.equal(receiver.rows.applications.length, expected); assert.equal(receiver.rows.journey.length, expected);
+    assert.equal(receiver.rows.applications.length, expected); assert.equal(receiver.rows.journey.length, 0);
     assert.ok(!JSON.stringify(receiver.rows).includes(configuredSecret));
   });
 }

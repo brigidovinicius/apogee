@@ -1,6 +1,5 @@
 const SPREADSHEET_ID = "136r8ESII-8xBTdGy-zfDJbCZonN-VzgBncGBCM7XWf0";
 const APPLICATIONS_SHEET_NAME = "Aplicações";
-const JOURNEY_SHEET_NAME = "Jornada";
 const MAX_WEBHOOK_BYTES = 32 * 1024;
 const WEBHOOK_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -13,14 +12,12 @@ function doPost(event) {
     authenticateWebhook(data.webhookSecret);
     // Toda a validação antecede acesso ao lock e às planilhas.
     if (data.kind === "application") validateApplication(data);
-    else if (data.kind === "journey_events") validateJourneyBatch(data);
     else throw new Error("Pedido inválido.");
 
     const lock = LockService.getScriptLock();
     lock.waitLock(10000);
     try {
-      if (data.kind === "journey_events") appendJourneyEvents(data);
-      else appendApplication(data);
+      appendApplication(data);
     } finally { lock.releaseLock(); }
     return webhookResponse(true);
   } catch {
@@ -68,43 +65,6 @@ function appendApplication(data) {
     safeCell(data.utmCampaign), safeCell(data.utmContent), safeCell(data.referrer), data.age,
     safeCell(data.profession), data.hasLaptop ? "Sim" : "Não", "", "", "",
   ]);
-}
-
-function validateJourneyBatch(data) {
-  objectWithKeys(data, ["kind", "webhookSecret", "events"]);
-  if (!Array.isArray(data.events) || !data.events.length || data.events.length > 20) throw new Error("Eventos inválidos.");
-  data.events.forEach(validateJourneyEvent);
-}
-
-function appendJourneyEvents(data) {
-  validateJourneyBatch(data);
-  const sheet = requiredSheet(JOURNEY_SHEET_NAME);
-  const known = Object.create(null);
-  const lastRow = sheet.getLastRow();
-  if (lastRow >= 6) sheet.getRange(6, 1, lastRow - 5, 1).getValues().forEach(function (row) { known[String(row[0]).toLowerCase()] = true; });
-  const rows = [];
-  data.events.forEach(function (item) {
-    validateJourneyEvent(item);
-    if (known[item.eventId]) return;
-    known[item.eventId] = true;
-    rows.push([
-      safeCell(item.eventId), safeCell(item.receivedAt), safeCell(item.journeyId), safeCell(item.eventName),
-      safeCell(item.path), safeCell(item.context), item.step || "", safeCell(item.device),
-    ]);
-  });
-  if (rows.length) sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 8).setValues(rows);
-}
-
-function validateJourneyEvent(item) {
-  const names = ["page_view", "section_view", "scroll_depth", "cta_click", "form_view", "form_started", "form_step_completed", "form_validation_error", "form_submit_started", "form_submit_succeeded", "form_submit_failed"];
-  objectWithKeys(item, ["eventId", "journeyId", "receivedAt", "eventName", "path", "context", "step", "device"]);
-  if (typeof item.eventId !== "string" || typeof item.journeyId !== "string" || !WEBHOOK_UUID.test(item.eventId) || !WEBHOOK_UUID.test(item.journeyId)) throw new Error("Evento inválido.");
-  if (names.indexOf(item.eventName) < 0 || ["/", "/participar"].indexOf(item.path) < 0) throw new Error("Evento inválido.");
-  if (typeof item.context !== "string" || item.context.length > 160 || !/^[a-z0-9_,.\-]*$/.test(item.context)) throw new Error("Evento inválido.");
-  if (item.step !== null && (!Number.isInteger(item.step) || item.step < 1 || item.step > 3)) throw new Error("Evento inválido.");
-  if (["mobile", "desktop"].indexOf(item.device) < 0 || !validTimestamp(item.receivedAt)) throw new Error("Evento inválido.");
-  item.eventId = item.eventId.toLowerCase();
-  item.journeyId = item.journeyId.toLowerCase();
 }
 
 function requiredSheet(name) {

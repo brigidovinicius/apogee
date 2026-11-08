@@ -4,7 +4,7 @@ import { BrandMark } from "@/components/ui/brand-mark";
 import { ArrowUpRight } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import Link from "next/link";
-import { flushJourneyEvents, getJourneyId, trackJourney } from "@/components/analytics/journey-client";
+import { flushJourneyEvents, trackJourney } from "@/components/analytics/journey-client";
 import { readAttribution, validateStep, type ApplicationValues, type FieldErrors } from "./application-client";
 import styles from "./application.module.css";
 
@@ -108,7 +108,7 @@ export function ApplicationForm() {
         name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim(),
         age: Number(values.age), profession: values.profession.trim(),
         hasIdea: values.hasIdea, ideaDescription: values.hasIdea ? values.ideaDescription.trim() : "",
-        hasLaptop: values.hasLaptop, usesPaidAI: values.usesPaidAI, journeyId: getJourneyId(), website: values.website, ...readAttribution(),
+        hasLaptop: values.hasLaptop, usesPaidAI: values.usesPaidAI, website: values.website, ...readAttribution(),
       };
       const signature = JSON.stringify(payload);
       // A retry reuses its key, including after an uncertain network timeout.
@@ -198,7 +198,7 @@ export function ApplicationForm() {
             <button type="submit" className={styles.primary}>{submitting ? "Enviando sua aplicação…" : step === 2 ? "Enviar aplicação" : "Continuar"}<span aria-hidden="true">{submitting ? "…" : <ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} />}</span></button>
           </div>
         </fieldset>
-        <p className={styles.privacy}>Seus dados serão usados pela Apogee para avaliar sua participação, organizar esta edição e manter contato sobre próximas experiências. Nesta sessão, também registramos as etapas percorridas e eventuais erros técnicos, sem copiar o conteúdo das suas respostas para esses eventos. Não exibimos suas respostas publicamente. O envio não reserva uma vaga.</p>
+        <p className={styles.privacy}>Seus dados serão usados pela Apogee para avaliar sua participação, organizar esta edição e manter contato sobre próximas experiências. Se você permitir a medição de uso, contamos as etapas e os erros técnicos sem copiar suas respostas nem vincular os eventos à inscrição. Não exibimos suas respostas publicamente. O envio não reserva uma vaga.</p>
       </form>
       <noscript><p className={styles.errorSummary}>Ative o JavaScript no navegador para preencher e enviar sua aplicação.</p></noscript>
     </section>

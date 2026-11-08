@@ -18,6 +18,7 @@ const child = spawn(process.execPath, [resolve(".next/standalone/server.js")], {
   cwd: resolve(".next/standalone"),
   env: {
     PATH: process.env.PATH, NODE_ENV: "production", HOSTNAME: "127.0.0.1", PORT: String(port), NEXT_TELEMETRY_DISABLED: "1",
+    APOGEE_BEHAVIOR_ENABLED: "true", APPLICATION_HOSTING_PROVIDER: "caddy",
     APPLICATION_ORIGIN: origin, APPLICATION_SIGNING_SECRET: "synthetic-body-http-secret-at-least-32-characters",
     SUPABASE_URL: "https://synthetic.supabase.co", SUPABASE_SECRET_KEY: "sb_secret_synthetic01234567890123456789",
     BETTER_AUTH_URL: origin, BETTER_AUTH_SECRET: "synthetic-body-http-auth-secret-at-least-32-characters",
@@ -32,6 +33,7 @@ async function incomplete(path, expected, waitForTimeout) {
   const start = performance.now();
   const request = httpRequest({ host: "127.0.0.1", port, path, method: "POST", headers: {
     origin, "content-type": "application/json", "content-length": "100", connection: "close",
+    "x-apogee-measurement": "allow-v1", "x-apogee-client-ip": "127.0.0.1",
   } });
   const guard = setTimeout(() => request.destroy(new Error("HTTP test guard fired")), 9000);
   try {
@@ -68,7 +70,8 @@ try {
   await incomplete("/api/members/invitations", 401, false);
   await incomplete("/api/members/verification", 401, false);
   await incomplete("/api/applications", 408, true);
-  await incomplete("/api/journey", 408, true);
+  await incomplete("/api/journey", 410, false);
+  await incomplete("/api/behavior", 408, true);
 } finally {
   child.kill("SIGTERM");
   const guard = setTimeout(() => child.kill("SIGKILL"), 3000);

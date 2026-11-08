@@ -18,7 +18,7 @@ export function SaveOpportunityButton({id,title}:{id:string;title:string}) {
   const context=useContext(Context);
   if(!context||context.state.kind==='disabled')return null;
   if(context.state.kind==='unavailable')return <span className={styles.message}>Agenda temporariamente indisponível.</span>;
-  if(context.state.kind==='redirect')return <Link className={styles.button} href={context.state.href} prefetch={false} aria-label={'Salvar '+title+' na minha agenda'}>Salvar na minha agenda</Link>;
+  if(context.state.kind==='redirect')return <Link data-behavior-action="save" className={styles.button} href={context.state.href} prefetch={false} aria-label={'Salvar '+title+' na minha agenda'}>Salvar na minha agenda</Link>;
   return <ReadySaveButton context={context} id={id} title={title}/>;
 }
 function ReadySaveButton({context,id,title}:{context:SaveContext;id:string;title:string}) {
@@ -31,7 +31,7 @@ function ReadySaveButton({context,id,title}:{context:SaveContext;id:string;title
     if('redirect' in result){router.push(result.redirect);return '';}
     return result.error;
   },'');
-  return <div><form action={action} className={styles.form}>
+  return <div><form action={action} data-behavior-action={saved?"remove_saved":"save"} className={styles.form}>
     <button className={styles.button} type="submit" disabled={pending} aria-pressed={saved} aria-label={(saved?'Remover ':'Salvar ')+title+(saved?' da minha agenda':' na minha agenda')}>{pending?'Salvando…':saved?'Salvo · remover':'Salvar na minha agenda'}</button>
     {message&&<span role="status" className={styles.message}>{message}</span>}
     {saved&&<span className={styles.message}><Link href="/membros/meu-calendario">Ver minha agenda</Link>{' · '}<Link href={googleCalendarReturnPath(context.returnTo)}>Configurar Google Agenda</Link></span>}

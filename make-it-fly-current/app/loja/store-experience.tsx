@@ -30,7 +30,7 @@ function ProductGallery({ product, onBuy }: { product: StoreProduct; onBuy: () =
       </div>
       <div className={styles.productHeading}><h2 id={`title-${product.slug}`}>{product.name}</h2><span>{product.detail}</span></div>
       <p>{product.description}</p>
-      <button className={styles.productLink} type="button" onClick={onBuy} aria-haspopup="dialog" aria-controls="drop-purchase-dialog" aria-label={`Comprar ${product.name}`}>Comprar <ArrowUpRight size={18} aria-hidden="true" /></button>
+      <button data-behavior-action="store_interest" className={styles.productLink} type="button" onClick={onBuy} aria-haspopup="dialog" aria-controls="drop-purchase-dialog" aria-label={`Comprar ${product.name}`}>Comprar <ArrowUpRight size={18} aria-hidden="true" /></button>
       <dialog ref={dialog} className={styles.photoDialog} aria-label={`Foto ampliada de ${product.name}`} onClick={(event) => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
         <button className={styles.closePhoto} type="button" autoFocus onClick={() => dialog.current?.close()}>Fechar <X size={18} aria-hidden="true" /></button>
         <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="90vw" />

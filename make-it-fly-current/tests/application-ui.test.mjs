@@ -132,25 +132,16 @@ test("all three participation CTAs reach the local form and leave Earth componen
   assert.match(landing, /<ApogeeFlight pageRef=\{pageRef\} onReadyChange=\{setEarthReady\} \/>/);
 });
 
-test("journey tracking is first-party, session-scoped and never copies form answers", async () => {
+test("application events use the aggregate adapter without an identity link", async () => {
   const [client, tracker, form, layout] = await Promise.all([
-    read("components/analytics/journey-client.ts"),
-    read("components/analytics/JourneyTracker.tsx"),
-    read("components/application/ApplicationForm.tsx"),
-    read("app/layout.tsx"),
+    read("components/analytics/journey-client.ts"), read("components/analytics/JourneyTracker.tsx"),
+    read("components/application/ApplicationForm.tsx"), read("app/layout.tsx"),
   ]);
-  assert.match(client, /sessionStorage\.getItem/);
-  assert.doesNotMatch(client, /localStorage/);
-  assert.match(client, /navigator\.doNotTrack\s*!==\s*"1"/);
-  assert.match(client, /fetch\("\/api\/journey"/);
-  assert.match(client, /keepalive:\s*true/);
-  assert.match(tracker, /page_view/);
-  assert.match(tracker, /section_view/);
-  assert.match(tracker, /scroll_depth/);
+  assert.doesNotMatch(client, /sessionStorage|localStorage|randomUUID|getJourneyId|api\/journey/);
+  assert.match(client, /trackBehavior/);
+  assert.match(tracker, /APOGEE_BEHAVIOR_ENABLED/);
+  assert.doesNotMatch(form, /getJourneyId|journeyId:/);
   assert.match(form, /form_step_completed/);
   assert.match(form, /form_submit_succeeded/);
   assert.match(layout, /<JourneyTracker \/>/);
-  for (const privateField of ["email", "phone", "profession", "ideaDescription"]) {
-    assert.doesNotMatch(client, new RegExp(privateField, "i"));
-  }
 });
