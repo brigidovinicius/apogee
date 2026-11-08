@@ -47,7 +47,7 @@ export function BehaviorInsightsPanel({ data }: { data: BehaviorInsights }) {
         {BEHAVIOR_METRICS.map(item => <button key={item.key} type="button" aria-pressed={metric === item.key} onClick={() => setMetric(item.key)}>{item.label}</button>)}
       </div>
       <div className={styles.readout} aria-live="polite" aria-atomic="true">
-        <div><span>{selectedMetric.label}</span><strong>{active.available ? number.format(active.counts[metric]) : "—"}</strong></div>
+        <div><span>{selectedMetric.label}</span><strong>{active.available ? number.format(active.counts[metric]) : "-"}</strong></div>
         <p>{date(active.day)}{active.today ? " · Hoje, parcial" : ""}<br />{active.available ? "Eventos registrados neste dia" : "Sem histórico disponível neste dia"}</p>
       </div>
       <div className={styles.chartFrame}>
@@ -68,7 +68,7 @@ export function BehaviorInsightsPanel({ data }: { data: BehaviorInsights }) {
       </div>
       <label className={styles.explorer} htmlFor={`${id}-day`}>Explorar dia<input id={`${id}-day`} type="range" min="0" max="29" step="1" value={activeDay} aria-valuetext={`${date(active.day)}: ${active.available ? `${number.format(active.counts[metric])} ${selectedMetric.label.toLowerCase()}` : "sem histórico"}${active.today ? ", hoje parcial" : ""}`} onChange={event => setActiveDay(Number(event.target.value))} /></label>
       <p className={styles.note}>{data.firstDay ? `Primeiro registro disponível em ${date(data.firstDay)}/${data.firstDay.slice(0, 4)}. ` : "Ainda não há registros de comportamento. "}Dias anteriores ficam sem histórico. Zero indica ausência de eventos registrados, não ausência de visitantes.</p>
-      <details className={styles.dailyValues}><summary>Ver valores por dia</summary><div className={styles.tableScroll}><table className={styles.table}><caption>{selectedMetric.label} por dia</caption><thead><tr><th scope="col">Data</th><th scope="col">Contagem</th><th scope="col">Observação</th></tr></thead><tbody>{data.daily.map(day => <tr key={day.day}><th scope="row">{date(day.day)}/{day.day.slice(0, 4)}</th><td>{day.available ? number.format(day.counts[metric]) : "—"}</td><td>{!day.available ? "Sem histórico" : day.today ? "Hoje, parcial" : day.day === data.firstDay ? "Início do histórico" : "Eventos registrados"}</td></tr>)}</tbody></table></div></details>
+      <details className={styles.dailyValues}><summary>Ver valores por dia</summary><div className={styles.tableScroll}><table className={styles.table}><caption>{selectedMetric.label} por dia</caption><thead><tr><th scope="col">Data</th><th scope="col">Contagem</th><th scope="col">Observação</th></tr></thead><tbody>{data.daily.map(day => <tr key={day.day}><th scope="row">{date(day.day)}/{day.day.slice(0, 4)}</th><td>{day.available ? number.format(day.counts[metric]) : "-"}</td><td>{!day.available ? "Sem histórico" : day.today ? "Hoje, parcial" : day.day === data.firstDay ? "Início do histórico" : "Eventos registrados"}</td></tr>)}</tbody></table></div></details>
     </section>
 
     <section className={styles.surface} aria-labelledby={`${id}-weekly-title`}>
@@ -78,7 +78,7 @@ export function BehaviorInsightsPanel({ data }: { data: BehaviorInsights }) {
         const variation = data.variations[item.key];
         const change = variation.reason === "history" ? "Histórico incompleto" : variation.reason === "zero-base" ? "Sem base percentual" : variation.reason === "no-events" ? "Sem eventos nos dois períodos" : `${variation.percent! > 0 ? "+" : ""}${percentage.format(variation.percent!)}%`;
         return <article className={styles.weekCard} key={item.key}>
-          <h3>{item.label}</h3><div className={styles.weekNumbers}><div><span>Últimos 7 dias</span><strong>{variation.current === null ? "—" : number.format(variation.current)}</strong><small>{!data.currentWeek.availableDays ? "Sem histórico" : data.currentWeek.complete ? "Período completo" : "Histórico parcial"}</small></div><div><span>7 dias anteriores</span><strong>{variation.previous === null ? "—" : number.format(variation.previous)}</strong><small>{!data.previousWeek.availableDays ? "Sem histórico" : data.previousWeek.complete ? "Período completo" : "Histórico parcial"}</small></div></div>
+          <h3>{item.label}</h3><div className={styles.weekNumbers}><div><span>Últimos 7 dias</span><strong>{variation.current === null ? "-" : number.format(variation.current)}</strong><small>{!data.currentWeek.availableDays ? "Sem histórico" : data.currentWeek.complete ? "Período completo" : "Histórico parcial"}</small></div><div><span>7 dias anteriores</span><strong>{variation.previous === null ? "-" : number.format(variation.previous)}</strong><small>{!data.previousWeek.availableDays ? "Sem histórico" : data.previousWeek.complete ? "Período completo" : "Histórico parcial"}</small></div></div>
           <p className={styles.change}>{change}</p>{variation.difference !== null && <p className={styles.difference}>{signed(variation.difference)} {variation.difference === 1 || variation.difference === -1 ? "ocorrência" : "ocorrências"} em relação ao período anterior</p>}
         </article>;
       })}</div>
