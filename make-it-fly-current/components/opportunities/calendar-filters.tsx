@@ -30,7 +30,7 @@ export function CalendarFilters({filters,items,path,hidden={}}:{filters:FilterVa
     ...(filters.stateCode?[{name:'uf',label:'Estado: '+filters.stateCode}]:[]),
     ...(filters.cityName?[{name:'cidade',label:'Cidade: '+filters.cityName}]:[])];
   return <section aria-label="Filtros do calendário" className={styles.filterPanel}>
-    <form key={JSON.stringify([filters,hidden])} action={path} className={styles.filterForm}>
+    <form data-behavior-filter="applied" key={JSON.stringify([filters,hidden])} action={path} className={styles.filterForm}>
       {Object.entries(hidden).map(([name,value])=><input type="hidden" key={name} name={name} value={value}/>)}
       {filters.view==='month'&&<input type="hidden" name="visualizacao" value="mes"/>}
       <div className={styles.filterPrimary}>
@@ -43,7 +43,7 @@ export function CalendarFilters({filters,items,path,hidden={}}:{filters:FilterVa
         {!hidden.calendario&&<label>Calendário<select name="calendario" defaultValue={filters.calendar??''}><option value="">Todos</option>{CALENDARS.map(c=><option key={c.slug} value={c.slug}>{c.name}</option>)}</select></label>}
         {fields.map(f=><label key={f.name}>{f.label}<select name={f.name} defaultValue={f.value??''}><option value="">Todas as opções</option>{f.options.map(([value,label])=><option value={value} key={value}>{label}</option>)}</select></label>)}
       </div></details>
-      <div className={styles.filterActions}><button type="submit">Aplicar filtros</button><Link href={path+(new URLSearchParams(hidden).size?'?'+new URLSearchParams(hidden):'')}>Limpar filtros</Link></div>
+      <div className={styles.filterActions}><button type="submit">Aplicar filtros</button><Link data-behavior-filter="cleared" href={path+(new URLSearchParams(hidden).size?'?'+new URLSearchParams(hidden):'')}>Limpar filtros</Link></div>
     </form>
     {!!chips.length&&<ul className={styles.filterChips} aria-label="Filtros aplicados">{chips.map(chip=>{
       const params=new URLSearchParams(current);params.delete(chip.name);if(chip.name==='uf')params.delete('cidade');

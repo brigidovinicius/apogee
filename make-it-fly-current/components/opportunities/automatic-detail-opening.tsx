@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { flushBehavior, trackBehavior } from "@/components/analytics/behavior-client";
 
 type Props = {
   action: string | (() => Promise<void>);
@@ -15,9 +16,10 @@ export function AutomaticDetailOpening({ action, checkout = false }: Props) {
   useEffect(() => {
     if (form.current && !submitted.current) {
       submitted.current = true;
+      if (checkout) { trackBehavior("action", "checkout_start"); void flushBehavior(); }
       form.current.requestSubmit();
     }
-  }, []);
+  }, [checkout]);
 
   return <form ref={form} action={action} method={typeof action === "string" ? "post" : undefined} data-radar-detail-opening>
     <p role="status">{checkout ? "Abrindo checkout…" : "Abrindo detalhes…"}</p>

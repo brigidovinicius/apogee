@@ -33,7 +33,8 @@ type ValidApplication = {
   ideaDescription: string;
   hasLaptop: boolean;
   usesPaidAI: boolean;
-  journeyId: string;
+  // Legacy clients retain the v1 retry fingerprint; never written as journey_id.
+  journeyId?: string;
   idempotencyKey: string;
   utmSource: string;
   utmMedium: string;
@@ -127,8 +128,8 @@ export function validateApplication(value: unknown): ValidApplication {
   if (typeof input.hasLaptop !== "boolean") errors.hasLaptop = "Escolha Sim ou Não.";
   if (typeof input.usesPaidAI !== "boolean") errors.usesPaidAI = "Escolha Sim ou Não.";
   const description = text("ideaDescription", 2000, true);
-  const journeyId = text("journeyId", 36).toLowerCase();
-  if (!UUID.test(journeyId)) errors.journeyId = "Atualize a página antes de enviar novamente.";
+  const journeyId = text("journeyId", 36, true).toLowerCase();
+  if (journeyId && !UUID.test(journeyId)) errors.journeyId = "Atualize a página antes de enviar novamente.";
   const idempotencyKey = text("idempotencyKey", 36).toLowerCase();
   if (!UUID.test(idempotencyKey)) errors.idempotencyKey = "Atualize a página antes de enviar novamente.";
   const utmSource = text("utmSource", 200, true);
@@ -148,7 +149,7 @@ export function validateApplication(value: unknown): ValidApplication {
     }
   }
   if (Object.keys(errors).length) throw new ApplicationError(400, "Confira os campos indicados.", errors);
-  return { name, email, phone, age: age as number, profession, hasIdea: input.hasIdea as boolean, ideaDescription: input.hasIdea ? description : "", hasLaptop: input.hasLaptop as boolean, usesPaidAI: input.usesPaidAI as boolean, journeyId, idempotencyKey, utmSource, utmMedium, utmCampaign, utmContent, referrer };
+  return { name, email, phone, age: age as number, profession, hasIdea: input.hasIdea as boolean, ideaDescription: input.hasIdea ? description : "", hasLaptop: input.hasLaptop as boolean, usesPaidAI: input.usesPaidAI as boolean, ...(journeyId ? { journeyId } : {}), idempotencyKey, utmSource, utmMedium, utmCampaign, utmContent, referrer };
 }
 
 export function applicationFingerprint(application: ValidApplication, secret: string): string {
@@ -247,7 +248,6 @@ export async function saveApplication(application: ValidApplication, config: Con
       idea_description: application.ideaDescription || null,
       has_laptop: application.hasLaptop,
       uses_paid_ai: application.usesPaidAI,
-      journey_id: application.journeyId,
       status: eligible ? "APPROVED" : "NOT_ELIGIBLE",
       utm_source: application.utmSource || null,
       utm_medium: application.utmMedium || null,

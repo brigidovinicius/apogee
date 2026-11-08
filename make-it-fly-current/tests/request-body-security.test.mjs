@@ -54,7 +54,7 @@ const options = { env, rateLimiter: () => true, fetcher: () => { throw new Error
 const consumers = [
   ["invitations", (load, r) => load("lib/members/invitation-http.ts").invitationBody(r)],
   ["applications", (load, r) => load("lib/applications.ts").handleApplicationPost(r, options)],
-  ["journey", (load, r) => load("lib/journey.ts").handleJourneyPost(r, options)],
+  ["behavior", (load, r) => load("lib/behavior.ts").handleBehaviorPost(r, { enabled: true, origin, rateLimit: () => true, store: async () => { throw Error("No persistence allowed"); } }), { headers: { "x-apogee-measurement": "allow-v1" } }],
   ["gallery upload", (load, r) => load("lib/gallery.ts").uploadCommunityPhoto(r), { multipart: true }],
   ["gallery deletion", (load, r) => load("lib/gallery.ts").manageCommunityPhotos(r, { memberRole: "admin" }), { method: "DELETE" }],
   ["avatar", (load, r) => load("lib/members/avatar.ts").boundedAvatarForm(r), { multipart: true }],

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
@@ -81,7 +81,7 @@ for (const hasIdea of [false, true]) {
       assert.equal(record.age, 28);
       assert.equal(record.profession, "Design de produto");
       assert.equal(record.has_laptop, hasLaptop);
-      assert.equal(record.journey_id, submitted.journeyId);
+      assert.equal("journey_id" in record, false);
       assert.equal(record.checkout_started_at, null);
       assert.equal("purchased_at" in record, false);
     });
@@ -339,4 +339,26 @@ test("schema grants only server access and enforces eligibility/idempotency with
   assert.match(criteriaSql, /grant select, insert on public\.journey_events to service_role/i);
   assert.match(source, /import "server-only"/);
   assert.doesNotMatch(source, /NEXT_PUBLIC_/);
+});
+
+test("legacy tabs can retry pre-upgrade applications without restoring the journey column", async () => {
+  const sent = payload();
+  // Exact pre-upgrade v1 field order and normalization, independent of current code.
+  const legacy = { name: sent.name, email: sent.email, phone: "12025550101", age: 28, profession: sent.profession,
+    hasIdea: true, ideaDescription: "", hasLaptop: true, usesPaidAI: true, journeyId: sent.journeyId,
+    idempotencyKey: sent.idempotencyKey, utmSource: "", utmMedium: "", utmCampaign: "", utmContent: "", referrer: "" };
+  const oldHash = createHmac("sha256", env.APPLICATION_SIGNING_SECRET).update("makeitfly:application:v1:").update(JSON.stringify(legacy)).digest("hex");
+  const db = fakeDatabase();
+  db.rows.set(sent.idempotencyKey, { id: randomUUID(), created_at: "2026-09-12T16:00:00Z", eligible: true, status: "APPROVED", payload_hash: oldHash, idempotency_key: sent.idempotencyKey });
+  const response = await api.handleApplicationPost(request(sent), options(db));
+  assert.equal(response.status, 200);
+  assert.equal(db.rows.size, 1);
+  assert.equal("journey_id" in JSON.parse(db.calls[0].options.body), false);
+});
+test("new applications need no journey identifier and save no link", async () => {
+  const sent = payload(); delete sent.journeyId;
+  const db = fakeDatabase();
+  assert.equal((await api.handleApplicationPost(request(sent), options(db))).status, 201);
+  assert.equal("journey_id" in [...db.rows.values()][0], false);
+  assert.equal("journeyId" in api.validateApplication(sent), false);
 });

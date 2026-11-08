@@ -7,7 +7,7 @@ export function OpportunityAlert({id,title,available}:{id:string;title:string;av
   if (!available) return <p className={styles.alertHint}>Avisos por e-mail em preparação.</p>;
   return <details className={styles.alertForm}><summary>Avisar-me sobre mudanças</summary>
     <p>Receba novidades desta oportunidade, como prazo definido, mudança nas inscrições ou cancelamento.</p>
-    <form onSubmit={async(event)=>{ event.preventDefault();const form=event.currentTarget;const data=new FormData(form);setBusy(true);setMessage("");
+    <form data-behavior-action="alert_request" onSubmit={async(event)=>{ event.preventDefault();const form=event.currentTarget;const data=new FormData(form);setBusy(true);setMessage("");
       try { const response=await fetch("/api/radar/alerts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"subscribe",opportunityId:id.replace(/^radar-/,""),email:data.get("email"),consent:data.get("consent")==="on"})});
         const result=await response.json();setMessage(response.ok?"Confira seu e-mail e confirme o acompanhamento. O envio pode levar alguns minutos.":result.error ?? "Não foi possível cadastrar. Tente novamente.");if(response.ok)form.reset();
       } catch {setMessage("Não foi possível cadastrar. Tente novamente.");} finally{setBusy(false);} }}>

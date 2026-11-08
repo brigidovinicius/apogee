@@ -40,10 +40,10 @@ export function GoogleCalendar({status,result,returnTo}: {
       {status.connected ? <>
         <p>Conta conectada.{status.lastSync && <> Última atualização: <time dateTime={status.lastSync}>{new Date(status.lastSync).toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo"})} (Brasília).</time></>}</p>
         {!status.reviewRequired && <form action={syncGoogleCalendarAction}><input type="hidden" name="next" value={destination}/><Submit>Sincronizar agora</Submit></form>}
-        {!status.reviewRequired && status.error === "permission" && <form action={connectGoogleCalendarAction}><input type="hidden" name="next" value={destination}/><Submit>Revisar autorização Google</Submit></form>}
+        {!status.reviewRequired && status.error === "permission" && <form data-behavior-action="google_calendar" action={connectGoogleCalendarAction}><input type="hidden" name="next" value={destination}/><Submit>Revisar autorização Google</Submit></form>}
         <form action={disconnectGoogleCalendarAction}><Submit>Desconectar Google Agenda</Submit></form>
         <p>Ao desconectar, as atualizações param. O calendário já criado permanece no Google e pode ser removido por você.</p>
-      </> : !status.reviewRequired && <form action={connectGoogleCalendarAction}><input type="hidden" name="next" value={destination}/><Submit>{status.error === "reconnect"?"Reconectar Google Agenda":"Conectar Google Agenda"}</Submit></form>}
+      </> : !status.reviewRequired && <form data-behavior-action="google_calendar" action={connectGoogleCalendarAction}><input type="hidden" name="next" value={destination}/><Submit>{status.error === "reconnect"?"Reconectar Google Agenda":"Conectar Google Agenda"}</Submit></form>}
     </>}
   </section>;
 }

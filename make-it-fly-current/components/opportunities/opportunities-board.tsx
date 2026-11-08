@@ -1,4 +1,5 @@
 "use client";
+import { trackBehavior } from "@/components/analytics/behavior-client";
 
 import { SaveOpportunityButton } from "./save-opportunity";
 import { AREAS, displayOpportunityTitle, publicOpportunityPath } from "@/lib/opportunities/discovery";
@@ -100,6 +101,7 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
     : [];
 
   const updateFilters = (nextFilters: OpportunityFilters) => {
+    trackBehavior("filter_apply", "applied");
     setVisibleLimit(24);
     const params = setOpportunityFilterSearchParams(
       new URLSearchParams(searchParams.toString()),
@@ -412,6 +414,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
       <div className={styles.cardFooter}>
         <Link
           href={detailed ? opportunity.officialUrl : detailHref ?? opportunityDetailPath(opportunity.id)}
+          data-behavior-action={detailed ? "official_link" : undefined}
           prefetch={false}
           className={`${styles.externalLink} ${styles.detailButton}`}
           target={detailed ? "_blank" : undefined}
