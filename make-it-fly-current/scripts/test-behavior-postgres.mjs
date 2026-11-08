@@ -54,6 +54,31 @@ try {
   await sql`create role behavior_public_test`;
   assert.equal((await sql`select has_table_privilege('behavior_public_test','apogee_behavior_daily','SELECT') as readable`)[0].readable, false);
   console.log("PASS no public table access");
+  await sql`insert into apogee_behavior_daily (day,page,event,target,device,count) values
+    ((now() at time zone 'America/Sao_Paulo')::date-7,'home','page_view','view','mobile',3),
+    ((now() at time zone 'America/Sao_Paulo')::date-1,'home','page_view','view','mobile',5),
+    ((now() at time zone 'America/Sao_Paulo')::date-8,'home','page_view','view','desktop',4),
+    ((now() at time zone 'America/Sao_Paulo')::date+1,'home','page_view','view','desktop',99)`;
+  let authorized = false;
+  const overview = opportunityLoader({ "./access": { requireAdmin: async () => { authorized = true; } },
+    "@/lib/members/db": { getSql: () => { assert.equal(authorized, true); return sql; } } })("lib/admin/behavior.ts");
+  const previousFlag = process.env.APOGEE_BEHAVIOR_ENABLED;
+  process.env.APOGEE_BEHAVIOR_ENABLED = "true";
+  try {
+    const report = await overview.getBehaviorOverview();
+    assert.equal(report.state, "ready");
+    assert.equal(report.insights.today, today.day);
+    assert.equal(report.insights.daily.length, 30);
+    assert.equal(report.insights.currentWeek.counts.views, 8);
+    assert.equal(report.insights.previousWeek.counts.views, 4);
+    assert.equal(report.insights.variations.views.percent, 100);
+    assert.equal(report.insights.totals.views, 28);
+    assert.equal(report.rows.some(row => row.total === "99"), false);
+    console.log("PASS authorized daily snapshot, closed-week comparison and future-date exclusion");
+  } finally {
+    if (previousFlag === undefined) delete process.env.APOGEE_BEHAVIOR_ENABLED;
+    else process.env.APOGEE_BEHAVIOR_ENABLED = previousFlag;
+  }
 } finally {
   if (sql) await sql.end();
   if (started) run("pg_ctl", ["-D", data, "-m", "fast", "-w", "stop"]);
