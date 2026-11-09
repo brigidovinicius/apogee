@@ -1,0 +1,20 @@
+{
+  "name": "apogee-blog-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "start": "node src/cli.mjs run",
+    "test": "node --test --test-concurrency=1 test/*.test.mjs",
+    "test:integration": "node test/postgres-integration.mjs",
+    "migrate": "node src/cli.mjs migrate"
+  },
+  "dependencies": {
+    "postgres": "3.4.9",
+    "rss-parser": "3.13.0",
+    "sharp": "0.35.5"
+  }
+}

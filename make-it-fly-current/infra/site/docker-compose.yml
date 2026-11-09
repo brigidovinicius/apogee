@@ -66,6 +66,70 @@ services:
       retries: 3
       start_period: 180s
 
+  blog-db-proxy:
+    profiles: [blog]
+    image: edoburu/pgbouncer:v1.26.0-p0
+    restart: unless-stopped
+    entrypoint: []
+    command: ["/usr/bin/pgbouncer", "/etc/pgbouncer/blog/pgbouncer.ini"]
+    volumes:
+      - ${APOGEE_BLOG_DB_CONFIG_PATH:-/opt/apogee-blog/db-proxy}:/etc/pgbouncer/blog:ro
+      - ${APOGEE_MEMBERS_CERTS_PATH:-/opt/apogee-membros/certs}:/etc/pgbouncer/certs:ro
+    networks:
+      members_internal: {}
+      blog_data:
+        aliases: [pgbouncer]
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 96m
+    cpus: 0.25
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-p", "5432"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  blog-worker:
+    profiles: [blog]
+    build:
+      context: ../../../blog-worker
+      args:
+        APOGEE_RELEASE_SHA: ${APOGEE_RELEASE_SHA:-local}
+    image: apogee-blog-worker:${APOGEE_RELEASE_SHA:-local}
+    restart: unless-stopped
+    init: true
+    environment:
+      BLOG_DATABASE_URL: ${BLOG_DATABASE_URL:-}
+      BLOG_DATABASE_CA_CERT_FILE: /run/apogee/pgbouncer-ca.crt
+      BLOG_GOOGLE_CLI_PATH: /usr/local/bin/agy
+      BLOG_GOOGLE_CLI_SHA256: ${BLOG_GOOGLE_CLI_SHA256:-}
+      BLOG_CONFIG_DIR: /app/config
+    volumes:
+      - ${PGBOUNCER_CA_PATH:-/opt/apogee-membros/certs/server.crt}:/run/apogee/pgbouncer-ca.crt:ro
+      - ${APOGEE_BLOG_CONFIG_PATH:-../../../blog-worker/config}:/app/config:ro
+      - ${APOGEE_BLOG_GOOGLE_CLI_PATH:-/opt/apogee-blog/bin/agy}:/usr/local/bin/agy:ro
+      # Native CLI profile AND encrypted Linux keyring persist across restarts.
+      - ${APOGEE_BLOG_GOOGLE_PROFILE_PATH:-/opt/apogee-blog/home}:/home/node
+      - ${APOGEE_BLOG_KEYRING_PASSWORD_PATH:-/opt/apogee-blog/secrets/keyring-password}:/run/apogee/keyring-password:ro
+    depends_on:
+      blog-db-proxy:
+        condition: service_healthy
+    networks: [blog_data, blog_outbound]
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 768m
+    cpus: 0.5
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "node", "src/cli.mjs", "healthcheck"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 180s
+
   caddy:
     image: caddy:2.10.2-alpine
     restart: unless-stopped
@@ -101,6 +165,14 @@ volumes:
     name: apogee_site_caddy_config
 
 networks:
+  blog_data:
+    name: apogee_blog_data
+    internal: true
+  blog_outbound:
+    name: apogee_blog_outbound
+  members_internal:
+    name: apogee_membros_internal
+    external: true
   public:
     name: apogee_site_public
   members_edge:

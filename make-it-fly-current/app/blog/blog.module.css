@@ -88,3 +88,5 @@
 :global([data-apogee-design]) .articleArt::after { display: none; }
 :global([data-apogee-design]) .cardText h3 { font-size: 2.2rem; }
 :global([data-apogee-design]) .cardText p { font-size: 1rem; }
+.coverFigure { margin:0; }
+.coverFigure figcaption { margin:.65rem 0 1.5rem;color:rgb(255 255 255 / 72%);font-size:.85rem;line-height:1.6; }
