@@ -6,6 +6,7 @@ import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
 import { normalizeDiscoveredPage, discoveredPageFailureReason } from "@/lib/ingestion/discovered-page";
 import { publicationIssue } from "@/lib/ingestion/publication";
+import { validCategories } from "@/lib/ingestion/categories";
 import { structuredEvents } from "@/lib/ingestion/structured-events";
 import { eventOrganizerVerified } from "@/lib/ingestion/public-event";
 import type { OfficialSource, OpportunityCandidate } from "@/lib/ingestion/types";
@@ -80,7 +81,7 @@ export async function prepareSourceExpansion(lead: ExpansionLead): Promise<Prepa
   }
   const candidate = normalizeDiscoveredPage(resource.body.toString("utf8"), source);
   if (!candidate) return { reason: discoveredPageFailureReason(resource.body.toString('utf8')) };
-  if (candidate.requiresManualReview) return { reason: "candidate_unconfirmed" };
+  if (candidate.requiresManualReview || !validCategories(candidate.categories)) return { reason: "candidate_unconfirmed" };
   const issue = publicationIssue(candidate, source);
   if (issue) return { reason: issue };
   return { source, candidate, registration: { checkedAt: new Date().toISOString(), targetHash: target.hash,
