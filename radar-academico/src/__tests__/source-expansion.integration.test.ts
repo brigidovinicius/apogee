@@ -89,7 +89,7 @@ it.each([{ path: [parent.slice(0, -1)] }, { path: [parent] }, { path: [] }])("re
     from discovery_leads where target_id=$1`, [target]);
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, sourcesRegistered: 1, created: 1, published: 1 });
   const audit = (await state.db!.query<{ execution_metadata: Record<string, unknown> }>(
-    "select execution_metadata from ingestion_runs where execution_metadata->>'source_expansion_version'='6'" )).rows[0].execution_metadata;
+    "select execution_metadata from ingestion_runs where execution_metadata->>'source_expansion_version'='7'" )).rows[0].execution_metadata;
   expect(audit).toMatchObject({ source_registration: { targetUrl: rawParent, discoveryPath: [parent] } });
   expect((await state.db!.query('select official_url,official_verified_url from discovery_targets where id=$1', [target])).rows)
     .toEqual([{ official_url: rawParent, official_verified_url: rawParent }]);
@@ -120,7 +120,7 @@ it("recovers a legacy blocked link, registers one exact source and publishes ato
     .toEqual([{ review_status: "approved", publication_issue: null, verification_method: "automatic" }]);
   const audit = (await state.db!.query<{ execution_metadata: Record<string, unknown> }>(
     "select execution_metadata from ingestion_runs where execution_metadata->>'component'='discovery-lead'" )).rows[0].execution_metadata;
-  expect(audit).toMatchObject({ sources_registered: 1, source_expansion_version: 6,
+  expect(audit).toMatchObject({ sources_registered: 1, source_expansion_version: 7,
     source_registration: { targetUrl: parent, organizer: "Instituto oficial", pageHash: expect.stringMatching(/^[a-f0-9]{64}$/) } });
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, sourcesRegistered: 0, published: 0 });
 });

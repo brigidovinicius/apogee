@@ -44,6 +44,41 @@ beforeEach(async () => {
 });
 const due = () => state.db!.query('update discovery_targets set next_check_at=now() where id=$1', [target]);
 
+it('rechecks a version-six layout once and publishes its evidenced ticketed event through the native transaction', async () => {
+  await state.db!.query("update discovery_targets set topics=array['eventos'] where id=$1", [target]);
+  const url = parent + 'concerto';
+  const inputs = [
+    { url, reason: 'detail_layout_unrecognized', attempts: 1 },
+    { url: parent + 'missing-deadline', reason: 'invalid_deadline', attempts: 1 },
+    { url: parent + 'unchanged-authority', reason: 'source_authority_unverified', attempts: 1 },
+    { url: parent + 'exhausted', reason: 'detail_layout_unrecognized', attempts: 4 },
+  ];
+  for (const input of inputs) {
+    const row = (await state.db!.query<{ id: string }>(`insert into discovery_leads(target_id,url,title,processing_status,processing_reason,processing_attempts)
+      values($1,$2,'Broadway: Um Encontro Musical','blocked',$3,$4) returning id`, [target, input.url, input.reason, input.attempts])).rows[0];
+    await state.db!.query(`insert into ingestion_runs(started_at,finished_at,status,execution_metadata)
+      values(now(),now(),'completed_with_warnings',jsonb_build_object('component','discovery-lead','lead_id',$1::text,'source_expansion_version',6))`, [row.id]);
+  }
+  const oldUrl = parent + 'workshop-antigo';
+  const old = (await state.db!.query<{ id: string }>(`insert into discovery_leads(target_id,url,title,processing_status,processing_reason,processing_attempts,first_seen_at)
+    values($1,$2,'Workshop de tecnologia antigo','blocked','detail_layout_unrecognized',1,now()-interval '2 days') returning id`, [target, oldUrl])).rows[0];
+  await state.db!.query(`insert into ingestion_runs(started_at,finished_at,status,execution_metadata)
+    values(now(),now(),'completed_with_warnings',jsonb_build_object('component','discovery-lead','lead_id',$1::text,'source_expansion_version',6))`, [old.id]);
+  const html = (await readFile(new URL('./fixtures/pucpr-broadway-service-20261109.html', import.meta.url), 'utf8')).replaceAll('2026', '2099');
+  page(parent, `<a href="${url}">Broadway: Um Encontro Musical</a><a href="${oldUrl}">Workshop de tecnologia antigo</a>`);
+  page(url, html); page(oldUrl, '<div>Notícia antiga sem estrutura de candidatura.</div>');
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 2, created: 1, published: 1, sourcesRegistered: 1 });
+  expect(vi.mocked(fetchOfficialResource).mock.calls.filter(([requested]) => requested !== parent)[0][0]).toBe(url);
+  expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ source_page_url: url })]);
+  expect((await state.db!.query("select verification_method,publication_issue,deadline_at,deadline_precision,event_starts_at::text from opportunities")).rows)
+    .toEqual([{ verification_method: 'automatic', publication_issue: null, deadline_at: null, deadline_precision: 'not_informed', event_starts_at: '2099-11-12' }]);
+  expect((await state.db!.query("select execution_metadata->>'source_expansion_version' as version from ingestion_runs where execution_metadata->>'reason'='published'")).rows)
+    .toEqual([{ version: '7' }]);
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, published: 0 });
+  expect((await state.db!.query("select url,processing_attempts from discovery_leads where processing_status='blocked' and url<>$1 order by url", [oldUrl])).rows)
+    .toEqual(inputs.slice(1).sort((a,b) => a.url.localeCompare(b.url)).map(input => ({ url: input.url, processing_attempts: input.attempts })));
+});
+
 it('preserves crawl progress and canonical evidence paths for an origin stored without its implicit slash', async () => {
   const rawParent = parent.slice(0, -1);
   await state.db!.query('update discovery_targets set official_url=$2,official_verified_url=$2 where id=$1', [target, rawParent]);

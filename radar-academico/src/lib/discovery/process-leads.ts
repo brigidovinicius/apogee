@@ -77,7 +77,9 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
              or (lead.processing_status='blocked' and lead.processing_reason in
                  ('scope_unverified','candidate_unconfirmed','detail_layout_unrecognized','source_authority_unverified','listing_or_ambiguous','unsupported_content')
                and not exists(select 1 from ingestion_runs run where run.execution_metadata->>'lead_id'=lead.id::text
-                 and (run.execution_metadata->>'source_expansion_version'='6' or
+                 and (run.execution_metadata->>'source_expansion_version'='7' or
+                   (run.execution_metadata->>'source_expansion_version'='6' and
+                     lead.processing_reason<>'detail_layout_unrecognized') or
                    (run.execution_metadata->>'source_expansion_version'='5' and
                      lead.processing_reason<>'detail_layout_unrecognized') or
                    (run.execution_metadata->>'source_expansion_version'='4' and lead.processing_reason in
@@ -85,6 +87,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
          order by case when (lead.processing_status='blocked' or coalesce(lead.processing_reason='processing_budget_exhausted',false))=$6 then 0 else 1 end,
            case when lead.processing_reason='processing_budget_exhausted' then 0 else 1 end,
            case when lead.processing_status='blocked' and lead.processing_reason='detail_layout_unrecognized' then 0 else 1 end,
+           case when $6 and lead.processing_status='blocked' then lead.first_seen_at end desc,
            case when lead.title ~* $5 then 0 else 1 end,
            case when $7 then lead.first_seen_at end desc,
            case when lead.first_seen_at<=now()-interval '48 hours' then 0 else 1 end,
@@ -105,7 +108,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
          where id=$1 and status='running'`, [lead.previous_run_id]);
       const run = await client.query<{ id: string }>(
         `insert into ingestion_runs(started_at,status,execution_metadata) values(now(),'running',$1) returning id`,
-        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 6, processing_policy_version: 2 }],
+        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 7, processing_policy_version: 2 }],
       );
       lead.processing_run_id = run.rows[0].id;
       await client.query("update discovery_leads set processing_run_id=$2 where id=$1", [lead.id, lead.processing_run_id]);
