@@ -20,6 +20,11 @@ import { categoriesFromContext } from "./categories";
 const relevant = /bolsa|auxílio|monitoria|estágio|mobilidade|intercâmbio|iniciação|seleção|oportunidade|curso|qualificaç|capacitaç|oficina|formação|premiaç|prêmio|concurso cultural|desafio|hackathon|pesquisa|extensão|inovação|empreendedorismo|evento|palestra|seminário|encontro|workshop|conferência|congresso|feira|webinar|competição|acelera|incuba/i;
 const excluded = /licitaç|pregão|compra pública|concurso público|processo administrativo/i;
 
+export function relevantOpportunityContent(title: string, text: string) {
+  const combined = `${title} ${text}`.replace(/\s+/gu, ' ');
+  return (relevant.test(combined) || /olimp[ií]ada|torneio|maratona/i.test(title)) && !excluded.test(combined);
+}
+
 function benefit(text: string): BenefitType {
   const value = text.toLowerCase();
   if (/premiaç|prêmio|concurso cultural/.test(value)) return "prize";
@@ -51,7 +56,7 @@ export function normalizeOpportunity(input: {
   const combined = `${input.title}\n${input.text}`.replace(/\s+/g, " ").trim();
   const normalizedLocation = normalizeBrazilianLocation(input.source.location ?? {});
   if (normalizedLocation.status === "invalid") return null;
-  if (!(relevant.test(combined) || /olimp[ií]ada|torneio|maratona/i.test(input.title)) || excluded.test(combined)) return null;
+  if (!relevantOpportunityContent(input.title, input.text)) return null;
   const applicantType = classifyAudience(combined);
   const applicationRoute = classifyApplicationRoute(combined);
   const deadline = detectDeadline(combined);
