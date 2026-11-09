@@ -14,7 +14,7 @@ export function detectDeadline(raw: string): Deadline {
   const contexts = [...text.matchAll(/(?=((?:inscriç(?:ão|ões)|inscrever(?:-se)?|candidaturas?|candidatar(?:-se)?|submiss(?:ão|ões)|prazo(?: de inscrição)?).{0,160}))/gi)].map(match => {
     const prefix = text.slice(Math.max(0, match.index - 45), match.index);
     const closingLabel = /(?:encerramento|término|data limite)(?: d[ae]s?)?\s*$/i.exec(prefix)?.[0] ?? '';
-    return (closingLabel + match[1]).split(/[.;]\s|\b(?:divulgação|resultados?|classificaç(?:ão|ões)|sorteio|recursos?|matrículas?|etapa presencial|realização)\b|data (?:do evento|de realização)|início (?:do evento|do curso)|(?:o )?evento (?:acontece|ocorre|será realizado)/i)[0];
+    return (closingLabel + match[1]).split(/[.;]\s|\b(?:publicad[oa]s?|atualizad[oa]s?|divulgação|resultados?|classificaç(?:ão|ões)|sorteio|recursos?|matrículas?|etapa presencial|realização)\b|data (?:do evento|de realização)|início (?:do evento|do curso)|(?:o )?evento (?:acontece|ocorre|será realizado)/i)[0];
   });
   const candidates: { day: string; value: string; exact: boolean }[] = [];
   let invalid = false;

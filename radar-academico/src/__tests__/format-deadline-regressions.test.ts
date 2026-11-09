@@ -63,6 +63,8 @@ it.each([
 
 it.each([
   'Inscrições abertas até 9 de novembro. Publicado em 23/10/2099.',
+  'Inscrições abertas até 9 de novembro Publicado em 23.10.2099.',
+  'Inscrições abertas até 9 de novembro Atualizado em 23/10/2099.',
   'Inscrições abertas pelo formulário. Data do evento: 31/12/2099.',
   'Inscrições de 9 de março a 5 de maio.',
   'Inscrições até 31.02.2099.',
