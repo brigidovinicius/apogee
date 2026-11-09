@@ -1,4 +1,5 @@
 import "server-only";
+import { createOpportunitySearch } from "./search";
 import { primaryOpportunityCategory, type OpportunityFilters, type StudentOpportunity } from "./types";
 
 // Preferred activities and confirmed prizes exceed tie-breakers and diversity penalties.
@@ -75,10 +76,11 @@ export function opportunityScore(item: StudentOpportunity, filters: OpportunityF
  * Only the head of each sorted bucket can win, avoiding rescanning every course. */
 export function rankOpportunities(items: readonly StudentOpportunity[], filters: OpportunityFilters,
   now = Date.now(), config: RankingConfig = DEFAULT_RANKING) {
-  type Candidate = { item: StudentOpportunity; score: number; organization: string; category: string };
+  const search = createOpportunitySearch(filters.query);
+  type Candidate = { item: StudentOpportunity; relevance: number; score: number; organization: string; category: string };
   type Bucket = { candidates: Candidate[]; index: number };
   const groups = new Map<string, Bucket>();
-  const compare = (left: Candidate, right: Candidate) => right.score - left.score ||
+  const compare = (left: Candidate, right: Candidate) => right.relevance - left.relevance || right.score - left.score ||
     (left.item.deadline ?? "9999-12-31").localeCompare(right.item.deadline ?? "9999-12-31") ||
     eventTime(left.item) - eventTime(right.item) || left.item.id.localeCompare(right.item.id);
   for (const item of items) {
@@ -86,7 +88,7 @@ export function rankOpportunities(items: readonly StudentOpportunity[], filters:
     const category = primaryOpportunityCategory(item) ?? "";
     const key = `${organization}\u0000${category}`;
     const bucket = groups.get(key) ?? { candidates: [], index: 0 };
-    bucket.candidates.push({ item, organization, category, score: opportunityScore(item, filters, now, config) });
+    bucket.candidates.push({ item, organization, category, relevance: search.score(item), score: opportunityScore(item, filters, now, config) });
     groups.set(key, bucket);
   }
   const buckets = [...groups.values()];
@@ -102,7 +104,7 @@ export function rankOpportunities(items: readonly StudentOpportunity[], filters:
     for (let index = 1; index < buckets.length; index++) {
       const left = buckets[index].candidates[buckets[index].index];
       const right = buckets[best].candidates[buckets[best].index];
-      const delta = adjusted(left) - adjusted(right);
+      const delta = left.relevance - right.relevance || adjusted(left) - adjusted(right);
       if (delta > 0 || delta === 0 && compare({ ...left, score: 0 }, { ...right, score: 0 }) < 0) best = index;
     }
     const bucket = buckets[best];
