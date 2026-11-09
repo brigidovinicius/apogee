@@ -9,6 +9,8 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function POST(request: Request) {
+  // Reserve time for persistence/alerts before the scheduler's 300-second timeout.
+  const processingDeadline = Date.now() + 240_000;
   const expected = process.env.CRON_SECRET;
   const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
     request.headers.get("x-cron-secret");
@@ -24,7 +26,7 @@ export async function POST(request: Request) {
     if (search.get("leadsOnly") !== "1" || sourceId || search.has("maxPages") || search.has("maxCandidates")) {
       return Response.json({ error: "Parâmetros de ingestão inválidos" }, { status: 400 });
     }
-    try { return Response.json({ leadProcessing: await runScheduledLeadProcessing() }); }
+    try { return Response.json({ leadProcessing: await runScheduledLeadProcessing(processingDeadline) }); }
     catch { return Response.json({ error: "Falha no processamento de links" }, { status: 500 }); }
   }
   if (!sourceId) {
@@ -37,7 +39,7 @@ export async function POST(request: Request) {
       try { discovery=await runScheduledDiscovery(); }
       catch { discovery={targetsChecked:0,newLeads:0,failed:true}; }
       let leadProcessing;
-      try { leadProcessing=await runScheduledLeadProcessing(); }
+      try { leadProcessing=await runScheduledLeadProcessing(processingDeadline); }
       catch { leadProcessing={leadsChecked:0,created:0,updated:0,published:0,blocked:0,retried:0,ignored:0,leaseLost:0,failed:1,reasons:{}}; }
       let alerts;
       try { alerts=await runOpportunityAlerts(); }

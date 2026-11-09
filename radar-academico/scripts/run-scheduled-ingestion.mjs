@@ -22,7 +22,7 @@ async function run() {
       component: "radar-scheduler",
       startedAt,
       status: report.failed > 0 || report.discovery?.failed || report.discovery?.pageFailures > 0 || discoveryBlocked > 0 || report.leadProcessing?.failed > 0 ||
-        report.leadProcessing?.blocked > 0 || report.leadProcessing?.retried > 0 ? "completed_with_warnings" : "completed",
+        report.leadProcessing?.blocked > 0 || report.leadProcessing?.retried > 0 || report.leadProcessing?.deferred > 0 ? "completed_with_warnings" : "completed",
       sourcesChecked: report.sourcesChecked,
       pagesChecked: report.pagesChecked,
       discovered: report.discovered,
@@ -42,6 +42,7 @@ async function run() {
       leadsPublished: report.leadProcessing?.published ?? 0,
       leadsBlocked: report.leadProcessing?.blocked ?? 0,
       leadsRetried: report.leadProcessing?.retried ?? 0,
+      leadsDeferred: report.leadProcessing?.deferred ?? 0,
       leadsIgnored: report.leadProcessing?.ignored ?? 0,
       leadsLeaseLost: report.leadProcessing?.leaseLost ?? 0,
       leadsFailed: report.leadProcessing?.failed ?? 0,

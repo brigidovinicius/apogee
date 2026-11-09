@@ -12,7 +12,7 @@ vi.mock('@/lib/db/client', () => ({
 vi.mock('@/lib/ingestion/fetch-source', () => ({ fetchOfficialResource: vi.fn() }));
 import { fetchOfficialResource } from '@/lib/ingestion/fetch-source';
 import { runScheduledDiscovery } from '@/lib/discovery/daily-discovery';
-import { runScheduledLeadProcessing } from '@/lib/discovery/process-leads';
+import { runScheduledLeadProcessing, claimDueDiscoveryLeads, finishDiscoveryLead } from '@/lib/discovery/process-leads';
 import { listPublicOpportunities } from '@/lib/db/read-models';
 const parent = 'https://official.example.org/';
 const target = 'coverage-test';
@@ -288,4 +288,45 @@ it('charges failed child requests to the same per-cycle document budget', async 
   await due();
   const next = await runScheduledDiscovery();
   expect(next.pageFailures).toBeLessThanOrEqual(2);
+});
+
+
+it('gives a newly discovered call a bounded turn while preserving the older pending backlog', async () => {
+  for (let i = 0; i < 30; i++) await state.db!.query(`insert into discovery_leads(target_id,url,title,first_seen_at,processing_next_at)
+    values($1,$2,'Inscrições antigas',now()-interval '3 days',now()-interval '3 days')`, [target, parent + 'old-' + i + '.png']);
+  const url = parent + 'nova-bolsa';
+  await state.db!.query(`insert into discovery_leads(target_id,url,title) values($1,$2,'Nova bolsa com inscrições abertas')`, [target,url]);
+  page(parent, `<a href="${url}">Nova bolsa com inscrições abertas</a>`);
+  page(url, detail('Nova bolsa com inscrições abertas'));
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 24, created: 1, published: 1 });
+  expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ source_page_url: url })]);
+  expect((await state.db!.query("select count(*)::int as count from discovery_leads where processing_status='pending'")).rows).toEqual([{ count: 7 }]);
+});
+
+
+it('reserves pending work between layout re-evaluations rather than treating a null reason as a blocked lead', async () => {
+  for (let i = 0; i < 30; i++) await state.db!.query(`insert into discovery_leads(target_id,url,title,processing_status,processing_reason)
+    values($1,$2,'Bolsa antiga','blocked','detail_layout_unrecognized')`, [target, parent + 'layout-' + i]);
+  const url=parent+'nova-bolsa';
+  await state.db!.query(`insert into discovery_leads(target_id,url,title) values($1,$2,'Nova bolsa')`, [target,url]);
+  page(parent, `<a href="${url}">Nova bolsa</a>`); page(url,detail('Nova bolsa'));
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked:24,created:1,published:1 });
+});
+
+it('returns an unstarted budget deferral to the queue without spending the final real attempt', async () => {
+  const url=parent+'waiting-budget';
+  await state.db!.query(`insert into discovery_leads(target_id,url,title,processing_attempts) values($1,$2,'Bolsa',3)`,[target,url]);
+  const [lead]=await claimDueDiscoveryLeads(1);
+  expect(lead.processing_attempts).toBe(4);
+  expect(await finishDiscoveryLead(lead,{reason:'processing_budget_exhausted'})).toMatchObject({state:'retry',deferred:true,published:0});
+  expect((await state.db!.query('select processing_attempts,processing_reason from discovery_leads')).rows)
+    .toEqual([{processing_attempts:3,processing_reason:'processing_budget_exhausted'}]);
+  expect((await state.db!.query("select status,items_failed,execution_metadata->'attempt_consumed' as consumed from ingestion_runs")).rows)
+    .toEqual([{status:'completed_with_warnings',items_failed:0,consumed:false}]);
+  expect(await claimDueDiscoveryLeads(1)).toEqual([]);
+  await state.db!.query("update discovery_leads set processing_next_at=now()-interval '1 minute'");
+  const [last]=await claimDueDiscoveryLeads(1);
+  expect(await finishDiscoveryLead(last,{reason:'request_timeout',retry:true})).toMatchObject({state:'blocked',reason:'retry_exhausted'});
+  expect((await state.db!.query('select processing_attempts from discovery_leads')).rows).toEqual([{processing_attempts:4}]);
+  expect((await state.db!.query('select id from opportunities')).rows).toHaveLength(0);
 });
