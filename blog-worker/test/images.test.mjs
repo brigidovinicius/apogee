@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {validatePolicy,validateGrant} from '../src/policy.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from '../src/images.mjs';
 import {openAIProvider} from '../src/provider.mjs';
-import {policy,price,grant,article,reservation,identity} from './fixtures.mjs';
+import {policy,grant,article,reservation,identity} from './fixtures.mjs';
 
 import {imagePolicy,imagePrice,imageUsage,webpFixture} from './fixtures.mjs';
 test('image policy and conservative reservation fit the shared article cap',()=>{

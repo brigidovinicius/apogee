@@ -18,7 +18,7 @@ export function loadCms(sql,entry="lib/blog/data.ts"){
   const db=drizzle(sql),cache=new Map();
   function load(relative){
     if(cache.has(relative))return cache.get(relative).exports;
-    const module={exports:{}};cache.set(relative,module);
+    const loaded={exports:{}};cache.set(relative,loaded);
     const source=readFileSync(join(site,relative),'utf8');
     const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
     const localRequire=name=>{
@@ -30,8 +30,8 @@ export function loadCms(sql,entry="lib/blog/data.ts"){
       if(!['drizzle-orm','drizzle-orm/pg-core'].includes(name))throw Error('unexpected_cms_test_import');
       return require(name);
     };
-    new Function('require','module','exports',compiled)(localRequire,module,module.exports);
-    return module.exports;
+    new Function('require','module','exports',compiled)(localRequire,loaded,loaded.exports);
+    return loaded.exports;
   }
   return load(entry);
 }
