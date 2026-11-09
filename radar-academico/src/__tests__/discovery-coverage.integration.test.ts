@@ -97,11 +97,13 @@ it('rechecks a version-six layout once and publishes its evidenced ticketed even
   await state.db!.query(`insert into ingestion_runs(started_at,finished_at,status,execution_metadata)
     values(now(),now(),'completed_with_warnings',jsonb_build_object('component','discovery-lead','lead_id',$1::text,'source_expansion_version',6))`, [old.id]);
   const html = (await readFile(new URL('./fixtures/pucpr-broadway-service-20261109.html', import.meta.url), 'utf8')).replaceAll('2026', '2099');
-  page(parent, `<a href="${url}">Broadway: Um Encontro Musical</a><a href="${oldUrl}">Workshop de tecnologia antigo</a>`);
+  page(parent, `<a href="${url}">Broadway: Um Encontro Musical</a><a href="${oldUrl}">Workshop de tecnologia antigo</a><a href="${parent}missing-deadline">Bolsa de pesquisa</a>`);
   page(url, html); page(oldUrl, '<div>Notícia antiga sem estrutura de candidatura.</div>');
   page(parent + 'missing-deadline', '<main><h1>Bolsa de pesquisa</h1><p>Inscrições abertas até 9 de novembro pelo formulário de inscrição.</p></main>');
-  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 3, created: 1, published: 1, sourcesRegistered: 1 });
-  expect(vi.mocked(fetchOfficialResource).mock.calls.filter(([requested]) => requested !== parent)[0][0]).toBe(url);
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 3, created: 1, published: 1, sourcesRegistered: 1,
+    reasons: { published: 1, invalid_deadline: 1, detail_layout_unrecognized: 1 } });
+  expect(vi.mocked(fetchOfficialResource).mock.calls.filter(([requested]) => requested !== parent).map(([requested]) => requested))
+    .toEqual(expect.arrayContaining([url, oldUrl, parent + 'missing-deadline']));
   expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ source_page_url: url })]);
   expect((await state.db!.query("select verification_method,publication_issue,deadline_at,deadline_precision,event_starts_at::text from opportunities")).rows)
     .toEqual([{ verification_method: 'automatic', publication_issue: null, deadline_at: null, deadline_precision: 'not_informed', event_starts_at: '2099-11-12' }]);
