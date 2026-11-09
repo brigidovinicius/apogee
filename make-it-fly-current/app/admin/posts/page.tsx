@@ -21,7 +21,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   return <div className={styles.content}>
     <AdminPageHeader title="Blog" description="Gerencie artigos, rascunhos e publicações agendadas. Somente administradores podem alterar conteúdo." aside={<Link className={styles.button} href="/admin/posts/novo">Novo artigo</Link>} />
     <section className={editorStyles.list} aria-label="Artigos do blog">
-      <div className={editorStyles.listHeader}><span>{total} artigo{total === 1 ? "" : "s"}</span><Link href="/blog" target="_blank" rel="noopener noreferrer">Ver blog público <ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></Link></div>
+      <div className={editorStyles.listHeader}><span>{total} artigo{total === 1 ? "" : "s"}</span><Link href="/admin/posts/pipeline">Central Editorial →</Link><Link href="/blog" target="_blank" rel="noopener noreferrer">Ver blog público <ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></Link></div>
       {posts.length ? posts.map((post) => <article className={editorStyles.listRow} key={post.id}>
         <div><span className={editorStyles.kicker}>{categoryLabel(post.category)} · {statusLabel(post)}</span><h2><Link href={`/admin/posts/${post.id}`}>{interfaceText(post.title)}</Link></h2><p>{interfaceText(post.excerpt)}</p></div>
         <div className={editorStyles.rowMeta}><time dateTime={post.updatedAt.toISOString()}>Editado em {dateFormat.format(post.updatedAt)}</time><Link href={`/admin/posts/${post.id}`}>Editar →</Link></div>

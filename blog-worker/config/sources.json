@@ -1,0 +1,146 @@
+[
+  {
+    "id": "SRC01",
+    "name": "NASA News Releases",
+    "editoria": "ciencia-espaco",
+    "type": "rss",
+    "url": "https://www.nasa.gov/news-release/feed/",
+    "article_hosts": [
+      "www.nasa.gov"
+    ],
+    "interval_minutes": 60,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "SRC02",
+    "name": "NASA Technology",
+    "editoria": "tecnologia",
+    "type": "rss",
+    "url": "https://www.nasa.gov/technology/feed/",
+    "article_hosts": [
+      "www.nasa.gov"
+    ],
+    "interval_minutes": 60,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "SRC03",
+    "name": "NASA JPL via NASA",
+    "editoria": "ciencia-espaco",
+    "type": "rss",
+    "url": "https://www.nasa.gov/centers-and-facilities/jpl/feed/",
+    "article_hosts": [
+      "www.nasa.gov"
+    ],
+    "interval_minutes": 60,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "SRC04",
+    "name": "MIT Research",
+    "editoria": "ciencia-espaco",
+    "type": "rss",
+    "url": "https://news.mit.edu/rss/research",
+    "article_hosts": [
+      "news.mit.edu"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "SRC05",
+    "name": "Harvard Gazette",
+    "editoria": "ciencia-espaco",
+    "type": "rss",
+    "url": "https://news.harvard.edu/gazette/feed/",
+    "article_hosts": [
+      "news.harvard.edu"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "SRC06",
+    "name": "OpenAI News",
+    "editoria": "ia",
+    "type": "rss",
+    "url": "https://openai.com/news/rss.xml",
+    "article_hosts": [
+      "openai.com"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "SRC07",
+    "name": "Google Research",
+    "editoria": "ia",
+    "type": "rss",
+    "url": "https://research.google/blog/rss/",
+    "article_hosts": [
+      "research.google"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "SRC08",
+    "name": "Google DeepMind",
+    "editoria": "ia",
+    "type": "rss",
+    "url": "https://deepmind.google/blog/rss.xml",
+    "article_hosts": [
+      "deepmind.google"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "SRC09",
+    "name": "Y Combinator Blog",
+    "editoria": "startups",
+    "type": "rss",
+    "url": "https://www.ycombinator.com/blog/rss",
+    "article_hosts": [
+      "www.ycombinator.com"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  }
+]

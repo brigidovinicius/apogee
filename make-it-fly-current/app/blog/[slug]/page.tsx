@@ -1,3 +1,4 @@
+import { sourceReferences } from "@/lib/blog/editorial-review";
 import { interfaceText } from "@/lib/presentation-text.mjs";
 import { BrandMark } from "@/components/ui/brand-mark";
 import type { Metadata } from "next";
@@ -47,7 +48,9 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
   const jsonLd = {
     "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title,
     description: post.excerpt, datePublished: date?.toISOString(), dateModified: post.updatedAt.toISOString(),
-    author: { "@type": "Person", name: post.authorName },
+    author: { "@type": post.authorName.startsWith("Redação Apogee") ? "Organization" : "Person", name: post.authorName },
+    inLanguage: "pt-BR",
+    citation: sourceReferences(post.body).map(source => ({ "@type": "CreativeWork", name: source.title, url: source.url })),
     publisher: { "@type": "Organization", name: "Apogee", url: "https://www.apogee.community" },
     mainEntityOfPage: `https://www.apogee.community/blog/${post.slug}`,
     image: cover ? `https://www.apogee.community${blogMediaUrl(cover.id)}` : undefined,
@@ -59,10 +62,11 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
       <nav className={styles.breadcrumb} aria-label="Localização"><Link href="/blog">Blog</Link><span aria-hidden>/</span><span>{categoryLabel(post.category)}</span></nav>
       <header className={styles.articleHeader}><p className={styles.eyebrow}>{categoryLabel(post.category)} / Apogee</p><h1>{interfaceText(post.title)}</h1><p className={styles.articleLead}>{interfaceText(post.excerpt)}</p><div className={styles.articleByline}><span>Por {interfaceText(post.authorName)}</span>{date ? <time dateTime={date.toISOString()}>{dateFormat.format(date)}</time> : null}</div></header>
       <ShareButton title={`${interfaceText(post.title)} | Apogee`} path={`/blog/${encodeURIComponent(post.slug)}`} />
-      <div className={styles.articleArt} data-category={post.category}>{cover ? <>
+      <figure className={styles.coverFigure}><div className={styles.articleArt} data-category={post.category}>{cover ? <>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={interfaceText(cover.alt)} width={cover.width} height={cover.height} />
       </> : <><span>APOGEE / IDEIAS</span><span aria-hidden><BrandMark /></span></>}</div>
+      {cover?.caption ? <figcaption>{interfaceText(cover.caption)}</figcaption> : null}</figure>
       <article className={styles.articleBody}>{paragraphs.map((paragraph, index) => {
         const marker = /^\[\[media:([a-f0-9-]{36})\]\]$/.exec(paragraph.trim());
         const image = marker ? mediaById.get(marker[1]) : null;

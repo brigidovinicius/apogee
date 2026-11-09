@@ -1,0 +1,9 @@
+{
+  "account_email": "blog-owner@example.test",
+  "plan": "google_ai_pro",
+  "auth_method": "official_google_oauth",
+  "use_g1_credits": false,
+  "verified_at": null,
+  "valid_until": null,
+  "verification_reference": "Preencher somente após conferir a conta, assinatura e cliente oficial. Não contém senha ou token."
+}
