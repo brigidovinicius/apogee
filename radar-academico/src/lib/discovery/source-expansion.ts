@@ -50,6 +50,12 @@ export async function prepareSourceExpansion(lead: ExpansionLead): Promise<Prepa
   const url = candidateUrl(lead.url), parent = candidateUrl(lead.target_official_url);
   if (!lead.target_enabled || !lead.target_verified_at || lead.target_verified_url !== lead.target_official_url ||
     !lead.target_organizer?.trim() || !url || url !== lead.url || !parent) return { reason: "source_authority_unverified" };
+  // The live biology-olympiad target points to CFBio news but names Butantan.
+  // A newly readable template must not grant that different institution authority.
+  if (new URL(parent).hostname.replace(/^www\./, '') === 'cfbio.gov.br' &&
+    !/^(?:CFBio|Conselho Federal de Biologia(?:\s*\(CFBio\))?)$/iu.test(lead.target_organizer.trim())) {
+    return { reason: "source_authority_unverified" };
+  }
   const foreign = !sameDiscoveryScope(parent, url);
   if (foreign && new URL(url).hostname !== "luma.com" &&
     !/evento|hackathon|workshop|confer|congresso|summit|seminário|webinar|builders|pitch|encontro|\bia\b/i.test(lead.title)) return { reason: "source_authority_unverified" };

@@ -26,6 +26,9 @@ resposta preservados. Evidências e hashes estão no diretório local ignorado
   (`status_unconfirmed`) mesmo quando não há prazo legível.
 - Novas fontes continuam exigindo categoria comprovada antes do cadastro.
   Um título de patrocínio não se transforma automaticamente em olimpíada.
+  A expansão do alvo CFBio é bloqueada quando o cadastro atribui sua autoria
+  ao Instituto Butantan ou a outra instituição; um alvo CFBio devidamente
+  verificado deve identificar o Conselho Federal de Biologia.
 - Extrator 8 reavalia uma única vez as retenções antigas de formato e prazo.
   Preserva quatro tentativas totais, fontes pausadas, decisões administrativas,
   exclusões, leases, transação atômica e a distribuição de trabalho existente.

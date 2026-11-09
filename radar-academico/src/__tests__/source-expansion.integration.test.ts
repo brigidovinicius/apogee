@@ -12,6 +12,7 @@ import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { runScheduledLeadProcessing } from "@/lib/discovery/process-leads";
 import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
 import { loadActiveOfficialSources } from "@/lib/ingestion/official-source-registry";
+import { prepareSourceExpansion } from "@/lib/discovery/source-expansion";
 
 const parent = "https://official.example.org/";
 const target = "exp-source-expansion-test";
@@ -89,6 +90,26 @@ it('does not register a newly readable page without an evidenced Radar category'
     reasons: { candidate_unconfirmed: 1 } });
   expect((await state.db!.query("select id from official_sources where id like 'auto-page-%'")).rows).toHaveLength(0);
   expect((await state.db!.query('select id from opportunities')).rows).toHaveLength(0);
+});
+
+it.each(['Instituto Butantan', 'Instituto Butantan / CFBio'])('rejects the known CFBio authority mismatch before transport: %s', async organizer => {
+  vi.mocked(fetchOfficialResource).mockClear();
+  expect(await prepareSourceExpansion({ url: 'https://cfbio.gov.br/chamada/', title, target_id: target,
+    target_official_url: 'https://cfbio.gov.br/category/noticias/', target_verified_at: new Date().toISOString(),
+    target_verified_url: 'https://cfbio.gov.br/category/noticias/', target_enabled: true,
+    target_organizer: organizer })).toEqual({ reason: 'source_authority_unverified' });
+  expect(fetchOfficialResource).not.toHaveBeenCalled();
+});
+
+it.each(['CFBio', 'Conselho Federal de Biologia (CFBio)'])('permits a separately verified CFBio target with its actual organizer: %s', async organizer => {
+  const root = 'https://cfbio.gov.br/category/noticias/', detailUrl = 'https://cfbio.gov.br/chamada/';
+  vi.mocked(fetchOfficialResource).mockImplementation(async requested => requested === root
+    ? resource(`<a href="${detailUrl}">${title}</a>`)
+    : resource(`<article><h1>${title}</h1><p>Inscrições abertas até 31/12/2099 pelo formulário de inscrição.</p></article>`));
+  expect(await prepareSourceExpansion({ url: detailUrl, title, target_id: target, target_official_url: root,
+    target_verified_at: new Date().toISOString(), target_verified_url: root, target_enabled: true,
+    target_organizer: organizer })).toMatchObject({ source: { institutionName: organizer },
+    candidate: { deadlineAt: '2099-12-31' } });
 });
 
 it.each([{ path: [parent.slice(0, -1)] }, { path: [parent] }, { path: [] }])("revalidates and publishes a verified origin stored without its implicit slash ($path)", async ({ path }) => {
