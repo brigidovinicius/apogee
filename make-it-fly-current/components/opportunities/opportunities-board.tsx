@@ -1,4 +1,5 @@
 "use client";
+import { OpportunitySearchSuggestions } from "./search-suggestions";
 import { trackBehavior } from "@/components/analytics/behavior-client";
 
 import { SaveOpportunityButton } from "./save-opportunity";
@@ -145,8 +146,9 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
             const query = new FormData(event.currentTarget).get("busca");
             updateFilters({ ...filters, query: String(query ?? "").trim().slice(0, 100) || null });
           }}>
-            <label htmlFor="opportunity-query">Área ou palavra-chave</label>
-            <input key={filters.query ?? ""} id="opportunity-query" name="busca" type="search" maxLength={100} defaultValue={filters.query ?? ""} placeholder="Ex.: engenharia, saúde, soldagem" />
+            <label htmlFor="opportunity-query">Buscar evento, tema ou instituição</label>
+            <input key={filters.query ?? ""} id="opportunity-query" name="busca" type="search" maxLength={100} list="opportunity-search-suggestions" defaultValue={filters.query ?? ""} placeholder="Ex.: Red Hat Summit, tecnologia, USP" />
+            <OpportunitySearchSuggestions id="opportunity-search-suggestions" />
             <button type="submit">Buscar</button>
           </form>
       </div>
@@ -346,15 +348,23 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
         <div className={styles.empty} role="status">
           <Compass size={28} aria-hidden />
           <h3>
-            {activeFilterCount > 0
+            {filters.query
+              ? "Nenhuma oportunidade encontrada para sua busca."
+              : activeFilterCount > 0
               ? "Nenhuma oportunidade com estes filtros."
               : "Nenhuma oportunidade aberta no momento."}
           </h3>
           <p>
-            {activeFilterCount > 0
+            {filters.query
+              ? "Tente parte do nome do evento, outro tema ou a instituição. Os filtros selecionados também limitam os resultados."
+              : activeFilterCount > 0
               ? "Limpe ou ajuste os filtros para explorar outras chamadas verificadas pela Apogee."
               : "Novas chamadas verificadas aparecerão aqui assim que estiverem disponíveis."}
           </p>
+          {filters.query && activeFilterCount > 1 ? <button type="button" onClick={() => updateFilters({ ...EMPTY_OPPORTUNITY_FILTERS, query: filters.query })}>
+            Buscar em todas as categorias e locais
+          </button> : null}
+          {filters.query ? <p><Link href={`/calendarios/eventos?${new URLSearchParams({ busca: filters.query })}`}>Buscar próximas etapas no calendário de eventos</Link></p> : null}
           {activeFilterCount > 0 ? (
             <button type="button" onClick={clearFilters}>
               Limpar filtros

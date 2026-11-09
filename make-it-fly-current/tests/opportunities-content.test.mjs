@@ -1,21 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import ts from "typescript";
+import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
-const catalogueSource = (await readFile(new URL("../content/opportunities.ts", import.meta.url), "utf8"))
-  .replace(/^import "server-only";\s*/m, "");
-const { outputText } = ts.transpileModule(catalogueSource, {
-  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
-});
-const catalogue = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`);
-const locationSource = await readFile(new URL("../lib/opportunities/location.ts", import.meta.url), "utf8");
-const logicSource = (await readFile(new URL("../lib/opportunities/types.ts", import.meta.url), "utf8"))
-  .replace(/^import \{[\s\S]*?\} from "@\/lib\/opportunities\/location";\s*/m, "");
-const { outputText: logicOutput } = ts.transpileModule(`${locationSource}\n${logicSource}`, {
-  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
-});
-const logic = await import(`data:text/javascript;base64,${Buffer.from(logicOutput).toString("base64")}`);
+const load = opportunityLoader();
+const catalogue = load("content/opportunities.ts");
+const logic = load("lib/opportunities/types.ts");
 
 test("the public catalogue contains only unique official HTTPS links", () => {
   const ids = new Set();
