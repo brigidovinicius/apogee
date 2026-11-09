@@ -44,6 +44,38 @@ beforeEach(async () => {
 });
 const due = () => state.db!.query('update discovery_targets set next_check_at=now() where id=$1', [target]);
 
+it('rechecks version-seven formats and explicit deadlines once without reopening protected decisions', async () => {
+  const inputs = [
+    { path: 'bolsa-layout', reason: 'detail_layout_unrecognized', status: 'new', attempts: 1 },
+    { path: 'bolsa-prazo', reason: 'invalid_deadline', status: 'reviewing', attempts: 2 },
+    { path: 'bolsa-sem-ano', reason: 'invalid_deadline', status: 'new', attempts: 1 },
+    { path: 'bolsa-encerrada', reason: 'invalid_deadline', status: 'new', attempts: 1 },
+    { path: 'exhausted', reason: 'invalid_deadline', status: 'new', attempts: 4 },
+    { path: 'dismissed', reason: 'invalid_deadline', status: 'dismissed', attempts: 1 },
+    { path: 'manual', reason: 'manual_override', status: 'reviewing', attempts: 1 },
+    { path: 'authority', reason: 'source_authority_unverified', status: 'new', attempts: 1 },
+  ];
+  for (const input of inputs) {
+    const row = (await state.db!.query<{ id: string }>(`insert into discovery_leads(target_id,url,title,status,processing_status,processing_reason,processing_attempts)
+      values($1,$2,'Bolsa de pesquisa',$3,'blocked',$4,$5) returning id`, [target, parent + input.path, input.status, input.reason, input.attempts])).rows[0];
+    await state.db!.query(`insert into ingestion_runs(started_at,finished_at,status,execution_metadata)
+      values(now(),now(),'completed_with_warnings',jsonb_build_object('component','discovery-lead','lead_id',$1::text,'source_expansion_version',7))`, [row.id]);
+  }
+  page(parent, inputs.slice(0,4).map(input => `<a href="${parent + input.path}">Bolsa de pesquisa</a>`).join(''));
+  page(parent + 'bolsa-layout', '<body class="single-post"><div id="Subheader"><h1 class="title">Bolsa de pesquisa</h1></div><div id="Content"><div class="post-wrapper-content"><div class="the_content_wrapper"><p>Inscrições abertas até 31.12.2099 pelo formulário de inscrição.</p></div></div></div></body>');
+  page(parent + 'bolsa-prazo', '<main><h1>Bolsa de pesquisa com calendário</h1><p>Inscrições abertas de 9 de março a 5 de maio de 2099 pelo formulário de inscrição.</p></main>');
+  page(parent + 'bolsa-sem-ano', '<main><h1>Bolsa de pesquisa</h1><p>Inscrições abertas até 9 de novembro pelo formulário de inscrição.</p></main>');
+  page(parent + 'bolsa-encerrada', '<main><h1>Bolsa de pesquisa</h1><p>Inscrições para Participantes: Encerradas.</p></main>');
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 4, published: 2, sourcesRegistered: 2,
+    reasons: { published: 2, invalid_deadline: 1, status_unconfirmed: 1 } });
+  expect(await listPublicOpportunities()).toHaveLength(2);
+  expect((await state.db!.query("select distinct execution_metadata->>'source_expansion_version' as version from ingestion_runs where execution_metadata->>'reason'='published'")).rows).toEqual([{ version: '8' }]);
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, published: 0 });
+  expect((await state.db!.query("select url,processing_attempts from discovery_leads where url=any($1::text[]) order by url", [inputs.slice(4).map(input => parent + input.path)])).rows)
+    .toEqual(inputs.slice(4).sort((a,b) => a.path.localeCompare(b.path)).map(input => ({ url: parent + input.path, processing_attempts: input.attempts })));
+  expect(fetchOfficialResource).not.toHaveBeenCalledWith(expect.stringMatching(/exhausted|dismissed|manual|authority/), expect.anything(), expect.anything());
+});
+
 it('rechecks a version-six layout once and publishes its evidenced ticketed event through the native transaction', async () => {
   await state.db!.query("update discovery_targets set topics=array['eventos'] where id=$1", [target]);
   const url = parent + 'concerto';
@@ -65,18 +97,21 @@ it('rechecks a version-six layout once and publishes its evidenced ticketed even
   await state.db!.query(`insert into ingestion_runs(started_at,finished_at,status,execution_metadata)
     values(now(),now(),'completed_with_warnings',jsonb_build_object('component','discovery-lead','lead_id',$1::text,'source_expansion_version',6))`, [old.id]);
   const html = (await readFile(new URL('./fixtures/pucpr-broadway-service-20261109.html', import.meta.url), 'utf8')).replaceAll('2026', '2099');
-  page(parent, `<a href="${url}">Broadway: Um Encontro Musical</a><a href="${oldUrl}">Workshop de tecnologia antigo</a>`);
+  page(parent, `<a href="${url}">Broadway: Um Encontro Musical</a><a href="${oldUrl}">Workshop de tecnologia antigo</a><a href="${parent}missing-deadline">Bolsa de pesquisa</a>`);
   page(url, html); page(oldUrl, '<div>Notícia antiga sem estrutura de candidatura.</div>');
-  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 2, created: 1, published: 1, sourcesRegistered: 1 });
-  expect(vi.mocked(fetchOfficialResource).mock.calls.filter(([requested]) => requested !== parent)[0][0]).toBe(url);
+  page(parent + 'missing-deadline', '<main><h1>Bolsa de pesquisa</h1><p>Inscrições abertas até 9 de novembro pelo formulário de inscrição.</p></main>');
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 3, created: 1, published: 1, sourcesRegistered: 1,
+    reasons: { published: 1, invalid_deadline: 1, detail_layout_unrecognized: 1 } });
+  expect(vi.mocked(fetchOfficialResource).mock.calls.filter(([requested]) => requested !== parent).map(([requested]) => requested))
+    .toEqual(expect.arrayContaining([url, oldUrl, parent + 'missing-deadline']));
   expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ source_page_url: url })]);
   expect((await state.db!.query("select verification_method,publication_issue,deadline_at,deadline_precision,event_starts_at::text from opportunities")).rows)
     .toEqual([{ verification_method: 'automatic', publication_issue: null, deadline_at: null, deadline_precision: 'not_informed', event_starts_at: '2099-11-12' }]);
   expect((await state.db!.query("select execution_metadata->>'source_expansion_version' as version from ingestion_runs where execution_metadata->>'reason'='published'")).rows)
-    .toEqual([{ version: '7' }]);
+    .toEqual([{ version: '8' }]);
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, published: 0 });
   expect((await state.db!.query("select url,processing_attempts from discovery_leads where processing_status='blocked' and url<>$1 order by url", [oldUrl])).rows)
-    .toEqual(inputs.slice(1).sort((a,b) => a.url.localeCompare(b.url)).map(input => ({ url: input.url, processing_attempts: input.attempts })));
+    .toEqual(inputs.slice(1).sort((a,b) => a.url.localeCompare(b.url)).map(input => ({ url: input.url, processing_attempts: input.attempts + (input.reason === 'invalid_deadline' ? 1 : 0) })));
 });
 
 it('preserves crawl progress and canonical evidence paths for an origin stored without its implicit slash', async () => {
@@ -169,7 +204,7 @@ it('rechecks version-four extraction failures once without retrying unchanged au
     .toEqual([{ url: parent + 'exhausted', processing_attempts: 4 }, { url: parent + 'unverified', processing_attempts: 1 }]);
 });
 
-it('rechecks version-five layout failures once while preserving other decisions and the attempt limit', async () => {
+it('rechecks version-five layout and deadline failures once while preserving other decisions and the attempt limit', async () => {
   const inputs = [
     { url: parent + 'curso-joomla', reason: 'detail_layout_unrecognized', attempts: 1 },
     { url: parent + 'invalid-deadline', reason: 'invalid_deadline', attempts: 1 },
@@ -186,12 +221,13 @@ it('rechecks version-five layout failures once while preserving other decisions 
   page(parent, `<a href="${parent}curso-joomla">Instituto abre inscrições para curso de estatística</a>`);
   page(parent + 'curso-joomla', '<div class="com-content-article item-page"><h1>Instituto abre inscrições para curso de estatística</h1>' +
     '<div class="com-content-article__body"><p>Inscrições abertas. As inscrições podem ser feitas até 8 de novembro de 2099 pelo formulário de inscrição.</p></div></div>');
-  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, created: 1, published: 1 });
+  page(parent + 'invalid-deadline', '<main><h1>Bolsa de pesquisa</h1><p>Inscrições abertas até 9 de novembro pelo formulário de inscrição.</p></main>');
+  expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 2, created: 1, published: 1 });
   expect(await listPublicOpportunities()).toEqual([expect.objectContaining({ title: 'Instituto abre inscrições para curso de estatística' })]);
   expect((await state.db!.query('select categories,is_course from opportunities')).rows).toEqual([{ categories: ['formacao'], is_course: true }]);
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, published: 0 });
   expect((await state.db!.query('select url,processing_attempts from discovery_leads where processing_status=\'blocked\' order by url')).rows)
-    .toEqual(inputs.slice(1).sort((a,b) => a.url.localeCompare(b.url)).map(input => ({ url: input.url, processing_attempts: input.attempts })));
+    .toEqual(inputs.slice(1).sort((a,b) => a.url.localeCompare(b.url)).map(input => ({ url: input.url, processing_attempts: input.attempts + (input.reason === 'invalid_deadline' ? 1 : 0) })));
 });
 
 it('reaches a corrected layout within the native batch despite older broad extraction blocks', async () => {
