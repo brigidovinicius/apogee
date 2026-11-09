@@ -92,6 +92,22 @@ test('structured drafts require evidence, reject copied text, unsupported number
   const copied=structuredClone(article);copied.paragraphs[0].text=candidate().evidence[0].text;assert.throws(()=>validateArticle(copied,candidate().evidence),/copied_passage/);
   assert.throws(()=>validateArticle({...article,title:'<script>alert(1)</script>'},candidate().evidence));
 });
+test('Brazilian decimal commas preserve sourced values in prose and SEO without accepting changed values',()=>{
+  const evidence=structuredClone(candidate().evidence);
+  evidence[0].text+=' The maximum potential award is $264.3 million and the secondary figure is 12.75.';
+  const output=structuredClone(article);
+  output.paragraphs[0].text='O valor potencial informado para o contrato chega a 264,3 milhões, enquanto a outra medida registrada corresponde a 12,75.';
+  output.seoTitle='Contrato com valor potencial de 264,3 milhões';
+  validateArticle(output,evidence);
+  const changed=structuredClone(output);changed.paragraphs[0].text=changed.paragraphs[0].text.replace('264,3','264,4');
+  assert.throws(()=>validateArticle(changed,evidence),/unsupported_numbers/);
+  assert.throws(()=>validateArticle({...output,seoTitle:'Contrato com valor potencial de 264,4 milhões'},evidence),/unsupported_numbers/);
+});
+test('ambiguous three-digit separators and grouping are never equated automatically',()=>{
+  const evidence=structuredClone(candidate().evidence);evidence[0].text+=' The recorded figure is 1.000.';
+  const output=structuredClone(article);output.paragraphs[0].text='A medida registrada no documento corresponde a 1,000 e ainda depende de revisão editorial do contexto.';
+  assert.throws(()=>validateArticle(output,evidence),/unsupported_numbers/);
+});
 const jsonResponse=data=>new Response(JSON.stringify(data),{headers:{'Content-Type':'application/json'}});
 const apiKey='sk-synthetic-not-a-real-key';
 test('provider uses only Responses, counts full input and limits ALL output, including reasoning',async()=>{

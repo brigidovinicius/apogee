@@ -58,20 +58,23 @@ export function cacheKey(candidate,policy) {
   return hash({evidence:candidate.evidence_hash,model:policy.model_id,prompt:PROMPT_VERSION,policy:hash(policy)});
 }
 const textValid=(value,min,max)=>typeof value==='string' && value.trim().length>=min && value.length<=max && !/[<>]|https?:\/\//i.test(value);
+// One or two fractional digits are unambiguous decimals. Preserve grouping and
+// three-digit separators verbatim: their interpretation requires source context.
+const numericTokens=text=>(text.match(/\d+(?:[.,]\d+)*/g)??[]).map(n=>/^\d+[.,]\d{1,2}$/.test(n)?n.replace(',','.'):n);
 export function validateArticle(value,evidence) {
   const expected=['excerpt','paragraphs','seoDescription','seoTitle','title'];
   if(!value || Object.keys(value).sort().join()!==expected.sort().join() || !textValid(value.title,8,140)
     || !textValid(value.excerpt,20,400) || !textValid(value.seoTitle,8,70) || !textValid(value.seoDescription,20,160)
     || !Array.isArray(value.paragraphs) || value.paragraphs.length<2 || value.paragraphs.length>6)fail('invalid_structure');
   const known=new Set(evidence.map(e=>e.id));
-  const allNumbers=new Set(evidence.map(e=>e.text+' '+e.published_at).join(' ').match(/\d+(?:[.,]\d+)*/g)??[]);
-  if([value.title,value.excerpt,value.seoTitle,value.seoDescription].some(t=>(t.match(/\d+(?:[.,]\d+)*/g)??[]).some(n=>!allNumbers.has(n))))fail('unsupported_numbers');
+  const allNumbers=new Set(numericTokens(evidence.map(e=>e.text+' '+e.published_at).join(' ')));
+  if([value.title,value.excerpt,value.seoTitle,value.seoDescription].some(t=>numericTokens(t).some(n=>!allNumbers.has(n))))fail('unsupported_numbers');
   for(const p of value.paragraphs){
     if(!p || Object.keys(p).sort().join()!=='sourceIds,text' || !textValid(p.text,30,1600) || !Array.isArray(p.sourceIds) || !p.sourceIds.length)fail('invalid_structure');
     if(p.sourceIds.some(id=>!known.has(id)))fail('invalid_references');
     const source=evidence.filter(e=>p.sourceIds.includes(e.id)).map(e=>e.text+' '+e.published_at).join(' ');
-    const numbers=new Set(source.match(/\d+(?:[.,]\d+)*/g)??[]);
-    if((p.text.match(/\d+(?:[.,]\d+)*/g)??[]).some(n=>!numbers.has(n)))fail('unsupported_numbers');
+    const numbers=new Set(numericTokens(source));
+    if(numericTokens(p.text).some(n=>!numbers.has(n)))fail('unsupported_numbers');
     const normalized=source.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ');
     const words=p.text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim().split(' ');
     for(let i=0;i+16<=words.length;i++)if(normalized.includes(words.slice(i,i+16).join(' ')))fail('copied_passage');
