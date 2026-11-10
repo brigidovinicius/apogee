@@ -35,6 +35,7 @@ export const LEAD_PROCESSING_REASONS = new Set([
   "tls_verification_failed", "source_request_failed", "http_400", "http_401", "http_403", "http_404",
   "source_authority_unverified", "source_link_missing", "source_registration_conflict",
   "http_408", "http_410", "http_429", "http_500", "http_502", "http_503", "http_504",
+  "processing_budget_exhausted",
 ]);
 
 export function sanitizedLeadReason(reason: string) {
@@ -48,7 +49,7 @@ export function leadRetryDelayMinutes(attempt: number) {
   return Math.min(24 * 60, 60 * 2 ** Math.max(0, attempt - 1));
 }
 
-export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[] = [], preferReevaluation = false): Promise<ProcessingLead[]> {
+export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[] = [], preferReevaluation = false, preferFresh = false): Promise<ProcessingLead[]> {
   const batchSize = Number.isInteger(limit) && limit >= 1 && limit <= 2 ? limit : 2;
   return withAdminTransaction(async (client) => {
     await client.query(
@@ -74,17 +75,24 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
            and ((lead.processing_status in ('pending','retry') and lead.processing_next_at<=now())
              or (lead.processing_status='processing' and lead.processing_lease_until<=now())
              or (lead.processing_status='blocked' and lead.processing_reason in
-                 ('scope_unverified','candidate_unconfirmed','detail_layout_unrecognized','source_authority_unverified','listing_or_ambiguous','unsupported_content')
+                 ('scope_unverified','candidate_unconfirmed','detail_layout_unrecognized','invalid_deadline','source_authority_unverified','listing_or_ambiguous','unsupported_content')
                and not exists(select 1 from ingestion_runs run where run.execution_metadata->>'lead_id'=lead.id::text
-                 and (run.execution_metadata->>'source_expansion_version'='6' or
+                 and (run.execution_metadata->>'source_expansion_version'='8' or
+                   (run.execution_metadata->>'source_expansion_version'='7' and
+                     lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline')) or
+                   (run.execution_metadata->>'source_expansion_version'='6' and
+                     lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline')) or
                    (run.execution_metadata->>'source_expansion_version'='5' and
-                     lead.processing_reason<>'detail_layout_unrecognized') or
+                     lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline')) or
                    (run.execution_metadata->>'source_expansion_version'='4' and lead.processing_reason in
                      ('scope_unverified','source_authority_unverified','unsupported_content'))))))
-         order by case when (lead.processing_status='blocked')=$6 then 0 else 1 end,
-           case when lead.processing_status='blocked' and lead.processing_reason='detail_layout_unrecognized' then 0 else 1 end,
-           case when lead.first_seen_at<=now()-interval '48 hours' then 0 else 1 end,
+         order by case when (lead.processing_status='blocked' or coalesce(lead.processing_reason='processing_budget_exhausted',false))=$6 then 0 else 1 end,
+           case when lead.processing_reason='processing_budget_exhausted' then 0 else 1 end,
+           case when lead.processing_status='blocked' and lead.processing_reason in ('detail_layout_unrecognized','invalid_deadline') then 0 else 1 end,
+           case when $6 and lead.processing_status='blocked' then lead.first_seen_at end desc,
            case when lead.title ~* $5 then 0 else 1 end,
+           case when $7 then lead.first_seen_at end desc,
+           case when lead.first_seen_at<=now()-interval '48 hours' then 0 else 1 end,
            lead.processing_next_at,lead.first_seen_at,lead.id
          limit $3 for update of lead skip locked
        ) update discovery_leads lead set processing_status='processing',
@@ -93,7 +101,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
        from due where lead.id=due.id
        returning lead.*,due.target_official_url,due.target_verified_at,due.target_enabled,due.target_verified_url,
          due.target_name,due.target_organizer,due.target_priority,due.target_topics,due.previous_run_id`,
-      [MAX_ATTEMPTS, randomUUID(), batchSize, excludedTargets, CALL_PRIORITY_PATTERN, preferReevaluation],
+      [MAX_ATTEMPTS, randomUUID(), batchSize, excludedTargets, CALL_PRIORITY_PATTERN, preferReevaluation, preferFresh],
     );
     for (const lead of rows) {
       if (lead.previous_run_id) await client.query(
@@ -102,7 +110,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
          where id=$1 and status='running'`, [lead.previous_run_id]);
       const run = await client.query<{ id: string }>(
         `insert into ingestion_runs(started_at,status,execution_metadata) values(now(),'running',$1) returning id`,
-        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 6 }],
+        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 8, processing_policy_version: 2 }],
       );
       lead.processing_run_id = run.rows[0].id;
       await client.query("update discovery_leads set processing_run_id=$2 where id=$1", [lead.id, lead.processing_run_id]);
@@ -112,7 +120,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
 }
 
 type Prepared = PreparedDiscoveryCandidate;
-type Outcome = { reason: string; state: "retry" | "blocked" | "completed" | "ignored"; created: number; updated: number; published: number; opportunityId?: string; sourceId?: string; sourcesRegistered?: number };
+type Outcome = { reason: string; state: "retry" | "blocked" | "completed" | "ignored"; created: number; updated: number; published: number; opportunityId?: string; sourceId?: string; sourcesRegistered?: number; deferred?: boolean };
 
 function blocked(reason: string, retry: boolean, attempt: number): Outcome {
   const shouldRetry = retry && RETRYABLE_REASONS.has(reason);
@@ -125,23 +133,24 @@ async function recordOutcome(client: PoolClient, lead: ProcessingLead, outcome: 
     `update discovery_leads set processing_status=$3,processing_reason=$4,processed_at=now(),
        processing_next_at=now()+make_interval(mins=>$5),processing_lease_until=null,processing_lease_token=null,
        processing_source_id=$6,processing_opportunity_id=$7,
+       processing_attempts=greatest(0,processing_attempts-case when $8 then 1 else 0 end),
        status=case when $3='completed' then 'mapped' else status end,
        reviewed_at=case when $3='completed' then now() else reviewed_at end
      where id=$1 and processing_lease_token=$2 and processing_status='processing'`,
     [lead.id, lead.processing_lease_token, outcome.state, outcome.reason,
-      leadRetryDelayMinutes(lead.processing_attempts), outcome.sourceId ?? null, outcome.opportunityId ?? null],
+      outcome.deferred ? 5 : leadRetryDelayMinutes(lead.processing_attempts), outcome.sourceId ?? null, outcome.opportunityId ?? null, outcome.deferred === true],
   );
   await client.query(
     `update ingestion_runs set official_source_id=$2,finished_at=now(),status=$3,
        pages_checked=$4,items_discovered=$5,items_created=$6,items_updated=$7,items_ignored=$8,items_failed=$9,
        error_summary=$10,execution_metadata=execution_metadata || $11::jsonb where id=$1 and status='running'`,
     [lead.processing_run_id, outcome.sourceId ?? null,
-      outcome.state === "retry" ? "failed" : outcome.state === "blocked" ? "completed_with_warnings" : "completed",
+      outcome.deferred ? "completed_with_warnings" : outcome.state === "retry" ? "failed" : outcome.state === "blocked" ? "completed_with_warnings" : "completed",
       outcome.sourceId ? 1 : 0, outcome.opportunityId ? 1 : 0, outcome.created, outcome.updated,
-      outcome.state === "ignored" ? 1 : 0, outcome.state === "retry" ? 1 : 0,
+      outcome.state === "ignored" ? 1 : 0, outcome.state === "retry" && !outcome.deferred ? 1 : 0,
       ["retry", "blocked"].includes(outcome.state) ? outcome.reason : null,
       { outcome: outcome.state, reason: outcome.reason, published: outcome.published, opportunity_id: outcome.opportunityId ?? null,
-        sources_registered: outcome.sourcesRegistered ?? 0 }],
+        sources_registered: outcome.sourcesRegistered ?? 0, attempt_consumed: !outcome.deferred }],
   );
   return outcome;
 }
@@ -172,7 +181,9 @@ export async function finishDiscoveryLead(lead: ProcessingLead, prepared: Prepar
       !isDeepStrictEqual(row.target_topics ?? [], lead.target_topics ?? [])) {
       return recordOutcome(client, lead, blocked("target_changed", false, lead.processing_attempts));
     }
-    if ("reason" in prepared) return recordOutcome(client, lead, blocked(prepared.reason, prepared.retry === true, lead.processing_attempts));
+    if ("reason" in prepared) return recordOutcome(client, lead, prepared.reason === "processing_budget_exhausted"
+      ? { state: "retry", reason: prepared.reason, deferred: true, created: 0, updated: 0, published: 0 }
+      : blocked(prepared.reason, prepared.retry === true, lead.processing_attempts));
     const { source, candidate } = prepared;
     let sourcesRegistered = 0;
     if (prepared.registration) {
@@ -240,18 +251,21 @@ export async function finishDiscoveryLead(lead: ProcessingLead, prepared: Prepar
   });
 }
 
-export async function runScheduledLeadProcessing() {
+export async function runScheduledLeadProcessing(parentDeadline = Infinity) {
   const started = Date.now();
+  const hardDeadline = Math.min(started + 185_000, parentDeadline);
   const roundTargets = new Set<string>();
   const sources = await loadActiveOfficialSources();
-  const report = { leadsChecked: 0, sourcesRegistered: 0, created: 0, updated: 0, published: 0, blocked: 0, retried: 0, ignored: 0, leaseLost: 0, failed: 0, reasons: {} as Record<string, number> };
-  // Claim only the candidate about to start; the time budget leaves no unstarted leases.
-  while (report.leadsChecked < 24 && Date.now() - started < 90_000) {
-    const preferReevaluation = report.leadsChecked % 4 === 3;
-    let [lead] = await claimDueDiscoveryLeads(1, [...roundTargets], preferReevaluation);
+  const report = { leadsChecked: 0, sourcesRegistered: 0, created: 0, updated: 0, published: 0, blocked: 0, retried: 0, deferred: 0, ignored: 0, leaseLost: 0, failed: 0, reasons: {} as Record<string, number> };
+  // Stop starting work after 90 seconds; reserve a full 90-second chain plus
+  // claim overhead before leasing. The final candidate may finish afterwards.
+  while (report.leadsChecked < 24 && Date.now() - started < 90_000 && hardDeadline - Date.now() >= 95_000) {
+    const preferReevaluation = report.leadsChecked % 4 === 0;
+    const preferFresh = report.leadsChecked % 4 === 1;
+    let [lead] = await claimDueDiscoveryLeads(1, [...roundTargets], preferReevaluation, preferFresh);
     if (!lead && roundTargets.size) {
       roundTargets.clear();
-      [lead] = await claimDueDiscoveryLeads(1, [], preferReevaluation);
+      [lead] = await claimDueDiscoveryLeads(1, [], preferReevaluation, preferFresh);
     }
     if (!lead) break;
     roundTargets.add(lead.target_id);
@@ -262,7 +276,7 @@ export async function runScheduledLeadProcessing() {
     const selectionIssue = discoveryLinkIssue(lead) ??
       (/\.pdf$/i.test(new URL(lead.url).pathname) && !authorizedPdf ? "unsupported_content" : null);
     try {
-      prepared = await withOfficialRequestDeadline(started + 90_000, async () => {
+      prepared = hardDeadline - Date.now() < 90_000 ? { reason: "processing_budget_exhausted" } : await withOfficialRequestDeadline(Math.min(Date.now() + 90_000, hardDeadline), async () => {
         const result = !lead.target_enabled || !lead.target_verified_at || lead.target_verified_url !== lead.target_official_url
           ? { reason: "target_unavailable" } : selectionIssue ? { reason: selectionIssue } : await prepareLeadCandidate(lead, sources);
         return "reason" in result && result.reason === "scope_unverified" ? prepareSourceExpansion(lead) : result;
@@ -280,7 +294,8 @@ export async function runScheduledLeadProcessing() {
     report.sourcesRegistered += outcome.sourcesRegistered ?? 0;
     if ((outcome.sourcesRegistered ?? 0) > 0 && "source" in prepared) sources.push(prepared.source);
     if (outcome.state === "blocked") report.blocked += 1;
-    if (outcome.state === "retry") report.retried += 1;
+    if (outcome.deferred) report.deferred += 1;
+    else if (outcome.state === "retry") report.retried += 1;
     if (outcome.state === "ignored") report.ignored += 1;
     report.reasons[outcome.reason] = (report.reasons[outcome.reason] ?? 0) + 1;
   }

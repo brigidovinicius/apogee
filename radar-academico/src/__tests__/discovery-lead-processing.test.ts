@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import * as requestBudget from "@/lib/ingestion/request-budget";
 import type { OfficialSource, OpportunityCandidate } from "@/lib/ingestion/types";
 
 vi.mock("@/lib/db/client", () => ({ withAdminTransaction: vi.fn() }));
@@ -154,4 +155,45 @@ it('stops claiming before the time budget expires without leasing unstarted cand
     expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, published: 1 });
     expect(claimed).toHaveLength(4);
   } finally { clock.mockRestore(); }
+});
+
+
+it('gives a late-started candidate its full chain budget rather than the remaining selection window', async () => {
+  let now = Date.now();
+  const base = now;
+  const clock = vi.spyOn(Date, 'now').mockImplementation(() => now);
+  const budget = vi.spyOn(requestBudget, 'withOfficialRequestDeadline');
+  claimed = [{ ...lead }, { ...lead }];
+  vi.mocked(prepareLeadCandidate).mockImplementation(async () => { now += 75_000; return { source, candidate }; });
+  try {
+    expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 2, published: 2 });
+    expect(budget.mock.calls.map(args => args[0])).toEqual([base + 90_000, base + 165_000]);
+  } finally { clock.mockRestore(); budget.mockRestore(); }
+});
+
+it('does not claim anything when the parent request cannot fit one complete candidate budget', async () => {
+  claimed = [{ ...lead }];
+  expect(await runScheduledLeadProcessing(Date.now() + 80_000)).toMatchObject({ leadsChecked: 0, published: 0 });
+  expect(claimed).toHaveLength(1);
+  expect(prepareLeadCandidate).not.toHaveBeenCalled();
+});
+
+
+it('defers a lease delayed by the database before making any request or spending a real attempt', async () => {
+  let now=Date.now();
+  const clock=vi.spyOn(Date,'now').mockImplementation(()=>now);
+  const original=query.getMockImplementation()!;
+  query.mockImplementation(async (sql,values)=>{
+    const result=await original(sql,values);
+    if(sql.includes('insert into ingestion_runs')) now+=100_000;
+    return result;
+  });
+  claimed=[{...lead,processing_attempts:4}];
+  try {
+    expect(await runScheduledLeadProcessing()).toMatchObject({leadsChecked:1,deferred:1,retried:0,blocked:0,published:0});
+    expect(prepareLeadCandidate).not.toHaveBeenCalled();
+    const audit=query.mock.calls.find(([sql])=>sql.includes('update ingestion_runs set official_source_id'))!;
+    expect(audit[1]?.[2]).toBe('completed_with_warnings');
+    expect(audit[1]?.[8]).toBe(0);
+  } finally {query.mockImplementation(original);clock.mockRestore();}
 });
