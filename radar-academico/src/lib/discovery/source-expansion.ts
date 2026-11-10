@@ -6,6 +6,7 @@ import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
 import { normalizeDiscoveredPage, discoveredPageFailureReason } from "@/lib/ingestion/discovered-page";
 import { publicationIssue } from "@/lib/ingestion/publication";
+import { validCategories } from "@/lib/ingestion/categories";
 import { structuredEvents } from "@/lib/ingestion/structured-events";
 import { eventOrganizerVerified } from "@/lib/ingestion/public-event";
 import type { OfficialSource, OpportunityCandidate } from "@/lib/ingestion/types";
@@ -49,6 +50,12 @@ export async function prepareSourceExpansion(lead: ExpansionLead): Promise<Prepa
   const url = candidateUrl(lead.url), parent = candidateUrl(lead.target_official_url);
   if (!lead.target_enabled || !lead.target_verified_at || lead.target_verified_url !== lead.target_official_url ||
     !lead.target_organizer?.trim() || !url || url !== lead.url || !parent) return { reason: "source_authority_unverified" };
+  // The live biology-olympiad target points to CFBio news but names Butantan.
+  // A newly readable template must not grant that different institution authority.
+  if (new URL(parent).hostname.replace(/^www\./, '') === 'cfbio.gov.br' &&
+    !/^(?:CFBio|Conselho Federal de Biologia(?:\s*\(CFBio\))?)$/iu.test(lead.target_organizer.trim())) {
+    return { reason: "source_authority_unverified" };
+  }
   const foreign = !sameDiscoveryScope(parent, url);
   if (foreign && new URL(url).hostname !== "luma.com" &&
     !/evento|hackathon|workshop|confer|congresso|summit|seminário|webinar|builders|pitch|encontro|\bia\b/i.test(lead.title)) return { reason: "source_authority_unverified" };
@@ -80,7 +87,7 @@ export async function prepareSourceExpansion(lead: ExpansionLead): Promise<Prepa
   }
   const candidate = normalizeDiscoveredPage(resource.body.toString("utf8"), source);
   if (!candidate) return { reason: discoveredPageFailureReason(resource.body.toString('utf8')) };
-  if (candidate.requiresManualReview) return { reason: "candidate_unconfirmed" };
+  if (candidate.requiresManualReview || !validCategories(candidate.categories)) return { reason: "candidate_unconfirmed" };
   const issue = publicationIssue(candidate, source);
   if (issue) return { reason: issue };
   return { source, candidate, registration: { checkedAt: new Date().toISOString(), targetHash: target.hash,

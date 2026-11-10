@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import { normalizeOpportunity } from "./normalize-opportunity";
+import { normalizeOpportunity, relevantOpportunityContent } from "./normalize-opportunity";
 import { asObject, publicText, structuredEvents } from "./structured-events";
 import { normalizeLuma } from "./normalize-expansion";
 import type { OfficialSource, OpportunityCandidate } from "./types";
@@ -7,17 +7,72 @@ import { brazilianStateCode } from "@/lib/location";
 import { normalizePublicEvent } from "./public-event";
 import { detectDeadline } from './detect-deadline';
 import { classifyApplicationRoute } from './classify-application-route';
-import { deadlineIsCurrent } from './publication';
+import { confirmedTerminalStatus, deadlineIsCurrent } from './publication';
+import { normalizeServiceEvent } from './normalize-service-event';
 
 export const isDiscoveredPageSource = (source: Pick<OfficialSource, "id">) => source.id.startsWith("auto-page-");
 const clean = (text: string) => text.normalize("NFC").replace(/\s+/gu, " ").trim();
+
+/** Named detail templates only: a page title may be outside its bounded body. */
+function detachedDetail($: cheerio.CheerioAPI) {
+  const layouts = [
+    { marker: $('body.single-post #Subheader'), heading: $('body.single-post #Subheader h1.title'),
+      body: $('body.single-post #Content .post-wrapper-content .the_content_wrapper') },
+    { marker: $('body.ast-single-post .ast-single-entry-banner'), heading: $('body.ast-single-post .ast-single-entry-banner h1.entry-title'),
+      body: $('body.ast-single-post main.site-main > article .entry-content') },
+    { marker: $('body#neve_body.wp-singular .nv-post-cover'), heading: $('body#neve_body.wp-singular .nv-post-cover h1.entry-title'),
+      body: $('body#neve_body.wp-singular main#content .nv-content-wrap.entry-content') },
+    { marker: $('section#interna > .container.noticia'), heading: $('section#interna > .container.noticia > h3'),
+      body: $('section#interna > .container.noticia > .texto') },
+    { marker: $('#outer-body #inner-content > .center-content'), heading: $('#outer-body #inner-content > .center-content > h1'),
+      body: $('#outer-body #inner-content > .center-content') },
+  ].filter(layout => layout.marker.length);
+  if (!layouts.length) return undefined;
+  if (layouts.length !== 1) return null;
+  const { marker, heading, body } = layouts[0];
+  if (marker.length !== 1 || heading.length !== 1 || body.length !== 1) return null;
+  const title = clean(heading.text());
+  if (!title || body.find('h1').length > 1 || body.find('h1').toArray().some(node => clean($(node).text()) !== title)) return null;
+  const bounded = body.clone();
+  bounded.find('h1').remove();
+  bounded.prepend($('<h1>').text(title));
+  return bounded;
+}
+
+function articleContent(article: ReturnType<cheerio.CheerioAPI>) {
+  if (article.length !== 1 || article.find('h1').length !== 1) return null;
+  const title = clean(article.find('h1').first().text());
+  const html = article.html() ?? '';
+  article.find('br').replaceWith(' ');
+  // Separate calendar cells/rows before reading dates; adjacent cells are not
+  // one number, and a later results row is not an application closing date.
+  article.find('p,div,h1,h2,h3,li,a,th,td,tr,dt,dd').append(' ');
+  const text = clean(article.text()).slice(0, 30_000);
+  return title && text ? { title, text, html } : null;
+}
 
 /** Shared semantic HTML extraction; dedicated source normalizers keep their own policy. */
 export function singleOpportunityArticle(html: string) {
   const $ = cheerio.load(html);
   $("script,style,noscript,nav,footer,aside,.entry-meta,.postmetadata,[class*='related'],.post-navigation").remove();
+  $('.section__page__hero__meta,.headNews > .meta').remove();
+  const detached = detachedDetail($);
+  if (detached !== undefined) return detached === null ? null : articleContent(detached);
   const articles = $("article");
-  if (articles.length > 1) return null;
+  // Single-post themes render recommendations as sibling <article> cards.
+  // Only one primary article may contain an h1; archive/list pages still fail.
+  const wpPrimary = $('body.single-post article').filter((_, node) => $(node).find('h1').length > 0);
+  const elementor = $('body.single-post .elementor-location-single');
+  const postDetail = $('body.single-post #primary .post-detail-holder');
+  if (elementor.length + postDetail.length > 1 || wpPrimary.length > 1) return null;
+  if (articles.length > 1 && !elementor.length && !postDetail.length && wpPrimary.length !== 1) return null;
+  const themedRoot = elementor.length ? elementor : postDetail;
+  const themedBody = elementor.length ? elementor.find('.elementor-widget-theme-post-content') : postDetail.find('.entry-content');
+  if (themedRoot.length) {
+    const title = elementor.length ? elementor.find('.elementor-widget-theme-post-title h1') : postDetail.children('h1.entry-title');
+    if (title.length !== 1 || themedBody.length !== 1 || themedBody.find('h1').length) return null;
+    themedBody.prepend(title.clone());
+  }
   // Joomla keeps the title beside the body, without a semantic <article>.
   // Read only that body; modules and publication metadata are not evidence.
   const joomla = $('.com-content-article.item-page');
@@ -39,15 +94,12 @@ export function singleOpportunityArticle(html: string) {
     wpContent.prepend($('<h1>').text(title));
     if (wpTitle.closest('.wp-block-post-content').length === 0) wpTitle.remove();
   }
-  const article = joomla.length === 1 ? joomlaBody : institutional.length === 1 ? institutional :
+  const article = themedRoot.length === 1 ? themedBody : wpPrimary.length === 1 ? wpPrimary :
+    joomla.length === 1 ? joomlaBody : institutional.length === 1 ? institutional :
     wpContent.length === 1 && wpTitle.length === 1 ? wpContent :
     articles.length === 1 && articles.find('h1').length === 1 ? articles :
       $('.cps-texto-conteudo').length === 1 ? $('.cps-texto-conteudo') : $('main,[role="main"]');
-  if (article.length !== 1 || article.find("h1").length !== 1) return null;
-  const title = clean(article.find("h1").first().text());
-  article.find("p,div,h1,h2,h3,li,a").append(" ");
-  const text = clean(article.text()).slice(0, 30_000);
-  return title && text ? { title, text } : null;
+  return articleContent(article);
 }
 
 /** A detail page must identify one opportunity; navigation and mixed listings fail closed. */
@@ -84,7 +136,9 @@ export function normalizeDiscoveredPage(html: string, source: OfficialSource): O
     }, new Date());
   }
   const article = singleOpportunityArticle(html);
-  return article ? normalizeOpportunity({ ...article, url: source.baseUrl, source }) : null;
+  if (!article || !relevantOpportunityContent(article.title, article.text)) return null;
+  const service = normalizeServiceEvent(article, source);
+  return service === undefined ? normalizeOpportunity({ ...article, url: source.baseUrl, source }) : service;
 }
 
 /** Explain a failed generic extraction without turning incomplete text into a candidate. */
@@ -92,7 +146,9 @@ export function discoveredPageFailureReason(html: string) {
   if (structuredEvents(html).length) return 'candidate_unconfirmed';
   const article = singleOpportunityArticle(html);
   if (!article) return 'detail_layout_unrecognized';
+  if (!relevantOpportunityContent(article.title, article.text)) return 'irrelevant_link';
   const text = `${article.title} ${article.text}`;
+  if (confirmedTerminalStatus(text, article.title)) return 'status_unconfirmed';
   const deadline = detectDeadline(text);
   if (deadline.precision === 'not_informed') return 'invalid_deadline';
   if (!deadlineIsCurrent({ deadlineAt: deadline.deadlineAt, deadlinePrecision: deadline.precision })) return 'expired';

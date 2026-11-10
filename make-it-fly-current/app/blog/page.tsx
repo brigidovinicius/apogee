@@ -1,5 +1,4 @@
 import { interfaceText } from "@/lib/presentation-text.mjs";
-import { BrandMark } from "@/components/ui/brand-mark";
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -31,35 +30,47 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   const covers = new Map(coverRows.map((media) => [media.id, media]));
   const pageUrl = (next: number) => `/blog?${new URLSearchParams({ ...(category ? { tema: category } : {}), pagina: String(next) })}`;
 
-  return <div className={styles.page}>
+  const renderPost = (post: (typeof posts)[number], index: number) => {
+    const date = postDate(post);
+    const cover = post.coverMediaId ? covers.get(post.coverMediaId) : null;
+    const lead = index === 0;
+    const showCover = (lead || index >= 3) && cover?.postId === post.id;
+    return <article className={`${styles.card} ${lead ? styles.leadCard : ""}`} key={post.id}>
+      <Link href={`/blog/${post.slug}`} className={styles.cardLink} aria-label={`Ler ${interfaceText(post.title)}`}>
+        <div className={styles.cardText}>
+          <div className={styles.cardMeta}><span>{categoryLabel(post.category)}</span>{date ? <time dateTime={date.toISOString()}>{dateFormat.format(date)}</time> : null}</div>
+          <h3>{interfaceText(post.title)}</h3>
+          <p>{interfaceText(post.excerpt)}</p>
+        </div>
+        {showCover && cover ? <div className={styles.cardArt}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={interfaceText(cover.alt)} width={cover.width} height={cover.height} loading={lead ? "eager" : "lazy"} />
+        </div> : null}
+        <span className={styles.readMore}>Ler artigo <ArrowUpRight aria-hidden="true" size={16} /></span>
+      </Link>
+    </article>;
+  };
+
+  return <div className={`${styles.page} ${styles.indexPage}`}>
     <SiteHeader current="blog" />
     <main id="experiencia" tabIndex={-1} className={styles.main}>
       <section className={styles.hero}>
         <p className={styles.eyebrow}>Apogee / editorial</p>
-        <h1>Ideias que abrem <em>caminhos</em></h1>
-        <p>Um espaço para aprender, questionar e descobrir novas possibilidades em estudos, negócios, ciência, tecnologia e tudo o que move o mundo</p>
-        <span className={styles.heroIndex} aria-hidden>01 - 06</span>
+        <h1>Ideias que abrem caminhos</h1>
+        <p>Ciência, tecnologia e possibilidades para aprender, construir e participar.</p>
       </section>
       <nav className={styles.categories} aria-label="Temas do blog">
         <Link href="/blog" aria-current={!category ? "page" : undefined}>Todos</Link>
         {BLOG_CATEGORIES.map((item) => <Link key={item.value} href={`/blog?tema=${item.value}`} aria-current={category === item.value ? "page" : undefined}>{item.label}</Link>)}
       </nav>
-      <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Leitura / Apogee</p><h2>{category ? categoryLabel(category) : "Últimas publicações"}</h2></div><span>{total} artigo{total === 1 ? "" : "s"}</span></div>
-      {posts.length ? <div className={styles.grid}>
-        {posts.map((post, index) => {
-          const date = postDate(post);
-          const cover = post.coverMediaId ? covers.get(post.coverMediaId) : null;
-          return <article className={styles.card} key={post.id}>
-            <Link href={`/blog/${post.slug}`} className={styles.cardLink} aria-label={`Ler ${interfaceText(post.title)}`}>
-              <div className={styles.cardArt} data-category={post.category}>{cover && cover.postId === post.id ? <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={interfaceText(cover.alt)} width={cover.width} height={cover.height} loading="lazy" />
-              </> : <><span>{String((page - 1) * 12 + index + 1).padStart(2, "0")}</span><span aria-hidden><BrandMark /></span></>}</div>
-              <div className={styles.cardText}><div className={styles.cardMeta}><span>{categoryLabel(post.category)}</span>{date ? <time dateTime={date.toISOString()}>{dateFormat.format(date)}</time> : null}</div><h3>{interfaceText(post.title)}</h3><p>{interfaceText(post.excerpt)}</p><span className={styles.readMore}>Ler artigo <span aria-hidden><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></span></div>
-            </Link>
-          </article>;
-        })}
-      </div> : <div className={styles.empty}><p>Novas ideias estão a caminho</p><span>{category ? "Ainda não há artigos publicados neste tema" : "O blog ainda não tem artigos publicados"}</span></div>}
+      <div className={styles.sectionHeading}><h2>{category ? categoryLabel(category) : page === 1 ? "Em destaque" : "Últimas publicações"}</h2><span>{total} artigo{total === 1 ? "" : "s"}</span></div>
+      {posts.length ? <>
+        <div className={styles.frontGrid} data-count={Math.min(posts.length, 3)}>
+          <div>{renderPost(posts[0], 0)}</div>
+          {posts.length > 1 ? <div className={styles.secondary}>{posts.slice(1, 3).map((post, index) => renderPost(post, index + 1))}</div> : null}
+        </div>
+        {posts.length > 3 ? <div className={styles.grid}>{posts.slice(3).map((post, index) => renderPost(post, index + 3))}</div> : null}
+      </> : <div className={styles.empty}><p>Novas ideias estão a caminho</p><span>{category ? "Ainda não há artigos publicados neste tema" : "O blog ainda não tem artigos publicados"}</span></div>}
       {pages > 1 ? <nav className={styles.pagination} aria-label="Páginas do blog">
         {page > 1 ? <Link href={pageUrl(page - 1)}>← Anterior</Link> : <span />}
         <span>{page} / {pages}</span>
