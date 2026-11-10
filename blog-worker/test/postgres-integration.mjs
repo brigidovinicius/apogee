@@ -212,6 +212,15 @@ try{
   const completion=(text=completed.text)=>({model:policy.model_id,service_tier:'default',status:'completed',usage:completed.usage,
     output:[{type:'message',content:[{type:'output_text',text}]}]});
   const fullConfig=()=>({policy,sources:[source],catalog:[price()]});
+  await check('retention preserves full snapshots referenced by any immutable dossier version',async()=>{
+    await reset();await store.ingest(candidate());await store.ingest(candidate(2));
+    const rows=await admin`select id,candidate_id from blog_worker.captured_document order by candidate_id`;
+    assert.equal(rows.length,2);const referenced=rows[0];const document=dossierFixture(1);document.documents[0].capture_id=referenced.id;
+    await admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,source_hash,change_reason) values(${referenced.candidate_id},1,${admin.json(document)},${dossierHash(document)},${admin.json(assessDossier(document))},'test-editor','synthetic-snapshot-hash','Keep the original source supporting editorial history')`;
+    await admin`update blog_worker.captured_document set captured_at=now()-interval '31 days'`;
+    await store.maintenance();
+    const remaining=await admin`select id from blog_worker.captured_document`;assert.deepEqual(remaining.map(r=>r.id),[referenced.id]);
+  });
   await check('RSS to real adapter to durable private CMS draft, public queries and cached recollection',async()=>{
     await reset();await operator.attestGrant(grant(),identity);const calls=[];
     const provider=openAIProvider({apiKey:'sk-synthetic-not-a-real-key',identity,fetcher:async(url,request)=>{
@@ -517,7 +526,12 @@ try{
     await admin`update public.blog_post set cover_media_id='test-factual-cover' where id=${p.id}`;
     await assert.rejects(()=>admin`update public.blog_post set status='published',published_at=now() where id=${p.id}`,/blog_factual_review_required/);
     assert.equal(await editorial.reviewFinalArticle('test-editor',candidate().id,p.revision),true);
-    await admin`update public.blog_post set status='published',published_at=now() where id=${p.id}`;
+    const [ready]=await admin`select * from public.blog_post where id=${p.id}`;
+    const saved=await cms.savePost({id:ready.id,revision:ready.revision,slug:ready.slug,title:ready.title,excerpt:ready.excerpt,
+      body:ready.body.replace(/\n/g,'\r\n'),category:ready.category,featured:ready.featured,seoTitle:ready.seo_title,seoDescription:ready.seo_description,
+      focusKeyword:ready.focus_keyword,seoNoIndex:false,coverMediaId:ready.cover_media_id,videoUrl:ready.video_url,intent:'publish',scheduledAt:null,actorId:'test-editor',actorName:'Synthetic Editor'});
+    assert.notEqual(saved,'conflict','the actual editor round-trip accepts browser CRLF after review');
+    assert.equal((await admin`select body from public.blog_post where id=${p.id}`)[0].body,ready.body,'canonical text remains unchanged');
     await assert.rejects(()=>admin`update public.blog_post set body=body||' changed' where id=${p.id}`,/blog_factual_review_required/);
     assert.ok(await cms.getPublicPost(p.slug));
     assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,2);

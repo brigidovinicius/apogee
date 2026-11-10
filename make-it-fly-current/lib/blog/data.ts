@@ -138,7 +138,7 @@ export async function savePost(input: {
     if (input.intent === "save" && status === "archived") status = "draft";
 
     const fields = {
-      slug: input.slug, title: input.title, excerpt: input.excerpt, body: input.body,
+      slug: input.slug, title: input.title, excerpt: input.excerpt, body: input.body.replace(/\r\n?/g, "\n"),
       category: input.category, featured: input.featured, seoTitle: input.seoTitle,
       seoDescription: input.seoDescription, focusKeyword: input.focusKeyword,
       seoNoIndex: input.seoNoIndex, coverMediaId: input.coverMediaId, videoUrl: input.videoUrl,

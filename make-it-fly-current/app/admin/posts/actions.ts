@@ -43,6 +43,16 @@ function isUniqueViolation(error: unknown): boolean {
   return false;
 }
 
+function isFactualReviewRequired(error: unknown): boolean {
+  let current = error;
+  for (let depth = 0; depth < 3; depth += 1) {
+    if (typeof current !== "object" || current === null) return false;
+    if ("code" in current && current.code === "P0001" && "message" in current && current.message === "blog_factual_review_required") return true;
+    current = "cause" in current ? current.cause : null;
+  }
+  return false;
+}
+
 export async function saveBlogPost(id: number | null, _state: EditorState, form: FormData): Promise<EditorState> {
   const admin = await requireAdmin(id === null ? "/admin/posts/novo" : `/admin/posts/${id}`);
   const values = Object.fromEntries(
@@ -105,7 +115,7 @@ export async function saveBlogPost(id: number | null, _state: EditorState, form:
     revalidatePath("/admin/posts");
     redirect(`/admin/posts/${saved.id}?salvo=1`);
   } catch (error) {
-    if (typeof error === "object" && error !== null && "message" in error && String(error.message).includes("blog_factual_review_required")) {
+    if (isFactualReviewRequired(error)) {
       return fail({ message: "Conclua a conferência do dossiê e registre a revisão final na Central Editorial antes de publicar ou agendar. Alterações no texto ou na capa exigem nova revisão." });
     }
     if (isUniqueViolation(error)) {

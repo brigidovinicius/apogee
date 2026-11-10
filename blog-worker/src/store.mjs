@@ -72,7 +72,10 @@ export class Store {
   async maintenance() {
     await this.sql`delete from blog_worker.quota_observation where created_at<now()-interval '90 days'`;
 
-    await this.sql`delete from blog_worker.captured_document where id in (select id from blog_worker.captured_document where captured_at<now()-interval '30 days' limit 200)`;
+    // A dossier's complete source snapshot is production history, never a disposable cache.
+    await this.sql`delete from blog_worker.captured_document where id in (
+      select d.id from blog_worker.captured_document d where d.captured_at<now()-interval '30 days'
+      and not exists(select 1 from blog_worker.dossier_version v,jsonb_array_elements(v.document->'documents') e where e->>'capture_id'=d.id) limit 200)`;
     // Only disposable, never-generated candidates. Evidence supporting any attempt/draft stays intact.
     await this.sql`update blog_worker.candidate set evidence='[]'::jsonb,status='held',reason='retention'
       where id in (select c.id from blog_worker.candidate c where c.created_at<now()-interval '30 days'
