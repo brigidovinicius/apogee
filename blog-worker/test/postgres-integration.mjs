@@ -393,6 +393,22 @@ try{
     const pipeline=loadCms(cmsClient,'lib/blog/pipeline.ts');await store.syncPipeline({policy:googlePolicy,sources:[source],catalog:[]},{});
     const dashboard=await pipeline.getPipelineDashboard();assert.equal(dashboard.quota.day_calls,2);assert.equal(dashboard.quota.day_tokens,'41200');assert.equal(dashboard.subscription.plan,'google_ai_pro');
   });
+  await check('a second cover requires explicit authorization, preserves the original and cannot become an automatic retry',async()=>{
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier();
+    const r=await store.reserve(googleOptions());await store.finish(r,{...googleCompleted,usage:googleUsage});
+    const first=await store.reserveImage(googleOptions());const old=await store.finish(first,{outcome:'completed',image:webpFixture(),usage:googleUsage});
+    const [p]=await admin`select revision from public.blog_post where id=${old.post_id}`;
+    await admin`update blog_worker.image_job set state='pending',media_id=null,image=null,expected_revision=${p.revision} where candidate_id=${candidate().id}`;
+    await assert.rejects(()=>store.reserveImage(googleOptions()),/image_attempt_limit/);
+    await assert.rejects(()=>runtime`insert into blog_worker.operator_event(actor_id,action,target) values('forged','image_revision_authorized',${candidate().id})`,/permission denied/);
+    await admin`insert into blog_worker.operator_event(actor_id,action,target,detail) values('authorized-editor','image_revision_authorized',${candidate().id},${admin.json({previous_attempt_id:first.id,previous_media_id:old.media_id,expected_revision:p.revision})})`;
+    const replacement=await store.reserveImage(googleOptions());assert.equal(replacement.status,'reserved');
+    const fresh=await store.finish(replacement,{outcome:'completed',image:webpFixture(),usage:googleUsage});assert.equal(fresh.status,'cover_ready');assert.notEqual(fresh.media_id,old.media_id);
+    assert.equal((await admin`select count(*)::int as n from public.blog_media where post_id=${old.post_id}`)[0].n,2);
+    const receipts=await admin`select ordinal,state,charged_micro_usd from blog_worker.attempt where kind='image' order by ordinal`;assert.deepEqual(receipts.map(a=>a.ordinal),[1,2]);assert.ok(receipts.every(a=>a.state==='confirmed'&&Number(a.charged_micro_usd)===0));
+    await admin`update blog_worker.image_job set state='pending',media_id=null,image=null where candidate_id=${candidate().id}`;
+    await assert.rejects(()=>store.reserveImage(googleOptions()),/image_attempt_limit/);
+  });
   await check('Google requires current subscription and reserves quota atomically across instances',async()=>{
     await reset();await store.ingest(candidate());await googleDossier();await assert.rejects(()=>store.reserve(googleOptions()),/google_subscription_unverified/);
     await operator.attestSubscription({...subscription(),account_email:'another@example.test'});

@@ -321,12 +321,19 @@ export class Store {
         join blog_worker.candidate c on c.id=j.candidate_id where j.state='pending'
         and (${candidateId}::text is null or j.candidate_id=${candidateId}) order by j.created_at limit 1 for update of j`;
       if(!job)return {status:'idle'};
+      const previousImages=await tx`select id,state from blog_worker.attempt where candidate_id=${job.candidate_id} and kind='image' order by ordinal`;
+      // Only a trusted editor/owner can append this authorization; runtime has no event INSERT grant.
+      // One explicit replacement is permitted, preserving both actual receipts and media.
+      const [revisionAuthorization]=google&&previousImages.length===1&&previousImages[0].state==='confirmed'?await tx`select id from blog_worker.operator_event
+        where action='image_revision_authorized' and target=${job.candidate_id}
+          and detail->>'previous_attempt_id'=${previousImages[0].id} and detail->>'expected_revision'=${String(job.expected_revision)}
+          and length(detail->>'previous_media_id')>0 order by id desc limit 1`:[];
+      if(previousImages.length && (!revisionAuthorization||previousImages.length!==1))fail('image_attempt_limit');
       const source=sources.find(s=>s.id===job.source_id&&s.enabled&&s.feed_content_approved);
       if(google&&job.artifact?.corroboration){
         const [v]=await tx`select * from blog_worker.dossier_version where candidate_id=${job.candidate_id} order by revision desc limit 1`;
-        if(!v||job.candidate_reason==='source_changed_after_reservation'||v.source_hash!==job.evidence_hash||v.revision!==job.artifact.dossier_revision||!assessDossier(v.document,{comparisonVerified:v.assessment.comparison_verified===true}).eligible)fail('comparison_review_required');
+        if(!v||job.candidate_reason==='source_changed_after_reservation'||v.source_hash!==job.evidence_hash||(!revisionAuthorization&&v.revision!==job.artifact.dossier_revision)||!assessDossier(v.document,{comparisonVerified:v.assessment.comparison_verified===true}).eligible)fail('comparison_review_required');
       }else if(!source || job.candidate_reason==='source_changed_after_reservation' || job.evidence.some(e=>e.rights_reference!==source.rights_reference))fail('source_approval_changed');
-      if((await tx`select id from blog_worker.attempt where candidate_id=${job.candidate_id} and kind='image'`).length)fail('image_attempt_limit');
       const body=google?{prompt:job.prompt}:imageRequest(job,policy),reserve=google?0:imageCost(price,policy.image_input_tokens_cap,policy.image_output_tokens_reservation);
       const {day,week}=periodKeys(at);
       const [spent]=await tx`select
@@ -338,7 +345,7 @@ export class Store {
       if(!google && n(spent.article)+reserve>policy.article_budget_micro_usd_cap_including_all_attempts)fail('article_budget');
       const id=randomUUID();
       await tx`insert into blog_worker.attempt(id,candidate_id,benefit_id,kind,ordinal,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,provider,quota_reserved)
-        values(${id},${job.candidate_id},${grant?.id??null},'image',1,${hash(body)},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?policy.google_tokens_reserved_per_call:0})`;
+        values(${id},${job.candidate_id},${grant?.id??null},'image',${previousImages.length+1},${hash(body)},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?policy.google_tokens_reserved_per_call:0})`;
       await tx`update blog_worker.image_job set state='reserved',updated_at=now() where candidate_id=${job.candidate_id}`;
       return {status:'reserved',kind:'image',id,candidate_id:job.candidate_id,body,policy,identity,reserved_micro_usd:reserve,not_after:new Date(+at+180000).toISOString()};
     });
