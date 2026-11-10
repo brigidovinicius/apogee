@@ -104,17 +104,23 @@ export function validateGooglePolicy(p) {
     || typeof p.automatic_image_generation_enabled!=='boolean' || typeof p.operator_commands_only!=='boolean'
     || p.model_id!=='gemini-3.8-flash-low' || p.image_model_id!=='antigravity_generate_image' || p.reasoning_effort!=='low'
     || forcedFalse.some(k=>p[k]!==false) || ['cycle_budget_micro_usd_cap','daily_budget_micro_usd_cap','article_budget_micro_usd_cap_including_all_attempts'].some(k=>p[k]!==0))fail('google_policy');
+  if(p.google_automatic_access_validation_enabled!==undefined&&typeof p.google_automatic_access_validation_enabled!=='boolean')fail('google_policy');
   const caps={new_drafts_per_day_cap:p.schema_version===3?10:1,new_drafts_per_week_cap:p.schema_version===3?70:5,concurrency:1,input_tokens_cap_including_overhead:8000,billed_output_tokens_cap_including_reasoning:2000,max_primary_evidence_documents:p.schema_version===3?10:2,max_provider_attempts_per_article_including_repairs:2,google_daily_calls_cap:p.schema_version===3?30:3,google_weekly_calls_cap:p.schema_version===3?210:15,google_daily_tokens_cap:180000,google_weekly_tokens_cap:900000,google_tokens_reserved_per_call:60000,google_max_invocations_per_call:1,google_timeout_seconds:150};
   for(const [k,max] of Object.entries(caps))if(!Number.isSafeInteger(p[k])||p[k]<1||p[k]>max)fail('google_policy_limit');
   if(p.schema_version===3 && (p.multisource_required!==true || p.minimum_compatibility_basis_points!==9000 || p.critical_fact_confirmation_required!==true || p.per_topic_daily_cap!==1 || p.per_topic_weekly_cap!==7))fail('google_policy');
   if(p.input_counting_mode!=='local_byte_bound' || p.image_size!=='1536x1024')fail('google_policy');
   return Object.freeze(structuredClone(p));
 }
-export function validateSubscription(a,at=new Date(),expectedEmail=null) {
+export function validateSubscriptionBinding(a,at=new Date(),expectedEmail=null) {
   if(!a || !(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.account_email??'')) || (expectedEmail!==null&&a.account_email!==expectedEmail) || a.plan!=='google_ai_pro' || a.auth_method!=='official_google_oauth' || a.use_g1_credits!==false
     || typeof a.verification_reference!=='string' || a.verification_reference.length<20
-    || !(Date.parse(a.verified_at)<=+at) || !(Date.parse(a.valid_until)>+at+180000)
+    || !(Date.parse(a.verified_at)<=+at) || !(Date.parse(a.valid_until)>Date.parse(a.verified_at))
     || Date.parse(a.valid_until)-Date.parse(a.verified_at)>86400000)fail('google_subscription_unverified');
+  return a;
+}
+export function validateSubscription(a,at=new Date(),expectedEmail=null) {
+  validateSubscriptionBinding(a,at,expectedEmail);
+  if(!(Date.parse(a.valid_until)>+at+180000))fail('google_subscription_unverified');
   return a;
 }
 export function subscriptionUsage(usage) {

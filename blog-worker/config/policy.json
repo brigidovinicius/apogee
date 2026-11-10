@@ -61,5 +61,6 @@
   "minimum_compatibility_basis_points": 9000,
   "critical_fact_confirmation_required": true,
   "per_topic_daily_cap": 1,
-  "per_topic_weekly_cap": 7
+  "per_topic_weekly_cap": 7,
+  "google_automatic_access_validation_enabled": false
 }

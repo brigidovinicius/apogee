@@ -103,3 +103,22 @@ test('real image artifact is decoded, normalized and symlink inputs remain denie
   assert.equal(meta.format,'webp');assert.equal(meta.width,1536);assert.equal(meta.height,1024);
   const linked=join(folder,'linked.png');await symlink(path,linked);await assert.rejects(()=>readGeneratedImage({...opts,path:linked}),/google_image_path/);
 });
+test('automatic access diagnostic has zero model/tool permissions and reuses its fresh quota once',async()=>{
+  const dir=await mkdtemp(join(tmpdir(),'google-access-check-')),binary=join(dir,'agy');await writeFile(binary,'fake');
+  let calls=0;const fingerprint=createHash('sha256').update('fake').digest('hex');
+  const data={status:'SUCCESS',num_turns:0,usage:{input_tokens:0,output_tokens:0},command:{name:'usage',data:{groups:[{name:'Gemini Models',buckets:[
+    {window:'weekly',remaining_fraction:0.9,reset_time:new Date(Date.now()+86400000).toISOString()},
+    {window:'5h',remaining_fraction:0.8,reset_time:new Date(Date.now()+3600000).toISOString()}]}]}}};
+  const provider=googleSubscriptionProvider({binary,sha256:fingerprint,runner:async(_,args,options)=>{
+    calls++;assert.equal(args.at(-1),'/usage');assert.equal(JSON.parse(args[1]).useG1Credits,false);
+    const guard=JSON.parse(await readFile(join(options.cwd,'policy.json'),'utf8'));assert.equal(guard.kind,'diagnostic');assert.equal(guard.maxInvocations,0);
+    assert.equal((await decide('invocation',{modelName:'anything',invocationNum:0},guard,options.cwd)).terminationBehavior,'terminate');
+    assert.equal((await decide('tool',{toolCall:{name:'finish',args:{}}},guard,options.cwd)).decision,'deny');
+    return {code:0,stdout:JSON.stringify(data)};
+  }});
+  const receipt=await provider.verifyAccess();assert.equal(receipt.model_tokens,0);assert.equal(receipt.num_turns,0);assert.equal(receipt.client_sha256,fingerprint);
+  await provider.preflight();assert.equal(calls,1,'hourly check supplies the immediate preflight');
+  data.num_turns=1;await assert.rejects(()=>provider.verifyAccess(),/google_quota_unavailable/);
+  data.num_turns=0;data.usage.input_tokens=1;await assert.rejects(()=>provider.verifyAccess(),/google_quota_unavailable/);
+  data.usage.input_tokens=0;data.command.data.groups[0].buckets[1].window='unknown';await assert.rejects(()=>provider.verifyAccess(),/google_quota_unavailable/);
+});

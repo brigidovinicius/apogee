@@ -1,13 +1,13 @@
 import {automaticDossier} from './automatic-research.mjs';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,subscriptionUsage} from './policy.mjs';
+import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
 import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -34,6 +34,20 @@ export class Store {
     return this.sql.begin(async tx=>{const {at}=await lock(tx);validateSubscription(record,at);
       await tx`insert into blog_worker.subscription(singleton,account_email,plan,verified_at,valid_until,attestation) values(true,${record.account_email},${record.plan},${record.verified_at},${record.valid_until},${tx.json(record)}) on conflict(singleton) do update set account_email=excluded.account_email,plan=excluded.plan,verified_at=excluded.verified_at,valid_until=excluded.valid_until,attestation=excluded.attestation`;
       return {status:'subscription_verified',valid_until:record.valid_until};});
+  }
+  async revalidateGoogleAccess(policy,provider){
+    if(!provider?.verifyAccess||!provider.clientSha256)return {status:'blocked',reason:'google_access_unverified'};
+    const [{result:claim}]=await this.sql`select blog_worker.claim_google_access(${policy.google_account_email},${provider.clientSha256}) as result`;
+    if(claim.status!=='claimed')return claim;
+    let receipt;
+    try{receipt=await provider.verifyAccess();}catch(error){receipt={ok:false,reason:error instanceof Error?error.code:'google_access_unavailable'};}
+    try{
+      const [{result}]=await this.sql`select blog_worker.settle_google_access(${claim.claim_id},${this.sql.json(receipt)}) as result`;
+      return result;
+    }catch{
+      const [{result}]=await this.sql`select blog_worker.settle_google_access(${claim.claim_id},${this.sql.json({ok:false,reason:'google_access_unavailable'})}) as result`;
+      return result;
+    }
   }
   async attestGrant(g,identity) {
     return this.sql.begin(async tx=>{
@@ -394,7 +408,7 @@ export class Store {
       await lock(tx);
       for(const s of config.sources)await tx`insert into blog_worker.source_catalog(id,definition) values(${s.id},${tx.json(s)}) on conflict do nothing`;
       const snapshot={provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:config.policy.google_daily_calls_cap??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:config.policy.google_daily_tokens_cap??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
-        operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
+        automatic_access_validation:config.policy.google_automatic_access_validation_enabled===true,operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
         organization_id:identity?.organization_id??null,project_id:identity?.project_id??null,
         article_cap:config.policy.article_budget_micro_usd_cap_including_all_attempts,daily_cap:config.policy.daily_budget_micro_usd_cap,
         cycle_cap:config.policy.cycle_budget_micro_usd_cap,cycle_fraction:config.policy.cycle_grant_fraction_cap_basis_points,
@@ -481,7 +495,12 @@ async function holdAfterCharge(tx,id,cost){
 
 async function subscriptionBudget(tx,policy,at) {
   const [record]=await tx`select attestation from blog_worker.subscription where singleton=true`;
-  validateSubscription(record?.attestation,at,policy.google_account_email);
+  if(policy.google_automatic_access_validation_enabled){
+    validateSubscriptionBinding(record?.attestation,at,policy.google_account_email);
+    const [access]=await tx`select state,binding_hash,succeeded_at,valid_until from blog_worker.google_access where singleton=true`;
+    if(access?.state!=='valid'||access.binding_hash!==hash(record.attestation)||!(+access.succeeded_at<=+at)
+      ||!(+access.valid_until>+at+180000)||+access.valid_until-(+access.succeeded_at)>21600000)fail('google_access_unverified');
+  }else validateSubscription(record?.attestation,at,policy.google_account_email);
   const {day,week}=periodKeys(at);
   const [q]=await tx`select count(*) filter(where day=${day}::date)::int as day_calls,count(*) filter(where week=${week}::date)::int as week_calls,
     coalesce(sum(coalesce(quota_used,quota_reserved)) filter(where day=${day}::date),0) as day_tokens,

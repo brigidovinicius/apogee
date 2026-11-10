@@ -4,6 +4,7 @@ import {join,resolve} from 'node:path';
 const [event,folder]=process.argv.slice(2);
 const stop=reason=>({terminationBehavior:'terminate',injectSteps:[{errorMessage:{userMessage:reason}}]});
 export async function decide(event,payload,config,folder) {
+  if(config.kind==='diagnostic')return event==='tool'?{decision:'deny',reason:'Account check never uses tools'}:stop('Account check never invokes a model');
   if(payload.modelName!==config.model)return event==='tool'?{decision:'deny',reason:'Model outside editorial policy'}:stop('Model outside editorial policy');
   if(event==='invocation'){
     if(!Number.isSafeInteger(payload.invocationNum)||payload.invocationNum>=config.maxInvocations)return stop('Editorial invocation limit');

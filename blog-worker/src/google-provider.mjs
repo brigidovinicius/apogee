@@ -130,16 +130,38 @@ export function googleSubscriptionProvider({binary,sha256,runner=runCli,env=proc
       return {outcome:'completed',image,usage:data.usage};
     }catch{return {outcome:'rejected',reason:kind==='image'?'invalid_image':'invalid_structure',usage:data.usage};}
   };
-  provider.preflight=async()=>{
+  let checkedQuota;
+  const diagnosticUsage=async()=>{
     const bytes=await readFile(binary).catch(()=>null);
     if(!bytes)fail('google_client_unavailable');
     if(createHash('sha256').update(bytes).digest('hex')!==sha256)fail('google_client_changed');
     const folder=await mkdtemp(join(tmpdir(),'apogee-google-quota-'));
+    await mkdir(join(folder,'.agents'),{mode:0o700});
+    const hook=fileURLToPath(new URL('./google-hook.mjs',import.meta.url));
+    const command=event=>[process.execPath,hook,event,folder].map(shellQuote).join(' ');
+    await writeFile(join(folder,'policy.json'),JSON.stringify({kind:'diagnostic',model:'no-model',maxInvocations:0}),{mode:0o600});
+    await writeFile(join(folder,'.agents/hooks.json'),JSON.stringify({'apogee-diagnostic':{PreInvocation:[{type:'command',command:command('invocation'),timeout:5}],PreToolUse:[{matcher:'*',hooks:[{type:'command',command:command('tool'),timeout:5}]}]}}),{mode:0o600});
     const checked=await runner(binary,['--settings',JSON.stringify({...sessionSettings,disableSlashCommands:false,trustedWorkspaces:[folder]}),'--output-format','json','--print-timeout','20s','-p','/usage'],{cwd:folder,env:cleanEnvironment(env),timeoutMs:20000});
     let status;try{status=JSON.parse(checked.stdout);}catch{fail('google_quota_unavailable');}
+    if(checked.code!==0&&/authenticat|sign.in|login/i.test(String(status.error??'')))fail('google_auth_required');
     const group=status.command?.data?.groups?.find(g=>g.name==='Gemini Models');
-    if(checked.code!==0||status.command?.name!=='usage'||status.num_turns!==0||!group?.buckets?.length)fail('google_quota_unavailable');
-    if(group.buckets.some(b=>typeof b.remaining_fraction!=='number'||b.remaining_fraction<=0))fail('google_quota_exhausted');
+    if(checked.code!==0||status.status!=='SUCCESS'||status.command?.name!=='usage'||status.num_turns!==0
+      ||Object.values(status.usage??{}).some(v=>v!==0)||!group?.buckets?.length)fail('google_quota_unavailable');
+    if(group.buckets.some(b=>typeof b.remaining_fraction!=='number'||!Number.isFinite(b.remaining_fraction)||b.remaining_fraction<0||b.remaining_fraction>1))fail('google_quota_unavailable');
+    return group;
+  };
+  Object.defineProperty(provider,'clientSha256',{value:sha256});
+  provider.verifyAccess=async()=>{
+    const group=await diagnosticUsage();
+    if(group.buckets.length!==2||new Set(group.buckets.map(b=>b.window)).size!==2||group.buckets.some(b=>!['weekly','5h'].includes(b.window)
+      ||!(Date.parse(b.reset_time)>clock())||Date.parse(b.reset_time)>clock()+8*86400000))fail('google_quota_unavailable');
+    checkedQuota=group;
+    return {ok:true,command:'usage',num_turns:0,model_tokens:0,use_g1_credits:false,client_sha256:sha256,
+      quota:{name:group.name,buckets:group.buckets.map(({window,remaining_fraction,reset_time})=>({window,remaining_fraction,reset_time}))}};
+  };
+  provider.preflight=async()=>{
+    const group=checkedQuota??await diagnosticUsage();checkedQuota=null;
+    if(group.buckets.some(b=>b.remaining_fraction<=0))fail('google_quota_exhausted');
     if(group.buckets.some(b=>b.remaining_fraction<0.2))fail('google_quota_low');
     return group;
   };

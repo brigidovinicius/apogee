@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { getSql } from "@/lib/members/db";
 import type { PipelineSource } from "./pipeline-validation";
 
-export type PipelineSnapshot = { provider: string; account_email: string | null; daily_calls_cap: number; weekly_calls_cap: number; daily_tokens_cap: number; weekly_tokens_cap: number; generation_enabled: boolean; images_enabled: boolean; operator_commands_only: boolean; model: string; image_model: string | null; organization_id: string | null; project_id: string | null; article_cap: number; daily_cap: number; cycle_cap: number; cycle_fraction: number; per_day: number; per_week: number };
+export type PipelineSnapshot = { provider: string; account_email: string | null; daily_calls_cap: number; weekly_calls_cap: number; daily_tokens_cap: number; weekly_tokens_cap: number; generation_enabled: boolean; images_enabled: boolean; operator_commands_only: boolean; automatic_access_validation?: boolean; model: string; image_model: string | null; organization_id: string | null; project_id: string | null; article_cap: number; daily_cap: number; cycle_cap: number; cycle_fraction: number; per_day: number; per_week: number };
 export type Evidence = { id: string; title: string; text: string; url: string; rights_reference: string };
 export type PipelineCandidate = { id: string; title: string; url: string; editoria: string; source_id: string; status: string; reason: string | null; post_id: number | null; published_at: Date; evidence: Evidence[]; image_state: string | null; image_reason: string | null; prompt: string | null; alt: string | null; caption: string | null; media_id: string | null; post_revision: number | null; post_title: string | null; post_status: string | null; body: string | null; seo_title: string | null; seo_description: string | null; seo_noindex: boolean | null };
 export type PipelineCommand = { id: string; kind: string; state: string; created_at: Date; result: { generation?: { reason?: string }; image?: { reason?: string } } | null };
@@ -50,7 +50,11 @@ export async function getPipelineDashboard(page = 1) {
   const topicUsage = multisource_ready ? await sql<{ category: string | null; subcategory: string | null; calls: number; tokens: string }[]>`select d.document->>'category' as category,d.document->>'subcategory' as subcategory,count(*)::int as calls,
     sum(coalesce(a.quota_used,a.quota_reserved))::text as tokens from blog_worker.attempt a left join blog_worker.dossier_version d on d.candidate_id=a.candidate_id and d.revision=a.dossier_revision
     where a.provider='google_subscription' and a.day=(now() at time zone 'America/Sao_Paulo')::date group by 1,2` : [];
-  return { subscription: subscription ?? null, quota, control, sources, candidates, total, commands, attempts, counts, usage, benefit: benefit ?? null, multisource_ready, quotaObservations, topicUsage };
+  const [{ access_ready }] = await sql<{ access_ready: boolean }[]>`select to_regclass('blog_worker.google_access') is not null as access_ready`;
+  const [googleAccess] = access_ready ? await sql<{ state: string; checked_at: Date | null; succeeded_at: Date | null; valid_until: Date | null; next_check_at: Date; reason: string | null; valid: boolean }[]>`select a.state,a.checked_at,a.succeeded_at,a.valid_until,a.next_check_at,a.reason,
+    coalesce(a.state='valid' and a.valid_until>now() and a.binding_hash=encode(sha256(convert_to(blog_worker.canonical_json(s.attestation),'UTF8')),'hex'),false) as valid
+    from blog_worker.google_access a join blog_worker.subscription s using(singleton) where a.singleton=true` : [];
+  return { googleAccess: googleAccess ?? null, subscription: subscription ?? null, quota, control, sources, candidates, total, commands, attempts, counts, usage, benefit: benefit ?? null, multisource_ready, quotaObservations, topicUsage };
 }
 
 // These writes enqueue work only. The web process never receives a provider credential.

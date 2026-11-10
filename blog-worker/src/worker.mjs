@@ -47,6 +47,11 @@ export async function tick({store,config,identity,provider,download}) {
   validatePolicy(config.policy);validateSources(config.sources);
   await store.recover();
   const sources=store.syncPipeline?validateSources(await store.syncPipeline(config,identity)):config.sources;
+  let access;
+  if(config.policy.provider==='google_subscription'&&config.policy.generation_enabled&&config.policy.google_automatic_access_validation_enabled){
+    try{access=await store.revalidateGoogleAccess(config.policy,provider);}
+    catch(error){access={status:'blocked',reason:error instanceof Blocked?error.code:'google_access_unavailable'};}
+  }
   const command=store.claimCommand?await store.claimCommand():null;
   const storage=await store.maintenance();
   const collection=storage.capture_allowed?await collect({store,sources,download}):{sources:0,created:0,duplicate:0,failed:0,reason:'storage_cap'};
@@ -56,6 +61,7 @@ export async function tick({store,config,identity,provider,download}) {
     if(!config.policy.generation_enabled)return {collection,generation:{status:'blocked',reason:'generation_disabled'}};
     if(config.policy.operator_commands_only && !command)return {collection,generation:{status:'idle',reason:'waiting_for_editor'}};
     if(!provider)return {collection,generation:{status:'blocked',reason:'credentials_missing'}};
+    if(access&&access.status!=='valid')return {collection,generation:{status:'blocked',reason:access.reason??'google_access_unverified'}};
     const options={...config,sources,identity,candidateId:command?.candidate_id??null};
     async function perform(method){
       let reservation;
@@ -79,7 +85,7 @@ export async function tick({store,config,identity,provider,download}) {
   try{
     const result=await generate();
     if(command)await store.completeCommand(command.id,result);
-    return result;
+    return access?{...result,access}:result;
   }catch(error){
     if(command)await store.completeCommand(command.id,{generation:{status:'blocked',reason:'worker_error'}});
     throw error;

@@ -42,7 +42,7 @@ try{
     GRANT INSERT,UPDATE ON blog_worker.candidate,blog_worker.attempt,blog_worker.source_state,blog_worker.control,blog_worker.image_job,blog_worker.source_catalog,blog_worker.command,blog_worker.captured_document,blog_worker.quota_observation TO blog_runtime;
     GRANT DELETE ON blog_worker.candidate,blog_worker.captured_document,blog_worker.quota_observation TO blog_runtime;
     GRANT USAGE ON SEQUENCE blog_worker.quota_observation_id_seq TO blog_runtime;
-    GRANT EXECUTE ON FUNCTION blog_worker.prepare_automatic_research(text,jsonb,text),blog_worker.record_assisted_comparison(text,uuid,jsonb,jsonb),blog_worker.import_draft(text,jsonb),blog_worker.queue_cover(text,text,text,text),blog_worker.import_cover(text,text) TO blog_runtime;`);
+    GRANT EXECUTE ON FUNCTION blog_worker.claim_google_access(text,text),blog_worker.settle_google_access(uuid,jsonb),blog_worker.prepare_automatic_research(text,jsonb,text),blog_worker.record_assisted_comparison(text,uuid,jsonb,jsonb),blog_worker.import_draft(text,jsonb),blog_worker.queue_cover(text,text,text,text),blog_worker.import_cover(text,text) TO blog_runtime;`);
   await admin.unsafe(`CREATE ROLE blog_editor LOGIN;
     GRANT USAGE ON SCHEMA public,blog_worker TO blog_editor;
     GRANT SELECT ON ALL TABLES IN SCHEMA blog_worker TO blog_editor;
@@ -55,7 +55,7 @@ try{
   runtime=postgres({...connection,username:'blog_runtime'});other=postgres({...connection,username:'blog_runtime'});
   const store=new Store(runtime),second=new Store(other),operator=new Store(admin);
   async function reset(){
-    await admin.unsafe('TRUNCATE blog_worker.subscription,blog_worker.source_catalog,blog_worker.command,blog_worker.operator_event,blog_worker.attempt,blog_worker.candidate,blog_worker.benefit,blog_worker.source_state,public.blog_post_event,public.blog_post RESTART IDENTITY CASCADE');
+    await admin.unsafe('TRUNCATE blog_worker.google_access,blog_worker.subscription,blog_worker.source_catalog,blog_worker.command,blog_worker.operator_event,blog_worker.attempt,blog_worker.candidate,blog_worker.benefit,blog_worker.source_state,public.blog_post_event,public.blog_post RESTART IDENTITY CASCADE');
     await admin`update blog_worker.control set paused=false,reason=null`;
   }
   async function setup({benefit=grant(),items=[candidate()]}={}){await reset();await operator.attestGrant(benefit,identity);for(const c of items)await store.ingest(c);}
@@ -417,6 +417,51 @@ try{
     const receipts=await admin`select ordinal,state,charged_micro_usd from blog_worker.attempt where kind='image' order by ordinal`;assert.deepEqual(receipts.map(a=>a.ordinal),[1,2]);assert.ok(receipts.every(a=>a.state==='confirmed'&&Number(a.charged_micro_usd)===0));
     await admin`update blog_worker.image_job set state='pending',media_id=null,image=null where candidate_id=${candidate().id}`;
     await assert.rejects(()=>store.reserveImage(googleOptions()),/image_attempt_limit/);
+  });
+  const accessPolicy=()=>({...googlePolicy,google_automatic_access_validation_enabled:true});
+  const accessReceipt=(fraction=1)=>({ok:true,command:'usage',num_turns:0,model_tokens:0,use_g1_credits:false,client_sha256:'a'.repeat(64),quota:{name:'Gemini Models',buckets:[{window:'weekly',remaining_fraction:fraction,reset_time:new Date(Date.now()+86400000).toISOString()},{window:'5h',remaining_fraction:fraction,reset_time:new Date(Date.now()+3600000).toISOString()}]}});
+  const accessProvider=(inspect)=>({clientSha256:'a'.repeat(64),verifyAccess:inspect??(async()=>accessReceipt())});
+  await check('automatic access renews operational proof without changing expired plan evidence or spending tokens',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    await admin`update blog_worker.subscription set verified_at=now()-interval '2 days',valid_until=now()-interval '1 day',attestation=attestation||jsonb_build_object('verified_at',now()-interval '2 days','valid_until',now()-interval '1 day')`;
+    const [before]=await admin`select attestation from blog_worker.subscription`;
+    let checks=0;const provider=accessProvider(async()=>{checks++;return accessReceipt();});
+    await store.ingest(candidate());await googleDossier();
+    await assert.rejects(()=>store.reserve({...googleOptions(),policy:accessPolicy()}),/google_access_unverified/);
+    assert.equal((await store.revalidateGoogleAccess(accessPolicy(),provider)).status,'valid');assert.equal(checks,1);
+    assert.equal((await store.revalidateGoogleAccess(accessPolicy(),provider)).status,'valid');assert.equal(checks,1,'hourly result reused without another diagnostic');
+    await admin`update blog_worker.google_access set succeeded_at=now()-interval '7 hours',valid_until=now()-interval '1 hour',next_check_at=now()-interval '1 hour'`;
+    await assert.rejects(()=>store.reserve({...googleOptions(),policy:accessPolicy()}),/google_access_unverified/);
+    assert.equal((await store.revalidateGoogleAccess(accessPolicy(),provider)).status,'valid');assert.equal(checks,2,'expired operational lease is renewed by a fresh diagnostic');
+    const [after]=await admin`select attestation from blog_worker.subscription`;assert.deepEqual(after.attestation,before.attestation);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0,'diagnostics never enter the model ledger');
+    assert.equal((await store.reserve({...googleOptions(),policy:accessPolicy()})).status,'reserved','manual 24h expiry no longer blocks a verified native profile');
+    await assert.rejects(()=>runtime`update blog_worker.subscription set valid_until=now()+interval '1 year'`,/permission denied/);
+    await assert.rejects(()=>runtime`update blog_worker.google_access set valid_until=now()+interval '1 year'`,/permission denied/);
+  });
+  await check('concurrent access checks deduplicate, reject stale bindings and reject model or credit receipts',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const [first]=await runtime`select blog_worker.claim_google_access(${googlePolicy.google_account_email},${'a'.repeat(64)}) as result`;
+    const [busy]=await other`select blog_worker.claim_google_access(${googlePolicy.google_account_email},${'a'.repeat(64)}) as result`;assert.equal(busy.result.reason,'google_access_check_in_progress');
+    for(const change of [{num_turns:1},{model_tokens:1},{use_g1_credits:true},{client_sha256:'b'.repeat(64)}])await assert.rejects(()=>runtime`select blog_worker.settle_google_access(${first.result.claim_id},${runtime.json({...accessReceipt(),...change})})`,/invalid_access_receipt/);
+    await admin`update blog_worker.subscription set attestation=attestation||'{"verification_reference":"New authorized profile observation invalidates old checks"}'::jsonb`;
+    const [stale]=await runtime`select blog_worker.settle_google_access(${first.result.claim_id},${runtime.json(accessReceipt())}) as result`;assert.equal(stale.result.reason,'google_access_stale_check');
+  });
+  await check('failed checks block dispatch, back off and recover without clearing a paused circuit',async()=>{
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier();
+    let checks=0;const provider=accessProvider(async()=>{checks++;throw Object.assign(new Error('fixture'),{code:'google_auth_required'});});
+    const result=await store.revalidateGoogleAccess(accessPolicy(),provider);assert.equal(result.reason,'google_auth_required');
+    await store.revalidateGoogleAccess(accessPolicy(),provider);assert.equal(checks,1,'failure backoff prevents per-minute retries');
+    await assert.rejects(()=>store.reserve({...googleOptions(),policy:accessPolicy()}),/google_access_unverified/);
+    await admin`update blog_worker.google_access set next_check_at=now()-interval '1 second'`;await admin`update blog_worker.control set paused=true,reason='operator_hold'`;
+    assert.equal((await store.revalidateGoogleAccess(accessPolicy(),accessProvider())).status,'valid');assert.equal((await store.summary()).control.paused,true);
+  });
+  await check('automatic idle worker revalidates access but never invokes a model',async()=>{
+    await reset();await operator.attestSubscription(subscription());let checks=0,modelCalls=0;
+    const provider=Object.assign(async()=>{modelCalls++;throw Error('unexpected model');},accessProvider(async()=>{checks++;return accessReceipt();}));
+    const config={policy:{...accessPolicy(),operator_commands_only:false},sources:[],catalog:[]};
+    const result=await tick({store,config,identity:{},provider});assert.equal(result.access.status,'valid');assert.equal(result.generation.reason,'waiting_for_evidence');assert.equal(checks,1);assert.equal(modelCalls,0);
+    const pipeline=loadCms(cmsClient,'lib/blog/pipeline.ts');const dashboard=await pipeline.getPipelineDashboard();assert.equal(dashboard.googleAccess.valid,true);assert.equal(dashboard.quota.day_calls,0);
   });
   await check('Google requires current subscription and reserves quota atomically across instances',async()=>{
     await reset();await store.ingest(candidate());await googleDossier();await assert.rejects(()=>store.reserve(googleOptions()),/google_subscription_unverified/);

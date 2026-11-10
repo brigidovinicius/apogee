@@ -31,3 +31,7 @@ GRANT USAGE ON SEQUENCE blog_worker.quota_observation_id_seq TO apogee_blog_work
 GRANT EXECUTE ON FUNCTION blog_worker.record_assisted_comparison(text,uuid,jsonb,jsonb) TO apogee_blog_worker;
 
 GRANT EXECUTE ON FUNCTION blog_worker.prepare_automatic_research(text,jsonb,text) TO apogee_blog_worker;
+
+GRANT SELECT ON blog_worker.google_access TO apogee_blog_worker;
+GRANT EXECUTE ON FUNCTION blog_worker.claim_google_access(text,text),blog_worker.settle_google_access(uuid,jsonb) TO apogee_blog_worker;
+-- Web: SELECT on google_access only; runtime cannot edit the original plan attestation.
