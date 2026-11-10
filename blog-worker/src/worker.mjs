@@ -47,31 +47,45 @@ export async function tick({store,config,identity,provider,download}) {
   validatePolicy(config.policy);validateSources(config.sources);
   await store.recover();
   const sources=store.syncPipeline?validateSources(await store.syncPipeline(config,identity)):config.sources;
+  let access;
+  if(config.policy.provider==='google_subscription'&&config.policy.generation_enabled&&config.policy.google_automatic_access_validation_enabled){
+    try{access=await store.revalidateGoogleAccess(config.policy,provider);}
+    catch(error){access={status:'blocked',reason:error instanceof Blocked?error.code:'google_access_unavailable'};}
+  }
   const command=store.claimCommand?await store.claimCommand():null;
   const storage=await store.maintenance();
   const collection=storage.capture_allowed?await collect({store,sources,download}):{sources:0,created:0,duplicate:0,failed:0,reason:'storage_cap'};
+  const research=config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&config.policy.generation_enabled&&store.prepareAutomaticResearch?await store.prepareAutomaticResearch(config.policy):{prepared:0};
   async function generate(){
     if(command?.kind==='collect')return {collection,generation:{status:'idle'}};
     if(!config.policy.generation_enabled)return {collection,generation:{status:'blocked',reason:'generation_disabled'}};
     if(config.policy.operator_commands_only && !command)return {collection,generation:{status:'idle',reason:'waiting_for_editor'}};
     if(!provider)return {collection,generation:{status:'blocked',reason:'credentials_missing'}};
+    if(access&&access.status!=='valid')return {collection,generation:{status:'blocked',reason:access.reason??'google_access_unverified'}};
     const options={...config,sources,identity,candidateId:command?.candidate_id??null};
     async function perform(method){
       let reservation;
-      try{if(provider.preflight)await provider.preflight();reservation=await store[method](options);}
+      try{if(provider.preflight){const quota=await provider.preflight();if(store.observeQuota)await store.observeQuota(quota,'before');}reservation=await store[method](options);}
       catch(error){if(error instanceof Blocked)return {status:'blocked',reason:error.code};throw error;}
       if(reservation.status!=='reserved')return reservation;
       let result;try{result=await provider(reservation);}catch{result={outcome:'unknown'};}
-      return store.finish(reservation,result);
+      const completed=await store.finish(reservation,result);
+      if(provider.preflight&&store.observeQuota){try{await store.observeQuota(await provider.preflight(),'after');}catch{/* Settlement is already durable; a quota refresh must never cause a retry. */}}
+      return completed;
     }
-    const generation=await perform('reserve');
+    const automatic=!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.nextAutomaticWork?await store.nextAutomaticWork(config.policy):null;
+    if(!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.nextAutomaticWork&&!automatic)return {collection,research,generation:{status:'idle',reason:'waiting_for_evidence'}};
+    if(automatic)options.candidateId=automatic.candidateId;
+    const generation=await perform(automatic?.method??(command?.kind==='compare'?'reserveComparison':'reserve'));
+    if(automatic?.method==='reserveComparison'||automatic?.method==='reserveImage')return {collection,research,generation};
+    if(command?.kind==='compare')return {collection,generation};
     if(!config.policy.automatic_image_generation_enabled || !['draft','idle'].includes(generation.status))return {collection,generation};
-    return {collection,generation,image:await perform('reserveImage')};
+    return {collection,research,generation,image:await perform('reserveImage')};
   }
   try{
     const result=await generate();
     if(command)await store.completeCommand(command.id,result);
-    return result;
+    return access?{...result,access}:result;
   }catch(error){
     if(command)await store.completeCommand(command.id,{generation:{status:'blocked',reason:'worker_error'}});
     throw error;

@@ -1,11 +1,13 @@
+import {automaticDossier} from './automatic-research.mjs';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,subscriptionUsage} from './policy.mjs';
+import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
+import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -32,6 +34,20 @@ export class Store {
     return this.sql.begin(async tx=>{const {at}=await lock(tx);validateSubscription(record,at);
       await tx`insert into blog_worker.subscription(singleton,account_email,plan,verified_at,valid_until,attestation) values(true,${record.account_email},${record.plan},${record.verified_at},${record.valid_until},${tx.json(record)}) on conflict(singleton) do update set account_email=excluded.account_email,plan=excluded.plan,verified_at=excluded.verified_at,valid_until=excluded.valid_until,attestation=excluded.attestation`;
       return {status:'subscription_verified',valid_until:record.valid_until};});
+  }
+  async revalidateGoogleAccess(policy,provider){
+    if(!provider?.verifyAccess||!provider.clientSha256)return {status:'blocked',reason:'google_access_unverified'};
+    const [{result:claim}]=await this.sql`select blog_worker.claim_google_access(${policy.google_account_email},${provider.clientSha256}) as result`;
+    if(claim.status!=='claimed')return claim;
+    let receipt;
+    try{receipt=await provider.verifyAccess();}catch(error){receipt={ok:false,reason:error instanceof Error?error.code:'google_access_unavailable'};}
+    try{
+      const [{result}]=await this.sql`select blog_worker.settle_google_access(${claim.claim_id},${this.sql.json(receipt)}) as result`;
+      return result;
+    }catch{
+      const [{result}]=await this.sql`select blog_worker.settle_google_access(${claim.claim_id},${this.sql.json({ok:false,reason:'google_access_unavailable'})}) as result`;
+      return result;
+    }
   }
   async attestGrant(g,identity) {
     return this.sql.begin(async tx=>{
@@ -62,13 +78,24 @@ export class Store {
         now()+least(86400,3600*power(2,failures))*interval '1 second',
         now()+${Math.min(604800,Math.max(0,Number.isSafeInteger(headers.retryAfter)?headers.retryAfter:0))}*interval '1 second') else next_due_at end where id=${id}`;
   }
+  async observeQuota(group,stage) {
+    const fractions=group?.buckets?.map(b=>b.remaining_fraction);
+    if(!fractions?.length||fractions.some(v=>typeof v!=='number'||!Number.isFinite(v)||v<0||v>1))fail('google_quota_unavailable');
+    await this.sql`insert into blog_worker.quota_observation(stage,minimum_fraction) values(${stage},${Math.min(...fractions)})`;
+  }
   async maintenance() {
+    await this.sql`delete from blog_worker.quota_observation where created_at<now()-interval '90 days'`;
+
+    // A dossier's complete source snapshot is production history, never a disposable cache.
+    await this.sql`delete from blog_worker.captured_document where id in (
+      select d.id from blog_worker.captured_document d where d.captured_at<now()-interval '30 days'
+      and not exists(select 1 from blog_worker.dossier_version v,jsonb_array_elements(v.document->'documents') e where e->>'capture_id'=d.id) limit 200)`;
     // Only disposable, never-generated candidates. Evidence supporting any attempt/draft stays intact.
     await this.sql`update blog_worker.candidate set evidence='[]'::jsonb,status='held',reason='retention'
       where id in (select c.id from blog_worker.candidate c where c.created_at<now()-interval '30 days'
-        and c.post_id is null and c.evidence<>'[]'::jsonb and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id) limit 200)`;
+        and c.post_id is null and c.evidence<>'[]'::jsonb and not exists(select 1 from blog_worker.dossier_version v where v.candidate_id=c.id) and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id) limit 200)`;
     await this.sql`delete from blog_worker.candidate where id in
-      (select c.id from blog_worker.candidate c where c.created_at<now()-interval '180 days' and c.post_id is null
+      (select c.id from blog_worker.candidate c where c.created_at<now()-interval '180 days' and c.post_id is null and not exists(select 1 from blog_worker.dossier_version v where v.candidate_id=c.id)
         and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id) limit 200)`;
     const [{bytes}]=await this.sql`select coalesce(sum(pg_total_relation_size(c.oid)),0)::text as bytes
       from pg_class c join pg_namespace s on s.oid=c.relnamespace where s.nspname='blog_worker' and c.relkind='r'`;
@@ -78,13 +105,20 @@ export class Store {
     return this.sql.begin(async tx=>{
       const inserted=await tx`insert into blog_worker.candidate(id,source_id,guid,url,event_key,title,editoria,score,published_at,evidence,evidence_hash,status)
         values(${c.id},${c.source_id},${c.guid},${c.url},${c.event_key},${c.title},${c.editoria},${c.score},${c.published_at},${tx.json(c.evidence)},${c.evidence_hash},${c.status}) on conflict do nothing returning id`;
+      const [parent]=await tx`select id from blog_worker.candidate where id=${c.id} or event_key=${c.event_key} order by case when id=${c.id} then 0 else 1 end limit 1`;
+      if(parent)for(const e of c.evidence)await tx`insert into blog_worker.captured_document(id,candidate_id,source_id,url,snapshot_hash,document)
+        values(${hash(e)},${parent.id},${c.source_id},${e.url},${hash(e)},${tx.json(e)}) on conflict do nothing`;
       if(inserted.length)return 'created';
       // Preserve dossiers already used by a reservation or reviewed draft. Changed evidence requires human assessment.
       const [current]=await tx`select * from blog_worker.candidate where id=${c.id} for update`;
+      if(current && current.source_id!==c.source_id)return 'duplicate'; // Preserve curated input while retaining the raw snapshot.
       if(current && current.evidence_hash!==c.evidence_hash){
+        const factual=e=>e.map(({related_urls,...document})=>document);
+        if(hash(factual(current.evidence))===hash(factual(c.evidence)))return 'duplicate';
         const [used]=await tx`select id from blog_worker.attempt where candidate_id=${c.id} limit 1`;
-        if(!used && current.source_id===c.source_id)await tx`update blog_worker.candidate set evidence=${tx.json(c.evidence)},evidence_hash=${c.evidence_hash},status=${c.status} where id=${c.id}`;
-        else await tx`update blog_worker.candidate set reason='source_changed_after_reservation' where id=${c.id}`;
+        const [dossier]=await tx`select revision from blog_worker.dossier_version where candidate_id=${c.id} limit 1`;
+        if(!used && !dossier && current.source_id===c.source_id)await tx`update blog_worker.candidate set evidence=${tx.json(c.evidence)},evidence_hash=${c.evidence_hash},status=${c.status} where id=${c.id}`;
+        else await tx`update blog_worker.candidate set evidence=${tx.json(c.evidence)},evidence_hash=${c.evidence_hash},reason='source_changed_after_reservation' where id=${c.id}`;
       }
       return 'duplicate';
     });
@@ -101,13 +135,54 @@ export class Store {
       return stale.length;
     });
   }
-  async reserve({policy,catalog,identity,sources,candidateId=null}) {
+  async prepareAutomaticResearch(policy){
+    const candidates=await this.sql`select c.* from blog_worker.candidate c where c.post_id is null and c.first_attempt_day is null
+      and c.published_at>now()-interval '7 days' and c.evidence<>'[]'::jsonb
+      and not exists(select 1 from blog_worker.dossier_version v where v.candidate_id=c.id)
+      and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id) order by c.score desc,c.published_at desc limit 100`;
+    const rows=await this.sql`select d.id as capture_id,d.source_id,d.document from blog_worker.captured_document d join blog_worker.source_catalog s on s.id=d.source_id
+      where s.definition->>'enabled'='true' and s.definition->>'feed_content_approved'='true' and d.captured_at>now()-interval '7 days' order by d.captured_at desc limit 400`;
+    const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id}));
+    for(const candidate of candidates){
+      let document;try{document=automaticDossier(candidate,captures,policy);}catch{continue;}
+      if(!document)continue;
+      const [r]=await this.sql`select blog_worker.prepare_automatic_research(${candidate.id},${this.sql.json(document)},${candidate.evidence_hash}) as prepared`;
+      if(r.prepared)return {prepared:1};
+    }
+    return {prepared:0};
+  }
+  async nextAutomaticWork(policy){
+    const [image]=await this.sql`select j.candidate_id from blog_worker.image_job j join blog_worker.candidate c on c.id=j.candidate_id
+      where j.state='pending' and c.status='draft' and c.reason is distinct from 'source_changed_after_reservation'
+      and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='image') order by j.created_at limit 1`;
+    if(policy.automatic_image_generation_enabled&&image)return {method:'reserveImage',candidateId:image.candidate_id};
+    const {day,week}=periodKeys(new Date());
+    const usage=await this.sql`select d.document->>'category' as category,d.document->>'subcategory' as subcategory,
+      count(*) filter(where c.first_attempt_day=${day}::date)::int as day,count(*) filter(where c.first_attempt_week=${week}::date)::int as week
+      from blog_worker.candidate c join lateral(select v.document from blog_worker.attempt a join blog_worker.dossier_version v on v.candidate_id=a.candidate_id and v.revision=a.dossier_revision where a.candidate_id=c.id order by a.created_at,a.id limit 1) d on true group by 1,2`;
+    const rows=await this.sql`select c.id,c.status,c.first_attempt_day,v.document,v.assessment,
+      (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts
+      from blog_worker.candidate c join lateral(select * from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) v on true
+      where c.post_id is null and c.reason is distinct from 'source_changed_after_reservation' and c.published_at>now()-interval '7 days'
+      and c.status in ('ready','held','discovered') order by c.score desc,c.published_at desc limit 100`;
+    for(const c of rows){
+      const used=usage.find(u=>u.category===c.document.category&&u.subcategory===c.document.subcategory);
+      if(!c.first_attempt_day&&used&&(used.day>=policy.per_topic_daily_cap||used.week>=policy.per_topic_weekly_cap))continue;
+      if(c.attempts>=policy.max_provider_attempts_per_article_including_repairs)continue;
+      if(c.status==='ready'&&c.assessment.eligible&&c.assessment.comparison_verified)return {method:'reserve',candidateId:c.id};
+      if(!c.attempts&&!c.assessment.comparison_verified&&c.document.documents.length>=2&&c.document.documents.every(d=>d.same_event))return {method:'reserveComparison',candidateId:c.id};
+    }
+    return null;
+  }
+  async reserveComparison(options) { return this.reserve({...options,kind:'comparison'}); }
+  async reserve({policy,catalog,identity,sources,candidateId=null,kind='text'}) {
     validatePolicy(policy);
     if(!policy.generation_enabled)fail('generation_disabled');
     return this.sql.begin(async tx=>{
       const {at,control}=await lock(tx);
       if(control.paused)fail('paused');
       const google=policy.provider==='google_subscription';
+      if(kind==='comparison'&&(!google||!candidateId))fail('comparison_requires_google');
       const price=google?{model:policy.model_id,provider:policy.provider,billing_mode:'subscription_no_overages'}:selectPrice(catalog,policy,at);assertWindow(at);
       let grant;
       if(google)await subscriptionBudget(tx,policy,at);
@@ -118,23 +193,45 @@ export class Store {
       const [pending]=await tx`select id from blog_worker.attempt where state in ('reserved','unknown') limit 1`;
       if(pending)fail('request_pending');
       const enabled=sources.filter(s=>s.enabled && s.feed_content_approved && s.rights_reference);
-      if(!enabled.length)fail('no_approved_sources');
+      if(!google&&!enabled.length)fail('no_approved_sources');
       const [candidate]=await tx`select c.* from blog_worker.candidate c
-        where c.status='ready' and c.reason is distinct from 'source_changed_after_reservation'
+        where (c.status='ready' or (${kind}='comparison' and c.status in ('discovered','held') and c.post_id is null)) and c.reason is distinct from 'source_changed_after_reservation'
         and (${candidateId}::text is null or c.id=${candidateId})
-        and c.source_id in ${tx(enabled.map(s=>s.id))} and c.published_at>now()-interval '7 days'
+        and (not ${google} or ${candidateId}::text is not null or exists(select 1 from blog_worker.dossier_version v where v.candidate_id=c.id and v.revision=(select max(z.revision) from blog_worker.dossier_version z where z.candidate_id=c.id) and v.source_hash=c.evidence_hash and v.assessment->>'eligible'='true' and v.assessment->>'comparison_verified'='true'))
+        and (${google} or c.source_id=any(${enabled.map(s=>s.id)}::text[])) and c.published_at>now()-interval '7 days'
         order by (select count(*) from blog_worker.candidate d where d.editoria=c.editoria and d.status='draft' and d.created_at>now()-interval '28 days') asc,
         c.score desc,c.published_at desc,c.id asc limit 1 for update`;
       if(!candidate)return {status:'idle'};
       const source=enabled.find(s=>s.id===candidate.source_id);
-      if(candidate.evidence.some(e=>e.rights_reference!==source.rights_reference))fail('source_approval_changed');
+      if(!google&&candidate.evidence.some(e=>e.rights_reference!==source.rights_reference))fail('source_approval_changed');
+      let version,effective=candidate;
+      if(google){
+        [version]=await tx`select * from blog_worker.dossier_version where candidate_id=${candidate.id} order by revision desc limit 1`;
+        if(!version)fail('comparison_incomplete');
+        if(version.source_hash!==candidate.evidence_hash)fail('source_changed_after_reservation');
+        validateDossier(version.document);
+        if(kind==='text'){
+          const verification=version.assessment.comparison_verified?{actor_id:version.actor_id,hash:version.document_hash}:null;
+          effective={...candidate,evidence:approvedEvidence(version.document,verification),corroboration:assessDossier(version.document,{comparisonVerified:!!verification})};
+          effective.evidence_hash=hash(effective.evidence);
+        }
+      }
       const {day,week}=periodKeys(at);
       const [counts]=await tx`select count(*) filter(where first_attempt_day=${day}::date)::int as day,
         count(*) filter(where first_attempt_week=${week}::date)::int as week from blog_worker.candidate`;
       if(!candidate.first_attempt_day && (counts.day>=policy.new_drafts_per_day_cap||counts.week>=policy.new_drafts_per_week_cap))fail('draft_frequency');
-      const attempts=await tx`select * from blog_worker.attempt where candidate_id=${candidate.id} and kind='text'`;
+      if(google&&policy.schema_version===3&&!candidate.first_attempt_day){
+        const [topic]=await tx`select count(*) filter(where c.first_attempt_day=${day}::date)::int as day,
+          count(*) filter(where c.first_attempt_week=${week}::date)::int as week from blog_worker.candidate c
+          join lateral (select v.document from blog_worker.attempt a join blog_worker.dossier_version v on v.candidate_id=a.candidate_id and v.revision=a.dossier_revision where a.candidate_id=c.id order by a.created_at,a.id limit 1) d on true
+          where d.document->>'category'=${version.document.category} and (d.document->>'subcategory') is not distinct from ${version.document.subcategory}`;
+        if(topic.day>=policy.per_topic_daily_cap||topic.week>=policy.per_topic_weekly_cap)fail('topic_frequency');
+      }
+
+      const attempts=await tx`select * from blog_worker.attempt where candidate_id=${candidate.id} and kind in ('text','comparison')`;
       if(attempts.length>=policy.max_provider_attempts_per_article_including_repairs)fail('attempt_limit');
-      const body=buildRequest(candidate,policy,attempts.length>0),key=cacheKey(candidate,policy);
+      const body=kind==='comparison'?buildComparisonRequest(version.document,policy):buildRequest(effective,policy,attempts.some(a=>a.kind==='text'));
+      const key=kind==='comparison'?comparisonCacheKey(version.document,policy):cacheKey(effective,policy);
       const reserve=google?0:usageCost(price,policy.input_tokens_cap_including_overhead,policy.billed_output_tokens_cap_including_reasoning);
       const [spent]=await tx`select
         coalesce(sum(coalesce(charged_micro_usd,reserved_micro_usd)) filter(where benefit_id=${grant?.id??null}),0) as cycle,
@@ -145,11 +242,11 @@ export class Store {
       if(!google && n(spent.day)+reserve>policy.daily_budget_micro_usd_cap)fail('daily_budget');
       if(!google && n(spent.article)+reserve>policy.article_budget_micro_usd_cap_including_all_attempts)fail('article_budget');
       const id=randomUUID();
-      await tx`insert into blog_worker.attempt(id,candidate_id,benefit_id,ordinal,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,provider,quota_reserved)
-        values(${id},${candidate.id},${grant?.id??null},${attempts.length+1},${key},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?policy.google_tokens_reserved_per_call:0})`;
+      await tx`insert into blog_worker.attempt(id,candidate_id,benefit_id,kind,ordinal,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,provider,quota_reserved,dossier_revision,dossier_hash)
+        values(${id},${candidate.id},${grant?.id??null},${kind},${attempts.length+1},${key},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?policy.google_tokens_reserved_per_call:0},${version?.revision??null},${version?.document_hash??null})`;
       await tx`update blog_worker.candidate set first_attempt_day=coalesce(first_attempt_day,${day}::date),
         first_attempt_week=coalesce(first_attempt_week,${week}::date) where id=${candidate.id}`;
-      return {status:'reserved',id,candidate,body,reserved_micro_usd:reserve,policy,identity,not_after:new Date(+at+180000).toISOString()};
+      return {status:'reserved',id,kind,candidate:effective,body,reserved_micro_usd:reserve,policy,identity,not_after:new Date(+at+180000).toISOString()};
     });
   }
   async finish(reservation,result) {
@@ -183,8 +280,30 @@ export class Store {
         return {status:'held',reason:'usage_exceeded_reservation',charged_micro_usd:cost};
       }
       let article,reason=result.reason;
+      let version,corroboration,effective=candidate;
+      if(google){
+        [version]=await tx`select * from blog_worker.dossier_version where candidate_id=${candidate.id} order by revision desc limit 1`;
+        if(!version||version.source_hash!==candidate.evidence_hash||version.revision!==attempt.dossier_revision||version.document_hash!==attempt.dossier_hash)return holdAfterCharge(tx,candidate.id,cost);
+        if(attempt.kind==='comparison'){
+          let suggestion;
+          try{if(result.outcome==='completed')suggestion=validateComparison(JSON.parse(result.text),version.document);}catch(error){reason=error.code??'invalid_comparison';}
+          if(suggestion){
+            const assessment=assessDossier(suggestion,{comparisonVerified:true});
+            await tx`select blog_worker.record_assisted_comparison(${candidate.id},${attempt.id},${tx.json(suggestion.claims)},${tx.json(assessment)})`;
+            return {status:'comparison_ready',reason:assessment.blockers[0]??null,charged_micro_usd:cost};
+          }
+          await tx`update blog_worker.candidate set status='held',reason=${reason??'invalid_comparison'} where id=${candidate.id}`;
+          await tx`update blog_worker.attempt set reason=${reason??'invalid_comparison'} where id=${attempt.id}`;
+          return {status:'held',reason:reason??'invalid_comparison',charged_micro_usd:cost};
+        }
+        try{
+          const verification=version.assessment.comparison_verified?{actor_id:version.actor_id,hash:version.document_hash}:null;
+          corroboration=assessDossier(version.document,{comparisonVerified:!!verification});
+          effective={...candidate,evidence:approvedEvidence(version.document,verification)};
+        }catch{return holdAfterCharge(tx,candidate.id,cost);}
+      }
       if(result.outcome==='completed'){
-        try{article=validateArticle(JSON.parse(result.text),candidate.evidence);}catch(error){reason=error.code??'invalid_structure';}
+        try{article=validateArticle(JSON.parse(result.text),effective.evidence,corroboration);}catch(error){reason=error.code??'invalid_structure';}
       }
       if(!article){
         const retry=reason==='invalid_structure'&&attempt.ordinal<attempt.policy.max_provider_attempts_per_article_including_repairs;
@@ -193,9 +312,9 @@ export class Store {
         return {status:retry?'repair_pending':'held',reason:reason??'invalid_response',charged_micro_usd:cost};
       }
       if(hash(candidate.evidence)!==candidate.evidence_hash || candidate.reason==='source_changed_after_reservation')return holdAfterCharge(tx,candidate.id,cost);
-      const draft=cmsDraft(candidate,article);
+      const draft=cmsDraft(effective,article);
       const [{post_id}]=await tx`select blog_worker.import_draft(${candidate.id},${tx.json(draft)}) as post_id`;
-      await tx`update blog_worker.candidate set artifact=${tx.json({article,evidence:candidate.evidence,cache_key:attempt.cache_key,human_review_required:true})} where id=${candidate.id}`;
+      await tx`update blog_worker.candidate set artifact=${tx.json({article,evidence:effective.evidence,corroboration:corroboration??null,dossier_revision:version?.revision??null,cache_key:attempt.cache_key,human_review_required:true})} where id=${candidate.id}`;
       if(attempt.policy.automatic_image_generation_enabled){
         const brief=coverBrief(article);
         await tx`select blog_worker.queue_cover(${candidate.id},${brief.prompt},${brief.alt},${brief.caption})`;
@@ -215,13 +334,23 @@ export class Store {
       else {const rows=await tx`select * from blog_worker.benefit where starts_at<=${at} and expires_at>${at} and revoked_at is null`;
         if(rows.length!==1)fail('benefit_unverified');grant=validateGrant(benefit(rows[0]),at,identity);}
       if((await tx`select id from blog_worker.attempt where state in ('reserved','unknown') limit 1`).length)fail('request_pending');
-      const [job]=await tx`select j.*,c.source_id,c.reason as candidate_reason,c.evidence,c.evidence_hash from blog_worker.image_job j
+      const [job]=await tx`select j.*,c.source_id,c.reason as candidate_reason,c.evidence,c.evidence_hash,c.artifact from blog_worker.image_job j
         join blog_worker.candidate c on c.id=j.candidate_id where j.state='pending'
         and (${candidateId}::text is null or j.candidate_id=${candidateId}) order by j.created_at limit 1 for update of j`;
       if(!job)return {status:'idle'};
+      const previousImages=await tx`select id,state from blog_worker.attempt where candidate_id=${job.candidate_id} and kind='image' order by ordinal`;
+      // Only a trusted editor/owner can append this authorization; runtime has no event INSERT grant.
+      // One explicit replacement is permitted, preserving both actual receipts and media.
+      const [revisionAuthorization]=google&&previousImages.length===1&&previousImages[0].state==='confirmed'?await tx`select id from blog_worker.operator_event
+        where action='image_revision_authorized' and target=${job.candidate_id}
+          and detail->>'previous_attempt_id'=${previousImages[0].id} and detail->>'expected_revision'=${String(job.expected_revision)}
+          and length(detail->>'previous_media_id')>0 order by id desc limit 1`:[];
+      if(previousImages.length && (!revisionAuthorization||previousImages.length!==1))fail('image_attempt_limit');
       const source=sources.find(s=>s.id===job.source_id&&s.enabled&&s.feed_content_approved);
-      if(!source || job.candidate_reason==='source_changed_after_reservation' || job.evidence.some(e=>e.rights_reference!==source.rights_reference))fail('source_approval_changed');
-      if((await tx`select id from blog_worker.attempt where candidate_id=${job.candidate_id} and kind='image'`).length)fail('image_attempt_limit');
+      if(google&&job.artifact?.corroboration){
+        const [v]=await tx`select * from blog_worker.dossier_version where candidate_id=${job.candidate_id} order by revision desc limit 1`;
+        if(!v||job.candidate_reason==='source_changed_after_reservation'||v.source_hash!==job.evidence_hash||(!revisionAuthorization&&v.revision!==job.artifact.dossier_revision)||!assessDossier(v.document,{comparisonVerified:v.assessment.comparison_verified===true}).eligible)fail('comparison_review_required');
+      }else if(!source || job.candidate_reason==='source_changed_after_reservation' || job.evidence.some(e=>e.rights_reference!==source.rights_reference))fail('source_approval_changed');
       const body=google?{prompt:job.prompt}:imageRequest(job,policy),reserve=google?0:imageCost(price,policy.image_input_tokens_cap,policy.image_output_tokens_reservation);
       const {day,week}=periodKeys(at);
       const [spent]=await tx`select
@@ -233,7 +362,7 @@ export class Store {
       if(!google && n(spent.article)+reserve>policy.article_budget_micro_usd_cap_including_all_attempts)fail('article_budget');
       const id=randomUUID();
       await tx`insert into blog_worker.attempt(id,candidate_id,benefit_id,kind,ordinal,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,provider,quota_reserved)
-        values(${id},${job.candidate_id},${grant?.id??null},'image',1,${hash(body)},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?policy.google_tokens_reserved_per_call:0})`;
+        values(${id},${job.candidate_id},${grant?.id??null},'image',${previousImages.length+1},${hash(body)},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?policy.google_tokens_reserved_per_call:0})`;
       await tx`update blog_worker.image_job set state='reserved',updated_at=now() where candidate_id=${job.candidate_id}`;
       return {status:'reserved',kind:'image',id,candidate_id:job.candidate_id,body,policy,identity,reserved_micro_usd:reserve,not_after:new Date(+at+180000).toISOString()};
     });
@@ -279,7 +408,7 @@ export class Store {
       await lock(tx);
       for(const s of config.sources)await tx`insert into blog_worker.source_catalog(id,definition) values(${s.id},${tx.json(s)}) on conflict do nothing`;
       const snapshot={provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:config.policy.google_daily_calls_cap??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:config.policy.google_daily_tokens_cap??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
-        operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
+        automatic_access_validation:config.policy.google_automatic_access_validation_enabled===true,operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
         organization_id:identity?.organization_id??null,project_id:identity?.project_id??null,
         article_cap:config.policy.article_budget_micro_usd_cap_including_all_attempts,daily_cap:config.policy.daily_budget_micro_usd_cap,
         cycle_cap:config.policy.cycle_budget_micro_usd_cap,cycle_fraction:config.policy.cycle_grant_fraction_cap_basis_points,
@@ -366,14 +495,25 @@ async function holdAfterCharge(tx,id,cost){
 
 async function subscriptionBudget(tx,policy,at) {
   const [record]=await tx`select attestation from blog_worker.subscription where singleton=true`;
-  validateSubscription(record?.attestation,at,policy.google_account_email);
+  if(policy.google_automatic_access_validation_enabled){
+    validateSubscriptionBinding(record?.attestation,at,policy.google_account_email);
+    const [access]=await tx`select state,binding_hash,succeeded_at,valid_until from blog_worker.google_access where singleton=true`;
+    if(access?.state!=='valid'||access.binding_hash!==hash(record.attestation)||!(+access.succeeded_at<=+at)
+      ||!(+access.valid_until>+at+180000)||+access.valid_until-(+access.succeeded_at)>21600000)fail('google_access_unverified');
+  }else validateSubscription(record?.attestation,at,policy.google_account_email);
   const {day,week}=periodKeys(at);
   const [q]=await tx`select count(*) filter(where day=${day}::date)::int as day_calls,count(*) filter(where week=${week}::date)::int as week_calls,
     coalesce(sum(coalesce(quota_used,quota_reserved)) filter(where day=${day}::date),0) as day_tokens,
     coalesce(sum(coalesce(quota_used,quota_reserved)) filter(where week=${week}::date),0) as week_tokens from (
       select day,week,quota_used,quota_reserved from blog_worker.attempt where provider='google_subscription'
       union all select (created_at at time zone 'America/Sao_Paulo')::date,date_trunc('week',created_at at time zone 'America/Sao_Paulo')::date,
-        (detail->>'quota_used')::bigint,0::bigint from blog_worker.operator_event where action='google_diagnostic_usage'
+        (detail->>'quota_used')::bigint,0::bigint from blog_worker.operator_event e where e.action='google_diagnostic_usage' and not exists (
+          select 1 from blog_worker.attempt a where e.actor_id='google_editorial_pilot'
+          and e.detail->>'purpose'='Authorized real editorial batch; legacy-compatible usage accounting'
+          and e.target=a.id::text and a.provider='google_subscription' and a.state='confirmed'
+          and e.detail->>'usage_known'='true' and e.detail->>'kind'=a.kind
+          and (e.detail->>'quota_used')::bigint=a.quota_used and e.detail->'usage'=a.usage
+          and a.day=(e.created_at at time zone 'America/Sao_Paulo')::date)
     ) q`;
   if(q.day_calls>=policy.google_daily_calls_cap || q.week_calls>=policy.google_weekly_calls_cap)fail('google_call_limit');
   if(n(q.day_tokens)+policy.google_tokens_reserved_per_call>policy.google_daily_tokens_cap || n(q.week_tokens)+policy.google_tokens_reserved_per_call>policy.google_weekly_tokens_cap)fail('google_token_limit');

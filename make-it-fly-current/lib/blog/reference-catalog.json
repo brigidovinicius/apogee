@@ -1,0 +1,971 @@
+[
+  {
+    "id": "REF01",
+    "name": "Olhar Digital",
+    "publisher": "olhar-digital",
+    "url": "https://olhardigital.com.br/",
+    "categories": [
+      "tecnologia",
+      "ciencia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "jornalismo",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Olhar Digital",
+      "Olhar Digital"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF02",
+    "name": "Canaltech",
+    "publisher": "canaltech",
+    "url": "https://canaltech.com.br/",
+    "categories": [
+      "tecnologia",
+      "ciencia"
+    ],
+    "subcategories": [],
+    "role": "jornalismo",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Canaltech"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF03",
+    "name": "TecMundo",
+    "publisher": "tecmundo",
+    "url": "https://www.tecmundo.com.br/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [],
+    "role": "jornalismo",
+    "access": "bloqueio_robots_na_consulta",
+    "aliases": [
+      "TecMundo"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF04",
+    "name": "G1 Ciência e Saúde",
+    "publisher": "g1",
+    "url": "https://g1.globo.com/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [],
+    "role": "jornalismo",
+    "access": "pagina_nao_lida",
+    "aliases": [
+      "G1 Ciência e Saúde"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF05",
+    "name": "Tecnoblog",
+    "publisher": "tecnoblog",
+    "url": "https://tecnoblog.net/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [],
+    "role": "jornalismo",
+    "access": "bloqueio_403_na_consulta",
+    "aliases": [
+      "Tecnoblog"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF06",
+    "name": "MIT Technology Review",
+    "publisher": "mit-technology-review",
+    "url": "https://www.technologyreview.com/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "jornalismo",
+    "access": "bloqueio_robots_na_consulta",
+    "aliases": [
+      "MIT Technology Review",
+      "MIT Technology Review"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF07",
+    "name": "Revista Pesquisa FAPESP",
+    "publisher": "pesquisa-fapesp",
+    "url": "https://revistapesquisa.fapesp.br/",
+    "categories": [
+      "ciencia",
+      "tecnologia"
+    ],
+    "subcategories": [],
+    "role": "jornalismo_cientifico",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Revista Pesquisa FAPESP"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF08",
+    "name": "Inovação Tecnológica",
+    "publisher": "inovacao-tecnologica",
+    "url": "https://www.inovacaotecnologica.com.br/",
+    "categories": [
+      "tecnologia",
+      "ciencia"
+    ],
+    "subcategories": [
+      "hardware-robotica",
+      "aeroespacial"
+    ],
+    "role": "divulgacao_cientifica",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Inovação Tecnológica"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF09",
+    "name": "SoCientífica",
+    "publisher": "socientifica",
+    "url": "https://socientifica.com.br/",
+    "categories": [
+      "ciencia",
+      "tecnologia"
+    ],
+    "subcategories": [],
+    "role": "divulgacao_cientifica",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Socientífica"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF10",
+    "name": "Space Today",
+    "publisher": "space-today",
+    "url": "https://spacetoday.com.br/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "divulgacao_especializada",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Space Today"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF11",
+    "name": "STAT News / Neuroscience",
+    "publisher": "stat-news",
+    "url": "https://www.statnews.com/topic/neuroscience/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "jornalismo_especializado",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "STAT News"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF12",
+    "name": "Nature Neuroscience",
+    "publisher": "nature-neuroscience",
+    "url": "https://www.nature.com/neuro/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "periodico_cientifico",
+    "access": "redirect_cookie_sem_leitura",
+    "aliases": [
+      "Nature Neuroscience"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF13",
+    "name": "The Lancet Neurology",
+    "publisher": "lancet-neurology",
+    "url": "https://www.thelancet.com/journals/laneur/home",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "periodico_cientifico",
+    "access": "bloqueio_403_na_consulta",
+    "aliases": [
+      "Lancet Neurology"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF14",
+    "name": "Nature Medicine",
+    "publisher": "nature-medicine",
+    "url": "https://www.nature.com/nm/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "periodico_cientifico",
+    "access": "redirect_cookie_sem_leitura",
+    "aliases": [
+      "Nature Medicine"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF15",
+    "name": "Neuroscience News",
+    "publisher": "neuroscience-news",
+    "url": "https://neurosciencenews.com/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "divulgacao_cientifica",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Neuroscience News"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF16",
+    "name": "Scientific American / Mind & Brain",
+    "publisher": "scientific-american",
+    "url": "https://www.scientificamerican.com/mind-and-brain/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "jornalismo_cientifico",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Scientific American Mind"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF17",
+    "name": "Knowable Magazine / The Mind",
+    "publisher": "knowable-magazine",
+    "url": "https://knowablemagazine.org/content/mind",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "jornalismo_cientifico",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Knowable Mind"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF18",
+    "name": "Quanta Magazine / Biology",
+    "publisher": "quanta-magazine",
+    "url": "https://www.quantamagazine.org/biology/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "jornalismo_cientifico",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Quanta Biology"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF19",
+    "name": "The Conversation / mente e neurociência",
+    "publisher": "the-conversation",
+    "url": "https://theconversation.com/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "analise_especialista",
+    "access": "bloqueio_robots_na_consulta",
+    "aliases": [
+      "The Conversation Mind"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF20",
+    "name": "Psychology Today",
+    "publisher": "psychology-today",
+    "url": "https://www.psychologytoday.com/us",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "publicacao_especializada",
+    "access": "pagina_publica_lida_com_redirect",
+    "aliases": [
+      "Psychology Today"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF21",
+    "name": "MedPage Today / neurologia",
+    "publisher": "medpage-today",
+    "url": "https://www.medpagetoday.com/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "jornalismo_medico",
+    "access": "pagina_nao_lida",
+    "aliases": [
+      "MedPage Neuro"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF22",
+    "name": "NASA",
+    "publisher": "nasa",
+    "url": "https://www.nasa.gov/",
+    "categories": [
+      "ciencia",
+      "tecnologia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "institucional",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "NASA"
+    ],
+    "collection_enabled": false,
+    "hosts": [
+      "nasa.gov",
+      "science.nasa.gov"
+    ]
+  },
+  {
+    "id": "REF23",
+    "name": "ESA",
+    "publisher": "esa",
+    "url": "https://www.esa.int/",
+    "categories": [
+      "ciencia",
+      "tecnologia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "institucional",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "ESA"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF24",
+    "name": "Nature Astronomy",
+    "publisher": "nature-astronomy",
+    "url": "https://www.nature.com/natastron/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "periodico_cientifico",
+    "access": "pagina_publica_lida_com_redirect_cookie",
+    "aliases": [
+      "Nature Astronomy"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF25",
+    "name": "Science / AAAS",
+    "publisher": "science-aaas",
+    "url": "https://www.science.org/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "periodico_e_jornalismo",
+    "access": "bloqueio_403_na_consulta",
+    "aliases": [
+      "Science Magazine"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF26",
+    "name": "Quanta Magazine / Physics",
+    "publisher": "quanta-magazine",
+    "url": "https://www.quantamagazine.org/physics/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "jornalismo_cientifico",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Quanta Physics"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF27",
+    "name": "Space.com",
+    "publisher": "space-com",
+    "url": "https://www.space.com/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "jornalismo_especializado",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Space.com"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF28",
+    "name": "Sky & Telescope",
+    "publisher": "sky-and-telescope",
+    "url": "https://skyandtelescope.org/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "jornalismo_especializado",
+    "access": "bloqueio_403_na_consulta",
+    "aliases": [
+      "Sky & Telescope"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF29",
+    "name": "Physics World / Astronomy and space",
+    "publisher": "physics-world",
+    "url": "https://physicsworld.com/c/astronomy-space/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "jornalismo_cientifico",
+    "access": "secao_identificada_busca_acesso_403",
+    "aliases": [
+      "Physics World Astronomy"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF30",
+    "name": "New Scientist / Space",
+    "publisher": "new-scientist",
+    "url": "https://www.newscientist.com/subject/space/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "jornalismo_cientifico",
+    "access": "bloqueio_robots_na_consulta",
+    "aliases": [
+      "New Scientist Space"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF31",
+    "name": "Scientific American / Space & Physics",
+    "publisher": "scientific-american",
+    "url": "https://www.scientificamerican.com/space-and-physics/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "jornalismo_cientifico",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Scientific American Space"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF32",
+    "name": "Phys.org / Astronomy & Space",
+    "publisher": "phys-org",
+    "url": "https://phys.org/space-news/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "jornalismo_e_divulgacao",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Phys.org Space"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF33",
+    "name": "ScienceDaily / Space & Time",
+    "publisher": "science-daily",
+    "url": "https://www.sciencedaily.com/news/space_time/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "divulgacao_cientifica",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "ScienceDaily Space"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF34",
+    "name": "National Geographic Brasil",
+    "publisher": "national-geographic-brasil",
+    "url": "https://www.nationalgeographicbrasil.com/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "jornalismo_cientifico",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "National Geographic Brasil"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF35",
+    "name": "Stanford HAI",
+    "publisher": "stanford",
+    "url": "https://hai.stanford.edu/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "institucional_pesquisa",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Stanford HAI"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF36",
+    "name": "Nature Machine Intelligence",
+    "publisher": "nature-machine-intelligence",
+    "url": "https://www.nature.com/natmachintell/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "periodico_cientifico",
+    "access": "pagina_publica_lida_com_redirect_cookie",
+    "aliases": [
+      "Nature Machine Intelligence"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF37",
+    "name": "WIRED",
+    "publisher": "wired",
+    "url": "https://www.wired.com/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "jornalismo",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Wired"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF38",
+    "name": "The Verge",
+    "publisher": "the-verge",
+    "url": "https://www.theverge.com/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "jornalismo",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "The Verge"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF39",
+    "name": "Ars Technica",
+    "publisher": "ars-technica",
+    "url": "https://arstechnica.com/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "jornalismo",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Ars Technica"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF40",
+    "name": "IEEE Spectrum / AI",
+    "publisher": "ieee-spectrum",
+    "url": "https://spectrum.ieee.org/topic/artificial-intelligence/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "jornalismo_especializado",
+    "access": "pagina_publica_lida_com_redirect",
+    "aliases": [
+      "IEEE Spectrum AI"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF41",
+    "name": "Quanta Magazine / Computer Science",
+    "publisher": "quanta-magazine",
+    "url": "https://www.quantamagazine.org/computer-science/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "jornalismo_cientifico",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Quanta Computer Science"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF42",
+    "name": "VentureBeat / AI",
+    "publisher": "venturebeat",
+    "url": "https://venturebeat.com/ai",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "jornalismo",
+    "access": "pagina_publica_lida_com_redirect",
+    "aliases": [
+      "VentureBeat AI"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF43",
+    "name": "Exame / Tecnologia",
+    "publisher": "exame",
+    "url": "https://exame.com/tecnologia/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "jornalismo",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Exame Tecnologia"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF44",
+    "name": "Forbes Brasil / Forbes Tech",
+    "publisher": "forbes-brasil",
+    "url": "https://forbes.com.br/forbes-tech/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "jornalismo",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Forbes Brasil Tech"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "SRC04",
+    "name": "MIT Research",
+    "publisher": "mit",
+    "url": "https://news.mit.edu/",
+    "categories": [
+      "ciencia",
+      "tecnologia"
+    ],
+    "subcategories": [],
+    "role": "institucional",
+    "access": "cadastro_legado_canal_a_homologar",
+    "aliases": [
+      "MIT Research"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "SRC05",
+    "name": "Harvard Gazette",
+    "publisher": "harvard",
+    "url": "https://news.harvard.edu/",
+    "categories": [
+      "ciencia",
+      "tecnologia"
+    ],
+    "subcategories": [],
+    "role": "institucional",
+    "access": "cadastro_legado_canal_a_homologar",
+    "aliases": [
+      "Harvard Gazette"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "SRC06",
+    "name": "OpenAI News",
+    "publisher": "openai",
+    "url": "https://openai.com/",
+    "categories": [
+      "ciencia",
+      "tecnologia"
+    ],
+    "subcategories": [],
+    "role": "institucional",
+    "access": "cadastro_legado_canal_a_homologar",
+    "aliases": [
+      "OpenAI News"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "SRC07",
+    "name": "Google Research",
+    "publisher": "google",
+    "url": "https://research.google/",
+    "categories": [
+      "ciencia",
+      "tecnologia"
+    ],
+    "subcategories": [],
+    "role": "institucional",
+    "access": "cadastro_legado_canal_a_homologar",
+    "aliases": [
+      "Google Research"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "SRC08",
+    "name": "Google DeepMind",
+    "publisher": "google",
+    "url": "https://deepmind.google/",
+    "categories": [
+      "ciencia",
+      "tecnologia"
+    ],
+    "subcategories": [],
+    "role": "institucional",
+    "access": "cadastro_legado_canal_a_homologar",
+    "aliases": [
+      "Google DeepMind"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "SRC09",
+    "name": "Y Combinator Blog",
+    "publisher": "y-combinator",
+    "url": "https://www.ycombinator.com/",
+    "categories": [
+      "negocios"
+    ],
+    "subcategories": [],
+    "role": "institucional",
+    "access": "cadastro_legado_canal_a_homologar",
+    "aliases": [
+      "Y Combinator Blog"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_STANFORD_MED",
+    "name": "Stanford Medicine",
+    "publisher": "stanford",
+    "url": "https://med.stanford.edu/",
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "institucional_pesquisa",
+    "access": "pagina_publica_lida_20261109",
+    "aliases": [
+      "Stanford Medicine"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "EXT_VIA_SATELLITE",
+    "name": "Via Satellite",
+    "publisher": "access-intelligence-via-satellite",
+    "url": "https://www.satellitetoday.com/",
+    "categories": [
+      "ciencia",
+      "tecnologia",
+      "negocios"
+    ],
+    "subcategories": [
+      "aeroespacial"
+    ],
+    "role": "jornalismo_especializado",
+    "access": "pagina_publica_lida_20261109",
+    "aliases": [
+      "Via Satellite"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_JETSON",
+    "name": "Jetson / produto oficial",
+    "publisher": "jetson",
+    "url": "https://jetson.com/jetson-one",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "hardware-robotica"
+    ],
+    "role": "institucional",
+    "access": "pagina_publica_lida_20261109",
+    "aliases": [
+      "Jetson / produto oficial"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_COCA_COLA",
+    "name": "Coca-Cola Brasil / campanhas oficiais",
+    "publisher": "coca-cola",
+    "url": "https://www.coca-cola.com/br/pt/offerings/natal",
+    "categories": [
+      "negocios"
+    ],
+    "subcategories": [
+      "marketing"
+    ],
+    "role": "institucional",
+    "access": "pagina_publica_lida_20261109",
+    "aliases": [
+      "Coca-Cola Brasil / campanhas oficiais"
+    ],
+    "collection_enabled": false
+  }
+]

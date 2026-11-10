@@ -12,6 +12,7 @@ export function opportunityLoader(mocks = {}) {
   const cache = new Map();
   function load(relative) {
     const filename = path.resolve(root, relative);
+    if (filename.endsWith(".json")) return JSON.parse(readFileSync(filename, "utf8"));
     if (cache.has(filename)) return cache.get(filename).exports;
     const loaded = { exports: {} };
     cache.set(filename, loaded);

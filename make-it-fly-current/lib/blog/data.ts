@@ -119,6 +119,9 @@ export async function savePost(input: {
   actorName: string;
 }): Promise<{ id: number; slug: string } | "conflict"> {
   return getDb().transaction(async (tx) => {
+    // Match the worker lock order before touching a post or its review trigger.
+    const installed = await tx.execute(sql`select to_regclass('blog_worker.control') is not null as ready`);
+    if (installed[0]?.ready) await tx.execute(sql`select singleton from blog_worker.control where singleton=true for update`);
     const now = new Date();
     const current = input.id === null ? null : (await tx.select().from(blogPost).where(eq(blogPost.id, input.id)).limit(1))[0];
     if (input.id !== null && (!current || current.revision !== input.revision)) return "conflict";
@@ -135,7 +138,7 @@ export async function savePost(input: {
     if (input.intent === "save" && status === "archived") status = "draft";
 
     const fields = {
-      slug: input.slug, title: input.title, excerpt: input.excerpt, body: input.body,
+      slug: input.slug, title: input.title, excerpt: input.excerpt, body: input.body.replace(/\r\n?/g, "\n"),
       category: input.category, featured: input.featured, seoTitle: input.seoTitle,
       seoDescription: input.seoDescription, focusKeyword: input.focusKeyword,
       seoNoIndex: input.seoNoIndex, coverMediaId: input.coverMediaId, videoUrl: input.videoUrl,

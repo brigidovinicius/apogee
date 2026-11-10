@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { readMediaResponse } from "@/lib/blog/media-client";
 import styles from "./posts.module.css";
 
 export type MediaItem = { id: string; url: string; alt: string; caption: string | null; width: number; height: number };
@@ -24,8 +25,8 @@ export function MediaManager({ postId, initialMedia, coverId, onCover, onInsert 
       const form = new FormData();
       form.set("image", file); form.set("alt", alt.trim()); form.set("caption", caption.trim());
       const response = await fetch(`/api/admin/posts/${postId}/media`, { method: "POST", body: form });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Falha no envio.");
+      const result = await readMediaResponse(response);
+      if (!result.media || typeof result.media !== "object" || !("id" in result.media) || !("url" in result.media)) throw new Error("Não foi possível receber a imagem enviada. Atualize a página antes de tentar novamente.");
       setMedia((current) => [result.media as MediaItem, ...current]);
       setAlt(""); setCaption("");
       if (fileRef.current) fileRef.current.value = "";
@@ -38,8 +39,7 @@ export function MediaManager({ postId, initialMedia, coverId, onCover, onInsert 
     setBusy(true); setMessage("");
     try {
       const response = await fetch(`/api/admin/posts/${postId}/media?mediaId=${encodeURIComponent(item.id)}`, { method: "DELETE" });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Falha ao excluir.");
+      await readMediaResponse(response);
       setMedia((current) => current.filter((candidate) => candidate.id !== item.id));
       setMessage("Imagem excluída.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Falha ao excluir."); }

@@ -21,7 +21,7 @@ function fixture(session = null) {
     "./db": {}, "./schema": {}, "./gallery-repository": {},
     "./data": { getAdminPost: async () => ({ id: 1 }) },
     "@/lib/members/auth": {}, "@/lib/members/db": {}, "@/lib/members/schema": {},
-    "@/lib/members/mail": {}, "@/lib/members/rate-limit": {},
+    "@/lib/members/mail": { applicationOrigin: () => origin }, "@/lib/members/rate-limit": {},
   });
   return load;
 }

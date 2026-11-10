@@ -3,14 +3,14 @@ import { randomUUID } from "node:crypto";
 import { getSql } from "@/lib/members/db";
 import type { PipelineSource } from "./pipeline-validation";
 
-export type PipelineSnapshot = { provider: string; account_email: string | null; daily_calls_cap: number; weekly_calls_cap: number; daily_tokens_cap: number; weekly_tokens_cap: number; generation_enabled: boolean; images_enabled: boolean; operator_commands_only: boolean; model: string; image_model: string | null; organization_id: string | null; project_id: string | null; article_cap: number; daily_cap: number; cycle_cap: number; cycle_fraction: number; per_day: number; per_week: number };
+export type PipelineSnapshot = { provider: string; account_email: string | null; daily_calls_cap: number; weekly_calls_cap: number; daily_tokens_cap: number; weekly_tokens_cap: number; generation_enabled: boolean; images_enabled: boolean; operator_commands_only: boolean; automatic_access_validation?: boolean; model: string; image_model: string | null; organization_id: string | null; project_id: string | null; article_cap: number; daily_cap: number; cycle_cap: number; cycle_fraction: number; per_day: number; per_week: number };
 export type Evidence = { id: string; title: string; text: string; url: string; rights_reference: string };
-export type PipelineCandidate = { id: string; title: string; url: string; editoria: string; source_id: string; status: string; reason: string | null; post_id: number | null; published_at: Date; evidence: Evidence[]; image_state: string | null; image_reason: string | null; prompt: string | null; alt: string | null; caption: string | null; media_id: string | null; post_revision: number | null; post_title: string | null; post_status: string | null; body: string | null; seo_title: string | null; seo_description: string | null; seo_noindex: boolean | null };
+export type PipelineCandidate = { id: string; title: string; url: string; editoria: string; source_id: string; status: string; generation_ready: boolean; reason: string | null; post_id: number | null; published_at: Date; evidence: Evidence[]; image_state: string | null; image_reason: string | null; prompt: string | null; alt: string | null; caption: string | null; media_id: string | null; post_revision: number | null; post_title: string | null; post_status: string | null; body: string | null; seo_title: string | null; seo_description: string | null; seo_noindex: boolean | null };
 export type PipelineCommand = { id: string; kind: string; state: string; created_at: Date; result: { generation?: { reason?: string }; image?: { reason?: string } } | null };
 export type PipelineAttempt = { id: string; candidate_id: string; kind: string; state: string; provider: string; quota_reserved: string; quota_used: string | null; model: string; charged: string | null; reserved: string; reason: string | null; created_at: Date };
 export async function getPipelineDashboard(page = 1) {
   const sql = getSql();
-  const [{ ready }] = await sql<{ ready: boolean }[]>`select to_regclass('blog_worker.subscription') is not null as ready`;
+  const [{ ready, dossiers_ready }] = await sql<{ ready: boolean; dossiers_ready: boolean }[]>`select to_regclass('blog_worker.subscription') is not null as ready,to_regclass('blog_worker.dossier_version') is not null as dossiers_ready`;
   if (!ready) return null;
   const [control] = await sql<{ paused: boolean; reason: string | null; snapshot: PipelineSnapshot | null; heartbeat_at: Date | null; alive: boolean }[]>`select paused,reason,snapshot,heartbeat_at,coalesce(heartbeat_at between now()-interval '4 minutes' and now(),false) as alive from blog_worker.control where singleton=true`;
   const sources = await sql<{ id: string; definition: PipelineSource; revision: number; last_collected_at: Date | null; last_result: string | null }[]>`select c.id,c.definition,c.revision,s.last_collected_at,s.last_result from blog_worker.source_catalog c left join blog_worker.source_state s using(id) order by c.id`;
@@ -18,7 +18,14 @@ export async function getPipelineDashboard(page = 1) {
     j.state as image_state,j.reason as image_reason,j.prompt,j.alt,j.caption,j.media_id,b.revision as post_revision,b.title as post_title,b.status as post_status,b.body,b.seo_title,b.seo_description,b.seo_noindex
     from blog_worker.candidate c left join blog_worker.image_job j on j.candidate_id=c.id left join public.blog_post b on b.id=c.post_id
     order by c.created_at desc,c.id limit 20 offset ${(page - 1) * 20}`;
+  const verified = dossiers_ready && candidates.length ? await sql<{ id: string }[]>`select c.id from blog_worker.candidate c
+    join lateral (select source_hash,assessment from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) d on true
+    where c.id=any(${candidates.map(c => c.id)}::text[]) and c.status='ready' and c.post_id is null and d.source_hash=c.evidence_hash
+    and d.assessment->>'eligible'='true' and d.assessment->>'comparison_verified'='true'` : [];
+  const verifiedIds = new Set(verified.map(c => c.id));
+  for (const c of candidates) c.generation_ready = c.status === "ready" && (control.snapshot?.provider !== "google_subscription" || verifiedIds.has(c.id));
   const [{ total }] = await sql<{ total: number }[]>`select count(*)::int as total from blog_worker.candidate`;
+  const [{ total_posts }] = await sql<{ total_posts: number }[]>`select count(*)::int as total_posts from public.blog_post`;
   const commands = await sql<PipelineCommand[]>`select id,kind,state,result,created_at from blog_worker.command order by created_at desc limit 10`;
   const attempts = await sql<PipelineAttempt[]>`select id,candidate_id,kind,state,provider,quota_reserved::text,quota_used::text,price->>'model' as model,charged_micro_usd::text as charged,reserved_micro_usd::text as reserved,reason,created_at from blog_worker.attempt order by created_at desc limit 20`;
   const counts = await sql<{ status: string; count: number }[]>`select status,count(*)::int as count from blog_worker.candidate group by status`;
@@ -37,9 +44,24 @@ export async function getPipelineDashboard(page = 1) {
     coalesce(sum(quota_reserved) filter(where state<>'confirmed'),0)::text as held from (
       select day,week,quota_used,quota_reserved,state from blog_worker.attempt where provider='google_subscription'
       union all select (created_at at time zone 'America/Sao_Paulo')::date,date_trunc('week',created_at at time zone 'America/Sao_Paulo')::date,
-        (detail->>'quota_used')::bigint,0::bigint,'confirmed' from blog_worker.operator_event where action='google_diagnostic_usage'
+        (detail->>'quota_used')::bigint,0::bigint,'confirmed' from blog_worker.operator_event e where e.action='google_diagnostic_usage' and not exists (
+          select 1 from blog_worker.attempt a where e.actor_id='google_editorial_pilot'
+          and e.detail->>'purpose'='Authorized real editorial batch; legacy-compatible usage accounting'
+          and e.target=a.id::text and a.provider='google_subscription' and a.state='confirmed'
+          and e.detail->>'usage_known'='true' and e.detail->>'kind'=a.kind
+          and (e.detail->>'quota_used')::bigint=a.quota_used and e.detail->'usage'=a.usage
+          and a.day=(e.created_at at time zone 'America/Sao_Paulo')::date)
     ) q`;
-  return { subscription: subscription ?? null, quota, control, sources, candidates, total, commands, attempts, counts, usage, benefit: benefit ?? null };
+  const [{ multisource_ready }] = await sql<{ multisource_ready: boolean }[]>`select to_regclass('blog_worker.quota_observation') is not null as multisource_ready`;
+  const quotaObservations = multisource_ready ? await sql<{ stage: string; minimum_fraction: number; created_at: Date }[]>`select stage,minimum_fraction,created_at from blog_worker.quota_observation order by id desc limit 10` : [];
+  const topicUsage = multisource_ready ? await sql<{ category: string | null; subcategory: string | null; calls: number; tokens: string }[]>`select d.document->>'category' as category,d.document->>'subcategory' as subcategory,count(*)::int as calls,
+    sum(coalesce(a.quota_used,a.quota_reserved))::text as tokens from blog_worker.attempt a left join blog_worker.dossier_version d on d.candidate_id=a.candidate_id and d.revision=a.dossier_revision
+    where a.provider='google_subscription' and a.day=(now() at time zone 'America/Sao_Paulo')::date group by 1,2` : [];
+  const [{ access_ready }] = await sql<{ access_ready: boolean }[]>`select to_regclass('blog_worker.google_access') is not null as access_ready`;
+  const [googleAccess] = access_ready ? await sql<{ state: string; checked_at: Date | null; succeeded_at: Date | null; valid_until: Date | null; next_check_at: Date; reason: string | null; valid: boolean }[]>`select a.state,a.checked_at,a.succeeded_at,a.valid_until,a.next_check_at,a.reason,
+    coalesce(a.state='valid' and a.valid_until>now() and a.binding_hash=encode(sha256(convert_to(blog_worker.canonical_json(s.attestation),'UTF8')),'hex'),false) as valid
+    from blog_worker.google_access a join blog_worker.subscription s using(singleton) where a.singleton=true` : [];
+  return { googleAccess: googleAccess ?? null, subscription: subscription ?? null, quota, control, sources, candidates, total, totalPosts: total_posts, commands, attempts, counts, usage, benefit: benefit ?? null, multisource_ready, quotaObservations, topicUsage };
 }
 
 // These writes enqueue work only. The web process never receives a provider credential.
@@ -66,6 +88,15 @@ export async function enqueuePipeline(actor: string, kind: "collect" | "generate
       if (control.paused || !candidateId) return false;
       const [c] = await tx`select c.status,j.state as image_state from blog_worker.candidate c left join blog_worker.image_job j on c.id=j.candidate_id where c.id=${candidateId}`;
       if (!c || !(c.status === "ready" || (c.status === "draft" && c.image_state === "pending"))) return false;
+      if (c.status === "ready" && control.snapshot?.provider === "google_subscription") {
+        const [{ ready }] = await tx`select to_regclass('blog_worker.dossier_version') is not null as ready`;
+        if (!ready) return false;
+        const [verified] = await tx`select c.id from blog_worker.candidate c
+          join lateral (select source_hash,assessment from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) d on true
+          where c.id=${candidateId} and c.post_id is null and d.source_hash=c.evidence_hash
+          and d.assessment->>'eligible'='true' and d.assessment->>'comparison_verified'='true'`;
+        if (!verified) return false;
+      }
     }
     if ((await tx`select id from blog_worker.command where state in ('queued','running')`).length) return false;
     await tx`insert into blog_worker.command(id,kind,candidate_id,actor_id) values(${randomUUID()},${kind},${candidateId},${actor})`;

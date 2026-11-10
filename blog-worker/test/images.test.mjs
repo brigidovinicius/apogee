@@ -15,7 +15,8 @@ test('image policy and conservative reservation fit the shared article cap',()=>
   assert.throws(()=>selectImagePrice([{...p,approved:false}],imagePolicy,new Date()),/image_price_unapproved/);
 });
 test('cover prompt is bounded and output must be a non-animated WebP of the required dimensions',()=>{
-  const body=imageRequest(coverBrief(article),imagePolicy);assert.equal(body.n,1);
+  const brief=coverBrief({...article,title:'á'.repeat(140),excerpt:'á'.repeat(400)});assert.match(brief.prompt,/fotorrealista/);assert.match(brief.caption,/não é fotografia/);
+  const body=imageRequest(brief,imagePolicy);assert.equal(body.n,1);
   assert.throws(()=>imageRequest({prompt:'é'.repeat(800)},imagePolicy),/image_prompt_limit/);
   assert.equal(validateWebp(webpFixture()).width,1536);
   const wrong=webpFixture();wrong.writeUInt16LE(1024,26);assert.throws(()=>validateWebp(wrong),/image_dimensions/);

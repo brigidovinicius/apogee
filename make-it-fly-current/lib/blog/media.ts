@@ -1,5 +1,6 @@
 import "server-only";
 import { RequestBodyError, readRequestBody, UPLOAD_BODY_TIMEOUT_MS } from "@/lib/request-body";
+import { applicationOrigin } from "@/lib/members/mail";
 
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
@@ -20,7 +21,9 @@ export function blogMediaUrl(id: string): string {
 
 function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
-  if (!origin || origin !== new URL(request.url).origin) throw new MediaError(403, "Origem não autorizada.");
+  // Next's internal URL may use the container hostname behind the proxy.
+  // Trust only the configured application origin, never forwarded client headers.
+  if (!origin || origin !== applicationOrigin()) throw new MediaError(403, "Origem não autorizada.");
 }
 
 async function boundedForm(request: Request) {
