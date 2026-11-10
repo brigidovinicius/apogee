@@ -7,6 +7,7 @@ import {join} from 'node:path';
 import {createServer} from 'node:net';
 import {spawnSync} from 'node:child_process';
 import postgres from 'postgres';
+import {normalizeItem} from '../src/editorial.mjs';
 import {Store,migrate} from '../src/store.mjs';
 import {tick} from '../src/worker.mjs';
 import {openAIProvider} from '../src/provider.mjs';
@@ -41,7 +42,7 @@ try{
     GRANT INSERT,UPDATE ON blog_worker.candidate,blog_worker.attempt,blog_worker.source_state,blog_worker.control,blog_worker.image_job,blog_worker.source_catalog,blog_worker.command,blog_worker.captured_document,blog_worker.quota_observation TO blog_runtime;
     GRANT DELETE ON blog_worker.candidate,blog_worker.captured_document,blog_worker.quota_observation TO blog_runtime;
     GRANT USAGE ON SEQUENCE blog_worker.quota_observation_id_seq TO blog_runtime;
-    GRANT EXECUTE ON FUNCTION blog_worker.record_assisted_comparison(text,uuid,jsonb,jsonb),blog_worker.import_draft(text,jsonb),blog_worker.queue_cover(text,text,text,text),blog_worker.import_cover(text,text) TO blog_runtime;`);
+    GRANT EXECUTE ON FUNCTION blog_worker.prepare_automatic_research(text,jsonb,text),blog_worker.record_assisted_comparison(text,uuid,jsonb,jsonb),blog_worker.import_draft(text,jsonb),blog_worker.queue_cover(text,text,text,text),blog_worker.import_cover(text,text) TO blog_runtime;`);
   await admin.unsafe(`CREATE ROLE blog_editor LOGIN;
     GRANT USAGE ON SCHEMA public,blog_worker TO blog_editor;
     GRANT SELECT ON ALL TABLES IN SCHEMA blog_worker TO blog_editor;
@@ -436,6 +437,35 @@ try{
     await assert.rejects(()=>store.reserveImage({...googleOptions(),policy:{...googlePolicy,google_daily_calls_cap:2}}),/google_call_limit/);
     assert.equal((await store.reserveImage({...googleOptions(),policy:{...googlePolicy,google_daily_calls_cap:3}})).status,'reserved');
     assert.equal((await admin`select count(*)::int as n from blog_worker.operator_event where action='google_diagnostic_usage'`)[0].n,2,'audit events retained');
+  });
+  await check('automatic research is bounded to captured approved sources and advances through metered comparison to a private draft',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const approved=[{...source,id:'SRC01',url:'https://www.nasa.gov/news-release/feed/',article_hosts:['www.nasa.gov'],editoria:'ciencia-espaco'},
+      {...source,id:'REF27',url:'https://www.space.com/feeds/all',article_hosts:['www.space.com'],editoria:'ciencia-espaco'}];
+    const autoPolicy={...googlePolicy,operator_commands_only:false,automatic_image_generation_enabled:false};
+    await store.syncPipeline({policy:autoPolicy,sources:approved,catalog:[]},{});
+    const text='A equipe anunciou um experimento inicial. Trata-se de um teste sintético da integração, sem valor de notícia. O estudo sintético DOI 10.1234/fixture-automatic não comprova aplicações clínicas nem lançamento comercial.';
+    const make=(src,title,url,content)=>normalizeItem({title,link:url,contentSnippet:content,isoDate:new Date().toISOString()},src,new Date());
+    const a=make(approved[0],'Synthetic NASA test','https://www.nasa.gov/synthetic-auto-test/',text);
+    const b=make(approved[1],'Synthetic independent test','https://www.space.com/synthetic-auto-test/','Análise própria de limitações metodológicas para um teste sintético. '+text);
+    await store.ingest(a);await store.ingest(b);
+    assert.deepEqual(await store.prepareAutomaticResearch(autoPolicy),{prepared:1});
+    const [v]=await admin`select * from blog_worker.dossier_version where candidate_id=${a.id}`;
+    assert.equal(v.actor_id,'automatic_research');assert.equal(v.reviewed_by,null);assert.equal(v.assessment.comparison_verified,false);
+    assert.deepEqual(await store.prepareAutomaticResearch(autoPolicy),{prepared:0});
+    const changed=structuredClone(v.document);changed.documents[0].text+=' invented';changed.documents[0].content_hash=dossierHash(changed.documents[0].text);
+    // The narrow function cannot overwrite a dossier or manufacture an approval.
+    assert.equal((await runtime`select blog_worker.prepare_automatic_research(${a.id},${runtime.json(changed)},${a.evidence_hash}) as prepared`)[0].prepared,false);
+    const work=await store.nextAutomaticWork(autoPolicy);assert.equal(work.method,'reserveComparison');assert.equal(work.candidateId,a.id);
+    const r=await store.reserveComparison({...googleOptions(),policy:autoPolicy,candidateId:a.id});
+    const claim={id:'C1',text:'A equipe anunciou um experimento inicial.',critical:true,cells:v.document.documents.map(d=>({document_id:d.id,status:'supports',quote:'A equipe anunciou um experimento inicial.',note:'Synthetic fixture correspondence only'}))};
+    assert.equal((await store.finish(r,{outcome:'completed',text:JSON.stringify({claims:[claim]}),usage:googleUsage})).status,'comparison_ready');
+    assert.equal((await store.nextAutomaticWork(autoPolicy)).method,'reserve');
+    const draftReservation=await store.reserve({...googleOptions(),policy:autoPolicy,candidateId:a.id});
+    const result=await store.finish(draftReservation,{...googleCompleted,usage:googleUsage});assert.equal(result.status,'draft');
+    assert.equal((await admin`select status from public.blog_post where id=${result.post_id}`)[0].status,'draft');
+    await assert.rejects(()=>admin`update public.blog_post set status='published' where id=${result.post_id}`,/blog_factual_review_required/);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,2);
   });
   await check('multisource comparison is metered, advances automatically to a private draft, and protects final publication',async()=>{
     await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());

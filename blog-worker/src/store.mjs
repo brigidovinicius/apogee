@@ -1,3 +1,4 @@
+import {automaticDossier} from './automatic-research.mjs';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,subscriptionUsage} from './policy.mjs';
@@ -6,7 +7,7 @@ import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,valida
 import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -93,7 +94,10 @@ export class Store {
       if(inserted.length)return 'created';
       // Preserve dossiers already used by a reservation or reviewed draft. Changed evidence requires human assessment.
       const [current]=await tx`select * from blog_worker.candidate where id=${c.id} for update`;
+      if(current && current.source_id!==c.source_id)return 'duplicate'; // Preserve curated input while retaining the raw snapshot.
       if(current && current.evidence_hash!==c.evidence_hash){
+        const factual=e=>e.map(({related_urls,...document})=>document);
+        if(hash(factual(current.evidence))===hash(factual(c.evidence)))return 'duplicate';
         const [used]=await tx`select id from blog_worker.attempt where candidate_id=${c.id} limit 1`;
         const [dossier]=await tx`select revision from blog_worker.dossier_version where candidate_id=${c.id} limit 1`;
         if(!used && !dossier && current.source_id===c.source_id)await tx`update blog_worker.candidate set evidence=${tx.json(c.evidence)},evidence_hash=${c.evidence_hash},status=${c.status} where id=${c.id}`;
@@ -113,6 +117,45 @@ export class Store {
       }
       return stale.length;
     });
+  }
+  async prepareAutomaticResearch(policy){
+    const candidates=await this.sql`select c.* from blog_worker.candidate c where c.post_id is null and c.first_attempt_day is null
+      and c.published_at>now()-interval '7 days' and c.evidence<>'[]'::jsonb
+      and not exists(select 1 from blog_worker.dossier_version v where v.candidate_id=c.id)
+      and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id) order by c.score desc,c.published_at desc limit 100`;
+    const rows=await this.sql`select d.id as capture_id,d.source_id,d.document from blog_worker.captured_document d join blog_worker.source_catalog s on s.id=d.source_id
+      where s.definition->>'enabled'='true' and s.definition->>'feed_content_approved'='true' and d.captured_at>now()-interval '7 days' order by d.captured_at desc limit 400`;
+    const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id}));
+    for(const candidate of candidates){
+      let document;try{document=automaticDossier(candidate,captures,policy);}catch{continue;}
+      if(!document)continue;
+      const [r]=await this.sql`select blog_worker.prepare_automatic_research(${candidate.id},${this.sql.json(document)},${candidate.evidence_hash}) as prepared`;
+      if(r.prepared)return {prepared:1};
+    }
+    return {prepared:0};
+  }
+  async nextAutomaticWork(policy){
+    const [image]=await this.sql`select j.candidate_id from blog_worker.image_job j join blog_worker.candidate c on c.id=j.candidate_id
+      where j.state='pending' and c.status='draft' and c.reason is distinct from 'source_changed_after_reservation'
+      and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='image') order by j.created_at limit 1`;
+    if(policy.automatic_image_generation_enabled&&image)return {method:'reserveImage',candidateId:image.candidate_id};
+    const {day,week}=periodKeys(new Date());
+    const usage=await this.sql`select d.document->>'category' as category,d.document->>'subcategory' as subcategory,
+      count(*) filter(where c.first_attempt_day=${day}::date)::int as day,count(*) filter(where c.first_attempt_week=${week}::date)::int as week
+      from blog_worker.candidate c join lateral(select v.document from blog_worker.attempt a join blog_worker.dossier_version v on v.candidate_id=a.candidate_id and v.revision=a.dossier_revision where a.candidate_id=c.id order by a.created_at,a.id limit 1) d on true group by 1,2`;
+    const rows=await this.sql`select c.id,c.status,c.first_attempt_day,v.document,v.assessment,
+      (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts
+      from blog_worker.candidate c join lateral(select * from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) v on true
+      where c.post_id is null and c.reason is distinct from 'source_changed_after_reservation' and c.published_at>now()-interval '7 days'
+      and c.status in ('ready','held','discovered') order by c.score desc,c.published_at desc limit 100`;
+    for(const c of rows){
+      const used=usage.find(u=>u.category===c.document.category&&u.subcategory===c.document.subcategory);
+      if(!c.first_attempt_day&&used&&(used.day>=policy.per_topic_daily_cap||used.week>=policy.per_topic_weekly_cap))continue;
+      if(c.attempts>=policy.max_provider_attempts_per_article_including_repairs)continue;
+      if(c.status==='ready'&&c.assessment.eligible&&c.assessment.comparison_verified)return {method:'reserve',candidateId:c.id};
+      if(!c.attempts&&!c.assessment.comparison_verified&&c.document.documents.length>=2&&c.document.documents.every(d=>d.same_event))return {method:'reserveComparison',candidateId:c.id};
+    }
+    return null;
   }
   async reserveComparison(options) { return this.reserve({...options,kind:'comparison'}); }
   async reserve({policy,catalog,identity,sources,candidateId=null,kind='text'}) {

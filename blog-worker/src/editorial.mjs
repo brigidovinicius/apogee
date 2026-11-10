@@ -17,8 +17,9 @@ export function normalizeItem(item,source,at) {
   const searchable=(title+' '+content).toLocaleLowerCase('pt-BR');
   if(terms.length && !terms.some(x=>searchable.includes(x)))return null;
   const eligible=source.feed_content_approved===true && !!source.rights_reference && content.length>=200 && content.length<=12000;
+  const related_urls=[...new Set((String(item['content:encoded']??item.content??'').match(/https:\/\/[^\s"'<>]+/g)??[]).map(v=>{try{const u=new URL(v.replaceAll('&amp;','&'));if(u.username||u.password||u.port)return null;u.hash='';return u.href;}catch{return null;}}).filter(Boolean))].slice(0,40);
   const evidence=eligible?[{id:'E1',url,title,published_at:published.toISOString(),text:content,
-    source_id:source.id,rights_reference:source.rights_reference,content_hash:hash(content)}]:[];
+    source_id:source.id,rights_reference:source.rights_reference,content_hash:hash(content),related_urls}]:[];
   const dois=[...new Set((content.match(/\b10\.\d{4,9}\/[a-z0-9._;()/:+-]+/gi)??[]).map(v=>v.replace(/[.,;)]+$/,'').toLowerCase()))];
   return {id:hash(url),url,source_id:source.id,guid:hash(String(item.guid??url)),title,editoria:source.editoria,
     event_key:hash(dois.length===1?'doi:'+dois[0]+':day:'+published.toISOString().slice(0,10):title.normalize('NFKD').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim()),

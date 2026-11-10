@@ -50,6 +50,7 @@ export async function tick({store,config,identity,provider,download}) {
   const command=store.claimCommand?await store.claimCommand():null;
   const storage=await store.maintenance();
   const collection=storage.capture_allowed?await collect({store,sources,download}):{sources:0,created:0,duplicate:0,failed:0,reason:'storage_cap'};
+  const research=config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&config.policy.generation_enabled&&store.prepareAutomaticResearch?await store.prepareAutomaticResearch(config.policy):{prepared:0};
   async function generate(){
     if(command?.kind==='collect')return {collection,generation:{status:'idle'}};
     if(!config.policy.generation_enabled)return {collection,generation:{status:'blocked',reason:'generation_disabled'}};
@@ -66,10 +67,14 @@ export async function tick({store,config,identity,provider,download}) {
       if(provider.preflight&&store.observeQuota){try{await store.observeQuota(await provider.preflight(),'after');}catch{/* Settlement is already durable; a quota refresh must never cause a retry. */}}
       return completed;
     }
-    const generation=await perform(command?.kind==='compare'?'reserveComparison':'reserve');
+    const automatic=!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.nextAutomaticWork?await store.nextAutomaticWork(config.policy):null;
+    if(!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.nextAutomaticWork&&!automatic)return {collection,research,generation:{status:'idle',reason:'waiting_for_evidence'}};
+    if(automatic)options.candidateId=automatic.candidateId;
+    const generation=await perform(automatic?.method??(command?.kind==='compare'?'reserveComparison':'reserve'));
+    if(automatic?.method==='reserveComparison'||automatic?.method==='reserveImage')return {collection,research,generation};
     if(command?.kind==='compare')return {collection,generation};
     if(!config.policy.automatic_image_generation_enabled || !['draft','idle'].includes(generation.status))return {collection,generation};
-    return {collection,generation,image:await perform('reserveImage')};
+    return {collection,research,generation,image:await perform('reserveImage')};
   }
   try{
     const result=await generate();

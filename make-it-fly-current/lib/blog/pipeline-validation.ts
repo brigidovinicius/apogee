@@ -33,6 +33,7 @@ export const pipelineMessages: Record<string, string> = {
 };
 export function pipelineReason(code: string | null | undefined): string {
   const reasons: Record<string, string> = {
+    waiting_for_evidence: "Aguardando fontes do mesmo acontecimento, comparação elegível e cota; nenhuma geração iniciada.",
     topic_frequency: "Esta área já atingiu o limite diário ou semanal de matérias iniciadas.",
     comparison_required: "Conclua a comparação das evidências antes de criar o rascunho.",
     comparison_incomplete: "Monte o dossiê e compare os fatos antes da redação.",

@@ -29,3 +29,5 @@ GRANT SELECT,INSERT,DELETE ON blog_worker.quota_observation TO apogee_blog_worke
 GRANT USAGE ON SEQUENCE blog_worker.quota_observation_id_seq TO apogee_blog_worker;
 
 GRANT EXECUTE ON FUNCTION blog_worker.record_assisted_comparison(text,uuid,jsonb,jsonb) TO apogee_blog_worker;
+
+GRANT EXECUTE ON FUNCTION blog_worker.prepare_automatic_research(text,jsonb,text) TO apogee_blog_worker;
