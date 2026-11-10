@@ -95,6 +95,8 @@ services:
     profiles: [blog]
     build:
       context: ../../../blog-worker
+      additional_contexts:
+        editorial-contract: ../..
       args:
         APOGEE_RELEASE_SHA: ${APOGEE_RELEASE_SHA:-local}
     image: apogee-blog-worker:${APOGEE_RELEASE_SHA:-local}

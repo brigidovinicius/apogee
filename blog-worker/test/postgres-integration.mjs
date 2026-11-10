@@ -11,6 +11,8 @@ import {Store,migrate} from '../src/store.mjs';
 import {tick} from '../src/worker.mjs';
 import {openAIProvider} from '../src/provider.mjs';
 import {loadCms} from './cms-harness.mjs';
+import {dossierFixture} from './corroboration-fixture.mjs';
+import {assessDossier,dossierHash} from '../src/corroboration.mjs';
 import {hash,periodKeys} from '../src/policy.mjs';
 import {identity,policy,source,grant,price,candidate,completed,imagePolicy,imagePrice,imageUsage,webpFixture} from './fixtures.mjs';
 
@@ -21,7 +23,7 @@ const free=createServer();await new Promise(resolve=>free.listen(0,'127.0.0.1',r
 const port=free.address().port;await new Promise(resolve=>free.close(resolve));
 function pg(command,args){const result=spawnSync(join(bin,command),args,{encoding:'utf8',timeout:60000});if(result.status!==0)throw Error(command+' failed: '+result.stderr);}
 pg('initdb',['-D',data,'-A','trust','-U','blog_test','--no-locale']);
-let started=false,admin,runtime,other,cmsClient,passed=0;
+let started=false,admin,runtime,other,cmsClient,editorClient,passed=0;
 try{
   pg('pg_ctl',['-D',data,'-l',join(directory,'postgres.log'),'-o',`-h 127.0.0.1 -p ${port} -k ${directory} -c shared_buffers=16MB -c max_connections=12 -c fsync=off`,'-w','start']);started=true;
   const connection={host:'127.0.0.1',port,database:'postgres',username:'blog_test',ssl:false,max:2,prepare:false,onnotice:()=>{}};
@@ -36,9 +38,19 @@ try{
   await admin.unsafe(`CREATE ROLE blog_runtime LOGIN;
     GRANT USAGE ON SCHEMA blog_worker TO blog_runtime;
     GRANT SELECT ON ALL TABLES IN SCHEMA blog_worker TO blog_runtime;
-    GRANT INSERT,UPDATE ON blog_worker.candidate,blog_worker.attempt,blog_worker.source_state,blog_worker.control,blog_worker.image_job,blog_worker.source_catalog,blog_worker.command TO blog_runtime;
-    GRANT DELETE ON blog_worker.candidate TO blog_runtime;
-    GRANT EXECUTE ON FUNCTION blog_worker.import_draft(text,jsonb),blog_worker.queue_cover(text,text,text,text),blog_worker.import_cover(text,text) TO blog_runtime;`);
+    GRANT INSERT,UPDATE ON blog_worker.candidate,blog_worker.attempt,blog_worker.source_state,blog_worker.control,blog_worker.image_job,blog_worker.source_catalog,blog_worker.command,blog_worker.captured_document,blog_worker.quota_observation TO blog_runtime;
+    GRANT DELETE ON blog_worker.candidate,blog_worker.captured_document,blog_worker.quota_observation TO blog_runtime;
+    GRANT USAGE ON SEQUENCE blog_worker.quota_observation_id_seq TO blog_runtime;
+    GRANT EXECUTE ON FUNCTION blog_worker.record_assisted_comparison(text,uuid,jsonb,jsonb),blog_worker.import_draft(text,jsonb),blog_worker.queue_cover(text,text,text,text),blog_worker.import_cover(text,text) TO blog_runtime;`);
+  await admin.unsafe(`CREATE ROLE blog_editor LOGIN;
+    GRANT USAGE ON SCHEMA public,blog_worker TO blog_editor;
+    GRANT SELECT ON ALL TABLES IN SCHEMA blog_worker TO blog_editor;
+    GRANT SELECT ON public.blog_post,public.blog_media TO blog_editor;
+    GRANT UPDATE ON public.blog_post TO blog_editor;
+    GRANT INSERT ON blog_worker.dossier_version,blog_worker.post_review,blog_worker.operator_event,blog_worker.command,blog_worker.candidate TO blog_editor;
+    GRANT UPDATE ON blog_worker.control,blog_worker.candidate TO blog_editor;
+    GRANT USAGE ON SEQUENCE blog_worker.operator_event_id_seq,blog_worker.post_review_id_seq TO blog_editor;`);
+  editorClient=postgres({...connection,username:'blog_editor'});
   runtime=postgres({...connection,username:'blog_runtime'});other=postgres({...connection,username:'blog_runtime'});
   const store=new Store(runtime),second=new Store(other),operator=new Store(admin);
   async function reset(){
@@ -359,12 +371,19 @@ try{
   const googlePolicy={...JSON.parse(await readFile(new URL('../config/policy.json',import.meta.url),'utf8')),google_account_email:'blog-owner@example.test',generation_enabled:true,automatic_image_generation_enabled:true};
   const subscription=()=>({account_email:'blog-owner@example.test',plan:'google_ai_pro',auth_method:'official_google_oauth',use_g1_credits:false,verified_at:new Date().toISOString(),valid_until:new Date(Date.now()+3600000).toISOString(),verification_reference:'Synthetic official account verification for integration tests'});
   const googleOptions=()=>options({policy:googlePolicy,catalog:[]});
+  async function googleDossier(reviewed=true){
+    const c=candidate(),document=dossierFixture(3),assessment=assessDossier(document,{comparisonVerified:reviewed});
+    const [stored]=await admin`select evidence_hash from blog_worker.candidate where id=${c.id}`;
+    await admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,reviewed_by,reviewed_at,source_hash,change_reason)
+      values(${c.id},1,${admin.json(document)},${dossierHash(document)},${admin.json(assessment)},'test-editor',${reviewed?'test-editor':null},${reviewed?new Date():null},${stored.evidence_hash},'Synthetic fixture dossier')`;
+  }
+  const googleCompleted={...completed,text:JSON.stringify({...JSON.parse(completed.text),paragraphs:JSON.parse(completed.text).paragraphs.map(p=>({...p,claimIds:['C1']}))})};
   const googleUsage={input_tokens:10000,output_tokens:500,thinking_tokens:100,cache_read_tokens:10000,total_tokens:10500};
   await check('Google subscription imports text and cover with zero API charge and distinct quota ledger',async()=>{
-    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier();
     await assert.rejects(()=>runtime`update blog_worker.subscription set plan='google_ai_pro'`,/permission denied/);
     const r=await store.reserve(googleOptions());assert.equal(r.reserved_micro_usd,0);
-    const done=await store.finish(r,{...completed,usage:googleUsage});assert.equal(done.status,'draft');
+    const done=await store.finish(r,{...googleCompleted,usage:googleUsage});assert.equal(done.status,'draft');
     const image=await store.reserveImage(googleOptions());assert.equal(image.reserved_micro_usd,0);
     const cover=await store.finish(image,{outcome:'completed',image:webpFixture(),usage:googleUsage});assert.equal(cover.status,'cover_ready');
     const attempts=await admin`select provider,benefit_id,charged_micro_usd,quota_used from blog_worker.attempt`;
@@ -374,7 +393,7 @@ try{
     const dashboard=await pipeline.getPipelineDashboard();assert.equal(dashboard.quota.day_calls,2);assert.equal(dashboard.quota.day_tokens,'41200');assert.equal(dashboard.subscription.plan,'google_ai_pro');
   });
   await check('Google requires current subscription and reserves quota atomically across instances',async()=>{
-    await reset();await store.ingest(candidate());await assert.rejects(()=>store.reserve(googleOptions()),/google_subscription_unverified/);
+    await reset();await store.ingest(candidate());await googleDossier();await assert.rejects(()=>store.reserve(googleOptions()),/google_subscription_unverified/);
     await operator.attestSubscription({...subscription(),account_email:'another@example.test'});
     await assert.rejects(()=>store.reserve(googleOptions()),/google_subscription_unverified/);
     await operator.attestSubscription(subscription());
@@ -391,18 +410,114 @@ try{
     await operator.resume();assert.equal((await store.reserve(googleOptions())).status,'idle');
   });
   await check('Google daily quota and over-reservation stop additional work without charging dollars',async()=>{
-    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier();
     const tight=googleOptions();tight.policy={...googlePolicy,google_daily_tokens_cap:59999};await assert.rejects(()=>store.reserve(tight),/google_token_limit/);
-    const r=await store.reserve(googleOptions());const done=await store.finish(r,{...completed,usage:{...googleUsage,input_tokens:80000,total_tokens:80500}});
+    const r=await store.reserve(googleOptions());const done=await store.finish(r,{...googleCompleted,usage:{...googleUsage,input_tokens:80000,total_tokens:80500}});
     assert.equal(done.status,'held');assert.equal(done.charged_micro_usd,0);await assert.rejects(()=>operator.resume(),/usage_exceeded_reservation/);
   });
   await check('diagnostic consumption remains visible and cannot evade local quota',async()=>{
-    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier();
     await admin`insert into blog_worker.operator_event(actor_id,action,detail) values('operator','google_diagnostic_usage','{"quota_used":1778}'::jsonb)`;
     const pipeline=loadCms(cmsClient,'lib/blog/pipeline.ts');await store.syncPipeline({policy:googlePolicy,sources:[source],catalog:[]},{});
     const dashboard=await pipeline.getPipelineDashboard();assert.equal(dashboard.quota.day_calls,1);assert.equal(dashboard.quota.day_tokens,'1778');
     await assert.rejects(()=>store.reserve({...googleOptions(),policy:{...googlePolicy,google_daily_calls_cap:1}}),/google_call_limit/);
     await assert.rejects(()=>store.reserve({...googleOptions(),policy:{...googlePolicy,google_daily_tokens_cap:60000}}),/google_token_limit/);
+  });
+  await check('mirrored pilot usage counts once only when the confirmed native receipt matches exactly',async()=>{
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier();
+    const r=await store.reserve(googleOptions());await store.finish(r,{...googleCompleted,usage:googleUsage});
+    const detail={quota_used:20600,usage_known:true,usage:googleUsage,kind:'text',purpose:'Authorized real editorial batch; legacy-compatible usage accounting'};
+    await admin`insert into blog_worker.operator_event(actor_id,action,target,detail) values('google_editorial_pilot','google_diagnostic_usage',${r.id},${admin.json(detail)})`;
+    const pipeline=loadCms(cmsClient,'lib/blog/pipeline.ts');await store.syncPipeline({policy:googlePolicy,sources:[source],catalog:[]},{});
+    let dash=await pipeline.getPipelineDashboard();assert.equal(dash.quota.day_calls,1);assert.equal(dash.quota.day_tokens,'20600');
+    // A genuine extra diagnostic can reference the same attempt; it must still consume quota.
+    await admin`insert into blog_worker.operator_event(actor_id,action,target,detail) values('operator','google_diagnostic_usage',${r.id},${admin.json({...detail,purpose:'Additional independent diagnostic',quota_used:100})})`;
+    dash=await pipeline.getPipelineDashboard();assert.equal(dash.quota.day_calls,2);assert.equal(dash.quota.day_tokens,'20700');
+    await assert.rejects(()=>store.reserveImage({...googleOptions(),policy:{...googlePolicy,google_daily_calls_cap:2}}),/google_call_limit/);
+    assert.equal((await store.reserveImage({...googleOptions(),policy:{...googlePolicy,google_daily_calls_cap:3}})).status,'reserved');
+    assert.equal((await admin`select count(*)::int as n from blog_worker.operator_event where action='google_diagnostic_usage'`)[0].n,2,'audit events retained');
+  });
+  await check('multisource comparison is metered, advances automatically to a private draft, and protects final publication',async()=>{
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());
+    assert.equal((await store.reserve(googleOptions())).status,'idle');
+    await assert.rejects(()=>store.reserve({...googleOptions(),candidateId:candidate().id}),/comparison_incomplete/);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0);
+    await googleDossier(false);
+    await assert.rejects(()=>runtime`update blog_worker.dossier_version set reviewed_by='forged'`,/permission denied/);
+    await assert.rejects(()=>editorClient`delete from blog_worker.dossier_version`,/permission denied/);
+    await assert.rejects(()=>editorClient`insert into blog_worker.attempt(id) values('00000000-0000-0000-0000-000000000000')`,/permission denied/);
+    await assert.rejects(()=>runtime`select blog_worker.import_draft_legacy(${candidate().id},'{}'::jsonb)`,/permission denied/);
+    const editorial=loadCms(editorClient,'lib/blog/dossier.ts');
+    const config={policy:{...googlePolicy,automatic_image_generation_enabled:false},sources:[source],catalog:[]};
+    await store.syncPipeline(config,identity);
+    assert.equal(await editorial.requestDossierComparison('test-editor',candidate().id,1),true);
+    let requests=0;
+    const run=()=>tick({store,config,identity,download:async()=>({notModified:true}),provider:async r=>{
+      requests++;return r.kind==='comparison'?{outcome:'completed',text:JSON.stringify({claims:dossierFixture(3).claims}),usage:googleUsage}:{...googleCompleted,usage:googleUsage};
+    }});
+    assert.equal((await run()).generation.status,'comparison_ready');assert.equal(requests,1);
+    assert.equal((await admin`select count(*)::int as n from public.blog_post`)[0].n,0);
+    const [assisted]=await admin`select * from blog_worker.dossier_version where candidate_id=${candidate().id} order by revision desc limit 1`;
+    assert.equal(assisted.revision,2);assert.equal(assisted.actor_id,'google_assisted');assert.equal(assisted.reviewed_by,null);assert.equal(assisted.assessment.eligible,true);
+    assert.equal(await editorial.reviewDossier('test-editor',candidate().id,1),false,'stale editor version rejected');
+    const pipeline=loadCms(cmsClient,'lib/blog/pipeline.ts');
+    assert.equal(await pipeline.enqueuePipeline('test-editor','generate',candidate().id),true);
+    const draft=(await run()).generation;assert.equal(draft.status,'draft');assert.equal(requests,2);
+    const [p]=await admin`select * from public.blog_post where id=${draft.post_id}`;
+    assert.equal(p.status,'draft');assert.equal(await cms.getPublicPost(p.slug),null);
+    await assert.rejects(()=>admin`update public.blog_post set status='published',published_at=now() where id=${p.id}`,/blog_factual_review_required/);
+    assert.equal(await editorial.reviewFinalArticle('test-editor',candidate().id,p.revision),true);
+    await admin`insert into public.blog_media(id,post_id,alt,caption,width,height,image) values('test-factual-cover',${p.id},'Capa sintética de teste','Crédito sintético autorizado',1536,1024,${webpFixture()})`;
+    await admin`update public.blog_post set cover_media_id='test-factual-cover' where id=${p.id}`;
+    await assert.rejects(()=>admin`update public.blog_post set status='published',published_at=now() where id=${p.id}`,/blog_factual_review_required/);
+    assert.equal(await editorial.reviewFinalArticle('test-editor',candidate().id,p.revision),true);
+    await admin`update public.blog_post set status='published',published_at=now() where id=${p.id}`;
+    await assert.rejects(()=>admin`update public.blog_post set body=body||' changed' where id=${p.id}`,/blog_factual_review_required/);
+    assert.ok(await cms.getPublicPost(p.slug));
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,2);
+    assert.equal((await store.reserveComparison({...googleOptions(),candidateId:candidate().id})).status,'idle');
+  });
+  await check('database independently verifies assisted scores and preserves the human-review boundary',async()=>{
+    for(const [total,confirmed,criticalConflict] of [[10,9,false],[9,8,false],[10,10,true]]){
+      await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(false);
+      const reservation=await store.reserveComparison({...googleOptions(),candidateId:candidate().id});
+      const document=dossierFixture(total,confirmed);if(criticalConflict)document.claims[0].cells[1].status='contradicts';
+      const assessment=assessDossier(document,{comparisonVerified:true});
+      await admin`update blog_worker.attempt set state='confirmed',charged_micro_usd=0 where id=${reservation.id}`;
+      await assert.rejects(()=>runtime`select blog_worker.record_assisted_comparison(${candidate().id},${reservation.id},${runtime.json(document.claims)},${runtime.json({...assessment,hash:'0'.repeat(64)})})`,/invalid_assessment/);
+      await runtime`select blog_worker.record_assisted_comparison(${candidate().id},${reservation.id},${runtime.json(document.claims)},${runtime.json(assessment)})`;
+      const [version]=await admin`select * from blog_worker.dossier_version order by revision desc limit 1`;
+      assert.equal(version.assessment.eligible,assessment.eligible);assert.equal(version.reviewed_by,null);assert.equal(version.actor_id,'google_assisted');
+      assert.equal(version.document_hash,dossierHash(document));
+      await assert.rejects(()=>runtime`insert into blog_worker.post_review(candidate_id) values(${candidate().id})`,/permission denied/);
+      await assert.rejects(()=>runtime`select blog_worker.record_assisted_comparison(${candidate().id},${reservation.id},${runtime.json(document.claims)},${runtime.json(assessment)})`,/stale_comparison/);
+    }
+  });
+  await check('dossier edited while comparison is in flight preserves charged usage and rejects stale result',async()=>{
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(false);
+    const r=await store.reserveComparison({...googleOptions(),candidateId:candidate().id});const editorial=loadCms(editorClient,'lib/blog/dossier.ts');
+    assert.equal(await editorial.saveDossierScope('test-editor',candidate().id,1,{event_key:'changed-fixture-event',category:'ciencia',subcategory:'aeroespacial'},'Scope changed during comparison'),true);
+    const result=await store.finish(r,{outcome:'completed',text:JSON.stringify({claims:dossierFixture(3).claims}),usage:googleUsage});
+    assert.equal(result.status,'held');assert.equal(result.reason,'evidence_changed');
+    const [a]=await admin`select state,charged_micro_usd,quota_used from blog_worker.attempt`;assert.equal(a.state,'confirmed');assert.equal(a.charged_micro_usd,'0');assert.equal(a.quota_used,'20600');
+  });
+  await check('authorized daily target is one first reservation per topic, with ten topics and unchanged token ceilings',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const topics=[['ciencia',null],['ciencia','aeroespacial'],['ciencia','neurociencia'],['tecnologia',null],['tecnologia','ia'],['tecnologia','software-ferramentas'],['tecnologia','hardware-robotica'],['negocios',null],['negocios','marketing'],['negocios','empreendedorismo-startups']];
+    const smallUsage={input_tokens:100,output_tokens:100,thinking_tokens:0,cache_read_tokens:0,total_tokens:200};
+    for(let i=0;i<topics.length;i++){
+      const c=candidate(i+1);await store.ingest(c);const document={...dossierFixture(1),category:topics[i][0],subcategory:topics[i][1]};
+      await admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,source_hash,change_reason) values(${c.id},1,${admin.json(document)},${dossierHash(document)},${admin.json(assessDossier(document))},'test-editor',${c.evidence_hash},'Daily topic fixture')`;
+      const r=await store.reserveComparison({...googleOptions(),candidateId:c.id});assert.equal(r.status,'reserved');
+      await store.finish(r,{outcome:'completed',text:JSON.stringify({claims:document.claims}),usage:smallUsage});
+      if(i===0){
+        const extra=candidate(50);await store.ingest(extra);
+        await admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,source_hash,change_reason) values(${extra.id},1,${admin.json(document)},${dossierHash(document)},${admin.json(assessDossier(document))},'test-editor',${extra.evidence_hash},'Duplicate topic fixture')`;
+        await assert.rejects(()=>store.reserveComparison({...googleOptions(),candidateId:extra.id}),/topic_frequency/);
+      }
+    }
+    await assert.rejects(()=>store.reserveComparison({...googleOptions(),candidateId:candidate(50).id}),/draft_frequency/);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,10);
   });
   await check('CLI once, status and healthcheck use only the isolated DB with shipped generation off',async()=>{
     await reset();const health=join(directory,'health.json');
@@ -419,6 +534,6 @@ try{
   // Fixtures only. Still avoid dumping full SQL/connection objects.
   console.error(error.stack??error.message);process.exitCode=1;
 }finally{
-  for(const sql of [cmsClient,other,runtime,admin])if(sql)await sql.end({timeout:5});
+  for(const sql of [editorClient,cmsClient,other,runtime,admin])if(sql)await sql.end({timeout:5});
   if(started)pg('pg_ctl',['-D',data,'-m','fast','-w','stop']);
 }

@@ -22,6 +22,7 @@ export const coverSchema = z.object({
   alt: z.string().trim().min(3).max(160), caption: z.string().trim().min(10).max(300),
 }).refine(v => new TextEncoder().encode(v.prompt).length + 128 <= 1024, { message: "Reduza a descrição visual para respeitar o limite de consumo." });
 export const pipelineMessages: Record<string, string> = {
+  topic_locked_after_start: "A área da pauta fica vinculada ao primeiro uso para preservar o limite por tópico. Abra outra pesquisa para um enquadramento diferente.",
   saved: "Alterações salvas.", queued: "Pedido enviado à fila. O worker fará a verificação de consumo antes de gerar.",
   paused: "Geração pausada. A captação pode continuar.", resumed: "Pausa removida. Os limites e as verificações continuam ativos.",
   cover_applied: "Capa aplicada ao rascunho. Revise o artigo no editor.",
@@ -32,6 +33,19 @@ export const pipelineMessages: Record<string, string> = {
 };
 export function pipelineReason(code: string | null | undefined): string {
   const reasons: Record<string, string> = {
+    topic_frequency: "Esta área já atingiu o limite diário ou semanal de matérias iniciadas.",
+    comparison_required: "Conclua a comparação das evidências antes de criar o rascunho.",
+    comparison_incomplete: "Monte o dossiê e compare os fatos antes da redação.",
+    comparison_review_required: "A comparação desta versão precisa ser refeita antes de continuar.",
+    compatibility_below_90: "Menos de 90% dos fatos relevantes estão convergentes.",
+    critical_fact_unresolved: "Há fato crítico ausente, pendente ou contraditório.",
+    independence_unverified: "Falta fonte primária ou apuração/análise independente conferida.",
+    event_unverified: "Confirme se os documentos tratam do mesmo acontecimento e escopo.",
+    invalid_comparison: "A comparação não apresentou uma matriz verificável.",
+    quote_not_in_document: "Um trecho citado não corresponde literalmente ao documento.",
+    invalid_claim_references: "O texto não vinculou corretamente os fatos aprovados às evidências.",
+    evidence_changed: "O dossiê mudou durante a geração; resultado retido para revisão.",
+    attempt_limit: "Limite de tentativas da pauta atingido, incluindo comparação e redação.",
     google_subscription_unverified: "Login e assinatura Google precisam ser conferidos.",
     google_call_limit: "Limite local de chamadas atingido. Aguarde o próximo período.",
     google_token_limit: "Limite local de uso atingido. Aguarde o próximo período.",

@@ -1,0 +1,16 @@
+export type Document = { id: string; reference_id: string; title: string; url: string; published_at: string | null; text: string; content_hash: string; rights_reference: string; kind: 'primary' | 'independent' | 'derivative' | 'context'; origin_url: string; independence_note: string; same_event: boolean; publisher_key?: string };
+export type Cell = { document_id: string; status: 'supports' | 'contradicts' | 'not_mentioned' | 'unverifiable'; quote: string; note: string };
+export type Claim = { id: string; text: string; critical: boolean; cells: Cell[] };
+export type Dossier = { schema_version: 1; event_key: string; category: string; subcategory: string | null; documents: Document[]; claims: Claim[] };
+export type Assessment = { criterion: string; hash: string; total: number; convergent: number; percentage: number | null; eligible: boolean; comparison_verified: boolean; blockers: string[]; claims: (Claim & { status: string; origins: string[] })[]; documents: number; publishers: number; origins: number; independent_analyses: number };
+export const referenceCatalog: readonly { id: string; name: string; publisher: string; url: string; hosts?: string[]; categories: string[]; subcategories: string[]; role: string; access: string; aliases: string[]; collection_enabled: boolean }[];
+export const taxonomy: Readonly<Record<string, { label: string; subcategories: Record<string, string> }>>;
+export const CRITERION: string;
+export const MAX_DOCUMENTS: number;
+export function dossierHash(value: unknown): string;
+export function referenceUrl(value: string, reference?: { url: string; hosts?: string[] }): string;
+export function validateDossier(value: unknown): Dossier;
+export function assessDossier(value: Dossier, options?: { comparisonVerified?: boolean }): Assessment;
+export function validateComparison(value: unknown, dossier: Dossier): Dossier;
+export function approvedEvidence(value: Dossier, review: { hash: string; actor_id: string } | null): { id: string; source_id: string; title: string; url: string; published_at: string | null; rights_reference: string; text: string; content_hash: string; claim_ids: string[] }[];
+export const comparisonSchema: object;

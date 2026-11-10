@@ -14,7 +14,7 @@ const usage={input_tokens:1000,output_tokens:500,thinking_tokens:200,cache_read_
 const quota={code:0,stdout:JSON.stringify({status:'SUCCESS',num_turns:0,command:{name:'usage',data:{groups:[{name:'Gemini Models',buckets:[{remaining_fraction:1}]}]}}})};
 test('Google policy enforces zero additional billing, own account and bounded workload',()=>{
   validatePolicy(p);
-  for(const change of [{google_use_g1_credits:true},{gemini_api_enabled:true},{paid_balance_fallback_enabled:true},{google_daily_calls_cap:4},{google_account_email:'invalid'},{model_id:'claude-opus'},{daily_budget_micro_usd_cap:1}])assert.throws(()=>validatePolicy({...p,...change}));
+  for(const change of [{google_use_g1_credits:true},{gemini_api_enabled:true},{paid_balance_fallback_enabled:true},{google_daily_calls_cap:31},{per_topic_daily_cap:2},{google_account_email:'invalid'},{model_id:'claude-opus'},{daily_budget_micro_usd_cap:1}])assert.throws(()=>validatePolicy({...p,...change}));
   assert.equal(subscriptionUsage(usage),1800);
   assert.throws(()=>subscriptionUsage({input_tokens:1}),/missing/);
   assert.throws(()=>validateSubscription({account_email:p.google_account_email,plan:'google_ai_pro'}),/unverified/);

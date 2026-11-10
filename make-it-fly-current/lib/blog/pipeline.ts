@@ -37,9 +37,20 @@ export async function getPipelineDashboard(page = 1) {
     coalesce(sum(quota_reserved) filter(where state<>'confirmed'),0)::text as held from (
       select day,week,quota_used,quota_reserved,state from blog_worker.attempt where provider='google_subscription'
       union all select (created_at at time zone 'America/Sao_Paulo')::date,date_trunc('week',created_at at time zone 'America/Sao_Paulo')::date,
-        (detail->>'quota_used')::bigint,0::bigint,'confirmed' from blog_worker.operator_event where action='google_diagnostic_usage'
+        (detail->>'quota_used')::bigint,0::bigint,'confirmed' from blog_worker.operator_event e where e.action='google_diagnostic_usage' and not exists (
+          select 1 from blog_worker.attempt a where e.actor_id='google_editorial_pilot'
+          and e.detail->>'purpose'='Authorized real editorial batch; legacy-compatible usage accounting'
+          and e.target=a.id::text and a.provider='google_subscription' and a.state='confirmed'
+          and e.detail->>'usage_known'='true' and e.detail->>'kind'=a.kind
+          and (e.detail->>'quota_used')::bigint=a.quota_used and e.detail->'usage'=a.usage
+          and a.day=(e.created_at at time zone 'America/Sao_Paulo')::date)
     ) q`;
-  return { subscription: subscription ?? null, quota, control, sources, candidates, total, commands, attempts, counts, usage, benefit: benefit ?? null };
+  const [{ multisource_ready }] = await sql<{ multisource_ready: boolean }[]>`select to_regclass('blog_worker.quota_observation') is not null as multisource_ready`;
+  const quotaObservations = multisource_ready ? await sql<{ stage: string; minimum_fraction: number; created_at: Date }[]>`select stage,minimum_fraction,created_at from blog_worker.quota_observation order by id desc limit 10` : [];
+  const topicUsage = multisource_ready ? await sql<{ category: string | null; subcategory: string | null; calls: number; tokens: string }[]>`select d.document->>'category' as category,d.document->>'subcategory' as subcategory,count(*)::int as calls,
+    sum(coalesce(a.quota_used,a.quota_reserved))::text as tokens from blog_worker.attempt a left join blog_worker.dossier_version d on d.candidate_id=a.candidate_id and d.revision=a.dossier_revision
+    where a.provider='google_subscription' and a.day=(now() at time zone 'America/Sao_Paulo')::date group by 1,2` : [];
+  return { subscription: subscription ?? null, quota, control, sources, candidates, total, commands, attempts, counts, usage, benefit: benefit ?? null, multisource_ready, quotaObservations, topicUsage };
 }
 
 // These writes enqueue work only. The web process never receives a provider credential.

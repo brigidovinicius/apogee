@@ -58,13 +58,16 @@ export async function tick({store,config,identity,provider,download}) {
     const options={...config,sources,identity,candidateId:command?.candidate_id??null};
     async function perform(method){
       let reservation;
-      try{if(provider.preflight)await provider.preflight();reservation=await store[method](options);}
+      try{if(provider.preflight){const quota=await provider.preflight();if(store.observeQuota)await store.observeQuota(quota,'before');}reservation=await store[method](options);}
       catch(error){if(error instanceof Blocked)return {status:'blocked',reason:error.code};throw error;}
       if(reservation.status!=='reserved')return reservation;
       let result;try{result=await provider(reservation);}catch{result={outcome:'unknown'};}
-      return store.finish(reservation,result);
+      const completed=await store.finish(reservation,result);
+      if(provider.preflight&&store.observeQuota){try{await store.observeQuota(await provider.preflight(),'after');}catch{/* Settlement is already durable; a quota refresh must never cause a retry. */}}
+      return completed;
     }
-    const generation=await perform('reserve');
+    const generation=await perform(command?.kind==='compare'?'reserveComparison':'reserve');
+    if(command?.kind==='compare')return {collection,generation};
     if(!config.policy.automatic_image_generation_enabled || !['draft','idle'].includes(generation.status))return {collection,generation};
     return {collection,generation,image:await perform('reserveImage')};
   }

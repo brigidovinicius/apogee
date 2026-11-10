@@ -105,6 +105,9 @@ export async function saveBlogPost(id: number | null, _state: EditorState, form:
     revalidatePath("/admin/posts");
     redirect(`/admin/posts/${saved.id}?salvo=1`);
   } catch (error) {
+    if (typeof error === "object" && error !== null && "message" in error && String(error.message).includes("blog_factual_review_required")) {
+      return fail({ message: "Conclua a conferência do dossiê e registre a revisão final na Central Editorial antes de publicar ou agendar. Alterações no texto ou na capa exigem nova revisão." });
+    }
     if (isUniqueViolation(error)) {
       return fail({ errors: { slug: "Esse endereço já está em uso." } });
     }
