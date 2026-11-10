@@ -389,6 +389,24 @@ try{
   }
   const googleCompleted={...completed,text:JSON.stringify({...JSON.parse(completed.text),paragraphs:JSON.parse(completed.text).paragraphs.map(p=>({...p,claimIds:['C1']}))})};
   const googleUsage={input_tokens:10000,output_tokens:500,thinking_tokens:100,cache_read_tokens:10000,total_tokens:10500};
+  await check('admin generation waits for a current eligible comparison and rejects stale evidence before enqueueing',async()=>{
+    await reset();await store.ingest(candidate());await store.syncPipeline({policy:googlePolicy,sources:[source],catalog:[]},{});
+    const pipeline=loadCms(cmsClient,'lib/blog/pipeline.ts'),editorial=loadCms(cmsClient,'lib/blog/dossier.ts');
+    await admin`insert into public.blog_post(slug,title,excerpt,body,category,author_id,author_name) values('manual-admin-fixture','Manual draft fixture','Synthetic manual draft for admin coverage','Synthetic manual draft body for admin coverage. No article is published.','tecnologia','test-editor','Synthetic Editor')`;
+    assert.equal((await pipeline.getPipelineDashboard()).totalPosts,1,'manual drafts count in CMS even without a worker candidate');
+    assert.equal(await pipeline.enqueuePipeline('test-editor','generate',candidate().id),false,'one captured source is research, not a verified article');
+    assert.equal((await pipeline.getPipelineDashboard()).candidates[0].generation_ready,false);
+    await googleDossier(false);
+    assert.equal(await pipeline.enqueuePipeline('test-editor','generate',candidate().id),false,'an unverified comparison cannot enter the generation queue');
+    assert.equal(await editorial.reviewDossier('test-editor',candidate().id,1),true);
+    assert.equal((await pipeline.getPipelineDashboard()).candidates[0].generation_ready,true);
+    assert.equal(await pipeline.enqueuePipeline('test-editor','generate',candidate().id),true);
+    await admin`update blog_worker.command set state='completed'`;
+    await admin`update blog_worker.candidate set evidence_hash=${'f'.repeat(64)} where id=${candidate().id}`;
+    assert.equal((await pipeline.getPipelineDashboard()).candidates[0].generation_ready,false);
+    assert.equal(await pipeline.enqueuePipeline('test-editor','generate',candidate().id),false,'source changes invalidate readiness before another command is queued');
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0);
+  });
   await check('Google subscription imports text and cover with zero API charge and distinct quota ledger',async()=>{
     await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier();
     await assert.rejects(()=>runtime`update blog_worker.subscription set plan='google_ai_pro'`,/permission denied/);

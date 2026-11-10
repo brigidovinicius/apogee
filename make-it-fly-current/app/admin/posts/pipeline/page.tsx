@@ -13,7 +13,7 @@ import styles from "./pipeline.module.css";
 export const dynamic = "force-dynamic";
 const money = (value: string | number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "USD", minimumFractionDigits: 4, maximumFractionDigits: 6 }).format(Number(value) / 1_000_000);
 const date = (value: Date | null | undefined) => value ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(new Date(value)) : "Ainda não verificado";
-const states: Record<string, string> = { ready: "Pronta para criar", discovered: "Aguardando evidências", held: "Retida", draft: "Rascunho no CMS", published: "Publicado", scheduled: "Agendado", archived: "Arquivado", pending: "Aguardando geração", reserved: "Em geração", review: "Revisar capa", completed: "Concluído", queued: "Na fila", running: "Em execução", blocked: "Bloqueado", confirmed: "Consumo confirmado", unknown: "Consumo incerto" };
+const states: Record<string, string> = { ready: "Pesquisa pendente", verified_ready: "Pronta para redação", discovered: "Aguardando evidências", held: "Retida", draft: "Rascunho no CMS", published: "Publicado", scheduled: "Agendado", archived: "Arquivado", pending: "Aguardando geração", reserved: "Em geração", review: "Revisar capa", completed: "Concluído", queued: "Na fila", running: "Em execução", blocked: "Bloqueado", confirmed: "Consumo confirmado", unknown: "Consumo incerto" };
 
 function SourceForm({ source, revision = 0 }: { source?: PipelineSource; revision?: number }) {
   return <form action={managePipeline} className={styles.form}>
@@ -60,17 +60,18 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
       <p>{p?.operator_commands_only === false ? "A pesquisa e a geração de rascunhos são automáticas, dentro dos tetos diários e semanais. A associação exige DOI compartilhado ou referência explícita ao artigo; pautas sem evidências suficientes continuam retidas. " : ""}As fontes são consultadas nos intervalos cadastrados. Cada pedido verifica o acesso e os limites antes de gerar texto e capa. A captação e o monitoramento das fontes não consomem IA. Publicar exige revisão no editor.</p>
     </section>
     <div className={styles.metrics}>
-      <MetricCard label="Pautas prontas" value={String(data.counts.find(c => c.status === "ready")?.count ?? 0)} detail="Selecionadas a partir das fontes aprovadas" />
-      <MetricCard label="Artigos criados" value={String(data.counts.find(c => c.status === "draft")?.count ?? 0)} detail="Rascunhos e publicações no CMS" />
+      <MetricCard label="Pautas captadas" value={String(data.total)} detail="A redação exige comparação elegível das fontes" />
+      <MetricCard label="Artigos no CMS" value={String(data.totalPosts)} detail="Inclui rascunhos e artigos cadastrados manualmente" />
       <MetricCard label={google ? "Chamadas Google hoje" : "Consumo hoje"} value={google ? `${quota.day_calls} / ${p?.daily_calls_cap}` : money(usage.day)} detail={google ? "Assinatura, sem créditos extras" : p ? `Teto diário ${money(p.daily_cap)}` : "Aguardando configuração"} />
       <MetricCard label={google ? "Uso local hoje" : "Reservas pendentes"} value={google ? Number(quota.day_tokens).toLocaleString("pt-BR") : money(usage.held)} detail={google ? "Tokens contabilizados e reservados" : "Valor retido até confirmar a cobrança"} />
     </div>
     <section id="pautas" className={styles.section}><div className={styles.row}><div><h2>Pautas e produção</h2><p className={styles.muted}>{data.total} pauta(s) · fontes originais preservadas para conferência</p></div><Link href="/admin/posts/novo">Criar artigo manualmente →</Link></div>
       {data.candidates.length ? data.candidates.map(c => <article key={c.id} className={styles.panel}>
-        <div className={styles.row}><div><span className={styles.badge}>{EDITORIAS[c.editoria as keyof typeof EDITORIAS] ?? c.editoria} · {states[c.post_status ?? c.status]}</span><h3>{c.post_title ?? c.title}</h3><p className={styles.muted}>{c.source_id} · {date(c.published_at)}</p></div><a href={c.url} target="_blank" rel="noopener noreferrer">Conferir fonte ↗</a></div>
+        <div className={styles.row}><div><span className={styles.badge}>{EDITORIAS[c.editoria as keyof typeof EDITORIAS] ?? c.editoria} · {states[c.post_status ?? (c.status === "ready" && c.generation_ready ? "verified_ready" : c.status)]}</span><h3>{c.post_title ?? c.title}</h3><p className={styles.muted}>{c.source_id} · {date(c.published_at)}</p></div><a href={c.url} target="_blank" rel="noopener noreferrer">Conferir fonte ↗</a></div>
         {c.reason ? <p>{pipelineReason(c.reason)}</p> : null}
+        {c.status === "ready" && !c.generation_ready ? <p>Conclua o dossiê e a comparação das fontes antes de solicitar a redação.</p> : null}
         <div className={styles.actions}>
-          {c.status === "ready" ? <><Command intent="generate" candidate={c.id} disabled={!available}>Criar texto e capa</Command><Command intent="hold" candidate={c.id}>Reter pauta</Command></> : null}
+          {c.status === "ready" ? <>{c.generation_ready ? <Command intent="generate" candidate={c.id} disabled={!available}>Criar texto e capa</Command> : null}<Command intent="hold" candidate={c.id}>Reter pauta</Command></> : null}
           {c.reason === "operator_hold" ? <Command intent="release" candidate={c.id}>Devolver à fila</Command> : null}
           {c.post_id ? <Link className={adminStyles.button} href={`/admin/posts/${c.post_id}`}>Editar e revisar artigo →</Link> : null}
           {c.image_state === "pending" ? <Command intent="generate" candidate={c.id} disabled={!available}>Gerar capa pendente</Command> : null}
