@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { OpportunitySearchSuggestions } from './search-suggestions';
 import { AREAS, EDUCATION_LEVELS, OPPORTUNITY_CATEGORIES, OPPORTUNITY_KINDS, dateInBrazil, type StudentOpportunity } from '@/lib/opportunities/types';
 import { STAGE_LABELS, calendarFilterQuery, type CalendarFilters as FilterValues } from '@/lib/opportunities/calendar-filters';
 import { CALENDARS } from '@/lib/opportunities/discovery';
@@ -34,7 +35,8 @@ export function CalendarFilters({filters,items,path,hidden={}}:{filters:FilterVa
       {Object.entries(hidden).map(([name,value])=><input type="hidden" key={name} name={name} value={value}/>)}
       {filters.view==='month'&&<input type="hidden" name="visualizacao" value="mes"/>}
       <div className={styles.filterPrimary}>
-        <label className={styles.searchField}>Buscar eventos<input type="search" name="busca" maxLength={100} defaultValue={filters.query??''} placeholder="Tema, evento ou instituição"/></label>
+        <label className={styles.searchField}>Buscar evento, tema ou instituição<input type="search" name="busca" maxLength={100} list="calendar-search-suggestions" defaultValue={filters.query??''} placeholder="Ex.: Red Hat Summit, tecnologia, USP"/></label>
+        <OpportunitySearchSuggestions id="calendar-search-suggestions" />
         <CalendarPeriodFields period={filters.period??(filters.month||filters.view==='month'?'mes':'proximas')} month={filters.month??dateInBrazil().slice(0,7)}/>
         <CalendarLocationFields initialState={filters.stateCode??''} initialCity={filters.cityName??''} citiesByState={citiesByState}/>
         <label>Formato<select name="formato" defaultValue={filters.format??''}><option value="">Todos os formatos</option><option value="online">Online</option><option value="presencial">Presencial</option><option value="hibrido">Híbrido</option></select></label>
