@@ -154,7 +154,7 @@ test("only the approved Apogee, blog, admin, community and Make It Fly surfaces 
     "app/api/members/invitations/route.ts", "app/api/members/verification/route.ts",
     "app/api/membros/avatar/[id]/route.ts", "app/api/membros/avatar/route.ts", "app/api/radar/alerts/route.ts",
     "app/api/radar/checkout/route.ts", "app/api/radar/verify-email/route.ts", "app/api/stripe/webhook/route.ts",
-    "app/blog/[slug]/page.tsx", "app/blog/media/[photo]/route.ts", "app/blog/page.tsx", "app/galeria/fotos/[photo]/route.ts", "app/galeria/page.tsx",
+    "app/blog/[slug]/page.tsx", "app/blog/layout.tsx", "app/blog/media/[photo]/route.ts", "app/blog/page.tsx", "app/galeria/fotos/[photo]/route.ts", "app/galeria/page.tsx",
     "app/gerenciar-galeria/page.tsx", "app/home-robonauta/page.tsx", "app/layout.tsx", "app/login/page.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",
     "app/makeitfly/participar/page.tsx", "app/membros/cadastro/page.tsx", "app/membros/convite/page.tsx",
     "app/membros/entrar/google/concluir/page.tsx", "app/membros/entrar/page.tsx",
