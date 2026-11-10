@@ -1,7 +1,8 @@
 import { AREAS, isOpportunityCategory, type OpportunityCategory, type StudentOpportunity } from './types';
 
 export { AREAS } from "./types";
-export const SUBTYPES = { olimpiada:'Olimpíada científica', vestibular:'Vestibular', hackathon:'Hackathon', curso_online:'Curso online', escola_de_verao:'Escola de verão ou inverno', estagio:'Estágio' };
+export { SUBTYPES } from "./vocabulary";
+import { SUBTYPES } from "./vocabulary";
 export type Stage = { id: string; name: string; kind: 'registration' | 'exam' | 'result' | 'enrollment' | 'event'; start: string; end?: string; sourceUrl?: string; checkedAt: string };
 export type Discovery = { primaryType?: OpportunityCategory; subtype?: keyof typeof SUBTYPES; areas: (keyof typeof AREAS)[]; editions: { id: string; name: string; stages: Stage[] }[] };
 const record = (value: unknown): value is Record<string, unknown> => Boolean(value && typeof value === 'object' && !Array.isArray(value));

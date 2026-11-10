@@ -32,6 +32,13 @@ jobs:
           cache-dependency-path: ${{ matrix.app }}/package-lock.json
       - run: npm ci --no-fund --no-audit
       - run: npm test
+      - name: Blog worker without provider calls
+        if: matrix.app == 'make-it-fly-current'
+        run: |
+          npm ci --prefix ../blog-worker --no-audit --no-fund
+          cd ../blog-worker
+          npm test
+          BLOG_TEST_PG_BIN="$(pg_config --bindir)" npm run test:integration
       - run: npm run typegen
       - run: npm run typecheck
       - run: npm run lint

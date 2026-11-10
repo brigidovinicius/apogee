@@ -1,4 +1,6 @@
+import { createOpportunitySearch } from "./search";
 import type { Discovery } from "./discovery";
+import { AREAS, OPPORTUNITY_CATEGORIES } from "./vocabulary";
 import {
   BRAZILIAN_STATE_CODES,
   SEARCH_CITIES_BY_STATE,
@@ -8,15 +10,7 @@ import {
 
 export const OPPORTUNITY_KINDS = ["Bolsa", "Auxílio", "Estágio", "Intercâmbio", "Curso", "Prêmio", "Fomento", "Programa"] as const;
 export const EDUCATION_LEVELS = ["Ensino médio", "Graduação", "Pós-graduação", "Público diverso"] as const;
-export const OPPORTUNITY_CATEGORIES = [
-  { id: "formacao", label: "Formação e aprendizagem" },
-  { id: "bolsas", label: "Bolsas e apoios financeiros" },
-  { id: "intercambios", label: "Intercâmbios" },
-  { id: "competicoes", label: "Competições e hackathons" },
-  { id: "pesquisa", label: "Pesquisa e inovação" },
-  { id: "carreira", label: "Carreira e experiência" },
-  { id: "eventos", label: "Eventos e comunidades" },
-] as const;
+export { AREAS, OPPORTUNITY_CATEGORIES } from "./vocabulary";
 
 /** One editorial category leads the card; other verified categories remain searchable. */
 export const OPPORTUNITY_CATEGORY_PRIORITY = ["eventos", "competicoes", "pesquisa", "carreira", "bolsas", "intercambios", "formacao"] as const;
@@ -33,8 +27,6 @@ export const isOpportunityCategory = (value: unknown): value is OpportunityCateg
   typeof value === "string" && OPPORTUNITY_CATEGORIES.some((category) => category.id === value);
 
 /** Campos que podem compor a prévia pública do Radar. */
-export const AREAS = { matematica:'Matemática', fisica:'Física', quimica:'Química', biologia:'Biologia', astronomia:'Astronomia e espaço', clima:'Terra e clima', ambiente:'Meio ambiente', saude:'Saúde', neurociencia:'Neurociência', tecnologia:'Tecnologia', ia:'Inteligência artificial', robotica:'Robótica e engenharia', dados:'Dados', humanas:'Humanas e história', geografia:'Geografia', linguas:'Línguas', educacao:'Educação', artes:'Artes e design', comunicacao:'Comunicação', negocios:'Negócios', direito:'Direito e políticas públicas', 'relacoes-internacionais':'Relações internacionais', esportes:'Esportes' };
-
 export type OpportunityPreview = {
   id: string;
   title: string;
@@ -289,8 +281,7 @@ export function filterOpportunities(
   now = Date.now(),
   includeClosed = false,
 ) {
-  const normalizeSearch = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("pt-BR");
-  const query = normalizeSearch(filters.query?.trim() ?? "");
+  const search = createOpportunitySearch(filters.query);
   return (preserveOrder ? [...opportunities] : sortByDeadline(opportunities))
     .filter((opportunity) => includeClosed || isOpportunityOpen(opportunity, today, now))
     .filter((opportunity) => {
@@ -310,9 +301,7 @@ export function filterOpportunities(
     .filter((opportunity) => !filters.scope || opportunity.nationallyEligible === true)
     .filter((opportunity) => matchesOpportunityBenefit(opportunity, filters.benefit))
     .filter((opportunity) => matchesOpportunityDeadline(opportunity, filters.deadlineWindow, today))
-    .filter((opportunity) => !query || [opportunity.title, opportunity.organization,
-      opportunity.eligibility, opportunity.benefit, opportunity.summary]
-      .some((value) => normalizeSearch(value).includes(query)));
+    .filter((opportunity) => search.score(opportunity) > 0);
 }
 
 export function countActiveOpportunityFilters(filters: OpportunityFilters) {

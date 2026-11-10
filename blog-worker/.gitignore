@@ -1,0 +1,10 @@
+node_modules/
+.env*
+!.env.example
+.local/
+
+# Private operator pilot records remain local.
+/test/live-pilot.mjs
+/docs/editorial-pipeline-spec.md
+/docs/google-subscription-spec-20261108.md
+/docs/pipeline-validation-20261108.md

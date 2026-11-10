@@ -34,15 +34,14 @@ test("process card exposes course details and original management IDs", async ()
 });
 test("public and management board count processes and filter course options before grouping", async () => {
  const React = await import("react"), jsx=await import("react/jsx-runtime"), {renderToStaticMarkup}=await import("react-dom/server");
- const location=await readFile(new URL("../lib/opportunities/location.ts",import.meta.url),"utf8");
- const types=(await readFile(new URL("../lib/opportunities/types.ts",import.meta.url),"utf8")).replace(/^import \{[\s\S]*?\} from "@\/lib\/opportunities\/location";\s*/m,"");
- const logic=await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(location+types,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText).toString("base64")}`);
+ const logic=opportunityLoader()("lib/opportunities/types.ts");
  let query=""; const loaded={exports:{}};
  const mocks={"@/lib/opportunities/discovery":opportunityLoader()("lib/opportunities/discovery.ts"),"@/lib/opportunities/detail-path":opportunityLoader()("lib/opportunities/detail-path.ts"),"@/lib/presentation-text.mjs":{interfaceText},"react/jsx-runtime":jsx,"react":React,"next/navigation":{useRouter:()=>({replace(){}}),usePathname:()=>"/oportunidades",useSearchParams:()=>new URLSearchParams(query)},"next/link":{__esModule:true,default:({children,...p})=>React.createElement("a",p,children)},"lucide-react":new Proxy({},{get:()=>()=>null}),"@/lib/opportunities/types":logic,"@/lib/opportunities/admission-processes":{groupAdmissionProcesses},"./admission-process-card":{AdmissionProcessCard:({group})=>React.createElement("div",{"data-process":group.id},group.courses.map(c=>c.title).join(" | "))},"./opportunity-countdown":{OpportunityCountdown:()=>null},"./opportunity-financials":opportunityLoader()("components/opportunities/opportunity-financials.tsx"),"./opportunity-alert":{OpportunityAlert:()=>null},"./live-refresh":{LiveCatalogueRefresh:()=>null},"./opportunities.module.css":{__esModule:true,default:{}}};
  mocks["@/components/analytics/behavior-client"]={trackBehavior(){}};
  mocks["./save-opportunity"]={SaveOpportunityButton:()=>null}; // Calendar actions have separate lifecycle/browser coverage.
  mocks["@/components/site/share-button"]=opportunityLoader()("components/site/share-button.tsx");
  mocks["./opportunity-dates"]=opportunityLoader()("components/opportunities/opportunity-dates.tsx");
+ mocks["./search-suggestions"]=opportunityLoader()("components/opportunities/search-suggestions.tsx");
  new Function("require","module","exports",await compile("../components/opportunities/opportunities-board.tsx"))(name=>{if(!(name in mocks))throw Error(name);return mocks[name]},loaded,loaded.exports);
  const base={organization:"IFSC",deadline:"2099-10-30",verifiedAt:"2026-10-14",deadlineLabel:"Prazo",eligibility:"Seleção por prova",benefit:"Ver taxa",summary:"Inscrições",location:"SC",stateCode:"SC",level:"Ensino médio",categories:["formacao"]};
  const opportunities=[course("a",{...base,title:"Mecatrônica",cityName:"Blumenau"}),course("b",{...base,title:"Informática",cityName:"Joinville"}),course("c",{...base,title:"Curso por sorteio",admissionProcess:null})];

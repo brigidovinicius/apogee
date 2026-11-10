@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "purpose": "read_only_source_validation_not_editorial_approval",
+  "generation_calls": 0,
+  "sources_enabled": 0,
+  "local": {
+    "checked_at": "2026-11-06T16:01:29.610Z",
+    "generation_calls": 0,
+    "sources": [
+      {
+        "id": "SRC01",
+        "url": "https://www.nasa.gov/news-release/feed/",
+        "enabled": false,
+        "network_origin": "local_mac",
+        "status": "parsed",
+        "bytes": 255522,
+        "sha256": "ddb5cbb60f991fc0f61d8e04ad83b4e5dd9ec77e8e7f4061dc2625290344bc2f",
+        "total_items": 10,
+        "inspected_items": 10,
+        "accepted_metadata": 5,
+        "evidence_size_eligible_only": 5,
+        "newest_date": "2026-11-06T05:05:00.000Z",
+        "article_hosts": [
+          "science.nasa.gov",
+          "www.nasa.gov"
+        ],
+        "etag": "\"dc4e216bcea5fcb427bde1fc484fd790\"",
+        "last_modified": "Fri, 06 Nov 2026 15:56:25 GMT",
+        "duration_ms": 196
+      },
+      {
+        "id": "SRC02",
+        "url": "https://www.nasa.gov/technology/feed/",
+        "enabled": false,
+        "network_origin": "local_mac",
+        "status": "parsed",
+        "bytes": 420572,
+        "sha256": "390ff769a59da71c6b561f4827660dd500774549fcff97b9890e6a25fb86e8e4",
+        "total_items": 10,
+        "inspected_items": 10,
+        "accepted_metadata": 1,
+        "evidence_size_eligible_only": 1,
+        "newest_date": "2026-11-04T18:00:02.000Z",
+        "article_hosts": [
+          "www.nasa.gov",
+          "science.nasa.gov"
+        ],
+        "etag": "\"ac92003d021c99b92e0b88708b6a12bc\"",
+        "last_modified": "Fri, 06 Nov 2026 13:38:41 GMT",
+        "duration_ms": 94
+      },
+      {
+        "id": "SRC03",
+        "url": "https://www.nasa.gov/centers-and-facilities/jpl/feed/",
+        "enabled": false,
+        "network_origin": "local_mac",
+        "status": "parsed",
+        "bytes": 326225,
+        "sha256": "d10e5b181f05ac63b1ed325b9d7a1829e6bb3cdcdc5dd1db65ac9f47ebcbcadb",
+        "total_items": 10,
+        "inspected_items": 10,
+        "accepted_metadata": 0,
+        "evidence_size_eligible_only": 0,
+        "newest_date": "2026-10-29T18:18:09.000Z",
+        "article_hosts": [
+          "www.nasa.gov",
+          "science.nasa.gov"
+        ],
+        "etag": "\"b3d2e7c98bb350d8d5b56424c73640b8\"",
+        "last_modified": "Fri, 06 Nov 2026 15:04:23 GMT",
+        "duration_ms": 62
+      },
+      {
+        "id": "SRC04",
+        "url": "https://news.mit.edu/rss/research",
+        "enabled": false,
+        "network_origin": "local_mac",
+        "status": "parsed",
+        "bytes": 513597,
+        "sha256": "fa1564f100e037b9b4d144054be16412bf8d9a5c5020bc1dd12e71da42608178",
+        "total_items": 50,
+        "inspected_items": 20,
+        "accepted_metadata": 9,
+        "evidence_size_eligible_only": 9,
+        "newest_date": "2026-11-05T16:20:00.000Z",
+        "article_hosts": [
+          "news.mit.edu"
+        ],
+        "etag": "\"1793980671\"",
+        "last_modified": "Fri, 06 Nov 2026 15:57:51 GMT",
+        "duration_ms": 296
+      },
+      {
+        "id": "SRC05",
+        "url": "https://news.harvard.edu/gazette/feed/",
+        "enabled": false,
+        "network_origin": "local_mac",
+        "status": "parsed",
+        "bytes": 917219,
+        "sha256": "1a564da8644d7edbc3773680f3ede4d924905354f5a0cb9db71c3d9ff320d762",
+        "total_items": 50,
+        "inspected_items": 20,
+        "accepted_metadata": 12,
+        "evidence_size_eligible_only": 10,
+        "newest_date": "2026-11-05T22:11:01.000Z",
+        "article_hosts": [
+          "news.harvard.edu"
+        ],
+        "etag": "\"dc2941952e2602537a9ba91370dc2431\"",
+        "last_modified": "Fri, 06 Nov 2026 14:09:28 GMT",
+        "duration_ms": 246
+      },
+      {
+        "id": "SRC06",
+        "url": "https://openai.com/news/rss.xml",
+        "enabled": false,
+        "network_origin": "local_mac",
+        "status": "parsed",
+        "bytes": 831593,
+        "sha256": "4150641c073f954f092f1b3f7f33def9789a62a7657a1e04ebf8c683c656f0d4",
+        "total_items": 1366,
+        "inspected_items": 20,
+        "accepted_metadata": 20,
+        "evidence_size_eligible_only": 0,
+        "newest_date": "2026-11-05T20:00:00.000Z",
+        "article_hosts": [
+          "openai.com"
+        ],
+        "etag": null,
+        "last_modified": null,
+        "duration_ms": 414
+      },
+      {
+        "id": "SRC07",
+        "url": "https://research.google/blog/rss/",
+        "enabled": false,
+        "network_origin": "local_mac",
+        "status": "parsed",
+        "bytes": 78411,
+        "sha256": "b5faf5298fb3ed706db2f4b8c43d2b152ee005fae0201679e818a362721224f6",
+        "total_items": 100,
+        "inspected_items": 20,
+        "accepted_metadata": 2,
+        "evidence_size_eligible_only": 0,
+        "newest_date": "2026-11-05T16:01:08.000Z",
+        "article_hosts": [
+          "research.google"
+        ],
+        "etag": null,
+        "last_modified": "Thu, 05 Nov 2026 16:01:08 GMT",
+        "duration_ms": 827
+      },
+      {
+        "id": "SRC08",
+        "url": "https://deepmind.google/blog/rss.xml",
+        "enabled": false,
+        "network_origin": "local_mac",
+        "status": "parsed",
+        "bytes": 70178,
+        "sha256": "d04e4f295a10562ac4cb3933c27b1001c8dc6b694c181231ce25a5a66f244f00",
+        "total_items": 100,
+        "inspected_items": 20,
+        "accepted_metadata": 2,
+        "evidence_size_eligible_only": 0,
+        "newest_date": "2026-11-05T17:05:16.000Z",
+        "article_hosts": [
+          "deepmind.google"
+        ],
+        "etag": "\"xuYVgQ\"",
+        "last_modified": null,
+        "duration_ms": 1193
+      },
+      {
+        "id": "SRC09",
+        "url": "https://www.ycombinator.com/blog/rss",
+        "enabled": false,
+        "network_origin": "local_mac",
+        "status": "parsed",
+        "bytes": 91494,
+        "sha256": "03dc4f86ea2dc8ea47b1eee937580ab309754117ec0165c6cc02cb82ce0155e9",
+        "total_items": 15,
+        "inspected_items": 15,
+        "accepted_metadata": 8,
+        "evidence_size_eligible_only": 8,
+        "newest_date": "2026-10-30T18:31:21.000Z",
+        "article_hosts": [
+          "www.ycombinator.com"
+        ],
+        "etag": "W/\"03dc4f86ea2dc8ea47b1eee937580ab3\"",
+        "last_modified": null,
+        "duration_ms": 1539
+      }
+    ]
+  },
+  "vps": {
+    "checked_at": "2026-11-06T16:04:41.874107+00:00",
+    "generation_calls": 0,
+    "remote_changes": false,
+    "sources": [
+      {
+        "id": "SRC01",
+        "url": "https://www.nasa.gov/news-release/feed/",
+        "network_origin": "apogee_vps",
+        "http_status": 200,
+        "bytes": 255518,
+        "status": "parsed",
+        "total_items": 10,
+        "sha256": "ecca07a788bfe190e5cc48172f426999c540caae293a2b78f11cd247fea35466"
+      },
+      {
+        "id": "SRC02",
+        "url": "https://www.nasa.gov/technology/feed/",
+        "network_origin": "apogee_vps",
+        "http_status": 200,
+        "bytes": 420572,
+        "status": "parsed",
+        "total_items": 10,
+        "sha256": "390ff769a59da71c6b561f4827660dd500774549fcff97b9890e6a25fb86e8e4"
+      },
+      {
+        "id": "SRC03",
+        "url": "https://www.nasa.gov/centers-and-facilities/jpl/feed/",
+        "network_origin": "apogee_vps",
+        "http_status": 200,
+        "bytes": 326223,
+        "status": "parsed",
+        "total_items": 10,
+        "sha256": "1a2eaab09dc7e6df4d5a3417e4d4dde51715a50cca003d190412834010a63748"
+      },
+      {
+        "id": "SRC04",
+        "url": "https://news.mit.edu/rss/research",
+        "network_origin": "apogee_vps",
+        "http_status": 200,
+        "bytes": 513597,
+        "status": "parsed",
+        "total_items": 50,
+        "sha256": "fa1564f100e037b9b4d144054be16412bf8d9a5c5020bc1dd12e71da42608178"
+      },
+      {
+        "id": "SRC05",
+        "url": "https://news.harvard.edu/gazette/feed/",
+        "network_origin": "apogee_vps",
+        "http_status": 200,
+        "bytes": 917218,
+        "status": "parsed",
+        "total_items": 50,
+        "sha256": "38a65ed3bee6f191e9d1ace3916d64b809c0ccc2006a9605c2e06eb0a42a326c"
+      },
+      {
+        "id": "SRC06",
+        "url": "https://openai.com/news/rss.xml",
+        "network_origin": "apogee_vps",
+        "http_status": 200,
+        "bytes": 831593,
+        "status": "parsed",
+        "total_items": 1366,
+        "sha256": "061bf290dbf1305f5fadddc916a23d5a6dd33afc86575ad7e545dea4e83ee1d5"
+      },
+      {
+        "id": "SRC07",
+        "url": "https://research.google/blog/rss/",
+        "network_origin": "apogee_vps",
+        "http_status": 200,
+        "bytes": 78411,
+        "status": "parsed",
+        "total_items": 100,
+        "sha256": "b5faf5298fb3ed706db2f4b8c43d2b152ee005fae0201679e818a362721224f6"
+      },
+      {
+        "id": "SRC08",
+        "url": "https://deepmind.google/blog/rss.xml",
+        "network_origin": "apogee_vps",
+        "http_status": 200,
+        "bytes": 70178,
+        "status": "parsed",
+        "total_items": 100,
+        "sha256": "d04e4f295a10562ac4cb3933c27b1001c8dc6b694c181231ce25a5a66f244f00"
+      },
+      {
+        "id": "SRC09",
+        "url": "https://www.ycombinator.com/blog/rss",
+        "network_origin": "apogee_vps",
+        "http_status": 200,
+        "bytes": 91494,
+        "status": "parsed",
+        "total_items": 15,
+        "sha256": "03dc4f86ea2dc8ea47b1eee937580ab309754117ec0165c6cc02cb82ce0155e9"
+      }
+    ]
+  }
+}
