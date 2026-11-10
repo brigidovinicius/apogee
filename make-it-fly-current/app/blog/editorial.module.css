@@ -1,0 +1,43 @@
+/* Brand primitives stay inside /blog, including its article routes. */
+.scope {
+  --apogee-navy: #07182d;
+  --editorial-white: var(--apogee-white);
+  --editorial-navy: var(--apogee-navy);
+  --editorial-sky: var(--apogee-sky);
+
+  --editorial-paper: var(--editorial-white);
+  --editorial-ink: var(--editorial-navy);
+  --editorial-muted: #45566c;
+  --editorial-rule: rgb(7 24 45 / 20%);
+  --editorial-tint: #edf3fa;
+  --editorial-display: var(--font-editorial-display), Georgia, serif;
+  --editorial-body: var(--font-inter), Arial, sans-serif;
+
+  --editorial-content-width: 75rem;
+  --editorial-reading-width: 42.5rem;
+  --editorial-margin: clamp(1.25rem, 4vw, 2rem);
+  --apogee-font-heading: var(--editorial-display);
+  --apogee-font-sans: var(--editorial-body);
+  min-height: 100svh;
+  color: var(--editorial-ink);
+  background: var(--editorial-paper);
+  font-family: var(--editorial-body);
+  font-synthesis: none;
+  color-scheme: light;
+}
+
+.scope :is(a, button, summary):focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .scope {
+    --editorial-paper: var(--editorial-navy);
+    --editorial-ink: var(--editorial-white);
+    --editorial-muted: #c3d0df;
+    --editorial-rule: rgb(255 255 255 / 24%);
+    --editorial-tint: #102a48;
+    color-scheme: dark;
+  }
+}
