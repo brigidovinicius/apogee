@@ -293,3 +293,126 @@
 .header[data-adaptive][data-tone="light"] .adaptiveWhite { display: none; }
 .header[data-adaptive][data-tone="light"] .adaptiveNavy { display: block; }
 @media (prefers-reduced-motion: reduce) { .header[data-adaptive] { transition: none; } }
+
+/* Shared editorial masthead. The scroll-controlled Earth opening retains its shell. */
+.header[data-editorial][data-tone] {
+  color: #07182d;
+  background: #fff;
+  border: 0;
+}
+.header[data-editorial] .headerInner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  width: min(calc(100% - 4rem), 1376px);
+  min-height: 7rem;
+  margin-inline: auto;
+  gap: 1.5rem;
+  padding-block: 1rem;
+}
+.header[data-editorial] .brand { justify-self: start; }
+.header[data-editorial] .brand img { width: 7rem; }
+.header[data-editorial] .signature {
+  margin: 0;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -.025em;
+  text-align: center;
+}
+.header[data-editorial][data-tone] .memberLink {
+  display: inline-flex;
+  justify-self: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-height: 2.75rem;
+  padding: .65rem 1rem;
+  border: 1px solid #07182d;
+  border-radius: .25rem;
+  color: #07182d;
+  background: #fff;
+  font-size: .875rem;
+  font-weight: 550;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.header[data-editorial][data-tone] .memberLink:hover,
+.header[data-editorial][data-tone] .memberLink[aria-current="page"] {
+  color: #07182d;
+  background: #b9d3ee;
+}
+.header[data-editorial] .navigationBar {
+  color: #fff;
+  background: #07182d;
+}
+.header[data-editorial][data-tone] .desktopNavigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: .25rem clamp(1.25rem, 3.3vw, 3rem);
+  width: min(calc(100% - 4rem), 1376px);
+  margin-inline: auto;
+}
+.header[data-editorial][data-tone] .desktopNavigation a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: #fff;
+  font-size: .875rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 1;
+}
+.header[data-editorial][data-tone] .desktopNavigation a:hover,
+.header[data-editorial][data-tone] .desktopNavigation a[aria-current="page"] { color: #b9d3ee; }
+.header[data-editorial][data-tone] .desktopNavigation a::after { background: #b9d3ee; }
+.header[data-editorial] .mobileNavigation { display: none; }
+.header[data-editorial] .mobileNavigation summary {
+  gap: .5rem;
+  min-height: 2.75rem;
+  border: 1px solid #cdd6e0;
+  border-radius: .25rem;
+  color: #07182d;
+  font-size: .875rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.header[data-editorial] .mobileNavigation nav {
+  top: calc(100% + .75rem);
+  min-width: min(18rem, calc(100vw - 2.5rem));
+  border-color: #cdd6e0;
+  border-radius: .25rem;
+  color: #07182d;
+  background: #fff;
+}
+.header[data-editorial] .mobileNavigation a {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-size: .9375rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+@media (max-width: 760px) {
+  .header[data-editorial] .headerInner {
+    width: calc(100% - 2.5rem);
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 1rem;
+    min-height: 6.25rem;
+  }
+  .header[data-editorial] .brand img { width: 5.5rem; }
+  .header[data-editorial] .signature { justify-self: center; max-width: 12ch; font-size: 1.5rem; text-align: left; }
+  .header[data-editorial][data-tone] .memberLink { display: none; }
+  .header[data-editorial] .mobileNavigation { position: relative; display: block; }
+  .header[data-editorial][data-tone] .desktopNavigation { width: calc(100% - 2.5rem); justify-content: flex-start; gap: 1.5rem; }
+  .header[data-editorial][data-tone] .desktopNavigation a:not([data-compact]) { display: none; }
+}
+@media (max-width: 360px) {
+  .header[data-editorial] .headerInner { gap: .625rem; }
+  .header[data-editorial] .brand img { width: 4.75rem; }
+  .header[data-editorial] .signature { font-size: 1.375rem; }
+}

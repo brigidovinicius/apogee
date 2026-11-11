@@ -9,13 +9,14 @@ import { interfaceText } from "@/lib/presentation-text.mjs";
 import { OpportunityBenefits } from "@/components/opportunities/opportunity-financials";
 import { OpportunityDates } from "@/components/opportunities/opportunity-dates";
 import { OpportunitySearchSuggestions } from "@/components/opportunities/search-suggestions";
-import styles from "./earth-radar.module.css";
+import defaultStyles from "./earth-radar.module.css";
 
 const categories: [HomeOpportunityCategory, string][] = [
   ["all", "Em destaque"], ["competicoes", "Competições e hackathons"], ["eventos", "Eventos e comunidades"],
 ];
 
-export function EarthRadarList({ opportunities, capturedAt }: { opportunities: StudentOpportunity[]; capturedAt: string }) {
+export function EarthRadarList({ opportunities, capturedAt, classNames }: { opportunities: StudentOpportunity[]; capturedAt: string; classNames?: Record<string, string> }) {
+  const styles = classNames ?? defaultStyles;
   const [category, setCategory] = useState<HomeOpportunityCategory>("all");
   const [now, setNow] = useState(() => new Date(capturedAt));
   useEffect(() => {
@@ -57,7 +58,7 @@ export function EarthRadarList({ opportunities, capturedAt }: { opportunities: S
           <Link prefetch={false} className={styles["opportunity-action"]} href={opportunityDetailPath(item.id)} aria-label={`Ver detalhes: ${item.title}`}>Ver detalhes</Link>
         </article>)}
       </div>
-      {!visible.length && <div className={`${styles["empty-state"]} ${styles.visible}`}>
+      {!visible.length && <div className={[styles["empty-state"], styles.visible].filter(Boolean).join(" ")}>
         <p>Nenhuma oportunidade em destaque nesta categoria agora. Explore o catálogo completo.</p>
         <button className={styles["reset-filters"]} onClick={() => setCategory("all")}>Limpar filtros</button>
       </div>}

@@ -73,6 +73,24 @@ test("member route and data guard keep Radar state when authentication or onboar
   assert.equal(catalogueRead, false);
 });
 
+test("shared navigation marks only a defined current section and preserves the configured member destination", () => {
+  const headerLoad = opportunityLoader({
+    "next/link": { __esModule: true, default: "Link" },
+    "next/image": { __esModule: true, default: "Image" },
+    "./site-mobile-navigation": { SiteMobileNavigation: "MobileNavigation" },
+  });
+  const { SiteHeader } = headerLoad("components/site/site-header.tsx");
+  const memberHref = "/membros/entrar?next=%2Fmembros%2Foportunidades%3Fcategoria%3Deventos";
+  const unknown = nodes(SiteHeader({ memberHref }), node => node.type === "Link");
+  assert.equal(unknown.filter(node => node.props["aria-current"] === "page").length, 0);
+  assert.equal(unknown.filter(node => node.props.href === memberHref).length, 2);
+  for (const adaptive of [false, true]) {
+    const selected = nodes(SiteHeader({ current: "blog", memberHref, adaptive }), node => node.type === "Link" && node.props["aria-current"] === "page");
+    assert.equal(selected.length, 2);
+    assert.ok(selected.every(node => node.props.href === "/blog"));
+  }
+});
+
 test("every mobile admin destination closes the persistent details menu and restores focus", () => {
   let focused = false;
   const menu = { open: true, querySelector: () => ({ focus: () => { focused = true; } }) };

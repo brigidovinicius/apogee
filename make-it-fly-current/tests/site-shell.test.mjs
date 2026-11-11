@@ -23,14 +23,15 @@ test("institutional shell is reused by the first public and member routes", asyn
   }
 
   const editorial = await source("components/home/editorial-home.tsx");
-  assert.match(editorial, /<EarthRadarPreview radar=/);
-  assert.match(editorial, /<HomeRadar presentation="earth" \/>/);
+  assert.match(editorial, /<HomeRadar presentation="earth"/);
+  assert.match(editorial, /<main id="experiencia" tabIndex=\{-1\}>/);
+  assert.doesNotMatch(editorial, /^["']use client["']|DEMO_OPPORTUNITIES|localStorage|Prévia local/);
   const earth = await source("components/home/earth-radar/earth-radar-preview.tsx");
   assert.match(earth, /<SiteFooter \/>/);
   assert.match(earth, /<main id="experiencia" tabIndex=\{-1\}>/);
   assert.doesNotMatch(earth, /DEMO_OPPORTUNITIES|localStorage|Prévia local/);
 
-  for (const route of [homeContent, opportunities, membersLayout]) {
+  for (const route of [editorial, homeContent, opportunities, membersLayout]) {
     assert.match(route, /<SiteHeader/);
     assert.match(route, /<SiteFooter/);
   }
@@ -41,7 +42,6 @@ test("institutional shell is reused by the first public and member routes", asyn
   assert.doesNotMatch(homeContent, /^["']use client["']/);
 
   assert.match(header, /<SiteMobileNavigation>/);
-  assert.match(header, /aria-current=\{item\.section === current \? "page" : undefined\}/);
   assert.match(footer, /aria-label="Navegação do rodapé"/);
   assert.match(opportunities, /memberHref=\{memberHref\}/);
   assert.match(opportunities, /memberRadarLoginHref\(params\)/);
