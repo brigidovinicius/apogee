@@ -122,3 +122,22 @@ test('automatic access diagnostic has zero model/tool permissions and reuses its
   data.num_turns=0;data.usage.input_tokens=1;await assert.rejects(()=>provider.verifyAccess(),/google_quota_unavailable/);
   data.usage.input_tokens=0;data.command.data.groups[0].buckets[1].window='unknown';await assert.rejects(()=>provider.verifyAccess(),/google_quota_unavailable/);
 });
+
+test('comparison finish contract permits one invocation and no image, web or filesystem tools',async()=>{
+  const {dossierFixture}=await import('./corroboration-fixture.mjs');
+  const {buildComparisonRequest}=await import('../src/corroboration.mjs');
+  const dir=await mkdtemp(join(tmpdir(),'google-comparison-')),binary=join(dir,'agy');await writeFile(binary,'fake');
+  const document=dossierFixture(3);let calls=0;
+  const provider=googleSubscriptionProvider({binary,sha256:createHash('sha256').update('fake').digest('hex'),runner:async(_,args,options)=>{
+    calls++;const guard=JSON.parse(await readFile(join(options.cwd,'policy.json'),'utf8'));assert.equal(guard.kind,'comparison');assert.equal(guard.maxInvocations,1);
+    const payload={modelName:p.model_id,invocationNum:0};assert.deepEqual(await decide('invocation',payload,guard,options.cwd),{});
+    assert.equal((await decide('tool',{...payload,toolCall:{name:'finish',args:{claims:document.claims}}},guard,options.cwd)).decision,'auto_approve');
+    for(const name of ['generate_image','read_file','read_url','run_command'])assert.equal((await decide('tool',{...payload,toolCall:{name,args:{}}},guard,options.cwd)).decision,'deny');
+    assert.equal((await decide('tool',{...payload,toolCall:{name:'finish',args:article}},guard,options.cwd)).decision,'deny');
+    assert.equal((await decide('invocation',{...payload,invocationNum:1},guard,options.cwd)).terminationBehavior,'terminate');
+    assert.equal(options.timeoutMs,45000);assert.match(args.at(-1),/claims/);
+    return {code:0,stdout:JSON.stringify({status:'SUCCESS',structured_output:{claims:document.claims},usage})};
+  }});
+  const result=await provider({kind:'comparison',policy:p,body:buildComparisonRequest(document,p),not_after:new Date(Date.now()+180000).toISOString()});
+  assert.equal(result.outcome,'completed');assert.deepEqual(JSON.parse(result.text),{claims:document.claims});assert.equal(calls,1);
+});

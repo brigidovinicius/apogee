@@ -656,6 +656,7 @@ try{
       assert.equal((await store.finish(r,{outcome:'completed',text:JSON.stringify({claims:document.claims}),usage:smallUsage})).status,'comparison_ready');
       const text=await store.reserve({...googleOptions(),candidateId:c.id});
       const result=await store.finish(text,{...googleCompleted,usage:smallUsage});assert.equal(result.status,'draft');
+      assert.equal((await admin`select category from public.blog_post where id=${result.post_id}`)[0].category,{ciencia:'ciencias',tecnologia:'tecnologia',negocios:'empreendedorismo'}[topics[i][0]]);
       const image=await store.reserveImage({...googleOptions(),candidateId:c.id});assert.equal(image.status,'reserved');
       assert.equal((await store.finish(image,{outcome:'completed',image:webpFixture(),usage:smallUsage})).status,'cover_ready');
       if(i===0){
@@ -665,6 +666,7 @@ try{
     }
     const dashboard=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();
     assert.equal(dashboard.production.reduce((n,t)=>n+t.complete,0),10);
+    assert.ok(dashboard.candidates.filter(c=>c.post_id).every(c=>c.topic_category&&c.topic_subcategory!==undefined));
     assert.equal((await admin`select count(*)::int as n from public.blog_post where status='draft' and published_at is null and scheduled_at is null`)[0].n,10);
     assert.equal((await admin`select count(*)::int as n from blog_worker.attempt where charged_micro_usd<>0`)[0].n,0);
     assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,30);

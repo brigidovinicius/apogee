@@ -15,7 +15,7 @@ export async function decide(event,payload,config,folder) {
     // It only returns structured data; it has no filesystem/network side effects.
     if(payload.toolCall?.name==='finish'){
       const keys=Object.keys(payload.toolCall.args??{}).sort().join(',');
-      const expected=config.kind==='image'?'image_path':'excerpt,paragraphs,seoDescription,seoTitle,title';
+      const expected=config.kind==='image'?'image_path':config.kind==='comparison'?'claims':'excerpt,paragraphs,seoDescription,seoTitle,title';
       return keys===expected?{decision:'auto_approve',reason:'Return the requested structured output'}:{decision:'deny',reason:'Unexpected output fields'};
     }
     if(config.kind!=='image'||payload.toolCall?.name!=='generate_image')return {decision:'deny',reason:'Only one editorial image tool is permitted; no commands, web, files, MCP or subagents'};

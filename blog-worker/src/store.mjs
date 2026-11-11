@@ -22,6 +22,7 @@ export async function migrate(sql) {
     }return 'applied';
   });
 }
+const scopeEditoria=d=>d.category==='ciencia'?'ciencia-espaco':d.category==='negocios'?'startups':d.subcategory==='ia'?'ia':'tecnologia';
 export const n=value=>{const num=Number(value);if(!Number.isSafeInteger(num)||num<0)fail('invalid_ledger');return num;};
 const benefit=row=>row?{...row.attestation,...row,provider_grant_id:row.id,amount_micro_usd:n(row.amount_micro_usd),remaining_micro_usd:n(row.remaining_micro_usd)}:null;
 export async function lock(tx) {
@@ -270,7 +271,7 @@ export class Store {
         validateDossier(version.document);
         if(kind==='text'){
           const verification=version.assessment.comparison_verified?{actor_id:version.actor_id,hash:version.document_hash}:null;
-          effective={...candidate,evidence:approvedEvidence(version.document,verification),corroboration:assessDossier(version.document,{comparisonVerified:!!verification})};
+          effective={...candidate,editoria:scopeEditoria(version.document),evidence:approvedEvidence(version.document,verification),corroboration:assessDossier(version.document,{comparisonVerified:!!verification})};
           effective.evidence_hash=hash(effective.evidence);
         }
       }
@@ -358,7 +359,7 @@ export class Store {
         try{
           const verification=version.assessment.comparison_verified?{actor_id:version.actor_id,hash:version.document_hash}:null;
           corroboration=assessDossier(version.document,{comparisonVerified:!!verification});
-          effective={...candidate,evidence:approvedEvidence(version.document,verification)};
+          effective={...candidate,editoria:scopeEditoria(version.document),evidence:approvedEvidence(version.document,verification)};
         }catch{return holdAfterCharge(tx,candidate.id,cost);}
       }
       if(result.outcome==='completed'){

@@ -111,7 +111,7 @@ export function googleSubscriptionProvider({binary,sha256,runner=runCli,env=proc
     await writeFile(join(folder,'.agents/agents',agent+'.md'),kind==='image'?imageAgent:textAgent,{mode:0o600});
     const hook=fileURLToPath(new URL('./google-hook.mjs',import.meta.url));
     const command=event=>[process.execPath,hook,event,folder].map(shellQuote).join(' ');
-    await writeFile(join(folder,'policy.json'),JSON.stringify({model:p.model_id,kind,prompt:reservation.body.prompt,maxInvocations:1}),{mode:0o600});
+    await writeFile(join(folder,'policy.json'),JSON.stringify({model:p.model_id,kind:reservation.kind==='comparison'?'comparison':kind,prompt:reservation.body.prompt,maxInvocations:1}),{mode:0o600});
     await writeFile(join(folder,'.agents/hooks.json'),JSON.stringify({'apogee-editorial':{PreInvocation:[{type:'command',command:command('invocation'),timeout:5}],PreToolUse:[{matcher:'*',hooks:[{type:'command',command:command('tool'),timeout:5}]}]}}),{mode:0o600});
     const prompt=googlePrompt(reservation);
     if(Buffer.byteLength(prompt)>12000)return {outcome:'not_sent',reason:'input_limit'};
