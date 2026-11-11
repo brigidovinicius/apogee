@@ -561,11 +561,12 @@ try{
     await store.syncPipeline({policy:googlePolicy,sources:[src],catalog:[]},{});
     const date=new Date().toISOString(),url='https://www.space.com/research-enrichment-test/';
     const seed=normalizeItem({title:'Synthetic NASA experiment',link:url,isoDate:date,contentSnippet:'A partial RSS discovery; primary evidence and independent verification are still required. '.repeat(4)},src,new Date());await store.ingest(seed);
-    const text='A equipe anunciou um experimento inicial. Este documento sintético descreve os limites do método de avaliação e não representa uma notícia real. '+('A análise exige novas medições. '.repeat(4));
+    const text='A equipe anunciou um experimento inicial. Este documento sintético descreve os limites do método de avaliação e não representa uma notícia real. '+('Dr. Silva mediu 3.14 unidades no teste?! O DOI 10.1234/fixture-enrichment exige novas medições. '.repeat(30));
     const read=async(url,budget)=>{budget.used++;return {source_id:url===seed.url?'ARTICLE_REF27':'ARTICLE_REF22',url,title:'Synthetic public research',published_at:date,text:(url===seed.url?'Análise independente de contexto. ':'')+text,rights_reference:'Public fixture excerpt for testing',content_hash:hash(text),extraction_method:'public_article',related_urls:url===seed.url?['https://www.nasa.gov/research-enrichment-test/']:[]};};
     assert.equal((await store.prepareAutomaticResearch({...googlePolicy,operator_commands_only:false},{read})).prepared,1);
     const [d]=await admin`select * from blog_worker.dossier_version`;assert.equal(d.document.documents.length,2);assert.equal(d.assessment.eligible,false);
     assert.equal(d.document.documents[0].url,'https://www.nasa.gov/research-enrichment-test/');assert.equal(d.reviewed_by,null);
+    for(const doc of d.document.documents){const [snapshot]=await admin`select document from blog_worker.captured_document where id=${doc.capture_id}`;assert.equal(snapshot.document.text.slice(0,doc.text.length),doc.text);}
     assert.equal((await admin`select count(*)::int as n from blog_worker.captured_document`)[0].n>=3,true);
     await store.ingest(seed);assert.equal((await store.researchCandidate(seed.url)).evidence[0].extraction_method,'public_article');
     const changed=structuredClone(seed);changed.evidence[0].text+=' Material change recorded by the source.';changed.evidence[0].content_hash=hash(changed.evidence[0].text);changed.evidence_hash=hash(changed.evidence);await store.ingest(changed);
