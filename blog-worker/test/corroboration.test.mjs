@@ -42,7 +42,7 @@ test('one bounded Google comparison request contains originals, no silent trunca
 });
 test('policy allows the authorized ten daily topics without raising token budgets or permitting overages',()=>{
   assert.equal(defaultPolicy.new_drafts_per_day_cap,10);assert.equal(defaultPolicy.new_drafts_per_week_cap,70);
-  assert.equal(defaultPolicy.per_topic_daily_cap,1);assert.equal(defaultPolicy.google_daily_calls_cap,30);
+  assert.equal(defaultPolicy.per_topic_daily_cap,1);assert.equal(defaultPolicy.google_daily_calls_cap,40);
   assert.equal(defaultPolicy.google_daily_tokens_cap,180000);assert.equal(defaultPolicy.google_weekly_tokens_cap,900000);
   assert.equal(defaultPolicy.google_use_g1_credits,false);
 });

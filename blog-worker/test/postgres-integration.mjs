@@ -697,6 +697,42 @@ try{
     const replacement=candidate(2);await store.ingest(replacement);const replacementDoc={...dossierFixture(1),event_key:'different-event-replacement',documents:dossierFixture(1).documents.map(d=>({...d,url:d.url+'replacement',origin_url:d.origin_url+'replacement'}))};await dossier(replacement,replacementDoc);
     assert.equal((await store.reserveComparison({...googleOptions(),candidateId:replacement.id})).status,'reserved');
   });
+  await check('one comparator upgrade can repair a known receipt then write text, preserving all receipts and per-kind ordinals',async()=>{
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(false);
+    const auto={...googlePolicy,operator_commands_only:false,automatic_image_generation_enabled:false};
+    const first=await store.reserveComparison({...googleOptions(),policy:auto,candidateId:candidate().id});
+    await store.finish(first,{outcome:'completed',text:'{}',usage:googleUsage});
+    assert.equal(await store.nextAutomaticWork(auto),null,'the same prompt is not retried');
+    await admin`update blog_worker.attempt set policy=policy-'comparison_prompt_version' where id=${first.id}`;
+    assert.equal((await store.nextAutomaticWork(auto)).method,'reserveComparison');
+    const second=await store.reserveComparison({...googleOptions(),policy:auto,candidateId:candidate().id});
+    assert.equal((await store.finish(second,{outcome:'completed',text:JSON.stringify({claims:dossierFixture(3).claims}),usage:googleUsage})).status,'comparison_ready');
+    const text=await store.reserve({...googleOptions(),policy:auto,candidateId:candidate().id});
+    assert.equal((await store.finish(text,{...googleCompleted,usage:googleUsage})).status,'draft');
+    const receipts=await admin`select kind,ordinal,state,charged_micro_usd from blog_worker.attempt order by created_at`;
+    assert.deepEqual(receipts.map(a=>[a.kind,a.ordinal]),[['comparison',1],['comparison',2],['text',1]]);
+    assert.ok(receipts.every(a=>a.state==='confirmed'&&Number(a.charged_micro_usd)===0));
+    assert.equal((await admin`select status from public.blog_post`)[0].status,'draft');
+  });
+  await check('editors can correct a compared topic before writing, requiring a new comparison and preserving the later lock',async()=>{
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(false);
+    const first=await store.reserveComparison({...googleOptions(),candidateId:candidate().id});
+    await store.finish(first,{outcome:'completed',text:JSON.stringify({claims:dossierFixture(3).claims}),usage:googleUsage});
+    const editorial=loadCms(editorClient,'lib/blog/dossier.ts');
+    const [v]=await admin`select * from blog_worker.dossier_version order by revision desc limit 1`;
+    const category=v.document.category==='ciencia'?'tecnologia':'ciencia';
+    assert.equal(await editorial.saveDossierScope('test-editor',candidate().id,v.revision,{event_key:v.document.event_key,category,subcategory:null},'Correct headline focus before writing'),true);
+    const [fresh]=await admin`select * from blog_worker.dossier_version order by revision desc limit 1`;
+    assert.equal(fresh.document.claims.length,0);assert.equal(fresh.reviewed_by,null);
+    assert.equal((await store.reserve({...googleOptions(),candidateId:candidate().id})).status,'idle');
+    const second=await store.reserveComparison({...googleOptions(),candidateId:candidate().id});
+    await store.finish(second,{outcome:'completed',text:JSON.stringify({claims:dossierFixture(3).claims}),usage:googleUsage});
+    const writing=await store.reserve({...googleOptions(),candidateId:candidate().id});
+    const result=await store.finish(writing,{...googleCompleted,usage:googleUsage});assert.equal(result.status,'draft');
+    const [last]=await admin`select * from blog_worker.dossier_version order by revision desc limit 1`;
+    await assert.rejects(()=>editorial.saveDossierScope('test-editor',candidate().id,last.revision,{event_key:last.document.event_key,category:v.document.category,subcategory:v.document.subcategory},'Cannot change a written article topic'),/topic_locked_after_start/);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.post_review`)[0].n,0);
+  });
   await check('CLI once, status and healthcheck use only the isolated DB with shipped generation off',async()=>{
     await reset();const health=join(directory,'health.json');
     const env={PATH:process.env.PATH,TMPDIR:directory,BLOG_LOCAL_TEST:'1',BLOG_DATABASE_URL:`postgres://blog_runtime@127.0.0.1:${port}/postgres`,BLOG_HEALTH_FILE:health};

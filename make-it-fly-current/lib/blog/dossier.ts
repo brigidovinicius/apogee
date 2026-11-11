@@ -29,7 +29,10 @@ async function changeDossier(actor: string, id: string, expected: number, reason
     const category = candidate.editoria === "startups" ? "negocios" : candidate.editoria === "ciencia-espaco" ? "ciencia" : "tecnologia";
     const base: Dossier = previous?.document ?? { schema_version: 1, event_key: candidate.url, category, subcategory: candidate.editoria === "ia" ? "ia" : null, documents: [], claims: [] };
     const document = validateDossier(mutate(structuredClone(base)));
-    if (candidate.first_attempt_day && (document.category !== base.category || document.subcategory !== base.subcategory)) throw Object.assign(new Error("topic_locked_after_start"), { code: "topic_locked_after_start" });
+    if (document.category !== base.category || document.subcategory !== base.subcategory) {
+      const [{ writingStarted }] = await tx<{ writingStarted: boolean }[]>`select exists(select 1 from blog_worker.attempt where candidate_id=${id} and kind='text') as "writingStarted"`;
+      if (candidate.post_id || writingStarted) throw Object.assign(new Error("topic_locked_after_start"), { code: "topic_locked_after_start" });
+    }
     const assessment = assessDossier(document, { comparisonVerified: document.claims.length > 0 });
     if (review && (!assessment.eligible || previous?.source_hash !== candidate.evidence_hash)) return false;
     const revision = expected + 1;

@@ -142,5 +142,210 @@
     "feed_content_approved": false,
     "rights_reference": null,
     "keywords": []
+  },
+  {
+    "id": "REF05",
+    "name": "Tecnoblog",
+    "editoria": "tecnologia",
+    "type": "rss",
+    "url": "https://tecnoblog.net/feed/",
+    "article_hosts": [
+      "tecnoblog.net",
+      "www.tecnoblog.net"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "REF02",
+    "name": "Canaltech",
+    "editoria": "tecnologia",
+    "type": "rss",
+    "url": "https://canaltech.com.br/rss/",
+    "article_hosts": [
+      "canaltech.com.br",
+      "www.canaltech.com.br"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "REF38",
+    "name": "The Verge",
+    "editoria": "tecnologia",
+    "type": "rss",
+    "url": "https://www.theverge.com/rss/index.xml",
+    "article_hosts": [
+      "theverge.com",
+      "www.theverge.com"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "REF39",
+    "name": "Ars Technica",
+    "editoria": "tecnologia",
+    "type": "rss",
+    "url": "https://feeds.arstechnica.com/arstechnica/index",
+    "article_hosts": [
+      "arstechnica.com",
+      "www.arstechnica.com",
+      "feeds.arstechnica.com"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "REF37",
+    "name": "WIRED",
+    "editoria": "tecnologia",
+    "type": "rss",
+    "url": "https://www.wired.com/feed/rss",
+    "article_hosts": [
+      "wired.com",
+      "www.wired.com"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "REF32",
+    "name": "Phys.org / Astronomy & Space",
+    "editoria": "ciencia-espaco",
+    "type": "rss",
+    "url": "https://phys.org/rss-feed/",
+    "article_hosts": [
+      "phys.org",
+      "www.phys.org"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "REF33",
+    "name": "ScienceDaily / Space & Time",
+    "editoria": "ciencia-espaco",
+    "type": "rss",
+    "url": "https://www.sciencedaily.com/rss/top/science.xml",
+    "article_hosts": [
+      "sciencedaily.com",
+      "www.sciencedaily.com"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "REF07",
+    "name": "Revista Pesquisa FAPESP",
+    "editoria": "ciencia-espaco",
+    "type": "rss",
+    "url": "https://revistapesquisa.fapesp.br/feed/",
+    "article_hosts": [
+      "revistapesquisa.fapesp.br",
+      "www.revistapesquisa.fapesp.br"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "REF17",
+    "name": "Knowable Magazine / The Mind",
+    "editoria": "ciencia-espaco",
+    "type": "rss",
+    "url": "https://knowablemagazine.org/rss",
+    "article_hosts": [
+      "knowablemagazine.org",
+      "www.knowablemagazine.org"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "PRIMARY_GOOGLE_BLOG",
+    "name": "Google / anúncios oficiais",
+    "editoria": "tecnologia",
+    "type": "rss",
+    "url": "https://blog.google/rss/",
+    "article_hosts": [
+      "blog.google",
+      "www.blog.google"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "PRIMARY_MICROSOFT_BLOG",
+    "name": "Microsoft / anúncios oficiais",
+    "editoria": "tecnologia",
+    "type": "rss",
+    "url": "https://blogs.microsoft.com/feed/",
+    "article_hosts": [
+      "blogs.microsoft.com",
+      "www.blogs.microsoft.com"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "PRIMARY_META_NEWS",
+    "name": "Meta / anúncios oficiais",
+    "editoria": "tecnologia",
+    "type": "rss",
+    "url": "https://about.fb.com/news/feed/",
+    "article_hosts": [
+      "about.fb.com",
+      "www.about.fb.com"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
   }
 ]
