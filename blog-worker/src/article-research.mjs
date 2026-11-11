@@ -9,7 +9,7 @@ const host=u=>new URL(u).hostname.replace(/^www\./,'');
 export function referenceForUrl(value){
   try{const u=referenceUrl(value),h=host(u),path=new URL(u).pathname;
     if(h==='nature.com'&&path.startsWith('/articles/')){
-      const id=Object.entries({s41593:'REF12',s41591:'REF14',s41550:'REF24',s42256:'REF36'}).find(([prefix])=>path.startsWith('/articles/'+prefix))?.[1];
+      const id=Object.entries({s41593:'REF12',s41591:'REF14',s41550:'REF24',s42256:'REF36',s41586:'PRIMARY_NATURE_RESEARCH'}).find(([prefix])=>path.startsWith('/articles/'+prefix))?.[1];
       return referenceCatalog.find(r=>r.id===id)??null;
     }
     return referenceCatalog.filter(r=>(r.hosts??[host(r.url)]).includes(h))
@@ -59,8 +59,9 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   if(/nosnippet|max-snippet\s*:\s*0/i.test(meta.robots??''))fail('research_excerpt_disallowed');
   // Never read a hidden article body or reconstruct content behind a paywall.
   if(/"isAccessibleForFree"\s*:\s*(?:false|"false")/.test(html))fail('research_access_restricted');
+  const bodies=nodes.filter(n=>{const a=attrs(n);return a.itemprop==='articleBody'||/(?:^|\s)(?:article-body|article_body|story-body|story_body|post-content|entry-content|article-content|news-article--content)(?:\s|$)/i.test((a.id??'')+' '+(a.class??''));});
   const articles=nodes.filter(n=>n.tagName==='article');
-  const roots=articles.length?articles:nodes.filter(n=>n.tagName==='main');
+  const roots=bodies.length?bodies:articles.length?articles:nodes.filter(n=>n.tagName==='main');
   const root=roots.sort((a,b)=>textOf(b).length-textOf(a).length)[0];if(!root)fail('research_article_missing');
   const text=clean(textOf(root)).slice(0,12000);if(text.length<200)fail('research_text_insufficient');
   const title=clean(meta['og:title']??textOf(nodes.find(n=>n.tagName==='h1')??{}))||fallbackTitle;
@@ -69,7 +70,8 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   for(const n of nodes.filter(n=>n.tagName==='script'&&/ld\+json/i.test(attrs(n).type??''))){
     try{const scan=v=>{if(!v||typeof v!=='object')return;const types=[v['@type']].flat();if(types.some(t=>['NewsArticle','Article','BlogPosting','ScholarlyArticle'].includes(t))&&typeof v.datePublished==='string')structuredDate??=v.datePublished;for(const child of Object.values(v))if(Array.isArray(child))child.forEach(scan);else if(child&&typeof child==='object')scan(child);};scan(JSON.parse((n.childNodes??[]).map(c=>c.value??'').join('')));}catch{/* Invalid page metadata is not evidence. */}
   }
-  const rawDate=meta['article:published_time']??meta['citation_publication_date']??meta['date']??meta['dc.date']??meta['dcterms.created']??structuredDate??fallbackDate;
+  const time=nodes.find(n=>n.tagName==='time'&&attrs(n).datetime);
+  const rawDate=meta['article:published_time']??meta['citation_online_date']??structuredDate??meta['citation_publication_date']??meta['date']??meta['dc.date']??meta['dcterms.created']??(time?attrs(time).datetime:null)??fallbackDate;
   const date=rawDate?new Date(rawDate):null;
   const bodyNodes=[];const walk=n=>{if(ignored.has(n.tagName))return;bodyNodes.push(n);for(const c of n.childNodes??[])walk(c);};walk(root);
   const related_urls=[...new Set(bodyNodes.filter(n=>n.tagName==='a').map(n=>{try{return referenceUrl(new URL(attrs(n).href,url).href);}catch{return null;}}).filter(Boolean))].slice(0,150);
@@ -79,15 +81,15 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
 export function createArticleReader({download=getFeed,clock=Date.now}={}){
   const robots=new Map();
   return async function read(value,budget,{fallbackTitle='',fallbackDate=null}={}){
-    if(/^https:\/\/doi\.org\/10\.\d{4,9}\//i.test(value)){
-      const doi=referenceUrl(value),origin='https://doi.org';
+    if(/^https:\/\/(?:dx\.)?doi\.org\/10\.\d{4,9}\//i.test(value)){
+      const doi=referenceUrl(value.replace('https://dx.doi.org/','https://doi.org/')),origin='https://doi.org';
       const request=async(url,options)=>{if(budget.used>=budget.max||clock()>budget.deadline)fail('research_cycle_limit');budget.used++;return download(url,['doi.org'],{timeoutMs:Math.min(7000,Math.max(1,budget.deadline-clock())),...options});};
       const rules=await request(origin+'/robots.txt',{maxBytes:65536,statuses:[200,404,410],accept:'text/plain'});
       if(!robotsAllowed(rules.status===200?rules.body:'',doi))fail('research_robots_disallowed');
       const result=await request(doi,{maxBytes:65536,statuses:[301,302,303,307,308],accept:'text/html'});
       const target=referenceUrl(new URL(result.location,doi).href);
       if(!primaryReference(referenceForUrl(target)))fail('research_reference_unregistered');
-      return read(target,budget,{fallbackTitle,fallbackDate});
+      const doc=await read(target,budget,{fallbackTitle,fallbackDate});return {...doc,doi:doc.doi??new URL(doi).pathname.slice(1)};
     }
     const reference=referenceForUrl(value);if(!reference)fail('research_reference_unregistered');
     let url=referenceUrl(value,reference);

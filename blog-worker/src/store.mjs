@@ -107,13 +107,21 @@ export class Store {
       const inserted=await tx`insert into blog_worker.candidate(id,source_id,guid,url,event_key,title,editoria,score,published_at,evidence,evidence_hash,status)
         values(${c.id},${c.source_id},${c.guid},${c.url},${c.event_key},${c.title},${c.editoria},${c.score},${c.published_at},${tx.json(c.evidence)},${c.evidence_hash},${c.status}) on conflict do nothing returning id`;
       const [parent]=await tx`select id from blog_worker.candidate where id=${c.id} or event_key=${c.event_key} order by case when id=${c.id} then 0 else 1 end limit 1`;
+      const [previousRSS]=!inserted.length&&parent&&!c.evidence.some(e=>e.extraction_method==='public_article')?await tx`select document from blog_worker.captured_document where candidate_id=${parent.id} and source_id=${c.source_id} and document->>'extraction_method' is distinct from 'public_article' order by captured_at desc,id limit 1`:[];
       if(parent)for(const e of c.evidence)await tx`insert into blog_worker.captured_document(id,candidate_id,source_id,url,snapshot_hash,document)
         values(${hash(e)},${parent.id},${c.source_id},${e.url},${hash(e)},${tx.json(e)}) on conflict do nothing`;
       if(inserted.length)return 'created';
       // Preserve dossiers already used by a reservation or reviewed draft. Changed evidence requires human assessment.
       const [current]=await tx`select * from blog_worker.candidate where id=${c.id} for update`;
       if(current && current.source_id!==c.source_id)return 'duplicate'; // Preserve curated input while retaining the raw snapshot.
-      if(current?.evidence.some(e=>e.extraction_method==='public_article')&&!c.evidence.some(e=>e.extraction_method==='public_article'))return 'duplicate'; // RSS summaries cannot replace an article snapshot.
+      if(current?.evidence.some(e=>e.extraction_method==='public_article')&&!c.evidence.some(e=>e.extraction_method==='public_article')){
+        // Summaries cannot replace full article evidence. A changed RSS snapshot
+        // still fences every dependent dossier, preserving the original captures.
+        const factual=e=>e.map(({related_urls,...document})=>document);
+        if(previousRSS&&hash(factual([previousRSS.document]))!==hash(factual(c.evidence)))await tx`update blog_worker.candidate p set reason='source_changed_after_reservation',status=case when p.post_id is null then 'held' else p.status end
+          where p.id=${current.id} or exists(select 1 from blog_worker.dossier_version v,jsonb_array_elements(v.document->'documents') d where v.candidate_id=p.id and d->>'url'=${c.url})`;
+        return 'duplicate';
+      }
       if(current && current.evidence_hash!==c.evidence_hash){
         const factual=e=>e.map(({related_urls,...document})=>document);
         if(hash(factual(current.evidence))===hash(factual(c.evidence)))return 'duplicate';

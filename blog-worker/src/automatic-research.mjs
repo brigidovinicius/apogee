@@ -41,7 +41,7 @@ export function sameResearchEvent(a,b){
   if(a.published_at&&b.published_at&&Math.abs(Date.parse(a.published_at)-Date.parse(b.published_at))>7*86400000)return false;
   const u=referenceUrl(a.url),v=referenceUrl(b.url);
   if((a.related_urls??[]).includes(v)||(b.related_urls??[]).includes(u))return true;
-  const dois=evidenceDois(a.text+' '+(a.doi??''));return [...evidenceDois(b.text+' '+(b.doi??''))].some(d=>dois.has(d));
+  const dois=evidenceDois(a.text+' '+(a.doi??'')+' '+(a.related_urls??[]).join(' '));return [...evidenceDois(b.text+' '+(b.doi??'')+' '+(b.related_urls??[]).join(' '))].some(d=>dois.has(d));
 }
 function prefix(text,bytes){
   // A declared, contiguous opening excerpt. The complete captured snapshot is
