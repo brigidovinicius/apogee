@@ -15,6 +15,7 @@ import {loadCms} from './cms-harness.mjs';
 import {dossierFixture} from './corroboration-fixture.mjs';
 import {assessDossier,dossierHash} from '../src/corroboration.mjs';
 import {hash,periodKeys} from '../src/policy.mjs';
+import {TOPICS,topicKey} from '../src/automatic-research.mjs';
 import {identity,policy,source,grant,price,candidate,completed,imagePolicy,imagePrice,imageUsage,webpFixture} from './fixtures.mjs';
 
 const bin=process.env.BLOG_TEST_PG_BIN;if(!bin)throw Error('Set BLOG_TEST_PG_BIN to native PostgreSQL binaries; no existing DB is accepted.');
@@ -554,6 +555,23 @@ try{
     assert.equal((await admin`select status from public.blog_post where id=${result.post_id}`)[0].status,'draft');
     await assert.rejects(()=>admin`update public.blog_post set status='published' where id=${result.post_id}`,/blog_factual_review_required/);
     assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,2);
+  });
+  await check('network research rotates through all ten topics across restarts and backoff without model calls',async()=>{
+    await reset();const items=[];
+    for(let i=0;i<TOPICS.length;i++)for(let j=0;j<2;j++){
+      const c=candidate(20+i*2+j);await store.ingest(c);items.push(c);
+      await admin`update blog_worker.candidate set artifact=${admin.json({research:{topic:TOPICS[i]}})} where id=${c.id}`;
+    }
+    const calls=[],scopes=[];
+    const read=async url=>{calls.push(url);throw Object.assign(Error('Synthetic inaccessible source'),{code:'research_source_unavailable'});};
+    for(let i=0;i<TOPICS.length;i++){
+      const fresh=new Store(runtime);assert.equal((await fresh.prepareAutomaticResearch(googlePolicy,{read})).prepared,0);
+      const c=items.find(c=>c.url===calls.at(-1));const [row]=await admin`select artifact from blog_worker.candidate where id=${c.id}`;
+      scopes.push(topicKey(row.artifact.research.topic));assert.ok(row.artifact.research.next_at>new Date().toISOString());
+    }
+    assert.equal(calls.length,10);assert.equal(new Set(calls).size,10);
+    assert.deepEqual([...new Set(scopes)].sort(),TOPICS.map(topicKey).sort());
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0);
   });
   await check('public article enrichment captures approved snapshots, promotes the primary and preserves the dossier on RSS recollection',async()=>{
     await reset();await operator.attestSubscription(subscription());

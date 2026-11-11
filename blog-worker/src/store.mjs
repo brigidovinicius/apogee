@@ -1,4 +1,4 @@
-import {automaticDossier,balancedResearchCandidates} from './automatic-research.mjs';
+import {automaticDossier,balancedResearchCandidates,nextResearchCandidate} from './automatic-research.mjs';
 import {enrichResearch} from './research-service.mjs';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
@@ -205,7 +205,12 @@ export class Store {
     };
     for(const {candidate,topic} of plan)if(await prepare(candidate,topic))return {prepared:1};
     // One bounded network research per cycle; no search API, model call or paid service.
-    const selected=plan.find(({candidate})=>candidate.artifact?.research?.day!==day||Number(candidate.artifact?.research?.tries??0)<3);
+    // Count today's completed network selections even while their candidates
+    // are in backoff. Restarting the process must not favor the first topic.
+    const history=await this.sql`select artifact->'research'->'topic' as topic,count(*)::int as researched from blog_worker.candidate
+      where artifact->'research'->>'day'=${day} and artifact->'research'->>'stage' is distinct from 'primary_found'
+      and jsonb_typeof(artifact->'research'->'topic')='object' group by 1`;
+    const selected=nextResearchCandidate(plan.filter(({candidate})=>candidate.artifact?.research?.day!==day||Number(candidate.artifact?.research?.tries??0)<3),history);
     if(!selected)return {prepared:0};
     const {candidate,topic}=selected,tries=candidate.artifact?.research?.day===day?Number(candidate.artifact.research.tries??0)+1:1;
     let result;try{result=await enrichResearch({store:this,candidate,topic,captures,read});}catch(error){result={reason:error.code??'research_source_unavailable'};}
