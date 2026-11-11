@@ -34,6 +34,10 @@ export function balancedResearchCandidates(rows,usage=[],limit=30){
   }
   return selected;
 }
+export function nextResearchCandidate(plan,history=[]){
+  const count=topic=>Number(history.find(h=>topicKey(h.topic)===topicKey(topic))?.researched??0);
+  return plan.reduce((selected,item)=>!selected||count(item.topic)<count(selected.topic)?item:selected,null);
+}
 export const evidenceDois=text=>new Set((text.match(/\b10\.\d{4,9}\/[a-z0-9._;()/:+-]+/gi)??[]).map(v=>v.replace(/[.,;)]+$/,'').toLowerCase()));
 // Pair only an exact DOI or an explicit article-to-article reference. Similar
 // titles, generic home-page links and popularity never establish the event.

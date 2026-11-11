@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {robotsAllowed,extractArticle,createArticleReader,referenceForUrl} from '../src/article-research.mjs';
-import {balancedResearchCandidates,TOPICS,topicKey,automaticDossier,sameResearchEvent} from '../src/automatic-research.mjs';
+import {balancedResearchCandidates,nextResearchCandidate,TOPICS,topicKey,automaticDossier,sameResearchEvent} from '../src/automatic-research.mjs';
 import {enrichResearch,researchPrimaryLinks} from '../src/research-service.mjs';
 import {defaultPolicy} from './fixtures.mjs';
 const content='A equipe anunciou um experimento inicial e suas limitações. '.repeat(6);
@@ -35,6 +35,14 @@ test('ten topics are balanced; completed daily topics and duplicate candidate re
  const rows=TOPICS.flatMap((t,i)=>Array.from({length:2},(_,j)=>({id:`${i}-${j}`,title:'Synthetic news',artifact:{research:{topic:t}}})));
  const plan=balancedResearchCandidates(rows,[],10);assert.equal(plan.length,10);assert.equal(new Set(plan.map(p=>topicKey(p.topic))).size,10);assert.equal(new Set(plan.map(p=>p.candidate.id)).size,10);
  assert.ok(balancedResearchCandidates(rows,[{...TOPICS[0],day:1}],10).every(p=>topicKey(p.topic)!==topicKey(TOPICS[0])));
+});
+test('network research rotates across cycles and preserves candidate order within a topic',()=>{
+ const plan=TOPICS.flatMap((topic,i)=>[{topic,candidate:{id:`${i}-a`}},{topic,candidate:{id:`${i}-b`}}]);
+ const history=[];
+ for(const topic of TOPICS){const selected=nextResearchCandidate(plan,history);assert.equal(topicKey(selected.topic),topicKey(topic));assert.ok(selected.candidate.id.endsWith('-a'));history.push({topic:selected.topic,researched:1});}
+ assert.equal(nextResearchCandidate(plan,history).candidate.id,'0-a');
+ assert.equal(nextResearchCandidate([],history),null);
+ assert.notEqual(topicKey(nextResearchCandidate(plan,[{topic:TOPICS[0],researched:30}]).topic),topicKey(TOPICS[0]));
 });
 test('secondary research captures its registered primary and prepares only unverified research',async()=>{
  const now=new Date().toISOString(),seed={id:'seed',source_id:'REF27',title:'Synthetic NASA report',url:'https://www.space.com/test/',published_at:now,artifact:{}};
