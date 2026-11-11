@@ -28,6 +28,18 @@ test('automatic dossiers keep snapshots, start unverified and reject identical r
  assert.equal(automaticDossier(primary,[a,{...b,text:a.text}],defaultPolicy),null);
  assert.equal(automaticDossier(primary,[a,{...b,source_id:'SRC02'}],defaultPolicy),null);
 });
+test('opening excerpts remain literal with decimals, abbreviations and adjacent punctuation',()=>{
+ const {primary,a,b}=fixtures();
+ const sentence='Dr. Silva mediu 3.14 unidades no teste?! O DOI 10.1234/synthetic-example identifica o estudo. ';
+ a.text=sentence.repeat(30);b.text='Análise independente do experimento. '+sentence.repeat(30);
+ const d=automaticDossier(primary,[a,b],defaultPolicy);assert.ok(d);
+ for(const doc of d.documents){
+  const original=doc.id==='E1'?a.text:b.text;
+  assert.equal(original.slice(0,doc.text.length),doc.text);
+  assert.ok(Buffer.byteLength(doc.text)<=1500);
+ }
+ assert.equal(a.text,sentence.repeat(30));
+});
 test('automatic idle queue never invokes the Google client or its quota endpoint',async()=>{
  const provider=()=>assert.fail('no model call');provider.preflight=()=>assert.fail('no quota request without work');
  const store={recover:async()=>0,maintenance:async()=>({capture_allowed:true}),prepareAutomaticResearch:async()=>({prepared:0}),nextAutomaticWork:async()=>null};

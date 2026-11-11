@@ -47,9 +47,13 @@ function prefix(text,bytes){
   // A declared, contiguous opening excerpt. The complete captured snapshot is
   // immutable and remains accessible to the editor. Never join distant quotes.
   if(Buffer.byteLength(text)<=bytes)return text.trimEnd();
-  const sentences=text.match(/[^.!?]+[.!?](?:\s+|$)/g)??[];let result='';
-  for(const s of sentences){if(Buffer.byteLength(result+s)>bytes)break;result+=s;}
-  return result.trim();
+  let end=0;
+  // Slice the original prefix, rather than concatenating regex matches: dots in
+  // decimals, DOIs and adjacent punctuation must never remove intervening text.
+  for(const match of text.matchAll(/[.!?](?=\s|$)/g)){
+    const next=match.index+1;if(Buffer.byteLength(text.slice(0,next))>bytes)break;end=next;
+  }
+  return text.slice(0,end).trimEnd();
 }
 export function automaticDossier(candidate,captures,policy,topic=researchTopic(candidate)){
   const ref=sourceReference(candidate.source_id);
