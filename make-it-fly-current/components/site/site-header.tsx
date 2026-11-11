@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { SiteMobileNavigation } from "./site-mobile-navigation";
 import styles from "./site-shell.module.css";
 
@@ -34,13 +35,28 @@ export function SiteHeader({
   adaptive = false,
 }: SiteHeaderProps) {
   const links = eventLink ? [...navigation, { href: "/makeitfly#participar", label: "Participar" }] : navigation;
+  const desktopNavigation = (
+    <nav className={styles.desktopNavigation} aria-label="Navegação principal">
+      {links.map((item, index) => (
+        <Link
+          href={item.href}
+          prefetch={prefetch}
+          key={item.href}
+          data-compact={index < 3 || undefined}
+          aria-current={item.section !== undefined && item.section === current ? "page" : undefined}
+        >
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
   return (
-    <header className={styles.header} data-tone={tone} data-adaptive={adaptive || undefined}>
+    <header className={styles.header} data-tone={adaptive ? tone : "light"} data-adaptive={adaptive || undefined} data-editorial={!adaptive || undefined}>
       <div className={styles.headerInner}>
         <Link className={styles.brand} href="/" aria-label="Apogee - início" prefetch={prefetch}>
           <Image
             className={adaptive ? styles.adaptiveWhite : undefined}
-            src={tone === "light" ? "/brand/apogee-logo-navy.svg" : "/brand/apogee-logo-white.svg"}
+            src={!adaptive || tone === "light" ? "/brand/apogee-logo-navy.svg" : "/brand/apogee-logo-white.svg"}
             alt=""
             width={1595}
             height={986}
@@ -50,18 +66,7 @@ export function SiteHeader({
           {adaptive && <Image className={styles.adaptiveNavy} src="/brand/apogee-logo-navy.svg" alt="" width={1595} height={986} sizes="112px" />}
         </Link>
 
-        <nav className={styles.desktopNavigation} aria-label="Navegação principal">
-          {links.map((item) => (
-            <Link
-              href={item.href}
-              prefetch={prefetch}
-              key={item.href}
-              aria-current={item.section === current ? "page" : undefined}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        {adaptive ? desktopNavigation : <p className={styles.signature}>Ideias que abrem caminhos.</p>}
 
         <Link
           className={styles.memberLink}
@@ -70,6 +75,7 @@ export function SiteHeader({
           aria-current={current === "members" ? "page" : undefined}
         >
           {memberLabel}
+          {!adaptive && <ArrowUpRight aria-hidden="true" size={18} />}
         </Link>
 
         <SiteMobileNavigation>
@@ -78,7 +84,7 @@ export function SiteHeader({
                 href={item.href}
                 prefetch={prefetch}
                 key={item.href}
-                aria-current={item.section === current ? "page" : undefined}
+                aria-current={item.section !== undefined && item.section === current ? "page" : undefined}
               >
                 {item.label}
               </Link>
@@ -88,6 +94,7 @@ export function SiteHeader({
             </Link>
         </SiteMobileNavigation>
       </div>
+      {!adaptive && <div className={styles.navigationBar}>{desktopNavigation}</div>}
     </header>
   );
 }
