@@ -42,4 +42,8 @@
 .empty { padding:2rem;border:1px dashed var(--apogee-border-subtle);border-radius:1rem; }
 .actions button:disabled { opacity:.5;cursor:not-allowed; }
 @media(max-width:1200px) { .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+/* Keep section shortcuts below the sticky navigation in the mobile admin shell. */
+@media(max-width:760px) {
+  .section,.panel { scroll-margin-top:6rem; }
+}
 @media(max-width:640px) { .fields,.limits,.metrics { grid-template-columns:1fr; } .panel,.source { padding:1rem; } .cover { flex-direction:column; } .cover img { width:100%; } .source summary { align-items:flex-start;flex-direction:column;gap:.25rem; } .actions { gap:.6rem; } }
