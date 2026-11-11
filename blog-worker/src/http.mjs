@@ -22,23 +22,23 @@ export function retryAfterSeconds(value,at=Date.now()) {
   return Number.isFinite(seconds)?Math.min(7*86400,Math.max(0,Math.ceil(seconds))):0;
 }
 // DNS is resolved once and pinned into TLS's lookup; no redirects, proxy or private IP fallback.
-export async function getFeed(url,hosts,{resolve=lookup,request=https.request,maxBytes=2*1024*1024,etag,lastModified}={}) {
+export async function getFeed(url,hosts,{resolve=lookup,request=https.request,maxBytes=2*1024*1024,etag,lastModified,accept='application/rss+xml,application/atom+xml,application/xml,text/xml',timeoutMs=20000,statuses=[200,304]}={}) {
   const u=allowedUrl(url,hosts),addresses=await resolve(u.hostname,{all:true,family:4});
   if(!addresses.length || addresses.some(x=>!publicIPv4(x.address)))fail('private_address');
   return new Promise((resolve,reject)=>{
-    const headers={'User-Agent':'ApogeeBlog/0.1','Accept':'application/rss+xml,application/atom+xml,application/xml,text/xml'};
+    const headers={'User-Agent':'ApogeeBlog/0.1 (+https://www.apogee.community)','Accept':accept};
     if(etag)headers['If-None-Match']=etag;
     if(lastModified)headers['If-Modified-Since']=lastModified;
-    const req=request(u,{headers,signal:AbortSignal.timeout(20000),lookup:(_host,options,cb)=>{
+    const req=request(u,{headers,signal:AbortSignal.timeout(timeoutMs),lookup:(_host,options,cb)=>{
       if(options.all)cb(null,[{address:addresses[0].address,family:4}]);else cb(null,addresses[0].address,4);
     }},res=>{
       if(res.statusCode===304){res.resume();resolve({notModified:true});return;}
-      if(res.statusCode!==200){res.resume();reject(Object.assign(Error('feed_http'),{retryAfter:retryAfterSeconds(res.headers['retry-after'])}));return;}
+      if(!statuses.includes(res.statusCode)){res.resume();reject(Object.assign(Error('feed_http'),{retryAfter:retryAfterSeconds(res.headers['retry-after'])}));return;}
       if(Number(res.headers['content-length']??0)>maxBytes){res.destroy();reject(Error('feed_size'));return;}
       let size=0;const chunks=[];
       res.on('data',chunk=>{size+=chunk.length;if(size>maxBytes){res.destroy();reject(Error('feed_size'));}else chunks.push(chunk);});
       res.on('error',()=>reject(Error('feed_read')));
-      res.on('end',()=>resolve({body:Buffer.concat(chunks).toString('utf8'),etag:res.headers.etag??null,lastModified:res.headers['last-modified']??null}));
+      res.on('end',()=>resolve({body:Buffer.concat(chunks).toString('utf8'),etag:res.headers.etag??null,lastModified:res.headers['last-modified']??null,status:res.statusCode,location:res.headers.location??null,contentType:res.headers['content-type']??null,robots:res.headers['x-robots-tag']??null}));
     });
     req.on('error',()=>reject(Error('feed_network')));req.end();
   });
