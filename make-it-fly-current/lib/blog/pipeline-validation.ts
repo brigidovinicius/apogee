@@ -33,6 +33,21 @@ export const pipelineMessages: Record<string, string> = {
 };
 export function pipelineReason(code: string | null | undefined): string {
   const reasons: Record<string, string> = {
+    primary_found: "Fonte primária localizada; buscando análise independente.",
+    primary_linked: "Pauta vinculada à fonte primária do acontecimento.",
+    research_primary_missing: "Ainda não há link para uma fonte primária cadastrada.",
+    research_primary_stale: "Fonte primária fora da janela de atualidade.",
+    research_independent_missing: "Aguardando cobertura independente do mesmo acontecimento.",
+    research_source_unavailable: "A página não pôde ser lida; pesquisa retida para nova tentativa limitada.",
+    research_robots_disallowed: "A fonte não permite a leitura automática desta página.",
+    research_excerpt_disallowed: "A fonte restringe o uso de excertos desta página.",
+    research_access_restricted: "Conteúdo restrito; necessário selecionar uma fonte pública.",
+    research_reference_unregistered: "Link fora das referências cadastradas; exige curadoria.",
+    research_format_unsupported: "Formato de documento não homologado para leitura automática.",
+    research_article_missing: "Corpo da matéria não identificado com segurança.",
+    research_text_insufficient: "Página sem texto público suficiente para comparação.",
+    research_cycle_limit: "Limite de acessos desta rodada atingido; pesquisa será retomada depois.",
+    duplicate_research_event: "Acontecimento já utilizado por outra matéria; selecione uma pauta diferente.",
     google_access_unverified: "Acesso Google aguardando revalidação automática.",
     google_access_check_in_progress: "Checagem automática do acesso Google em andamento.",
     google_access_stale_check: "O perfil mudou durante a checagem; aguarde nova validação.",

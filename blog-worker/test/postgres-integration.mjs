@@ -540,7 +540,7 @@ try{
     assert.deepEqual(await store.prepareAutomaticResearch(autoPolicy),{prepared:1});
     const [v]=await admin`select * from blog_worker.dossier_version where candidate_id=${a.id}`;
     assert.equal(v.actor_id,'automatic_research');assert.equal(v.reviewed_by,null);assert.equal(v.assessment.comparison_verified,false);
-    assert.deepEqual(await store.prepareAutomaticResearch(autoPolicy),{prepared:0});
+    assert.equal((await store.prepareAutomaticResearch(autoPolicy,{read:async()=>{throw Object.assign(Error('fixture unavailable'),{code:'research_source_unavailable'});}})).prepared,0);
     const changed=structuredClone(v.document);changed.documents[0].text+=' invented';changed.documents[0].content_hash=dossierHash(changed.documents[0].text);
     // The narrow function cannot overwrite a dossier or manufacture an approval.
     assert.equal((await runtime`select blog_worker.prepare_automatic_research(${a.id},${runtime.json(changed)},${a.evidence_hash}) as prepared`)[0].prepared,false);
@@ -554,6 +554,25 @@ try{
     assert.equal((await admin`select status from public.blog_post where id=${result.post_id}`)[0].status,'draft');
     await assert.rejects(()=>admin`update public.blog_post set status='published' where id=${result.post_id}`,/blog_factual_review_required/);
     assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,2);
+  });
+  await check('public article enrichment captures approved snapshots, promotes the primary and preserves the dossier on RSS recollection',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const src={...source,id:'REF27',url:'https://www.space.com/feeds/all',article_hosts:['www.space.com'],editoria:'ciencia-espaco'};
+    await store.syncPipeline({policy:googlePolicy,sources:[src],catalog:[]},{});
+    const date=new Date().toISOString(),url='https://www.space.com/research-enrichment-test/';
+    const seed=normalizeItem({title:'Synthetic NASA experiment',link:url,isoDate:date,contentSnippet:'A partial RSS discovery; primary evidence and independent verification are still required. '.repeat(4)},src,new Date());await store.ingest(seed);
+    const text='A equipe anunciou um experimento inicial. Este documento sintético descreve os limites do método de avaliação e não representa uma notícia real. '+('A análise exige novas medições. '.repeat(4));
+    const read=async(url,budget)=>{budget.used++;return {source_id:url===seed.url?'ARTICLE_REF27':'ARTICLE_REF22',url,title:'Synthetic public research',published_at:date,text:(url===seed.url?'Análise independente de contexto. ':'')+text,rights_reference:'Public fixture excerpt for testing',content_hash:hash(text),extraction_method:'public_article',related_urls:url===seed.url?['https://www.nasa.gov/research-enrichment-test/']:[]};};
+    assert.equal((await store.prepareAutomaticResearch({...googlePolicy,operator_commands_only:false},{read})).prepared,1);
+    const [d]=await admin`select * from blog_worker.dossier_version`;assert.equal(d.document.documents.length,2);assert.equal(d.assessment.eligible,false);
+    assert.equal(d.document.documents[0].url,'https://www.nasa.gov/research-enrichment-test/');assert.equal(d.reviewed_by,null);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.captured_document`)[0].n>=3,true);
+    await store.ingest(seed);assert.equal((await store.researchCandidate(seed.url)).evidence[0].extraction_method,'public_article');
+    const changed=structuredClone(seed);changed.evidence[0].text+=' Material change recorded by the source.';changed.evidence[0].content_hash=hash(changed.evidence[0].text);changed.evidence_hash=hash(changed.evidence);await store.ingest(changed);
+    assert.equal((await store.researchCandidate(seed.url)).evidence[0].extraction_method,'public_article');
+    assert.equal((await admin`select reason from blog_worker.candidate where id=${d.candidate_id}`)[0].reason,'source_changed_after_reservation');
+    assert.equal((await admin`select count(*)::int as n from blog_worker.dossier_version`)[0].n,1);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0);
   });
   await check('multisource comparison is metered, advances automatically to a private draft, and protects final publication',async()=>{
     await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());
@@ -624,23 +643,40 @@ try{
     assert.equal(result.status,'held');assert.equal(result.reason,'evidence_changed');
     const [a]=await admin`select state,charged_micro_usd,quota_used from blog_worker.attempt`;assert.equal(a.state,'confirmed');assert.equal(a.charged_micro_usd,'0');assert.equal(a.quota_used,'20600');
   });
-  await check('authorized daily target is one first reservation per topic, with ten topics and unchanged token ceilings',async()=>{
+  await check('ten distinct topics complete comparison, text and credited cover as drafts; failed comparisons do not occupy production',async()=>{
     await reset();await operator.attestSubscription(subscription());
     const topics=[['ciencia',null],['ciencia','aeroespacial'],['ciencia','neurociencia'],['tecnologia',null],['tecnologia','ia'],['tecnologia','software-ferramentas'],['tecnologia','hardware-robotica'],['negocios',null],['negocios','marketing'],['negocios','empreendedorismo-startups']];
     const smallUsage={input_tokens:100,output_tokens:100,thinking_tokens:0,cache_read_tokens:0,total_tokens:200};
+    const dossier=async(c,document)=>admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,source_hash,change_reason) values(${c.id},1,${admin.json(document)},${dossierHash(document)},${admin.json(assessDossier(document))},'test-editor',${c.evidence_hash},'Daily topic fixture')`;
     for(let i=0;i<topics.length;i++){
-      const c=candidate(i+1);await store.ingest(c);const document={...dossierFixture(1),category:topics[i][0],subcategory:topics[i][1]};
-      await admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,source_hash,change_reason) values(${c.id},1,${admin.json(document)},${dossierHash(document)},${admin.json(assessDossier(document))},'test-editor',${c.evidence_hash},'Daily topic fixture')`;
+      const c=candidate(i+1);await store.ingest(c);const document={...dossierFixture(1),event_key:'daily-unique-event-'+i,category:topics[i][0],subcategory:topics[i][1]};
+      document.documents=document.documents.map(d=>({...d,url:d.url+i,origin_url:d.origin_url+i}));
+      await dossier(c,document);
       const r=await store.reserveComparison({...googleOptions(),candidateId:c.id});assert.equal(r.status,'reserved');
-      await store.finish(r,{outcome:'completed',text:JSON.stringify({claims:document.claims}),usage:smallUsage});
+      assert.equal((await store.finish(r,{outcome:'completed',text:JSON.stringify({claims:document.claims}),usage:smallUsage})).status,'comparison_ready');
+      const text=await store.reserve({...googleOptions(),candidateId:c.id});
+      const result=await store.finish(text,{...googleCompleted,usage:smallUsage});assert.equal(result.status,'draft');
+      assert.equal((await admin`select category from public.blog_post where id=${result.post_id}`)[0].category,{ciencia:'ciencias',tecnologia:'tecnologia',negocios:'empreendedorismo'}[topics[i][0]]);
+      const image=await store.reserveImage({...googleOptions(),candidateId:c.id});assert.equal(image.status,'reserved');
+      assert.equal((await store.finish(image,{outcome:'completed',image:webpFixture(),usage:smallUsage})).status,'cover_ready');
       if(i===0){
-        const extra=candidate(50);await store.ingest(extra);
-        await admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,source_hash,change_reason) values(${extra.id},1,${admin.json(document)},${dossierHash(document)},${admin.json(assessDossier(document))},'test-editor',${extra.evidence_hash},'Duplicate topic fixture')`;
+        const extra=candidate(50);await store.ingest(extra);await dossier(extra,{...document,event_key:'daily-extra-event',documents:document.documents.map(d=>({...d,url:d.url+'extra',origin_url:d.origin_url+'extra'}))});
         await assert.rejects(()=>store.reserveComparison({...googleOptions(),candidateId:extra.id}),/topic_frequency/);
       }
     }
-    await assert.rejects(()=>store.reserveComparison({...googleOptions(),candidateId:candidate(50).id}),/draft_frequency/);
-    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,10);
+    const dashboard=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();
+    assert.equal(dashboard.production.reduce((n,t)=>n+t.complete,0),10);
+    assert.ok(dashboard.candidates.filter(c=>c.post_id).every(c=>c.topic_category&&c.topic_subcategory!==undefined));
+    assert.equal((await admin`select count(*)::int as n from public.blog_post where status='draft' and published_at is null and scheduled_at is null`)[0].n,10);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt where charged_micro_usd<>0`)[0].n,0);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,30);
+    await assert.rejects(()=>runtime`update blog_worker.research_reference set definition='{}'::jsonb`,/permission denied/);
+    await reset();await operator.attestSubscription(subscription());
+    const failed=candidate(1);await store.ingest(failed);await dossier(failed,dossierFixture(1));
+    const reservation=await store.reserveComparison({...googleOptions(),candidateId:failed.id});await store.finish(reservation,{outcome:'completed',text:'{}',usage:smallUsage});
+    assert.equal((await store.productionUsage()).length,0);
+    const replacement=candidate(2);await store.ingest(replacement);const replacementDoc={...dossierFixture(1),event_key:'different-event-replacement',documents:dossierFixture(1).documents.map(d=>({...d,url:d.url+'replacement',origin_url:d.origin_url+'replacement'}))};await dossier(replacement,replacementDoc);
+    assert.equal((await store.reserveComparison({...googleOptions(),candidateId:replacement.id})).status,'reserved');
   });
   await check('CLI once, status and healthcheck use only the isolated DB with shipped generation off',async()=>{
     await reset();const health=join(directory,'health.json');

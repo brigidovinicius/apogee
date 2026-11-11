@@ -393,7 +393,8 @@
     "collection_enabled": false,
     "hosts": [
       "nasa.gov",
-      "science.nasa.gov"
+      "science.nasa.gov",
+      "jpl.nasa.gov"
     ]
   },
   {
@@ -965,6 +966,47 @@
     "access": "pagina_publica_lida_20261109",
     "aliases": [
       "Coca-Cola Brasil / campanhas oficiais"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_CALTECH",
+    "name": "Caltech / notícias institucionais",
+    "publisher": "caltech",
+    "url": "https://www.caltech.edu/about/news",
+    "categories": [
+      "ciencia",
+      "tecnologia"
+    ],
+    "subcategories": [
+      "aeroespacial",
+      "hardware-robotica"
+    ],
+    "role": "institucional_pesquisa",
+    "access": "pagina_publica_verificada_20261111",
+    "aliases": [
+      "Caltech / notícias institucionais"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_NATURE_RESEARCH",
+    "name": "Nature / artigos de pesquisa",
+    "publisher": "nature",
+    "url": "https://www.nature.com/nature/",
+    "categories": [
+      "ciencia",
+      "tecnologia"
+    ],
+    "subcategories": [
+      "neurociencia",
+      "aeroespacial",
+      "ia"
+    ],
+    "role": "periodico_cientifico",
+    "access": "pagina_publica_verificada_20261111",
+    "aliases": [
+      "Nature / artigos de pesquisa"
     ],
     "collection_enabled": false
   }

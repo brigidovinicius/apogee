@@ -13,6 +13,7 @@
     "migrate": "node src/cli.mjs migrate"
   },
   "dependencies": {
+    "parse5": "8.1.1",
     "postgres": "3.4.9",
     "rss-parser": "3.13.0",
     "sharp": "0.35.5"

@@ -35,3 +35,7 @@ GRANT EXECUTE ON FUNCTION blog_worker.prepare_automatic_research(text,jsonb,text
 GRANT SELECT ON blog_worker.google_access TO apogee_blog_worker;
 GRANT EXECUTE ON FUNCTION blog_worker.claim_google_access(text,text),blog_worker.settle_google_access(uuid,jsonb) TO apogee_blog_worker;
 -- Web: SELECT on google_access only; runtime cannot edit the original plan attestation.
+
+-- Migration 007: reference registry is read-only for the runtime.
+GRANT SELECT ON blog_worker.research_reference TO apogee_blog_worker;
+-- GRANT SELECT ON blog_worker.research_reference TO apogee_site;
