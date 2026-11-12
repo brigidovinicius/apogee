@@ -207,7 +207,7 @@ export class Store {
       if(!document)return false;
       // Fresh corroboration can arrive during a network backoff. Recheck the
       // immutable cache, while keeping the cooldown for repeated page fetches.
-      if(freshOnly&&!document.documents.some(d=>Date.parse(captures.find(s=>s.capture_id===d.capture_id)?.captured_at)>Date.parse(candidate.artifact?.research?.at)))return false;
+      if(freshOnly&&!document.documents.some(d=>new Date(captures.find(s=>s.capture_id===d.capture_id)?.captured_at).getTime()>Date.parse(candidate.artifact?.research?.at)))return false;
       const [duplicate]=await this.sql`select v.candidate_id from blog_worker.dossier_version v where v.candidate_id<>${candidate.id}
         and (v.document->>'event_key'=${document.event_key} or v.document->'documents'->0->>'url'=${document.documents[0].url}) limit 1`;
       if(duplicate)return false;
@@ -251,7 +251,6 @@ export class Store {
     const rows=await this.sql`select c.id,c.status,c.reason,c.first_attempt_day,v.document,v.assessment,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison') as comparisons,
-      (select a.policy->>'comparison_prompt_version' from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' order by a.created_at desc limit 1) as comparison_prompt_version,
       exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.state in ('reserved','unknown')) as pending
       from blog_worker.candidate c join lateral(select * from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) v on true
       where c.post_id is null and c.reason is distinct from 'source_changed_after_reservation' and c.reason is distinct from 'operator_hold' and c.published_at>now()-interval '7 days'

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {canonicalResearchUrl} from '../src/research-links.mjs';
 import {extractArticle,primaryDocument} from '../src/article-research.mjs';
-import {sameResearchEvent,automaticDossier} from '../src/automatic-research.mjs';
+import {sameResearchEvent} from '../src/automatic-research.mjs';
 import {normalizeItem} from '../src/editorial.mjs';
 import {buildComparisonRequest} from '../src/corroboration.mjs';
 import {source,defaultPolicy} from './fixtures.mjs';
