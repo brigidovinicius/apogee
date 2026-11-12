@@ -1,5 +1,5 @@
 import {automaticDossier,balancedResearchCandidates,nextResearchCandidate} from './automatic-research.mjs';
-import {enrichResearch} from './research-service.mjs';
+import {enrichResearch,enrichSelectedEvidence} from './research-service.mjs';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage} from './policy.mjs';
@@ -201,15 +201,30 @@ export class Store {
       and d.captured_at>now()-interval '7 days' order by (d.document->>'extraction_method'='public_article') desc nulls last,d.captured_at desc limit 2000`;
     const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id}));
     const plan=balancedResearchCandidates(candidates,usage,1000);
-    const prepare=async(candidate,topic)=>{
+    let publicReadUsed=false,publicReadRequests=0;
+    const prepare=async(candidate,topic,{allowNetwork=true}={})=>{
       let document;try{document=automaticDossier(candidate,captures,policy,topic);}catch{return false;}
       if(!document)return false;
       const [duplicate]=await this.sql`select v.candidate_id from blog_worker.dossier_version v where v.candidate_id<>${candidate.id}
         and (v.document->>'event_key'=${document.event_key} or v.document->'documents'->0->>'url'=${document.documents[0].url}) limit 1`;
       if(duplicate)return false;
+      if(allowNetwork&&!publicReadUsed){
+        // Complete short public RSS previews before spending a comparison.
+        // One shared eight-request/30-second research budget per cycle.
+        const enriched=await enrichSelectedEvidence({store:this,candidate,dossier:document,captures,read});
+        publicReadUsed=enriched.attempted;publicReadRequests+=enriched.requests;
+        if(enriched.refreshed){
+          candidate=await this.researchCandidate(candidate.url)??candidate;
+          try{document=automaticDossier(candidate,captures,policy,topic);}catch{return false;}
+          if(!document)return false;
+        }
+      }
       return (await this.sql`select blog_worker.prepare_automatic_research(${candidate.id},${this.sql.json(document)},${candidate.evidence_hash}) as prepared`)[0].prepared;
     };
-    for(const {candidate,topic} of plan)if(await prepare(candidate,topic))return {prepared:1};
+    for(const {candidate,topic} of plan){
+      if(await prepare(candidate,topic))return {prepared:1,...(publicReadRequests?{requests:publicReadRequests}:{})};
+      if(publicReadUsed)return {prepared:0,reason:'research_independent_missing',requests:publicReadRequests};
+    }
     // One bounded network research per cycle; no search API, model call or paid service.
     // Count today's completed network selections even while their candidates
     // are in backoff. Restarting the process must not favor the first topic.
@@ -220,7 +235,7 @@ export class Store {
     if(!selected)return {prepared:0};
     const {candidate,topic}=selected,tries=candidate.artifact?.research?.day===day?Number(candidate.artifact.research.tries??0)+1:1;
     let result;try{result=await enrichResearch({store:this,candidate,topic,captures,read});}catch(error){result={reason:error.code??'research_source_unavailable'};}
-    if(result.primary&&await prepare(result.primary,topic))return {prepared:1,requests:result.requests};
+    if(result.primary&&await prepare(result.primary,topic,{allowNetwork:result.requests===0}))return {prepared:1,requests:(result.requests??0)+publicReadRequests};
     await this.researchProgress(candidate.id,{stage:result.reason??'research_independent_missing',topic,tries,next_at:new Date(Date.now()+3600000).toISOString()});
     return {prepared:0,reason:result.reason??'research_independent_missing',requests:result.requests??0};
   }
