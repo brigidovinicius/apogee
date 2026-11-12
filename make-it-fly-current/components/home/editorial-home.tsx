@@ -5,6 +5,7 @@ import { ArrowUpRight } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { BrandMark } from "@/components/ui/brand-mark";
+import { RedBullSupport } from "@/components/site/red-bull-support";
 import { HomeRadar } from "./home-radar";
 import styles from "./journal-home.module.css";
 
@@ -32,8 +33,10 @@ export function EditorialHome() {
     <main id="experiencia" tabIndex={-1}>
       <section className={styles.intro} aria-labelledby="home-title">
         <h1 id="home-title">Um lugar para o seu próximo salto.</h1>
-        <p>Conhecimento, oportunidades e gente curiosa para colocar ideias em movimento.</p>
+        <div className={styles.introActions}><p>Explore ciência e tecnologia, encontre oportunidades e participe de experiências para colocar suas ideias em prática.</p><div><Link className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={18} /></Link><Link className={styles.heroSecondary} href="/oportunidades" prefetch={false}>Explorar oportunidades</Link></div></div>
       </section>
+
+      <RedBullSupport />
 
       <section className={styles.featureBand} aria-labelledby="home-explore-title">
         <div className={styles.featureLayout}>
@@ -43,8 +46,8 @@ export function EditorialHome() {
               <Link href="/" aria-current="page" prefetch={false}>Em destaque</Link>
               <Link href="/oportunidades" prefetch={false}>Oportunidades</Link>
               <Link href="/blog" prefetch={false}>Ideias e leituras</Link>
-              <Link href="/galeria" prefetch={false}>Comunidade</Link>
-              <Link href="/makeitfly" prefetch={false}>Experiências</Link>
+              <Link href="/comunidade" prefetch={false}>Comunidade</Link>
+              <Link href="/evento-openai" prefetch={false}>Evento gratuito</Link>
             </nav>
           </aside>
           <ul className={styles.entryGrid} tabIndex={0} aria-label="Destaques da Apogee">
@@ -90,12 +93,12 @@ export function EditorialHome() {
           <p>Comunidade Apogee</p>
           <h2 id="home-community-title">Juntos, mais longe.</h2>
           <p>Encontros, projetos e outras perspectivas dão continuidade ao que começou como uma ideia.</p>
-          <Link className={styles.inlineAction} href="/galeria" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={18} /></Link>
+          <Link className={styles.inlineAction} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={18} /></Link>
         </div>
         <article className={styles.experience} aria-labelledby="home-experience-title">
-          <Image src="/media/earth-v2/earth-desktop-960.webp" alt="Imagem da Terra utilizada pela Apogee" width={960} height={540} sizes="(max-width: 760px) 90vw, 48vw" />
-          <div><p>Uma experiência Apogee</p><h3 id="home-experience-title">Make It Fly</h3>
-            <Link href="/makeitfly" prefetch={false}>Conhecer a experiência<ArrowUpRight aria-hidden="true" size={18} /></Link>
+          <Image className={styles.eventArt} src="/brand/apogee-star.svg" alt="" width={703} height={870} sizes="144px" />
+          <div><p>Evento gratuito · organização Apogee</p><h3 id="home-experience-title">Codex Community</h3>
+            <Link href="/evento-openai" prefetch={false}>Conhecer o evento gratuito<ArrowUpRight aria-hidden="true" size={18} /></Link>
           </div>
         </article>
       </section>

@@ -57,15 +57,15 @@ const nextConfig: NextConfig = {
     if (config.cache && !dev) config.cache = { type: "memory" };
     return config;
   },
-  // O Make It Fly virou uma página do site Apogee (/makeitfly). Mantém vivos os
-  // links já divulgados: o formulário antigo e a raiz do domínio makeitfly.
+  // Make It Fly is archived, preserving its source and assets for future use.
   async redirects() {
     return [
-      { source: "/participar", destination: "/makeitfly/participar", permanent: false },
+      { source: "/makeitfly/:path*", destination: "/comunidade", permanent: false },
+      { source: "/participar", destination: "/comunidade", permanent: false },
       {
         source: "/",
         has: [{ type: "host", value: "makeitfly.vercel.app" }],
-        destination: "/makeitfly",
+        destination: "/comunidade",
         permanent: false,
       },
     ];

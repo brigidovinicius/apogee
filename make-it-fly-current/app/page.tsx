@@ -5,17 +5,17 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Apogee | Comunidade, ideias e experiências",
-  description: "Descubra seu próximo salto na Apogee: explore o Radar de oportunidades, conheça os encontros Make It Fly e encontre uma comunidade para tirar ideias do papel",
+  description: "Descubra seu próximo salto na Apogee: explore conhecimento, encontre oportunidades e conheça a comunidade gratuita e o evento Codex Community.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Apogee | Comunidade, ideias e experiências",
-    description: "Encontros Make It Fly, fotos da comunidade e oportunidades para dar o próximo passo",
+    description: "Conhecimento, oportunidades e comunidade para colocar ideias em prática. Conheça o evento gratuito Codex Community da Apogee.",
     url: "/", siteName: "Apogee", locale: "pt_BR", type: "website",
   },
   twitter: {
     card: "summary",
     title: "Apogee | Comunidade, ideias e experiências",
-    description: "Encontros Make It Fly, fotos da comunidade e oportunidades para dar o próximo passo",
+    description: "Conhecimento, oportunidades e comunidade para colocar ideias em prática. Conheça o evento gratuito Codex Community da Apogee.",
   },
 };
 

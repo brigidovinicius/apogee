@@ -13,7 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await listPublicPostUrls();
   const opportunities = await listRadarOpportunities(true).catch(()=>[]);
   return [
-    ...["/", "/oportunidades", "/galeria", "/loja", "/makeitfly", "/blog"].map(
+    ...["/", "/oportunidades", "/galeria", "/loja", "/comunidade", "/evento-openai", "/blog"].map(
       (path) => ({ url: new URL(path, origin).toString() }),
     ),
     ...CALENDARS.map(c=>({url:new URL(`/calendarios/${c.slug}`,origin).toString()})),

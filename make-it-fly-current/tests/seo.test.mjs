@@ -117,6 +117,6 @@ test("API responses are noindex while robots and sitemap remain crawlable", asyn
   })).default();
   assert.equal(robots.rules.allow, "/");
   assert.equal(robots.sitemap, "https://www.apogee.community/sitemap.xml");
-  assert.deepEqual(sitemap.map(entry => new URL(entry.url).pathname), ["/", "/oportunidades", "/galeria", "/loja", "/makeitfly", "/blog", "/calendarios/olimpiadas-cientificas", "/calendarios/vestibulares", "/calendarios/eventos", "/calendarios/hackathons", "/calendarios", "/blog/ideias-apogee"]);
+  assert.deepEqual(sitemap.map(entry => new URL(entry.url).pathname), ["/", "/oportunidades", "/galeria", "/loja", "/comunidade", "/evento-openai", "/blog", "/calendarios/olimpiadas-cientificas", "/calendarios/vestibulares", "/calendarios/eventos", "/calendarios/hackathons", "/calendarios", "/blog/ideias-apogee"]);
   assert.equal(sitemap.at(-1).lastModified, publishedAt);
 });

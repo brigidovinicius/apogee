@@ -62,7 +62,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.apogee.community"),
   robots: { index: true, follow: true },
   title: "Apogee",
-  description: "Apogee: comunidade e experiências para tirar ideias do papel. Conheça o Make It Fly.",
+  description: "Apogee: conhecimento, oportunidades e comunidade para colocar ideias em prática.",
   openGraph: {
     siteName: "Apogee",
     title: "Apogee",

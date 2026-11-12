@@ -141,6 +141,7 @@ test("only the approved Apogee, blog, admin, community and Make It Fly surfaces 
   };
   await visit("app");
   assert.deepEqual(files.filter(path => /\/(?:page|layout|route)\.(?:tsx?|jsx?|mdx)$/.test(path)).sort(), [
+    "app/comunidade/page.tsx", "app/gravacao/page.tsx", "app/evento-openai/page.tsx", "app/admin/comunidade/page.tsx", "app/api/comunidade/contatos/route.ts",
     "app/api/colecoes/resumos/route.ts", "app/colecoes/[token]/page.tsx", "app/colecoes/resumos/cancelar/[token]/page.tsx",
     "app/membros/colecoes/page.tsx", "app/membros/colecoes/[id]/page.tsx", "app/membros/colecoes/acompanhadas/page.tsx", "app/membros/colecoes/seguir/[token]/page.tsx",
     "app/membros/esqueci-senha/page.tsx", "app/membros/redefinir-senha/page.tsx",
