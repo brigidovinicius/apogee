@@ -54,6 +54,7 @@ export function pipelineReason(code: string | null | undefined): string {
     google_access_binding_changed: "O perfil Google difere do acesso homologado. Confira a conta antes de retomar.",
     google_access_unavailable: "Não foi possível confirmar o acesso Google. A checagem será repetida sem chamar modelos.",
     waiting_for_evidence: "Aguardando fontes do mesmo acontecimento, comparação elegível e cota; nenhuma geração iniciada.",
+    draft_import_unavailable: "O acesso restrito de importação de rascunhos precisa ser reparado. Nenhuma chamada de IA foi iniciada.",
     topic_frequency: "Esta área já atingiu o limite diário ou semanal de matérias iniciadas.",
     comparison_required: "Conclua a comparação das evidências antes de criar o rascunho.",
     comparison_incomplete: "Monte o dossiê e compare os fatos antes da redação.",

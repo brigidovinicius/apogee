@@ -390,6 +390,24 @@ try{
   }
   const googleCompleted={...completed,text:JSON.stringify({...JSON.parse(completed.text),paragraphs:JSON.parse(completed.text).paragraphs.map(p=>({...p,claimIds:['C1']}))})};
   const googleUsage={input_tokens:10000,output_tokens:500,thinking_tokens:100,cache_read_tokens:10000,total_tokens:10500};
+  await check('missing draft-wrapper permission blocks comparison and text before reserving or invoking a provider',async()=>{
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier();
+    await admin.unsafe('REVOKE EXECUTE ON FUNCTION blog_worker.import_draft(text,jsonb) FROM blog_runtime');
+    try{
+      await assert.rejects(()=>store.reserve(googleOptions()),/draft_import_unavailable/);
+      await assert.rejects(()=>store.reserveComparison({...googleOptions(),candidateId:candidate().id}),/draft_import_unavailable/);
+      assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0);
+    }finally{await admin.unsafe('GRANT EXECUTE ON FUNCTION blog_worker.import_draft(text,jsonb) TO blog_runtime');}
+    assert.equal(await runtime`select has_function_privilege(current_user,'blog_worker.import_draft_legacy(text,jsonb)','EXECUTE') permitted`.then(r=>r[0].permitted),false);
+    assert.equal((await store.reserve(googleOptions())).status,'reserved');
+  });
+  await check('operator holds stay excluded from automatic comparison and explicit reservation',async()=>{
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(false);
+    await admin`update blog_worker.candidate set status='held',reason='operator_hold' where id=${candidate().id}`;
+    assert.equal(await store.nextAutomaticWork(googlePolicy),null);
+    assert.equal((await store.reserveComparison({...googleOptions(),candidateId:candidate().id})).status,'idle');
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0);
+  });
   await check('admin generation waits for a current eligible comparison and rejects stale evidence before enqueueing',async()=>{
     await reset();await store.ingest(candidate());await store.syncPipeline({policy:googlePolicy,sources:[source],catalog:[]},{});
     const pipeline=loadCms(cmsClient,'lib/blog/pipeline.ts'),editorial=loadCms(cmsClient,'lib/blog/dossier.ts');

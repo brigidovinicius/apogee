@@ -9,7 +9,7 @@ export function researchTopic(c){
   if(assigned&&TOPICS.some(t=>topicKey(t)===topicKey(assigned)))return assigned;
   const title=c.title.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
   const t=(title+' '+(c.evidence??[]).map(e=>e.text).join(' ').slice(0,1600)).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
-  if(/em promocao|veja uma selecao|onde assistir|escalacao|horoscopo|cupons|filmes para|^ofertas\b|melhor.*para comprar/.test(title))return null;
+  if(/em promocao|veja uma selecao|onde assistir|escalacao|horoscopo|cupons|filmes para|^ofertas\b|melhor.*para comprar|lotofacil|\bquina\b|mega.sena|\blottery\b|\bbest\b.*\bdeals\b/.test(title))return null;
   // The headline establishes the editorial focus. A mention of a detector chip
   // in a telescope story must not consume the daily robotics/hardware slot.
   if(/marketing|advertis|campanha|publicidade|\bads\b|anunciantes/.test(title))return {category:'negocios',subcategory:'marketing'};
@@ -18,7 +18,7 @@ export function researchTopic(c){
   if(/nasa|mars\b|marte\b|spacecraft|lunar|orbit|rocket|foguete|astronom|espacia|space telescope/.test(title))return {category:'ciencia',subcategory:'aeroespacial'};
   if(/\bai\b|\bia\b|artificial intelligence|inteligencia artificial|chatgpt|gemini|openai|llm/.test(title))return {category:'tecnologia',subcategory:'ia'};
   if(/neuro|brain|cerebr|alzheimer/.test(title))return {category:'ciencia',subcategory:'neurociencia'};
-  if(/software|application|aplicativo|ferramenta|browser|navegador|sistema operacional|windows|android/.test(title))return {category:'tecnologia',subcategory:'software-ferramentas'};
+  if(/software|application|aplicativo|ferramenta|browser|navegador|sistema operacional|windows|android|collaborativ|colaborativ/.test(title))return {category:'tecnologia',subcategory:'software-ferramentas'};
   const ref=sourceReference(c.source_id);
   if(ref?.id==='REF15')return {category:'ciencia',subcategory:'neurociencia'};
   if(/neuro|brain|cerebr|alzheimer/.test(t))return {category:'ciencia',subcategory:'neurociencia'};
@@ -49,13 +49,39 @@ export function nextResearchCandidate(plan,history=[]){
   return plan.reduce((selected,item)=>!selected||count(item.topic)<count(selected.topic)?item:selected,null);
 }
 export const evidenceDois=text=>new Set((text.match(/\b10\.\d{4,9}\/[a-z0-9._;()/:+-]+/gi)??[]).map(v=>v.replace(/[.,;)]+$/,'').toLowerCase()));
-// Pair only an exact DOI or an explicit article-to-article reference. Similar
-// titles, generic home-page links and popularity never establish the event.
+const escaped=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+// Some public RSS previews omit outbound hyperlinks. Admit only an exact,
+// distinctive product identifier in a dated corporate launch and another
+// launch headline naming that product and its owner. This selects evidence for
+// comparison; it does not confirm claims, independence or scientific results.
+export function sameProductLaunch(a,b){
+  if(!a.published_at||!b.published_at||![Date.parse(a.published_at),Date.parse(b.published_at)].every(Number.isFinite)||Math.abs(Date.parse(a.published_at)-Date.parse(b.published_at))>2*86400000)return false;
+  for(const [primary,news] of [[a,b],[b,a]]){
+    const ref=sourceReference(primary.source_id);
+    if(!primaryReferenceCorporate(ref)||!independentReference(sourceReference(news.source_id)))continue;
+    const title=String(primary.title??'');
+    const launch=/\b(?:try|introduc\w*|launch\w*|announc\w*|experimental|now available|lan[cç]\w*|anunci\w*|dispon[ií]vel)\b/i;
+    if(!launch.test(title)||!launch.test(news.title+' '+news.text.slice(0,1200)))continue;
+    if(/\b(?:review|hands.on|rumou?r|leak\w*|reportedly|lawsuit|breach|vulnerab\w*|an[aá]lise|opini[aã]o|falha|processo)\b/i.test(news.title))continue;
+    const product=title.match(/^Try\s+([A-Z][a-zA-Z0-9]{6,30})\b/)?.[1]
+      ??title.match(/^([A-Z][A-Za-z0-9]*(?:\s+\d+(?:\.\d+)?)(?:\s+[A-Z][a-zA-Z]+)?)\s+is now available\b/)?.[1]
+      ??title.match(/\b([A-Z][a-z]+[A-Z][A-Za-z]+\s+\d+(?:\.\d+)?)\b/)?.[1];
+    if(!product||/^(?:Google|Microsoft|OpenAI|Meta|Gemini|ChatGPT|Android|Windows|Product|Products)$/i.test(product))continue;
+    const exact=new RegExp('\\b'+escaped(product)+'\\b','i'),brand=new RegExp('\\b'+escaped(ref.publisher)+'\\b','i');
+    const matched=exact.exec(news.title);if(!matched||!exact.test(primary.text)||!brand.test(news.title+' '+news.text))continue;
+    if(/^\s+(?:Pro|Ultra|Max|Mini|Plus|\d)\b/i.test(news.title.slice(matched.index+matched[0].length)))continue;
+    return true;
+  }
+  return false;
+}
+const primaryReferenceCorporate=r=>!!r&&/^institucional/.test(r.role)&&['google','microsoft','meta','openai'].includes(r.publisher);
+// Exact identifiers select a research pair. Generic title similarity, home-page
+// links and popularity never establish a pair or a verified comparison.
 export function sameResearchEvent(a,b){
   if(a.published_at&&b.published_at&&Math.abs(Date.parse(a.published_at)-Date.parse(b.published_at))>7*86400000)return false;
   const u=referenceUrl(a.url),v=referenceUrl(b.url);
   if((a.related_urls??[]).includes(v)||(b.related_urls??[]).includes(u))return true;
-  const dois=evidenceDois(a.text+' '+(a.doi??'')+' '+(a.related_urls??[]).join(' '));return [...evidenceDois(b.text+' '+(b.doi??'')+' '+(b.related_urls??[]).join(' '))].some(d=>dois.has(d));
+  const dois=evidenceDois(a.text+' '+(a.doi??'')+' '+(a.related_urls??[]).join(' '));return [...evidenceDois(b.text+' '+(b.doi??'')+' '+(b.related_urls??[]).join(' '))].some(d=>dois.has(d))||sameProductLaunch(a,b);
 }
 function prefix(text,bytes){
   // A declared, contiguous opening excerpt. The complete captured snapshot is
@@ -90,7 +116,7 @@ export function automaticDossier(candidate,captures,policy,topic=researchTopic(c
     const text=prefix(s.text,budget);if(text.length<80)return null;
     return {id:'E'+(i+1),reference_id:s.ref.id,capture_id:s.capture_id,title:s.title,url:referenceUrl(s.url,s.ref),published_at:s.published_at,
       text,content_hash:dossierHash(text),rights_reference:s.rights_reference,kind:i===0?'primary':'independent',evidence_scope:s.evidence_scope??'source_excerpt',origin_url:referenceUrl(s.url),same_event:true,
-      independence_note:i===0?'Fonte primária institucional ou apuração de primeira mão explicitamente identificada; snapshot integral preservado.':'Associação automática por DOI ou referência explícita. Publicação jornalística distinta; o comparador deve rejeitar mera reprodução de release. Não representa replicação científica nem conferência humana.'};
+      independence_note:i===0?'Fonte primária institucional ou apuração de primeira mão explicitamente identificada; snapshot integral preservado.':'Seleção por DOI, referência explícita ou identificador exato de lançamento corporativo na janela de 48 horas. Confirmar mesmo evento, data e estágio. Publicação distinta; o comparador deve rejeitar mera reprodução de release. Não representa replicação científica nem conferência humana.'};
   });
   if(documents.some(d=>!d))continue;
   const dossier=validateDossier({schema_version:1,event_key:own.url.length<=180?own.url:'url-sha256:'+dossierHash(own.url),...topic,documents,claims:[]});
