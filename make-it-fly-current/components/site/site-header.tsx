@@ -22,7 +22,7 @@ const navigation: ReadonlyArray<{ href: string; label: string; section?: SiteSec
   { href: "/blog", label: "Blog", section: "blog" },
   { href: "/galeria", label: "Galeria", section: "gallery" },
   { href: "/loja", label: "Loja", section: "store" },
-  { href: "/makeitfly", label: "Make It Fly" },
+  { href: "/comunidade", label: "Comunidade" },
 ];
 
 export function SiteHeader({
@@ -34,7 +34,7 @@ export function SiteHeader({
   eventLink = false,
   adaptive = false,
 }: SiteHeaderProps) {
-  const links = eventLink ? [...navigation, { href: "/makeitfly#participar", label: "Participar" }] : navigation;
+  const links = eventLink ? [...navigation, { href: "/evento-openai", label: "Evento gratuito" }] : navigation;
   const desktopNavigation = (
     <nav className={styles.desktopNavigation} aria-label="Navegação principal">
       {links.map((item, index) => (

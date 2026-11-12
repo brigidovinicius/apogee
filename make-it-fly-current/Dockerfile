@@ -39,6 +39,8 @@ COPY --from=builder --chown=nextjs:nextjs /app/scripts/google-calendar-worker.mj
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/collection-digest-worker.mjs ./scripts/collection-digest-worker.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/google-calendar-alerts.mjs ./scripts/google-calendar-alerts.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/store-drops-migrate.mjs ./scripts/store-drops-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/community-contacts-migrate.mjs ./scripts/community-contacts-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/sql/community-contacts.sql ./sql/community-contacts.sql
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-grant-invitation-manager.mjs ./scripts/members-grant-invitation-manager.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/drizzle ./drizzle
 COPY --from=dependencies --chown=nextjs:nextjs /app/node_modules/postgres ./node_modules/postgres

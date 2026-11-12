@@ -26,7 +26,8 @@ export function SiteFooter() {
           <Link href="/blog">Blog</Link>
           <Link href="/galeria">Galeria</Link>
           <Link href="/loja">Loja</Link>
-          <Link href="/makeitfly">Make It Fly</Link>
+          <Link href="/comunidade">Comunidade</Link>
+          <Link href="/evento-openai">Evento gratuito</Link>
           <Link href="/membros">Membros</Link>
           {legalLinks.privacy && <Link href="/privacidade">Privacidade</Link>}
           {legalLinks.terms && <Link href="/termos">Termos de Uso</Link>}

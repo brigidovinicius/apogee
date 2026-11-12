@@ -131,3 +131,10 @@
   .community { grid-template-columns: minmax(0, 1fr); padding-block: 2rem; }
   .experience { min-height: 18rem; }
 }
+
+.introActions > p { max-width:28rem; margin:0; color:var(--journal-muted); font-size:1rem; }
+.introActions > div { display:flex; flex-wrap:wrap; gap:.8rem 1.2rem; align-items:center; margin-top:1.2rem; }
+.heroPrimary,.heroSecondary { display:inline-flex; align-items:center; gap:1rem; min-height:44px; font-size:.875rem; text-decoration:none; }
+.page main a.heroPrimary { padding:.75rem 1rem; background:var(--journal-ink); color:white; border-radius:.25rem; }.heroSecondary:hover { text-decoration:underline; }
+.experience > img.eventArt { width:9rem; height:11rem; inset:2rem 2rem auto auto; object-fit:contain; opacity:.35; }
+@media(min-width:761px) { .intro { grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); } }

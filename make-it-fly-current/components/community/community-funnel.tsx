@@ -13,8 +13,8 @@ export function FunnelHeader({ page }: { page: "community" | "recording" }) {
     <nav className={styles.navigation} aria-label="Navegação principal">
       <Link href={page === "community" ? "#comunidade" : "/comunidade"} prefetch={false}>A comunidade</Link>
       <Link href={page === "community" ? "#cursos" : "#como-funciona"}>{page === "community" ? "Cursos de IA" : "Como funciona"}</Link>
-      <Link href={page === "community" ? "/gravacao" : "#duvidas"} prefetch={false}>{page === "community" ? "Gravação do evento" : "Dúvidas"}</Link>
-    </nav><span className={styles.previewBadge}>Prévia local</span>
+      <Link href={page === "community" ? "/evento-openai" : "#duvidas"} prefetch={false}>{page === "community" ? "Evento gratuito" : "Dúvidas"}</Link>
+    </nav><Link className={styles.previewBadge} href="/">Conheça a Apogee</Link>
   </header>;
 }
 
@@ -27,8 +27,7 @@ export function CommunityJoinButton({ label = "Participar gratuitamente", second
       <button type="button" className={styles.closeButton} aria-label="Fechar convite da comunidade" onClick={() => dialog.current?.close()}><X size={20} aria-hidden="true" /></button>
       <MessageCircle className={styles.dialogIcon} size={32} strokeWidth={1.3} aria-hidden="true" /><p className={styles.eyebrow}>Comunidade Apogee · gratuita</p><h2 id={`${id}-title`}>A conversa começa<br />no WhatsApp.</h2>
       <p id={`${id}-description`}>O grupo está sendo preparado. O convite será disponibilizado aqui quando a entrada estiver aberta.</p>
-      <p className={styles.dialogNote}>Nesta prévia, você pode conhecer o percurso da gravação do evento. Nenhum grupo ou cadastro real é aberto.</p>
-      <Link className={styles.primary} href="/gravacao#inscricao" prefetch={false} onClick={() => dialog.current?.close()}>Conhecer a gravação <ArrowUpRight size={18} aria-hidden="true" /></Link>
+      <Link className={styles.primary} href="/evento-openai#inscricao" prefetch={false} onClick={() => dialog.current?.close()}>Conhecer o evento gratuito <ArrowUpRight size={18} aria-hidden="true" /></Link>
     </dialog>
   </>;
 }
@@ -41,7 +40,7 @@ export function FunnelFooter() {
   const legal = useSiteLegalLinks();
   return <footer className={styles.footer}>
     <Link className={styles.brand} href="/" prefetch={false} aria-label="Apogee — página inicial"><Image src="/brand/apogee-star.svg" alt="" width={24} height={30} /><span>Apogee<small>Conhecimento e oportunidades</small></span></Link>
-    <nav aria-label="Navegação do rodapé"><Link href="/comunidade" prefetch={false}>Comunidade</Link><Link href="/gravacao" prefetch={false}>Gravação do evento</Link><Link href="/oportunidades" prefetch={false}>Radar</Link><Link href="/blog" prefetch={false}>Blog</Link>{legal.privacy && <Link href="/privacidade">Privacidade</Link>}{legal.terms && <Link href="/termos">Termos de uso</Link>}</nav>
-    <p>Prévia local para revisão. Inscrições e convites ainda não estão ativos.</p>
+    <nav aria-label="Navegação do rodapé"><Link href="/comunidade" prefetch={false}>Comunidade</Link><Link href="/evento-openai" prefetch={false}>Evento gratuito</Link><Link href="/oportunidades" prefetch={false}>Radar</Link><Link href="/blog" prefetch={false}>Blog</Link>{legal.privacy && <Link href="/privacidade">Privacidade</Link>}{legal.terms && <Link href="/termos">Termos de uso</Link>}</nav>
+    <p>Conhecimento, oportunidades e gente para colocar ideias em movimento.</p>
   </footer>;
 }

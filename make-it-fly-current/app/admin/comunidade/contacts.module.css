@@ -1,0 +1,5 @@
+.notice { color:#4b5b70; font-size:.875rem; line-height:1.6; }
+.list { display:grid; gap:1rem; }
+.contact { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:start; gap:1rem; padding:1.25rem; border:1px solid #cdd6e0; background:#fff; border-radius:.4rem; overflow-wrap:anywhere; }
+.contact h2 { font-size:1.1rem; margin:0 0 .4rem; }.contact p { margin:0; }.contact time { font-size:.8rem; color:#4b5b70; }.contact details { flex-basis:100%; }.contact summary { cursor:pointer; padding-block:.5rem; }.contact details p { white-space:pre-wrap; }
+.pagination,.pagination>div { display:flex; flex-wrap:wrap; gap:1rem; align-items:center; }.pagination { justify-content:space-between; margin-top:1.5rem; }

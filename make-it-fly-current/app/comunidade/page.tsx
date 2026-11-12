@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { CommunitySalesPage } from "@/components/community/community-sales-page";
 
 const description = "Comunidade gratuita da Apogee no WhatsApp: IA no dia a dia, oportunidades e curadoria. Conheça também a primeira turma de IA em preparação.";
@@ -7,7 +6,8 @@ const description = "Comunidade gratuita da Apogee no WhatsApp: IA no dia a dia,
 export const metadata: Metadata = {
   title: "Comunidade Apogee",
   description,
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
+  alternates: { canonical: "https://www.apogee.community/comunidade" },
   openGraph: {
     title: "Comunidade Apogee",
     description,
@@ -18,6 +18,5 @@ export const metadata: Metadata = {
 };
 
 export default function CommunityPage() {
-  if (process.env.APOGEE_LOCAL_PREVIEW !== "1") notFound();
   return <CommunitySalesPage />;
 }

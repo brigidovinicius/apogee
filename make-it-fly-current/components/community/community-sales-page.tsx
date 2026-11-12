@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, BookOpen, Compass, MessageCircle, Newspaper } from "lucide-react";
+import { RedBullSupport } from "@/components/site/red-bull-support";
 import { COMMUNITY_BENEFITS, COMMUNITY_DELIVERABLES, COMMUNITY_FAQ } from "@/content/community";
 import { CommunityJoinButton, FunnelFaq, FunnelFooter, FunnelHeader } from "./community-funnel";
 import styles from "./community-sales-page.module.css";
@@ -19,11 +20,12 @@ export function CommunitySalesPage() {
             <h1 id="community-title">IA para o dia a dia.<br /><span>Gente para ir além.</span></h1>
             <p className={styles.heroLead}>Aprenda, descubra oportunidades e encontre outras pessoas que também querem colocar ideias em prática.</p>
             <CommunityJoinButton />
-            <p className={styles.actionHint}>Nossa comunidade começa no WhatsApp.</p>
+            <p className={styles.actionHint}>Nossa comunidade começa no WhatsApp. Convite em breve.</p>
           </div>
           <div className={styles.starScene} aria-hidden="true"><Image className={styles.heroStar} src="/brand/apogee-star.svg" alt="" width={703} height={870} priority /><span className={styles.orbitLine} /></div>
           <div className={styles.heroTopics}><span>IA na prática</span><span>Radar de oportunidades</span><span>Curadoria Apogee</span></div>
         </section>
+        <RedBullSupport />
         <section id="comunidade" className={styles.section} aria-labelledby="inside-title">
           <div className={styles.sectionHeading}><p className={styles.eyebrow}>O que nos reúne</p><h2 id="inside-title">Conhecimento, oportunidades<br />e boas conversas.</h2><p>Um ponto de encontro para quem tem curiosidade e quer dar o próximo passo.</p></div>
           <div className={styles.deliverables}>{COMMUNITY_DELIVERABLES.map(item => {
@@ -50,7 +52,7 @@ export function CommunitySalesPage() {
         </section>
         <section id="participar" className={[styles.section, styles.joinSection].join(" ")} aria-labelledby="join-title">
           <p className={styles.eyebrow}>Comunidade gratuita no WhatsApp</p><h2 id="join-title">O próximo passo fica melhor<br /><em>com gente.</em></h2><p>Trocas sobre IA, descobertas e oportunidades. Um lugar para continuar a conversa e aprender junto.</p><CommunityJoinButton />
-          <Link className={styles.subtleLink} href="/gravacao" prefetch={false}>Conhecer a gravação do evento <ArrowUpRight size={16} aria-hidden="true" /></Link>
+          <Link className={styles.subtleLink} href="/evento-openai" prefetch={false}>Conhecer o evento gratuito <ArrowUpRight size={16} aria-hidden="true" /></Link>
         </section>
         <FunnelFaq id="duvidas" title="Antes de fazer parte." items={COMMUNITY_FAQ} />
       </main>
