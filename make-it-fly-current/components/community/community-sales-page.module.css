@@ -1,0 +1,70 @@
+/* Only community-specific copy and status layouts; the Make It Fly design is shared. */
+.heroNote { color: #b6bdc5; font-size: .6rem; letter-spacing: .1em; }
+.heroWordmark {
+  margin: 0;
+  font-family: var(--font-instrument-serif), serif;
+  font-size: clamp(5rem, 15.5vw, 18rem);
+  font-weight: 400;
+  line-height: .84;
+  letter-spacing: -.055em;
+}
+.deliverable { width: 100%; border-top: 1px solid rgb(255 255 255 / 20%); }
+.deliverableCopy { display: grid; min-width: 0; justify-items: start; gap: .85rem; }
+.deliverableCopy p { grid-column: auto; min-width: 0; padding-right: 0; }
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  width: fit-content;
+  padding: .45rem .65rem;
+  border: 1px solid currentColor;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: .6rem;
+  line-height: 1.4;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.available::before { width: .4rem; height: .4rem; background: currentColor; border-radius: 50%; content: ""; }
+.lightStatus { margin-bottom: 2.4rem; }
+.subjectWord { margin-top: 2.4rem; line-height: 1.05; }
+.radarIntro h2 { max-width: none; font-size: clamp(2.5rem, 5.1vw, 5.4rem); }
+.launchNote { padding-top: 1.5rem; border-top: 1px solid currentColor; }
+.accessNote { margin-top: 1rem !important; font-size: .83rem !important; opacity: .8; }
+.faqSection { background: #fff; color: #07182d; }
+.faqLabel { color: #38506b; }
+.faqList { align-self: start; }
+.faqItem { border-top: 1px solid rgb(7 24 45 / 22%); }
+.faqItem:last-child { border-bottom: 1px solid rgb(7 24 45 / 22%); }
+.faqItem summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  min-height: 5rem;
+  padding-block: 1.3rem;
+  list-style: none;
+  cursor: pointer;
+  font-size: clamp(.95rem, 1.3vw, 1.15rem);
+  line-height: 1.5;
+  font-weight: 550;
+}
+.faqItem summary::-webkit-details-marker { display: none; }
+.faqItem summary svg { flex-shrink: 0; transition: transform 180ms ease; }
+.faqItem[open] summary svg { transform: rotate(45deg); }
+.faqItem p { margin: 0 0 1.8rem; max-width: 58ch; color: #38506b; font-size: .95rem; line-height: 1.7; }
+.faqItem summary:focus-visible { outline: 2px solid #07182d; outline-offset: 3px; }
+.footerBrand { display: grid; justify-items: start; gap: 1.2rem; }
+.footerBrand img { display: block; width: 7.5rem; height: auto; }
+.footerBrand span { font-family: var(--font-dm-mono), monospace; font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; }
+@media (max-width: 767px) {
+  .heroNote { font-size: .47rem; }
+  .heroWordmark { font-size: 16.7vw; line-height: .95; }
+  .deliverable { grid-template-columns: 2.75rem minmax(0, 1fr) 1.4rem; }
+  .deliverable h3 { min-width: 0; overflow-wrap: anywhere; }
+  .deliverableCopy { grid-column: 2 / -1; padding-right: 1.4rem; }
+  .subjectWord { font-size: clamp(3.5rem, 15vw, 5rem); }
+  .radarIntro h2 { font-size: clamp(2.8rem, 12vw, 4rem); }
+  .faqItem summary { min-height: 4.5rem; }
+}
+@media (max-width: 360px) { .deliverable h3 { font-size: 7vw; } }
+@media (prefers-reduced-motion: reduce) { .faqItem summary svg { transition: none; } }
