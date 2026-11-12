@@ -64,6 +64,14 @@ try{
   const options=(overrides={})=>({policy,catalog:[price()],identity,sources:[source],...overrides});
   async function check(name,run){await run();passed++;console.log('PASS '+name);}
 
+  await check('new marketing and startup references are available to research without runtime registry-write privileges',async()=>{
+    const rows=await runtime`select id,definition from blog_worker.research_reference where id in ('ARTICLE_REF45','ARTICLE_REF46','ARTICLE_REF47') order by id`;
+    assert.deepEqual(rows.map(r=>r.id),['ARTICLE_REF45','ARTICLE_REF46','ARTICLE_REF47']);
+    assert.ok(rows.every(r=>r.definition.enabled&&r.definition.content_approved&&r.definition.rights_reference.includes('sem reprodução integral')));
+    const [privileges]=await runtime`select has_table_privilege(current_user,'blog_worker.research_reference','SELECT') as read,has_table_privilege(current_user,'blog_worker.research_reference','UPDATE') as write`;
+    assert.deepEqual(privileges,{read:true,write:false});
+    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,9);
+  });
   await check('runtime cannot alter benefits or publish directly',async()=>{
     await assert.rejects(()=>runtime`insert into blog_worker.benefit(id) values('forged')`,/permission denied/);
     await assert.rejects(()=>runtime`update public.blog_post set status='published'`,/permission denied/);

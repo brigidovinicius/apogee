@@ -347,5 +347,56 @@
     "feed_content_approved": false,
     "rights_reference": null,
     "keywords": []
+  },
+  {
+    "id": "REF45",
+    "name": "Meio & Mensagem",
+    "editoria": "startups",
+    "type": "rss",
+    "url": "https://www.meioemensagem.com.br/feed",
+    "article_hosts": [
+      "meioemensagem.com.br",
+      "www.meioemensagem.com.br"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "REF46",
+    "name": "Propmark",
+    "editoria": "startups",
+    "type": "rss",
+    "url": "https://propmark.com.br/feed/",
+    "article_hosts": [
+      "propmark.com.br",
+      "www.propmark.com.br"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
+  },
+  {
+    "id": "REF47",
+    "name": "Startups.com.br",
+    "editoria": "startups",
+    "type": "rss",
+    "url": "https://startups.com.br/feed/",
+    "article_hosts": [
+      "startups.com.br",
+      "www.startups.com.br"
+    ],
+    "interval_minutes": 120,
+    "enabled": false,
+    "collection_approval_reference": null,
+    "feed_content_approved": false,
+    "rights_reference": null,
+    "keywords": []
   }
 ]

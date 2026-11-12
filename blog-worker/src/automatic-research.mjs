@@ -20,6 +20,9 @@ export function researchTopic(c){
   if(/neuro|brain|cerebr|alzheimer/.test(title))return {category:'ciencia',subcategory:'neurociencia'};
   if(/software|application|aplicativo|ferramenta|browser|navegador|sistema operacional|windows|android|collaborativ|colaborativ/.test(title))return {category:'tecnologia',subcategory:'software-ferramentas'};
   const ref=sourceReference(c.source_id);
+  // Headline-specific topics take precedence; these approved specialist feeds
+  // supply the focus when a headline does not name its editorial category.
+  if(['REF45','REF46','REF47'].includes(ref?.id))return {category:'negocios',subcategory:ref.subcategories[0]};
   if(ref?.id==='REF15')return {category:'ciencia',subcategory:'neurociencia'};
   if(/neuro|brain|cerebr|alzheimer/.test(t))return {category:'ciencia',subcategory:'neurociencia'};
   if(/robot|robo\b|hardware|semiconductor|chip\b|processor/.test(t))return {category:'tecnologia',subcategory:'hardware-robotica'};
