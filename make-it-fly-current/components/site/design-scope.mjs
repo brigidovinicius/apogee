@@ -1,4 +1,4 @@
-/** The event and its registration keep their own visual identity. */
+/** Event and community funnel have their own isolated visual identities. */
 export function usesApogeeDesign(pathname) {
-  return typeof pathname === "string" && pathname !== "/makeitfly" && !pathname.startsWith("/makeitfly/");
+  return typeof pathname === "string" && pathname !== "/comunidade" && pathname !== "/gravacao" && pathname !== "/evento-openai" && pathname !== "/makeitfly" && !pathname.startsWith("/makeitfly/");
 }

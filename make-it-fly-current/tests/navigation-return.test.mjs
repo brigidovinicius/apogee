@@ -101,7 +101,7 @@ test("every mobile admin destination closes the persistent details menu and rest
   });
   const { AdminNav } = adminLoad("components/admin/admin-nav.tsx");
   const links = nodes(AdminNav({ compact: true }), (node) => node.type === "Link");
-  assert.equal(links.length, 8);
+  assert.equal(links.length, 9);
   assert.ok(links.some(link => link.props.href === "/admin/comportamento"));
   for (const link of links) {
     menu.open = true; focused = false;
