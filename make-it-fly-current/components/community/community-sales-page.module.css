@@ -29,7 +29,7 @@
 .subjectWord { margin-top: 2.4rem; line-height: 1.05; }
 .radarIntro h2 { max-width: none; font-size: clamp(2.5rem, 5.1vw, 5.4rem); }
 .launchNote { padding-top: 1.5rem; border-top: 1px solid currentColor; }
-.accessNote { margin-top: 1rem !important; font-size: .83rem !important; opacity: .8; }
+.ctaActions { grid-template-columns: 1fr; justify-items: end; }
 .faqSection { background: #fff; color: #07182d; }
 .faqLabel { color: #38506b; }
 .faqList { align-self: start; }
