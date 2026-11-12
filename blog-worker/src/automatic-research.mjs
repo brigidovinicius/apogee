@@ -84,7 +84,7 @@ const primaryReferenceCorporate=r=>!!r&&/^institucional/.test(r.role)&&['google'
 // not qualify. The comparator still checks every critical fact and dependence.
 const primaryLinkCache=new WeakMap();
 export function primaryEventLinks(document){
-  const previous=primaryLinkCache.get(document);if(previous?.urls===document.related_urls)return previous.links;
+  const previous=primaryLinkCache.get(document);if(previous&&previous.urls===document.related_urls)return previous.links;
   const links=[];
   for(const value of document.related_urls??[])try{
     const r=referenceForUrl(value),url=referenceUrl(value,r);if(!primaryReference(r))continue;
