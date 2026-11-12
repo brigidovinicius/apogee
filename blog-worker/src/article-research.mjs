@@ -2,6 +2,7 @@ import {parse} from 'parse5';
 import {referenceCatalog,referenceUrl} from './corroboration.mjs';
 import {getFeed} from './http.mjs';
 import {hash,fail} from './policy.mjs';
+import {canonicalResearchUrl} from './research-links.mjs';
 
 export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$|periodico_e_jornalismo$)/.test(r.role));
 export const independentReference=r=>!!r&&!primaryReference(r)&&/jornalismo|divulgacao|analise_especialista|publicacao_especializada/.test(r.role);
@@ -10,7 +11,9 @@ export function primaryDocument(document,reference=referenceForUrl(document.url)
   if(!independentReference(reference))return false;
   const brands=[reference.name.split('/')[0].trim(),...(reference.id==='REF04'?['g1']:reference.id==='REF47'?['Startups']:[])];
   const name=brands.map(s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
-  return new RegExp('(?:\\b(?:told|tells?|confirmed to|in an interview with|documents (?:obtained|viewed) by)|disse(?:ram)? (?:ao|à|para)|(?:confirmou|informou|afirmou) (?:ao|à)|entrevista (?:ao|à)|apurou (?:o|a))\\s+(?:the\\s+)?(?:'+name+')\\b','i').test(document.text);
+  const attribution='(?:\\b(?:told|tells?|confirmed to|in an interview with|documents (?:obtained|viewed) by)|(?:disse(?:ram)?|diz|afirm(?:a|ou)|confirmou|informou|explic(?:a|ou)|cont(?:a|ou)|declar(?:a|ou)) (?:ao|à|a|para)|entrevista (?:ao|à|a)|(?:segundo )?apura[cç][aã]o (?:do|da)|apurou (?:o|a))';
+  return new RegExp(attribution+'\\s+(?:the\\s+)?(?:'+name+')\\b','i').test(document.text)
+    ||new RegExp('\\b(?:'+name+')\\s+(?:conversou|entrevistou|ouviu|apurou)\\b','i').test(document.text);
 }
 const host=u=>new URL(u).hostname.replace(/^www\./,'');
 export function referenceForUrl(value){
@@ -79,10 +82,11 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   // paper requires a subscription. Never read hidden sections or gated bodies.
   const abstracts=nodes.filter(n=>visible(n)&&(/^(?:abstract|abs1)$/i.test(attrs(n).id??'')||/^abstract$/i.test(attrs(n)['data-title']??''))&&textOf(n).trim().length>=200);
   if(restricted&&!abstracts.length)fail('research_access_restricted');
-  const bodies=nodes.filter(n=>{const a=attrs(n);return a.itemprop==='articleBody'||/(?:^|\s)(?:article-body|article_body|story-body|story_body|post-content|entry-content|article-content|news-article--content)(?:\s|$)/i.test((a.id??'')+' '+(a.class??''));});
+  const bodies=nodes.filter(n=>{const a=attrs(n);return a.itemprop==='articleBody'||/(?:^|\s)(?:article-body|article_body|story-body|story_body|post-content|entry-content|article-content|news-article--content|story_text|elementor-widget-theme-post-content|mc-article-body)(?:\s|$)/i.test((a.id??'')+' '+(a.class??''));});
   const articles=nodes.filter(n=>n.tagName==='article');
-  const roots=(restricted?abstracts:bodies.length?bodies:articles.length?articles:nodes.filter(n=>n.tagName==='main')).filter(visible);
-  const root=roots.sort((a,b)=>textOf(b).length-textOf(a).length)[0];if(!root)fail('research_article_missing');
+  const usable=items=>items.filter(n=>visible(n)&&clean(textOf(n)).length>=200);
+  const roots=restricted?usable(abstracts):usable(bodies).length?usable(bodies):usable(articles).length?usable(articles):usable(nodes.filter(n=>n.tagName==='main'));
+  const root=roots.sort((a,b)=>textOf(b).length-textOf(a).length)[0];if(!root)fail(bodies.length||articles.length?'research_text_insufficient':'research_article_missing');
   const text=clean(textOf(root)).slice(0,12000);if(text.length<200)fail('research_text_insufficient');
   const title=clean(meta['og:title']??textOf(nodes.find(n=>n.tagName==='h1')??{}))||fallbackTitle;
   if(title.length<3)fail('research_title_missing');
@@ -94,7 +98,10 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   const rawDate=meta['article:published_time']??meta['citation_online_date']??structuredDate??meta['citation_publication_date']??meta['date']??meta['dc.date']??meta['dcterms.created']??(time?attrs(time).datetime:null)??fallbackDate;
   const date=rawDate?new Date(rawDate):null;
   const bodyNodes=[];const walk=n=>{if(ignored.has(n.tagName)||!visible(n))return;bodyNodes.push(n);for(const c of n.childNodes??[])walk(c);};walk(root);
-  const related_urls=[...new Set(bodyNodes.filter(n=>n.tagName==='a').map(n=>{try{return referenceUrl(new URL(attrs(n).href,url).href);}catch{return null;}}).filter(Boolean))].slice(0,150);
+  // Explicit journal-reference blocks belong to the article, even when the
+  // publisher places them after the main prose. Never scan recommendations.
+  if(new URL(url).hostname.replace(/^www\./,'')==='sciencedaily.com')for(const n of nodes.filter(n=>/^(?:journal_references|story_source)$/.test(attrs(n).id??'')))walk(n);
+  const related_urls=[...new Set(bodyNodes.filter(n=>n.tagName==='a').map(n=>{try{return canonicalResearchUrl(attrs(n).href,url);}catch{return null;}}).filter(Boolean))].slice(0,150);
   return {url:referenceUrl(url),title:title.slice(0,220),published_at:date&&Number.isFinite(+date)?date.toISOString():null,text,content_hash:hash(text),related_urls,doi:meta.citation_doi??null,extraction_method:'public_article',evidence_scope:restricted?'public_abstract':'public_article',snapshot_hash:hash(html)};
 }
 

@@ -65,17 +65,22 @@ export async function getPipelineDashboard(page = 1) {
   const [googleAccess] = access_ready ? await sql<{ state: string; checked_at: Date | null; succeeded_at: Date | null; valid_until: Date | null; next_check_at: Date; reason: string | null; valid: boolean }[]>`select a.state,a.checked_at,a.succeeded_at,a.valid_until,a.next_check_at,a.reason,
     coalesce(a.state='valid' and a.valid_until>now() and a.binding_hash=encode(sha256(convert_to(blog_worker.canonical_json(s.attestation),'UTF8')),'hex'),false) as valid
     from blog_worker.google_access a join blog_worker.subscription s using(singleton) where a.singleton=true` : [];
-  const production = dossiers_ready ? await sql<{ category: string; subcategory: string | null; drafts: number; complete: number; researching: number; compared: number }[]>`
-    with scope as (select c.id,c.post_id,c.artifact,c.published_at,v.document,v.assessment,j.state as image_state,
+  const production = dossiers_ready ? await sql<{ category: string; subcategory: string | null; drafts: number; complete: number; researching: number; compared: number; primary_pending: number; independent_pending: number; unavailable: number; format_pending: number; factual_pending: number }[]>`
+    with scope as (select c.id,c.post_id,c.artifact,c.published_at,c.reason,v.document,v.assessment,j.state as image_state,
       exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='text' and a.day=(now() at time zone 'America/Sao_Paulo')::date) as today
       from blog_worker.candidate c left join lateral(select document,assessment from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) v on true
       left join blog_worker.image_job j on j.candidate_id=c.id)
     select coalesce(document->>'category',artifact->'research'->'topic'->>'category') as category,
-      coalesce(document->>'subcategory',artifact->'research'->'topic'->>'subcategory') as subcategory,
+      case when document is not null then document->>'subcategory' else artifact->'research'->'topic'->>'subcategory' end as subcategory,
       count(*) filter(where today and post_id is not null)::int as drafts,
       count(*) filter(where today and post_id is not null and image_state='completed')::int as complete,
       count(*) filter(where post_id is null and published_at>now()-interval '7 days' and artifact->'research' is not null)::int as researching,
-      count(*) filter(where post_id is null and assessment->>'eligible'='true' and assessment->>'comparison_verified'='true')::int as compared
+      count(*) filter(where post_id is null and assessment->>'eligible'='true' and assessment->>'comparison_verified'='true')::int as compared,
+      count(*) filter(where post_id is null and published_at>now()-interval '7 days' and artifact->'research'->>'stage' in ('research_primary_missing','research_reference_unregistered','research_primary_stale'))::int as primary_pending,
+      count(*) filter(where post_id is null and published_at>now()-interval '7 days' and artifact->'research'->>'stage'='research_independent_missing')::int as independent_pending,
+      count(*) filter(where post_id is null and published_at>now()-interval '7 days' and artifact->'research'->>'stage' in ('research_source_unavailable','research_robots_disallowed','research_access_restricted','research_article_missing','research_text_insufficient','research_excerpt_disallowed'))::int as unavailable,
+      count(*) filter(where post_id is null and published_at>now()-interval '7 days' and reason in ('invalid_structure','invalid_comparison','invalid_claim','invalid_claim_cell','invalid_dossier','duplicate_claim','quote_not_in_document'))::int as format_pending,
+      count(*) filter(where post_id is null and published_at>now()-interval '7 days' and assessment->>'comparison_verified'='true' and assessment->>'eligible'='false')::int as factual_pending
       from scope group by 1,2` : [];
   const [{ research_ready }] = await sql<{ research_ready: boolean }[]>`select to_regclass('blog_worker.research_reference') is not null as research_ready`;
   return { production, research_ready, googleAccess: googleAccess ?? null, subscription: subscription ?? null, quota, control, sources, candidates, total, totalPosts: total_posts, commands, attempts, counts, usage, benefit: benefit ?? null, multisource_ready, quotaObservations, topicUsage };

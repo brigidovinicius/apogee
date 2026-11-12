@@ -105,9 +105,9 @@ export function validateComparison(value, dossier) {
 }
 export const comparisonSchema = { type: 'object', additionalProperties: false, required: ['claims'], properties: { claims: { type: 'array', maxItems: 16, items: {
   type: 'object', additionalProperties: false, required: ['id', 'text', 'critical', 'cells'], properties: {
-    id: { type: 'string' }, text: { type: 'string' }, critical: { type: 'boolean' }, cells: { type: 'array', items: {
+    id: { type: 'string', pattern: '^C[1-9]\\d?$' }, text: { type: 'string', minLength: 8, maxLength: 500 }, critical: { type: 'boolean' }, cells: { type: 'array', items: {
       type: 'object', additionalProperties: false, required: ['document_id', 'status', 'quote', 'note'], properties: {
-        document_id: { type: 'string' }, status: { type: 'string', enum: ['supports', 'contradicts', 'not_mentioned', 'unverifiable'] }, quote: { type: 'string' }, note: { type: 'string' },
+        document_id: { type: 'string', pattern: '^E[1-9]\\d?$' }, status: { type: 'string', enum: ['supports', 'contradicts', 'not_mentioned', 'unverifiable'] }, quote: { type: 'string', maxLength: 240 }, note: { type: 'string', maxLength: 240 },
       },
     } },
   },

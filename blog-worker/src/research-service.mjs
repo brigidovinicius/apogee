@@ -2,11 +2,20 @@ import {createArticleReader,referenceForUrl,primaryReference,primaryDocument,ind
 import {normalizeItem} from './editorial.mjs';
 import {hash} from './policy.mjs';
 import {referenceUrl} from './corroboration.mjs';
+import {canonicalResearchUrl} from './research-links.mjs';
 
 const articleUrl=url=>{try{const u=new URL(url);return u.pathname!=='/'&&!/\.(?:png|jpe?g|gif|svg|webp|mp4|pdf)$/i.test(u.pathname)&&!/^\/(?:privacy|terms|contact|about|feed|live)\/?$/i.test(u.pathname)&&!/^\/(?:category|tag|topic)(?:\/|$)/i.test(u.pathname);}catch{return false;}};
 export function researchPrimaryLinks(document){
   const publisher=referenceForUrl(document.url)?.publisher;
-  return (document.related_urls??[]).filter(url=>{const r=referenceForUrl(url);return articleUrl(url)&&(!r||referenceUrl(url)!==referenceUrl(r.url))&&(primaryReference(r)||/^https:\/\/(?:dx\.)?doi\.org\/10\.\d{4,9}\//i.test(url)||independentReference(r)&&r.publisher!==publisher);}).sort((a,b)=>Number(primaryReference(referenceForUrl(b))||/doi\.org\//.test(b))-Number(primaryReference(referenceForUrl(a))||/doi\.org\//.test(a))).slice(0,8);
+  const links=[...(document.related_urls??[])];
+  for(const value of document.text?.match(/\b10\.\d{4,9}\/[a-z0-9._;()/:+-]+/gi)??[]){
+    const doi=value.replace(/[.,;)]+$/,'');if(!links.some(url=>{try{return /(?:^|\.)doi\.org$/.test(new URL(url).hostname)&&new URL(url).pathname.slice(1).toLowerCase()===doi.toLowerCase();}catch{return false;}}))links.push('https://doi.org/'+doi);
+  }
+  return [...new Set(links.map(url=>{try{return canonicalResearchUrl(url);}catch{return null;}}).filter(Boolean))].filter(url=>{const r=referenceForUrl(url);return articleUrl(url)&&(!r||referenceUrl(url)!==referenceUrl(r.url))&&(primaryReference(r)||/^https:\/\/(?:dx\.)?doi\.org\/10\.\d{4,9}\//i.test(url)||independentReference(r)&&r.publisher!==publisher);}).sort((a,b)=>Number(primaryReference(referenceForUrl(b))||/doi\.org\//.test(b))-Number(primaryReference(referenceForUrl(a))||/doi\.org\//.test(a))).slice(0,8);
+}
+export function researchPriority(candidate){
+ const doc=candidate.evidence?.[0];if(!doc)return 0;
+ return researchPrimaryLinks(doc).reduce((score,url)=>score+(primaryReference(referenceForUrl(url))?2:/doi\.org\//.test(url)?1:0),0);
 }
 export const defaultArticleReader=createArticleReader();
 export async function enrichSelectedEvidence({store,candidate,dossier,captures,read=defaultArticleReader,clock=Date.now}){
