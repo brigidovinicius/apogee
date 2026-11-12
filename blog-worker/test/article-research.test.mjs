@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {robotsAllowed,extractArticle,createArticleReader,referenceForUrl,primaryDocument} from '../src/article-research.mjs';
+import {robotsAllowed,extractArticle,createArticleReader,referenceForUrl,primaryDocument,ARTICLE_EXTRACTION_VERSION} from '../src/article-research.mjs';
 import {balancedResearchCandidates,nextResearchCandidate,researchTopic,TOPICS,topicKey,automaticDossier,sameResearchEvent} from '../src/automatic-research.mjs';
 import {enrichResearch,researchPrimaryLinks,enrichSelectedEvidence} from '../src/research-service.mjs';
 import {defaultPolicy} from './fixtures.mjs';
@@ -49,7 +49,7 @@ test('secondary research captures its registered primary and prepares only unver
  const now=new Date().toISOString(),seed={id:'seed',source_id:'REF27',title:'Synthetic NASA report',url:'https://www.space.com/test/',published_at:now,artifact:{}};
  const docs=[],stored=new Map();let saved;
  const store={captureResearchDocument:async(c,d)=>docs.push(d),ingest:async c=>{saved=c;stored.set(c.url,c);},researchCandidate:async url=>stored.get(url),researchProgress:async()=>{}};
- const read=async(url,budget)=>{budget.used++;return {url,title:'Synthetic primary report',published_at:now,text:url===seed.url?'Análise independente. '+content:content,source_id:url===seed.url?'ARTICLE_REF27':'ARTICLE_REF22',rights_reference:'Authorized fixture excerpt',extraction_method:'public_article',related_urls:url===seed.url?['https://www.nasa.gov/primary-test/']:[]};};
+ const read=async(url,budget)=>{budget.used++;return {url,title:'Synthetic primary report',published_at:now,text:url===seed.url?'Análise independente. '+content:content,source_id:url===seed.url?'ARTICLE_REF27':'ARTICLE_REF22',rights_reference:'Authorized fixture excerpt',extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,related_urls:url===seed.url?['https://www.nasa.gov/primary-test/']:[]};};
  const captures=[];const result=await enrichResearch({store,candidate:seed,topic:TOPICS[0],captures,read});assert.equal(result.primary.id,saved.id);assert.equal(docs.length,2);
  const dossier=automaticDossier(result.primary,captures,defaultPolicy,TOPICS[0]);assert.ok(dossier);assert.equal(dossier.documents.length,2);assert.deepEqual(dossier.claims,[]);assert.equal(result.primary.published_at,now);
 });
@@ -60,7 +60,7 @@ test('unavailable HTML preserves authorized RSS and follows its registered prima
  const rss={...seed,text:rssText,content_hash:hash(rssText),rights_reference:'Authorized public RSS fixture',related_urls:['https://www.nature.com/articles/s41586-026-12345-1']};
  const captures=[rss],saved=[],stored=new Map();let calls=0;
  const store={captureResearchDocument:async(c,d)=>saved.push(d),ingest:async c=>stored.set(c.url,c),researchCandidate:async url=>stored.get(url),researchProgress:async()=>{}};
- const read=async(url,budget)=>{calls++;budget.used+=2;if(url===seed.url)throw Object.assign(Error('restricted HTML'),{code:'research_access_restricted'});return {url,title:'Synthetic study',published_at:now,text:content,content_hash:hash(content),source_id:'ARTICLE_PRIMARY_NATURE_RESEARCH',rights_reference:'Public abstract fixture',extraction_method:'public_article',evidence_scope:'public_abstract',related_urls:[]};};
+ const read=async(url,budget)=>{calls++;budget.used+=2;if(url===seed.url)throw Object.assign(Error('restricted HTML'),{code:'research_access_restricted'});return {url,title:'Synthetic study',published_at:now,text:content,content_hash:hash(content),source_id:'ARTICLE_PRIMARY_NATURE_RESEARCH',rights_reference:'Public abstract fixture',extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,evidence_scope:'public_abstract',related_urls:[]};};
  const result=await enrichResearch({store,candidate:seed,topic:{category:'ciencia',subcategory:null},captures,read});
  assert.equal(calls,2);assert.equal(result.requests,4);assert.ok(result.primary);assert.equal(saved.length,1);assert.equal(saved[0].evidence_scope,'public_abstract');assert.ok(captures.includes(rss));
  const dossier=automaticDossier(result.primary,captures,defaultPolicy,{category:'ciencia',subcategory:null});assert.ok(dossier);assert.equal(dossier.documents.length,2);assert.deepEqual(dossier.claims,[]);
@@ -79,7 +79,7 @@ test('short public RSS previews are expanded before comparison with originals re
  const docs=Array.from({length:8},(_,i)=>({id:'E'+i,url:'https://www.space.com/fixture-'+i,title:'Synthetic source',published_at:new Date().toISOString(),text:content}));
  const original=structuredClone(docs),captures=[],saved=[];let calls=0;
  const result=await enrichSelectedEvidence({store:{captureResearchDocument:async(c,d)=>saved.push(d)},candidate:{id:'fixture'},dossier:{documents:docs},captures,
-  read:async(url,budget)=>{calls++;budget.used+=2;return {url,text:content.repeat(5),extraction_method:'public_article'};}});
+  read:async(url,budget)=>{calls++;budget.used+=2;return {url,text:content.repeat(5),extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION};}});
  assert.equal(calls,4);assert.equal(result.requests,8);assert.equal(result.refreshed,4);assert.equal(saved.length,4);assert.deepEqual(docs,original);
  assert.equal((await enrichSelectedEvidence({store:{captureResearchDocument:()=>assert.fail('no duplicate capture')},candidate:{id:'fixture'},dossier:{documents:docs.slice(0,4)},captures,read:()=>assert.fail('full snapshots cached')})).attempted,false);
  const blocked=await enrichSelectedEvidence({store:{captureResearchDocument:()=>assert.fail('restricted body never captured')},candidate:{id:'fixture'},dossier:{documents:docs.slice(4,5)},captures:[],read:async()=>{throw Error('restricted');}});

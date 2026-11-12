@@ -1,8 +1,9 @@
-import {createArticleReader,referenceForUrl,primaryReference,primaryDocument,independentReference,articleSource} from './article-research.mjs';
+import {createArticleReader,referenceForUrl,primaryReference,primaryDocument,independentReference,articleSource,ARTICLE_EXTRACTION_VERSION} from './article-research.mjs';
 import {normalizeItem} from './editorial.mjs';
 import {hash} from './policy.mjs';
 import {referenceUrl} from './corroboration.mjs';
 import {canonicalResearchUrl} from './research-links.mjs';
+import {researchTopic} from './automatic-research.mjs';
 
 const articleUrl=url=>{try{const u=new URL(url);return u.pathname!=='/'&&!/\.(?:png|jpe?g|gif|svg|webp|mp4|pdf)$/i.test(u.pathname)&&!/^\/(?:privacy|terms|contact|about|feed|live)\/?$/i.test(u.pathname)&&!/^\/(?:category|tag|topic)(?:\/|$)/i.test(u.pathname);}catch{return false;}};
 export function researchPrimaryLinks(document){
@@ -21,7 +22,8 @@ export const defaultArticleReader=createArticleReader();
 export async function enrichSelectedEvidence({store,candidate,dossier,captures,read=defaultArticleReader,clock=Date.now}){
   const budget={used:0,max:8,deadline:clock()+30000};let attempted=false,refreshed=0;
   for(const d of dossier.documents){
-    if(d.text.length>=1600||captures.some(c=>referenceUrl(c.url)===referenceUrl(d.url)&&c.extraction_method==='public_article'))continue;
+    const full=captures.filter(c=>referenceUrl(c.url)===referenceUrl(d.url)&&c.extraction_method==='public_article');
+    if(full.some(c=>c.extraction_version===ARTICLE_EXTRACTION_VERSION)||d.text.length>=1600&&!full.length)continue;
     if(budget.used>=budget.max||clock()>budget.deadline)break;
     attempted=true;
     try{
@@ -35,7 +37,7 @@ export async function enrichSelectedEvidence({store,candidate,dossier,captures,r
 export async function enrichResearch({store,candidate,topic,captures,read=defaultArticleReader,clock=Date.now}){
   const budget={used:0,max:8,deadline:clock()+30000};
   const obtain=async(url,seed)=>{
-    const cached=captures.find(d=>referenceUrl(d.url)===referenceUrl(url)&&d.extraction_method==='public_article');
+    const cached=captures.find(d=>referenceUrl(d.url)===referenceUrl(url)&&d.extraction_method==='public_article'&&d.extraction_version===ARTICLE_EXTRACTION_VERSION);
     if(cached)return cached;
     const doc=await read(url,budget,{fallbackTitle:seed?.title??'',fallbackDate:seed?.published_at??null});
     await store.captureResearchDocument(candidate,doc);captures.unshift({...doc,capture_id:hash(doc)});return captures[0];
@@ -52,7 +54,7 @@ export async function enrichResearch({store,candidate,topic,captures,read=defaul
     if(!own)throw error;
   }
   const ref=referenceForUrl(own.url);
-  if(primaryDocument(own,ref))return {primary:await store.researchCandidate(candidate.url),requests:budget.used};
+  if(primaryDocument(own,ref))return {primary:await store.researchCandidate(candidate.url),topic,requests:budget.used};
   let lastReason='research_primary_missing';
   for(const url of researchPrimaryLinks(own)){
     try{
@@ -67,9 +69,11 @@ export async function enrichResearch({store,candidate,topic,captures,read=defaul
       await store.ingest(next);
       const promoted=await store.researchCandidate(primary.url);
       if(!promoted)continue;
-      await store.researchProgress(promoted.id,{stage:'primary_found',topic,seed_candidate:candidate.id,source_published_at:primary.published_at,seed_published_at:new Date(candidate.published_at).toISOString(),next_at:new Date(clock()+3600000).toISOString()});
-      await store.researchProgress(candidate.id,{stage:'primary_linked',topic,primary_candidate:promoted.id,next_at:new Date(clock()+24*3600000).toISOString()});
-      return {primary:{...promoted,artifact:{...promoted.artifact,research:{...promoted.artifact?.research,topic}}},requests:budget.used};
+      const inferred=researchTopic({...promoted,artifact:null});
+      const resolved=inferred&&(inferred.category!==topic.category||inferred.subcategory&&topic.subcategory&&inferred.subcategory!==topic.subcategory)?inferred:topic;
+      await store.researchProgress(promoted.id,{stage:'primary_found',topic:resolved,seed_candidate:candidate.id,source_published_at:primary.published_at,seed_published_at:new Date(candidate.published_at).toISOString(),next_at:new Date(clock()+3600000).toISOString()});
+      await store.researchProgress(candidate.id,{stage:'primary_linked',topic:resolved,primary_candidate:promoted.id,next_at:new Date(clock()+24*3600000).toISOString()});
+      return {primary:{...promoted,artifact:{...promoted.artifact,research:{...promoted.artifact?.research,stage:'primary_found',topic:resolved}}},topic:resolved,requests:budget.used};
     }catch(error){lastReason=error.code??'research_source_unavailable';if(budget.used>=budget.max||clock()>budget.deadline)break;}
   }
   return {reason:lastReason,requests:budget.used};

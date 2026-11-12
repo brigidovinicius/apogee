@@ -1,5 +1,5 @@
 import {referenceCatalog,referenceUrl,validateDossier,dossierHash,buildComparisonRequest,taxonomy} from './corroboration.mjs';
-import {primaryDocument,primaryReference,referenceForUrl,independentReference} from './article-research.mjs';
+import {primaryDocument,primaryReference,referenceForUrl,independentReference,ARTICLE_EXTRACTION_VERSION} from './article-research.mjs';
 
 const referenceById=new Map(referenceCatalog.map(r=>[r.id,r]));
 export function sourceReference(id){const key=String(id).replace(/^ARTICLE_/,'');return referenceById.get({SRC01:'REF22',SRC02:'REF22',SRC03:'REF22'}[key]??key);}
@@ -7,19 +7,23 @@ export const TOPICS=Object.freeze(Object.entries(taxonomy).flatMap(([category,v]
 export const topicKey=t=>t.category+'/'+(t.subcategory??'geral');
 export function researchTopic(c){
   const assigned=c.artifact?.research?.topic;
-  if(assigned&&TOPICS.some(t=>topicKey(t)===topicKey(assigned)))return assigned;
+  const valid=assigned&&TOPICS.some(t=>topicKey(t)===topicKey(assigned));
+  // Unstaged assignments are editorial input. Operational history must not
+  // pin a topic inferred by an older extractor over a clear current headline.
+  if(valid&&!c.artifact.research.stage)return assigned;
+  const headline=topic=>valid&&assigned.subcategory===null&&assigned.category===topic.category?assigned:topic;
   const title=c.title.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
-  const t=(title+' '+(c.evidence??[]).map(e=>e.text).join(' ').slice(0,1600)).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
+  const t=(title+' '+(c.evidence??[]).filter(e=>e.extraction_method!=='public_article'||e.extraction_version===ARTICLE_EXTRACTION_VERSION).map(e=>e.text).join(' ').slice(0,1600)).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
   if(/em promocao|veja uma selecao|onde assistir|escalacao|horoscopo|cupons|filmes para|^ofertas\b|melhor.*para comprar|lotofacil|\bquina\b|mega.sena|\blottery\b|\bbest\b.*\bdeals\b/.test(title))return null;
   // The headline establishes the editorial focus. A mention of a detector chip
   // in a telescope story must not consume the daily robotics/hardware slot.
-  if(/marketing|advertis|campanha|publicidade|\bads\b|anunciantes/.test(title))return {category:'negocios',subcategory:'marketing'};
-  if(/startup|empreendedor|\bventure\b|acquisit|acquire|aquisicao|spinout|rodada de/.test(title))return {category:'negocios',subcategory:'empreendedorismo-startups'};
-  if(/robot|robo\b|hardware|semiconductor|chip\b|processor|processador|\bgpu\b/.test(title))return {category:'tecnologia',subcategory:'hardware-robotica'};
-  if(/nasa|mars\b|marte\b|spacecraft|lunar|orbit|rocket|foguete|astronom|espacia|space telescope/.test(title))return {category:'ciencia',subcategory:'aeroespacial'};
-  if(/\bai\b|\bia\b|artificial intelligence|inteligencia artificial|chatgpt|gemini|openai|llm/.test(title))return {category:'tecnologia',subcategory:'ia'};
-  if(/neuro|brain|cerebr|alzheimer/.test(title))return {category:'ciencia',subcategory:'neurociencia'};
-  if(/software|application|aplicativo|ferramenta|browser|navegador|sistema operacional|windows|android|collaborativ|colaborativ/.test(title))return {category:'tecnologia',subcategory:'software-ferramentas'};
+  if(/marketing|advertis|campanha|publicidade|\bads\b|anunciantes/.test(title))return headline({category:'negocios',subcategory:'marketing'});
+  if(/startup|empreendedor|\bventure\b|acquisit|acquire|aquisicao|spinout|rodada de/.test(title))return headline({category:'negocios',subcategory:'empreendedorismo-startups'});
+  if(/robot|robo\b|hardware|semiconductor|chip\b|processor|processador|\bgpu\b/.test(title))return headline({category:'tecnologia',subcategory:'hardware-robotica'});
+  if(/nasa|mars\b|marte\b|spacecraft|lunar|orbit|rocket|foguete|astronom|espacia|space telescope/.test(title))return headline({category:'ciencia',subcategory:'aeroespacial'});
+  if(/\bai\b|\bia\b|artificial intelligence|inteligencia artificial|chatgpt|gemini|openai|llm/.test(title))return headline({category:'tecnologia',subcategory:'ia'});
+  if(/neuro|brain|cerebr|alzheimer/.test(title))return headline({category:'ciencia',subcategory:'neurociencia'});
+  if(/software|application|aplicativo|ferramenta|browser|navegador|sistema operacional|windows|android|collaborativ|colaborativ/.test(title))return headline({category:'tecnologia',subcategory:'software-ferramentas'});
   const ref=sourceReference(c.source_id);
   // Headline-specific topics take precedence; these approved specialist feeds
   // supply the focus when a headline does not name its editorial category.
@@ -124,6 +128,7 @@ function prefix(text,bytes){
 }
 export function automaticDossier(candidate,captures,policy,topic=researchTopic(candidate)){
   const ref=sourceReference(candidate.source_id);
+  captures=captures.filter(s=>s.extraction_method!=='public_article'||s.extraction_version===ARTICLE_EXTRACTION_VERSION);
   const own=captures.find(s=>referenceUrl(s.url)===referenceUrl(candidate.url)&&sourceReference(s.source_id)?.publisher===ref?.publisher);
   if(!topic||!own||!ref||!primaryDocument(own,ref))return null;
   const rows=[own,...captures.filter(s=>s.capture_id!==own.capture_id&&sameResearchEvent(own,s))];
