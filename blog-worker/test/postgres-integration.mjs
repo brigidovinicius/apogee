@@ -933,7 +933,7 @@ try{
   await check('hybrid comparison and text share the same hard call cap and never publish without final review',async()=>{
     await reset();await operator.attestSubscription(subscription());const plan={...explainerCatalog[0],terms:['mecanismo','limites']};
     await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});const id=explainerId(plan);
-    await compareHybrid(id);await assert.rejects(()=>store.reserve({...hybridOptions(),policy:{...hybridPolicy,google_daily_calls_cap:1},candidateId:id}),/google_call_budget/);
+    await compareHybrid(id);await assert.rejects(()=>store.reserve({...hybridOptions(),policy:{...hybridPolicy,google_daily_calls_cap:1},candidateId:id}),/google_call_limit/);
     const result=await writeHybrid(id);assert.equal(result.status,'draft');await assert.rejects(()=>admin`update public.blog_post set status='published',published_at=now() where id=${result.post_id}`,/blog_factual_review_required/);
     assert.equal((await store.summary()).usage.charged_micro_usd,'0');
   });
