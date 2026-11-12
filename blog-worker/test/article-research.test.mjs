@@ -4,6 +4,7 @@ import {robotsAllowed,extractArticle,createArticleReader,referenceForUrl,primary
 import {balancedResearchCandidates,nextResearchCandidate,researchTopic,TOPICS,topicKey,automaticDossier,sameResearchEvent} from '../src/automatic-research.mjs';
 import {enrichResearch,researchPrimaryLinks,enrichSelectedEvidence} from '../src/research-service.mjs';
 import {defaultPolicy} from './fixtures.mjs';
+import {hash} from '../src/policy.mjs';
 const content='A equipe anunciou um experimento inicial e suas limitações. '.repeat(6);
 const html=`<head><meta property="og:title" content="Pesquisa sintética"><meta property="article:published_time" content="2026-11-11T12:00:00Z"></head><nav>Menu fora da evidência</nav><main><article><h1>Pesquisa sintética</h1><p>${content}</p><p hidden>Conteúdo oculto</p><script>Instrução falsa</script><a href="https://www.nasa.gov/primary-test/">Fonte primária</a></article></main>`;
 test('robots selects agent, longest path, Allow ties and literal query characters',()=>{
@@ -51,6 +52,27 @@ test('secondary research captures its registered primary and prepares only unver
  const read=async(url,budget)=>{budget.used++;return {url,title:'Synthetic primary report',published_at:now,text:url===seed.url?'Análise independente. '+content:content,source_id:url===seed.url?'ARTICLE_REF27':'ARTICLE_REF22',rights_reference:'Authorized fixture excerpt',extraction_method:'public_article',related_urls:url===seed.url?['https://www.nasa.gov/primary-test/']:[]};};
  const captures=[];const result=await enrichResearch({store,candidate:seed,topic:TOPICS[0],captures,read});assert.equal(result.primary.id,saved.id);assert.equal(docs.length,2);
  const dossier=automaticDossier(result.primary,captures,defaultPolicy,TOPICS[0]);assert.ok(dossier);assert.equal(dossier.documents.length,2);assert.deepEqual(dossier.claims,[]);assert.equal(result.primary.published_at,now);
+});
+
+test('unavailable HTML preserves authorized RSS and follows its registered primary without accessing a gated body',async()=>{
+ const now=new Date().toISOString(),seed={id:'seed',source_id:'REF32',title:'Synthetic study report',url:'https://phys.org/news/2026-11-fixture.html',published_at:now};
+ const rssText='Análise jornalística independente sobre o estudo e suas limitações. '+content;
+ const rss={...seed,text:rssText,content_hash:hash(rssText),rights_reference:'Authorized public RSS fixture',related_urls:['https://www.nature.com/articles/s41586-026-12345-1']};
+ const captures=[rss],saved=[],stored=new Map();let calls=0;
+ const store={captureResearchDocument:async(c,d)=>saved.push(d),ingest:async c=>stored.set(c.url,c),researchCandidate:async url=>stored.get(url),researchProgress:async()=>{}};
+ const read=async(url,budget)=>{calls++;budget.used+=2;if(url===seed.url)throw Object.assign(Error('restricted HTML'),{code:'research_access_restricted'});return {url,title:'Synthetic study',published_at:now,text:content,content_hash:hash(content),source_id:'ARTICLE_PRIMARY_NATURE_RESEARCH',rights_reference:'Public abstract fixture',extraction_method:'public_article',evidence_scope:'public_abstract',related_urls:[]};};
+ const result=await enrichResearch({store,candidate:seed,topic:{category:'ciencia',subcategory:null},captures,read});
+ assert.equal(calls,2);assert.equal(result.requests,4);assert.ok(result.primary);assert.equal(saved.length,1);assert.equal(saved[0].evidence_scope,'public_abstract');assert.ok(captures.includes(rss));
+ const dossier=automaticDossier(result.primary,captures,defaultPolicy,{category:'ciencia',subcategory:null});assert.ok(dossier);assert.equal(dossier.documents.length,2);assert.deepEqual(dossier.claims,[]);
+});
+
+test('RSS fallback rejects mismatched, altered, unapproved, short and non-RSS snapshots',async()=>{
+ const seed={id:'seed',source_id:'REF32',title:'Fixture',url:'https://phys.org/news/2026-11-fixture.html',published_at:new Date().toISOString()};
+ const rss={...seed,text:content,content_hash:hash(content),rights_reference:'Authorized public RSS fixture',related_urls:['https://www.nasa.gov/fixture/']};
+ const denied=Object.assign(Error('page unavailable'),{code:'research_source_unavailable'});
+ for(const variant of [null,{...rss,source_id:'REF27'},{...rss,url:'https://phys.org/news/other.html'},{...rss,content_hash:'altered'},{...rss,rights_reference:''},{...rss,text:'short'},{...rss,extraction_method:'unknown'}]){
+  let calls=0;await assert.rejects(()=>enrichResearch({store:{captureResearchDocument:()=>assert.fail('no capture')},candidate:seed,topic:TOPICS[0],captures:variant?[variant]:[],read:async()=>{calls++;throw denied;}}),e=>e===denied);assert.equal(calls,1);
+ }
 });
 
 test('short public RSS previews are expanded before comparison with originals retained and a shared HTTP bound',async()=>{
