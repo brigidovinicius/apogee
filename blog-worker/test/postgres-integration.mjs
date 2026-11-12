@@ -16,6 +16,7 @@ import {dossierFixture} from './corroboration-fixture.mjs';
 import {assessDossier,dossierHash} from '../src/corroboration.mjs';
 import {hash,periodKeys} from '../src/policy.mjs';
 import {TOPICS,topicKey} from '../src/automatic-research.mjs';
+import {articleSource,referenceForUrl} from '../src/article-research.mjs';
 import {identity,policy,source,grant,price,candidate,completed,imagePolicy,imagePrice,imageUsage,webpFixture} from './fixtures.mjs';
 
 const bin=process.env.BLOG_TEST_PG_BIN;if(!bin)throw Error('Set BLOG_TEST_PG_BIN to native PostgreSQL binaries; no existing DB is accepted.');
@@ -556,7 +557,7 @@ try{
     const a=make(approved[0],'Synthetic NASA test','https://www.nasa.gov/synthetic-auto-test/',text);
     const b=make(approved[1],'Synthetic independent test','https://www.space.com/synthetic-auto-test/','Análise própria de limitações metodológicas para um teste sintético. '+text);
     await store.ingest(a);await store.ingest(b);
-    assert.deepEqual(await store.prepareAutomaticResearch(autoPolicy),{prepared:1});
+    assert.deepEqual(await store.prepareAutomaticResearch(autoPolicy,{read:async()=>{throw Object.assign(Error('offline fixture'),{code:'research_source_unavailable'});}}),{prepared:1});
     const [v]=await admin`select * from blog_worker.dossier_version where candidate_id=${a.id}`;
     assert.equal(v.actor_id,'automatic_research');assert.equal(v.reviewed_by,null);assert.equal(v.assessment.comparison_verified,false);
     assert.equal((await store.prepareAutomaticResearch(autoPolicy,{read:async()=>{throw Object.assign(Error('fixture unavailable'),{code:'research_source_unavailable'});}})).prepared,0);
@@ -573,6 +574,22 @@ try{
     assert.equal((await admin`select status from public.blog_post where id=${result.post_id}`)[0].status,'draft');
     await assert.rejects(()=>admin`update public.blog_post set status='published' where id=${result.post_id}`,/blog_factual_review_required/);
     assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,2);
+  });
+  await check('short RSS sources are completed with public snapshots before the first metered comparison and keep the fresh source hash',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const sources=[{...source,id:'SRC01',url:'https://www.nasa.gov/news-release/feed/',article_hosts:['www.nasa.gov'],editoria:'ciencia-espaco'},
+      {...source,id:'REF27',url:'https://www.space.com/feeds/all',article_hosts:['www.space.com'],editoria:'ciencia-espaco'}];
+    await store.syncPipeline({policy:googlePolicy,sources,catalog:[]},{});
+    const at=new Date().toISOString(),short='Synthetic report with DOI 10.1234/complete-preview. This is a synthetic source for testing public research, never a real news article. Evidence and limitations must be checked before any draft or model invocation.';
+    const a=normalizeItem({title:'Synthetic NASA preview',link:'https://www.nasa.gov/complete-preview/',isoDate:at,contentSnippet:short},sources[0],new Date());
+    const b=normalizeItem({title:'Synthetic independent analysis',link:'https://www.space.com/complete-preview/',isoDate:at,contentSnippet:'Independent context. '+short},sources[1],new Date());
+    await store.ingest(a);await store.ingest(b);let reads=0;
+    const read=async(url,budget)=>{reads++;budget.used+=2;return {url,title:'Synthetic full public article',published_at:at,text:short.repeat(10),source_id:articleSource(referenceForUrl(url)).id,rights_reference:articleSource(referenceForUrl(url)).rights_reference,extraction_method:'public_article',evidence_scope:'public_article',related_urls:[]};};
+    const r=await store.prepareAutomaticResearch(googlePolicy,{read});assert.equal(r.prepared,1);assert.equal(reads,2);assert.equal(r.requests,4);
+    const [v]=await admin`select * from blog_worker.dossier_version where candidate_id=${a.id}`;
+    const [c]=await admin`select * from blog_worker.candidate where id=${a.id}`;
+    assert.notEqual(c.evidence_hash,a.evidence_hash);assert.equal(v.source_hash,c.evidence_hash);assert.equal(v.assessment.comparison_verified,false);
+    assert.ok(v.document.documents.every(d=>d.text.length>short.length));assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0);
   });
   await check('network research rotates through all ten topics across restarts and backoff without model calls',async()=>{
     await reset();const items=[];

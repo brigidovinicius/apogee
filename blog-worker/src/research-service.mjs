@@ -9,6 +9,20 @@ export function researchPrimaryLinks(document){
   return (document.related_urls??[]).filter(url=>{const r=referenceForUrl(url);return articleUrl(url)&&(!r||referenceUrl(url)!==referenceUrl(r.url))&&(primaryReference(r)||/^https:\/\/(?:dx\.)?doi\.org\/10\.\d{4,9}\//i.test(url)||independentReference(r)&&r.publisher!==publisher);}).sort((a,b)=>Number(primaryReference(referenceForUrl(b))||/doi\.org\//.test(b))-Number(primaryReference(referenceForUrl(a))||/doi\.org\//.test(a))).slice(0,8);
 }
 export const defaultArticleReader=createArticleReader();
+export async function enrichSelectedEvidence({store,candidate,dossier,captures,read=defaultArticleReader,clock=Date.now}){
+  const budget={used:0,max:8,deadline:clock()+30000};let attempted=false,refreshed=0;
+  for(const d of dossier.documents){
+    if(d.text.length>=1600||captures.some(c=>referenceUrl(c.url)===referenceUrl(d.url)&&c.extraction_method==='public_article'))continue;
+    if(budget.used>=budget.max||clock()>budget.deadline)break;
+    attempted=true;
+    try{
+      const full=await read(d.url,budget,{fallbackTitle:d.title,fallbackDate:d.published_at});
+      await store.captureResearchDocument(candidate,full);
+      captures.unshift({...full,capture_id:hash(full)});refreshed++;
+    }catch{/* The approved public RSS remains available; never bypass a page restriction. */}
+  }
+  return {attempted,refreshed,requests:budget.used};
+}
 export async function enrichResearch({store,candidate,topic,captures,read=defaultArticleReader,clock=Date.now}){
   const budget={used:0,max:8,deadline:clock()+30000};
   const obtain=async(url,seed)=>{

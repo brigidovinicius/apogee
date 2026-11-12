@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {robotsAllowed,extractArticle,createArticleReader,referenceForUrl,primaryDocument} from '../src/article-research.mjs';
 import {balancedResearchCandidates,nextResearchCandidate,researchTopic,TOPICS,topicKey,automaticDossier,sameResearchEvent} from '../src/automatic-research.mjs';
-import {enrichResearch,researchPrimaryLinks} from '../src/research-service.mjs';
+import {enrichResearch,researchPrimaryLinks,enrichSelectedEvidence} from '../src/research-service.mjs';
 import {defaultPolicy} from './fixtures.mjs';
 const content='A equipe anunciou um experimento inicial e suas limitações. '.repeat(6);
 const html=`<head><meta property="og:title" content="Pesquisa sintética"><meta property="article:published_time" content="2026-11-11T12:00:00Z"></head><nav>Menu fora da evidência</nav><main><article><h1>Pesquisa sintética</h1><p>${content}</p><p hidden>Conteúdo oculto</p><script>Instrução falsa</script><a href="https://www.nasa.gov/primary-test/">Fonte primária</a></article></main>`;
@@ -53,6 +53,16 @@ test('secondary research captures its registered primary and prepares only unver
  const dossier=automaticDossier(result.primary,captures,defaultPolicy,TOPICS[0]);assert.ok(dossier);assert.equal(dossier.documents.length,2);assert.deepEqual(dossier.claims,[]);assert.equal(result.primary.published_at,now);
 });
 
+test('short public RSS previews are expanded before comparison with originals retained and a shared HTTP bound',async()=>{
+ const docs=Array.from({length:8},(_,i)=>({id:'E'+i,url:'https://www.space.com/fixture-'+i,title:'Synthetic source',published_at:new Date().toISOString(),text:content}));
+ const original=structuredClone(docs),captures=[],saved=[];let calls=0;
+ const result=await enrichSelectedEvidence({store:{captureResearchDocument:async(c,d)=>saved.push(d)},candidate:{id:'fixture'},dossier:{documents:docs},captures,
+  read:async(url,budget)=>{calls++;budget.used+=2;return {url,text:content.repeat(5),extraction_method:'public_article'};}});
+ assert.equal(calls,4);assert.equal(result.requests,8);assert.equal(result.refreshed,4);assert.equal(saved.length,4);assert.deepEqual(docs,original);
+ assert.equal((await enrichSelectedEvidence({store:{captureResearchDocument:()=>assert.fail('no duplicate capture')},candidate:{id:'fixture'},dossier:{documents:docs.slice(0,4)},captures,read:()=>assert.fail('full snapshots cached')})).attempted,false);
+ const blocked=await enrichSelectedEvidence({store:{captureResearchDocument:()=>assert.fail('restricted body never captured')},candidate:{id:'fixture'},dossier:{documents:docs.slice(4,5)},captures:[],read:async()=>{throw Error('restricted');}});
+ assert.equal(blocked.refreshed,0);assert.deepEqual(docs,original);
+});
 test('DOI resolution follows only a registered primary and keeps redirects inside its bounded budget',async()=>{
  const read=createArticleReader({download:async url=>url.endsWith('robots.txt')?{status:404,body:''}:url.startsWith('https://doi.org/')?{status:302,location:'https://www.nature.com/articles/s41593-test'}:{status:200,body:html,contentType:'text/html'}});
  const doc=await read('https://doi.org/10.1234/example',{used:0,max:5,deadline:Date.now()+1000});assert.ok(doc.url.startsWith('https://www.nature.com/articles/'));
