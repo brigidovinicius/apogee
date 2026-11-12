@@ -31,7 +31,17 @@ export async function enrichResearch({store,candidate,topic,captures,read=defaul
     const doc=await read(url,budget,{fallbackTitle:seed?.title??'',fallbackDate:seed?.published_at??null});
     await store.captureResearchDocument(candidate,doc);captures.unshift({...doc,capture_id:hash(doc)});return captures[0];
   };
-  const own=await obtain(candidate.url,candidate);
+  let own;
+  try{own=await obtain(candidate.url,candidate);}catch(error){
+    // A publisher-authorized RSS excerpt remains a separate public resource
+    // when its HTML page is unavailable. Follow its registered references;
+    // never extract a gated body or substitute another article's snapshot.
+    own=referenceForUrl(candidate.url)&&captures.find(d=>d.source_id===candidate.source_id
+      &&referenceUrl(d.url)===referenceUrl(candidate.url)&&!d.extraction_method
+      &&typeof d.text==='string'&&d.text.length>=200&&d.text.length<=12000
+      &&d.rights_reference&&d.content_hash===hash(d.text));
+    if(!own)throw error;
+  }
   const ref=referenceForUrl(own.url);
   if(primaryDocument(own,ref))return {primary:await store.researchCandidate(candidate.url),requests:budget.used};
   let lastReason='research_primary_missing';
