@@ -4,6 +4,7 @@ import {getFeed} from './http.mjs';
 import {hash,fail} from './policy.mjs';
 import {canonicalResearchUrl} from './research-links.mjs';
 
+export const ARTICLE_EXTRACTION_VERSION='public-article-v3-body-citations-dates';
 export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$|periodico_e_jornalismo$)/.test(r.role));
 export const independentReference=r=>!!r&&!primaryReference(r)&&/jornalismo|divulgacao|analise_especialista|publicacao_especializada/.test(r.role);
 export function primaryDocument(document,reference=referenceForUrl(document.url)){
@@ -90,11 +91,9 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   const text=clean(textOf(root)).slice(0,12000);if(text.length<200)fail('research_text_insufficient');
   const title=clean(meta['og:title']??textOf(nodes.find(n=>n.tagName==='h1')??{}))||fallbackTitle;
   if(title.length<3)fail('research_title_missing');
-  let structuredDate;
-  for(const n of nodes.filter(n=>n.tagName==='script'&&/ld\+json/i.test(attrs(n).type??''))){
-    try{const scan=v=>{if(!v||typeof v!=='object')return;const types=[v['@type']].flat();if(types.some(t=>['NewsArticle','Article','BlogPosting','ScholarlyArticle'].includes(t))&&typeof v.datePublished==='string')structuredDate??=v.datePublished;for(const child of Object.values(v))if(Array.isArray(child))child.forEach(scan);else if(child&&typeof child==='object')scan(child);};scan(JSON.parse((n.childNodes??[]).map(c=>c.value??'').join('')));}catch{/* Invalid page metadata is not evidence. */}
-  }
-  const time=nodes.find(n=>n.tagName==='time'&&attrs(n).datetime);
+  const structuredDate=own.find(v=>typeof v.datePublished==='string')?.datePublished;
+  const withinRoot=n=>{for(let parent=n;parent;parent=parent.parentNode)if(parent===root)return true;return false;};
+  const time=nodes.find(n=>n.tagName==='time'&&attrs(n).datetime&&visible(n)&&withinRoot(n));
   const rawDate=meta['article:published_time']??meta['citation_online_date']??structuredDate??meta['citation_publication_date']??meta['date']??meta['dc.date']??meta['dcterms.created']??(time?attrs(time).datetime:null)??fallbackDate;
   const date=rawDate?new Date(rawDate):null;
   const bodyNodes=[];const walk=n=>{if(ignored.has(n.tagName)||!visible(n))return;bodyNodes.push(n);for(const c of n.childNodes??[])walk(c);};walk(root);
@@ -102,7 +101,7 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   // publisher places them after the main prose. Never scan recommendations.
   if(new URL(url).hostname.replace(/^www\./,'')==='sciencedaily.com')for(const n of nodes.filter(n=>/^(?:journal_references|story_source)$/.test(attrs(n).id??'')))walk(n);
   const related_urls=[...new Set(bodyNodes.filter(n=>n.tagName==='a').map(n=>{try{return canonicalResearchUrl(attrs(n).href,url);}catch{return null;}}).filter(Boolean))].slice(0,150);
-  return {url:referenceUrl(url),title:title.slice(0,220),published_at:date&&Number.isFinite(+date)?date.toISOString():null,text,content_hash:hash(text),related_urls,doi:meta.citation_doi??null,extraction_method:'public_article',evidence_scope:restricted?'public_abstract':'public_article',snapshot_hash:hash(html)};
+  return {url:referenceUrl(url),title:title.slice(0,220),published_at:date&&Number.isFinite(+date)?date.toISOString():null,text,content_hash:hash(text),related_urls,doi:meta.citation_doi??null,extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,evidence_scope:restricted?'public_abstract':'public_article',snapshot_hash:hash(html)};
 }
 
 export function createArticleReader({download=getFeed,clock=Date.now}={}){

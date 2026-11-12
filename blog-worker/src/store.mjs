@@ -210,7 +210,7 @@ export class Store {
       // immutable cache, while keeping the cooldown for repeated page fetches.
       if(freshOnly&&!document.documents.some(d=>new Date(captures.find(s=>s.capture_id===d.capture_id)?.captured_at).getTime()>Date.parse(candidate.artifact?.research?.at)))return false;
       const [duplicate]=await this.sql`select v.candidate_id from blog_worker.dossier_version v where v.candidate_id<>${candidate.id}
-        and (v.document->>'event_key'=${document.event_key} or v.document->'documents'->0->>'url'=${document.documents[0].url}) limit 1`;
+        and (v.document->>'event_key'=${document.event_key} or v.document->'documents'->0->>'url'=${document.documents[0].url} or exists(select 1 from jsonb_array_elements(v.document->'documents') old_doc join jsonb_array_elements(${this.sql.json(document.documents)}::jsonb) new_doc on old_doc->>'url'=new_doc->>'url')) limit 1`;
       if(duplicate)return false;
       if(allowNetwork&&!publicReadUsed){
         // Complete short public RSS previews before spending a comparison.
@@ -239,8 +239,8 @@ export class Store {
     if(!selected)return {prepared:0};
     const {candidate,topic}=selected,tries=candidate.artifact?.research?.day===day?Number(candidate.artifact.research.tries??0)+1:1;
     let result;try{result=await enrichResearch({store:this,candidate,topic,captures,read});}catch(error){result={reason:error.code??'research_source_unavailable'};}
-    if(result.primary&&await prepare(result.primary,topic,{allowNetwork:result.requests===0}))return {prepared:1,requests:(result.requests??0)+publicReadRequests};
-    await this.researchProgress(candidate.id,{stage:result.reason??'research_independent_missing',topic,tries,next_at:new Date(Date.now()+3600000).toISOString()});
+    if(result.primary&&await prepare(result.primary,result.topic??topic,{allowNetwork:result.requests===0}))return {prepared:1,requests:(result.requests??0)+publicReadRequests};
+    await this.researchProgress(candidate.id,{stage:result.reason??'research_independent_missing',topic:result.topic??topic,tries,next_at:new Date(Date.now()+3600000).toISOString()});
     return {prepared:0,reason:result.reason??'research_independent_missing',requests:result.requests??0};
   }
   async nextAutomaticWork(policy){
@@ -319,7 +319,7 @@ export class Store {
         topic=usage.find(u=>u.category===version.document.category&&u.subcategory===version.document.subcategory);
         if(topic&&(topic.day>=policy.per_topic_daily_cap||topic.week>=policy.per_topic_weekly_cap))fail('topic_frequency');
         const [duplicate]=await tx`select a.id from blog_worker.attempt a join blog_worker.dossier_version v on v.candidate_id=a.candidate_id and v.revision=a.dossier_revision
-          where a.candidate_id<>${candidate.id} and (v.document->>'event_key'=${version.document.event_key} or v.document->'documents'->0->>'url'=${version.document.documents[0].url}) limit 1`;
+          where a.candidate_id<>${candidate.id} and (v.document->>'event_key'=${version.document.event_key} or v.document->'documents'->0->>'url'=${version.document.documents[0].url} or exists(select 1 from jsonb_array_elements(v.document->'documents') old_doc join jsonb_array_elements(${tx.json(version.document.documents)}::jsonb) new_doc on old_doc->>'url'=new_doc->>'url')) limit 1`;
         if(duplicate)fail('duplicate_research_event');
       }else [counts]=await tx`select count(*) filter(where first_attempt_day=${day}::date)::int as day,count(*) filter(where first_attempt_week=${week}::date)::int as week from blog_worker.candidate`;
       if((google||!candidate.first_attempt_day)&&(counts.day>=policy.new_drafts_per_day_cap||counts.week>=policy.new_drafts_per_week_cap))fail('draft_frequency');

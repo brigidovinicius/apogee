@@ -16,7 +16,7 @@ import {dossierFixture} from './corroboration-fixture.mjs';
 import {assessDossier,dossierHash} from '../src/corroboration.mjs';
 import {hash,periodKeys} from '../src/policy.mjs';
 import {TOPICS,topicKey} from '../src/automatic-research.mjs';
-import {articleSource,referenceForUrl} from '../src/article-research.mjs';
+import {articleSource,referenceForUrl,ARTICLE_EXTRACTION_VERSION} from '../src/article-research.mjs';
 import {identity,policy,source,grant,price,candidate,completed,imagePolicy,imagePrice,imageUsage,webpFixture} from './fixtures.mjs';
 
 const bin=process.env.BLOG_TEST_PG_BIN;if(!bin)throw Error('Set BLOG_TEST_PG_BIN to native PostgreSQL binaries; no existing DB is accepted.');
@@ -592,7 +592,7 @@ try{
     const a=normalizeItem({title:'Synthetic NASA preview',link:'https://www.nasa.gov/complete-preview/',isoDate:at,contentSnippet:short},sources[0],new Date());
     const b=normalizeItem({title:'Synthetic independent analysis',link:'https://www.space.com/complete-preview/',isoDate:at,contentSnippet:'Independent context. '+short},sources[1],new Date());
     await store.ingest(a);await store.ingest(b);let reads=0;
-    const read=async(url,budget)=>{reads++;budget.used+=2;return {url,title:'Synthetic full public article',published_at:at,text:short.repeat(10),source_id:articleSource(referenceForUrl(url)).id,rights_reference:articleSource(referenceForUrl(url)).rights_reference,extraction_method:'public_article',evidence_scope:'public_article',related_urls:[]};};
+    const read=async(url,budget)=>{reads++;budget.used+=2;return {url,title:'Synthetic full public article',published_at:at,text:short.repeat(10),source_id:articleSource(referenceForUrl(url)).id,rights_reference:articleSource(referenceForUrl(url)).rights_reference,extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,evidence_scope:'public_article',related_urls:[]};};
     const r=await store.prepareAutomaticResearch(googlePolicy,{read});assert.equal(r.prepared,1);assert.equal(reads,2);assert.equal(r.requests,4);
     const [v]=await admin`select * from blog_worker.dossier_version where candidate_id=${a.id}`;
     const [c]=await admin`select * from blog_worker.candidate where id=${a.id}`;
@@ -623,7 +623,7 @@ try{
     const date=new Date().toISOString(),url='https://www.space.com/research-enrichment-test/';
     const seed=normalizeItem({title:'Synthetic NASA experiment',link:url,isoDate:date,contentSnippet:'A partial RSS discovery; primary evidence and independent verification are still required. '.repeat(4)},src,new Date());await store.ingest(seed);
     const text='A equipe anunciou um experimento inicial. Este documento sintético descreve os limites do método de avaliação e não representa uma notícia real. '+('Dr. Silva mediu 3.14 unidades no teste?! O DOI 10.1234/fixture-enrichment exige novas medições. '.repeat(30));
-    const read=async(url,budget)=>{budget.used++;return {source_id:url===seed.url?'ARTICLE_REF27':'ARTICLE_REF22',url,title:'Synthetic public research',published_at:date,text:(url===seed.url?'Análise independente de contexto. ':'')+text,rights_reference:'Public fixture excerpt for testing',content_hash:hash(text),extraction_method:'public_article',related_urls:url===seed.url?['https://www.nasa.gov/research-enrichment-test/']:[]};};
+    const read=async(url,budget)=>{budget.used++;return {source_id:url===seed.url?'ARTICLE_REF27':'ARTICLE_REF22',url,title:'Synthetic public research',published_at:date,text:(url===seed.url?'Análise independente de contexto. ':'')+text,rights_reference:'Public fixture excerpt for testing',content_hash:hash(text),extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,related_urls:url===seed.url?['https://www.nasa.gov/research-enrichment-test/']:[]};};
     assert.equal((await store.prepareAutomaticResearch({...googlePolicy,operator_commands_only:false},{read})).prepared,1);
     const [d]=await admin`select * from blog_worker.dossier_version`;assert.equal(d.document.documents.length,2);assert.equal(d.assessment.eligible,false);
     assert.equal(d.document.documents[0].url,'https://www.nasa.gov/research-enrichment-test/');assert.equal(d.reviewed_by,null);
@@ -768,6 +768,16 @@ try{
     assert.equal((await admin`select count(*)::int as count from public.blog_post where status='draft' and scheduled_at is null and published_at is null`)[0].count,10);
     assert.equal((await admin`select count(*)::int as count from blog_worker.attempt where charged_micro_usd<>0`)[0].count,0);
     await assert.rejects(()=>admin`update public.blog_post set status='published'`,/blog_factual_review_required/);
+  });
+  await check('a shared supporting article cannot produce another story under an alternative primary URL or topic',async()=>{
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(true);
+    const first=await store.reserve(googleOptions());await store.finish(first,{...googleCompleted,usage:googleUsage});
+    const next=candidate(2);await store.ingest(next);const doc={...dossierFixture(3),event_key:'alternate-primary-same-news',category:'tecnologia',subcategory:null};
+    doc.documents[0]={...doc.documents[0],url:doc.documents[0].url+'alternate',origin_url:doc.documents[0].origin_url+'alternate'};
+    await admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,source_hash,change_reason) values(${next.id},1,${admin.json(doc)},${dossierHash(doc)},${admin.json(assessDossier(doc))},'test-editor',${next.evidence_hash},'Synthetic alternate primary citation')`;
+    await assert.rejects(()=>store.reserveComparison({...googleOptions(),candidateId:next.id}),/duplicate_research_event/);
+    assert.equal((await admin`select count(*)::int as count from blog_worker.attempt`)[0].count,1);
+    assert.equal((await admin`select count(*)::int as count from public.blog_post`)[0].count,1);
   });
   await check('dashboard keeps a general dossier separate from an earlier subtopic and reports evidence blockers',async()=>{
     await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(true);
