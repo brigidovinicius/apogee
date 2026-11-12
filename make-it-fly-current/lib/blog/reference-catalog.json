@@ -795,6 +795,60 @@
     "collection_enabled": false
   },
   {
+    "id": "REF45",
+    "name": "Meio & Mensagem",
+    "publisher": "meio-mensagem",
+    "url": "https://www.meioemensagem.com.br/",
+    "categories": [
+      "negocios"
+    ],
+    "subcategories": [
+      "marketing"
+    ],
+    "role": "jornalismo",
+    "access": "rss_publico_verificado_20261112",
+    "aliases": [
+      "Meio & Mensagem"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF46",
+    "name": "Propmark",
+    "publisher": "propmark",
+    "url": "https://propmark.com.br/",
+    "categories": [
+      "negocios"
+    ],
+    "subcategories": [
+      "marketing"
+    ],
+    "role": "jornalismo",
+    "access": "rss_publico_verificado_20261112",
+    "aliases": [
+      "Propmark"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "REF47",
+    "name": "Startups.com.br",
+    "publisher": "startups-com-br",
+    "url": "https://startups.com.br/",
+    "categories": [
+      "negocios"
+    ],
+    "subcategories": [
+      "empreendedorismo-startups"
+    ],
+    "role": "jornalismo",
+    "access": "rss_publico_verificado_20261112",
+    "aliases": [
+      "Startups.com.br"
+    ],
+    "collection_enabled": false
+  },
+  {
     "id": "SRC04",
     "name": "MIT Research",
     "publisher": "mit",

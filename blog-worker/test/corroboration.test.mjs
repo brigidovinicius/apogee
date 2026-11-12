@@ -5,7 +5,7 @@ import {defaultPolicy} from './fixtures.mjs';
 
 import {dossierFixture} from './corroboration-fixture.mjs';
 test('44 references preserve exact duplicates as aliases and share publishers across sections',()=>{
-  const supplied=referenceCatalog.filter(r=>r.id.startsWith('REF'));assert.equal(supplied.length,44);assert.equal(supplied.reduce((n,r)=>n+r.aliases.length,0),46);
+  const supplied=referenceCatalog.filter(r=>/^REF(?:0[1-9]|[1-3][0-9]|4[0-4])$/.test(r.id));assert.equal(supplied.length,44);assert.equal(supplied.reduce((n,r)=>n+r.aliases.length,0),46);
   assert.equal(referenceCatalog.filter(r=>r.publisher==='quanta-magazine').length,3);
   assert.ok(referenceCatalog.every(r=>r.collection_enabled===false));
 });

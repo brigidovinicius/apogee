@@ -8,7 +8,7 @@ export const independentReference=r=>!!r&&!primaryReference(r)&&/jornalismo|divu
 export function primaryDocument(document,reference=referenceForUrl(document.url)){
   if(primaryReference(reference))return true;
   if(!independentReference(reference))return false;
-  const brands=[reference.name.split('/')[0].trim(),...(reference.id==='REF04'?['g1']:[])];
+  const brands=[reference.name.split('/')[0].trim(),...(reference.id==='REF04'?['g1']:reference.id==='REF47'?['Startups']:[])];
   const name=brands.map(s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
   return new RegExp('(?:\\b(?:told|tells?|confirmed to|in an interview with|documents (?:obtained|viewed) by)|disse(?:ram)? (?:ao|à|para)|(?:confirmou|informou|afirmou) (?:ao|à)|entrevista (?:ao|à)|apurou (?:o|a))\\s+(?:the\\s+)?(?:'+name+')\\b','i').test(document.text);
 }

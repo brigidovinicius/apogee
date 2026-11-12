@@ -30,7 +30,7 @@ test('dossier review derives actor from session and requires explicit confirmati
 test('web and worker execute the same corroboration implementation, with source provenance and no paid capture',()=>{
   const web=opportunityLoader()('lib/blog/corroboration.mjs'),d=dossierFixture(10,9);
   assert.equal(web.assessDossier(d,{comparisonVerified:true}).eligible,true);
-  assert.equal(web.referenceCatalog.filter(r=>r.id.startsWith('REF')).length,44);
+  assert.equal(web.referenceCatalog.filter(r=>r.id.startsWith('REF')).length,47);
   d.claims[0].cells[0].status='contradicts';assert.equal(web.assessDossier(d,{comparisonVerified:true}).eligible,false);
 });
 test('research UI renders factual matrix, controlled actions and immutable history without exposing active markup',async()=>{
