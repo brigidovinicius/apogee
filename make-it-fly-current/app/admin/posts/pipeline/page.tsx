@@ -54,7 +54,10 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
   return <div className={adminStyles.content}>
     <AdminPageHeader title="Central Editorial" description="Capte notícias, prepare artigos e revise cada publicação com o consumo sob controle." aside={<Link className={adminStyles.button} href="/admin/posts">Artigos e edição</Link>} />
     {notice ? <div role="status"><AdminNotice title="Atualização do pipeline" description={notice} /></div> : null}
-    <nav className={styles.tabs} aria-label="Etapas editoriais"><a href="#pautas">Pautas</a><a href="#referencias">Referências e pesquisa</a><a href="#fontes">Captação RSS</a><a href="#consumo">Consumo</a><a href="#historico">Histórico</a><Link href="/admin/posts/pipeline">Atualizar</Link></nav>
+    <nav className={styles.tabs} aria-label="Etapas editoriais"><a href="#pautas">Pautas</a><a href="#referencias">Referências e pesquisa</a><a href="#fontes">Captação RSS</a><a href="#consumo">Consumo</a><a href="#historico">Histórico</a>
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- Fetch current authorized data rather than reusing the client router cache. */}
+      <a href="/admin/posts/pipeline">Atualizar</a>
+    </nav>
     <section className={styles.panel} aria-label="Operação do worker">
       <div className={styles.row}><div><span className={styles.badge}>{!alive ? "Worker sem contato recente" : control.paused ? "Geração pausada" : p?.generation_enabled ? p.operator_commands_only ? "Pronto para pedidos" : "Geração automática de rascunhos" : "Geração desativada"}</span><p className={styles.muted}>Último contato: {date(control.heartbeat_at)} · Horário de Brasília</p>{control.reason ? <p>{pipelineReason(control.reason)}</p> : null}</div>
         <div className={styles.actions}><Command intent="collect" disabled={!alive || busy}>Captar notícias</Command><Command intent={control.paused ? "resume" : "pause"}>{control.paused ? "Retomar geração" : "Pausar geração"}</Command></div></div>
