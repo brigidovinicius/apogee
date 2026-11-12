@@ -1,5 +1,5 @@
 import {referenceCatalog,referenceUrl,validateDossier,dossierHash,buildComparisonRequest,taxonomy} from './corroboration.mjs';
-import {primaryDocument,independentReference} from './article-research.mjs';
+import {primaryDocument,primaryReference,referenceForUrl,independentReference} from './article-research.mjs';
 
 export function sourceReference(id){const key=String(id).replace(/^ARTICLE_/,'');return referenceCatalog.find(r=>r.id===({SRC01:'REF22',SRC02:'REF22',SRC03:'REF22'}[key]??key));}
 export const TOPICS=Object.freeze(Object.entries(taxonomy).flatMap(([category,v])=>Object.keys(v.subcategories).map(subcategory=>({category,subcategory}))).concat(Object.keys(taxonomy).map(category=>({category,subcategory:null}))));
@@ -78,12 +78,27 @@ export function sameProductLaunch(a,b){
   return false;
 }
 const primaryReferenceCorporate=r=>!!r&&/^institucional/.test(r.role)&&['google','microsoft','meta','openai'].includes(r.publisher);
+// A shared citation to one specific registered primary document is an event
+// identifier, not evidence of independent reporting. Generic landing pages do
+// not qualify. The comparator still checks every critical fact and dependence.
+export function primaryEventLinks(document){
+  const links=[];
+  for(const value of document.related_urls??[])try{
+    const r=referenceForUrl(value),url=referenceUrl(value,r);if(!primaryReference(r))continue;
+    const path=new URL(url).pathname,parts=path.split('/').filter(Boolean);
+    if(parts.length<2||url===referenceUrl(r.url)||/(?:^|\/)(?:category|tag|topic|author|privacy|terms|feed)(?:\/|$)/i.test(path))continue;
+    if(['google','meta'].includes(r.publisher)&&parts.length<3)continue;
+    links.push(url);
+  }catch{/* Unregistered URLs never become a common primary identifier. */}
+  return links;
+}
 // Exact identifiers select a research pair. Generic title similarity, home-page
 // links and popularity never establish a pair or a verified comparison.
 export function sameResearchEvent(a,b){
   if(a.published_at&&b.published_at&&Math.abs(Date.parse(a.published_at)-Date.parse(b.published_at))>7*86400000)return false;
   const u=referenceUrl(a.url),v=referenceUrl(b.url);
   if((a.related_urls??[]).includes(v)||(b.related_urls??[]).includes(u))return true;
+  const primaryLinks=new Set(primaryEventLinks(a));if(primaryEventLinks(b).some(url=>primaryLinks.has(url)))return true;
   const dois=evidenceDois(a.text+' '+(a.doi??'')+' '+(a.related_urls??[]).join(' '));return [...evidenceDois(b.text+' '+(b.doi??'')+' '+(b.related_urls??[]).join(' '))].some(d=>dois.has(d))||sameProductLaunch(a,b);
 }
 function prefix(text,bytes){
@@ -119,7 +134,7 @@ export function automaticDossier(candidate,captures,policy,topic=researchTopic(c
     const text=prefix(s.text,budget);if(text.length<80)return null;
     return {id:'E'+(i+1),reference_id:s.ref.id,capture_id:s.capture_id,title:s.title,url:referenceUrl(s.url,s.ref),published_at:s.published_at,
       text,content_hash:dossierHash(text),rights_reference:s.rights_reference,kind:i===0?'primary':'independent',evidence_scope:s.evidence_scope??'source_excerpt',origin_url:referenceUrl(s.url),same_event:true,
-      independence_note:i===0?'Fonte primária institucional ou apuração de primeira mão explicitamente identificada; snapshot integral preservado.':'Seleção por DOI, referência explícita ou identificador exato de lançamento corporativo na janela de 48 horas. Confirmar mesmo evento, data e estágio. Publicação distinta; o comparador deve rejeitar mera reprodução de release. Não representa replicação científica nem conferência humana.'};
+      independence_note:i===0?'Fonte primária institucional ou apuração de primeira mão explicitamente identificada; snapshot integral preservado.':'Seleção por DOI, documento primário comum, referência explícita ou identificador exato de lançamento corporativo na janela de 48 horas. Confirmar mesmo evento, data e estágio. Publicação distinta; o comparador deve rejeitar mera reprodução de release. Não representa replicação científica nem conferência humana.'};
   });
   if(documents.some(d=>!d))continue;
   const dossier=validateDossier({schema_version:1,event_key:own.url.length<=180?own.url:'url-sha256:'+dossierHash(own.url),...topic,documents,claims:[]});

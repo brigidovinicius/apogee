@@ -1,5 +1,6 @@
 import {CATEGORIES,fail,hash} from './policy.mjs';
 import {allowedUrl} from './http.mjs';
+import {canonicalResearchUrl} from './research-links.mjs';
 
 export const PROMPT_VERSION='blog-editorial-v4-seo-geo';
 export function canonicalUrl(value,hosts) {
@@ -17,7 +18,7 @@ export function normalizeItem(item,source,at) {
   const searchable=(title+' '+content).toLocaleLowerCase('pt-BR');
   if(terms.length && !terms.some(x=>searchable.includes(x)))return null;
   const eligible=source.feed_content_approved===true && !!source.rights_reference && content.length>=200 && content.length<=12000;
-  const related_urls=[...new Set((String(item['content:encoded']??item.content??'').match(/https:\/\/[^\s"'<>]+/g)??[]).map(v=>{try{const u=new URL(v.replaceAll('&amp;','&'));if(u.username||u.password||u.port)return null;u.hash='';return u.href;}catch{return null;}}).filter(Boolean))].slice(0,40);
+  const related_urls=[...new Set((String(item['content:encoded']??item.content??'').match(/https?:\/\/[^\s"'<>]+/g)??[]).map(v=>{try{const u=new URL(v.replaceAll('&amp;','&'));if(u.protocol==='http:')return canonicalResearchUrl(u.href);if(u.username||u.password||u.port)return null;u.hash='';return u.href;}catch{return null;}}).filter(Boolean))].slice(0,40);
   const evidence=eligible?[{id:'E1',url,title,published_at:published.toISOString(),text:content,
     source_id:source.id,rights_reference:source.rights_reference,content_hash:hash(content),related_urls}]:[];
   const dois=[...new Set((content.match(/\b10\.\d{4,9}\/[a-z0-9._;()/:+-]+/gi)??[]).map(v=>v.replace(/[.,;)]+$/,'').toLowerCase()))];

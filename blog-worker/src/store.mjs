@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
-import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION} from './corroboration.mjs';
+import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS} from './corroboration.mjs';
 
 export async function migrate(sql) {
   const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
@@ -192,19 +192,22 @@ export class Store {
     const candidates=await this.sql`select * from (select c.*,row_number() over(partition by c.source_id order by c.score desc,c.published_at desc) as source_rank
       from blog_worker.candidate c where c.post_id is null and c.first_attempt_day is null and c.published_at>now()-interval '7 days'
       and c.reason is distinct from 'source_changed_after_reservation' and c.reason is distinct from 'operator_hold' and c.reason is distinct from 'retention'
-      and coalesce(c.artifact->'research'->>'next_at','')<=to_char(now() at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
       and not exists(select 1 from blog_worker.dossier_version v where v.candidate_id=c.id)
       and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id)) q order by source_rank,score desc,published_at desc limit 1000`;
-    const rows=await this.sql`select d.id as capture_id,d.source_id,d.document from blog_worker.captured_document d
+    const rows=await this.sql`select d.id as capture_id,d.source_id,d.document,d.captured_at from blog_worker.captured_document d
       left join blog_worker.source_catalog s on s.id=d.source_id left join blog_worker.research_reference r on r.id=d.source_id
       where (s.definition->>'enabled'='true' and s.definition->>'feed_content_approved'='true' or r.definition->>'enabled'='true' and r.definition->>'content_approved'='true')
       and d.captured_at>now()-interval '7 days' order by (d.document->>'extraction_method'='public_article') desc nulls last,d.captured_at desc limit 2000`;
-    const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id}));
+    const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id,captured_at:r.captured_at}));
     const plan=balancedResearchCandidates(candidates,usage,1000);
+    const due=c=>!c.artifact?.research?.next_at||Date.parse(c.artifact.research.next_at)<=Date.now();
     let publicReadUsed=false,publicReadRequests=0;
-    const prepare=async(candidate,topic,{allowNetwork=true}={})=>{
+    const prepare=async(candidate,topic,{allowNetwork=true,freshOnly=false}={})=>{
       let document;try{document=automaticDossier(candidate,captures,policy,topic);}catch{return false;}
       if(!document)return false;
+      // Fresh corroboration can arrive during a network backoff. Recheck the
+      // immutable cache, while keeping the cooldown for repeated page fetches.
+      if(freshOnly&&!document.documents.some(d=>Date.parse(captures.find(s=>s.capture_id===d.capture_id)?.captured_at)>Date.parse(candidate.artifact?.research?.at)))return false;
       const [duplicate]=await this.sql`select v.candidate_id from blog_worker.dossier_version v where v.candidate_id<>${candidate.id}
         and (v.document->>'event_key'=${document.event_key} or v.document->'documents'->0->>'url'=${document.documents[0].url}) limit 1`;
       if(duplicate)return false;
@@ -222,7 +225,7 @@ export class Store {
       return (await this.sql`select blog_worker.prepare_automatic_research(${candidate.id},${this.sql.json(document)},${candidate.evidence_hash}) as prepared`)[0].prepared;
     };
     for(const {candidate,topic} of plan){
-      if(await prepare(candidate,topic))return {prepared:1,...(publicReadRequests?{requests:publicReadRequests}:{})};
+      if(await prepare(candidate,topic,{allowNetwork:due(candidate),freshOnly:!due(candidate)}))return {prepared:1,...(publicReadRequests?{requests:publicReadRequests}:{})};
       if(publicReadUsed)return {prepared:0,reason:'research_independent_missing',requests:publicReadRequests};
     }
     // One bounded network research per cycle; no search API, model call or paid service.
@@ -231,7 +234,7 @@ export class Store {
     const history=await this.sql`select artifact->'research'->'topic' as topic,count(*)::int as researched from blog_worker.candidate
       where artifact->'research'->>'day'=${day} and artifact->'research'->>'stage' is distinct from 'primary_found'
       and jsonb_typeof(artifact->'research'->'topic')='object' group by 1`;
-    const selected=nextResearchCandidate(plan.filter(({candidate})=>candidate.artifact?.research?.day!==day||Number(candidate.artifact?.research?.tries??0)<3),history);
+    const selected=nextResearchCandidate(plan.filter(({candidate})=>due(candidate)&&(candidate.artifact?.research?.day!==day||Number(candidate.artifact?.research?.tries??0)<3)),history);
     if(!selected)return {prepared:0};
     const {candidate,topic}=selected,tries=candidate.artifact?.research?.day===day?Number(candidate.artifact.research.tries??0)+1:1;
     let result;try{result=await enrichResearch({store:this,candidate,topic,captures,read});}catch(error){result={reason:error.code??'research_source_unavailable'};}
@@ -245,7 +248,7 @@ export class Store {
       and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='image') order by j.created_at limit 1`;
     if(policy.automatic_image_generation_enabled&&image)return {method:'reserveImage',candidateId:image.candidate_id};
     const usage=await this.productionUsage();
-    const rows=await this.sql`select c.id,c.status,c.first_attempt_day,v.document,v.assessment,
+    const rows=await this.sql`select c.id,c.status,c.reason,c.first_attempt_day,v.document,v.assessment,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison') as comparisons,
       (select a.policy->>'comparison_prompt_version' from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' order by a.created_at desc limit 1) as comparison_prompt_version,
@@ -259,9 +262,9 @@ export class Store {
       if(c.attempts>=policy.max_provider_attempts_per_article_including_repairs)continue;
       if(c.status==='ready'&&c.assessment.eligible&&c.assessment.comparison_verified)return {method:'reserve',candidateId:c.id};
       if(!c.attempts&&!c.assessment.comparison_verified&&c.document.documents.length>=2&&c.document.documents.every(d=>d.same_event))return {method:'reserveComparison',candidateId:c.id};
-      // One bounded re-evaluation after a real comparator fix, never an unknown
-      // request or an automatic retry under the same prompt. Old receipts stay.
-      if(!c.pending&&c.comparisons===1&&c.comparison_prompt_version!==COMPARISON_PROMPT_VERSION&&c.document.documents.length>=2&&c.document.documents.every(d=>d.same_event))return {method:'reserveComparison',candidateId:c.id};
+      // One format-only repair. Never repeat a factual rejection or an unknown
+      // request. It shares the existing article/day budgets; old receipts stay.
+      if(!c.pending&&c.comparisons===1&&COMPARISON_FORMAT_ERRORS.includes(c.reason)&&c.document.documents.length>=2&&c.document.documents.every(d=>d.same_event))return {method:'reserveComparison',candidateId:c.id};
     }
     return null;
   }
@@ -323,8 +326,9 @@ export class Store {
 
       const attempts=await tx`select * from blog_worker.attempt where candidate_id=${candidate.id} and kind in ('text','comparison')`;
       if(attempts.length>=policy.max_provider_attempts_per_article_including_repairs)fail('attempt_limit');
-      const body=kind==='comparison'?buildComparisonRequest(version.document,policy):buildRequest(effective,policy,attempts.some(a=>a.kind==='text'));
-      const key=kind==='comparison'?comparisonCacheKey(version.document,policy):cacheKey(effective,policy);
+      const comparisonRepair=kind==='comparison'&&attempts.some(a=>a.kind==='comparison');
+      const body=kind==='comparison'?buildComparisonRequest(version.document,policy,comparisonRepair):buildRequest(effective,policy,attempts.some(a=>a.kind==='text'));
+      const key=kind==='comparison'?comparisonCacheKey(version.document,policy,comparisonRepair):cacheKey(effective,policy);
       const reserve=google?0:usageCost(price,policy.input_tokens_cap_including_overhead,policy.billed_output_tokens_cap_including_reasoning);
       const [spent]=await tx`select
         coalesce(sum(coalesce(charged_micro_usd,reserved_micro_usd)) filter(where benefit_id=${grant?.id??null}),0) as cycle,

@@ -740,15 +740,52 @@ try{
     const replacement=candidate(2);await store.ingest(replacement);const replacementDoc={...dossierFixture(1),event_key:'different-event-replacement',documents:dossierFixture(1).documents.map(d=>({...d,url:d.url+'replacement',origin_url:d.origin_url+'replacement'}))};await dossier(replacement,replacementDoc);
     assert.equal((await store.reserveComparison({...googleOptions(),candidateId:replacement.id})).status,'reserved');
   });
-  await check('one comparator upgrade can repair a known receipt then write text, preserving all receipts and per-kind ordinals',async()=>{
+  await check('ten topics run from captured feeds through automatic comparison, text and credited covers without publishing',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const auto={...googlePolicy,operator_commands_only:false,google_automatic_access_validation_enabled:false};
+    const def=(id,url,host,editoria)=>({...source,id,url,article_hosts:[host],editoria});
+    const sources=[def('SRC01','https://www.nasa.gov/news-release/feed/','www.nasa.gov','ciencia-espaco'),def('SRC04','https://news.mit.edu/rss/research','news.mit.edu','ciencia-espaco'),def('SRC06','https://openai.com/news/rss.xml','openai.com','tecnologia'),def('PRIMARY_GOOGLE_BLOG','https://blog.google/rss/','blog.google','tecnologia'),def('REF27','https://www.space.com/feeds/all','www.space.com','ciencia-espaco'),def('REF15','https://neurosciencenews.com/feed/','neurosciencenews.com','ciencia-espaco'),def('REF33','https://www.sciencedaily.com/rss/all.xml','www.sciencedaily.com','ciencia-espaco'),def('REF05','https://tecnoblog.net/feed/','tecnoblog.net','tecnologia'),def('REF45','https://www.meioemensagem.com.br/feed','www.meioemensagem.com.br','startups'),def('REF47','https://startups.com.br/feed/','startups.com.br','startups'),def('REF43','https://exame.com/feed/','exame.com','startups')];
+    await store.syncPipeline({policy:auto,sources,catalog:[]},{});
+    const items=[['NASA spacecraft synthetic launch','SRC01','REF27'],['Brain research synthetic experiment','SRC04','REF15'],['Pesquisa científica experimental sintética','SRC04','REF33'],['Artificial intelligence synthetic research','PRIMARY_GOOGLE_BLOG','REF05'],['Software experimental synthetic research','PRIMARY_GOOGLE_BLOG','REF05'],['Hardware robot synthetic research','PRIMARY_GOOGLE_BLOG','REF05'],['Pesquisa computacional experimental sintética','SRC06','REF05'],['Marketing campanha experimental sintética','PRIMARY_GOOGLE_BLOG','REF45'],['Startup empreendedor experimental sintético','PRIMARY_GOOGLE_BLOG','REF47'],['Negócios mercado experimental sintético','PRIMARY_GOOGLE_BLOG','REF43']];
+    const sentence='A equipe anunciou um experimento inicial.',at=new Date().toISOString();
+    for(let i=0;i<items.length;i++)for(let side=1;side<=2;side++){
+      const item=items[i],src=sources.find(v=>v.id===item[side]),url='https://'+src.article_hosts[0]+'/synthetic-ten-topic-'+i+'/';
+      const text=(side===2?'Análise jornalística independente sobre métodos e limitações. ':'')+sentence+' DOI 10.1234/synthetic-ten-topic-'+i+'. '+('Este texto é inteiramente sintético para testar a produção e não apresenta resultados reais. '.repeat(20));
+      await store.ingest(normalizeItem({title:item[0],link:url,isoDate:at,contentSnippet:text},src,new Date()));
+    }
+    const usage={input_tokens:100,output_tokens:100,thinking_tokens:0,cache_read_tokens:0,total_tokens:200};let invocations=0,networkReads=0;
+    const simulationStore=new Store(runtime);simulationStore.prepareAutomaticResearch=policy=>Store.prototype.prepareAutomaticResearch.call(simulationStore,policy,{read:async()=>{networkReads++;throw Error('synthetic network disabled');}});
+    const provider=async r=>{invocations++;if(r.kind==='image')return {outcome:'completed',image:webpFixture(),usage};if(r.kind==='comparison'){const docs=JSON.parse(r.body.input).documents;return {outcome:'completed',text:JSON.stringify({claims:[{id:'C1',text:sentence,critical:true,cells:docs.map(d=>({document_id:d.id,status:'supports',quote:sentence,note:'Synthetic fixture correspondence, never a real editorial validation.'}))}]}),usage};}return {...googleCompleted,usage};};
+    // Only synthetic HTTP and provider adapters; no external request is possible.
+    for(let cycle=0;cycle<40;cycle++){
+      const result=await tick({store:simulationStore,config:{policy:auto,sources,catalog:[]},identity,provider,download:async()=>({notModified:true})});
+      const [{complete}]=await admin`select count(*)::int as complete from blog_worker.image_job where state='completed'`;
+      if(complete===10)break;
+      assert.notEqual(result.generation?.reason,'internal_error');
+    }
+    const dashboard=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();
+    assert.equal(dashboard.production.filter(t=>t.complete===1).length,10);assert.equal(invocations,30);assert.equal(networkReads,0);
+    assert.equal((await admin`select count(*)::int as count from public.blog_post where status='draft' and scheduled_at is null and published_at is null`)[0].count,10);
+    assert.equal((await admin`select count(*)::int as count from blog_worker.attempt where charged_micro_usd<>0`)[0].count,0);
+    await assert.rejects(()=>admin`update public.blog_post set status='published'`,/blog_factual_review_required/);
+  });
+  await check('dashboard keeps a general dossier separate from an earlier subtopic and reports evidence blockers',async()=>{
+    await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(true);
+    await admin`update blog_worker.dossier_version set document=jsonb_set(jsonb_set(document,'{category}','"tecnologia"'::jsonb),'{subcategory}','null'::jsonb)`;
+    await admin`update blog_worker.candidate set artifact=${admin.json({research:{topic:{category:'tecnologia',subcategory:'ia'},stage:'research_primary_missing'}})}`;
+    const dash=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();
+    const general=dash.production.find(t=>t.category==='tecnologia'&&t.subcategory===null);assert.ok(general);assert.equal(general.compared,1);assert.equal(general.primary_pending,1);
+    assert.ok(!dash.production.some(t=>t.category==='tecnologia'&&t.subcategory==='ia'&&t.compared));
+  });
+  await check('one bounded format repair can write text without repeating factual rejections or losing receipts',async()=>{
     await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(false);
     const auto={...googlePolicy,operator_commands_only:false,automatic_image_generation_enabled:false};
     const first=await store.reserveComparison({...googleOptions(),policy:auto,candidateId:candidate().id});
     await store.finish(first,{outcome:'completed',text:'{}',usage:googleUsage});
-    assert.equal(await store.nextAutomaticWork(auto),null,'the same prompt is not retried');
-    await admin`update blog_worker.attempt set policy=policy-'comparison_prompt_version' where id=${first.id}`;
+    assert.equal((await store.nextAutomaticWork(auto)).method,'reserveComparison','one format repair is allowed under the same prompt');
     assert.equal((await store.nextAutomaticWork(auto)).method,'reserveComparison');
     const second=await store.reserveComparison({...googleOptions(),policy:auto,candidateId:candidate().id});
+    assert.match(second.body.instructions,/Única reparação de formato/);
     assert.equal((await store.finish(second,{outcome:'completed',text:JSON.stringify({claims:dossierFixture(3).claims}),usage:googleUsage})).status,'comparison_ready');
     const text=await store.reserve({...googleOptions(),policy:auto,candidateId:candidate().id});
     assert.equal((await store.finish(text,{...googleCompleted,usage:googleUsage})).status,'draft');
@@ -756,6 +793,36 @@ try{
     assert.deepEqual(receipts.map(a=>[a.kind,a.ordinal]),[['comparison',1],['comparison',2],['text',1]]);
     assert.ok(receipts.every(a=>a.state==='confirmed'&&Number(a.charged_micro_usd)===0));
     assert.equal((await admin`select status from public.blog_post`)[0].status,'draft');
+  });
+  await check('factual rejections and a second invalid comparison never trigger another automatic call',async()=>{
+    const auto={...googlePolicy,operator_commands_only:false,automatic_image_generation_enabled:false};
+    for(const malformed of [false,true]){
+      await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(false);
+      const first=await store.reserveComparison({...googleOptions(),policy:auto,candidateId:candidate().id});
+      const document=dossierFixture(3);document.claims[0].cells[1].status='contradicts';
+      await store.finish(first,{outcome:'completed',text:malformed?'{}':JSON.stringify({claims:document.claims}),usage:googleUsage});
+      if(malformed){const second=await store.reserveComparison({...googleOptions(),policy:auto,candidateId:candidate().id});await store.finish(second,{outcome:'completed',text:'{}',usage:googleUsage});}
+      await admin`update blog_worker.attempt set policy=policy-'comparison_prompt_version'`;
+      assert.equal(await store.nextAutomaticWork(auto),null);
+    }
+  });
+  await check('new cached corroboration wakes a candidate in network backoff without making a page request',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const approved=[{...source,id:'SRC01',url:'https://www.nasa.gov/news-release/feed/',article_hosts:['www.nasa.gov'],editoria:'ciencia-espaco'}, {...source,id:'REF27',url:'https://www.space.com/feeds/all',article_hosts:['www.space.com'],editoria:'ciencia-espaco'}];
+    const auto={...googlePolicy,operator_commands_only:false};await store.syncPipeline({policy:auto,sources:approved,catalog:[]},{});
+    const at=new Date().toISOString(),text='A equipe anunciou um experimento inicial. DOI 10.1234/fresh-cache-test. '+('Evidência sintética, com contexto e limitações para teste. '.repeat(5));
+    const make=(s,url,prefix)=>normalizeItem({title:'Synthetic NASA report',link:url,isoDate:at,contentSnippet:prefix+text},s,new Date());
+    const primary=make(approved[0],'https://www.nasa.gov/fresh-cache-test/',''),other=make(approved[1],'https://www.space.com/fresh-cache-test/','Análise independente. ');
+    await store.ingest(primary);let prematureReads=0;
+    await store.researchProgress(primary.id,{stage:'research_independent_missing',topic:{category:'ciencia',subcategory:'aeroespacial'},tries:1,next_at:new Date(Date.now()+3600000).toISOString()});
+    assert.equal((await store.prepareAutomaticResearch(auto,{read:async()=>{prematureReads++;throw Error('backoff');}})).prepared,0);assert.equal(prematureReads,0);
+    await store.researchProgress(primary.id,{stage:'research_independent_missing',topic:{category:'ciencia',subcategory:'aeroespacial'},tries:3,next_at:new Date(Date.now()+3600000).toISOString()});
+    await admin`update blog_worker.captured_document set captured_at=now()-interval '1 minute' where candidate_id=${primary.id}`;
+    await admin`update blog_worker.candidate set artifact=jsonb_set(artifact,'{research,at}',to_jsonb((now()-interval '10 seconds')::text)) where id=${primary.id}`;
+    await store.ingest(other);let reads=0;
+    const result=await store.prepareAutomaticResearch(auto,{read:async()=>{reads++;throw Error('must not fetch in backoff');}});
+    assert.equal(result.prepared,1);assert.equal(reads,0);
+    const [d]=await admin`select assessment from blog_worker.dossier_version where candidate_id=${primary.id}`;assert.equal(d.assessment.comparison_verified,false);
   });
   await check('editors can correct a compared topic before writing, requiring a new comparison and preserving the later lock',async()=>{
     await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(false);
