@@ -5,6 +5,7 @@ import {extractArticle,primaryDocument} from '../src/article-research.mjs';
 import {sameResearchEvent} from '../src/automatic-research.mjs';
 import {normalizeItem} from '../src/editorial.mjs';
 import {buildComparisonRequest} from '../src/corroboration.mjs';
+import {researchPrimaryLinks,researchPriority} from '../src/research-service.mjs';
 import {source,defaultPolicy} from './fixtures.mjs';
 import {dossierFixture} from './corroboration-fixture.mjs';
 const text='A equipe anunciou um experimento inicial. O estudo é uma simulação inteiramente sintética para testes de descoberta e não descreve resultados reais. Limitações metodológicas ainda precisam ser avaliadas antes de qualquer aplicação.';
@@ -44,4 +45,10 @@ test('comparison requests enumerate the exact documents, bound cells and preserv
  assert.deepEqual(cells.items.properties.document_id.enum,['E1','E2']);assert.equal(cells.minItems,2);assert.equal(cells.maxItems,2);
  assert.equal(cells.items.properties.note.maxLength,240);assert.equal(normal.text.format.schema.properties.claims.maxItems,6);
  assert.match(repair.instructions,/Única reparação de formato/);assert.match(repair.instructions,/90%/);assert.equal(normal.input,repair.input);
+});
+
+test('literal DOI citations without hyperlinks are discovered and prioritize bounded primary research',()=>{
+ const doc={url:'https://www.space.com/synthetic/',text:'Synthetic journal reference DOI 10.1234/unlinked-reference.',related_urls:[]};
+ assert.deepEqual(researchPrimaryLinks(doc),['https://doi.org/10.1234/unlinked-reference']);
+ assert.ok(researchPriority({evidence:[doc]})>researchPriority({evidence:[{...doc,text:'A generic mention without a primary reference.'}]}));
 });

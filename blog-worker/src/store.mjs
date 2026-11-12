@@ -1,5 +1,5 @@
 import {automaticDossier,balancedResearchCandidates,nextResearchCandidate} from './automatic-research.mjs';
-import {enrichResearch,enrichSelectedEvidence} from './research-service.mjs';
+import {enrichResearch,enrichSelectedEvidence,researchPriority} from './research-service.mjs';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage} from './policy.mjs';
@@ -199,7 +199,8 @@ export class Store {
       where (s.definition->>'enabled'='true' and s.definition->>'feed_content_approved'='true' or r.definition->>'enabled'='true' and r.definition->>'content_approved'='true')
       and d.captured_at>now()-interval '7 days' order by (d.document->>'extraction_method'='public_article') desc nulls last,d.captured_at desc limit 2000`;
     const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id,captured_at:r.captured_at}));
-    const plan=balancedResearchCandidates(candidates,usage,1000);
+    const ranked=candidates.map((candidate,index)=>({candidate,index,priority:researchPriority(candidate)})).sort((a,b)=>b.priority-a.priority||a.index-b.index).map(v=>v.candidate);
+    const plan=balancedResearchCandidates(ranked,usage,1000);
     const due=c=>!c.artifact?.research?.next_at||Date.parse(c.artifact.research.next_at)<=Date.now();
     let publicReadUsed=false,publicReadRequests=0;
     const prepare=async(candidate,topic,{allowNetwork=true,freshOnly=false}={})=>{

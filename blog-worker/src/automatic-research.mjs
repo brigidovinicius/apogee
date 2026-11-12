@@ -1,7 +1,8 @@
 import {referenceCatalog,referenceUrl,validateDossier,dossierHash,buildComparisonRequest,taxonomy} from './corroboration.mjs';
 import {primaryDocument,primaryReference,referenceForUrl,independentReference} from './article-research.mjs';
 
-export function sourceReference(id){const key=String(id).replace(/^ARTICLE_/,'');return referenceCatalog.find(r=>r.id===({SRC01:'REF22',SRC02:'REF22',SRC03:'REF22'}[key]??key));}
+const referenceById=new Map(referenceCatalog.map(r=>[r.id,r]));
+export function sourceReference(id){const key=String(id).replace(/^ARTICLE_/,'');return referenceById.get({SRC01:'REF22',SRC02:'REF22',SRC03:'REF22'}[key]??key);}
 export const TOPICS=Object.freeze(Object.entries(taxonomy).flatMap(([category,v])=>Object.keys(v.subcategories).map(subcategory=>({category,subcategory}))).concat(Object.keys(taxonomy).map(category=>({category,subcategory:null}))));
 export const topicKey=t=>t.category+'/'+(t.subcategory??'geral');
 export function researchTopic(c){
@@ -81,7 +82,9 @@ const primaryReferenceCorporate=r=>!!r&&/^institucional/.test(r.role)&&['google'
 // A shared citation to one specific registered primary document is an event
 // identifier, not evidence of independent reporting. Generic landing pages do
 // not qualify. The comparator still checks every critical fact and dependence.
+const primaryLinkCache=new WeakMap();
 export function primaryEventLinks(document){
+  const previous=primaryLinkCache.get(document);if(previous?.urls===document.related_urls)return previous.links;
   const links=[];
   for(const value of document.related_urls??[])try{
     const r=referenceForUrl(value),url=referenceUrl(value,r);if(!primaryReference(r))continue;
@@ -90,7 +93,13 @@ export function primaryEventLinks(document){
     if(['google','meta'].includes(r.publisher)&&parts.length<3)continue;
     links.push(url);
   }catch{/* Unregistered URLs never become a common primary identifier. */}
-  return links;
+  primaryLinkCache.set(document,{urls:document.related_urls,links});return links;
+}
+const eventFeatureCache=new WeakMap();
+function eventFeatures(document){
+  const previous=eventFeatureCache.get(document);if(previous&&previous.urls===document.related_urls&&previous.text===document.text&&previous.doi===document.doi)return previous;
+  const features={urls:document.related_urls,text:document.text,doi:document.doi,dois:evidenceDois(document.text+' '+(document.doi??'')+' '+(document.related_urls??[]).join(' '))};
+  eventFeatureCache.set(document,features);return features;
 }
 // Exact identifiers select a research pair. Generic title similarity, home-page
 // links and popularity never establish a pair or a verified comparison.
@@ -99,7 +108,7 @@ export function sameResearchEvent(a,b){
   const u=referenceUrl(a.url),v=referenceUrl(b.url);
   if((a.related_urls??[]).includes(v)||(b.related_urls??[]).includes(u))return true;
   const primaryLinks=new Set(primaryEventLinks(a));if(primaryEventLinks(b).some(url=>primaryLinks.has(url)))return true;
-  const dois=evidenceDois(a.text+' '+(a.doi??'')+' '+(a.related_urls??[]).join(' '));return [...evidenceDois(b.text+' '+(b.doi??'')+' '+(b.related_urls??[]).join(' '))].some(d=>dois.has(d))||sameProductLaunch(a,b);
+  const dois=eventFeatures(a).dois;return [...eventFeatures(b).dois].some(d=>dois.has(d))||sameProductLaunch(a,b);
 }
 function prefix(text,bytes){
   // A declared, contiguous opening excerpt. The complete captured snapshot is
