@@ -77,6 +77,10 @@ test('DOI association preserves original dates and excludes stale context from a
  assert.equal(referenceForUrl('https://www.jpl.nasa.gov/news/test/').id,'REF22');
  assert.equal(referenceForUrl('https://arbitrary.nasa.gov/news/test/'),null);
  assert.equal(referenceForUrl('https://www.nature.com/articles/s41586-original').id,'PRIMARY_NATURE_RESEARCH');
+ assert.equal(referenceForUrl('https://www.nature.com/articles/s41467-026-12345-1').id,'PRIMARY_NATURE_RESEARCH');
+ assert.equal(referenceForUrl('https://www.nature.com/articles/s41593-026-12345-1').id,'REF12');
+ assert.equal(referenceForUrl('https://www.nature.com/articles/arbitrary-page'),null);
+ assert.equal(referenceForUrl('https://arbitrary.nature.com/articles/s41467-026-12345-1'),null);
 });
 
 test('the article body wins over unrelated semantic article cards and retains its own primary links',()=>{

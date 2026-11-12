@@ -16,7 +16,10 @@ export function referenceForUrl(value){
   try{const u=referenceUrl(value),h=host(u),path=new URL(u).pathname;
     if(h==='nature.com'&&path.startsWith('/articles/')){
       const id=Object.entries({s41593:'REF12',s41591:'REF14',s41550:'REF24',s42256:'REF36',s41586:'PRIMARY_NATURE_RESEARCH'}).find(([prefix])=>path.startsWith('/articles/'+prefix))?.[1];
-      return referenceCatalog.find(r=>r.id===id)??null;
+      // The registered Nature research reference also covers public papers
+      // in the publisher's other journals, not only the flagship s41586 code.
+      const researchId=id??(/^\/articles\/s\d{4,5}-\d{2,4}-[a-z0-9-]+\/?$/i.test(path)?'PRIMARY_NATURE_RESEARCH':null);
+      return referenceCatalog.find(r=>r.id===researchId)??null;
     }
     return referenceCatalog.filter(r=>(r.hosts??[host(r.url)]).includes(h))
     .sort((a,b)=>Number(new URL(u).pathname.startsWith(new URL(b.url).pathname))-Number(new URL(u).pathname.startsWith(new URL(a.url).pathname))||new URL(b.url).pathname.length-new URL(a.url).pathname.length)[0]??null;}catch{return null;}
