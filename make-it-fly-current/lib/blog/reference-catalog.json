@@ -1131,12 +1131,12 @@
     "collection_enabled": false
   },
   {
-    "id": "PRIMARY_NIA",
-    "name": "NIH / National Institute on Aging",
-    "publisher": "nih",
-    "url": "https://www.nia.nih.gov/",
+    "id": "PRIMARY_QBI",
+    "name": "University of Queensland / Queensland Brain Institute",
+    "publisher": "uq-qbi",
+    "url": "https://qbi.uq.edu.au/",
     "hosts": [
-      "nia.nih.gov"
+      "qbi.uq.edu.au"
     ],
     "categories": [
       "ciencia"
@@ -1147,7 +1147,7 @@
     "role": "institucional_educacao",
     "access": "pagina_publica_sujeita_a_validacao",
     "aliases": [
-      "NIH / National Institute on Aging"
+      "Queensland Brain Institute"
     ],
     "collection_enabled": false
   },

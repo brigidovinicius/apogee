@@ -4,7 +4,7 @@ import {explainerCatalog,validateExplainerCatalog,explainerWindowOpen,nextExplai
 import {validateDossier,assessDossier,scopeVerified,buildComparisonRequest,explainerOverlap} from '../src/corroboration.mjs';
 import {buildRequest,cmsDraft,validateArticle} from '../src/editorial.mjs';
 import {validatePolicy,hash} from '../src/policy.mjs';
-import {ARTICLE_EXTRACTION_VERSION,referenceForUrl,articleSource} from '../src/article-research.mjs';
+import {ARTICLE_EXTRACTION_VERSION,referenceForUrl,articleSource,extractArticle} from '../src/article-research.mjs';
 import {defaultPolicy,article,candidate} from './fixtures.mjs';
 import {dossierFixture} from './corroboration-fixture.mjs';
 
@@ -66,4 +66,12 @@ test('explanatory text has an explicit format and dates without adding invented 
   assert.throws(()=>validateArticle({...article,title:'Google anuncia hoje uma descoberta extraordinária'},c.evidence,null,c.editorial),/explainer_false_freshness/);
   c.corroboration=assessDossier(explanatory(),{comparisonVerified:true});c.evidence[0].content_hash=hash(c.evidence[0].text);
   assert.match(buildRequest(c,policy).instructions,/FORMATO EXPLICATIVO/);
+});
+test('public guide landmarks and book bodies are readable without accepting arbitrary page bodies or gated text',()=>{
+  const text='This public guide defines the subject and explains its context and limitations. '.repeat(8);
+  for(const element of [`<div role="main">${text}</div>`,`<div class="book-content">${text}</div>`,`<div class="field-name-body">${text}</div>`])assert.ok(extractArticle(`<title>Reference guide</title><h1>Reference guide</h1>${element}`,'https://git-scm.com/book/example').text.includes('public guide'));
+  const google=`<title>Cloud reference guide</title><body><nav>Navigation is excluded</nav><h1>Cloud reference guide</h1><section class="cws-jump-section">${text}</section></body>`;
+  assert.ok(extractArticle(google,'https://cloud.google.com/learn/example').text.includes('public guide'));
+  assert.throws(()=>extractArticle(google,'https://cloud.google.com/unrelated/example'),/research_article_missing/);
+  assert.throws(()=>extractArticle('<script type="application/ld+json">{"@type":"Article","isAccessibleForFree":false}</script>'+google,'https://cloud.google.com/learn/example'),/research_access_restricted/);
 });

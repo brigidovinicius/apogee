@@ -52,7 +52,7 @@ export function explainerExcerpt(text,terms,bytes){
   return {text:best.text,excerpt_offset:best.excerpt_offset};
 }
 export function automaticExplainerDossier(plan,captures,policy,at=new Date()){
-  const chosen=plan.urls.map(url=>captures.find(s=>referenceUrl(s.url)===referenceUrl(url)
+  const chosen=plan.urls.map(url=>captures.find(s=>(referenceUrl(s.url)===referenceUrl(url)||s.requested_url===url)
     &&s.extraction_method==='public_article'&&s.extraction_version===ARTICLE_EXTRACTION_VERSION
     &&Number.isFinite(Date.parse(s.checked_at??s.captured_at))&&Date.parse(s.checked_at??s.captured_at)<=+at
     &&+at-Date.parse(s.checked_at??s.captured_at)<86400000));

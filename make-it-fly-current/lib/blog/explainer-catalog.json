@@ -12,7 +12,7 @@
     ],
     "urls": [
       "https://science.nasa.gov/ems/01_intro/",
-      "https://www.esa.int/Science_Exploration/Space_Science/E"
+      "https://www.esa.int/pl/articles/about-us/directorates/science/integral/the-electromagnetic-spectrum"
     ]
   },
   {
@@ -27,7 +27,7 @@
     ],
     "urls": [
       "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-an-orbit-grades-k-4/",
-      "https://www.esa.int/kids/en/learn/Technology/Mission_control/Different_orbits"
+      "https://www.esa.int/articles/about-us/directorates/science/spacecraft-orbits"
     ]
   },
   {
@@ -42,7 +42,7 @@
       "signals"
     ],
     "urls": [
-      "https://www.nia.nih.gov/health/alzheimers-causes-and-risk-factors/what-happens-brain-alzheimers-disease",
+      "https://qbi.uq.edu.au/brain/brain-anatomy/what-neuron",
       "https://www.brainfacts.org/brain-anatomy-and-function/cells-and-circuits/2022/neurons-and-glia-113022"
     ]
   },
@@ -75,7 +75,7 @@
     ],
     "urls": [
       "https://developers.google.com/machine-learning/intro-to-ml/what-is-ml",
-      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-machine-learning"
+      "https://learn.microsoft.com/en-us/training/modules/fundamentals-machine-learning/2-what-is-machine-learning"
     ]
   },
   {
@@ -90,7 +90,7 @@
       "Git"
     ],
     "urls": [
-      "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git",
+      "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F",
       "https://docs.github.com/en/get-started/using-git/about-git"
     ]
   },
@@ -170,7 +170,7 @@
     ],
     "urls": [
       "https://science.nasa.gov/ems/01_intro/",
-      "https://www.esa.int/Science_Exploration/Space_Science/E"
+      "https://www.esa.int/pl/articles/about-us/directorates/science/integral/the-electromagnetic-spectrum"
     ]
   },
   {
@@ -186,7 +186,7 @@
     ],
     "urls": [
       "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-an-orbit-grades-k-4/",
-      "https://www.esa.int/kids/en/learn/Technology/Mission_control/Different_orbits"
+      "https://www.esa.int/articles/about-us/directorates/science/spacecraft-orbits"
     ]
   },
   {
@@ -200,7 +200,7 @@
       "axon"
     ],
     "urls": [
-      "https://www.nia.nih.gov/health/alzheimers-causes-and-risk-factors/what-happens-brain-alzheimers-disease",
+      "https://qbi.uq.edu.au/brain/brain-anatomy/what-neuron",
       "https://www.brainfacts.org/brain-anatomy-and-function/cells-and-circuits/2022/neurons-and-glia-113022"
     ]
   },
@@ -232,7 +232,7 @@
     ],
     "urls": [
       "https://developers.google.com/machine-learning/intro-to-ml/what-is-ml",
-      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-machine-learning"
+      "https://learn.microsoft.com/en-us/training/modules/fundamentals-machine-learning/3-types-of-machine-learning"
     ]
   },
   {
@@ -247,7 +247,7 @@
       "history"
     ],
     "urls": [
-      "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git",
+      "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F",
       "https://docs.github.com/en/get-started/using-git/about-git"
     ]
   },
@@ -328,7 +328,7 @@
     ],
     "urls": [
       "https://science.nasa.gov/ems/01_intro/",
-      "https://www.esa.int/Science_Exploration/Space_Science/E"
+      "https://www.esa.int/pl/articles/about-us/directorates/science/integral/the-electromagnetic-spectrum"
     ]
   },
   {
@@ -344,7 +344,7 @@
     ],
     "urls": [
       "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-an-orbit-grades-k-4/",
-      "https://www.esa.int/kids/en/learn/Technology/Mission_control/Different_orbits"
+      "https://www.esa.int/articles/about-us/directorates/science/spacecraft-orbits"
     ]
   },
   {
@@ -359,7 +359,7 @@
       "support"
     ],
     "urls": [
-      "https://www.nia.nih.gov/health/alzheimers-causes-and-risk-factors/what-happens-brain-alzheimers-disease",
+      "https://qbi.uq.edu.au/brain-basics/brain/brain-physiology/what-are-glia",
       "https://www.brainfacts.org/brain-anatomy-and-function/cells-and-circuits/2022/neurons-and-glia-113022"
     ]
   },
@@ -391,7 +391,7 @@
     ],
     "urls": [
       "https://developers.google.com/machine-learning/intro-to-ml/what-is-ml",
-      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-machine-learning"
+      "https://learn.microsoft.com/en-us/training/modules/fundamentals-machine-learning/2-what-is-machine-learning"
     ]
   },
   {
@@ -406,7 +406,7 @@
       "changes"
     ],
     "urls": [
-      "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git",
+      "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F",
       "https://docs.github.com/en/get-started/using-git/about-git"
     ]
   },

@@ -83,10 +83,16 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   // paper requires a subscription. Never read hidden sections or gated bodies.
   const abstracts=nodes.filter(n=>visible(n)&&(/^(?:abstract|abs1)$/i.test(attrs(n).id??'')||/^abstract$/i.test(attrs(n)['data-title']??''))&&textOf(n).trim().length>=200);
   if(restricted&&!abstracts.length)fail('research_access_restricted');
-  const bodies=nodes.filter(n=>{const a=attrs(n);return a.itemprop==='articleBody'||/(?:^|\s)(?:article-body|article_body|story-body|story_body|post-content|entry-content|article-content|news-article--content|story_text|elementor-widget-theme-post-content|mc-article-body)(?:\s|$)/i.test((a.id??'')+' '+(a.class??''));});
+  const bodies=nodes.filter(n=>{const a=attrs(n);return a.itemprop==='articleBody'||/(?:^|\s)(?:article-body|article_body|story-body|story_body|post-content|entry-content|article-content|news-article--content|story_text|elementor-widget-theme-post-content|mc-article-body|book-content|field--name-body|field-name-body)(?:\s|$)/i.test((a.id??'')+' '+(a.class??''));});
   const articles=nodes.filter(n=>n.tagName==='article');
   const usable=items=>items.filter(n=>visible(n)&&clean(textOf(n)).length>=200);
-  const roots=restricted?usable(abstracts):usable(bodies).length?usable(bodies):usable(articles).length?usable(articles):usable(nodes.filter(n=>n.tagName==='main'));
+  const landmarks=usable(nodes.filter(n=>n.tagName==='main'||attrs(n).role==='main'));
+  // Google's public /learn guides use labelled sections without an article or
+  // main landmark. Permit that known guide shell only; gated/hidden content is
+  // still excluded above and by textOf. Never use arbitrary page bodies.
+  const googleGuide=new URL(url).hostname==='cloud.google.com'&&new URL(url).pathname.startsWith('/learn/')
+    &&nodes.some(n=>n.tagName==='section'&&/(?:^|\s)cws-jump-section(?:\s|$)/.test(attrs(n).class??''));
+  const roots=restricted?usable(abstracts):usable(bodies).length?usable(bodies):usable(articles).length?usable(articles):landmarks.length?landmarks:googleGuide?usable(nodes.filter(n=>n.tagName==='body')):[];
   const root=roots.sort((a,b)=>textOf(b).length-textOf(a).length)[0];if(!root)fail(bodies.length||articles.length?'research_text_insufficient':'research_article_missing');
   const text=clean(textOf(root)).slice(0,12000);if(text.length<200)fail('research_text_insufficient');
   const title=clean(meta['og:title']??textOf(nodes.find(n=>n.tagName==='h1')??{}))||fallbackTitle;

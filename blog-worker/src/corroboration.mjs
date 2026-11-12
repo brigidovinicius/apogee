@@ -15,6 +15,7 @@ export function buildComparisonRequest(dossier, policy, repair=false) {
     text: { format: { schema } }, max_output_tokens: policy.billed_output_tokens_cap_including_reasoning };
   if(repair)body.instructions+=' Única reparação de formato: a resposta anterior foi inválida. Reconstrua o JSON completo com citações literais, sem mudar o escopo, omitir limitações ou remover fatos críticos.';
   if(isExplainer(d)){
+    body.instructions=body.instructions.replace('Compare as evidências do mesmo acontecimento.','Compare as evidências sobre a pergunta editorial.').replace('incluindo acontecimento, identidade, data/estágio e resultado/limitações','incluindo conceito, mecanismo, contexto de aplicação e limitações');
     body.instructions+=' FORMATO EXPLICATIVO: os documentos tratam de um conceito comum, não de um mesmo acontecimento. A pergunta editorial define o escopo. Compare apenas fatos que respondem a ela, incluindo limites e contexto essenciais. Não procure uma data de anúncio comum nem apresente um guia antigo como descoberta recente. Guias produzidos por instituições diferentes podem ser análises independentes de conhecimento estabelecido; verifique autoria e dependência, sem alegar validação experimental independente. A pergunta não permite omitir divergências ou transformar aconselhamento particular em regra universal. Não inclua números, desempenho comercial ou regras nacionais sem confirmação pertinente nas fontes.';
     const input=JSON.parse(body.input);input.editorial=d.editorial;body.input=JSON.stringify(input);
   }

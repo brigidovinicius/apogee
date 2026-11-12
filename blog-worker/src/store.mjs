@@ -201,14 +201,21 @@ export class Store {
       values(${id},${source.id},${id},${plan.urls[0]},${hash('explainer:'+plan.key)},${plan.question},${scopeEditoria(plan)},45,${at},'[]'::jsonb,${hash([])},'discovered','explainer',${plan.key}) on conflict do nothing`;
     const [candidate]=await this.sql`select * from blog_worker.candidate where id=${id}`;
     const rows=await this.sql`select id as capture_id,source_id,document,captured_at from blog_worker.captured_document
-      where url=any(${plan.urls}::text[]) and captured_at>now()-interval '24 hours' order by captured_at desc`;
+      where (url=any(${plan.urls}::text[]) or document->>'requested_url'=any(${plan.urls}::text[])) and captured_at>now()-interval '24 hours' order by captured_at desc`;
     const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id,captured_at:r.captured_at}));
     const budget={used:0,max:8,deadline:Date.now()+30000};let reason='explainer_sources_missing';
     try{
       for(const url of plan.urls){
-        if(captures.some(d=>d.url===url&&d.extraction_version===ARTICLE_EXTRACTION_VERSION&&Date.parse(d.checked_at??d.captured_at)<=+at&&+at-Date.parse(d.checked_at??d.captured_at)<86400000))continue;
-        const doc={...await read(url,budget),checked_at:new Date().toISOString()};
+        if(captures.some(d=>(d.url===url||d.requested_url===url)&&d.extraction_version===ARTICLE_EXTRACTION_VERSION&&Date.parse(d.checked_at??d.captured_at)<=+at&&+at-Date.parse(d.checked_at??d.captured_at)<86400000))continue;
+        const doc={...await read(url,budget),requested_url:url,checked_at:new Date().toISOString()};
         await this.captureResearchDocument(candidate,doc);captures.unshift({...doc,capture_id:hash(doc)});
+      }
+      const own=captures.find(d=>d.url===plan.urls[0]||d.requested_url===plan.urls[0]);
+      if(own){
+        const primary=Object.fromEntries(Object.entries(own).filter(([key])=>!['capture_id','captured_at'].includes(key))),evidence=[{id:'E1',...primary}];
+        await this.sql`update blog_worker.candidate c set url=${own.url},source_id=${own.source_id},evidence=${this.sql.json(evidence)},evidence_hash=${hash(evidence)}
+          where c.id=${id} and c.post_id is null and c.first_attempt_day is null and c.reason is distinct from 'operator_hold' and c.reason is distinct from 'source_changed_after_reservation'
+          and not exists(select 1 from blog_worker.dossier_version where candidate_id=c.id)`;
       }
       const [current]=await this.sql`select * from blog_worker.candidate where id=${id}`;
       const document=automaticExplainerDossier(plan,captures,policy,new Date());

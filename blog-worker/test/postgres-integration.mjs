@@ -864,7 +864,7 @@ try{
   });
   const hybridPolicy={...googlePolicy,automatic_explainers_enabled:true,explainer_after_local_hour:10,operator_commands_only:false};
   const hybridOptions=()=>({...googleOptions(),policy:hybridPolicy});
-  const hybridAt=()=>{const at=new Date();at.setUTCHours(15,0,0,0);return at;};
+  const hybridAt=()=>{const at=new Date();if(at.getUTCHours()<13)at.setUTCHours(15,0,0,0);return at;};
   const smallHybridUsage={input_tokens:100,output_tokens:100,thinking_tokens:0,cache_read_tokens:0,total_tokens:200};
   function guide(plan,url){
     const r=referenceForUrl(url),src=articleSource(r),text='🛰️ Guia sintético de '+r.publisher+'. '+('Contexto inicial sem relação com a seção seguinte. '.repeat(80))
