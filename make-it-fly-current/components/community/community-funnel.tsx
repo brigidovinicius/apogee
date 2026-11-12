@@ -9,7 +9,7 @@ import styles from "./community-sales-page.module.css";
 
 export function FunnelHeader({ page }: { page: "community" | "recording" }) {
   return <header className={styles.header}>
-    <Link className={styles.brand} href="/comunidade" prefetch={false} aria-label="Comunidade Apogee — início"><Image src="/brand/apogee-star.svg" alt="" width={24} height={30} /><span>Apogee<small>{page === "community" ? "Comunidade" : "Codex Community"}</small></span></Link>
+    <Link className={styles.brand} href="/comunidade" prefetch={false} aria-label="Comunidade Apogee - início"><Image src="/brand/apogee-star.svg" alt="" width={24} height={30} /><span>Apogee<small>{page === "community" ? "Comunidade" : "Codex Community"}</small></span></Link>
     <nav className={styles.navigation} aria-label="Navegação principal">
       <Link href={page === "community" ? "#comunidade" : "/comunidade"} prefetch={false}>A comunidade</Link>
       <Link href={page === "community" ? "#cursos" : "#como-funciona"}>{page === "community" ? "Cursos de IA" : "Como funciona"}</Link>
@@ -39,7 +39,7 @@ export function FunnelFaq({ id, title, items }: { id: string; title: string; ite
 export function FunnelFooter() {
   const legal = useSiteLegalLinks();
   return <footer className={styles.footer}>
-    <Link className={styles.brand} href="/" prefetch={false} aria-label="Apogee — página inicial"><Image src="/brand/apogee-star.svg" alt="" width={24} height={30} /><span>Apogee<small>Conhecimento e oportunidades</small></span></Link>
+    <Link className={styles.brand} href="/" prefetch={false} aria-label="Apogee - página inicial"><Image src="/brand/apogee-star.svg" alt="" width={24} height={30} /><span>Apogee<small>Conhecimento e oportunidades</small></span></Link>
     <nav aria-label="Navegação do rodapé"><Link href="/comunidade" prefetch={false}>Comunidade</Link><Link href="/evento-openai" prefetch={false}>Evento gratuito</Link><Link href="/oportunidades" prefetch={false}>Radar</Link><Link href="/blog" prefetch={false}>Blog</Link>{legal.privacy && <Link href="/privacidade">Privacidade</Link>}{legal.terms && <Link href="/termos">Termos de uso</Link>}</nav>
     <p>Conhecimento, oportunidades e gente para colocar ideias em movimento.</p>
   </footer>;
