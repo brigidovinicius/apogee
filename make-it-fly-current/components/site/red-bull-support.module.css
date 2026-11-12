@@ -1,7 +1,5 @@
-.support { display:flex; align-items:center; justify-content:center; gap:36px; padding:26px 24px; color:#07182d; background:#fff; border-block:1px solid #d8e1eb; }
+.support { display:flex; align-items:center; justify-content:center; gap:24px; padding:22px 24px; color:#07182d; background:#fff; border-block:1px solid #d8e1eb; }
 .support p { margin:0; }
-.brand { font-size:.65rem; letter-spacing:.14em; text-transform:uppercase; margin-bottom:5px!important; }
 .heading { font-size:1.15rem; font-weight:500; }
-.support img { display:block; width:104px; height:auto; }
-.caption { color:#4b5b70; font-size:.75rem; line-height:1.6; }
-@media(max-width:540px) { .support { gap:18px; padding:24px 18px; flex-wrap:wrap; }.heading { font-size:.95rem; }.support img { width:84px; }.caption { font-size:.65rem; } }
+.support img { display:block; width:28px; height:auto; flex-shrink:0; filter:brightness(0); }
+@media(max-width:540px) { .support { gap:18px; padding:20px 18px; }.heading { font-size:.95rem; }.support img { width:24px; } }

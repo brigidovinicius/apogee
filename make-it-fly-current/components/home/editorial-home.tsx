@@ -36,7 +36,7 @@ export function EditorialHome() {
         <div className={styles.introActions}><p>Explore ciência e tecnologia, encontre oportunidades e participe de experiências para colocar suas ideias em prática.</p><div><Link className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={18} /></Link><Link className={styles.heroSecondary} href="/oportunidades" prefetch={false}>Explorar oportunidades</Link></div></div>
       </section>
 
-      <RedBullSupport showSponsorCaption={false} />
+      <RedBullSupport />
 
       <section className={styles.featureBand} aria-labelledby="home-explore-title">
         <div className={styles.featureLayout}>

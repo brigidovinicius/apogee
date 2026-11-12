@@ -25,7 +25,7 @@ export function CommunitySalesPage() {
           <div className={styles.starScene} aria-hidden="true"><Image className={styles.heroStar} src="/brand/apogee-star.svg" alt="" width={703} height={870} priority /><span className={styles.orbitLine} /></div>
           <div className={styles.heroTopics}><span>IA na prática</span><span>Radar de oportunidades</span><span>Curadoria Apogee</span></div>
         </section>
-        <RedBullSupport showSponsorCaption={false} />
+        <RedBullSupport />
         <section id="comunidade" className={styles.section} aria-labelledby="inside-title">
           <div className={styles.sectionHeading}><p className={styles.eyebrow}>O que nos reúne</p><h2 id="inside-title">Conhecimento, oportunidades<br />e boas conversas.</h2><p>Um ponto de encontro para quem tem curiosidade e quer dar o próximo passo.</p></div>
           <div className={styles.deliverables}>{COMMUNITY_DELIVERABLES.map(item => {
