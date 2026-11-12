@@ -23,6 +23,12 @@ export async function migrate(sql) {
   });
 }
 const scopeEditoria=d=>d.category==='ciencia'?'ciencia-espaco':d.category==='negocios'?'startups':d.subcategory==='ia'?'ia':'tecnologia';
+async function assertDraftAccess(tx){
+  const [access]=await tx`select has_function_privilege(current_user,'blog_worker.import_draft(text,jsonb)','EXECUTE') as draft,
+    has_function_privilege(current_user,'blog_worker.queue_cover(text,text,text,text)','EXECUTE') as queue,
+    has_function_privilege(current_user,'blog_worker.import_cover(text,text)','EXECUTE') as cover`;
+  if(!access.draft||!access.queue||!access.cover)fail('draft_import_unavailable');
+}
 export const n=value=>{const num=Number(value);if(!Number.isSafeInteger(num)||num<0)fail('invalid_ledger');return num;};
 const benefit=row=>row?{...row.attestation,...row,provider_grant_id:row.id,amount_micro_usd:n(row.amount_micro_usd),remaining_micro_usd:n(row.remaining_micro_usd)}:null;
 export async function lock(tx) {
@@ -230,7 +236,7 @@ export class Store {
       (select a.policy->>'comparison_prompt_version' from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' order by a.created_at desc limit 1) as comparison_prompt_version,
       exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.state in ('reserved','unknown')) as pending
       from blog_worker.candidate c join lateral(select * from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) v on true
-      where c.post_id is null and c.reason is distinct from 'source_changed_after_reservation' and c.published_at>now()-interval '7 days'
+      where c.post_id is null and c.reason is distinct from 'source_changed_after_reservation' and c.reason is distinct from 'operator_hold' and c.published_at>now()-interval '7 days'
       and c.status in ('ready','held','discovered') order by c.score desc,c.published_at desc limit 100`;
     for(const c of rows){
       const used=usage.find(u=>u.category===c.document.category&&u.subcategory===c.document.subcategory);
@@ -251,6 +257,7 @@ export class Store {
     return this.sql.begin(async tx=>{
       const {at,control}=await lock(tx);
       if(control.paused)fail('paused');
+      await assertDraftAccess(tx);
       const google=policy.provider==='google_subscription';
       if(kind==='comparison'&&(!google||!candidateId))fail('comparison_requires_google');
       const price=google?{model:policy.model_id,provider:policy.provider,billing_mode:'subscription_no_overages'}:selectPrice(catalog,policy,at);assertWindow(at);
@@ -265,7 +272,7 @@ export class Store {
       const enabled=sources.filter(s=>s.enabled && s.feed_content_approved && s.rights_reference);
       if(!google&&!enabled.length)fail('no_approved_sources');
       const [candidate]=await tx`select c.* from blog_worker.candidate c
-        where (c.status='ready' or (${kind}='comparison' and c.status in ('discovered','held') and c.post_id is null)) and c.reason is distinct from 'source_changed_after_reservation'
+        where (c.status='ready' or (${kind}='comparison' and c.status in ('discovered','held') and c.post_id is null)) and c.reason is distinct from 'source_changed_after_reservation' and c.reason is distinct from 'operator_hold'
         and (${candidateId}::text is null or c.id=${candidateId})
         and (not ${google} or ${candidateId}::text is not null or exists(select 1 from blog_worker.dossier_version v where v.candidate_id=c.id and v.revision=(select max(z.revision) from blog_worker.dossier_version z where z.candidate_id=c.id) and v.source_hash=c.evidence_hash and v.assessment->>'eligible'='true' and v.assessment->>'comparison_verified'='true'))
         and (${google} or c.source_id=any(${enabled.map(s=>s.id)}::text[])) and c.published_at>now()-interval '7 days'
@@ -399,6 +406,7 @@ export class Store {
     if(!policy.generation_enabled)fail('generation_disabled');
     return this.sql.begin(async tx=>{
       const {at,control}=await lock(tx);if(control.paused)fail('paused');assertWindow(at);
+      await assertDraftAccess(tx);
       const google=policy.provider==='google_subscription';
       const price=google?{model:policy.image_model_id,provider:policy.provider,billing_mode:'subscription_no_overages'}:selectImagePrice(catalog,policy,at);
       let grant;

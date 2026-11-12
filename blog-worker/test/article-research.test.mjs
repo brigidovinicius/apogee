@@ -95,4 +95,7 @@ test('first-hand reporting requires an explicit attribution to the registered pu
 test('headline focus keeps a space telescope out of the hardware slot and filters shopping roundups',()=>{
  assert.deepEqual(researchTopic({title:'NASA UVEX space telescope announced',evidence:[{text:'Detectors use a new semiconductor chip.'}],editoria:'tecnologia'}),{category:'ciencia',subcategory:'aeroespacial'});
  assert.equal(researchTopic({title:'Melhor TV para comprar',evidence:[{text:'A robot and AI chip.'}]}),null);
+ assert.equal(researchTopic({title:'Resultado da Lotofácil de hoje',evidence:[]}),null);
+ assert.equal(researchTopic({title:'The best early Black Friday deals',evidence:[]}),null);
+ assert.deepEqual(researchTopic({title:'Try Tabletop: Customizable collaborative spaces',evidence:[{text:'Google AI creates apps.'}],editoria:'tecnologia'}),{category:'tecnologia',subcategory:'software-ferramentas'});
 });
