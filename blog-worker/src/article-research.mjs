@@ -8,8 +8,9 @@ export const independentReference=r=>!!r&&!primaryReference(r)&&/jornalismo|divu
 export function primaryDocument(document,reference=referenceForUrl(document.url)){
   if(primaryReference(reference))return true;
   if(!independentReference(reference))return false;
-  const name=reference.name.split('/')[0].trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  return new RegExp('(?:told|confirmed to|in an interview with|documents (?:obtained|viewed) by|disse(?:ram)? (?:ao|à|para)|entrevista (?:ao|à)|apurou (?:o|a))\\s+(?:the\\s+)?'+name,'i').test(document.text);
+  const brands=[reference.name.split('/')[0].trim(),...(reference.id==='REF04'?['g1']:[])];
+  const name=brands.map(s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
+  return new RegExp('(?:\\b(?:told|tells?|confirmed to|in an interview with|documents (?:obtained|viewed) by)|disse(?:ram)? (?:ao|à|para)|(?:confirmou|informou|afirmou) (?:ao|à)|entrevista (?:ao|à)|apurou (?:o|a))\\s+(?:the\\s+)?(?:'+name+')\\b','i').test(document.text);
 }
 const host=u=>new URL(u).hostname.replace(/^www\./,'');
 export function referenceForUrl(value){
@@ -102,9 +103,23 @@ export function createArticleReader({download=getFeed,clock=Date.now}={}){
   return async function read(value,budget,{fallbackTitle='',fallbackDate=null}={}){
     if(/^https:\/\/(?:dx\.)?doi\.org\/10\.\d{4,9}\//i.test(value)){
       const doi=referenceUrl(value.replace('https://dx.doi.org/','https://doi.org/')),origin='https://doi.org';
-      const request=async(url,options)=>{if(budget.used>=budget.max||clock()>budget.deadline)fail('research_cycle_limit');budget.used++;return download(url,['doi.org'],{timeoutMs:Math.min(7000,Math.max(1,budget.deadline-clock())),...options});};
-      const rules=await request(origin+'/robots.txt',{maxBytes:65536,statuses:[200,404,410],accept:'text/plain'});
-      if(!robotsAllowed(rules.status===200?rules.body:'',doi))fail('research_robots_disallowed');
+      const request=async(url,options)=>{if(budget.used>=budget.max||clock()>budget.deadline)fail('research_cycle_limit');budget.used++;return download(url,['doi.org','www.doi.org'],{timeoutMs:Math.min(7000,Math.max(1,budget.deadline-clock())),...options});};
+      let rules=robots.get(origin);
+      if(!rules||rules.expires<clock()){
+        const options={maxBytes:65536,statuses:[200,301,302,303,307,308,404,410],accept:'text/plain'};
+        let r=await request(origin+'/robots.txt',options);
+        if([301,302,303,307,308].includes(r.status)){
+          // DOI's public robots file uses its official www alias. This single
+          // exact redirect never authorizes another host, path or login flow.
+          const target=referenceUrl(new URL(r.location,origin+'/robots.txt').href);
+          if(target!=='https://www.doi.org/robots.txt')fail('research_robots_redirect');
+          r=await request(target,{...options,statuses:[200,404,410]});
+        }
+        if(![200,404,410].includes(r.status))fail('research_robots_redirect');
+        rules={text:r.status===200?r.body:'',expires:clock()+6*3600000};
+        if(robots.size>=100)robots.delete(robots.keys().next().value);robots.set(origin,rules);
+      }
+      if(!robotsAllowed(rules.text,doi))fail('research_robots_disallowed');
       const result=await request(doi,{maxBytes:65536,statuses:[301,302,303,307,308],accept:'text/html'});
       const target=referenceUrl(new URL(result.location,doi).href);
       if(!primaryReference(referenceForUrl(target)))fail('research_reference_unregistered');
