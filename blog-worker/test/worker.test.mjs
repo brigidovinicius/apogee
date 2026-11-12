@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {actualUsageCost,validatePolicy,validateGrant,selectPrice,cycleCap,usageCost,periodKeys,hash} from '../src/policy.mjs';
 import {canonicalUrl,normalizeItem,validateArticle,cacheKey,buildRequest} from '../src/editorial.mjs';
 import {publicIPv4,allowedUrl,getFeed,boundedJson,retryAfterSeconds} from '../src/http.mjs';
-import {collect,tick,loadConfig} from '../src/worker.mjs';
+import {collect,tick,loadConfig,assertSafeFeedXml} from '../src/worker.mjs';
 import {openAIProvider} from '../src/provider.mjs';
 import {defaultPolicy,policy,source,grant,price,candidate,article,reservation,identity} from './fixtures.mjs';
 
@@ -84,6 +84,15 @@ test('RSS collector parses, bounds, deduplicates and rejects XML declarations wi
   assert.deepEqual(result,{sources:1,created:1,duplicate:1,failed:0});
   assert.equal((await collect({store,sources:[source],download:async()=>({body:'<!DOCTYPE rss>'+xml})})).failed,1);
   assert.equal(states.at(-1),'feed_error');
+});
+test('literal XML examples in public RSS never become executable entity declarations',async()=>{
+  const literal='<![CDATA[An article discusses <!DOCTYPE html> and <!ENTITY sample "literal">. '+'Public editorial context. '.repeat(10)+']]>';
+  const xml=`<rss version="2.0"><channel><title>Fixture</title><item><title>Software document example</title><link>https://example.org/xml-example</link><pubDate>${new Date().toUTCString()}</pubDate><description>${literal}</description></item></channel></rss>`;
+  assert.equal(assertSafeFeedXml(xml),xml);
+  assert.equal(assertSafeFeedXml('<!-- Literal <![CDATA[ <!DOCTYPE sample> -->'+xml),'<!-- Literal <![CDATA[ <!DOCTYPE sample> -->'+xml);
+  for(const bad of ['<!DOCTYPE rss SYSTEM "https://example.org/external.dtd">'+xml,xml+'<!ENTITY external SYSTEM "file:///example">','<!-- <![CDATA[ --> <!DOCTYPE rss> ]]>','<![CDATA[literal]]><!DOCTYPE rss>','<![CDATA[unclosed','<!-- unclosed'])assert.throws(()=>assertSafeFeedXml(bad),/unsafe_xml/);
+  const store={claimSource:async()=>({}),sourceResult:async()=>{},ingest:async()=> 'created'};
+  assert.deepEqual(await collect({store,sources:[source],download:async()=>({body:xml})}),{sources:1,created:1,duplicate:0,failed:0});
 });
 test('structured drafts require evidence, reject copied text, unsupported numbers and active markup',()=>{
   validateArticle(article,candidate().evidence);

@@ -24,6 +24,19 @@ export async function loadConfig(directory) {
   if(!Array.isArray(catalog)||catalog.length>10)fail('invalid_catalog');
   return {policy,sources,catalog};
 }
+export function assertSafeFeedXml(body){
+  if(typeof body!=='string'||Buffer.byteLength(body)>2*1024*1024)fail('unsafe_xml');
+  const markers=/<!\[CDATA\[|<!--|<!DOCTYPE|<!ENTITY/gi;let match;
+  while((match=markers.exec(body))){
+    const end=match[0]==='<![CDATA['?']]>' : match[0]==='<!--'?'-->':null;
+    if(!end)fail('unsafe_xml');
+    const close=body.indexOf(end,markers.lastIndex);if(close<0)fail('unsafe_xml');
+    markers.lastIndex=close+end.length;
+  }
+  // Parse the unchanged original. Declarations inside CDATA/comments are
+  // literal article examples; executable DTD/entity declarations stay blocked.
+  return body;
+}
 export async function collect({store,sources,download=getFeed,at=new Date()}) {
   const stats={sources:0,created:0,duplicate:0,failed:0};
   for(const source of validateSources(sources)){
@@ -33,7 +46,7 @@ export async function collect({store,sources,download=getFeed,at=new Date()}) {
     try{
       const feed=await download(source.url,source.article_hosts,{etag:state.etag,lastModified:state.last_modified});
       if(feed.notModified){await store.sourceResult(source.id,'not_modified');continue;}
-      if(typeof feed.body!=='string'||Buffer.byteLength(feed.body)>2*1024*1024||/<!DOCTYPE|<!ENTITY/i.test(feed.body))fail('unsafe_xml');
+      assertSafeFeedXml(feed.body);
       const parsed=await new Parser().parseString(feed.body);
       // Limit the whole document by bytes before parsing; then inspect at most 20 recent items.
       const items=(parsed.items??[]).sort((a,b)=>Date.parse(b.isoDate??b.pubDate)-Date.parse(a.isoDate??a.pubDate)).slice(0,20);
