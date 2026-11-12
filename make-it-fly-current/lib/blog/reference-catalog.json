@@ -1129,5 +1129,224 @@
       "Meta / anúncios oficiais"
     ],
     "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_NIA",
+    "name": "NIH / National Institute on Aging",
+    "publisher": "nih",
+    "url": "https://www.nia.nih.gov/",
+    "hosts": [
+      "nia.nih.gov"
+    ],
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "NIH / National Institute on Aging"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_BRAINFACTS",
+    "name": "Society for Neuroscience / BrainFacts",
+    "publisher": "sfn",
+    "url": "https://www.brainfacts.org/",
+    "hosts": [
+      "brainfacts.org"
+    ],
+    "categories": [
+      "ciencia"
+    ],
+    "subcategories": [
+      "neurociencia"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "Society for Neuroscience / BrainFacts"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_GOOGLE_EDUCATION",
+    "name": "Google / documentação e educação",
+    "publisher": "google",
+    "url": "https://cloud.google.com/",
+    "hosts": [
+      "cloud.google.com",
+      "developers.google.com"
+    ],
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia",
+      "software-ferramentas"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "Google / documentação e educação"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_MICROSOFT_EDUCATION",
+    "name": "Microsoft / documentação e educação",
+    "publisher": "microsoft",
+    "url": "https://azure.microsoft.com/",
+    "hosts": [
+      "azure.microsoft.com",
+      "learn.microsoft.com"
+    ],
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia",
+      "software-ferramentas"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "Microsoft / documentação e educação"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_GIT",
+    "name": "Git / documentação oficial",
+    "publisher": "git",
+    "url": "https://git-scm.com/",
+    "hosts": [
+      "git-scm.com"
+    ],
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "software-ferramentas"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "Git / documentação oficial"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_GITHUB",
+    "name": "GitHub / documentação oficial",
+    "publisher": "github",
+    "url": "https://docs.github.com/",
+    "hosts": [
+      "docs.github.com"
+    ],
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "software-ferramentas"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "GitHub / documentação oficial"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_INTEL",
+    "name": "Intel / guias de computação",
+    "publisher": "intel",
+    "url": "https://www.intel.com/",
+    "hosts": [
+      "intel.com"
+    ],
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "hardware-robotica"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "Intel / guias de computação"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_NVIDIA",
+    "name": "NVIDIA / guias de computação",
+    "publisher": "nvidia",
+    "url": "https://blogs.nvidia.com/",
+    "hosts": [
+      "blogs.nvidia.com",
+      "nvidia.com"
+    ],
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "hardware-robotica"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "NVIDIA / guias de computação"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_SBA",
+    "name": "U.S. Small Business Administration / guias",
+    "publisher": "sba",
+    "url": "https://legacy.sba.gov/",
+    "hosts": [
+      "sba.gov",
+      "legacy.sba.gov"
+    ],
+    "categories": [
+      "negocios"
+    ],
+    "subcategories": [
+      "marketing",
+      "empreendedorismo-startups"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "U.S. Small Business Administration / guias"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_BUSINESS_AU",
+    "name": "Governo australiano / business.gov.au",
+    "publisher": "business-au",
+    "url": "https://business.gov.au/",
+    "hosts": [
+      "business.gov.au",
+      "business.sa.gov.au"
+    ],
+    "categories": [
+      "negocios"
+    ],
+    "subcategories": [
+      "marketing",
+      "empreendedorismo-startups"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "Governo australiano / business.gov.au"
+    ],
+    "collection_enabled": false
   }
 ]

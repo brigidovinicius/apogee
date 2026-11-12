@@ -1,0 +1,477 @@
+[
+  {
+    "key": "espectro-eletromagnetico-1",
+    "category": "ciencia",
+    "subcategory": null,
+    "question": "O que é o espectro eletromagnético e por que a luz visível é apenas parte dele?",
+    "terms": [
+      "electromagnetic spectrum",
+      "visible light",
+      "radio",
+      "infrared"
+    ],
+    "urls": [
+      "https://science.nasa.gov/ems/01_intro/",
+      "https://www.esa.int/Science_Exploration/Space_Science/E"
+    ]
+  },
+  {
+    "key": "orbitas-1",
+    "category": "ciencia",
+    "subcategory": "aeroespacial",
+    "question": "Como a gravidade e o movimento mantêm um objeto em órbita?",
+    "terms": [
+      "orbit",
+      "gravity",
+      "motion"
+    ],
+    "urls": [
+      "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-an-orbit-grades-k-4/",
+      "https://www.esa.int/kids/en/learn/Technology/Mission_control/Different_orbits"
+    ]
+  },
+  {
+    "key": "neuronios-1",
+    "category": "ciencia",
+    "subcategory": "neurociencia",
+    "question": "Como os neurônios recebem e transmitem sinais no sistema nervoso?",
+    "terms": [
+      "neurons",
+      "dendrites",
+      "axon",
+      "signals"
+    ],
+    "urls": [
+      "https://www.nia.nih.gov/health/alzheimers-causes-and-risk-factors/what-happens-brain-alzheimers-disease",
+      "https://www.brainfacts.org/brain-anatomy-and-function/cells-and-circuits/2022/neurons-and-glia-113022"
+    ]
+  },
+  {
+    "key": "computacao-nuvem-1",
+    "category": "tecnologia",
+    "subcategory": null,
+    "question": "O que é computação em nuvem e quais recursos ela disponibiliza pela internet?",
+    "terms": [
+      "cloud computing",
+      "internet",
+      "servers",
+      "storage"
+    ],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-cloud-computing",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-cloud-computing/"
+    ]
+  },
+  {
+    "key": "aprendizado-maquina-1",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "O que é aprendizado de máquina e qual é a relação entre dados, modelos e previsões?",
+    "terms": [
+      "machine learning",
+      "data",
+      "model",
+      "predictions"
+    ],
+    "urls": [
+      "https://developers.google.com/machine-learning/intro-to-ml/what-is-ml",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-machine-learning"
+    ]
+  },
+  {
+    "key": "controle-versao-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como o controle de versão registra o histórico de um projeto de software?",
+    "terms": [
+      "version control",
+      "history",
+      "changes",
+      "Git"
+    ],
+    "urls": [
+      "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git",
+      "https://docs.github.com/en/get-started/using-git/about-git"
+    ]
+  },
+  {
+    "key": "cpu-gpu-1",
+    "category": "tecnologia",
+    "subcategory": "hardware-robotica",
+    "question": "Como CPUs e GPUs dividem o trabalho em um computador?",
+    "terms": [
+      "CPU",
+      "GPU",
+      "parallel",
+      "tasks"
+    ],
+    "urls": [
+      "https://www.intel.com/content/www/us/en/products/docs/processors/cpu-vs-gpu.html",
+      "https://blogs.nvidia.com/blog/whats-the-difference-between-a-cpu-and-a-gpu/"
+    ]
+  },
+  {
+    "key": "plano-negocios-1",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "Para que serve um plano de negócios e que decisões ele ajuda a organizar?",
+    "terms": [
+      "business plan",
+      "goals",
+      "market",
+      "business"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/plan-your-business/write-your-business-plan",
+      "https://business.gov.au/planning/business-plans/develop-your-business-plan"
+    ]
+  },
+  {
+    "key": "plano-marketing-1",
+    "category": "negocios",
+    "subcategory": "marketing",
+    "question": "O que um plano de marketing precisa esclarecer sobre público, canais e objetivos?",
+    "terms": [
+      "marketing plan",
+      "target market",
+      "channels",
+      "goals"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/manage-your-business/marketing-sales",
+      "https://business.gov.au/planning/business-plans/develop-your-marketing-plan"
+    ]
+  },
+  {
+    "key": "pesquisa-mercado-1",
+    "category": "negocios",
+    "subcategory": "empreendedorismo-startups",
+    "question": "Como a pesquisa de mercado ajuda a avaliar uma ideia de negócio antes de desenvolvê-la?",
+    "terms": [
+      "market research",
+      "demand",
+      "customers",
+      "business idea"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/plan-your-business/market-research-competitive-analysis",
+      "https://business.gov.au/marketing-and-advertising/do-market-research"
+    ]
+  },
+  {
+    "key": "espectro-eletromagnetico-2",
+    "category": "ciencia",
+    "subcategory": null,
+    "question": "Como comprimento de onda e frequência distinguem as formas de radiação eletromagnética?",
+    "terms": [
+      "wavelength",
+      "frequency",
+      "electromagnetic"
+    ],
+    "urls": [
+      "https://science.nasa.gov/ems/01_intro/",
+      "https://www.esa.int/Science_Exploration/Space_Science/E"
+    ]
+  },
+  {
+    "key": "orbitas-2",
+    "category": "ciencia",
+    "subcategory": "aeroespacial",
+    "question": "O que diferencia órbitas baixas, polares e geoestacionárias?",
+    "terms": [
+      "polar",
+      "geostationary",
+      "low",
+      "orbit"
+    ],
+    "urls": [
+      "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-an-orbit-grades-k-4/",
+      "https://www.esa.int/kids/en/learn/Technology/Mission_control/Different_orbits"
+    ]
+  },
+  {
+    "key": "neuronios-2",
+    "category": "ciencia",
+    "subcategory": "neurociencia",
+    "question": "Que funções exercem dendritos, corpo celular e axônio na comunicação dos neurônios?",
+    "terms": [
+      "dendrites",
+      "cell body",
+      "axon"
+    ],
+    "urls": [
+      "https://www.nia.nih.gov/health/alzheimers-causes-and-risk-factors/what-happens-brain-alzheimers-disease",
+      "https://www.brainfacts.org/brain-anatomy-and-function/cells-and-circuits/2022/neurons-and-glia-113022"
+    ]
+  },
+  {
+    "key": "computacao-nuvem-2",
+    "category": "tecnologia",
+    "subcategory": null,
+    "question": "Como se distinguem os modelos IaaS, PaaS e SaaS na computação em nuvem?",
+    "terms": [
+      "IaaS",
+      "PaaS",
+      "SaaS"
+    ],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-cloud-computing",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-cloud-computing/"
+    ]
+  },
+  {
+    "key": "aprendizado-maquina-2",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Como aprendizado supervisionado e não supervisionado se distinguem?",
+    "terms": [
+      "supervised",
+      "unsupervised",
+      "labeled",
+      "patterns"
+    ],
+    "urls": [
+      "https://developers.google.com/machine-learning/intro-to-ml/what-is-ml",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-machine-learning"
+    ]
+  },
+  {
+    "key": "controle-versao-2",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "O que torna o Git um sistema de controle de versão distribuído?",
+    "terms": [
+      "distributed",
+      "repository",
+      "local",
+      "history"
+    ],
+    "urls": [
+      "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git",
+      "https://docs.github.com/en/get-started/using-git/about-git"
+    ]
+  },
+  {
+    "key": "cpu-gpu-2",
+    "category": "tecnologia",
+    "subcategory": "hardware-robotica",
+    "question": "Por que o processamento paralelo favorece certas tarefas gráficas e computacionais?",
+    "terms": [
+      "parallel",
+      "cores",
+      "graphics",
+      "tasks"
+    ],
+    "urls": [
+      "https://www.intel.com/content/www/us/en/products/docs/processors/cpu-vs-gpu.html",
+      "https://blogs.nvidia.com/blog/whats-the-difference-between-a-cpu-and-a-gpu/"
+    ]
+  },
+  {
+    "key": "plano-negocios-2",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "Por que o público e a finalidade influenciam o conteúdo de um plano de negócios?",
+    "terms": [
+      "plan",
+      "audience",
+      "investors",
+      "goals"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/plan-your-business/write-your-business-plan",
+      "https://business.gov.au/planning/business-plans/develop-your-business-plan"
+    ]
+  },
+  {
+    "key": "plano-marketing-2",
+    "category": "negocios",
+    "subcategory": "marketing",
+    "question": "Como objetivos e indicadores orientam a avaliação de um plano de marketing?",
+    "terms": [
+      "goals",
+      "measure",
+      "evaluate",
+      "marketing"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/manage-your-business/marketing-sales",
+      "https://business.gov.au/planning/business-plans/develop-your-marketing-plan"
+    ]
+  },
+  {
+    "key": "pesquisa-mercado-2",
+    "category": "negocios",
+    "subcategory": "empreendedorismo-startups",
+    "question": "Qual é a diferença entre pesquisa direta com clientes e dados de fontes existentes?",
+    "terms": [
+      "primary",
+      "secondary",
+      "research",
+      "customers"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/plan-your-business/market-research-competitive-analysis",
+      "https://business.gov.au/marketing-and-advertising/do-market-research"
+    ]
+  },
+  {
+    "key": "espectro-eletromagnetico-3",
+    "category": "ciencia",
+    "subcategory": null,
+    "question": "Por que diferentes faixas do espectro são usadas para observar o Universo?",
+    "terms": [
+      "wavelength",
+      "visible",
+      "infrared",
+      "Universe"
+    ],
+    "urls": [
+      "https://science.nasa.gov/ems/01_intro/",
+      "https://www.esa.int/Science_Exploration/Space_Science/E"
+    ]
+  },
+  {
+    "key": "orbitas-3",
+    "category": "ciencia",
+    "subcategory": "aeroespacial",
+    "question": "Por que satélites de observação e comunicação usam órbitas diferentes?",
+    "terms": [
+      "satellites",
+      "weather",
+      "communications",
+      "orbit"
+    ],
+    "urls": [
+      "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-an-orbit-grades-k-4/",
+      "https://www.esa.int/kids/en/learn/Technology/Mission_control/Different_orbits"
+    ]
+  },
+  {
+    "key": "neuronios-3",
+    "category": "ciencia",
+    "subcategory": "neurociencia",
+    "question": "Como as células gliais dão suporte ao funcionamento dos neurônios?",
+    "terms": [
+      "glia",
+      "astrocytes",
+      "myelin",
+      "support"
+    ],
+    "urls": [
+      "https://www.nia.nih.gov/health/alzheimers-causes-and-risk-factors/what-happens-brain-alzheimers-disease",
+      "https://www.brainfacts.org/brain-anatomy-and-function/cells-and-circuits/2022/neurons-and-glia-113022"
+    ]
+  },
+  {
+    "key": "computacao-nuvem-3",
+    "category": "tecnologia",
+    "subcategory": null,
+    "question": "Qual é a diferença entre nuvem pública, privada e híbrida?",
+    "terms": [
+      "public cloud",
+      "private cloud",
+      "hybrid cloud"
+    ],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-cloud-computing",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-cloud-computing/"
+    ]
+  },
+  {
+    "key": "aprendizado-maquina-3",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "O que significa treinar um modelo e avaliar suas previsões?",
+    "terms": [
+      "training",
+      "model",
+      "data",
+      "predictions"
+    ],
+    "urls": [
+      "https://developers.google.com/machine-learning/intro-to-ml/what-is-ml",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-machine-learning"
+    ]
+  },
+  {
+    "key": "controle-versao-3",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como commits e ramificações organizam alterações em um projeto Git?",
+    "terms": [
+      "commit",
+      "branch",
+      "snapshot",
+      "changes"
+    ],
+    "urls": [
+      "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git",
+      "https://docs.github.com/en/get-started/using-git/about-git"
+    ]
+  },
+  {
+    "key": "cpu-gpu-3",
+    "category": "tecnologia",
+    "subcategory": "hardware-robotica",
+    "question": "Como latência e vazão ajudam a explicar as diferenças entre CPU e GPU?",
+    "terms": [
+      "latency",
+      "throughput",
+      "serial",
+      "parallel"
+    ],
+    "urls": [
+      "https://www.intel.com/content/www/us/en/products/docs/processors/cpu-vs-gpu.html",
+      "https://blogs.nvidia.com/blog/whats-the-difference-between-a-cpu-and-a-gpu/"
+    ]
+  },
+  {
+    "key": "plano-negocios-3",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "Por que um plano de negócios precisa ser revisado à medida que a empresa evolui?",
+    "terms": [
+      "plan",
+      "review",
+      "change",
+      "goals"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/plan-your-business/write-your-business-plan",
+      "https://business.gov.au/planning/business-plans/develop-your-business-plan"
+    ]
+  },
+  {
+    "key": "plano-marketing-3",
+    "category": "negocios",
+    "subcategory": "marketing",
+    "question": "Por que posicionamento e público-alvo orientam as escolhas de marketing?",
+    "terms": [
+      "positioning",
+      "target",
+      "customers",
+      "advantage"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/manage-your-business/marketing-sales",
+      "https://business.gov.au/planning/business-plans/develop-your-marketing-plan"
+    ]
+  },
+  {
+    "key": "pesquisa-mercado-3",
+    "category": "negocios",
+    "subcategory": "empreendedorismo-startups",
+    "question": "Como pesquisar concorrentes ajuda a entender o mercado de uma nova empresa?",
+    "terms": [
+      "competitors",
+      "competitive",
+      "market",
+      "research"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/plan-your-business/market-research-competitive-analysis",
+      "https://business.gov.au/marketing-and-advertising/do-market-research"
+    ]
+  }
+]

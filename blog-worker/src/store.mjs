@@ -1,14 +1,16 @@
 import {automaticDossier,balancedResearchCandidates,nextResearchCandidate} from './automatic-research.mjs';
-import {enrichResearch,enrichSelectedEvidence,researchPriority} from './research-service.mjs';
+import {enrichResearch,enrichSelectedEvidence,researchPriority,defaultArticleReader} from './research-service.mjs';
+import {articleSource,referenceForUrl,ARTICLE_EXTRACTION_VERSION} from './article-research.mjs';
+import {explainerCatalog,explainerId,explainerWindowOpen,nextExplainer,automaticExplainerDossier} from './explainers.mjs';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
-import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS} from './corroboration.mjs';
+import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -152,7 +154,7 @@ export class Store {
       return stale.length;
     });
   }
-  async researchCandidate(url){const [c]=await this.sql`select * from blog_worker.candidate where url=${url}`;return c;}
+  async researchCandidate(url){const [c]=await this.sql`select * from blog_worker.candidate where url=${url} and content_kind='news'`;return c;}
   async captureResearchDocument(candidate,document){
     return this.sql.begin(async tx=>{
       const [approved]=await tx`select definition from blog_worker.research_reference where id=${document.source_id} and definition->>'enabled'='true' and definition->>'content_approved'='true'`;
@@ -185,12 +187,43 @@ export class Store {
   async checkResearchBudget(policy){
     return this.sql.begin(async tx=>{const {control,at}=await lock(tx);if(control.paused)fail('paused');await subscriptionBudget(tx,policy,at);});
   }
+  async prepareAutomaticExplainer(policy,{read=defaultArticleReader,plans=explainerCatalog,at=new Date()}={}){
+    if(!explainerWindowOpen(policy,at))return null;
+    const [control]=await this.sql`select paused from blog_worker.control where singleton=true`;
+    if(control?.paused)return null;
+    const usage=await this.productionUsage(),existing=await this.sql`select c.id,c.explainer_key,c.post_id,c.first_attempt_day,c.reason,c.artifact,
+      exists(select 1 from blog_worker.dossier_version where candidate_id=c.id) as has_dossier from blog_worker.candidate c where content_kind='explainer'`;
+    const plan=nextExplainer(plans,usage,existing,at);if(!plan)return null;
+    const id=explainerId(plan),source=articleSource(referenceForUrl(plan.urls[0]));
+    // Planning time is distinct from the actual source publication dates kept
+    // in the immutable captured documents and the final references.
+    await this.sql`insert into blog_worker.candidate(id,source_id,guid,url,event_key,title,editoria,score,published_at,evidence,evidence_hash,status,content_kind,explainer_key)
+      values(${id},${source.id},${id},${plan.urls[0]},${hash('explainer:'+plan.key)},${plan.question},${scopeEditoria(plan)},45,${at},'[]'::jsonb,${hash([])},'discovered','explainer',${plan.key}) on conflict do nothing`;
+    const [candidate]=await this.sql`select * from blog_worker.candidate where id=${id}`;
+    const rows=await this.sql`select id as capture_id,source_id,document,captured_at from blog_worker.captured_document
+      where url=any(${plan.urls}::text[]) and captured_at>now()-interval '24 hours' order by captured_at desc`;
+    const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id,captured_at:r.captured_at}));
+    const budget={used:0,max:8,deadline:Date.now()+30000};let reason='explainer_sources_missing';
+    try{
+      for(const url of plan.urls){
+        if(captures.some(d=>d.url===url&&d.extraction_version===ARTICLE_EXTRACTION_VERSION&&Date.parse(d.checked_at??d.captured_at)<=+at&&+at-Date.parse(d.checked_at??d.captured_at)<86400000))continue;
+        const doc={...await read(url,budget),checked_at:new Date().toISOString()};
+        await this.captureResearchDocument(candidate,doc);captures.unshift({...doc,capture_id:hash(doc)});
+      }
+      const [current]=await this.sql`select * from blog_worker.candidate where id=${id}`;
+      const document=automaticExplainerDossier(plan,captures,policy,new Date());
+      if(document&&(await this.sql`select blog_worker.prepare_automatic_research(${id},${this.sql.json(document)},${current.evidence_hash}) as prepared`)[0].prepared)return {prepared:1,kind:'explainer',requests:budget.used};
+    }catch(error){reason=error.code??'research_source_unavailable';}
+    const {day}=periodKeys(at),tries=candidate.artifact?.research?.day===day?Number(candidate.artifact.research.tries??0)+1:1;
+    await this.researchProgress(id,{stage:reason,topic:{category:plan.category,subcategory:plan.subcategory},kind:'explainer',tries,next_at:new Date(+at+3600000).toISOString()});
+    return {prepared:0,kind:'explainer',reason,requests:budget.used};
+  }
   async prepareAutomaticResearch(policy,{read}={}){
     const [control]=await this.sql`select paused from blog_worker.control where singleton=true`;
     if(control?.paused)return {prepared:0};
     const {day}=periodKeys(new Date()),usage=await this.productionUsage();
     const candidates=await this.sql`select * from (select c.*,row_number() over(partition by c.source_id order by c.score desc,c.published_at desc) as source_rank
-      from blog_worker.candidate c where c.post_id is null and c.first_attempt_day is null and c.published_at>now()-interval '7 days'
+      from blog_worker.candidate c where c.content_kind='news' and c.post_id is null and c.first_attempt_day is null and c.published_at>now()-interval '7 days'
       and c.reason is distinct from 'source_changed_after_reservation' and c.reason is distinct from 'operator_hold' and c.reason is distinct from 'retention'
       and not exists(select 1 from blog_worker.dossier_version v where v.candidate_id=c.id)
       and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id)) q order by source_rank,score desc,published_at desc limit 1000`;
@@ -210,7 +243,7 @@ export class Store {
       // immutable cache, while keeping the cooldown for repeated page fetches.
       if(freshOnly&&!document.documents.some(d=>new Date(captures.find(s=>s.capture_id===d.capture_id)?.captured_at).getTime()>Date.parse(candidate.artifact?.research?.at)))return false;
       const [duplicate]=await this.sql`select v.candidate_id from blog_worker.dossier_version v where v.candidate_id<>${candidate.id}
-        and (v.document->>'event_key'=${document.event_key} or v.document->'documents'->0->>'url'=${document.documents[0].url} or exists(select 1 from jsonb_array_elements(v.document->'documents') old_doc join jsonb_array_elements(${this.sql.json(document.documents)}::jsonb) new_doc on old_doc->>'url'=new_doc->>'url')) limit 1`;
+        and (v.document->>'event_key'=${document.event_key} or (coalesce(v.document->'editorial'->>'kind','news')='news' and exists(select 1 from jsonb_array_elements(v.document->'documents') old_doc join jsonb_array_elements(${this.sql.json(document.documents)}::jsonb) new_doc on old_doc->>'url'=new_doc->>'url'))) limit 1`;
       if(duplicate)return false;
       if(allowNetwork&&!publicReadUsed){
         // Complete short public RSS previews before spending a comparison.
@@ -233,8 +266,13 @@ export class Store {
     // Count today's completed network selections even while their candidates
     // are in backoff. Restarting the process must not favor the first topic.
     const history=await this.sql`select artifact->'research'->'topic' as topic,count(*)::int as researched from blog_worker.candidate
-      where artifact->'research'->>'day'=${day} and artifact->'research'->>'stage' is distinct from 'primary_found'
+      where content_kind='news' and artifact->'research'->>'day'=${day} and artifact->'research'->>'stage' is distinct from 'primary_found'
       and jsonb_typeof(artifact->'research'->'topic')='object' group by 1`;
+    if(explainerWindowOpen(policy)){
+      const eligible=explainerCatalog.filter(p=>!plan.some(v=>v.topic.category===p.category&&v.topic.subcategory===p.subcategory)
+        ||history.some(h=>h.topic.category===p.category&&h.topic.subcategory===p.subcategory&&h.researched>=1));
+      const explainer=await this.prepareAutomaticExplainer(policy,{read,plans:eligible});if(explainer)return explainer;
+    }
     const selected=nextResearchCandidate(plan.filter(({candidate})=>due(candidate)&&(candidate.artifact?.research?.day!==day||Number(candidate.artifact?.research?.tries??0)<3)),history);
     if(!selected)return {prepared:0};
     const {candidate,topic}=selected,tries=candidate.artifact?.research?.day===day?Number(candidate.artifact.research.tries??0)+1:1;
@@ -261,10 +299,10 @@ export class Store {
       if(used&&(used.day>=policy.per_topic_daily_cap||used.week>=policy.per_topic_weekly_cap))continue;
       if(c.attempts>=policy.max_provider_attempts_per_article_including_repairs)continue;
       if(c.status==='ready'&&c.assessment.eligible&&c.assessment.comparison_verified)return {method:'reserve',candidateId:c.id};
-      if(!c.attempts&&!c.assessment.comparison_verified&&c.document.documents.length>=2&&c.document.documents.every(d=>d.same_event))return {method:'reserveComparison',candidateId:c.id};
+      if(!c.attempts&&!c.assessment.comparison_verified&&c.document.documents.length>=2&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
       // One format-only repair. Never repeat a factual rejection or an unknown
       // request. It shares the existing article/day budgets; old receipts stay.
-      if(!c.pending&&c.comparisons===1&&COMPARISON_FORMAT_ERRORS.includes(c.reason)&&c.document.documents.length>=2&&c.document.documents.every(d=>d.same_event))return {method:'reserveComparison',candidateId:c.id};
+      if(!c.pending&&c.comparisons===1&&COMPARISON_FORMAT_ERRORS.includes(c.reason)&&c.document.documents.length>=2&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
     }
     return null;
   }
@@ -307,7 +345,7 @@ export class Store {
         validateDossier(version.document);
         if(kind==='text'){
           const verification=version.assessment.comparison_verified?{actor_id:version.actor_id,hash:version.document_hash}:null;
-          effective={...candidate,editoria:scopeEditoria(version.document),evidence:approvedEvidence(version.document,verification),corroboration:assessDossier(version.document,{comparisonVerified:!!verification})};
+          effective={...candidate,editoria:scopeEditoria(version.document),evidence:approvedEvidence(version.document,verification),corroboration:assessDossier(version.document,{comparisonVerified:!!verification}),editorial:version.document.editorial};
           effective.evidence_hash=hash(effective.evidence);
         }
       }
@@ -319,7 +357,7 @@ export class Store {
         topic=usage.find(u=>u.category===version.document.category&&u.subcategory===version.document.subcategory);
         if(topic&&(topic.day>=policy.per_topic_daily_cap||topic.week>=policy.per_topic_weekly_cap))fail('topic_frequency');
         const [duplicate]=await tx`select a.id from blog_worker.attempt a join blog_worker.dossier_version v on v.candidate_id=a.candidate_id and v.revision=a.dossier_revision
-          where a.candidate_id<>${candidate.id} and (v.document->>'event_key'=${version.document.event_key} or v.document->'documents'->0->>'url'=${version.document.documents[0].url} or exists(select 1 from jsonb_array_elements(v.document->'documents') old_doc join jsonb_array_elements(${tx.json(version.document.documents)}::jsonb) new_doc on old_doc->>'url'=new_doc->>'url')) limit 1`;
+          where a.candidate_id<>${candidate.id} and (v.document->>'event_key'=${version.document.event_key} or (${!isExplainer(version.document)} and coalesce(v.document->'editorial'->>'kind','news')='news' and exists(select 1 from jsonb_array_elements(v.document->'documents') old_doc join jsonb_array_elements(${tx.json(version.document.documents)}::jsonb) new_doc on old_doc->>'url'=new_doc->>'url'))) limit 1`;
         if(duplicate)fail('duplicate_research_event');
       }else [counts]=await tx`select count(*) filter(where first_attempt_day=${day}::date)::int as day,count(*) filter(where first_attempt_week=${week}::date)::int as week from blog_worker.candidate`;
       if((google||!candidate.first_attempt_day)&&(counts.day>=policy.new_drafts_per_day_cap||counts.week>=policy.new_drafts_per_week_cap))fail('draft_frequency');
@@ -386,6 +424,15 @@ export class Store {
           try{if(result.outcome==='completed')suggestion=validateComparison(JSON.parse(result.text),version.document);}catch(error){reason=error.code??'invalid_comparison';}
           if(suggestion){
             const assessment=assessDossier(suggestion,{comparisonVerified:true});
+            if(isExplainer(suggestion)&&assessment.eligible){
+              const previous=await tx`select v.document from blog_worker.candidate c join lateral(select document from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) v on true
+                where c.content_kind='explainer' and c.post_id is not null and c.id<>${candidate.id}`;
+              if(explainerOverlap(suggestion,previous.map(v=>v.document))){
+                await tx`update blog_worker.candidate set status='held',reason='explainer_overlap' where id=${candidate.id}`;
+                await tx`update blog_worker.attempt set reason='explainer_overlap' where id=${attempt.id}`;
+                return {status:'held',reason:'explainer_overlap',charged_micro_usd:cost};
+              }
+            }
             await tx`select blog_worker.record_assisted_comparison(${candidate.id},${attempt.id},${tx.json(suggestion.claims)},${tx.json(assessment)})`;
             return {status:'comparison_ready',reason:assessment.blockers[0]??null,charged_micro_usd:cost};
           }
@@ -396,11 +443,11 @@ export class Store {
         try{
           const verification=version.assessment.comparison_verified?{actor_id:version.actor_id,hash:version.document_hash}:null;
           corroboration=assessDossier(version.document,{comparisonVerified:!!verification});
-          effective={...candidate,editoria:scopeEditoria(version.document),evidence:approvedEvidence(version.document,verification)};
+          effective={...candidate,editoria:scopeEditoria(version.document),evidence:approvedEvidence(version.document,verification),editorial:version.document.editorial};
         }catch{return holdAfterCharge(tx,candidate.id,cost);}
       }
       if(result.outcome==='completed'){
-        try{article=validateArticle(JSON.parse(result.text),effective.evidence,corroboration);}catch(error){reason=error.code??'invalid_structure';}
+        try{article=validateArticle(JSON.parse(result.text),effective.evidence,corroboration,effective.editorial);}catch(error){reason=error.code??'invalid_structure';}
       }
       if(!article){
         const [used]=await tx`select count(*)::int as total,count(*) filter(where kind='text')::int as texts from blog_worker.attempt where candidate_id=${candidate.id} and kind in ('text','comparison')`;
@@ -507,7 +554,7 @@ export class Store {
       await lock(tx);
       for(const s of config.sources)await tx`insert into blog_worker.source_catalog(id,definition) values(${s.id},${tx.json(s)}) on conflict do nothing`;
       const snapshot={provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:config.policy.google_daily_calls_cap??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:config.policy.google_daily_tokens_cap??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
-        automatic_access_validation:config.policy.google_automatic_access_validation_enabled===true,operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
+        automatic_access_validation:config.policy.google_automatic_access_validation_enabled===true,automatic_explainers:config.policy.automatic_explainers_enabled===true,explainer_after_local_hour:config.policy.explainer_after_local_hour??null,operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
         organization_id:identity?.organization_id??null,project_id:identity?.project_id??null,
         article_cap:config.policy.article_budget_micro_usd_cap_including_all_attempts,daily_cap:config.policy.daily_budget_micro_usd_cap,
         cycle_cap:config.policy.cycle_budget_micro_usd_cap,cycle_fraction:config.policy.cycle_grant_fraction_cap_basis_points,

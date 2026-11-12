@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { getSql } from "@/lib/members/db";
-import { approvedEvidence, assessDossier, dossierHash, referenceCatalog, referenceUrl, taxonomy, validateDossier, type Dossier, type Claim, type Document, type Assessment } from "./corroboration.mjs";
+import { approvedEvidence, assessDossier, dossierHash, referenceCatalog, referenceUrl, taxonomy, validateDossier, isExplainer, scopeVerified, type Dossier, type Claim, type Document, type Assessment } from "./corroboration.mjs";
 
 export type DossierVersion = { revision: number; document: Dossier; document_hash: string; assessment: Assessment; reviewed_by: string | null; source_hash: string; actor_id: string; created_at: Date; change_reason: string };
 export async function getDossierView(id: string) {
@@ -56,13 +56,14 @@ export async function saveDossierDocument(actor: string, id: string, revision: n
   });
 }
 export async function importCapturedDocument(actor: string, id: string, revision: number, capturedId: string) {
-  const [row] = await getSql()<{ document: Omit<Document, "kind" | "origin_url" | "same_event" | "independence_note" | "reference_id"> }[]>`select document from blog_worker.captured_document where id=${capturedId} and candidate_id=${id}`;
+  const [row] = await getSql()<{ captured_at: Date; document: Omit<Document, "kind" | "origin_url" | "same_event" | "independence_note" | "reference_id"> }[]>`select document,captured_at from blog_worker.captured_document where id=${capturedId} and candidate_id=${id}`;
   if (!row) return false;
   const ref = referenceCatalog.find(r => new URL(r.url).hostname.replace(/^www\./, "") === new URL(row.document.url).hostname.replace(/^www\./, ""));
   if (!ref) return false;
   return changeDossier(actor, id, revision, "Evidência captada adicionada para conferir acontecimento e origem", d => {
     d.documents.push({ ...row.document, id: "E" + (Math.max(0, ...d.documents.map(v => Number(v.id.slice(1)))) + 1), reference_id: ref.id,
-      kind: "context", origin_url: row.document.url, same_event: false, independence_note: "" });
+      kind: "context", origin_url: row.document.url, same_event: false, independence_note: "",
+      ...(isExplainer(d) ? {same_subject:false,excerpt_offset:0,consulted_at:new Date(row.captured_at).toISOString()} : {}) });
     d.claims = []; return d;
   });
 }
@@ -85,7 +86,7 @@ export async function requestDossierComparison(actor: string, id: string, revisi
     const [control] = await tx`select * from blog_worker.control where singleton=true for update`;
     const [v] = await tx<DossierVersion[]>`select * from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
     const [c] = await tx`select post_id from blog_worker.candidate where id=${id}`;
-    if (c?.post_id || !v || v.revision !== revision || control.paused || control.snapshot?.provider !== "google_subscription" || control.snapshot?.generation_enabled !== true || v.document.documents.length < 2 || v.document.documents.some(d => !d.same_event)) return false;
+    if (c?.post_id || !v || v.revision !== revision || control.paused || control.snapshot?.provider !== "google_subscription" || control.snapshot?.generation_enabled !== true || v.document.documents.length < 2 || !scopeVerified(v.document)) return false;
     if ((await tx`select id from blog_worker.command where state in ('queued','running')`).length) return false;
     await tx`insert into blog_worker.command(id,kind,candidate_id,actor_id) values(${randomUUID()},'compare',${id},${actor})`;
     await tx`insert into blog_worker.operator_event(actor_id,action,target) values(${actor},'comparison_requested',${id})`;
