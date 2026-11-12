@@ -1,11 +1,12 @@
-import {createArticleReader,referenceForUrl,primaryReference,articleSource} from './article-research.mjs';
+import {createArticleReader,referenceForUrl,primaryReference,primaryDocument,independentReference,articleSource} from './article-research.mjs';
 import {normalizeItem} from './editorial.mjs';
 import {hash} from './policy.mjs';
 import {referenceUrl} from './corroboration.mjs';
 
 const articleUrl=url=>{try{const u=new URL(url);return u.pathname!=='/'&&!/\.(?:png|jpe?g|gif|svg|webp|mp4|pdf)$/i.test(u.pathname)&&!/^\/(?:privacy|terms|contact|about|feed|live)\/?$/i.test(u.pathname)&&!/^\/(?:category|tag|topic)(?:\/|$)/i.test(u.pathname);}catch{return false;}};
 export function researchPrimaryLinks(document){
-  return (document.related_urls??[]).filter(url=>articleUrl(url)&&(!referenceForUrl(url)||referenceUrl(url)!==referenceUrl(referenceForUrl(url).url))&&(primaryReference(referenceForUrl(url))||/^https:\/\/(?:dx\.)?doi\.org\/10\.\d{4,9}\//i.test(url))).slice(0,8);
+  const publisher=referenceForUrl(document.url)?.publisher;
+  return (document.related_urls??[]).filter(url=>{const r=referenceForUrl(url);return articleUrl(url)&&(!r||referenceUrl(url)!==referenceUrl(r.url))&&(primaryReference(r)||/^https:\/\/(?:dx\.)?doi\.org\/10\.\d{4,9}\//i.test(url)||independentReference(r)&&r.publisher!==publisher);}).sort((a,b)=>Number(primaryReference(referenceForUrl(b))||/doi\.org\//.test(b))-Number(primaryReference(referenceForUrl(a))||/doi\.org\//.test(a))).slice(0,8);
 }
 export const defaultArticleReader=createArticleReader();
 export async function enrichResearch({store,candidate,topic,captures,read=defaultArticleReader,clock=Date.now}){
@@ -18,11 +19,12 @@ export async function enrichResearch({store,candidate,topic,captures,read=defaul
   };
   const own=await obtain(candidate.url,candidate);
   const ref=referenceForUrl(own.url);
-  if(primaryReference(ref))return {primary:await store.researchCandidate(candidate.url),requests:budget.used};
+  if(primaryDocument(own,ref))return {primary:await store.researchCandidate(candidate.url),requests:budget.used};
   let lastReason='research_primary_missing';
   for(const url of researchPrimaryLinks(own)){
     try{
       const primary=await obtain(url);
+      if(!primaryDocument(primary)){lastReason='research_primary_missing';continue;}
       const source=articleSource(referenceForUrl(primary.url));
       // The candidate is current because of the dated news seed. Its captured
       // source retains its actual publication date (including unknown), separately.

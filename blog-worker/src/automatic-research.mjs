@@ -1,5 +1,5 @@
 import {referenceCatalog,referenceUrl,validateDossier,dossierHash,buildComparisonRequest,taxonomy} from './corroboration.mjs';
-import {primaryReference,independentReference} from './article-research.mjs';
+import {primaryDocument,independentReference} from './article-research.mjs';
 
 export function sourceReference(id){const key=String(id).replace(/^ARTICLE_/,'');return referenceCatalog.find(r=>r.id===({SRC01:'REF22',SRC02:'REF22',SRC03:'REF22'}[key]??key));}
 export const TOPICS=Object.freeze(Object.entries(taxonomy).flatMap(([category,v])=>Object.keys(v.subcategories).map(subcategory=>({category,subcategory}))).concat(Object.keys(taxonomy).map(category=>({category,subcategory:null}))));
@@ -7,8 +7,18 @@ export const topicKey=t=>t.category+'/'+(t.subcategory??'geral');
 export function researchTopic(c){
   const assigned=c.artifact?.research?.topic;
   if(assigned&&TOPICS.some(t=>topicKey(t)===topicKey(assigned)))return assigned;
-  const t=(c.title+' '+(c.evidence??[]).map(e=>e.text).join(' ')).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
-  if(/em promocao|veja uma selecao|onde assistir|escalacao|horoscopo|cupons|filmes para/.test(t))return null;
+  const title=c.title.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
+  const t=(title+' '+(c.evidence??[]).map(e=>e.text).join(' ').slice(0,1600)).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
+  if(/em promocao|veja uma selecao|onde assistir|escalacao|horoscopo|cupons|filmes para|^ofertas\b|melhor.*para comprar/.test(title))return null;
+  // The headline establishes the editorial focus. A mention of a detector chip
+  // in a telescope story must not consume the daily robotics/hardware slot.
+  if(/marketing|advertis|campanha|publicidade|\bads\b|anunciantes/.test(title))return {category:'negocios',subcategory:'marketing'};
+  if(/startup|empreendedor|\bventure\b|acquisit|acquire|aquisicao|spinout|rodada de/.test(title))return {category:'negocios',subcategory:'empreendedorismo-startups'};
+  if(/robot|robo\b|hardware|semiconductor|chip\b|processor|processador|\bgpu\b/.test(title))return {category:'tecnologia',subcategory:'hardware-robotica'};
+  if(/nasa|mars\b|marte\b|spacecraft|lunar|orbit|rocket|foguete|astronom|espacia|space telescope/.test(title))return {category:'ciencia',subcategory:'aeroespacial'};
+  if(/\bai\b|\bia\b|artificial intelligence|inteligencia artificial|chatgpt|gemini|openai|llm/.test(title))return {category:'tecnologia',subcategory:'ia'};
+  if(/neuro|brain|cerebr|alzheimer/.test(title))return {category:'ciencia',subcategory:'neurociencia'};
+  if(/software|application|aplicativo|ferramenta|browser|navegador|sistema operacional|windows|android/.test(title))return {category:'tecnologia',subcategory:'software-ferramentas'};
   const ref=sourceReference(c.source_id);
   if(ref?.id==='REF15')return {category:'ciencia',subcategory:'neurociencia'};
   if(/neuro|brain|cerebr|alzheimer/.test(t))return {category:'ciencia',subcategory:'neurociencia'};
@@ -62,7 +72,7 @@ function prefix(text,bytes){
 export function automaticDossier(candidate,captures,policy,topic=researchTopic(candidate)){
   const ref=sourceReference(candidate.source_id);
   const own=captures.find(s=>referenceUrl(s.url)===referenceUrl(candidate.url)&&sourceReference(s.source_id)?.publisher===ref?.publisher);
-  if(!topic||!own||!ref||!(primaryReference(ref)||/entrevista exclusiva|exclusive interview|interviewed by|entrevistou/i.test(own.text)))return null;
+  if(!topic||!own||!ref||!primaryDocument(own,ref))return null;
   const rows=[own,...captures.filter(s=>s.capture_id!==own.capture_id&&sameResearchEvent(own,s))];
   const pubs=new Set(),chosen=[];
   for(const s of rows){
@@ -74,15 +84,18 @@ export function automaticDossier(candidate,captures,policy,topic=researchTopic(c
     pubs.add(r.publisher);chosen.push({...s,ref:r});if(chosen.length===Math.min(10,policy.max_primary_evidence_documents))break;
   }
   if(chosen.length<2||chosen.length>10)return null;
-  const budget=Math.floor(3000/chosen.length);
+  for(let total=6000;total>=1000;total-=500){
+  const budget=Math.floor(total/chosen.length);
   const documents=chosen.map((s,i)=>{
     const text=prefix(s.text,budget);if(text.length<80)return null;
     return {id:'E'+(i+1),reference_id:s.ref.id,capture_id:s.capture_id,title:s.title,url:referenceUrl(s.url,s.ref),published_at:s.published_at,
-      text,content_hash:dossierHash(text),rights_reference:s.rights_reference,kind:i===0?'primary':'independent',origin_url:referenceUrl(s.url),same_event:true,
+      text,content_hash:dossierHash(text),rights_reference:s.rights_reference,kind:i===0?'primary':'independent',evidence_scope:s.evidence_scope??'source_excerpt',origin_url:referenceUrl(s.url),same_event:true,
       independence_note:i===0?'Fonte primária institucional ou apuração de primeira mão explicitamente identificada; snapshot integral preservado.':'Associação automática por DOI ou referência explícita. Publicação jornalística distinta; o comparador deve rejeitar mera reprodução de release. Não representa replicação científica nem conferência humana.'};
   });
-  if(documents.some(d=>!d))return null;
+  if(documents.some(d=>!d))continue;
   const dossier=validateDossier({schema_version:1,event_key:own.url.length<=180?own.url:'url-sha256:'+dossierHash(own.url),...topic,documents,claims:[]});
-  try{buildComparisonRequest(dossier,policy);}catch{return null;}
+  try{buildComparisonRequest(dossier,policy);}catch{continue;}
   return dossier;
+  }
+  return null;
 }

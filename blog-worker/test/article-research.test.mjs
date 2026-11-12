@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {robotsAllowed,extractArticle,createArticleReader,referenceForUrl} from '../src/article-research.mjs';
-import {balancedResearchCandidates,nextResearchCandidate,TOPICS,topicKey,automaticDossier,sameResearchEvent} from '../src/automatic-research.mjs';
+import {robotsAllowed,extractArticle,createArticleReader,referenceForUrl,primaryDocument} from '../src/article-research.mjs';
+import {balancedResearchCandidates,nextResearchCandidate,researchTopic,TOPICS,topicKey,automaticDossier,sameResearchEvent} from '../src/automatic-research.mjs';
 import {enrichResearch,researchPrimaryLinks} from '../src/research-service.mjs';
 import {defaultPolicy} from './fixtures.mjs';
 const content='A equipe anunciou um experimento inicial e suas limitações. '.repeat(6);
@@ -76,4 +76,23 @@ test('the article body wins over unrelated semantic article cards and retains it
 
 test('an institutional about/news article is allowed but its news index is not an event source',()=>{
  assert.deepEqual(researchPrimaryLinks({related_urls:['https://www.caltech.edu/about/news','https://www.caltech.edu/about/news/actual-announcement']}),['https://www.caltech.edu/about/news/actual-announcement']);
+});
+test('access metadata ignores unrelated gated recommendations but never reveals a hidden body',()=>{
+ const own={"@type":"NewsArticle",url:'https://www.space.com/test/',isAccessibleForFree:true};
+ const unrelated={...own,url:'https://www.space.com/other/',isAccessibleForFree:false};
+ assert.ok(extractArticle(`<script type="application/ld+json">${JSON.stringify([own,unrelated])}</script>`+html,own.url).text);
+ const abstract=`<section id="Abs1"><h2>Abstract</h2><p>${content}</p></section>`;
+ const paper=`<script type="application/ld+json">${JSON.stringify({...own,isAccessibleForFree:false})}</script><h1>Synthetic paper</h1><main>${abstract}<section hidden><p>RESTRICTED FULL TEXT ${content}</p></section></main>`;
+ const d=extractArticle(paper,own.url);assert.equal(d.evidence_scope,'public_abstract');assert.ok(!d.text.includes('RESTRICTED FULL TEXT'));
+ assert.throws(()=>extractArticle(paper.replace('<section id="Abs1">','<section id="Abs1" hidden>'),own.url),/research_access_restricted/);
+});
+test('first-hand reporting requires an explicit attribution to the registered publication',()=>{
+ const url='https://www.theverge.com/test/';
+ assert.equal(primaryDocument({url,text:'A spokesperson told The Verge that the launch is a test.'}),true);
+ assert.equal(primaryDocument({url,text:'A spokesperson told another website about the test.'}),false);
+ assert.equal(primaryDocument({url,text:'This site reports that a launch is planned.'}),false);
+});
+test('headline focus keeps a space telescope out of the hardware slot and filters shopping roundups',()=>{
+ assert.deepEqual(researchTopic({title:'NASA UVEX space telescope announced',evidence:[{text:'Detectors use a new semiconductor chip.'}],editoria:'tecnologia'}),{category:'ciencia',subcategory:'aeroespacial'});
+ assert.equal(researchTopic({title:'Melhor TV para comprar',evidence:[{text:'A robot and AI chip.'}]}),null);
 });

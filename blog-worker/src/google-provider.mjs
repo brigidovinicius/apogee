@@ -115,7 +115,7 @@ export function googleSubscriptionProvider({binary,sha256,runner=runCli,env=proc
     await writeFile(join(folder,'.agents/hooks.json'),JSON.stringify({'apogee-editorial':{PreInvocation:[{type:'command',command:command('invocation'),timeout:5}],PreToolUse:[{matcher:'*',hooks:[{type:'command',command:command('tool'),timeout:5}]}]}}),{mode:0o600});
     const prompt=googlePrompt(reservation);
     if(Buffer.byteLength(prompt)>12000)return {outcome:'not_sent',reason:'input_limit'};
-    const timeout=kind==='image'?p.google_timeout_seconds:Math.min(45,p.google_timeout_seconds);
+    const timeout=kind==='image'?p.google_timeout_seconds:Math.min(90,p.google_timeout_seconds);
     const args=['--settings',JSON.stringify({...sessionSettings,trustedWorkspaces:[folder]}),'--agent',agent,'--model',p.model_id,'--effort','low','--disable-slash-commands','--output-format','json','--print-timeout',timeout+'s','-p',prompt];
     const result=await runner(binary,args,{cwd:folder,env:cleanEnvironment(env),timeoutMs:timeout*1000});
     let data;try{data=JSON.parse(result.stdout);}catch{return {outcome:'unknown',reason:result.reason??'google_execution_unknown'};}

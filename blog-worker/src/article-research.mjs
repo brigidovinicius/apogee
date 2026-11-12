@@ -3,8 +3,14 @@ import {referenceCatalog,referenceUrl} from './corroboration.mjs';
 import {getFeed} from './http.mjs';
 import {hash,fail} from './policy.mjs';
 
-export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$)/.test(r.role));
+export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$|periodico_e_jornalismo$)/.test(r.role));
 export const independentReference=r=>!!r&&!primaryReference(r)&&/jornalismo|divulgacao|analise_especialista|publicacao_especializada/.test(r.role);
+export function primaryDocument(document,reference=referenceForUrl(document.url)){
+  if(primaryReference(reference))return true;
+  if(!independentReference(reference))return false;
+  const name=reference.name.split('/')[0].trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return new RegExp('(?:told|confirmed to|in an interview with|documents (?:obtained|viewed) by|disse(?:ram)? (?:ao|à|para)|entrevista (?:ao|à)|apurou (?:o|a))\\s+(?:the\\s+)?'+name,'i').test(document.text);
+}
 const host=u=>new URL(u).hostname.replace(/^www\./,'');
 export function referenceForUrl(value){
   try{const u=referenceUrl(value),h=host(u),path=new URL(u).pathname;
@@ -52,16 +58,26 @@ function textOf(node){
   return (node.childNodes??[]).map(textOf).join(' ');
 }
 const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
+const visible=node=>{for(let n=node;n;n=n.parentNode){const a=attrs(n);if(a.hidden!==undefined||a['aria-hidden']==='true'||/display\s*:\s*none|visibility\s*:\s*hidden/i.test(a.style??''))return false;}return true;};
 export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={}){
   if(Buffer.byteLength(html)>3145728)fail('research_page_size');
   const tree=parse(html),nodes=[];const visit=n=>{nodes.push(n);for(const c of n.childNodes??[])visit(c);};visit(tree);
   const meta={};for(const n of nodes.filter(n=>n.tagName==='meta')){const a=attrs(n);meta[(a.property??a.name??'').toLowerCase()]=a.content??'';}
   if(/nosnippet|max-snippet\s*:\s*0/i.test(meta.robots??''))fail('research_excerpt_disallowed');
-  // Never read a hidden article body or reconstruct content behind a paywall.
-  if(/"isAccessibleForFree"\s*:\s*(?:false|"false")/.test(html))fail('research_access_restricted');
+  // Scope access metadata to this article, not unrelated recommended stories.
+  const structured=[];
+  for(const n of nodes.filter(n=>n.tagName==='script'&&/ld\+json/i.test(attrs(n).type??'')))try{
+    const scan=v=>{if(!v||typeof v!=='object')return;if([v['@type']].flat().some(t=>['NewsArticle','Article','BlogPosting','ScholarlyArticle'].includes(t)))structured.push(v);for(const child of Object.values(v))if(Array.isArray(child))child.forEach(scan);else if(child&&typeof child==='object')scan(child);};scan(JSON.parse((n.childNodes??[]).map(c=>c.value??'').join('')));
+  }catch{/* Malformed metadata never grants access. */}
+  const own=structured.filter(v=>{const value=v.url??v.mainEntityOfPage?.['@id']??v['@id'];try{return value?referenceUrl(value)===referenceUrl(url):structured.length===1;}catch{return false;}});
+  const restricted=own.length?own.some(v=>v.isAccessibleForFree===false||v.isAccessibleForFree==='false'):/"isAccessibleForFree"\s*:\s*(?:false|"false")/.test(html);
+  // A visible, explicitly-labelled abstract remains public even when the full
+  // paper requires a subscription. Never read hidden sections or gated bodies.
+  const abstracts=nodes.filter(n=>visible(n)&&(/^(?:abstract|abs1)$/i.test(attrs(n).id??'')||/^abstract$/i.test(attrs(n)['data-title']??''))&&textOf(n).trim().length>=200);
+  if(restricted&&!abstracts.length)fail('research_access_restricted');
   const bodies=nodes.filter(n=>{const a=attrs(n);return a.itemprop==='articleBody'||/(?:^|\s)(?:article-body|article_body|story-body|story_body|post-content|entry-content|article-content|news-article--content)(?:\s|$)/i.test((a.id??'')+' '+(a.class??''));});
   const articles=nodes.filter(n=>n.tagName==='article');
-  const roots=bodies.length?bodies:articles.length?articles:nodes.filter(n=>n.tagName==='main');
+  const roots=(restricted?abstracts:bodies.length?bodies:articles.length?articles:nodes.filter(n=>n.tagName==='main')).filter(visible);
   const root=roots.sort((a,b)=>textOf(b).length-textOf(a).length)[0];if(!root)fail('research_article_missing');
   const text=clean(textOf(root)).slice(0,12000);if(text.length<200)fail('research_text_insufficient');
   const title=clean(meta['og:title']??textOf(nodes.find(n=>n.tagName==='h1')??{}))||fallbackTitle;
@@ -73,9 +89,9 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   const time=nodes.find(n=>n.tagName==='time'&&attrs(n).datetime);
   const rawDate=meta['article:published_time']??meta['citation_online_date']??structuredDate??meta['citation_publication_date']??meta['date']??meta['dc.date']??meta['dcterms.created']??(time?attrs(time).datetime:null)??fallbackDate;
   const date=rawDate?new Date(rawDate):null;
-  const bodyNodes=[];const walk=n=>{if(ignored.has(n.tagName))return;bodyNodes.push(n);for(const c of n.childNodes??[])walk(c);};walk(root);
+  const bodyNodes=[];const walk=n=>{if(ignored.has(n.tagName)||!visible(n))return;bodyNodes.push(n);for(const c of n.childNodes??[])walk(c);};walk(root);
   const related_urls=[...new Set(bodyNodes.filter(n=>n.tagName==='a').map(n=>{try{return referenceUrl(new URL(attrs(n).href,url).href);}catch{return null;}}).filter(Boolean))].slice(0,150);
-  return {url:referenceUrl(url),title:title.slice(0,220),published_at:date&&Number.isFinite(+date)?date.toISOString():null,text,content_hash:hash(text),related_urls,doi:meta.citation_doi??null,extraction_method:'public_article',snapshot_hash:hash(html)};
+  return {url:referenceUrl(url),title:title.slice(0,220),published_at:date&&Number.isFinite(+date)?date.toISOString():null,text,content_hash:hash(text),related_urls,doi:meta.citation_doi??null,extraction_method:'public_article',evidence_scope:restricted?'public_abstract':'public_article',snapshot_hash:hash(html)};
 }
 
 export function createArticleReader({download=getFeed,clock=Date.now}={}){

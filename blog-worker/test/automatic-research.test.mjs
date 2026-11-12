@@ -36,7 +36,7 @@ test('opening excerpts remain literal with decimals, abbreviations and adjacent 
  for(const doc of d.documents){
   const original=doc.id==='E1'?a.text:b.text;
   assert.equal(original.slice(0,doc.text.length),doc.text);
-  assert.ok(Buffer.byteLength(doc.text)<=1500);
+  assert.ok(Buffer.byteLength(doc.text)<=3000);
  }
  assert.equal(a.text,sentence.repeat(30));
 });

@@ -14,7 +14,7 @@ const usage={input_tokens:1000,output_tokens:500,thinking_tokens:200,cache_read_
 const quota={code:0,stdout:JSON.stringify({status:'SUCCESS',num_turns:0,command:{name:'usage',data:{groups:[{name:'Gemini Models',buckets:[{remaining_fraction:1}]}]}}})};
 test('Google policy enforces zero additional billing, own account and bounded workload',()=>{
   validatePolicy(p);
-  for(const change of [{google_use_g1_credits:true},{gemini_api_enabled:true},{paid_balance_fallback_enabled:true},{google_daily_calls_cap:31},{per_topic_daily_cap:2},{google_account_email:'invalid'},{model_id:'claude-opus'},{daily_budget_micro_usd_cap:1}])assert.throws(()=>validatePolicy({...p,...change}));
+  for(const change of [{google_use_g1_credits:true},{gemini_api_enabled:true},{paid_balance_fallback_enabled:true},{google_daily_calls_cap:41},{per_topic_daily_cap:2},{google_account_email:'invalid'},{model_id:'claude-opus'},{daily_budget_micro_usd_cap:1}])assert.throws(()=>validatePolicy({...p,...change}));
   assert.equal(subscriptionUsage(usage),1800);
   assert.throws(()=>subscriptionUsage({input_tokens:1}),/missing/);
   assert.throws(()=>validateSubscription({account_email:p.google_account_email,plan:'google_ai_pro'}),/unverified/);
@@ -29,7 +29,7 @@ test('official CLI pins binary/settings, checks quota without generation and ret
     assert.equal(args.includes('--dangerously-skip-permissions'),false);assert.ok(args.includes(p.model_id));
     assert.equal(args[args.indexOf('--agent')+1],'apogee-editor');
     const hooks=JSON.parse(await readFile(join(o.cwd,'policy.json'),'utf8'));assert.equal(hooks.maxInvocations,1);
-    assert.equal(o.timeoutMs,45000);assert.equal(await realpath(o.cwd),o.cwd);
+    assert.equal(o.timeoutMs,90000);assert.equal(await realpath(o.cwd),o.cwd);
     const definition=await readFile(join(o.cwd,'.agents/agents/apogee-editor.md'),'utf8');assert.match(definition,/excludeDefaultComponents: true/);assert.match(definition,/tools: \[\]/);
     await writeFile(join(o.cwd,'invocation-0.json'),'{}');
     assert.equal(args.includes('--json-schema'),false);
@@ -135,7 +135,7 @@ test('comparison finish contract permits one invocation and no image, web or fil
     for(const name of ['generate_image','read_file','read_url','run_command'])assert.equal((await decide('tool',{...payload,toolCall:{name,args:{}}},guard,options.cwd)).decision,'deny');
     assert.equal((await decide('tool',{...payload,toolCall:{name:'finish',args:article}},guard,options.cwd)).decision,'deny');
     assert.equal((await decide('invocation',{...payload,invocationNum:1},guard,options.cwd)).terminationBehavior,'terminate');
-    assert.equal(options.timeoutMs,45000);assert.match(args.at(-1),/claims/);
+    assert.equal(options.timeoutMs,90000);assert.match(args.at(-1),/claims/);
     return {code:0,stdout:JSON.stringify({status:'SUCCESS',structured_output:{claims:document.claims},usage})};
   }});
   const result=await provider({kind:'comparison',policy:p,body:buildComparisonRequest(document,p),not_after:new Date(Date.now()+180000).toISOString()});

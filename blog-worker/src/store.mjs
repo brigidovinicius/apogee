@@ -5,10 +5,10 @@ import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
-import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey} from './corroboration.mjs';
+import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -225,7 +225,10 @@ export class Store {
     if(policy.automatic_image_generation_enabled&&image)return {method:'reserveImage',candidateId:image.candidate_id};
     const usage=await this.productionUsage();
     const rows=await this.sql`select c.id,c.status,c.first_attempt_day,v.document,v.assessment,
-      (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts
+      (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts,
+      (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison') as comparisons,
+      (select a.policy->>'comparison_prompt_version' from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' order by a.created_at desc limit 1) as comparison_prompt_version,
+      exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.state in ('reserved','unknown')) as pending
       from blog_worker.candidate c join lateral(select * from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) v on true
       where c.post_id is null and c.reason is distinct from 'source_changed_after_reservation' and c.published_at>now()-interval '7 days'
       and c.status in ('ready','held','discovered') order by c.score desc,c.published_at desc limit 100`;
@@ -235,6 +238,9 @@ export class Store {
       if(c.attempts>=policy.max_provider_attempts_per_article_including_repairs)continue;
       if(c.status==='ready'&&c.assessment.eligible&&c.assessment.comparison_verified)return {method:'reserve',candidateId:c.id};
       if(!c.attempts&&!c.assessment.comparison_verified&&c.document.documents.length>=2&&c.document.documents.every(d=>d.same_event))return {method:'reserveComparison',candidateId:c.id};
+      // One bounded re-evaluation after a real comparator fix, never an unknown
+      // request or an automatic retry under the same prompt. Old receipts stay.
+      if(!c.pending&&c.comparisons===1&&c.comparison_prompt_version!==COMPARISON_PROMPT_VERSION&&c.document.documents.length>=2&&c.document.documents.every(d=>d.same_event))return {method:'reserveComparison',candidateId:c.id};
     }
     return null;
   }
@@ -306,9 +312,9 @@ export class Store {
       if(!google && (n(spent.cycle)+reserve>cycleCap(policy,grant) || n(spent.cycle)+reserve>grant.remaining_micro_usd-(grant.credit_safety_buffer_micro_usd??0)))fail('cycle_budget');
       if(!google && n(spent.day)+reserve>policy.daily_budget_micro_usd_cap)fail('daily_budget');
       if(!google && n(spent.article)+reserve>policy.article_budget_micro_usd_cap_including_all_attempts)fail('article_budget');
-      const id=randomUUID();
+      const id=randomUUID(),recordedPolicy=kind==='comparison'?{...policy,comparison_prompt_version:COMPARISON_PROMPT_VERSION}:policy;
       await tx`insert into blog_worker.attempt(id,candidate_id,benefit_id,kind,ordinal,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,provider,quota_reserved,dossier_revision,dossier_hash)
-        values(${id},${candidate.id},${grant?.id??null},${kind},${attempts.length+1},${key},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?policy.google_tokens_reserved_per_call:0},${version?.revision??null},${version?.document_hash??null})`;
+        values(${id},${candidate.id},${grant?.id??null},${kind},${attempts.filter(a=>a.kind===kind).length+1},${key},${hash(body)},${tx.json(price)},${tx.json(recordedPolicy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?policy.google_tokens_reserved_per_call:0},${version?.revision??null},${version?.document_hash??null})`;
       await tx`update blog_worker.candidate set first_attempt_day=coalesce(first_attempt_day,${day}::date),
         first_attempt_week=coalesce(first_attempt_week,${week}::date) where id=${candidate.id}`;
       return {status:'reserved',id,kind,candidate:effective,body,reserved_micro_usd:reserve,policy,identity,not_after:new Date(+at+180000).toISOString()};
@@ -371,7 +377,8 @@ export class Store {
         try{article=validateArticle(JSON.parse(result.text),effective.evidence,corroboration);}catch(error){reason=error.code??'invalid_structure';}
       }
       if(!article){
-        const retry=reason==='invalid_structure'&&attempt.ordinal<attempt.policy.max_provider_attempts_per_article_including_repairs;
+        const [used]=await tx`select count(*)::int as total,count(*) filter(where kind='text')::int as texts from blog_worker.attempt where candidate_id=${candidate.id} and kind in ('text','comparison')`;
+        const retry=reason==='invalid_structure'&&used.total<attempt.policy.max_provider_attempts_per_article_including_repairs&&used.texts<2;
         await tx`update blog_worker.candidate set status=${retry?'ready':'held'},reason=${reason??'invalid_response'} where id=${candidate.id}`;
         await tx`update blog_worker.attempt set reason=${reason??'invalid_response'} where id=${attempt.id}`;
         return {status:retry?'repair_pending':'held',reason:reason??'invalid_response',charged_micro_usd:cost};

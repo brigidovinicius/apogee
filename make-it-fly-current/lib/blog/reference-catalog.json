@@ -1009,5 +1009,71 @@
       "Nature / artigos de pesquisa"
     ],
     "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_GOOGLE_BLOG",
+    "name": "Google / anúncios oficiais",
+    "publisher": "google",
+    "url": "https://blog.google/",
+    "categories": [
+      "tecnologia",
+      "negocios"
+    ],
+    "subcategories": [
+      "ia",
+      "software-ferramentas",
+      "marketing",
+      "empreendedorismo-startups"
+    ],
+    "role": "institucional",
+    "access": "pagina_publica_verificada_20261111",
+    "aliases": [
+      "Google / anúncios oficiais"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_MICROSOFT_BLOG",
+    "name": "Microsoft / anúncios oficiais",
+    "publisher": "microsoft",
+    "url": "https://blogs.microsoft.com/",
+    "categories": [
+      "tecnologia",
+      "negocios"
+    ],
+    "subcategories": [
+      "ia",
+      "software-ferramentas",
+      "marketing",
+      "empreendedorismo-startups"
+    ],
+    "role": "institucional",
+    "access": "pagina_publica_verificada_20261111",
+    "aliases": [
+      "Microsoft / anúncios oficiais"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_META_NEWS",
+    "name": "Meta / anúncios oficiais",
+    "publisher": "meta",
+    "url": "https://about.fb.com/news/",
+    "categories": [
+      "tecnologia",
+      "negocios"
+    ],
+    "subcategories": [
+      "ia",
+      "software-ferramentas",
+      "marketing",
+      "empreendedorismo-startups"
+    ],
+    "role": "institucional",
+    "access": "pagina_publica_verificada_20261111",
+    "aliases": [
+      "Meta / anúncios oficiais"
+    ],
+    "collection_enabled": false
   }
 ]
