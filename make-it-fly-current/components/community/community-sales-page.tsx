@@ -211,7 +211,7 @@ export function CommunitySalesPage() {
               <Reveal className={styles.ctaCopy}>
                 <h2 id="participate-title"><span className={styles.ctaAvailability}>Conheça o que já está no ar.</span><span>Acompanhe o que vem a seguir.</span></h2>
                 <div className={styles.ctaBottom}>
-                  <div><p>Explore o Radar enquanto preparamos os cursos e a newsletter. O preço e o formato de adesão à Comunidade Apogee ainda estão em definição.</p><p className={community.accessNote}>As condições da comunidade serão apresentadas antes da abertura das inscrições. O Radar segue com suas próprias condições de acesso.</p></div>
+                  <div><p className={community.accessNote}>As condições da comunidade serão apresentadas antes da abertura das inscrições. O Radar segue com suas próprias condições de acesso.</p></div>
                   <Link className={styles.finalCta} href="/oportunidades">Explorar o Radar <ArrowUpRight aria-hidden size={20} /></Link>
                 </div>
               </Reveal>
