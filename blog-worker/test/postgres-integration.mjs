@@ -786,6 +786,14 @@ try{
     const dash=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();
     const general=dash.production.find(t=>t.category==='tecnologia'&&t.subcategory===null);assert.ok(general);assert.equal(general.compared,1);assert.equal(general.primary_pending,1);
     assert.ok(!dash.production.some(t=>t.category==='tecnologia'&&t.subcategory==='ia'&&t.compared));
+    await admin`update blog_worker.candidate set status='held',reason='operator_hold'`;
+    const held=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();
+    const retained=held.production.find(t=>t.category==='tecnologia'&&t.subcategory===null);
+    assert.equal(retained.compared,0,'A retained duplicate cannot be advertised as waiting for automatic writing');
+    assert.equal(retained.review_held,1);
+    await admin`update blog_worker.candidate set status='ready',reason=null,evidence_hash=${'f'.repeat(64)}`;
+    const changed=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();
+    assert.equal(changed.production.find(t=>t.category==='tecnologia'&&t.subcategory===null).compared,0,'A comparison cannot approve changed source evidence');
   });
   await check('one bounded format repair can write text without repeating factual rejections or losing receipts',async()=>{
     await reset();await operator.attestSubscription(subscription());await store.ingest(candidate());await googleDossier(false);
