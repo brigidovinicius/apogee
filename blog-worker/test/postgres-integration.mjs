@@ -17,6 +17,7 @@ import {assessDossier,dossierHash} from '../src/corroboration.mjs';
 import {hash,periodKeys} from '../src/policy.mjs';
 import {TOPICS,topicKey} from '../src/automatic-research.mjs';
 import {articleSource,referenceForUrl,ARTICLE_EXTRACTION_VERSION} from '../src/article-research.mjs';
+import {explainerCatalog,explainerId} from '../src/explainers.mjs';
 import {identity,policy,source,grant,price,candidate,completed,imagePolicy,imagePrice,imageUsage,webpFixture} from './fixtures.mjs';
 
 const bin=process.env.BLOG_TEST_PG_BIN;if(!bin)throw Error('Set BLOG_TEST_PG_BIN to native PostgreSQL binaries; no existing DB is accepted.');
@@ -25,7 +26,7 @@ const data=join(directory,'data');
 const free=createServer();await new Promise(resolve=>free.listen(0,'127.0.0.1',resolve));
 const port=free.address().port;await new Promise(resolve=>free.close(resolve));
 function pg(command,args){const result=spawnSync(join(bin,command),args,{encoding:'utf8',timeout:60000});if(result.status!==0)throw Error(command+' failed: '+result.stderr);}
-pg('initdb',['-D',data,'-A','trust','-U','blog_test','--no-locale']);
+pg('initdb',['-D',data,'-A','trust','-U','blog_test','--no-locale','-E','UTF8']);
 let started=false,admin,runtime,other,cmsClient,editorClient,passed=0;
 try{
   pg('pg_ctl',['-D',data,'-l',join(directory,'postgres.log'),'-o',`-h 127.0.0.1 -p ${port} -k ${directory} -c shared_buffers=16MB -c max_connections=12 -c fsync=off`,'-w','start']);started=true;
@@ -70,7 +71,7 @@ try{
     assert.ok(rows.every(r=>r.definition.enabled&&r.definition.content_approved&&r.definition.rights_reference.includes('sem reprodução integral')));
     const [privileges]=await runtime`select has_table_privilege(current_user,'blog_worker.research_reference','SELECT') as read,has_table_privilege(current_user,'blog_worker.research_reference','UPDATE') as write`;
     assert.deepEqual(privileges,{read:true,write:false});
-    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,9);
+    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,10);
   });
   await check('runtime cannot alter benefits or publish directly',async()=>{
     await assert.rejects(()=>runtime`insert into blog_worker.benefit(id) values('forged')`,/permission denied/);
@@ -860,6 +861,103 @@ try{
     const [last]=await admin`select * from blog_worker.dossier_version order by revision desc limit 1`;
     await assert.rejects(()=>editorial.saveDossierScope('test-editor',candidate().id,last.revision,{event_key:last.document.event_key,category:v.document.category,subcategory:v.document.subcategory},'Cannot change a written article topic'),/topic_locked_after_start/);
     assert.equal((await admin`select count(*)::int as n from blog_worker.post_review`)[0].n,0);
+  });
+  const hybridPolicy={...googlePolicy,automatic_explainers_enabled:true,explainer_after_local_hour:10,operator_commands_only:false};
+  const hybridOptions=()=>({...googleOptions(),policy:hybridPolicy});
+  const hybridAt=()=>{const at=new Date();if(at.getUTCHours()<13)at.setUTCHours(15,0,0,0);return at;};
+  const smallHybridUsage={input_tokens:100,output_tokens:100,thinking_tokens:0,cache_read_tokens:0,total_tokens:200};
+  function guide(plan,url){
+    const r=referenceForUrl(url),src=articleSource(r),text='🛰️ Guia sintético de '+r.publisher+'. '+('Contexto inicial sem relação com a seção seguinte. '.repeat(80))
+      +'O mecanismo sintético '+plan.key+' organiza dados em uma estrutura documentada. '
+      +'O método tem limites explícitos e depende do contexto. '+('Este é material sintético de teste, sem afirmações reais. '.repeat(20));
+    return {source_id:src.id,url,title:'Guia público sintético de '+r.publisher,text,published_at:'2015-03-01T12:00:00Z',content_hash:hash(text),rights_reference:src.rights_reference,extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,checked_at:new Date().toISOString()};
+  }
+  const fakeGuideReader=plan=>async(url,budget)=>{budget.used+=1;return guide(plan,url);};
+  function hybridClaims(d){
+    const quote=d.documents[0].text.match(/O mecanismo sintético [^.]+\./)?.[0]??'O método tem limites explícitos e depende do contexto.';
+    return [{id:'C1',text:'O mecanismo do conceito está documentado nas duas referências sintéticas.',critical:true,cells:d.documents.map(x=>({document_id:x.id,status:'supports',quote,note:'Material sintético para verificar o fluxo.'}))}];
+  }
+  async function compareHybrid(id){
+    const [v]=await admin`select document from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+    const r=await store.reserveComparison({...hybridOptions(),candidateId:id});assert.equal(r.status,'reserved');
+    return store.finish(r,{outcome:'completed',text:JSON.stringify({claims:hybridClaims(v.document)}),usage:smallHybridUsage});
+  }
+  const hybridText={title:'Como funciona o conceito documentado nas referências',excerpt:'Este explicativo apresenta um mecanismo e seus limites a partir de duas referências independentes.',seoTitle:'Entenda um mecanismo documentado',seoDescription:'Conheça o mecanismo explicado em referências independentes e os limites que precisam acompanhar sua interpretação.',paragraphs:[
+    {text:'O conceito descreve uma maneira de organizar informações em uma estrutura cujo funcionamento é documentado pelas referências.',sourceIds:['E1','E2'],claimIds:['C1']},
+    {text:'A explicação deve ser interpretada dentro do contexto apresentado pelos autores e exige atenção às limitações do método.',sourceIds:['E1','E2'],claimIds:['C1']} ]};
+  async function writeHybrid(id){const r=await store.reserve({...hybridOptions(),candidateId:id});assert.equal(r.status,'reserved');return store.finish(r,{outcome:'completed',text:JSON.stringify(hybridText),usage:smallHybridUsage});}
+  await check('hybrid window and pause prevent source reads before planning; the shipped policy remains disabled',async()=>{
+    await reset();let reads=0;const read=async()=>{reads++;throw Error('must not read');};
+    const before=new Date('2026-11-12T12:59:59Z');assert.equal(await store.prepareAutomaticExplainer(hybridPolicy,{read,at:before}),null);
+    await admin`update blog_worker.control set paused=true`;assert.equal(await store.prepareAutomaticExplainer(hybridPolicy,{read,at:hybridAt()}),null);
+    assert.equal(reads,0);assert.equal((await admin`select count(*)::int as n from blog_worker.candidate`)[0].n,0);
+  });
+  await check('explanatory guides keep original dates, enforce a genuine shared subject and attach a credited private cover',async()=>{
+    await reset();await operator.attestSubscription(subscription());const plan={...explainerCatalog[0],terms:['mecanismo','limites']};
+    const result=await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});assert.equal(result.prepared,1);
+    const id=explainerId(plan),[v]=await admin`select document from blog_worker.dossier_version where candidate_id=${id}`;
+    assert.ok(v.document.documents.every(d=>!d.same_event&&d.same_subject&&d.published_at.startsWith('2015')&&d.excerpt_offset>0));
+    assert.equal((await compareHybrid(id)).status,'comparison_ready');const written=await writeHybrid(id);assert.equal(written.status,'draft');
+    const image=await store.reserveImage({...hybridOptions(),candidateId:id});assert.equal((await store.finish(image,{outcome:'completed',image:webpFixture(),usage:smallHybridUsage})).status,'cover_ready');
+    const post=await cms.getAdminPost(written.post_id);assert.match(post.body,/Artigo explicativo/);assert.match(post.body,/2015-03-01/);assert.match(post.body,/consulta em/);assert.equal(post.status,'draft');assert.equal(await cms.getPublicPost(post.slug),null);
+    assert.equal((await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:async()=>assert.fail('topic already filled'),at:hybridAt()})),null);
+    const dashboard=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();assert.equal(dashboard.production.reduce((n,t)=>n+t.explainers,0),1);assert.equal(dashboard.production.reduce((n,t)=>n+t.complete,0),1);
+  });
+  await check('one real guide URL can back distinct questions while news URL uniqueness and repeated critical-content holds survive',async()=>{
+    await reset();await operator.attestSubscription(subscription());const first={...explainerCatalog[0],terms:['mecanismo','limites']};
+    assert.equal((await store.prepareAutomaticExplainer(hybridPolicy,{plans:[first],read:fakeGuideReader(first),at:hybridAt()})).prepared,1);
+    assert.equal((await compareHybrid(explainerId(first))).status,'comparison_ready');assert.equal((await writeHybrid(explainerId(first))).status,'draft');
+    const cover=await store.reserveImage({...hybridOptions(),candidateId:explainerId(first)});await store.finish(cover,{outcome:'completed',image:webpFixture(),usage:smallHybridUsage});
+    const next={...first,key:first.key+'-different',subcategory:'neurociencia',question:'Como uma outra pergunta sintética aborda o mecanismo já utilizado?'};
+    assert.equal((await store.prepareAutomaticExplainer(hybridPolicy,{plans:[next],read:async()=>assert.fail('reuse a fresh captured guide'),at:hybridAt()})).prepared,1);
+    assert.equal((await compareHybrid(explainerId(next))).reason,'explainer_overlap');assert.equal(await store.nextAutomaticWork(hybridPolicy),null);
+    assert.equal((await admin`select count(*)::int as n from public.blog_post`)[0].n,1);
+    const primaryUrl=first.urls[0];let news={...candidate(66),url:primaryUrl,id:hash(primaryUrl),guid:hash(primaryUrl)};await store.ingest(news);
+    assert.equal((await store.researchCandidate(primaryUrl)).id,news.id);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.candidate where url=${primaryUrl}`)[0].n,3);
+    await assert.rejects(()=>admin`insert into blog_worker.candidate(id,source_id,guid,url,event_key,title,editoria,score,published_at,evidence,evidence_hash,status) select ${'c'.repeat(64)},source_id,${'d'.repeat(64)},url,${'e'.repeat(64)},title,editoria,score,published_at,evidence,evidence_hash,status from blog_worker.candidate where id=${news.id}`,e=>e.code==='23505');
+  });
+  await check('database checks explanatory excerpts, subject flags and source dates independently of the caller',async()=>{
+    await reset();await operator.attestSubscription(subscription());const plan={...explainerCatalog[0],terms:['mecanismo','limites']};
+    await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});const id=explainerId(plan);
+    const [original]=await admin`select document,source_hash from blog_worker.dossier_version where candidate_id=${id}`;
+    // Only this disposable test dossier in our newly-created temporary cluster.
+    await admin`delete from blog_worker.dossier_version where candidate_id=${id}`;
+    for(const mutation of [d=>{d.documents[0].excerpt_offset++;},d=>{d.documents[0].same_subject=false;},d=>{d.documents[0].published_at='2026-11-12T12:00:00Z';},d=>{d.documents[0].consulted_at=new Date(Date.now()-172800000).toISOString();}]){
+      const d=structuredClone(original.document);mutation(d);
+      await assert.rejects(()=>runtime`select blog_worker.prepare_automatic_research(${id},${runtime.json(d)},${original.source_hash})`,/unapproved_research_snapshot/);
+    }
+    const [result]=await runtime`select blog_worker.prepare_automatic_research(${id},${runtime.json(original.document)},${original.source_hash}) as prepared`;assert.equal(result.prepared,true);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0);
+  });
+  await check('hybrid comparison and text share the same hard call cap and never publish without final review',async()=>{
+    await reset();await operator.attestSubscription(subscription());const plan={...explainerCatalog[0],terms:['mecanismo','limites']};
+    await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});const id=explainerId(plan);
+    await compareHybrid(id);await assert.rejects(()=>store.reserve({...hybridOptions(),policy:{...hybridPolicy,google_daily_calls_cap:1},candidateId:id}),/google_call_limit/);
+    const result=await writeHybrid(id);assert.equal(result.status,'draft');await assert.rejects(()=>admin`update public.blog_post set status='published',published_at=now() where id=${result.post_id}`,/blog_factual_review_required/);
+    assert.equal((await store.summary()).usage.charged_micro_usd,'0');
+  });
+  await check('four news stories and six explainers fill ten distinct daily slots with credited covers and zero provider charges',async()=>{
+    await reset();await operator.attestSubscription(subscription());let invocations=0;
+    const newsKeys=new Set(['ciencia/geral','ciencia/aeroespacial','tecnologia/ia','tecnologia/software-ferramentas']);
+    for(const [i,original] of explainerCatalog.slice(0,10).entries()){
+      const plan={...original,terms:['mecanismo','limites']};let id;
+      if(newsKeys.has(topicKey(plan))){
+        const c=candidate(100+i);id=c.id;await store.ingest(c);
+        const document={...dossierFixture(1),event_key:'mixed-news-'+i,category:plan.category,subcategory:plan.subcategory};document.documents=document.documents.map(d=>({...d,url:d.url+i,origin_url:d.origin_url+i}));
+        await admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,source_hash,change_reason) values(${id},1,${admin.json(document)},${dossierHash(document)},${admin.json(assessDossier(document))},'test-editor',${c.evidence_hash},'Synthetic mixed editorial fixture')`;
+        const r=await store.reserveComparison({...hybridOptions(),candidateId:id});await store.finish(r,{outcome:'completed',text:JSON.stringify({claims:document.claims}),usage:smallHybridUsage});
+        const text=await store.reserve({...hybridOptions(),candidateId:id});assert.equal((await store.finish(text,{...googleCompleted,usage:smallHybridUsage})).status,'draft');
+      }else{
+        assert.equal((await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()})).prepared,1);id=explainerId(plan);
+        assert.equal((await compareHybrid(id)).status,'comparison_ready');assert.equal((await writeHybrid(id)).status,'draft');
+      }
+      const image=await store.reserveImage({...hybridOptions(),candidateId:id});assert.equal((await store.finish(image,{outcome:'completed',image:webpFixture(),usage:smallHybridUsage})).status,'cover_ready');invocations+=3;
+    }
+    const dashboard=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();
+    assert.equal(dashboard.production.reduce((n,t)=>n+t.complete,0),10);assert.equal(dashboard.production.reduce((n,t)=>n+t.news,0),4);assert.equal(dashboard.production.reduce((n,t)=>n+t.explainers,0),6);
+    assert.ok(dashboard.production.every(t=>t.drafts===1&&t.complete===1));assert.equal(invocations,30);assert.equal((await store.summary()).usage.charged_micro_usd,'0');
+    assert.equal((await admin`select count(*)::int as n from public.blog_post where status<>'draft' or not seo_noindex`)[0].n,0);
   });
   await check('CLI once, status and healthcheck use only the isolated DB with shipped generation off',async()=>{
     await reset();const health=join(directory,'health.json');
