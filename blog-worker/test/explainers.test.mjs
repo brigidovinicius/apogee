@@ -74,4 +74,6 @@ test('public guide landmarks and book bodies are readable without accepting arbi
   assert.ok(extractArticle(google,'https://cloud.google.com/learn/example').text.includes('public guide'));
   assert.throws(()=>extractArticle(google,'https://cloud.google.com/unrelated/example'),/research_article_missing/);
   assert.throws(()=>extractArticle('<script type="application/ld+json">{"@type":"Article","isAccessibleForFree":false}</script>'+google,'https://cloud.google.com/learn/example'),/research_access_restricted/);
+  assert.ok(extractArticle(`<h1>What is a neuron?</h1><div class="field-name-field-uq-basic-body">${text}</div>`,'https://qbi.uq.edu.au/brain/example').text.includes('public guide'));
+  assert.ok(extractArticle(`<h1>Git guide</h1><div id="main" class="book edition2">${text}</div>`,'https://git-scm.com/book/example').text.includes('public guide'));
 });

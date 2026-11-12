@@ -83,10 +83,13 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   // paper requires a subscription. Never read hidden sections or gated bodies.
   const abstracts=nodes.filter(n=>visible(n)&&(/^(?:abstract|abs1)$/i.test(attrs(n).id??'')||/^abstract$/i.test(attrs(n)['data-title']??''))&&textOf(n).trim().length>=200);
   if(restricted&&!abstracts.length)fail('research_access_restricted');
-  const bodies=nodes.filter(n=>{const a=attrs(n);return a.itemprop==='articleBody'||/(?:^|\s)(?:article-body|article_body|story-body|story_body|post-content|entry-content|article-content|news-article--content|story_text|elementor-widget-theme-post-content|mc-article-body|book-content|field--name-body|field-name-body)(?:\s|$)/i.test((a.id??'')+' '+(a.class??''));});
+  const guideHost=new URL(url).hostname.replace(/^www\./,'');
+  const bodies=nodes.filter(n=>{const a=attrs(n);return a.itemprop==='articleBody'||/(?:^|\s)(?:article-body|article_body|story-body|story_body|post-content|entry-content|article-content|news-article--content|story_text|elementor-widget-theme-post-content|mc-article-body|book-content|field--name-body|field-name-body)(?:\s|$)/i.test((a.id??'')+' '+(a.class??''))
+    ||guideHost==='git-scm.com'&&a.id==='main'&&/(?:^|\s)book(?:\s|$)/.test(a.class??'')
+    ||guideHost==='qbi.uq.edu.au'&&/(?:^|\s)field-name-field-uq-basic-body(?:\s|$)/.test(a.class??'');});
   const articles=nodes.filter(n=>n.tagName==='article');
   const usable=items=>items.filter(n=>visible(n)&&clean(textOf(n)).length>=200);
-  const landmarks=usable(nodes.filter(n=>n.tagName==='main'||attrs(n).role==='main'));
+  const landmarks=usable(nodes.filter(n=>n.tagName==='main'||attrs(n).role==='main'||guideHost==='qbi.uq.edu.au'&&attrs(n).id==='block-system-main'));
   // Google's public /learn guides use labelled sections without an article or
   // main landmark. Permit that known guide shell only; gated/hidden content is
   // still excluded above and by textOf. Never use arbitrary page bodies.
