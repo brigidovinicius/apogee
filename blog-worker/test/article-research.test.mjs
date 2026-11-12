@@ -92,6 +92,17 @@ test('DOI resolution follows only a registered primary and keeps redirects insid
  await assert.rejects(()=>blocked('https://doi.org/10.1234/example',{used:0,max:5,deadline:Date.now()+1000}),/invalid_reference_url/);
 });
 
+test('DOI robots follows only its exact official www alias, caches rules and charges every HTTP request to the same budget',async()=>{
+ const calls=[];const reader=createArticleReader({download:async(url,hosts)=>{calls.push(url);if(url==='https://doi.org/robots.txt')return {status:301,location:'https://www.doi.org/robots.txt'};if(url==='https://www.doi.org/robots.txt'){assert.ok(hosts.includes('www.doi.org'));return {status:200,body:'User-agent: *\nAllow: /'};}if(url.endsWith('robots.txt'))return {status:404,body:''};if(url.startsWith('https://doi.org/'))return {status:302,location:'https://www.nasa.gov/fixture-primary/'};return {status:200,body:html,contentType:'text/html'};}});
+ const budget=()=>({used:0,max:8,deadline:Date.now()+1000});const first=budget();assert.equal((await reader('https://doi.org/10.1234/fixture',first)).source_id,'ARTICLE_REF22');assert.equal(first.used,5);
+ const second=budget();await reader('https://doi.org/10.1234/fixture',second);assert.equal(second.used,2);assert.equal(calls.filter(u=>u.endsWith('doi.org/robots.txt')).length,2);
+ for(const location of ['https://evil.invalid/robots.txt','https://other.doi.org/robots.txt','https://www.doi.org/login','http://www.doi.org/robots.txt']){
+  let requests=0;const blocked=createArticleReader({download:async()=>{requests++;return {status:301,location};}});await assert.rejects(()=>blocked('https://doi.org/10.1234/fixture',budget()));assert.equal(requests,1);
+ }
+ const denied=createArticleReader({download:async url=>url==='https://doi.org/robots.txt'?{status:301,location:'https://www.doi.org/robots.txt'}:{status:200,body:'User-agent: *\nDisallow: /'}});await assert.rejects(()=>denied('https://doi.org/10.1234/fixture',budget()),/research_robots_disallowed/);
+ let bounded=0;const limited=createArticleReader({download:async()=>{bounded++;return {status:301,location:'https://www.doi.org/robots.txt'};}});await assert.rejects(()=>limited('https://doi.org/10.1234/fixture',{...budget(),max:1}),/research_cycle_limit/);assert.equal(bounded,1);
+});
+
 test('DOI association preserves original dates and excludes stale context from a current event',()=>{
  const a={url:'https://www.nature.com/articles/s41586-original',text:'Original study',published_at:'2020-01-01T00:00:00Z',doi:'10.1038/s41586-original'};
  const b={url:'https://www.space.com/new-analysis/',text:'A new independent analysis',published_at:new Date().toISOString(),related_urls:['https://dx.doi.org/10.1038/s41586-original']};
@@ -127,6 +138,14 @@ test('first-hand reporting requires an explicit attribution to the registered pu
  assert.equal(primaryDocument({url,text:'A spokesperson told The Verge that the launch is a test.'}),true);
  assert.equal(primaryDocument({url,text:'A spokesperson told another website about the test.'}),false);
  assert.equal(primaryDocument({url,text:'This site reports that a launch is planned.'}),false);
+});
+
+test('first-hand attribution recognizes the G1 brand and explicit reporter verbs without treating mentions or another outlet as primary',()=>{
+ const g1='https://g1.globo.com/tecnologia/noticia/2026/11/11/fixture.ghtml';
+ assert.equal(primaryDocument({url:g1,text:'A empresa disse ao g1 que o incidente foi corrigido.'}),true);
+ assert.equal(primaryDocument({url:'https://tecnoblog.net/noticias/fixture/',text:'A empresa confirmou ao Tecnoblog a disponibilidade do serviço.'}),true);
+ assert.equal(primaryDocument({url:'https://www.wired.com/story/fixture/',text:'The researcher tells WIRED that the trial remains preliminary.'}),true);
+ for(const text of ['O g1 publicou uma notícia sobre o teste.','A empresa disse ao Tecnoblog que o serviço mudou.','A empresa disse ao g1fake que o serviço mudou.'])assert.equal(primaryDocument({url:g1,text}),false);
 });
 test('headline focus keeps a space telescope out of the hardware slot and filters shopping roundups',()=>{
  assert.deepEqual(researchTopic({title:'NASA UVEX space telescope announced',evidence:[{text:'Detectors use a new semiconductor chip.'}],editoria:'tecnologia'}),{category:'ciencia',subcategory:'aeroespacial'});
