@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { CommunitySalesPage } from "@/components/community/community-sales-page";
 
-const description = "Conheça a Comunidade Apogee: Radar de oportunidades, cursos de IA em preparação e uma newsletter curada em construção.";
+const description = "Comunidade gratuita da Apogee no WhatsApp: IA no dia a dia, oportunidades e curadoria. Conheça também a primeira turma de IA em preparação.";
 
 export const metadata: Metadata = {
   title: "Comunidade Apogee",
@@ -17,5 +18,6 @@ export const metadata: Metadata = {
 };
 
 export default function CommunityPage() {
+  if (process.env.APOGEE_LOCAL_PREVIEW !== "1") notFound();
   return <CommunitySalesPage />;
 }
