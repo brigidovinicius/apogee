@@ -17,6 +17,7 @@ function Topic({ value }: { value: string }) {
   return <label>Área da pauta<select name="topic" defaultValue={value}>{Object.entries(taxonomy).flatMap(([id, t]) => [<option key={id} value={id}>{t.label}</option>, ...Object.entries(t.subcategories).map(([sub, label]) => <option key={sub} value={`${id}:${sub}`}>{t.label} / {label}</option>)])}</select></label>;
 }
 function DocumentForm({ id, revision, next, document: d, explainer = false }: { id: string; revision: number; next: number; document?: Document; explainer?: boolean }) {
+  const consultedAt = d?.consulted_at ? new Intl.DateTimeFormat("sv-SE", {timeZone:"America/Sao_Paulo", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hourCycle:"h23"}).format(new Date(d.consulted_at)).replace(" ", "T") : "";
   return <form action={manageDossier} className={styles.form}>
     <Fields id={id} revision={revision} intent="document" /><input type="hidden" name="document_id" value={d?.id ?? `E${next}`} />
     <div className={styles.fields}>
@@ -30,7 +31,7 @@ function DocumentForm({ id, revision, next, document: d, explainer = false }: { 
       <label className={styles.wide}>Condição de uso editorial conferida<input name="rights_reference" required minLength={8} maxLength={500} defaultValue={d?.rights_reference} /></label>
       <label className={styles.wide}>Texto ou trecho autorizado para conferência<textarea name="text" required minLength={80} maxLength={12000} rows={8} defaultValue={d?.text} /></label>
     </div>
-    {explainer ? <><input type="hidden" name="excerpt_offset" value={d?.excerpt_offset ?? 0} /><label>Data e horário da consulta (Brasília)<input name="consulted_at" type="datetime-local" required defaultValue={new Intl.DateTimeFormat("sv-SE", {timeZone:"America/Sao_Paulo", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hourCycle:"h23"}).format(new Date(d?.consulted_at ?? Date.now())).replace(" ", "T")} /></label><label className={styles.check}><input name="same_subject" type="checkbox" defaultChecked={d?.same_subject} />Conferi que este documento responde à mesma pergunta do explicativo.</label></> : <label className={styles.check}><input name="same_event" type="checkbox" defaultChecked={d?.same_event} />Conferi que este documento trata do mesmo acontecimento e escopo.</label>}
+    {explainer ? <><input type="hidden" name="excerpt_offset" value={d?.excerpt_offset ?? 0} /><label>Data e horário da consulta (Brasília)<input name="consulted_at" type="datetime-local" required defaultValue={consultedAt} /></label><label className={styles.check}><input name="same_subject" type="checkbox" defaultChecked={d?.same_subject} />Conferi que este documento responde à mesma pergunta do explicativo.</label></> : <label className={styles.check}><input name="same_event" type="checkbox" defaultChecked={d?.same_event} />Conferi que este documento trata do mesmo acontecimento e escopo.</label>}
     <label>Motivo da inclusão ou alteração<input name="reason" required minLength={8} maxLength={1000} /></label>
     <p className={styles.muted}>Salvar evidência inicia nova versão e exige refazer a comparação. Texto original e decisões anteriores ficam no histórico. Não ultrapasse paywalls nem copie conteúdo sem condição de uso compatível.</p>
     <button className={adminStyles.button}>Salvar evidência</button>
