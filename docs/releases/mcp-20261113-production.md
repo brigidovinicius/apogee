@@ -47,6 +47,12 @@ O ChatGPT descobriu automaticamente issuer, recurso, DCR e PKCE e chegou ao cons
 
 ## Conexão pessoal no ChatGPT — pendência explícita
 
-Foi criado um aplicativo pessoal Apogee de teste, ainda sem autorização da conta. O fluxo chegou à tela real de consentimento com callback `chatgpt.com`; a autorização inicial foi cancelada pelo motivo descrito acima. O ChatGPT não expõe edição de OAuth desse aplicativo, portanto a substituição do rascunho e a concessão do novo acesso aguardam confirmação pessoal do usuário exigida pelo controle do navegador. **Não há validação concluída de chamada autenticada no ChatGPT nem de renovação real nessa conta até essa confirmação.** A opção Claude foi publicada, mas não foi conectada a uma conta pessoal Claude.
+### Correção da aceitação de consentimento
+
+Após autorização explícita para substituir o rascunho e conectar a conta com os quatro escopos da aplicação e renovação até revogação, o fluxo real encontrou `401 invalid_request: request not found` ao aceitar. A API em processo do OAuth Provider 1.7.14 precisa de `Request` para continuar no endpoint de autorização; apenas os headers não bastavam. O ajuste fornece esse contexto e define `asResponse:false`, mantendo as verificações de origem, assinatura, sessão e concessão por usuário.
+
+O teste de integração passou a executar a Server Action `decideMcpConsent` real, sem `prompt=consent` artificial: falhou antes da correção e passou depois, verificando código, família imutável, token, consulta via SDK, revogação e reconexão. Os 59 testes MCP passaram; lint terminou com zero erros e um aviso preexistente de imagem na galeria. Revisão independente sem achados relevantes. A publicação do ajuste e a nova tentativa no ChatGPT seguem em andamento.
+
+O rascunho inicial foi excluído e substituído com autorização pessoal explícita. O novo aplicativo solicita os cinco escopos, incluindo `offline_access`, e chegou ao consentimento com callback `chatgpt.com`. **A chamada autenticada no ChatGPT aguarda a publicação da correção acima e a conclusão do callback.** A opção Claude foi publicada, mas não foi conectada a uma conta pessoal Claude.
 
 Evidências locais não versionadas em `.local/mcp-radar-20261112/`: `release-full-tests.log`, `release-integrated-tests.log`, `release-lint.log`, `refresh-discovery-tests.log`, `refresh-discovery-lint.log`, `published-buttons.jpg` e `test-draft-confirmation.jpg`. Logs de build isolados na VPS em `/opt/apogee-site/deploy-logs/mcp-{636fd79,589290f,bc960a7}-*.log`. Não persistir URLs OAuth assinadas ou tokens nesses relatórios.
