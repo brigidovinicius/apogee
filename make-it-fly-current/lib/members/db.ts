@@ -3,8 +3,9 @@ import { readFileSync } from "node:fs";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
+import * as mcpSchema from "@/lib/mcp/schema";
 
-export type MembersDb = PostgresJsDatabase<typeof schema>;
+export type MembersDb = PostgresJsDatabase<typeof schema & typeof mcpSchema>;
 
 type Cached = { client: postgres.Sql; db: MembersDb };
 
@@ -36,7 +37,7 @@ export function getDb(): MembersDb {
     idle_timeout: 20,
     connect_timeout: 10,
   });
-  const db = drizzle(client, { schema });
+  const db = drizzle(client, { schema: { ...schema, ...mcpSchema } });
   globalForDb.__apogeeMembersDb = { client, db };
   return db;
 }

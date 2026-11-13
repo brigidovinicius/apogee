@@ -113,6 +113,13 @@
       "when": 1793912500000,
       "tag": "0015_calendar_following",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1794528000000,
+      "tag": "0016_mcp_oauth",
+      "breakpoints": true
     }
   ]
 }

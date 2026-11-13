@@ -47,7 +47,7 @@ export async function radarPurchaseNeedsVerification(userId: string, livemode: b
   return rows.length > 0;
 }
 
-export async function radarAccess(userId: string, livemode: boolean): Promise<RadarAccess> {
+export async function radarAccess(userId: string, livemode: boolean, options: { claimPurchases?: boolean } = {}): Promise<RadarAccess> {
   return getSql().begin(async tx => {
     const [user] = await tx`select id, email, email_verified, role, blocked from "user" where id = ${userId} for update`;
     if (!user || user.blocked) return { active: false, source: null };
@@ -56,12 +56,17 @@ export async function radarAccess(userId: string, livemode: boolean): Promise<Ra
     if (legacy.length) return { active: true, source: "legacy" };
     // Payment Links não trazem uma identidade de membro confiável. O vínculo
     // só ocorre após provar o controle do mesmo e-mail no Better Auth.
-    if (user.email_verified) {
+    if (user.email_verified && options.claimPurchases !== false) {
       await tx`update radar_purchase set user_id = ${userId}, updated_at = now()
         where user_id is null and email = ${String(user.email).trim().toLowerCase()} and livemode = ${livemode}`;
     }
-    const paid = await tx`select session_id from radar_purchase
-      where user_id = ${userId} and livemode = ${livemode} and status = 'paid' limit 1`;
+    const paid = options.claimPurchases === false
+      ? await tx`select session_id from radar_purchase
+          where (user_id = ${userId} or (user_id is null and ${user.email_verified === true}
+            and email = ${String(user.email).trim().toLowerCase()}))
+            and livemode = ${livemode} and status = 'paid' limit 1`
+      : await tx`select session_id from radar_purchase
+          where user_id = ${userId} and livemode = ${livemode} and status = 'paid' limit 1`;
     return { active: paid.length > 0, source: paid.length ? "stripe" : null };
   });
 }

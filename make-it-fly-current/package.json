@@ -33,6 +33,8 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
+    "@better-auth/oauth-provider": "1.7.14",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "@radix-ui/react-slot": "^1.3.3",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
@@ -55,22 +57,23 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.9",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.185.4",
+    "braces": "file:vendor/braces",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
     "shadcn": "^4.21.0",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "braces": "file:vendor/braces"
+    "typescript": "^5"
   },
   "overrides": {
     "proxy-addr": "2.0.8",
-    "@modelcontextprotocol/sdk": "1.31.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "braces": "$braces",
     "brace-expansion@1": "1.1.21",
     "brace-expansion@5": "5.0.12"
