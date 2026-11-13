@@ -1,8 +1,12 @@
+import guidelines from "./seo-guidelines.json";
+
+export const seoGuidelines = guidelines;
+
 export function sourceReferences(body: string) {
   // HTML forms submit CRLF; generated drafts use LF. Preserve both formats.
   const section = body.replace(/\r\n?/g,"\n").split(/\n\nFontes:\s*\n/).at(1) ?? "";
   return section.split("\n").slice(0,10).flatMap(line => {
-    const match = /^\[\d+\]\s+(.+?)\s+—\s+(https:\/\/\S+)(?:\s+\(\d{4}-\d{2}-\d{2}\))?$/.exec(line.trim());
+    const match = /^\[\d+\]\s+(.+?)\s+—\s+(https:\/\/\S+)(?:\s+\((?:\d{4}-\d{2}-\d{2}|data de publicação não informada)\))?(?: · consulta em \d{2}\/\d{2}\/\d{4})?$/.exec(line.trim());
     if (!match) return [];
     try { const url = new URL(match[2]); if(url.username || url.password) return []; return [{ title:match[1], url:url.href }]; } catch { return []; }
   });

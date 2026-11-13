@@ -1,0 +1,17 @@
+{
+  "id": "google-search-editorial-2026-11-13",
+  "reviewed_at": "2026-11-13",
+  "sources": [
+    { "title": "Guia de SEO para iniciantes do Google", "url": "https://developers.google.com/search/docs/fundamentals/seo-starter-guide?hl=pt-br" },
+    { "title": "Guia do Google para pesquisa com IA generativa", "url": "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide?hl=pt-br" }
+  ],
+  "instructions": "Diretriz editorial permanente de SEO e pesquisa com IA: abra com a informação central e responda à necessidade do leitor com uma síntese original e contexto verificável, sem apenas parafrasear notícias. Explique mecanismos, consequências e limites somente quando sustentados pelas fontes. Não invente experiência própria, entrevistas ou testes. Use título e descrição específicos e coerentes com o corpo; evite sensacionalismo e repetição de palavras-chave. Organize o texto em parágrafos claros, com entidades e datas precisas, distinguindo o fato de sua interpretação atribuída. Não alongue o conteúdo para atingir uma quantidade de palavras. Não crie variantes da mesma matéria para ocupar buscas. Fontes, créditos de imagem e autoria devem ser transparentes. Não prometa posição no Google nem citação por IA.",
+  "human_review": [
+    "A abertura responde à dúvida do leitor e o título corresponde ao texto?",
+    "A matéria acrescenta contexto útil sustentado pelas fontes, além de reescrevê-las?",
+    "Fatos, interpretações, datas e limitações estão claramente diferenciados?",
+    "Autoria e eventual uso de IA são transparentes, sem experiência ou entrevistas inventadas?",
+    "A imagem ajuda a compreender o tema e tem texto alternativo, crédito e direito de uso verificado?",
+    "Há outra matéria sobre o mesmo fato que deveria ser atualizada em vez de duplicada?"
+  ]
+}

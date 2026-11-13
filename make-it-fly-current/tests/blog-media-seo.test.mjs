@@ -20,7 +20,7 @@ test("vídeos permitidos recebem embed seguro", () => {
   }
 });
 
-test("análise SEO encontra expressão completa sem depender de meta keywords", () => {
+test("análise SEO orienta estrutura sem exigir palavra-chave repetida", () => {
   const result = analyzeSeo({ title: "Bolsas de estudo abertas", slug: "bolsas-de-estudo", excerpt: "Veja bolsas de estudo para 2026.", body: "Bolsas de estudo ajudam estudantes.\n\nSegundo parágrafo.", seoTitle: "", seoDescription: "", focusKeyword: "bolsas de estudo" });
   assert.equal(result.checks.every((check) => check.passed), true);
   assert.equal(result.previewTitle, "Bolsas de estudo abertas");
@@ -28,4 +28,6 @@ test("análise SEO encontra expressão completa sem depender de meta keywords", 
   const absent = analyzeSeo({ title: "Estudos", slug: "estudos", excerpt: "Bolsa de estudos", body: "Outro texto", seoTitle: "", seoDescription: "", focusKeyword: "bolsas de estudo" });
   assert.equal(absent.checks[0].passed, false);
   assert.equal(absent.checks[2].passed, false);
+  const noKeyword = analyzeSeo({ title: "Bolsas de estudo abertas", slug: "bolsas-de-estudo", excerpt: "Veja as oportunidades disponíveis para estudar.", body: "Apuração com fatos verificáveis.\n\nContexto e limitações para o leitor.", seoTitle: "", seoDescription: "", focusKeyword: "" });
+  assert.equal(noKeyword.checks.every(check => check.passed), true);
 });

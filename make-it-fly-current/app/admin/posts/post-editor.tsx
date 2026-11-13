@@ -3,6 +3,7 @@
 import { useActionState, useRef, useState, type ReactNode } from "react";
 import type { BlogPostRow } from "@/lib/blog/data";
 import { useFormErrorFocus } from "@/components/ui/use-form-error-focus";
+import { seoGuidelines } from "@/lib/blog/editorial-review";
 import { analyzeSeo } from "@/lib/blog/seo";
 import { BLOG_CATEGORIES, statusLabel } from "@/lib/blog/shared";
 import { saveBlogPost, type EditorState } from "./actions";
@@ -92,7 +93,7 @@ export function PostEditor({ post, media = [] }: { post: BlogPostRow | null; med
       {state.errors?.seoDescription ? <p className={styles.fieldError} id="seoDescription-error">{state.errors.seoDescription}</p> : null}
       <label className={styles.check}><input type="checkbox" name="seoNoIndex" defaultChecked={state.values ? state.values.seoNoIndex === "on" : post?.seoNoIndex ?? false} /> Não indexar este artigo em buscadores</label>
       <div className={styles.seoPreview} aria-label="Prévia de busca"><span>Prévia de busca</span><strong>{seo.previewTitle || "Título do artigo"}</strong><small>apogee.community/blog/{seo.previewSlug || "endereco-do-artigo"}</small><p>{seo.previewDescription || "O resumo do artigo aparece aqui."}</p></div>
-      <div className={styles.seoChecks} aria-live="polite"><strong>Revisão da palavra-chave</strong>{seoDraft.focusKeyword.trim() ? <ul>{seo.checks.map((check) => <li key={check.label} data-passed={check.passed}>{check.passed ? "Concluído:" : "Pendente:"} {check.label}</li>)}</ul> : <p>Defina a palavra-chave foco para ver sugestões.</p>}<small>Estas verificações orientam a revisão; não garantem posição nas buscas.</small></div>
+      <div className={styles.seoChecks} aria-live="polite"><strong>Revisão de SEO e GEO</strong><ul>{seo.checks.map((check) => <li key={check.label} data-passed={check.passed}>{check.passed ? "Concluído:" : "Pendente:"} {check.label}</li>)}</ul><details><summary>Revisão editorial antes de publicar</summary><ul>{seoGuidelines.human_review.map(item => <li key={item}>{item}</li>)}</ul>{seoGuidelines.sources.map(source => <p key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer">{source.title}</a></p>)}</details><small>Verificações de preenchimento não confirmam precisão ou originalidade. A palavra-chave é opcional; não precisa ser repetida. Não há garantia de posição nas buscas ou citação por IA.</small></div>
       <div className={styles.rule} />
       <label className={styles.field}>Agendar para <input type="datetime-local" name="scheduledAt" {...errorProps("scheduledAt")} defaultValue={state.values?.scheduledAt ?? brasiliaInput(post?.scheduledAt ?? null)} /></label>
       <p className={styles.help}>Horário de Brasília. Para agendar, preencha a data e escolha “Agendar”.</p>
