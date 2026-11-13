@@ -85,7 +85,7 @@ export function PostEditor({ post, media = [] }: { post: BlogPostRow | null; med
       {state.errors?.videoUrl ? <p className={styles.fieldError} id="videoUrl-error">{state.errors.videoUrl}</p> : null}
       <div className={styles.rule} />
       <label className={styles.field}>Palavra-chave foco <input name="focusKeyword" {...errorProps("focusKeyword")} maxLength={80} defaultValue={state.values?.focusKeyword ?? post?.focusKeyword ?? ""} onChange={(event) => updateSeo("focusKeyword", event.target.value)} placeholder="Ex.: bolsas de estudo" /></label>
-      <p className={styles.help}>Usada na análise editorial abaixo. Não gera a tag “meta keywords”, ignorada pelo Google.</p>
+      <p className={styles.help}>Referência opcional para o planejamento editorial. A revisão considera clareza e estrutura, sem exigir repetição.</p>
       {state.errors?.focusKeyword ? <p className={styles.fieldError} id="focusKeyword-error">{state.errors.focusKeyword}</p> : null}
       <label className={styles.field}>Título para buscadores <input name="seoTitle" {...errorProps("seoTitle")} maxLength={70} defaultValue={state.values?.seoTitle ?? post?.seoTitle ?? ""} onChange={(event) => updateSeo("seoTitle", event.target.value)} placeholder="Opcional: usa o título do artigo" /></label>
       {state.errors?.seoTitle ? <p className={styles.fieldError} id="seoTitle-error">{state.errors.seoTitle}</p> : null}
