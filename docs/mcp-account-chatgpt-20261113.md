@@ -1,6 +1,6 @@
 # Apogee no ChatGPT e no Claude
 
-Continuação do MCP do Radar (`ca2b38b`) na branch `feat/mcp-radar-20261112`. Escopo confirmado pelo usuário: botão no site e consulta ao perfil próprio, com organização de calendário e coleções. Publicado e ativado em 13/11/2026, com opção adicional Claude. A conexão pessoal ChatGPT, a emissão de renovação e uma consulta real ao Radar foram validadas; consulte o [registro de produção](releases/mcp-20261113-production.md).
+Continuação do MCP do Radar (`ca2b38b`) na branch `feat/mcp-radar-20261112`. Escopo confirmado pelo usuário: botão no site e consulta ao perfil próprio, com organização de calendário e coleções. Publicado e ativado em 13/11/2026. Conexões pessoais e consultas reais ao Radar foram validadas no ChatGPT e no Claude, com renovação autorizada; consulte o [registro de produção](releases/mcp-20261113-production.md).
 
 ## Entrada pelo site
 
@@ -9,6 +9,8 @@ O botão **Incluir no meu ChatGPT** aparece na navegação compartilhada (deskto
 A entrada leva a `/membros/integracoes/mcp`, com o login atual da Apogee e retorno preservado. O guia fornece o endereço selecionável, cópia com instrução de recuperação se o navegador negar o clipboard e abertura de `https://chatgpt.com/plugins`. O usuário adiciona o servidor, escolhe OAuth, autoriza a conta e instala o plugin no ChatGPT. O botão não afirma instalar automaticamente nem declarar conexão concluída. A lista de conexões e a revogação continuam disponíveis.
 
 O fluxo segue a [documentação atual de conexão da OpenAI](https://developers.openai.com/api/docs/guides/custom-mcp-server) e a [página oficial Plugins](https://chatgpt.com/plugins), consultadas em 13/11/2026. A disponibilidade depende da conta e das políticas do espaço no ChatGPT. Nenhum plugin público da Apogee foi submetido ou publicado por este trabalho.
+
+No Claude, o fluxo validado é **Personalização → Conectores → Adicionar conector personalizado**, com nome Apogee e o mesmo endereço `/mcp`. A descoberta selecionou **Entrar agora**, **Registrar automaticamente** (DCR) e HTTP Streamable. O Claude Free permite um conector personalizado; cadastros existentes podem bloquear uma nova inclusão. Após autorizar a conta na Apogee, conferir a integração no menu de conectores do chat e aprovar a consulta solicitada. A validação pessoal Claude concedeu somente `radar:read account:read offline_access`. Consulte a [ajuda oficial de conectores](https://support.claude.com/en/articles/11176164-use-connectors-to-extend-claude-s-capabilities).
 
 ## Capacidades e permissões
 
