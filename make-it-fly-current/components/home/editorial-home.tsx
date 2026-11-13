@@ -33,7 +33,7 @@ export function EditorialHome() {
     <main id="experiencia" tabIndex={-1}>
       <section className={styles.intro} aria-labelledby="home-title">
         <h1 id="home-title">Um lugar para o seu próximo salto.</h1>
-        <div className={styles.introActions}><p>Explore ciência e tecnologia, encontre oportunidades e participe de experiências para colocar suas ideias em prática.</p><div><Link className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={18} /></Link><Link className={styles.heroSecondary} href="/oportunidades" prefetch={false}>Explorar oportunidades</Link></div></div>
+        <div className={styles.introActions}><p>Aprenda a usar IA no dia a dia, troque experiências na comunidade gratuita e descubra novas possibilidades no evento gratuito Codex Community.</p><div><Link className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={18} /></Link><Link className={styles.heroSecondary} href="/oportunidades" prefetch={false}>Explorar oportunidades</Link></div></div>
       </section>
 
       <RedBullSupport />
@@ -90,15 +90,16 @@ export function EditorialHome() {
 
       <section className={styles.community} aria-labelledby="home-community-title">
         <div className={styles.communityCopy}>
-          <p>Comunidade Apogee</p>
+          <p>Comunidade Apogee · gratuita</p>
           <h2 id="home-community-title">Juntos, mais longe.</h2>
-          <p>Encontros, projetos e outras perspectivas dão continuidade ao que começou como uma ideia.</p>
-          <Link className={styles.inlineAction} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={18} /></Link>
+          <p>Troque experiências sobre IA, descubra oportunidades e encontre novas perspectivas para seus projetos em uma comunidade gratuita.</p>
+          <Link className={styles.inlineAction} href="/comunidade" prefetch={false}>Conhecer a comunidade gratuita<ArrowUpRight aria-hidden="true" size={18} /></Link>
         </div>
         <article className={styles.experience} aria-labelledby="home-experience-title">
           <Image className={styles.eventArt} src="/brand/apogee-star.svg" alt="" width={703} height={870} sizes="144px" />
           <div><p>Evento gratuito · organização Apogee</p><h3 id="home-experience-title">Codex Community</h3>
-            <Link href="/evento-openai" prefetch={false}>Conhecer o evento gratuito<ArrowUpRight aria-hidden="true" size={18} /></Link>
+            <p>Descubra como usar IA para pesquisar, escrever e organizar sua rotina no evento da comunidade OpenAI.</p>
+            <Link href="/evento-openai" prefetch={false}>Quero assistir gratuitamente<ArrowUpRight aria-hidden="true" size={18} /></Link>
           </div>
         </article>
       </section>
