@@ -62,5 +62,7 @@
   "critical_fact_confirmation_required": true,
   "per_topic_daily_cap": 1,
   "per_topic_weekly_cap": 7,
-  "google_automatic_access_validation_enabled": false
+  "google_automatic_access_validation_enabled": false,
+  "automatic_explainers_enabled": false,
+  "explainer_after_local_hour": 10
 }

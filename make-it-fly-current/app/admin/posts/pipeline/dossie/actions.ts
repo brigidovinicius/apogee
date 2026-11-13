@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/access";
 import { candidateKey } from "@/lib/blog/pipeline-validation";
 import { getDossierView, initializeDossier, importCapturedDocument, saveDossierDocument, saveDossierClaim, saveDossierScope, reviewDossier, requestDossierComparison, reviewFinalArticle, createResearchCandidate } from "@/lib/blog/dossier";
-import type { Cell } from "@/lib/blog/corroboration.mjs";
+import { isExplainer, type Cell } from "@/lib/blog/corroboration.mjs";
+import { parseBrasiliaTime } from "@/lib/blog/shared";
 
 const read = (f: FormData, k: string) => typeof f.get(k) === "string" ? String(f.get(k)).trim() : "";
 const date = (s: string) => { if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return ""; const parsed = new Date(s + "T12:00:00Z"); return Number.isFinite(+parsed) && parsed.toISOString().slice(0, 10) === s ? parsed.toISOString() : ""; };
@@ -34,11 +35,14 @@ export async function manageDossier(form: FormData): Promise<void> {
           const [category, subcategory] = read(form, "topic").split(":");
           saved = await saveDossierScope(admin.id, id, revision, { event_key: read(form, "event_key"), category, subcategory: subcategory || null }, reason);
         } else if (intent === "document") {
+          const view = await getDossierView(id), explainer = isExplainer(view?.latest?.document);
+          const consulted = explainer ? parseBrasiliaTime(read(form, "consulted_at")) : null;
           const published_at = date(read(form, "published_at"));
-          if ((!read(form, "published_at") || published_at) && (!published_at || Date.parse(published_at) < Date.now() + 86400000)) saved = await saveDossierDocument(admin.id, id, revision, {
+          if ((!explainer || consulted && +consulted <= Date.now()) && (!read(form, "published_at") || published_at) && (!published_at || Date.parse(published_at) < Date.now() + 86400000)) saved = await saveDossierDocument(admin.id, id, revision, {
             id: read(form, "document_id"), reference_id: read(form, "reference_id"), title: read(form, "title"), url: read(form, "url"), published_at: published_at || null,
             text: read(form, "text"), rights_reference: read(form, "rights_reference"), kind: read(form, "kind") as "primary",
-            origin_url: read(form, "origin_url"), independence_note: read(form, "independence_note"), same_event: read(form, "same_event") === "on",
+            origin_url: read(form, "origin_url"), independence_note: read(form, "independence_note"), same_event: !explainer && read(form, "same_event") === "on",
+            ...(explainer ? {same_subject:read(form, "same_subject")==="on", excerpt_offset:Number(read(form, "excerpt_offset")), consulted_at:consulted!.toISOString()} : {}),
           }, reason);
         } else if (intent === "claim") {
           const view = await getDossierView(id);

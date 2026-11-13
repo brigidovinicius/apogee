@@ -33,6 +33,12 @@ export const pipelineMessages: Record<string, string> = {
 };
 export function pipelineReason(code: string | null | undefined): string {
   const reasons: Record<string, string> = {
+    subject_unverified: "Confirme se as fontes explicam o mesmo assunto e respondem à pergunta editorial.",
+    explainer_sources_missing: "O explicativo ainda precisa de fontes públicas suficientes para responder à pergunta.",
+    invalid_explainer_scope: "O formato e a pergunta do explicativo precisam ser conferidos.",
+    invalid_explainer_document: "Confira a fonte, a data da consulta e o trecho do explicativo.",
+    explainer_overlap: "O núcleo deste explicativo já foi utilizado; selecione outra pergunta e evidências.",
+    explainer_false_freshness: "O título do explicativo sugere uma novidade que as fontes não comprovam.",
     primary_found: "Fonte primária localizada; buscando análise independente.",
     primary_linked: "Pauta vinculada à fonte primária do acontecimento.",
     research_primary_missing: "Ainda não há link para uma fonte primária cadastrada.",
@@ -53,7 +59,7 @@ export function pipelineReason(code: string | null | undefined): string {
     google_access_stale_check: "O perfil mudou durante a checagem; aguarde nova validação.",
     google_access_binding_changed: "O perfil Google difere do acesso homologado. Confira a conta antes de retomar.",
     google_access_unavailable: "Não foi possível confirmar o acesso Google. A checagem será repetida sem chamar modelos.",
-    waiting_for_evidence: "Aguardando fontes do mesmo acontecimento, comparação elegível e cota; nenhuma geração iniciada.",
+    waiting_for_evidence: "Aguardando fontes compatíveis com a pauta, comparação elegível e cota; nenhuma geração iniciada.",
     draft_import_unavailable: "O acesso restrito de importação de rascunhos precisa ser reparado. Nenhuma chamada de IA foi iniciada.",
     topic_frequency: "Esta área já atingiu o limite diário ou semanal de matérias iniciadas.",
     comparison_required: "Conclua a comparação das evidências antes de criar o rascunho.",

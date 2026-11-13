@@ -16,6 +16,10 @@ const clean = (text: string) => text.normalize("NFC").replace(/\s+/gu, " ").trim
 /** Named detail templates only: a page title may be outside its bounded body. */
 function detachedDetail($: cheerio.CheerioAPI) {
   const layouts = [
+    // Plone keeps its heading outside the rich-text body. Folder listings have
+    // tile articles instead; they must never become one combined opportunity.
+    { marker: $('#content h1.documentFirstHeading'), heading: $('#content h1.documentFirstHeading'),
+      body: $('#content #content-core #parent-fieldname-text') },
     { marker: $('body.single-post #Subheader'), heading: $('body.single-post #Subheader h1.title'),
       body: $('body.single-post #Content .post-wrapper-content .the_content_wrapper') },
     { marker: $('body.ast-single-post .ast-single-entry-banner'), heading: $('body.ast-single-post .ast-single-entry-banner h1.entry-title'),

@@ -9,6 +9,9 @@ export const taxonomy = Object.freeze({
 });
 export const CRITERION = 'facts-v1-90-critical-independent';
 export const MAX_DOCUMENTS = 10;
+export const isExplainer = d => d?.editorial?.kind === 'explainer';
+export const scopeVerified = d => d.documents.length > 0 && d.documents.every(doc => isExplainer(d)
+  ? doc.same_event === false && doc.same_subject === true : doc.same_event === true);
 const stable = v => Array.isArray(v) ? v.map(stable) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, stable(v[k])])) : v;
 export const dossierHash = v => createHash('sha256').update(typeof v === 'string' ? v : JSON.stringify(stable(v))).digest('hex');
 const reject = code => { throw Object.assign(new Error(code), { code }); };
@@ -27,6 +30,10 @@ export function validateDossier(value) {
   if (!value || value.schema_version !== 1 || !string(value.event_key, 8, 180) || typeof value.category !== 'string' || !Object.hasOwn(taxonomy,value.category)
     || (value.subcategory !== null && !Object.hasOwn(taxonomy[value.category].subcategories, value.subcategory))
     || !Array.isArray(value.documents) || value.documents.length > MAX_DOCUMENTS || !Array.isArray(value.claims) || value.claims.length > 16) reject('invalid_dossier');
+  if (value.editorial !== undefined && (!isExplainer(value) || !string(value.editorial.key, 8, 100)
+    || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.editorial.key) || !string(value.editorial.question, 20, 220)
+    || value.event_key !== 'explainer:' + value.editorial.key || typeof value.editorial.as_of !== 'string'
+    || !/^\d{4}-\d{2}-\d{2}T/.test(value.editorial.as_of) || !Number.isFinite(Date.parse(value.editorial.as_of)))) reject('invalid_explainer_scope');
   if (!unique(value.claims.map(c => String(c.text).normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim()))) reject('duplicate_claim');
   if (Buffer.byteLength(JSON.stringify(value)) > 180000 || !unique(value.documents.map(d => d.id)) || !unique(value.claims.map(c => c.id))) reject('invalid_dossier');
   const urls = [];
@@ -36,6 +43,9 @@ export function validateDossier(value) {
       || dossierHash(d.text) !== d.content_hash || !string(d.rights_reference, 8, 500)
       || !(d.published_at === null || (typeof d.published_at === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(d.published_at) && Number.isFinite(Date.parse(d.published_at)) && new Date(d.published_at.slice(0,10)+'T12:00:00Z').toISOString().slice(0,10)===d.published_at.slice(0,10))) || !['primary', 'independent', 'derivative', 'context'].includes(d.kind)
       || typeof d.same_event !== 'boolean' || !string(d.independence_note, 0, 1000)) reject('invalid_dossier_document');
+    if (isExplainer(value) && (typeof d.same_subject !== 'boolean' || d.same_event !== false
+      || !Number.isSafeInteger(d.excerpt_offset) || d.excerpt_offset < 0 || d.excerpt_offset > 12000
+      || typeof d.consulted_at !== 'string' || !Number.isFinite(Date.parse(d.consulted_at)))) reject('invalid_explainer_document');
     urls.push(referenceUrl(d.url, ref)); referenceUrl(d.origin_url);
     if (d.kind === 'independent' && !string(d.independence_note, 20, 1000)) reject('independence_unverified');
   }
@@ -74,7 +84,7 @@ export function assessDossier(input, { comparisonVerified = false } = {}) {
   const total = claims.length, convergent = claims.filter(c => c.status === 'convergent').length;
   const blockers = [];
   if (!total) blockers.push('comparison_incomplete');
-  if (!d.documents.length || d.documents.some(doc => !doc.same_event)) blockers.push('event_unverified');
+  if (!scopeVerified(d)) blockers.push(isExplainer(d) ? 'subject_unverified' : 'event_unverified');
   if (!primary.length || !independent.length) blockers.push('independence_unverified');
   if (!claims.some(c => c.critical) || claims.some(c => c.critical && c.status !== 'convergent')) blockers.push('critical_fact_unresolved');
   if (total && convergent * 100 < total * 90) blockers.push('compatibility_below_90');
@@ -96,12 +106,26 @@ export function approvedEvidence(dossier, verification) {
     if (!claims.length) return null;
     const text = [...new Set(claims.map(c => c.cells.find(v => v.document_id === doc.id).quote))].join('\n');
     return { id: doc.id, source_id: doc.reference_id, title: doc.title, url: doc.url, published_at: doc.published_at,
-      rights_reference: doc.rights_reference, text, content_hash: dossierHash(text), claim_ids: claims.map(c => c.id) };
+      rights_reference: doc.rights_reference, text, content_hash: dossierHash(text), claim_ids: claims.map(c => c.id),
+      ...(isExplainer(d) ? { consulted_at: doc.consulted_at } : {}) };
   }).filter(Boolean);
 }
 export function validateComparison(value, dossier) {
   if (!value || Object.keys(value).join() !== 'claims' || !Array.isArray(value.claims)) reject('invalid_comparison');
   return validateDossier({ ...dossier, claims: value.claims });
+}
+// Different questions can use the same reference guide, but cannot recycle
+// most of the critical evidence of an already-written explainer.
+export function explainerOverlap(dossier, previous) {
+  if (!isExplainer(dossier)) return false;
+  const signature = (d, c) => c.cells.filter(v => v.status === 'supports').map(v => {
+    const doc = d.documents.find(x => x.id === v.document_id);
+    return referenceUrl(doc.url) + '\n' + v.quote.normalize('NFKC').toLowerCase().replace(/\s+/g, ' ').trim();
+  });
+  const critical = dossier.claims.filter(c => c.critical);
+  if (!critical.length) return false;
+  const used = new Set(previous.filter(isExplainer).flatMap(d => d.claims.filter(c => c.critical).flatMap(c => signature(d, c))));
+  return critical.filter(c => signature(dossier, c).some(s => used.has(s))).length * 2 >= critical.length;
 }
 export const comparisonSchema = { type: 'object', additionalProperties: false, required: ['claims'], properties: { claims: { type: 'array', maxItems: 16, items: {
   type: 'object', additionalProperties: false, required: ['id', 'text', 'critical', 'cells'], properties: {

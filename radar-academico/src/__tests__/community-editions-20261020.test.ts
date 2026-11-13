@@ -18,6 +18,17 @@ function source(id: string): OfficialSource {
 const normalize = (fixture: typeof fixtures[number], at = now) =>
   normalizeCommunityEdition(fixture.html, corpus.mlhSupplement, source(fixture.id), at)[0];
 
+it('keeps the SouJava edition verifiable when speakers change, without retaining the old programme',()=>{
+  const fixture=fixtures.find(item=>item.id==='soujava-november-2026')!;
+  const changed={...fixture,html:fixture.html.replaceAll('Juarez Barbosa Junior','Maximillian Arruda').replaceAll('Bruno Silva','Nathalia Lugão')};
+  const candidate=normalize(changed,new Date('2026-11-12T18:00:00Z'));
+  expect(candidate).toMatchObject({opportunityStatus:'open',eventStartsAt:'2026-11-13',categories:['eventos']});
+  expect(candidate.requirementsText).not.toContain('RAG');
+  expect(normalize(changed,new Date('2026-11-13T03:00:00Z')).opportunityStatus).toBe('closed');
+  expect(()=>normalize({...changed,html:changed.html.replaceAll('13 November 2026','14 November 2026')})).toThrow();
+  expect(()=>normalize({...changed,html:changed.html.replaceAll('Oracle São Paulo','Outro local')})).toThrow();
+});
+
 it.each(fixtures)("publishes one audited organizer edition: $id", fixture => {
   const item = normalize(fixture);
   expect(item.opportunityStatus).toBe("open");

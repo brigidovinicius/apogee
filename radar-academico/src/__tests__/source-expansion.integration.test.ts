@@ -55,6 +55,26 @@ async function addLead(legacy = false) {
     values($1,$2,$3,$4,$5,$6)`, [target, url, title, legacy ? "blocked" : "pending", legacy ? "scope_unverified" : null, legacy ? 1 : 0]);
 }
 
+it('adds the requested space discovery sources idempotently and preserves later administrator settings',async()=>{
+  const sql=await readFile(new URL('../../scripts/space-discovery-targets-20261112.sql',import.meta.url),'utf8');
+  const ids=['exp-inpe-eventos','exp-inpe-oportunidades','exp-aeb-noticias','exp-aeb-escola'];
+  try {
+    await state.db!.exec(sql);
+    const targets=await state.db!.query<{id:string;official_url:string;official_verified_url:string;topics:string[]}>(
+      'select id,official_url,official_verified_url,topics from discovery_targets where id=any($1)',[ids]);
+    expect(targets.rows).toHaveLength(4);
+    for(const row of targets.rows){
+      expect(row.official_verified_url).toBe(row.official_url);
+      expect(row.topics).toContain('astronomia');
+      expect(row.official_url).toMatch(/^https:\/\/www\.gov\.br\/(?:inpe|aeb)\//);
+    }
+    await state.db!.query("update discovery_targets set enabled=false,priority=1 where id=$1",[ids[0]]);
+    await state.db!.exec(sql);
+    expect((await state.db!.query('select enabled,priority from discovery_targets where id=$1',[ids[0]])).rows)
+      .toEqual([{enabled:false,priority:1}]);
+  } finally { await state.db!.query('delete from discovery_targets where id=any($1)',[ids]); }
+});
+
 it('publishes a verified page with a fully stated written deadline through the automatic transaction', async () => {
   deadline = '10 de novembro de 2099';
   await addLead(true);

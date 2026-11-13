@@ -48,6 +48,12 @@ export function discoveryDocument(resource: DiscoveryResource, url: string, root
   if (html) {
     const $ = cheerio.load(text);
     $("header,aside").remove();
+    // Institutional Plone pages share gov.br navigation with other agencies.
+    // Only the bounded content and its pagination supply discovery links.
+    const plone = $('#content #content-core');
+    if ($('#content h1.documentFirstHeading').length === 1 && plone.length === 1) {
+      $('body').html(plone.clone());
+    }
     const events = structuredEvents(text);
     const unavailable = new Set(events.filter(e => typeof e.startDate === "string" &&
       (!eventHasNotStarted(e.startDate, now) || e.eventStatus === "https://schema.org/EventCancelled")).map(e => e.url));

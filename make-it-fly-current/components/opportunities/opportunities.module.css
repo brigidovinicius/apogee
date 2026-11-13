@@ -621,10 +621,10 @@
 .card {
   --radar-card-surface: #ffffff;
   --radar-card-text: #07182d;
-  --radar-card-muted: #40566e;
-  --radar-card-accent: #234b75;
-  --radar-card-line: #cbd7e3;
-  --radar-card-subtle: #f0f5fa;
+  --radar-card-muted: #4b5b70;
+  --radar-card-accent: #07182d;
+  --radar-card-line: #cdd6e0;
+  --radar-card-subtle: #f2f6fa;
   --radar-button-fill: #07182d;
   --radar-button-text: #ffffff;
   --radar-safe: #166534;
@@ -634,33 +634,18 @@
   flex-direction: column;
   gap: 0;
   min-width: 0;
-  padding: clamp(1.25rem, 2.5vw, 1.8rem);
+  padding: 1.375rem;
   color-scheme: light;
   color: var(--radar-card-text);
   background: var(--radar-card-surface);
   border: 1px solid var(--radar-card-line);
-  border-radius: var(--apogee-group-radius);
+  border-top: 3px solid var(--radar-card-text);
+  border-radius: .25rem;
   transition: border-color 180ms ease;
 }
 
 .card:hover {
   border-color: var(--radar-card-accent);
-}
-
-@media (prefers-color-scheme: dark) {
-  .card {
-    --radar-card-surface: #102a48;
-    --radar-card-text: #f4f8fc;
-    --radar-card-muted: #b9cee3;
-    --radar-card-accent: #b9d3ee;
-    --radar-card-line: #45617e;
-    --radar-card-subtle: #173653;
-    --radar-button-fill: #b9d3ee;
-    --radar-button-text: #07182d;
-    --radar-safe: #86efac;
-    --radar-urgent: #fca5a5;
-    color-scheme: dark;
-  }
 }
 
 .previewCard {
@@ -725,10 +710,7 @@
 }
 
 .kind {
-  padding: .3rem .6rem;
-  border-radius: .4rem;
-  background: var(--radar-card-subtle);
-  color: var(--radar-card-accent);
+  color: var(--radar-card-muted);
 }
 
 .cardMain {
@@ -743,8 +725,11 @@
 
 .card h3 {
   margin: 0;
-  font-size: clamp(1.25rem, 2vw, 1.6rem);
-  line-height: 1.3;
+  font-family: var(--font-inter), Arial, sans-serif;
+  font-size: 1.375rem;
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -.04em;
 }
 
 .summary {
@@ -1137,8 +1122,8 @@
 :global([data-apogee-design]) .details dt,
 :global([data-apogee-design]) .launchWindow span,
 :global([data-apogee-design]) .cardFooter span { font-family: var(--apogee-font-sans); font-size: .8125rem; letter-spacing: 0; text-transform: none; }
-:global([data-apogee-design]) .card { border-radius: var(--apogee-group-radius); }
-:global([data-apogee-design]) .card h3 { font-family: var(--apogee-font-heading); font-size: clamp(1.25rem, 2vw, 1.6rem); font-weight: 550; line-height: 1.3; }
+:global([data-apogee-design]) .card { border-radius: .25rem; }
+:global([data-apogee-design]) .card h3 { font-family: var(--font-inter), Arial, sans-serif; font-size: 1.375rem; font-weight: 650; line-height: 1.15; letter-spacing: -.04em; }
 :global([data-apogee-design]) .filterTrigger,
 :global([data-apogee-design]) .filterGroup button { border-radius: var(--apogee-control-radius); }
 

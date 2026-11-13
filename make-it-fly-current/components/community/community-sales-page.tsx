@@ -20,7 +20,7 @@ export function CommunitySalesPage() {
             <h1 id="community-title">IA para o dia a dia.<br /><span>Gente para ir além.</span></h1>
             <p className={styles.heroLead}>Aprenda, descubra oportunidades e encontre outras pessoas que também querem colocar ideias em prática.</p>
             <CommunityJoinButton />
-            <p className={styles.actionHint}>Nossa comunidade começa no WhatsApp. Convite em breve.</p>
+            <p className={styles.actionHint}>Uma comunidade no WhatsApp para aprender, trocar ideias e descobrir oportunidades.</p>
           </div>
           <div className={styles.starScene} aria-hidden="true"><Image className={styles.heroStar} src="/brand/apogee-star.svg" alt="" width={703} height={870} priority /><span className={styles.orbitLine} /></div>
           <div className={styles.heroTopics}><span>IA na prática</span><span>Radar de oportunidades</span><span>Curadoria Apogee</span></div>
@@ -43,12 +43,12 @@ export function CommunitySalesPage() {
           <div className={styles.radarVisual} aria-hidden="true"><div className={styles.radarRings}><Compass size={46} strokeWidth={1} /></div><span className={styles.radarTag}>Formação</span><span className={styles.radarTag}>Bolsas</span><span className={styles.radarTag}>Carreira</span><span className={styles.radarTag}>Eventos</span><p>Radar<span>Apogee</span></p></div>
         </section>
         <section id="beneficios" className={styles.section} aria-labelledby="benefits-title">
-          <div className={styles.sectionHeading}><p className={styles.eyebrow}>Benefícios planejados</p><h2 id="benefits-title">Benefícios para continuar<br />aprendendo.</h2><p>Queremos trazer vantagens para a comunidade. Cada benefício será anunciado quando estiver confirmado.</p></div>
-          <div className={styles.benefits}>{COMMUNITY_BENEFITS.map(item => <article key={item.title}><span className={styles.pending}>A confirmar</span><h3>{item.title}</h3><p>{item.description}</p></article>)}</div>
+          <div className={styles.sectionHeading}><p className={styles.eyebrow}>Benefícios e parcerias</p><h2 id="benefits-title">Benefícios para continuar<br />aprendendo.</h2><p>Possibilidades para explorar ferramentas, participar de experiências e aproveitar condições especiais. Consulte a disponibilidade e as regras de cada oferta.</p></div>
+          <div className={styles.benefits}>{COMMUNITY_BENEFITS.map(item => <article key={item.title}><span className={styles.pending}>Condições por oferta</span><h3>{item.title}</h3><p>{item.description}</p></article>)}</div>
         </section>
         <section id="cursos" className={[styles.section, styles.courseSection].join(" ")} aria-labelledby="course-title">
           <div className={styles.courseType} aria-hidden="true">Aprender.<br />Testar.<br /><em>Aplicar.</em></div>
-          <div className={styles.courseCopy}><p className={styles.eyebrow}>Primeira turma de IA · em preparação</p><h2 id="course-title">IA para o trabalho.<br />E para a vida também.</h2><p>Estamos preparando uma turma ao vivo para aprender a usar IA em tarefas reais: organizar a rotina, pesquisar, escrever e produzir melhor.</p><p className={styles.courseNote}>A turma será paga e terá inscrição separada. As aulas ainda não foram gravadas; programa, datas e preço serão apresentados antes da abertura.</p><CommunityJoinButton label="Conhecer a comunidade gratuita" secondary /></div>
+          <div className={styles.courseCopy}><p className={styles.eyebrow}>Cursos de inteligência artificial</p><h2 id="course-title">IA para o trabalho.<br />E para a vida também.</h2><p>Aprenda a usar IA em tarefas reais: organizar a rotina, pesquisar, escrever e transformar ideias em projetos. Conhecimento para experimentar e aplicar no seu dia a dia.</p><p className={styles.courseNote}>Os cursos de IA são pagos e têm inscrição própria, separada da comunidade gratuita.</p><CommunityJoinButton label="Conhecer a comunidade gratuita" secondary /></div>
         </section>
         <section id="participar" className={[styles.section, styles.joinSection].join(" ")} aria-labelledby="join-title">
           <p className={styles.eyebrow}>Comunidade gratuita no WhatsApp</p><h2 id="join-title">O próximo passo fica melhor<br /><em>com gente.</em></h2><p>Trocas sobre IA, descobertas e oportunidades. Um lugar para continuar a conversa e aprender junto.</p><CommunityJoinButton />

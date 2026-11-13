@@ -8,9 +8,10 @@ import { detectDeadline } from "./detect-deadline";
 import { isAllowedHostname } from "./validate-url";
 import type { OfficialSource, OpportunityCandidate } from "./types";
 import { sameDiscoveryScope } from "@/lib/discovery/documents";
+import { classifyDiscovery } from "./discovery";
 
 const clean = (value: string) => value.normalize("NFC").replace(/\s+/gu, " ").trim();
-const relevant = /hackathon|workshop|\bia\b|inteligência artificial|programaç|tecnologia|empreendedor|startup|ciência|carreira|builders|pitch|pesquisa|educaç|formação|oficina|olimp[ií]ada/i;
+const relevant = /hackathon|workshop|\bia\b|inteligência artificial|programaç|tecnologia|empreendedor|startup|ciência|carreira|builders|pitch|pesquisa|educaç|formação|oficina|olimp[ií]ada|astronom|astrof[íi]s|astron[áa]ut|aeroespac/i;
 function publicUrl(value: unknown): string | null {
   try {
     if (typeof value !== "string") return null;
@@ -87,8 +88,9 @@ export function normalizePublicEvent(html: string, event: Record<string, unknown
   const admissionCondition = controls.some(node => /^request to join$/i.test(clean($(node).text())))
     ? "Pedido de inscrição sujeito à aprovação do organizador; cadastro não garante entrada."
     : "Inscrição sujeita à disponibilidade e às regras do organizador.";
+  const categories: NonNullable<OpportunityCandidate['categories']> = /hackathon|competição|desafio/i.test(title) ? ["competicoes", "eventos"] : ["eventos"];
   return { officialSourceId: source.id, title, institution: source.institutionName, sourcePageUrl: source.baseUrl, applicationUrl: application,
-    applicantType: "mixed", applicationRoute: "direct_application", benefitType: "other", categories: /hackathon|competição|desafio/i.test(title) ? ["competicoes", "eventos"] : ["eventos"],
+    applicantType: "mixed", applicationRoute: "direct_application", benefitType: "other", categories,
     isCourse: false, nationallyEligible: false, geographicScopeKind: virtual ? "unknown" : "city", countryCode: virtual ? null : "BR",
     stateCode: virtual ? null : state, cityName: virtual ? null : city, eventStartsAt: start,
     deadlinePrecision: deadline.precision, ...(deadline.deadlineAt ? { deadlineAt: deadline.deadlineAt } : {}),
@@ -96,7 +98,7 @@ export function normalizePublicEvent(html: string, event: Record<string, unknown
     amountText: priceText, extractionMethod: "html", evidenceJson: { event_start: proof, registration_availability: proof, opportunity_status: proof,
       organizer: { source_url: source.baseUrl, excerpt: `${source.institutionName}; ${/; authority=(.+)$/.exec(source.notes ?? "")?.[1]}` },
       ...(deadline.deadlineAt ? { deadline_at: proof } : {}) },
-    discovery: { primaryType: "eventos", areas: [], editions: [{ id: source.id, name: title, stages: [{ id: "event", name: "Realização", kind: "event", start,
+    discovery: { ...classifyDiscovery(title, categories), editions: [{ id: source.id, name: title, stages: [{ id: "event", name: "Realização", kind: "event", start,
       ...(end ? { end } : {}), sourceUrl: source.baseUrl, checkedAt: now.toISOString() }] }] },
     contentHash: crypto.createHash("sha256").update(JSON.stringify({ version: 1, title, start, end, status, application, priceText,
       description, admissionCondition, deadlineAt: deadline.deadlineAt ?? null, deadlinePrecision: deadline.precision, state, city, virtual })).digest("hex") };

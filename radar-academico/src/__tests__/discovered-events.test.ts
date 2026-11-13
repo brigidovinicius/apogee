@@ -29,6 +29,12 @@ it('publishes one structured educational event with evidenced location outside S
     eventStartsAt: '2099-12-01T09:00:00-03:00', opportunityStatus: 'open', deadlinePrecision: 'not_informed' });
   expect(publicationIssue(candidate!, source)).toBeNull();
 });
+it('keeps a space hackathon in both event and competition categories and adds astronomy',()=>{
+  const candidate=normalizeDiscoveredPage(page({name:'Hackathon de Astronomia'}),source)!;
+  expect(candidate).toMatchObject({categories:['competicoes','eventos'],
+    discovery:{primaryType:'competicoes',subtype:'hackathon',areas:['astronomia']}});
+  expect(publicationIssue(candidate,source)).toBeNull();
+});
 it('accepts a verified Luma organizer in another Brazilian state', () => {
   const luma = { ...source, baseUrl: 'https://luma.com/workshop', allowedDomains: ['luma.com'], allowedPathPrefixes: ['/workshop'], listingUrls: ['https://luma.com/workshop'] };
   const candidate = normalizeDiscoveredPage(page({ '@type': 'Event' }, true), luma);

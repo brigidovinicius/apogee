@@ -16,8 +16,8 @@ const extract = (text = page(), now = new Date("2026-10-30T15:00:00Z")) => norma
 
 describe("piloto de monitoramento NASA Space Apps", () => {
   it("separa inscrição e realização e preserva datas sem horário", () => {
-    expect(extract()).toMatchObject({deadlineAt:"2026-11-15",eventStartsAt:"2026-11-14",
-      discovery:{subtype:"hackathon",editions:[{id:"space-apps-2026",stages:[
+    expect(extract()).toMatchObject({deadlineAt:"2026-11-15",eventStartsAt:"2026-11-14",categories:["competicoes","eventos"],
+      discovery:{primaryType:"competicoes",subtype:"hackathon",areas:["astronomia","tecnologia","dados"],editions:[{id:"space-apps-2026",stages:[
         {id:"registration",kind:"registration",start:"2026-08-26",end:"2026-11-15"},
         {id:"hackathon",kind:"event",start:"2026-11-14",end:"2026-11-15"},
       ]}]}});
