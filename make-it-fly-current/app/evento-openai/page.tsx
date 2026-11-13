@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { EventRecordingPage } from "@/components/community/event-recording-page";
 
-const description = "Assista gratuitamente ao evento Codex Community, da comunidade OpenAI, organizado pela Apogee. Cadastre-se para receber as informações de acesso.";
+const description = "Inscreva-se gratuitamente no evento Codex Community, da comunidade OpenAI, organizado pela Apogee, e explore como a IA pode ajudar no trabalho e na rotina.";
 export const metadata: Metadata = {
   title: "Evento gratuito Codex Community | Apogee",
   description,
