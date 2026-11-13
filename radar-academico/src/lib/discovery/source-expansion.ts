@@ -41,7 +41,7 @@ function pageSource(lead: ExpansionLead): OfficialSource {
     sourceType: "official_reference", baseUrl: lead.url, allowedDomains: [url.hostname],
     allowedPathPrefixes: [url.pathname], listingUrls: [lead.url], extractionMode: "html",
     audienceScope: [], geographicScope: [], categories: lead.target_topics ?? [], priority: Math.min(70, lead.target_priority ?? 0), active: true,
-    notes: `radar:discovery-page:v1; target=${lead.target_id}; authority=${lead.target_official_url}${internationalEligibilityNote(lead.target_topics)}`,
+    notes: `radar:discovery-page:v1; target=${lead.target_id}${internationalEligibilityNote(lead.target_topics)}; authority=${lead.target_official_url}`,
   };
 }
 

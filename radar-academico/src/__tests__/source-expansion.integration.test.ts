@@ -91,6 +91,30 @@ it('adds global event discovery without reactivating paused targets on repeat',a
   } finally {await state.db!.query('delete from discovery_targets where id=any($1)',[ids]);}
 });
 
+it('preserves organizer authority when a global structured event carries the Brazil policy', async () => {
+  title = 'Hackathon de tecnologia';
+  const calendar = 'https://luma.com/official-calendar';
+  url = 'https://luma.com/workshop-global';
+  await state.db!.query("update discovery_targets set topics=array['competicoes','eventos','eligibility-br-required'],official_url=$2,official_verified_url=$2 where id=$1", [target, calendar]);
+  await addLead();
+  const event = {
+    '@type': 'Event', name: title, url, startDate: '2099-12-01T09:00:00Z',
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+    location: { '@type': 'VirtualLocation', url: calendar },
+    organizer: { '@type': 'Organization', name: 'Instituto oficial', url: calendar },
+    description: 'Open to developers worldwide.',
+    offers: { '@type': 'Offer', url, price: '0', priceCurrency: 'USD', availability: 'https://schema.org/InStock' },
+  };
+  vi.mocked(fetchOfficialResource).mockImplementation(async requested => resource(requested === calendar
+    ? `<a href="${url}">${title}</a>`
+    : `<script type="application/ld+json">${JSON.stringify(event)}</script><main><h1>${title}</h1><p>Open to developers worldwide.</p><a href="${url}">Register</a></main>`));
+  expect(await runScheduledLeadProcessing()).toMatchObject({ created: 1, published: 1 });
+  const source = (await loadActiveOfficialSources()).find(s => s.id.startsWith('auto-page-'))!;
+  expect(source.notes).toContain('radar:eligibility-br-required:v1');
+  expect(source.notes).toMatch(/; authority=https:\/\/luma\.com\/official-calendar$/);
+});
+
 it('withdraws an automatically published international event when its linked rules exclude Brazil on recheck',async()=>{
   title='Hackathon de tecnologia';
   await state.db!.query("update discovery_targets set topics=array['competicoes','eventos','eligibility-br-required']where id=$1",[target]);

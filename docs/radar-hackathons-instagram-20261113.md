@@ -65,7 +65,7 @@ confirmados, escopo exato, orçamento, falhas de rede, reconsulta, publicação
 nativa e idempotência dos alvos. Dependências existentes foram reutilizadas,
 sem instalação ou build local; validação completa deve ser feita na CI do SHA.
 
-Validação local em 13/11, pela fila global e com um worker: 71 testes focados
+Validação local em 13/11, pela fila global e com um worker: 72 testes focados
 aprovados (`international-discovered-page`, `source-expansion.integration`,
 `scheduled-ingestion`) e 63 testes de regressão aprovados (`discovered-page`,
 `discovered-events`, `discovery-lead-processing`, `scheduled-ingestion`,
