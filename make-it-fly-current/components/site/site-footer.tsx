@@ -31,6 +31,7 @@ export function SiteFooter() {
           <Link href="/evento-openai">Evento gratuito</Link>
           <Link href="/membros">Membros</Link>
           <McpConnectLink />
+          <McpConnectLink provider="claude" />
           {legalLinks.privacy && <Link href="/privacidade">Privacidade</Link>}
           {legalLinks.terms && <Link href="/termos">Termos de Uso</Link>}
         </nav>

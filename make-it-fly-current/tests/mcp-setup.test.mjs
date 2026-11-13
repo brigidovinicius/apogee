@@ -19,6 +19,7 @@ test("site-wide entry follows the server-provided feature flag", () => {
     const shell = renderToStaticMarkup(React.createElement(McpAvailabilityProvider, { enabled },
       React.createElement(React.Fragment, null, React.createElement(SiteHeader), React.createElement(SiteFooter))));
     assert.equal((shell.match(/Incluir no meu ChatGPT/g) ?? []).length, enabled ? 3 : 0, "desktop, mobile and footer follow the same flag");
+    assert.equal((shell.match(/Incluir no meu Claude/g) ?? []).length, enabled ? 2 : 0, "mobile and footer also offer Claude");
   }
 });
 
@@ -27,6 +28,8 @@ test("guided setup opens official Plugins, exposes a selectable endpoint and doe
   const html = renderToStaticMarkup(React.createElement(McpSetup, { resource: "https://www.apogee.community/mcp" }));
   assert.match(html, /href="https:\/\/chatgpt.com\/plugins" target="_blank" rel="noopener noreferrer"/);
   assert.match(html, /Incluir no meu ChatGPT/); assert.match(html, /concluirá a conexão por lá/);
+  assert.match(html, /Incluir no meu Claude/); assert.match(html, /href="https:\/\/claude.ai\/customize\/connectors"/);
+  assert.match(html, /Register automatically/);
   assert.match(html, /readOnly="" value="https:\/\/www.apogee.community\/mcp"/);
   assert.match(html, /OAuth/); assert.match(html, /Add custom MCP server/);
   assert.doesNotMatch(html, /instalação concluída|conectado com sucesso|api_key|access_token|[?&]token=/i);

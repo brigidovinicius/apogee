@@ -9,8 +9,8 @@ export function McpAvailabilityProvider({ enabled, children }: { enabled: boolea
   return <McpEnabledContext.Provider value={enabled}>{children}</McpEnabledContext.Provider>;
 }
 
-export function McpConnectLink({ className }: { className?: string }) {
+export function McpConnectLink({ className, provider = "chatgpt" }: { className?: string; provider?: "chatgpt" | "claude" }) {
   return useContext(McpEnabledContext)
-    ? <Link className={className} href="/membros/integracoes/mcp" prefetch={false}>Incluir no meu ChatGPT</Link>
+    ? <Link className={className} href={`/membros/integracoes/mcp${provider === "claude" ? "#claude" : ""}`} prefetch={false}>Incluir no meu {provider === "claude" ? "Claude" : "ChatGPT"}</Link>
     : null;
 }

@@ -95,6 +95,7 @@ export function SiteHeader({
               {memberLabel}
             </Link>
             <McpConnectLink />
+            <McpConnectLink provider="claude" />
         </SiteMobileNavigation>
       </div>
       {!adaptive && <div className={styles.navigationBar}>{desktopNavigation}</div>}

@@ -12,6 +12,7 @@
 .primary, .address button { display: inline-flex; justify-content: center; align-items: center; gap: .6rem; min-height: 2.75rem; padding: .7rem 1rem; border-radius: .25rem; font: inherit; font-weight: 600; cursor: pointer; }
 .primary { margin-top: .5rem; color: #07182d; background: #b9d3ee; text-decoration: none; }
 .primary:hover { background: #d6e6f7; }
+.providers { display: flex; flex-wrap: wrap; gap: .75rem; }
 .hint, .feedback { font-size: .85rem; color: rgb(255 255 255 / 75%); }
 .address { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; margin-top: 1.5rem; }
 .address label { display: grid; flex: 1 1 16rem; min-width: 0; gap: .4rem; font-size: .85rem; }
