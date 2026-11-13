@@ -26,8 +26,15 @@ async function readMetadata(path) {
     .flatMap(statement => statement.declarationList.declarations)
     .find(variable => variable.name.getText(file) === "metadata");
   assert.ok(declaration?.initializer, `${path} must declare its own metadata`);
-  // Evaluate only the metadata initializer, excluding layout imports and fonts.
-  const { outputText } = ts.transpileModule(`export const metadata = ${declaration.initializer.getText(file)};`, {
+  // Keep static text shared by metadata fields without executing page imports,
+  // component initializers or font loaders.
+  const constants = file.statements.filter(statement => ts.isVariableStatement(statement)
+    && (statement.declarationList.flags & ts.NodeFlags.Const))
+    .flatMap(statement => statement.declarationList.declarations)
+    .filter(variable => ts.isIdentifier(variable.name) && variable.initializer
+      && ts.isStringLiteralLike(variable.initializer))
+    .map(variable => `const ${variable.name.text} = ${variable.initializer.getText(file)};`);
+  const { outputText } = ts.transpileModule(`${constants.join("\n")}\nexport const metadata = ${declaration.initializer.getText(file)};`, {
     compilerOptions: { module: ts.ModuleKind.CommonJS },
   });
   const exports = {};
@@ -187,6 +194,9 @@ test("public home and Make It Fly remain indexable while the Robonauta preview s
     "https://www.apogee.community/");
   assert.deepEqual(homeMetadata.robots ?? rootMetadata.robots, { index: true, follow: true });
   assert.equal(homeMetadata.title ?? rootMetadata.title, "Apogee | Comunidade, ideias e experiências");
+  assert.ok(homeMetadata.description?.length > 40);
+  assert.equal(homeMetadata.openGraph.description, homeMetadata.description);
+  assert.equal(homeMetadata.twitter.description, homeMetadata.description);
   assert.deepEqual(previewMetadata.robots, { index: false, follow: false });
   assert.equal(previewMetadata.title, "Apogee - Home com Robonauta");
   assert.deepEqual(publishedMetadata.robots, { index: true, follow: true });
