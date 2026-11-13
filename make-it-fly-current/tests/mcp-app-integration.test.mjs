@@ -10,9 +10,10 @@ test("real Apogee auth, PostgreSQL, code-family hook and MCP transport work toge
   const original = { ...process.env };
   const origin = "https://www.apogee.community", resource = origin + "/mcp", callback = "https://client.synthetic.test/callback";
   Object.assign(process.env, { NODE_ENV: "test", BETTER_AUTH_URL: origin, BETTER_AUTH_SECRET: "synthetic-apogee-mcp-key-at-least-32-characters",
-    APOGEE_MCP_ENABLED: "true", RADAR_BILLING_ENABLED: "false", MEMBERS_SUPERVISED_REGISTRATION_ENABLED: "false" });
+    APOGEE_MCP_ENABLED: "true", RADAR_BILLING_ENABLED: "false", MEMBERS_SUPERVISED_REGISTRATION_ENABLED: "false",
+    RADAR_CALENDAR_PERSONAL_ENABLED: "true", RADAR_COLLECTIONS_ENABLED: "true" });
   delete globalThis.__apogeeMembersAuth;
-  const database = await mcpTestDatabase();
+  const database = await mcpTestDatabase({ accountTables: true });
   // Match the app's postgres-js execute return shape; queries/transactions use
   // the real Drizzle PGlite database and real SQL schema.
   const appDb = Object.create(database.db);
@@ -23,6 +24,7 @@ test("real Apogee auth, PostgreSQL, code-family hook and MCP transport work toge
   const load = opportunityLoader({
     "@/lib/members/db": { getDb: () => appDb, getSql: () => database.sql },
     "./db": { getDb: () => appDb, getSql: () => database.sql },
+    "next/cache": { revalidatePath: () => {} },
     "better-auth/next-js": { nextCookies: () => ({ id: "synthetic-next-cookie-context" }) },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => [opportunity] },
     "@/lib/members/mail": { applicationOrigin: () => origin, memberMailAvailable: () => false, sendMemberMail: () => { throw Error("Real mail prohibited"); } },
@@ -42,9 +44,9 @@ test("real Apogee auth, PostgreSQL, code-family hook and MCP transport work toge
     const registration = await call("/oauth2/register", { client_name: "Cliente sintético", redirect_uris: [callback], token_endpoint_auth_method: "none", grant_types: ["authorization_code", "refresh_token"] });
     assert.equal(registration.status, 201, await registration.clone().text()); const client = await registration.json();
     const verifier = randomBytes(32).toString("base64url");
-    async function grant() {
+    async function grant(scope = "radar:read offline_access") {
       const params = new URLSearchParams({ response_type: "code", client_id: client.client_id, redirect_uri: callback, resource,
-        scope: "radar:read offline_access", code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256", prompt: "consent" });
+        scope, code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256", prompt: "consent" });
       const response = await call("/oauth2/authorize?" + params, undefined, { Cookie: cookie });
       const target = response.headers.get("location") ?? (await response.json()).url;
       const consent = await call("/oauth2/consent", { accept: true, oauth_query: new URL(target, origin).searchParams.toString() }, { Cookie: cookie });
@@ -67,7 +69,7 @@ test("real Apogee auth, PostgreSQL, code-family hook and MCP transport work toge
     const mcp = new Client({ name: "synthetic-client", version: "1.0.0" });
     try {
       await mcp.connect(transport);
-      assert.equal((await mcp.listTools()).tools.length, 4);
+      assert.equal((await mcp.listTools()).tools.length, 12);
       const result = await mcp.callTool({ name: "search_opportunities", arguments: { stateCode: "SC" } });
       assert.equal(result.isError, undefined, JSON.stringify(result));
       assert.equal(result.structuredContent.items[0].detailAccess, "locked");
@@ -81,6 +83,27 @@ test("real Apogee auth, PostgreSQL, code-family hook and MCP transport work toge
     assert.ok(await authorize(bearer(reconnected.access_token)));
     assert.equal(await authorize(bearer(first.access_token)), null);
     assert.equal((await database.pg.query("select count(*)::int as count from mcp_oauth_family where revoked_at is not null")).rows[0].count, 1);
+    const accountGrant = await grant("account:read collections:write offline_access");
+    assert.equal((await load("lib/mcp/connections.ts").listMcpConnections(account.user.id))[0].clientId, client.client_id,
+      "account-only consents remain visible and revocable");
+    await database.sql`insert into radar_legacy_access(user_id) values (${account.user.id})`;
+    const accountClient = new Client({ name: "synthetic-account-client", version: "1.0.0" });
+    try {
+      await accountClient.connect(new StreamableHTTPClientTransport(new URL(resource), {
+        requestInit: { headers: { Authorization: "Bearer " + accountGrant.access_token } },
+        fetch: (url, init) => { const req = new Request(url, init); return route[req.method](req); },
+      }));
+      const profile = await accountClient.callTool({ name: "get_account_profile", arguments: {} });
+      assert.equal(profile.isError, undefined, JSON.stringify(profile)); assert.equal(profile.structuredContent.username, "pessoa");
+      const created = await accountClient.callTool({ name: "create_collection", arguments: { name: "Via OAuth e SDK" } });
+      assert.equal(created.isError, undefined, JSON.stringify(created));
+      assert.equal((await database.sql`select user_id from radar_calendar_collection where id=${created.structuredContent.id}`)[0].user_id, account.user.id);
+      assert.equal((await accountClient.callTool({ name: "set_calendar_opportunity", arguments: { opportunityId: opportunity.id, saved: true } })).isError, true,
+        "collections write grant cannot write personal calendar");
+      await load("lib/mcp/connections.ts").revokeMcpConnection(account.user.id, client.client_id);
+      const rejected = await accountClient.callTool({ name: "list_my_collections", arguments: {} }).catch(() => null);
+      assert.ok(!rejected || rejected.isError, "revoked account token cannot read account data");
+    } finally { await accountClient.close(); }
   } finally {
     await database.close(); process.env = original; delete globalThis.__apogeeMembersAuth;
   }

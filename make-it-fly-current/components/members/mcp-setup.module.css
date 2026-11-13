@@ -1,0 +1,24 @@
+.setup {
+  margin: 2rem 0;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid rgb(185 211 238 / 40%);
+  border-radius: .5rem;
+  background: linear-gradient(135deg, rgb(185 211 238 / 14%), rgb(185 211 238 / 4%));
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.eyebrow { color: #b9d3ee; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; }
+.setup h2 { margin: .5rem 0 1rem; font-family: var(--font-instrument-serif), serif; font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 400; line-height: 1.1; }
+.primary, .address button { display: inline-flex; justify-content: center; align-items: center; gap: .6rem; min-height: 2.75rem; padding: .7rem 1rem; border-radius: .25rem; font: inherit; font-weight: 600; cursor: pointer; }
+.primary { margin-top: .5rem; color: #07182d; background: #b9d3ee; text-decoration: none; }
+.primary:hover { background: #d6e6f7; }
+.hint, .feedback { font-size: .85rem; color: rgb(255 255 255 / 75%); }
+.address { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; margin-top: 1.5rem; }
+.address label { display: grid; flex: 1 1 16rem; min-width: 0; gap: .4rem; font-size: .85rem; }
+.address input { width: 100%; min-height: 2.75rem; padding: .65rem; border: 1px solid rgb(185 211 238 / 45%); border-radius: .25rem; color: #fff; background: #07182d; font-size: .85rem; }
+.address button { border: 1px solid #b9d3ee; color: #fff; background: transparent; }
+.feedback { min-height: 1.5em; margin: .5rem 0; }
+.steps { display: grid; gap: 1rem; padding-left: 1.25rem; }
+.more { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgb(185 211 238 / 25%); font-size: .9rem; }
+.more summary { cursor: pointer; min-height: 2.75rem; }
+.setup a:focus-visible, .setup button:focus-visible, .setup input:focus-visible, .setup summary:focus-visible { outline: 2px solid #b9d3ee; outline-offset: 4px; }

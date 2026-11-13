@@ -63,9 +63,10 @@ async function fixture() {
   return { options, store, auth, account, call, cookie, client, authorizeParams, consent, exchange, authorize, bearer };
 }
 
-test("MCP OAuth config is resource-bound and cannot issue machine or write grants", async () => {
+test("MCP OAuth client ceiling supports explicit account upgrades without machine grants", async () => {
   const { options } = await fixture();
-  assert.deepEqual(options.scopes, ["radar:read", "offline_access"]);
+  assert.deepEqual(options.scopes, ["radar:read", "account:read", "calendar:write", "collections:write", "offline_access"]);
+  assert.deepEqual(options.clientRegistrationDefaultScopes, options.scopes);
   assert.deepEqual(options.grantTypes, ["authorization_code", "refresh_token"]);
   assert.deepEqual(options.clientRegistrationDefaultResources, [resource]);
   assert.equal(options.disableJwtPlugin, true); assert.equal(options.storeTokens, "hashed");
@@ -124,10 +125,25 @@ test("MCP refuses access after the authorization session has ended", async () =>
   assert.equal(await f.authorize(f.bearer(tokens.access_token)), null);
 });
 
-test("MCP rejects a token without radar:read even if it has offline access", async () => {
+test("MCP rejects a token with only offline access", async () => {
   const f = await fixture(); const params = new URLSearchParams(f.authorizeParams); params.set("scope", "offline_access");
   const issued = await f.exchange(await f.consent(params)); const tokens = await issued.json();
   await assert.rejects(f.authorize(f.bearer(tokens.access_token)), error => error.status === 403 && error.code === "insufficient_scope");
+});
+
+test("MCP client can obtain an account-only grant and explicitly upgrade to writes", async () => {
+  const f = await fixture(); const params = new URLSearchParams(f.authorizeParams);
+  params.set("scope", "account:read offline_access");
+  const issued = await f.exchange(await f.consent(params)); assert.equal(issued.status, 200, await issued.clone().text());
+  const tokens = await issued.json();
+  assert.deepEqual((await f.authorize(f.bearer(tokens.access_token))).scopes, ["account:read", "offline_access"]);
+  params.set("scope", "account:read calendar:write collections:write offline_access"); params.set("prompt", "consent");
+  const upgraded = await f.exchange(await f.consent(params)); assert.equal(upgraded.status, 200, await upgraded.clone().text());
+  const next = await upgraded.json();
+  assert.ok((await f.authorize(f.bearer(next.access_token))).scopes.includes("collections:write"));
+  assert.ok(!(await f.authorize(f.bearer(tokens.access_token))).scopes.includes("collections:write"), "old token is never upgraded");
+  for (const row of f.store.oauthConsent) row.scopes = ["account:read", "offline_access"];
+  assert.equal(await f.authorize(f.bearer(next.access_token)), null, "current consent must still cover token permissions");
 });
 
 test("MCP consent refuses an altered signed redirect or scope", async () => {

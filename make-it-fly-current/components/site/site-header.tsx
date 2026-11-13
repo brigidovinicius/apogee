@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { SiteMobileNavigation } from "./site-mobile-navigation";
+import { McpConnectLink } from "./mcp-connect-link";
 import styles from "./site-shell.module.css";
 
 type SiteSection = "home" | "opportunities" | "members" | "blog" | "gallery" | "store";
@@ -48,6 +49,7 @@ export function SiteHeader({
           {item.label}
         </Link>
       ))}
+      <McpConnectLink className={styles.mcpLink} />
     </nav>
   );
   return (
@@ -92,6 +94,7 @@ export function SiteHeader({
             <Link href={memberHref} prefetch={prefetch} aria-current={current === "members" ? "page" : undefined}>
               {memberLabel}
             </Link>
+            <McpConnectLink />
         </SiteMobileNavigation>
       </div>
       {!adaptive && <div className={styles.navigationBar}>{desktopNavigation}</div>}

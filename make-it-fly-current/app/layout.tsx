@@ -8,6 +8,8 @@ import { MakeItFlyScrollRestoration } from "@/components/site/make-it-fly-scroll
 import { SkipLink } from "@/components/site/skip-link";
 import { SiteLegalLinksProvider } from "@/components/site/site-legal-links";
 import { getSiteLegalLinks } from "@/lib/site-legal-links";
+import { mcpEnabled } from "@/lib/mcp/config";
+import { McpAvailabilityProvider } from "@/components/site/mcp-connect-link";
 import "./globals.css";
 
 const inter = localFont({
@@ -99,7 +101,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <MakeItFlyScrollRestoration />
         <SkipLink />
         <SiteLegalLinksProvider value={getSiteLegalLinks()}>
-          <ApogeeDesignSystem>{children}</ApogeeDesignSystem>
+          <McpAvailabilityProvider enabled={mcpEnabled()}>
+            <ApogeeDesignSystem>{children}</ApogeeDesignSystem>
+          </McpAvailabilityProvider>
         </SiteLegalLinksProvider>
       </body>
     </html>

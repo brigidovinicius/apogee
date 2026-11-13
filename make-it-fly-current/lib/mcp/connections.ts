@@ -1,10 +1,11 @@
 import "server-only";
 import { getSql } from "@/lib/members/db";
+import { mcpResource } from "./config";
 
 export async function listMcpConnections(userId: string) {
   const rows = await getSql()`select c.client_id, coalesce(c.name, 'Aplicativo') as name, max(g.updated_at) as authorized_at
     from mcp_oauth_consent g join mcp_oauth_client c on c.client_id = g.client_id
-    where g.user_id = ${userId} and 'radar:read' = any(g.scopes)
+    where g.user_id = ${userId} and ${mcpResource()} = any(g.resources)
     group by c.client_id, c.name order by authorized_at desc`;
   return rows.map(row => ({ clientId: String(row.client_id), name: String(row.name), authorizedAt: new Date(row.authorized_at).toISOString() }));
 }

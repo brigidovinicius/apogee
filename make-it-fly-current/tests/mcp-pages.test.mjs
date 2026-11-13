@@ -21,7 +21,7 @@ test("MCP entry remains public in the member proxy while consent and connections
 
 test("MCP login only renders a sign-in form for a verified OAuth request", async () => {
   const load = opportunityLoader({
-    "@/lib/mcp/config": { mcpEnabled: () => true },
+    "@/lib/mcp/config": { mcpEnabled: () => true, MCP_SCOPES: ["radar:read", "account:read", "calendar:write", "collections:write"], MCP_SCOPE_LABELS: { "radar:read": "Leitura do Radar" } },
     "@/lib/mcp/oauth": { verifiedMcpQuery: async params => params.get("sig") === "valid" ? params.toString() : null },
     "@/components/members/mcp-login": { McpLogin: () => React.createElement("form", { "data-mcp-login": true }) },
   });
@@ -36,7 +36,7 @@ test("MCP consent preserves the signed request through profile completion and di
   const paths = [];
   const query = "client_id=synthetic&scope=radar%3Aread+offline_access&redirect_uri=https%3A%2F%2Fclient.example.test%2Fcallback&sig=valid";
   const load = opportunityLoader({
-    "@/lib/mcp/config": { mcpEnabled: () => true },
+    "@/lib/mcp/config": { mcpEnabled: () => true, MCP_SCOPES: ["radar:read", "account:read", "calendar:write", "collections:write"], MCP_SCOPE_LABELS: { "radar:read": "Leitura do Radar" } },
     "@/lib/mcp/oauth": { verifiedMcpQuery: async () => query },
     "@/lib/members/dal": { requireSignedInMember: async path => { paths.push(path); return { id: "a", username: "pessoa" }; } },
     "@/lib/members/auth": { getAuth: () => ({ api: { getOAuthClientPublic: async () => ({ client_name: "<script>" }) } }) },

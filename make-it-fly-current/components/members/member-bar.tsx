@@ -22,7 +22,7 @@ export function MemberBar({ member, current }: { member: CurrentMember; current?
           Meu perfil
         </Link>
         <Link href="/membros/protecao">Cadastro protegido</Link>
-        {mcpEnabled() && <Link href="/membros/integracoes/mcp">Conexões de IA</Link>}
+        {mcpEnabled() && <Link href="/membros/integracoes/mcp">Incluir no meu ChatGPT</Link>}
       </nav>
       <div className={styles.memberIdentity}>
         <AvatarInitials name={member.name} userId={member.id} image={member.image} size="small" />

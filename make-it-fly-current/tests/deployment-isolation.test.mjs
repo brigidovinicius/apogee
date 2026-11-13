@@ -56,7 +56,7 @@ test("the single root layout preserves the approved visual wrapper and relocated
   const file = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const visual = file.statements.filter(statement => !(ts.isVariableStatement(statement)
     && statement.declarationList.declarations.some(declaration => declaration.name.getText(file) === "metadata"))
-    && !(ts.isImportDeclaration(statement) && ["next/link", "next/server", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link", "@/components/site/site-legal-links", "@/lib/site-legal-links"].includes(statement.moduleSpecifier.text)))
+    && !(ts.isImportDeclaration(statement) && ["next/link", "next/server", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link", "@/components/site/site-legal-links", "@/lib/site-legal-links", "@/lib/mcp/config", "@/components/site/mcp-connect-link"].includes(statement.moduleSpecifier.text)))
     .map(statement => statement.getText(file)).join("\n").replaceAll("../fonts/", "./fonts/")
     // On-demand font fetching changes network priority, not typography.
     .replaceAll("  preload: false,\n", "")
@@ -73,7 +73,9 @@ test("the single root layout preserves the approved visual wrapper and relocated
     .replace("        <SiteLegalLinksProvider value={getSiteLegalLinks()}>\n", "")
     .replace("        </SiteLegalLinksProvider>\n", "")
     // The context provider adds no DOM, including on the legacy event route.
-    .replace("          <ApogeeDesignSystem>{children}</ApogeeDesignSystem>", "        {children}");
+    .replace("          <McpAvailabilityProvider enabled={mcpEnabled()}>\n", "")
+    .replace("          </McpAvailabilityProvider>\n", "")
+    .replace("            <ApogeeDesignSystem>{children}</ApogeeDesignSystem>", "        {children}");
   assert.equal(sha256(visual), "bb2dbfad30652ec73ab9929b3732b448473f74112cbcb0cdaac56663c16f2cc0",
     "the event wrapper stays identical after removing metadata, analytics and the tested route-aware boundary");
   assert.ok(visual.includes("<html") && visual.includes("<body"));

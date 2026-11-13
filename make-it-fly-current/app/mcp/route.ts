@@ -1,4 +1,4 @@
-import { MCP_SCOPE, mcpEnabled, mcpResource } from "@/lib/mcp/config";
+import { MCP_DEFAULT_SCOPES, mcpEnabled, mcpResource } from "@/lib/mcp/config";
 import { authorizeMcpRequest } from "@/lib/mcp/oauth";
 import { mcpOriginAllowed, mcpResponseHeaders } from "@/lib/mcp/http";
 import { handleMcpMessage } from "@/lib/mcp/server";
@@ -14,7 +14,7 @@ function failure(status: number, message: string, headers = mcpResponseHeaders()
 }
 function challenge(error?: string) {
   const metadata = `${new URL(mcpResource()).origin}/.well-known/oauth-protected-resource/mcp`;
-  return `Bearer resource_metadata="${metadata}", scope="${MCP_SCOPE}"${error ? `, error="${error}"` : ""}`;
+  return `Bearer resource_metadata="${metadata}", scope="${MCP_DEFAULT_SCOPES.join(" ")}"${error ? `, error="${error}"` : ""}`;
 }
 export async function POST(request: Request) {
   if (!mcpEnabled()) return new Response(null, { status: 404, headers: { "Cache-Control": "no-store" } });
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const identity = await authorizeMcpRequest(request);
     if (!identity) {
       headers.set("WWW-Authenticate", challenge(request.headers.has("authorization") ? "invalid_token" : undefined));
-      return failure(401, "Conecte sua conta da Apogee para consultar o Radar.", headers);
+      return failure(401, "Conecte sua conta da Apogee para continuar.", headers);
     }
     if (!(await consumeRateLimit(`mcp-user:${identity.userId}`, 60, 60)) ||
         !(await consumeRateLimit(`mcp-client:${identity.clientId}:${identity.userId}`, 60, 60))) {
@@ -42,15 +42,15 @@ export async function POST(request: Request) {
       if (error instanceof RequestBodyError) return failure(error.status, error.message, headers);
       return failure(400, "JSON inválido.", headers);
     }
-    const response = await handleMcpMessage(request, identity.userId, body);
+    const response = await handleMcpMessage(request, identity.userId, body, identity.scopes);
     for (const [key, value] of headers) response.headers.set(key, value);
     return response;
   } catch (error) {
     if (error && typeof error === "object" && "code" in error && error.code === "insufficient_scope") {
       headers.set("WWW-Authenticate", challenge("insufficient_scope"));
-      return failure(403, "Autorize a permissão de leitura do Radar.", headers);
+      return failure(403, "Autorize as permissões da conexão na Apogee.", headers);
     }
-    return failure(503, "O Radar está temporariamente indisponível. Tente novamente mais tarde.", headers);
+    return failure(503, "A conexão com a Apogee está temporariamente indisponível. Tente novamente mais tarde.", headers);
   }
 }
 export async function OPTIONS(request: Request) {

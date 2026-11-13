@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { opportunityLoader } from "./load-opportunity-module.mjs";
 
 // In-memory PostgreSQL only; no URL, sockets, credentials or environment DB lookup.
-export async function mcpTestDatabase() {
+export async function mcpTestDatabase({ accountTables = false } = {}) {
   const pg = await PGlite.create();
   await pg.exec(await readFile(new URL("../../drizzle/0000_init.sql", import.meta.url), "utf8"));
   await pg.exec(`alter table "user" add column can_manage_admins boolean not null default false,
@@ -15,6 +15,9 @@ export async function mcpTestDatabase() {
       livemode boolean not null, status text not null, updated_at timestamptz default now());`);
   await pg.exec(await readFile(new URL("../../drizzle/0016_mcp_oauth.sql", import.meta.url), "utf8"));
   await pg.exec(await readFile(new URL("../../drizzle/0007_radar_free_opportunity.sql", import.meta.url), "utf8"));
+  if (accountTables) for (const file of ["0008_radar_calendar.sql", "0014_calendar_collections.sql"]) {
+    await pg.exec(await readFile(new URL(`../../drizzle/${file}`, import.meta.url), "utf8"));
+  }
   const load = opportunityLoader();
   const schema = { ...load("lib/members/schema.ts"), ...load("lib/mcp/schema.ts") };
   const db = drizzle(pg, { schema });
