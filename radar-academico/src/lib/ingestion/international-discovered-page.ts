@@ -19,8 +19,11 @@ function eligibility(text: string): 'excluded' | 'eligible' | 'unknown' {
     /\b(?:brazil|brasil|brazilians?)\b.{0,100}\b(?:not eligible|not permitted|not allowed|cannot (?:participate|enter|apply)|may not (?:participate|enter|apply)|are excluded|is excluded|nao podem|proibid)/u.test(value)) return 'excluded';
   if (/\b(?:only|exclusively).{0,25}\b(?:residents?|citizens?|based in).{0,100}/u.test(value) &&
     !/\b(?:only|exclusively).{0,25}\b(?:residents?|citizens?|based in).{0,100}\b(?:brazil|brasil)\b/u.test(value)) return 'unknown';
-  if (/\b(?:open|eligible|welcome|participation is open|aceita|aberto).{0,150}\b(?:worldwide|from anywhere|any country|all countries|around the world|brazil|brasil|todo o mundo)\b/u.test(value) ||
-    /\b(?:brazil|brasil|brazilians?)\b.{0,80}\b(?:are eligible|is eligible|may apply|can participate|podem participar)\b/u.test(value)) return 'eligible';
+  // Require a participation statement. A registration button near a mention
+  // of Brazil or a worldwide sponsor does not establish geographic eligibility.
+  if (/\b(?:open|welcome) to (?:(?:all|eligible) )?(?:participants?|entrants?|developers?|startups?|teams?|students?|anyone|people|residents?) (?:from )?(?:worldwide|anywhere(?: in the world)?|any country|all countries|around the world|brazil|brasil)\b/u.test(value) ||
+    /\b(?:participation|entry|applications?) (?:is|are) open (?:worldwide|to (?:all countries|brazil|brasil))\b/u.test(value) ||
+    /\b(?:open worldwide|brazilians? (?:are eligible|may apply|can participate)|residents? (?:of|in) (?:brazil|brasil) (?:are eligible|may apply|can participate)|(?:aberto|aberta) (?:a|para) (?:participantes|pessoas|equipes|estudantes|residentes) (?:de|do|em) (?:todo o mundo|qualquer pais|brasil)|(?:residentes no brasil|brasileiros) podem participar)\b/u.test(value)) return 'eligible';
   return 'unknown';
 }
 

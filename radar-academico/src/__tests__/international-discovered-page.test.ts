@@ -58,6 +58,8 @@ it.each([
   'Only accepted applicants may take part.',
   'Open worldwide. Only residents of India may enter.',
   'Brazil is not excluded.',
+  'Registration is open. Our partners include Brazil.',
+  'Applications are open now. Our sponsors operate worldwide.',
 ])('retains missing or incomplete geographic eligibility: %s',async text=>{
   expect(await prepareDiscoveredPage(page(text),source)).toEqual({reason:'eligibility_br_unconfirmed'});
 });
