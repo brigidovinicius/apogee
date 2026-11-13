@@ -19,8 +19,10 @@ export const COMMUNITY_FAQ = [
   { question: "Participar da comunidade inclui acesso completo ao Radar?", answer: "Você pode explorar o Radar pela página de oportunidades. Seus recursos e condições de acesso são apresentados no próprio Radar. A participação na comunidade e as inscrições nos cursos têm condições independentes." },
 ] as const;
 export const RECORDING_FAQ = [
-  { question: "O evento é gratuito?", answer: "Sim. O acesso ao conteúdo do evento Codex Community organizado pela Apogee é gratuito. A futura turma de IA será uma oferta separada, com suas próprias condições." },
-  { question: "Como recebo as informações de acesso?", answer: "Deixe seu nome e e-mail e autorize os avisos do evento. Você receberá as informações por e-mail quando o acesso estiver liberado. O cadastro não dá acesso imediato ao conteúdo." },
-  { question: "Preciso entrar no WhatsApp?", answer: "Não. O pedido de acesso ao evento é independente da comunidade. Você escolhe se quer conhecer o grupo gratuito no WhatsApp, cujo convite será disponibilizado depois." },
-  { question: "Quem organiza o evento?", answer: "A Apogee organiza o evento oficial Codex Community, da comunidade OpenAI. A formação paga que está sendo preparada é um produto da Apogee." },
+  { question: "O que vou aprender no evento?", answer: "Você vai explorar possibilidades de usar IA para pesquisar, escrever, organizar tarefas e desenvolver ideias. A proposta é ampliar seu repertório e encontrar pontos de partida para aplicar esse conhecimento no dia a dia." },
+  { question: "Preciso ter experiência com inteligência artificial?", answer: "Não. O evento é um convite para quem quer entender novas possibilidades e relacioná-las ao trabalho e à vida pessoal. Curiosidade e vontade de aprender são um bom começo." },
+  { question: "A inscrição é gratuita?", answer: "Sim. A inscrição no evento Codex Community organizado pela Apogee é gratuita." },
+  { question: "O que recebo ao me inscrever?", answer: "Você recebe por e-mail as orientações de acesso ao evento. É uma oportunidade para conhecer aplicações de IA e levar novas ideias para a sua rotina." },
+  { question: "Preciso participar do grupo no WhatsApp?", answer: "Não. A inscrição no evento é independente da comunidade. Você escolhe se quer conhecer o grupo gratuito da Apogee para continuar trocando experiências." },
+  { question: "Quem organiza o evento?", answer: "A Apogee organiza o evento Codex Community, da comunidade OpenAI, conectando pessoas interessadas em tecnologia, aprendizado e aplicações de IA." },
 ] as const;
