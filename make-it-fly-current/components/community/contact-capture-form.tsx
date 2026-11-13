@@ -56,17 +56,17 @@ export function ContactCaptureForm() {
   }
 
   if (submitted) return <div ref={confirmation} tabIndex={-1} className={styles.captureConfirmation} role="status" aria-labelledby={`${id}-confirmation`}>
-    <span className={styles.confirmationIcon}><Check size={24} aria-hidden="true" /></span><p className={styles.eyebrow}>Pedido recebido</p>
-    <h2 id={`${id}-confirmation`}>Vamos avisar você.</h2>
-    <p>Seu contato foi registrado. Você receberá as informações por e-mail quando o acesso ao evento estiver liberado.</p>
+    <span className={styles.confirmationIcon}><Check size={24} aria-hidden="true" /></span><p className={styles.eyebrow}>Inscrição registrada</p>
+    <h2 id={`${id}-confirmation`}>Você deu o primeiro passo.</h2>
+    <p>Seu contato foi registrado. As orientações de acesso ao evento serão enviadas para o e-mail informado.</p>
     <p className={styles.formPurpose}>Este cadastro não cria uma conta nem inscreve você em outros comunicados.</p>
     <Link className={styles.subtleLink} href="/comunidade" prefetch={false}>Conhecer a comunidade gratuita<ArrowUpRight size={16} aria-hidden="true" /></Link>
   </div>;
 
   return <form className={styles.captureForm} noValidate onSubmit={submit} aria-labelledby={`${id}-title`} aria-busy={pending}>
     <p className={styles.eyebrow}>Codex Community · acesso gratuito</p>
-    <h2 id={`${id}-title`}>Quero assistir gratuitamente.</h2>
-    <p className={styles.formLead}>Deixe seu contato para receber as informações de acesso ao evento por e-mail.</p>
+    <h2 id={`${id}-title`}>Inscreva-se gratuitamente.</h2>
+    <p className={styles.formLead}>Cadastre-se para receber por e-mail as orientações de acesso ao evento e descobrir aplicações de IA para o trabalho e a rotina.</p>
     <fieldset className={styles.captureFields} disabled={!hydrated || pending}>
       <div className={styles.field}><label htmlFor={`${id}-name`}>Nome</label><input id={`${id}-name`} name="name" type="text" autoComplete="given-name" maxLength={100} required aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? `${id}-name-error` : undefined} placeholder="Como você quer ser chamado?" />{errors.name && <p className={styles.fieldError} id={`${id}-name-error`}>{errors.name}</p>}</div>
       <div className={styles.field}><label htmlFor={`${id}-email`}>E-mail</label><input id={`${id}-email`} name="email" type="email" autoComplete="email" inputMode="email" maxLength={254} required aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? `${id}-email-error` : undefined} placeholder="nome@exemplo.com" />{errors.email && <p className={styles.fieldError} id={`${id}-email-error`}>{errors.email}</p>}</div>
