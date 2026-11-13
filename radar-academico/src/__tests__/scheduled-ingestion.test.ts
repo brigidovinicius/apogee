@@ -16,6 +16,7 @@ import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { saveReviewItems } from "@/lib/ingestion/save-review-item";
 import { runOfficialSourceIngestion, runScheduledOfficialSourceIngestion } from "@/lib/ingestion";
 import { recheckKnownOpportunities } from "@/lib/ingestion/recheck";
+import { internationalEligibilityNote, BRAZIL_ELIGIBILITY_TOPIC } from "@/lib/ingestion/international-discovered-page";
 
 const makeSource = (id: string): OfficialSource => ({
   id, name: id, institutionName: "Instituto Federal", institutionAcronym: "IF",
@@ -24,6 +25,29 @@ const makeSource = (id: string): OfficialSource => ({
   listingUrls: [`https://example.edu.br/${id}/editais`], extractionMode: "html",
   audienceScope: ["mixed"], geographicScope: [], location: { stateCode: "SP", cityName: null },
   categories: [], priority: 1, active: true,
+});
+
+it.each([1, 2, 5])('counts linked international rules inside maxPages=%s', async maxPages => {
+  vi.stubEnv('DATABASE_EDITOR_URL', 'fixture');
+  const url = 'https://example.edu.br/hackathon';
+  const source: OfficialSource = {
+    ...makeSource('auto-page-global-budget'), baseUrl: url, listingUrls: [url],
+    allowedPathPrefixes: ['/hackathon'], notes: internationalEligibilityNote([BRAZIL_ELIGIBILITY_TOPIC]),
+  };
+  vi.mocked(loadOfficialSource).mockResolvedValue(source);
+  vi.mocked(recheckKnownOpportunities).mockResolvedValue({ pagesChecked: 0, failed: 0, published: 0 });
+  vi.mocked(fetchOfficialResource).mockImplementation(async requested => ({
+    body: Buffer.from(requested === url
+      ? `<main><h1>Hackathon de tecnologia</h1><p>Open to developers worldwide.</p><p>Inscrições abertas até 31/12/2099 pelo formulário de inscrição.</p><a href="${url}/rules">Rules</a></main>`
+      : '<main>Open to entrants from all countries.</main>'),
+    contentType: 'text/html', hash: 'a'.repeat(64), cached: false,
+  }));
+  vi.mocked(saveReviewItems).mockResolvedValue({ saved: 1, published: 1, blocked: 0, created: 1, updated: 0, persistence: 'postgres' });
+  const report = await runOfficialSourceIngestion({ sourceId: source.id, maxPages });
+  expect(report.pagesChecked).toBe(Math.min(maxPages, 2));
+  expect(fetchOfficialResource).toHaveBeenCalledTimes(Math.min(maxPages, 2));
+  expect(recheckKnownOpportunities).toHaveBeenCalledWith(source, Math.floor(Math.max(0, maxPages - 2) / 2), expect.any(Function), undefined);
+  expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered).toHaveLength(maxPages === 1 ? 0 : 1);
 });
 
 it("reconsulta catálogos compartilhados dentro do orçamento de páginas e não excede maxPages", async () => {
