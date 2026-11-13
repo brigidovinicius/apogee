@@ -3,19 +3,21 @@ import { EditorialHome } from "@/components/home/editorial-home";
 
 export const dynamic = "force-dynamic";
 
+const description = "Explore aplicações da IA na rotina, troque experiências na comunidade gratuita da Apogee e conheça o evento gratuito Codex Community.";
+
 export const metadata: Metadata = {
   title: "Apogee | Comunidade, ideias e experiências",
-  description: "Descubra seu próximo salto na Apogee: explore conhecimento, encontre oportunidades e conheça a comunidade gratuita e o evento Codex Community.",
+  description,
   alternates: { canonical: "/" },
   openGraph: {
     title: "Apogee | Comunidade, ideias e experiências",
-    description: "Conhecimento, oportunidades e comunidade para colocar ideias em prática. Conheça o evento gratuito Codex Community da Apogee.",
+    description,
     url: "/", siteName: "Apogee", locale: "pt_BR", type: "website",
   },
   twitter: {
     card: "summary",
     title: "Apogee | Comunidade, ideias e experiências",
-    description: "Conhecimento, oportunidades e comunidade para colocar ideias em prática. Conheça o evento gratuito Codex Community da Apogee.",
+    description,
   },
 };
 
