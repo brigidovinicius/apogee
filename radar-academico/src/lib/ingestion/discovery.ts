@@ -63,7 +63,8 @@ export function parseDiscovery(value: unknown, source: OfficialSource): Discover
 export function classifyDiscovery(title: string, categories: readonly string[] = []): Discovery {
   const rules: [string,RegExp][] = [
     ["matematica",/\bmatem[áa]tica/iu], ["fisica",/\bf[íi]sica/iu], ["quimica",/\bqu[íi]mica/iu],
-    ["biologia",/\bbiologia/iu], ["astronomia",/\bastronomia|aeroespacial/iu],
+    ["biologia",/\bbiologia/iu],
+    ["astronomia",/\b(?:astronom(?:ia|y)|astrof[íi]sica|astrophysics|astron[áa]utica|astronautics|aeroespacia(?:l|is)|aerospace|cosmolog(?:ia|y)|radiotelesc[óo]pios?|NASA\s+(?:International\s+)?Space\s+Apps|(?:ci[êe]ncias?|engenharia|exploraç[ãa]o|geof[íi]sica|tecnologia)\s+espacia(?:l|is)|space\s+science)\b/iu],
     ["robotica",/\brob[óo]tica/iu], ["ia",/\bintelig[êe]ncia artificial/iu],
     ["tecnologia",/\bprogramaç[ãa]o|desenvolvimento de software/iu],
   ];

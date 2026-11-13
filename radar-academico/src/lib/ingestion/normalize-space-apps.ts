@@ -54,7 +54,7 @@ export function normalizeSpaceApps(input: { text: string; url: string; source: O
     geographicScopeKind: "global",
     countryCode: null,
     ...(eventStartsAt ? { eventStartsAt } : {}),
-    discovery: { primaryType: "competicoes", subtype: "hackathon", areas: [],
+    discovery: { primaryType: "competicoes", subtype: "hackathon", areas: ["astronomia", "tecnologia", "dados"],
       editions: [{ id: `space-apps-${title[1]}`, name: `NASA Space Apps ${title[1]}`, stages }] },
     deadlineAt,
     deadlinePrecision: "date_only",
@@ -72,6 +72,6 @@ export function normalizeSpaceApps(input: { text: string; url: string; source: O
       ...(event ? { event_start: { source_url: input.url, excerpt: event[0] } } : {}),
     },
     extractionMethod: input.source.extractionMode,
-    contentHash: crypto.createHash("sha256").update(JSON.stringify(["space-apps-v2", title[1], startsOn, deadlineAt, eventStartsAt, eventEndsAt])).digest("hex"),
+    contentHash: crypto.createHash("sha256").update(JSON.stringify(["space-apps-v3", title[1], startsOn, deadlineAt, eventStartsAt, eventEndsAt])).digest("hex"),
   };
 }
