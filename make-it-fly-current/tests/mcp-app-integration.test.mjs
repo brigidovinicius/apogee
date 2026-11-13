@@ -14,6 +14,10 @@ test("real Apogee auth, PostgreSQL, code-family hook and MCP transport work toge
     RADAR_CALENDAR_PERSONAL_ENABLED: "true", RADAR_COLLECTIONS_ENABLED: "true" });
   delete globalThis.__apogeeMembersAuth;
   const database = await mcpTestDatabase({ accountTables: true });
+  let actionHeaders, actionMember;
+  class ActionRedirect extends Error {
+    constructor(url) { super("Next redirect"); this.url = url; }
+  }
   // Match the app's postgres-js execute return shape; queries/transactions use
   // the real Drizzle PGlite database and real SQL schema.
   const appDb = Object.create(database.db);
@@ -25,6 +29,9 @@ test("real Apogee auth, PostgreSQL, code-family hook and MCP transport work toge
     "@/lib/members/db": { getDb: () => appDb, getSql: () => database.sql },
     "./db": { getDb: () => appDb, getSql: () => database.sql },
     "next/cache": { revalidatePath: () => {} },
+    "next/headers": { headers: async () => actionHeaders },
+    "next/navigation": { redirect: url => { throw new ActionRedirect(url); }, notFound: () => { throw Error("Not found"); } },
+    "@/lib/members/dal": { requireSignedInMember: async () => actionMember },
     "better-auth/next-js": { nextCookies: () => ({ id: "synthetic-next-cookie-context" }) },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => [opportunity] },
     "@/lib/members/mail": { applicationOrigin: () => origin, memberMailAvailable: () => false, sendMemberMail: () => { throw Error("Real mail prohibited"); } },
@@ -41,17 +48,26 @@ test("real Apogee auth, PostgreSQL, code-family hook and MCP transport work toge
     const signedUp = await call("/sign-up/email", { name: "Pessoa", username: "pessoa", email: "a@synthetic.test", password: "synthetic-password-123" });
     assert.equal(signedUp.status, 200, await signedUp.clone().text());
     const account = await signedUp.json(); const cookie = signedUp.headers.getSetCookie().map(c => c.split(";")[0]).join("; ");
+    actionMember = account.user;
+    actionHeaders = new Headers({ Origin: origin, Cookie: cookie, Accept: "text/x-component" });
     const registration = await call("/oauth2/register", { client_name: "Cliente sintético", redirect_uris: [callback], token_endpoint_auth_method: "none", grant_types: ["authorization_code", "refresh_token"] });
     assert.equal(registration.status, 201, await registration.clone().text()); const client = await registration.json();
     const verifier = randomBytes(32).toString("base64url");
     async function grant(scope = "radar:read offline_access") {
       const params = new URLSearchParams({ response_type: "code", client_id: client.client_id, redirect_uri: callback, resource,
-        scope, code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256", prompt: "consent" });
+        scope, code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256" });
       const response = await call("/oauth2/authorize?" + params, undefined, { Cookie: cookie });
       const target = response.headers.get("location") ?? (await response.json()).url;
-      const consent = await call("/oauth2/consent", { accept: true, oauth_query: new URL(target, origin).searchParams.toString() }, { Cookie: cookie });
-      assert.equal(consent.status, 200, await consent.clone().text());
-      const code = new URL((await consent.json()).url).searchParams.get("code"); assert.ok(code);
+      // Exercise the real Next Server Action, not just the provider HTTP route:
+      // accepting consent internally re-enters authorize and requires a Request.
+      const form = new FormData();
+      form.set("oauth_query", new URL(target, origin).searchParams.toString()); form.set("decision", "allow");
+      let redirect;
+      await assert.rejects(load("app/membros/integracoes/mcp/actions.ts").decideMcpConsent(form), error => {
+        assert.ok(error instanceof ActionRedirect, "consent action must reach the OAuth callback");
+        redirect = error.url; return true;
+      });
+      const code = new URL(redirect).searchParams.get("code"); assert.ok(code);
       const exchanged = await call("/oauth2/token", new URLSearchParams({ grant_type: "authorization_code", client_id: client.client_id, redirect_uri: callback, code, code_verifier: verifier, resource }));
       assert.equal(exchanged.status, 200, await exchanged.clone().text()); return exchanged.json();
     }

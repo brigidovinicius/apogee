@@ -23,7 +23,10 @@ export async function decideMcpConsent(form: FormData) {
   if (!(await consumeRateLimit(`mcp-consent:${member.id}`, 20, 600))) throw new Error("Aguarde alguns minutos antes de tentar novamente.");
   const decision = form.get("decision");
   if (decision !== "allow" && decision !== "deny") throw new Error("Confira sua decisão.");
-  const result = await getAuth().api.oauth2Consent({ body: { accept: decision === "allow", oauth_query: query }, headers: requestHeaders });
+  // Acceptance re-enters the provider's authorize endpoint, which needs a
+  // Request even when called in-process from a Next Server Action.
+  const request = new Request(`${applicationOrigin()}/api/auth/oauth2/consent`, { method: "POST", headers: requestHeaders });
+  const result = await getAuth().api.oauth2Consent({ body: { accept: decision === "allow", oauth_query: query }, headers: requestHeaders, request, asResponse: false });
   redirect(result.url);
 }
 export async function disconnectMcp(form: FormData) {
