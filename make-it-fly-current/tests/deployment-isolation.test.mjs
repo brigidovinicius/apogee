@@ -56,7 +56,7 @@ test("the single root layout preserves the approved visual wrapper and relocated
   const file = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const visual = file.statements.filter(statement => !(ts.isVariableStatement(statement)
     && statement.declarationList.declarations.some(declaration => declaration.name.getText(file) === "metadata"))
-    && !(ts.isImportDeclaration(statement) && ["next/link", "next/server", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link", "@/components/site/site-legal-links", "@/lib/site-legal-links"].includes(statement.moduleSpecifier.text)))
+    && !(ts.isImportDeclaration(statement) && ["next/link", "next/server", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link", "@/components/site/site-legal-links", "@/lib/site-legal-links", "@/lib/mcp/config", "@/components/site/mcp-connect-link"].includes(statement.moduleSpecifier.text)))
     .map(statement => statement.getText(file)).join("\n").replaceAll("../fonts/", "./fonts/")
     // On-demand font fetching changes network priority, not typography.
     .replaceAll("  preload: false,\n", "")
@@ -73,7 +73,9 @@ test("the single root layout preserves the approved visual wrapper and relocated
     .replace("        <SiteLegalLinksProvider value={getSiteLegalLinks()}>\n", "")
     .replace("        </SiteLegalLinksProvider>\n", "")
     // The context provider adds no DOM, including on the legacy event route.
-    .replace("          <ApogeeDesignSystem>{children}</ApogeeDesignSystem>", "        {children}");
+    .replace("          <McpAvailabilityProvider enabled={mcpEnabled()}>\n", "")
+    .replace("          </McpAvailabilityProvider>\n", "")
+    .replace("            <ApogeeDesignSystem>{children}</ApogeeDesignSystem>", "        {children}");
   assert.equal(sha256(visual), "bb2dbfad30652ec73ab9929b3732b448473f74112cbcb0cdaac56663c16f2cc0",
     "the event wrapper stays identical after removing metadata, analytics and the tested route-aware boundary");
   assert.ok(visual.includes("<html") && visual.includes("<body"));
@@ -130,7 +132,7 @@ test("approved fonts, public assets, icon and shared legacy dependencies retain 
   assert.equal(existsSync(new URL("public/vercel.svg", root)), false);
 });
 
-test("only the approved Apogee, blog, admin, community and Make It Fly surfaces are routable", async () => {
+test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surfaces are routable", async () => {
   const files = [];
   const visit = async directory => {
     for (const entry of await readdir(new URL(`${directory}/`, root), { withFileTypes: true })) {
@@ -141,6 +143,9 @@ test("only the approved Apogee, blog, admin, community and Make It Fly surfaces 
   };
   await visit("app");
   assert.deepEqual(files.filter(path => /\/(?:page|layout|route)\.(?:tsx?|jsx?|mdx)$/.test(path)).sort(), [
+    "app/.well-known/oauth-authorization-server/api/auth/route.ts", "app/.well-known/oauth-authorization-server/route.ts",
+    "app/.well-known/oauth-protected-resource/mcp/route.ts", "app/.well-known/oauth-protected-resource/route.ts", "app/mcp/route.ts",
+    "app/membros/integracoes/mcp/entrar/page.tsx", "app/membros/integracoes/mcp/autorizar/page.tsx", "app/membros/integracoes/mcp/page.tsx",
     "app/comunidade/page.tsx", "app/gravacao/page.tsx", "app/evento-openai/page.tsx", "app/admin/comunidade/page.tsx", "app/api/comunidade/contatos/route.ts",
     "app/api/colecoes/resumos/route.ts", "app/colecoes/[token]/page.tsx", "app/colecoes/resumos/cancelar/[token]/page.tsx",
     "app/membros/colecoes/page.tsx", "app/membros/colecoes/[id]/page.tsx", "app/membros/colecoes/acompanhadas/page.tsx", "app/membros/colecoes/seguir/[token]/page.tsx",

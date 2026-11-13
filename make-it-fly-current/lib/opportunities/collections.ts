@@ -44,6 +44,22 @@ export async function updateCollection(userId:string,id:string,input:Parameters<
  where id=${id} and user_id=${userId} and archived_at is null returning id`;
  if(!rows.length)throw new CollectionError('Coleção indisponível.');
 }
+/** Patch only supplied columns in one owned-row UPDATE. A prior read must not
+ * restore fields changed by another request while this one was in flight. */
+export async function patchCollection(userId:string,id:string,input:Partial<Parameters<typeof collectionInput>[0]>) {
+ validId(id);
+ const hasName=input.name!==undefined,hasDescription=input.description!==undefined,hasCover=input.cover!==undefined;
+ if(!hasName&&!hasDescription&&!hasCover)throw new CollectionError('Informe uma alteração.');
+ // Validate supplied fields with the same rules as the site's full editor.
+ // Placeholders for omitted fields are never written by the CASE expressions.
+ const data=collectionInput({name:hasName?input.name:'Preservado',description:hasDescription?input.description:'',cover:hasCover?input.cover:'aurora'});
+ const rows=await getSql()`update radar_calendar_collection set
+ name=case when ${hasName} then ${data.name} else name end,
+ description=case when ${hasDescription} then ${data.description} else description end,
+ cover=case when ${hasCover} then ${data.cover} else cover end,updated_at=now()
+ where id=${id} and user_id=${userId} and archived_at is null returning id`;
+ if(!rows.length)throw new CollectionError('Coleção indisponível.');
+}
 export async function archiveCollection(userId:string,id:string,archived:boolean) {
  validId(id);
  await getSql().begin(async tx=>{

@@ -9,7 +9,7 @@ WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN CIRCLE_NODE_TOTAL=2 NODE_OPTIONS=--max-old-space-size=2048 npm run build
 
 FROM node:24-bookworm-slim AS runner
 WORKDIR /app
@@ -35,6 +35,7 @@ COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-avatar-migrate.mj
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-invitations-migrate.mjs ./scripts/members-invitations-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/radar-billing-migrate.mjs ./scripts/radar-billing-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/radar-free-opportunity-migrate.mjs ./scripts/radar-free-opportunity-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/mcp-oauth-migrate.mjs ./scripts/mcp-oauth-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/google-calendar-worker.mjs ./scripts/google-calendar-worker.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/collection-digest-worker.mjs ./scripts/collection-digest-worker.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/google-calendar-alerts.mjs ./scripts/google-calendar-alerts.mjs

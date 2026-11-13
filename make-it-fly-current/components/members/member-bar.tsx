@@ -4,6 +4,7 @@ import { AdminModeSwitcher } from "@/components/admin/admin-mode-switcher";
 import type { CurrentMember } from "@/lib/members/dal";
 import { AvatarInitials } from "./avatar-initials";
 import styles from "./members.module.css";
+import { mcpEnabled } from "@/lib/mcp/config";
 
 export function MemberBar({ member, current }: { member: CurrentMember; current?: "forum" | "perfil" | "radar" }) {
   return (
@@ -21,6 +22,8 @@ export function MemberBar({ member, current }: { member: CurrentMember; current?
           Meu perfil
         </Link>
         <Link href="/membros/protecao">Cadastro protegido</Link>
+        {mcpEnabled() && <Link href="/membros/integracoes/mcp">Incluir no meu ChatGPT</Link>}
+        {mcpEnabled() && <Link href="/membros/integracoes/mcp#claude">Incluir no meu Claude</Link>}
       </nav>
       <div className={styles.memberIdentity}>
         <AvatarInitials name={member.name} userId={member.id} image={member.image} size="small" />

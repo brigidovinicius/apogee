@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Links de convite/verificação contêm segredos transitórios; omitir dos logs dev.
-  logging: { incomingRequests: { ignore: [/\/api\/integracoes\/google-agenda\/callback/, /\/meu-calendario\//, /\/colecoes\//, /\/membros\/convite/, /\/membros\/(cadastro|entrar|esqueci-senha|redefinir-senha)/, /\/api\/auth\/(verify-email|reset-password)/] } },
+  logging: { incomingRequests: { ignore: [/\/api\/integracoes\/google-agenda\/callback/, /\/meu-calendario\//, /\/colecoes\//, /\/membros\/convite/, /\/membros\/(cadastro|entrar|esqueci-senha|redefinir-senha)/, /\/api\/auth\/(verify-email|reset-password|callback)/, /\/membros\/integracoes\/mcp/, /\/api\/auth\/(?:admin\/)?oauth2\//] } },
   async headers() {
     return [{ source: "/:path*", headers: [
       { key: "X-Content-Type-Options", value: "nosniff" },
@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
       ...(process.env.NODE_ENV === "production" ? [{ key: "Strict-Transport-Security", value: "max-age=31536000" }] : []),
     ] }, { source: "/api/:path*", headers: [
       { key: "X-Robots-Tag", value: "noindex, nofollow" },
-    ] }, ...["/colecoes/:path*", "/membros/colecoes/:path*", "/membros/esqueci-senha", "/membros/redefinir-senha", "/api/auth/reset-password/:path*", "/api/auth/verify-email", "/api/integracoes/google-agenda/callback"].map(source => ({
+    ] }, ...["/colecoes/:path*", "/membros/colecoes/:path*", "/membros/esqueci-senha", "/membros/redefinir-senha", "/api/auth/reset-password/:path*", "/api/auth/verify-email", "/api/integracoes/google-agenda/callback", "/membros/integracoes/mcp/:path*", "/api/auth/oauth2/:path*"].map(source => ({
       source, headers: [
         { key: "Referrer-Policy", value: "no-referrer" },
         { key: "Cache-Control", value: "no-store" },

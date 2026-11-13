@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSiteLegalLinks } from "./site-legal-links";
+import { McpConnectLink } from "./mcp-connect-link";
 import styles from "./site-shell.module.css";
 
 export function SiteFooter() {
@@ -29,6 +30,8 @@ export function SiteFooter() {
           <Link href="/comunidade">Comunidade</Link>
           <Link href="/evento-openai">Evento gratuito</Link>
           <Link href="/membros">Membros</Link>
+          <McpConnectLink />
+          <McpConnectLink provider="claude" />
           {legalLinks.privacy && <Link href="/privacidade">Privacidade</Link>}
           {legalLinks.terms && <Link href="/termos">Termos de Uso</Link>}
         </nav>
