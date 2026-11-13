@@ -8,6 +8,15 @@ const discovery = {primaryType:'competicoes',subtype:'olimpiada',areas:['matemat
 const withStage = (patch:Record<string,unknown>) => ({...discovery,editions:[{...discovery.editions[0],stages:[{...stage,...patch}]}]});
 
 describe('verified classification and stage boundary',()=>{
+  it.each(['NASA Space Apps Challenge 2026','NASA International Space Apps Challenge 2026 - Florianópolis',
+    'Curso de Astrofísica','Olimpíada de Astronáutica','Astronomy summer school','Aerospace workshop',
+    'Simpósio de ciências espaciais','Semana de Geofísica Espacial','Engenharia espacial',
+    'Introdução à cosmologia','Apoio ao desenvolvimento de radiotelescópios'])('classifies explicit space topics without replacing the format: %s',title=>{
+    expect(classifyDiscovery(title,['competicoes','eventos'])).toMatchObject({primaryType:'competicoes',areas:['astronomia']});
+  });
+  it.each(['Concurso de Gastronomia','Espaço de inovação','Workshop de ciência de dados','Curso de astrologia'])('does not infer astronomy from unrelated titles: %s',title=>{
+    expect(classifyDiscovery(title,['eventos']).areas).not.toContain('astronomia');
+  });
   it('preserves distinct type, subtype, areas and all five stage kinds',()=>{
     const input={...discovery,areas:['matematica','matematica','fisica'],editions:[{...discovery.editions[0],stages:['registration','exam','result','enrollment','event'].map(kind=>({...stage,id:kind,kind}))}]};
     const result=parseDiscovery(input,source);

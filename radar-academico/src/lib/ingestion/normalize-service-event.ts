@@ -6,6 +6,7 @@ import { eventHasNotStarted, eventStartFromText } from './event-start';
 import { detectDeadline } from './detect-deadline';
 import { confirmedTerminalStatus } from './publication';
 import type { OfficialSource, OpportunityCandidate } from './types';
+import { classifyDiscovery } from './discovery';
 
 const clean = (value: string) => value.normalize('NFC').replace(/\s+/gu, ' ').trim();
 
@@ -69,7 +70,7 @@ export function normalizeServiceEvent(article: { title: string; text: string; ht
       registration_availability: proof(`Ingressos: ${tickets}; ${application.label}; ${application.url}`),
       opportunity_status: proof(`${serviceText}; ${terminal ?? application.label}`),
       ...(deadline.deadlineAt ? { deadline_at: proof(article.text) } : {}) },
-    discovery: { primaryType: 'eventos', areas: [], editions: [{ id: source.id, name: article.title,
+    discovery: { ...classifyDiscovery(article.title, ['eventos']), editions: [{ id: source.id, name: article.title,
       stages: [{ id: 'event', name: 'Realização', kind: 'event', start, sourceUrl: source.baseUrl, checkedAt: now.toISOString() }] }] },
     contentHash: createHash('sha256').update(`service-event:v1\n${article.text}\n${application.url}`).digest('hex') };
 }
