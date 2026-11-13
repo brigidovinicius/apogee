@@ -71,7 +71,8 @@ try{
     assert.ok(rows.every(r=>r.definition.enabled&&r.definition.content_approved&&r.definition.rights_reference.includes('sem reprodução integral')));
     const [privileges]=await runtime`select has_table_privilege(current_user,'blog_worker.research_reference','SELECT') as read,has_table_privilege(current_user,'blog_worker.research_reference','UPDATE') as write`;
     assert.deepEqual(privileges,{read:true,write:false});
-    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,10);
+    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,11);
+    assert.ok((await runtime`select definition from blog_worker.research_reference where id='ARTICLE_PRIMARY_MICROSOFT_EDUCATION'`)[0].definition.article_hosts.includes('support.microsoft.com'));
   });
   await check('runtime cannot alter benefits or publish directly',async()=>{
     await assert.rejects(()=>runtime`insert into blog_worker.benefit(id) values('forged')`,/permission denied/);
@@ -873,6 +874,21 @@ try{
   const hybridPolicy={...googlePolicy,automatic_explainers_enabled:true,explainer_after_local_hour:10,operator_commands_only:false};
   const hybridOptions=()=>({...googleOptions(),policy:hybridPolicy});
   const hybridAt=()=>{const at=new Date();if(at.getUTCHours()<13)at.setUTCHours(15,0,0,0);return at;};
+  await check('already researched topics reach their hybrid fallback before another short news pair can starve them',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const sources=[{...source,id:'SRC01',url:'https://www.nasa.gov/news-release/feed/',article_hosts:['www.nasa.gov'],editoria:'ciencia-espaco'},
+      {...source,id:'REF27',url:'https://www.space.com/feeds/all',article_hosts:['www.space.com'],editoria:'ciencia-espaco'}];
+    await store.syncPipeline({policy:hybridPolicy,sources,catalog:[]},{});
+    const date=new Date().toISOString(),short='Synthetic NASA report DOI 10.1234/hybrid-priority. This synthetic space source tests context completion and does not describe a real event. Primary evidence and independent coverage need checking before any generation.';
+    const a=normalizeItem({title:'Synthetic NASA hybrid priority',link:'https://www.nasa.gov/hybrid-priority/',isoDate:date,contentSnippet:short},sources[0],new Date());
+    const b=normalizeItem({title:'Synthetic independent hybrid coverage',link:'https://www.space.com/hybrid-priority/',isoDate:date,contentSnippet:'Independent context. '+short},sources[1],new Date());
+    await store.ingest(a);await store.ingest(b);await store.researchProgress(a.id,{stage:'research_independent_missing',topic:{category:'ciencia',subcategory:'aeroespacial'},tries:1,next_at:new Date(Date.now()+3600000).toISOString()});
+    const fresh=new Store(runtime);let fallback=0,reads=0;
+    fresh.prepareAutomaticExplainer=async(_,options)=>{fallback++;assert.ok(options.plans.some(p=>p.subcategory==='aeroespacial'));return {prepared:1,kind:'explainer'};};
+    const result=await fresh.prepareAutomaticResearch(hybridPolicy,{at:hybridAt(),read:async()=>{reads++;throw Error('News must not preempt the approved fallback');}});
+    assert.deepEqual(result,{prepared:1,kind:'explainer'});assert.equal(fallback,1);assert.equal(reads,0);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0);
+  });
   const smallHybridUsage={input_tokens:100,output_tokens:100,thinking_tokens:0,cache_read_tokens:0,total_tokens:200};
   function guide(plan,url){
     const r=referenceForUrl(url),src=articleSource(r),text='🛰️ Guia sintético de '+r.publisher+'. '+('Contexto inicial sem relação com a seção seguinte. '.repeat(80))
@@ -966,6 +982,33 @@ try{
     assert.equal(dashboard.production.reduce((n,t)=>n+t.complete,0),10);assert.equal(dashboard.production.reduce((n,t)=>n+t.news,0),4);assert.equal(dashboard.production.reduce((n,t)=>n+t.explainers,0),6);
     assert.ok(dashboard.production.every(t=>t.drafts===1&&t.complete===1));assert.equal(invocations,30);assert.equal((await store.summary()).usage.charged_micro_usd,'0');
     assert.equal((await admin`select count(*)::int as n from public.blog_post where status<>'draft' or not seo_noindex`)[0].n,0);
+  });
+  await check('dated allowance completes six missing topics after 34 calls while retaining ten private drafts and real reservations',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    for(const index of [2,5,7,9]){
+      const plan={...explainerCatalog[index],terms:['mecanismo','limites']};
+      assert.equal((await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()})).prepared,1);
+      const id=explainerId(plan);await compareHybrid(id);await writeHybrid(id);
+      const image=await store.reserveImage({...hybridOptions(),candidateId:id});await store.finish(image,{outcome:'completed',image:webpFixture(),usage:smallHybridUsage});
+    }
+    for(let i=0;i<22;i++)await admin`insert into blog_worker.operator_event(actor_id,action,target,detail) values('test-completion','google_diagnostic_usage',${String(i)},${admin.json({quota_used:i===0?4276:4228})})`;
+    const completionPolicy={...hybridPolicy,google_daily_completion:{day:periodKeys(new Date()).day,calls_cap:60,tokens_reserved_per_call:30000,authorization_reference:'Explicit synthetic allowance to complete todays batch'}};
+    for(const [i,original] of explainerCatalog.slice(30).entries()){
+      const plan={...original,terms:['mecanismo','limites']};
+      assert.equal((await store.prepareAutomaticExplainer(completionPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()})).prepared,1);
+      const id=explainerId(plan),options={...hybridOptions(),policy:completionPolicy,candidateId:id};
+      if(i===2)await assert.rejects(()=>store.reserveComparison({...options,policy:hybridPolicy}),/google_call_limit/);
+      const [v]=await admin`select document from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+      const comparison=await store.reserveComparison(options);assert.equal((await store.finish(comparison,{outcome:'completed',text:JSON.stringify({claims:hybridClaims(v.document)}),usage:smallHybridUsage})).status,'comparison_ready');
+      const writing=await store.reserve(options);assert.equal((await store.finish(writing,{outcome:'completed',text:JSON.stringify(hybridText),usage:smallHybridUsage})).status,'draft');
+      const image=await store.reserveImage(options);assert.equal((await store.finish(image,{outcome:'completed',image:webpFixture(),usage:smallHybridUsage})).status,'cover_ready');
+    }
+    const [usage]=await admin`select count(*)::int as calls,count(*) filter(where quota_reserved=30000)::int as completion_calls from blog_worker.attempt`;
+    assert.deepEqual(usage,{calls:30,completion_calls:18});
+    const [posts]=await admin`select count(*)::int as drafts,count(*) filter(where status<>'draft' or not seo_noindex or scheduled_at is not null)::int as unsafe from public.blog_post`;
+    assert.deepEqual(posts,{drafts:10,unsafe:0});
+    const dashboard=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();assert.ok(dashboard.production.every(t=>t.drafts===1&&t.complete===1));
+    assert.equal((await store.summary()).usage.charged_micro_usd,'0');
   });
   await check('CLI once, status and healthcheck use only the isolated DB with shipped generation off',async()=>{
     await reset();const health=join(directory,'health.json');

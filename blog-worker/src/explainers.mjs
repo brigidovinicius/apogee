@@ -48,7 +48,9 @@ export function explainerExcerpt(text,terms,bytes){
     const found=terms.filter(t=>value.toLowerCase().includes(t.toLowerCase())).length;
     if(!best||found>best.found)best={text:value,excerpt_offset:[...text.slice(0,start)].length,found};
   }
-  if(!best)return null;
+  // Redirects and incomplete shells may return readable text about a different
+  // subject. Do not spend a comparison on an unrelated 200 response.
+  if(!best||best.found<Math.min(2,terms.length))return null;
   return {text:best.text,excerpt_offset:best.excerpt_offset};
 }
 export function automaticExplainerDossier(plan,captures,policy,at=new Date()){

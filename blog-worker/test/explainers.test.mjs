@@ -11,7 +11,7 @@ import {dossierFixture} from './corroboration-fixture.mjs';
 const now=new Date('2026-11-12T15:00:00Z'),policy={...defaultPolicy,automatic_explainers_enabled:true,explainer_after_local_hour:10};
 const explanatory=()=>{const d=dossierFixture(1);return {...d,event_key:'explainer:synthetic-concept-1',editorial:{kind:'explainer',key:'synthetic-concept-1',question:'Como funciona o conceito sintético usado neste teste?',as_of:now.toISOString()},documents:d.documents.map(doc=>({...doc,same_event:false,same_subject:true,excerpt_offset:0,consulted_at:now.toISOString()}))};};
 test('curated explainer questions cover all ten topics, stay distinct and use separate registered authors',()=>{
-  assert.equal(explainerCatalog.length,30);assert.equal(new Set(explainerCatalog.map(p=>p.category+'/'+p.subcategory)).size,10);
+  assert.equal(explainerCatalog.length,36);assert.equal(new Set(explainerCatalog.map(p=>p.category+'/'+p.subcategory)).size,10);
   assert.throws(()=>validateExplainerCatalog([...explainerCatalog,explainerCatalog[0]]),/invalid_explainer_catalog/);
   assert.throws(()=>validateExplainerCatalog([{...explainerCatalog[0],urls:['https://www.nasa.gov/a','https://www.nasa.gov/b']}]),/invalid_explainer_sources/);
   assert.throws(()=>validateExplainerCatalog([{...explainerCatalog[0],urls:['https://127.0.0.1/a','https://www.esa.int/b']}]),/invalid_reference_url/);
@@ -48,6 +48,16 @@ test('a subject excerpt remains contiguous and records Unicode character offsets
   const result=explainerExcerpt(text,['alpha','beta','gamma'],600);assert.ok(result.excerpt_offset>0);
   assert.ok(result.text.includes('alpha'));assert.equal([...text].slice(result.excerpt_offset,result.excerpt_offset+[...result.text].length).join(''),result.text);
 });
+test('an unrelated redirect or a lone incidental term cannot spend a comparison',()=>{
+  assert.equal(explainerExcerpt('A public page about an unrelated subject. '.repeat(20),['orbital debris','collision','tracking'],1200),null);
+  assert.equal(explainerExcerpt('This article mentions tracking but concerns an unrelated product. '.repeat(20),['orbital debris','collision','tracking'],1200),null);
+  assert.ok(explainerExcerpt('Orbital debris and collision risks require tracking and careful context. '.repeat(20),['orbital debris','collision','tracking'],1200));
+});
+test('new explanatory questions replenish six missing topics without rewriting held or written questions',()=>{
+  const added=explainerCatalog.slice(30);
+  assert.equal(added.length,6);assert.equal(new Set(added.map(p=>p.category+'/'+p.subcategory)).size,6);
+  assert.ok(added.every(p=>!explainerCatalog.slice(0,30).some(q=>q.key===p.key||q.question===p.question)));
+});
 test('old source dates stay old; stale captures cannot produce an explanatory dossier',()=>{
   const plan=explainerCatalog[0],text=('Electromagnetic spectrum includes visible light, radio and infrared. Context and limits remain documented. ').repeat(15);
   const captures=plan.urls.map((url,i)=>({...articleSource(referenceForUrl(url)),url,title:'Public synthetic reference guide',text:'Synthetic author '+i+'. '+text,published_at:'2015-03-01T12:00:00Z',rights_reference:'Approved synthetic public excerpt',extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,checked_at:now.toISOString()}));
@@ -76,4 +86,21 @@ test('public guide landmarks and book bodies are readable without accepting arbi
   assert.throws(()=>extractArticle('<script type="application/ld+json">{"@type":"Article","isAccessibleForFree":false}</script>'+google,'https://cloud.google.com/learn/example'),/research_access_restricted/);
   assert.ok(extractArticle(`<h1>What is a neuron?</h1><div class="field-name-field-uq-basic-body">${text}</div>`,'https://qbi.uq.edu.au/brain/example').text.includes('public guide'));
   assert.ok(extractArticle(`<h1>Git guide</h1><div id="main" class="book edition2">${text}</div>`,'https://git-scm.com/book/example').text.includes('public guide'));
+});
+test('ESA guide context wins over unrelated recommendation articles, and Azure chapters stay together',()=>{
+  const first='This public guide describes the actual phenomenon and its documented context. '.repeat(8);
+  const second='This later section explains the mechanism, application and limitations. '.repeat(8);
+  const esa=`<h1>Official eclipse guide</h1><main><section class="articles-modules articles-modules__text-image">${first}</section><section class="articles-modules articles-modules__text-image">${second}</section><article data-card-link="https://www.esa.int/unrelated">${'Unrelated recommended story. '.repeat(50)}</article><div class="interactive-media-modal">${'Modal control. '.repeat(40)}</div></main>`;
+  const d=extractArticle(esa,'https://www.esa.int/articles/official-guide');
+  assert.ok(d.text.includes(first.trim()));assert.ok(d.text.includes(second.trim()));assert.equal(d.text.includes('Unrelated recommended'),false);assert.equal(d.text.includes('Modal control'),false);
+  const azure=`<h1>Public cloud guide</h1><main><article class="editorial-article__main">${first}</article><article class="editorial-article__main">${second}</article><article>${'Recommended commercial product. '.repeat(40)}</article></main>`;
+  const a=extractArticle(azure,'https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/example/');
+  assert.ok(a.text.includes(first.trim()));assert.ok(a.text.includes(second.trim()));assert.equal(a.text.includes('Recommended commercial product'),false);
+  assert.throws(()=>extractArticle('<script type="application/ld+json">{"@type":"Article","isAccessibleForFree":false}</script>'+esa,'https://www.esa.int/articles/official-guide'),/research_access_restricted/);
+});
+test('Intel public support body excludes menus and product recommendations',()=>{
+  const prose='Integrated graphics shares system memory, while discrete graphics has dedicated memory. '.repeat(6);
+  const html=`<h1>Public GPU guide</h1><div id="articleSFBody" data-component="articleSFBody">${prose}</div><div>${'Unrelated product list. '.repeat(100)}</div>`;
+  assert.equal(extractArticle(html,'https://www.intel.com/content/www/us/en/support/articles/000057824/graphics.html').text,prose.trim());
+  assert.throws(()=>extractArticle(html,'https://other.org/guide'),/research_article_missing/);
 });

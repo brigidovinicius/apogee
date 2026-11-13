@@ -473,5 +473,101 @@
       "https://legacy.sba.gov/business-guide/plan-your-business/market-research-competitive-analysis",
       "https://business.gov.au/marketing-and-advertising/do-market-research"
     ]
+  },
+  {
+    "key": "eclipses-solares-tipos-1",
+    "category": "ciencia",
+    "subcategory": null,
+    "question": "Como os eclipses solares totais, parciais e anulares se diferenciam?",
+    "terms": [
+      "solar eclipse",
+      "total",
+      "annular",
+      "partial"
+    ],
+    "urls": [
+      "https://science.nasa.gov/eclipses/geometry/",
+      "https://www.esa.int/articles/about-us/directorates/science/what-is-an-eclipse"
+    ]
+  },
+  {
+    "key": "detritos-orbitais-riscos-1",
+    "category": "ciencia",
+    "subcategory": "aeroespacial",
+    "question": "Por que os detritos orbitais representam riscos para satélites e missões tripuladas?",
+    "terms": [
+      "orbital debris",
+      "collision",
+      "tracking",
+      "spacecraft"
+    ],
+    "urls": [
+      "https://www.nasa.gov/reference/jsc-orbital-debris/",
+      "https://www.esa.int/Space_Safety/Space_Debris/Space_Debris_FAQ_Frequently_asked_questions"
+    ]
+  },
+  {
+    "key": "nuvem-escalabilidade-demanda-1",
+    "category": "tecnologia",
+    "subcategory": null,
+    "question": "Como a computação em nuvem permite ajustar recursos conforme a demanda?",
+    "terms": [
+      "scalability",
+      "scale",
+      "demand",
+      "resources"
+    ],
+    "urls": [
+      "https://cloud.google.com/learn/advantages-of-cloud-computing",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-cloud-computing/"
+    ]
+  },
+  {
+    "key": "classificacao-binaria-multiclasse-1",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "O que muda entre a classificação binária e a multiclasse no aprendizado de máquina?",
+    "terms": [
+      "binary classification",
+      "multiclass classification",
+      "classes",
+      "classification"
+    ],
+    "urls": [
+      "https://developers.google.com/machine-learning/crash-course/classification",
+      "https://learn.microsoft.com/en-us/dotnet/machine-learning/resources/tasks"
+    ]
+  },
+  {
+    "key": "gpu-integrada-dedicada-1",
+    "category": "tecnologia",
+    "subcategory": "hardware-robotica",
+    "question": "Como o tipo de GPU influencia o consumo de energia e as tarefas gráficas?",
+    "terms": [
+      "integrated",
+      "discrete",
+      "power",
+      "graphics"
+    ],
+    "urls": [
+      "https://www.intel.com/content/www/us/en/support/articles/000057824/graphics.html",
+      "https://support.microsoft.com/en-au/windows/experience/compatibility/all-about-graphics-processing-units-gpus"
+    ]
+  },
+  {
+    "key": "publico-alvo-segmentacao-1",
+    "category": "negocios",
+    "subcategory": "marketing",
+    "question": "Como definir o público-alvo ajuda a direcionar a comunicação de um negócio?",
+    "terms": [
+      "target market",
+      "customers",
+      "marketing",
+      "demographics"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/manage-your-business/marketing-sales",
+      "https://business.gov.au/marketing-and-advertising/identify-your-target-market"
+    ]
   }
 ]

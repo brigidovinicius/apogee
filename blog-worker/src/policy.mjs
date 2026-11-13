@@ -109,9 +109,24 @@ export function validateGooglePolicy(p) {
   if(p.automatic_explainers_enabled===true&&(!Number.isInteger(p.explainer_after_local_hour)||p.explainer_after_local_hour<6||p.explainer_after_local_hour>20||p.schema_version!==3))fail('google_policy');
   const caps={new_drafts_per_day_cap:p.schema_version===3?10:1,new_drafts_per_week_cap:p.schema_version===3?70:5,concurrency:1,input_tokens_cap_including_overhead:p.schema_version===3?12000:8000,billed_output_tokens_cap_including_reasoning:2000,max_primary_evidence_documents:p.schema_version===3?10:2,max_provider_attempts_per_article_including_repairs:p.schema_version===3?3:2,google_daily_calls_cap:p.schema_version===3?40:3,google_weekly_calls_cap:p.schema_version===3?280:15,google_daily_tokens_cap:180000,google_weekly_tokens_cap:900000,google_tokens_reserved_per_call:60000,google_max_invocations_per_call:1,google_timeout_seconds:150};
   for(const [k,max] of Object.entries(caps))if(!Number.isSafeInteger(p[k])||p[k]<1||p[k]>max)fail('google_policy_limit');
+  const completion=p.google_daily_completion;
+  if(completion!==undefined&&(p.schema_version!==3||!completion||typeof completion!=='object'
+    ||!/^\d{4}-\d{2}-\d{2}$/.test(completion.day??'')||!Number.isFinite(Date.parse(completion.day+'T12:00:00Z'))
+    ||new Date(completion.day+'T12:00:00Z').toISOString().slice(0,10)!==completion.day
+    ||!Number.isSafeInteger(completion.calls_cap)||completion.calls_cap<p.google_daily_calls_cap||completion.calls_cap>60
+    ||completion.tokens_reserved_per_call!==30000
+    ||typeof completion.authorization_reference!=='string'||completion.authorization_reference.length<20))fail('google_completion_policy');
   if(p.schema_version===3 && (p.multisource_required!==true || p.minimum_compatibility_basis_points!==9000 || p.critical_fact_confirmation_required!==true || p.per_topic_daily_cap!==1 || p.per_topic_weekly_cap!==7))fail('google_policy');
   if(p.input_counting_mode!=='local_byte_bound' || p.image_size!=='1536x1024')fail('google_policy');
   return Object.freeze(structuredClone(p));
+}
+// A dated completion allowance never changes the weekly/token limits, provider
+// quota checks, or the normal day after midnight in Brasilia.
+export function googleUsageLimits(policy,at=new Date()){
+  const completion=policy.google_daily_completion;
+  return completion?.day===periodKeys(at).day
+    ?{dailyCalls:completion.calls_cap,reservedTokens:completion.tokens_reserved_per_call}
+    :{dailyCalls:policy.google_daily_calls_cap,reservedTokens:policy.google_tokens_reserved_per_call};
 }
 export function validateSubscriptionBinding(a,at=new Date(),expectedEmail=null) {
   if(!a || !(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.account_email??'')) || (expectedEmail!==null&&a.account_email!==expectedEmail) || a.plan!=='google_ai_pro' || a.auth_method!=='official_google_oauth' || a.use_g1_credits!==false

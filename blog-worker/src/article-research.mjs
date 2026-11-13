@@ -4,7 +4,7 @@ import {getFeed} from './http.mjs';
 import {hash,fail} from './policy.mjs';
 import {canonicalResearchUrl} from './research-links.mjs';
 
-export const ARTICLE_EXTRACTION_VERSION='public-article-v3-body-citations-dates';
+export const ARTICLE_EXTRACTION_VERSION='public-article-v4-complete-guide-shells';
 export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$|periodico_e_jornalismo$)/.test(r.role));
 export const independentReference=r=>!!r&&!primaryReference(r)&&/jornalismo|divulgacao|analise_especialista|publicacao_especializada/.test(r.role);
 export function primaryDocument(document,reference=referenceForUrl(document.url)){
@@ -61,7 +61,8 @@ export function robotsAllowed(text,url){
 const attrs=n=>Object.fromEntries((n.attrs??[]).map(a=>[a.name,a.value]));
 const ignored=new Set(['script','style','nav','header','footer','aside','form','button','noscript','svg','template']);
 function textOf(node){
-  const a=attrs(node);if(ignored.has(node.tagName)||a.hidden!==undefined||a['aria-hidden']==='true'||/display\s*:\s*none|visibility\s*:\s*hidden/i.test(a.style??''))return '';
+  const a=attrs(node);if(ignored.has(node.tagName)||a.hidden!==undefined||a['aria-hidden']==='true'||/display\s*:\s*none|visibility\s*:\s*hidden/i.test(a.style??'')
+    ||a['data-card-link']!==undefined||/(?:^|\s)(?:interactive-media-modal|articles-modules__share)(?:\s|$)/.test(a.class??''))return '';
   if(node.nodeName==='#text')return node.value;
   return (node.childNodes??[]).map(textOf).join(' ');
 }
@@ -90,18 +91,26 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   const articles=nodes.filter(n=>n.tagName==='article');
   const usable=items=>items.filter(n=>visible(n)&&clean(textOf(n)).length>=200);
   const landmarks=usable(nodes.filter(n=>n.tagName==='main'||attrs(n).role==='main'||guideHost==='qbi.uq.edu.au'&&attrs(n).id==='block-system-main'));
+  // These verified public layouts split one guide into sibling sections, or
+  // place recommendation <article> cards inside main. Preserve article order
+  // and complete context; never treat the longest teaser/chapter as the guide.
+  const guideParts=guideHost==='azure.microsoft.com'&&new URL(url).pathname.includes('/resources/cloud-computing-dictionary/')
+    ?usable(nodes.filter(n=>n.tagName==='article'&&/(?:^|\s)editorial-article__main(?:\s|$)/.test(attrs(n).class??'')))
+    :guideHost==='www.intel.com'||guideHost==='intel.com'
+      ?usable(nodes.filter(n=>attrs(n).id==='articleSFBody'&&attrs(n)['data-component']==='articleSFBody')):[];
+  const completeGuide=guideParts.length?{nodeName:'#document-fragment',childNodes:guideParts}:guideHost==='esa.int'&&nodes.some(n=>/(?:^|\s)articles-modules(?:\s|$)/.test(attrs(n).class??''))?landmarks[0]:null;
   // Google's public /learn guides use labelled sections without an article or
   // main landmark. Permit that known guide shell only; gated/hidden content is
   // still excluded above and by textOf. Never use arbitrary page bodies.
   const googleGuide=new URL(url).hostname==='cloud.google.com'&&new URL(url).pathname.startsWith('/learn/')
     &&nodes.some(n=>n.tagName==='section'&&/(?:^|\s)cws-jump-section(?:\s|$)/.test(attrs(n).class??''));
-  const roots=restricted?usable(abstracts):usable(bodies).length?usable(bodies):usable(articles).length?usable(articles):landmarks.length?landmarks:googleGuide?usable(nodes.filter(n=>n.tagName==='body')):[];
+  const roots=restricted?usable(abstracts):completeGuide?[completeGuide]:usable(bodies).length?usable(bodies):usable(articles).length?usable(articles):landmarks.length?landmarks:googleGuide?usable(nodes.filter(n=>n.tagName==='body')):[];
   const root=roots.sort((a,b)=>textOf(b).length-textOf(a).length)[0];if(!root)fail(bodies.length||articles.length?'research_text_insufficient':'research_article_missing');
   const text=clean(textOf(root)).slice(0,12000);if(text.length<200)fail('research_text_insufficient');
   const title=clean(meta['og:title']??textOf(nodes.find(n=>n.tagName==='h1')??{}))||fallbackTitle;
   if(title.length<3)fail('research_title_missing');
   const structuredDate=own.find(v=>typeof v.datePublished==='string')?.datePublished;
-  const withinRoot=n=>{for(let parent=n;parent;parent=parent.parentNode)if(parent===root)return true;return false;};
+  const withinRoot=n=>{for(let parent=n;parent;parent=parent.parentNode)if(parent===root||guideParts.includes(parent))return true;return false;};
   const time=nodes.find(n=>n.tagName==='time'&&attrs(n).datetime&&visible(n)&&withinRoot(n));
   const rawDate=meta['article:published_time']??meta['citation_online_date']??structuredDate??meta['citation_publication_date']??meta['date']??meta['dc.date']??meta['dcterms.created']??(time?attrs(time).datetime:null)??fallbackDate;
   const date=rawDate?new Date(rawDate):null;
