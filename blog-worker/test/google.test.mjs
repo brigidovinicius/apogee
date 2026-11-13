@@ -5,8 +5,9 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {defaultPolicy,candidate,article} from './fixtures.mjs';
-import {validatePolicy,validateSubscription,subscriptionUsage} from '../src/policy.mjs';
+import {validatePolicy,validateSubscription,subscriptionUsage,googleUsageLimits} from '../src/policy.mjs';
 import {buildRequest} from '../src/editorial.mjs';
+import {SEO_GUIDELINES} from '../src/editorial.mjs';
 import {cleanEnvironment,googleSubscriptionProvider,readGeneratedImage,googlePrompt,parseArticleOutput} from '../src/google-provider.mjs';
 import {decide} from '../src/google-hook.mjs';
 const p={...defaultPolicy,google_account_email:"blog-owner@example.test",generation_enabled:true,automatic_image_generation_enabled:true};
@@ -19,6 +20,14 @@ test('Google policy enforces zero additional billing, own account and bounded wo
   assert.throws(()=>subscriptionUsage({input_tokens:1}),/missing/);
   assert.throws(()=>validateSubscription({account_email:p.google_account_email,plan:'google_ai_pro'}),/unverified/);
   assert.deepEqual(cleanEnvironment({PATH:'/bin',HOME:'/home/test',OPENAI_API_KEY:'secret',GEMINI_API_KEY:'secret',AGY_ADC_AUTH:'true',GOOGLE_APPLICATION_CREDENTIALS:'/key',DATABASE_URL:'secret'}),{PATH:'/bin',HOME:'/home/test'});
+});
+test('dated completion allowance expires at Brasilia midnight and cannot enlarge token or weekly ceilings',()=>{
+  const completion={day:'2026-11-13',calls_cap:60,tokens_reserved_per_call:30000,authorization_reference:'Explicit user authorization to complete todays ten private drafts'};
+  const policy=validatePolicy({...p,google_daily_completion:completion});
+  assert.deepEqual(googleUsageLimits(policy,new Date('2026-11-14T02:59:59Z')),{dailyCalls:60,reservedTokens:30000});
+  for(const at of ['2026-11-13T02:59:59Z','2026-11-14T03:00:00Z'])assert.deepEqual(googleUsageLimits(policy,new Date(at)),{dailyCalls:40,reservedTokens:60000});
+  for(const bad of [{calls_cap:61},{calls_cap:39},{day:'2026-02-30'},{tokens_reserved_per_call:1000},{authorization_reference:''}])assert.throws(()=>validatePolicy({...p,google_daily_completion:{...completion,...bad}}),/google_completion_policy/);
+  for(const bad of [{google_daily_tokens_cap:180001},{google_weekly_calls_cap:281},{google_use_g1_credits:true}])assert.throws(()=>validatePolicy({...policy,...bad}));
 });
 test('official CLI pins binary/settings, checks quota without generation and returns structured text once',async()=>{
   const dir=await mkdtemp(join(tmpdir(),'google-fixture-')),binary=join(dir,'agy');await writeFile(binary,'fake');
@@ -45,6 +54,7 @@ test('compact Google dossier removes bookkeeping without changing original evide
   assert.equal(prompt.includes('rights_reference'),false);assert.equal(prompt.includes('content_hash'),false);
   for(const e of JSON.parse(body.input).evidence)assert.ok(prompt.includes(e.text));
   assert.equal(JSON.stringify(body),before);assert.match(prompt,/acentuação correta/);
+  assert.ok(prompt.includes(SEO_GUIDELINES.instructions));
   assert.deepEqual(parseArticleOutput({response:'```json\n'+JSON.stringify(article)+'\n```'}),article);
   assert.throws(()=>parseArticleOutput({response:'Commentary\n'+JSON.stringify(article)}));
 });

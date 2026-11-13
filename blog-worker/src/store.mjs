@@ -4,13 +4,13 @@ import {articleSource,referenceForUrl,ARTICLE_EXTRACTION_VERSION} from './articl
 import {explainerCatalog,explainerId,explainerWindowOpen,nextExplainer,automaticExplainerDossier} from './explainers.mjs';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage} from './policy.mjs';
+import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle,SEO_GUIDELINES} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
 import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -229,10 +229,10 @@ export class Store {
     await this.researchProgress(id,{stage:reason,topic:{category:plan.category,subcategory:plan.subcategory},kind:'explainer',tries,next_at:new Date(+at+3600000).toISOString()});
     return {prepared:0,kind:'explainer',reason,requests:budget.used};
   }
-  async prepareAutomaticResearch(policy,{read}={}){
+  async prepareAutomaticResearch(policy,{read,at=new Date()}={}){
     const [control]=await this.sql`select paused from blog_worker.control where singleton=true`;
     if(control?.paused)return {prepared:0};
-    const {day}=periodKeys(new Date()),usage=await this.productionUsage();
+    const {day}=periodKeys(at),usage=await this.productionUsage();
     const candidates=await this.sql`select * from (select c.*,row_number() over(partition by c.source_id order by c.score desc,c.published_at desc) as source_rank
       from blog_worker.candidate c where c.content_kind='news' and c.post_id is null and c.first_attempt_day is null and c.published_at>now()-interval '7 days'
       and c.reason is distinct from 'source_changed_after_reservation' and c.reason is distinct from 'operator_hold' and c.reason is distinct from 'retention'
@@ -269,20 +269,26 @@ export class Store {
       }
       return (await this.sql`select blog_worker.prepare_automatic_research(${candidate.id},${this.sql.json(document)},${candidate.evidence_hash}) as prepared`)[0].prepared;
     };
-    for(const {candidate,topic} of plan){
-      if(await prepare(candidate,topic,{allowNetwork:due(candidate),freshOnly:!due(candidate)}))return {prepared:1,...(publicReadRequests?{requests:publicReadRequests}:{})};
-      if(publicReadUsed)return {prepared:0,reason:'research_independent_missing',requests:publicReadRequests};
-    }
     // One bounded network research per cycle; no search API, model call or paid service.
     // Count today's completed network selections even while their candidates
     // are in backoff. Restarting the process must not favor the first topic.
     const history=await this.sql`select artifact->'research'->'topic' as topic,count(*)::int as researched from blog_worker.candidate
       where content_kind='news' and artifact->'research'->>'day'=${day} and artifact->'research'->>'stage' is distinct from 'primary_found'
       and jsonb_typeof(artifact->'research'->'topic')='object' group by 1`;
-    if(explainerWindowOpen(policy)){
+    if(explainerWindowOpen(policy,at)){
       const eligible=explainerCatalog.filter(p=>!plan.some(v=>v.topic.category===p.category&&v.topic.subcategory===p.subcategory)
         ||history.some(h=>h.topic.category===p.category&&h.topic.subcategory===p.subcategory&&h.researched>=1));
-      const explainer=await this.prepareAutomaticExplainer(policy,{read,plans:eligible});if(explainer)return explainer;
+      const explainer=await this.prepareAutomaticExplainer(policy,{read,plans:eligible,at});if(explainer)return explainer;
+    }
+    // After the hybrid window, a topic already researched today gets its
+    // explanatory fallback before another news-page enrichment can starve it.
+    for(const {candidate,topic} of plan){
+      if(await prepare(candidate,topic,{allowNetwork:due(candidate),freshOnly:!due(candidate)}))return {prepared:1,...(publicReadRequests?{requests:publicReadRequests}:{})};
+      if(publicReadUsed){
+        const tries=candidate.artifact?.research?.day===day?Number(candidate.artifact.research.tries??0)+1:1;
+        await this.researchProgress(candidate.id,{stage:'research_independent_missing',topic,tries,next_at:new Date(Date.now()+3600000).toISOString()});
+        return {prepared:0,reason:'research_independent_missing',requests:publicReadRequests};
+      }
     }
     const selected=nextResearchCandidate(plan.filter(({candidate})=>due(candidate)&&(candidate.artifact?.research?.day!==day||Number(candidate.artifact?.research?.tries??0)<3)),history);
     if(!selected)return {prepared:0};
@@ -389,7 +395,7 @@ export class Store {
       if(!google && n(spent.article)+reserve>policy.article_budget_micro_usd_cap_including_all_attempts)fail('article_budget');
       const id=randomUUID(),recordedPolicy=kind==='comparison'?{...policy,comparison_prompt_version:COMPARISON_PROMPT_VERSION}:policy;
       await tx`insert into blog_worker.attempt(id,candidate_id,benefit_id,kind,ordinal,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,provider,quota_reserved,dossier_revision,dossier_hash)
-        values(${id},${candidate.id},${grant?.id??null},${kind},${attempts.filter(a=>a.kind===kind).length+1},${key},${hash(body)},${tx.json(price)},${tx.json(recordedPolicy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?policy.google_tokens_reserved_per_call:0},${version?.revision??null},${version?.document_hash??null})`;
+        values(${id},${candidate.id},${grant?.id??null},${kind},${attempts.filter(a=>a.kind===kind).length+1},${key},${hash(body)},${tx.json(price)},${tx.json(recordedPolicy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?googleUsageLimits(policy,at).reservedTokens:0},${version?.revision??null},${version?.document_hash??null})`;
       await tx`update blog_worker.candidate set first_attempt_day=coalesce(first_attempt_day,${day}::date),
         first_attempt_week=coalesce(first_attempt_week,${week}::date) where id=${candidate.id}`;
       return {status:'reserved',id,kind,candidate:effective,body,reserved_micro_usd:reserve,policy,identity,not_after:new Date(+at+180000).toISOString()};
@@ -519,7 +525,7 @@ export class Store {
       if(!google && n(spent.article)+reserve>policy.article_budget_micro_usd_cap_including_all_attempts)fail('article_budget');
       const id=randomUUID();
       await tx`insert into blog_worker.attempt(id,candidate_id,benefit_id,kind,ordinal,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,provider,quota_reserved)
-        values(${id},${job.candidate_id},${grant?.id??null},'image',${previousImages.length+1},${hash(body)},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?policy.google_tokens_reserved_per_call:0})`;
+        values(${id},${job.candidate_id},${grant?.id??null},'image',${previousImages.length+1},${hash(body)},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?googleUsageLimits(policy,at).reservedTokens:0})`;
       await tx`update blog_worker.image_job set state='reserved',updated_at=now() where candidate_id=${job.candidate_id}`;
       return {status:'reserved',kind:'image',id,candidate_id:job.candidate_id,body,policy,identity,reserved_micro_usd:reserve,not_after:new Date(+at+180000).toISOString()};
     });
@@ -564,7 +570,7 @@ export class Store {
     return this.sql.begin(async tx=>{
       await lock(tx);
       for(const s of config.sources)await tx`insert into blog_worker.source_catalog(id,definition) values(${s.id},${tx.json(s)}) on conflict do nothing`;
-      const snapshot={provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:config.policy.google_daily_calls_cap??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:config.policy.google_daily_tokens_cap??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
+      const snapshot={provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:googleUsageLimits(config.policy).dailyCalls??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:config.policy.google_daily_tokens_cap??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
         automatic_access_validation:config.policy.google_automatic_access_validation_enabled===true,automatic_explainers:config.policy.automatic_explainers_enabled===true,explainer_after_local_hour:config.policy.explainer_after_local_hour??null,operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
         organization_id:identity?.organization_id??null,project_id:identity?.project_id??null,
         article_cap:config.policy.article_budget_micro_usd_cap_including_all_attempts,daily_cap:config.policy.daily_budget_micro_usd_cap,
@@ -672,6 +678,7 @@ async function subscriptionBudget(tx,policy,at) {
           and (e.detail->>'quota_used')::bigint=a.quota_used and e.detail->'usage'=a.usage
           and a.day=(e.created_at at time zone 'America/Sao_Paulo')::date)
     ) q`;
-  if(q.day_calls>=policy.google_daily_calls_cap || q.week_calls>=policy.google_weekly_calls_cap)fail('google_call_limit');
-  if(n(q.day_tokens)+policy.google_tokens_reserved_per_call>policy.google_daily_tokens_cap || n(q.week_tokens)+policy.google_tokens_reserved_per_call>policy.google_weekly_tokens_cap)fail('google_token_limit');
+  const limits=googleUsageLimits(policy,at);
+  if(q.day_calls>=limits.dailyCalls || q.week_calls>=policy.google_weekly_calls_cap)fail('google_call_limit');
+  if(n(q.day_tokens)+limits.reservedTokens>policy.google_daily_tokens_cap || n(q.week_tokens)+limits.reservedTokens>policy.google_weekly_tokens_cap)fail('google_token_limit');
 }
