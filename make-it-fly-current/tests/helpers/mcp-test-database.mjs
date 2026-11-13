@@ -27,6 +27,7 @@ export async function mcpTestDatabase({ accountTables = false } = {}) {
       return (await connection.query(query, values)).rows;
     };
     sql.begin = fn => pg.transaction(tx => fn(tagged(tx)));
+    sql.unsafe = query => connection.exec(query);
     return sql;
   }
   const sql = tagged(pg);
