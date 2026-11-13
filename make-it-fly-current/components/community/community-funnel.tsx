@@ -25,8 +25,8 @@ export function CommunityJoinButton({ label = "Participar gratuitamente", second
     <button className={secondary ? styles.secondary : styles.primary} type="button" onClick={() => dialog.current?.showModal()} aria-haspopup="dialog" aria-controls={id}>{label}<ArrowUpRight size={18} aria-hidden="true" /></button>
     <dialog ref={dialog} id={id} className={styles.dialog} aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`} onClick={event => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>
       <button type="button" className={styles.closeButton} aria-label="Fechar convite da comunidade" onClick={() => dialog.current?.close()}><X size={20} aria-hidden="true" /></button>
-      <MessageCircle className={styles.dialogIcon} size={32} strokeWidth={1.3} aria-hidden="true" /><p className={styles.eyebrow}>Comunidade Apogee · gratuita</p><h2 id={`${id}-title`}>A conversa começa<br />no WhatsApp.</h2>
-      <p id={`${id}-description`}>O grupo está sendo preparado. O convite será disponibilizado aqui quando a entrada estiver aberta.</p>
+      <MessageCircle className={styles.dialogIcon} size={32} strokeWidth={1.3} aria-hidden="true" /><p className={styles.eyebrow}>Comunidade Apogee · gratuita</p><h2 id={`${id}-title`}>Explore o universo<br />Apogee.</h2>
+      <p id={`${id}-description`}>Conecte-se com ideias, oportunidades e aplicações de IA para o dia a dia. Comece conhecendo o evento gratuito da Apogee.</p>
       <Link className={styles.primary} href="/evento-openai#inscricao" prefetch={false} onClick={() => dialog.current?.close()}>Conhecer o evento gratuito <ArrowUpRight size={18} aria-hidden="true" /></Link>
     </dialog>
   </>;
