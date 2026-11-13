@@ -8,7 +8,8 @@ function fixture() {
   const state = { enabled: true, allowed: true, identity: { userId: "a", clientId: "synthetic-client", scopes: ["radar:read"] }, calls: [] };
   const load = opportunityLoader({
     "@/lib/mcp/config": { mcpEnabled: () => state.enabled, mcpResource: () => "https://www.apogee.community/mcp", MCP_SCOPE: "radar:read",
-      MCP_DEFAULT_SCOPES: ["radar:read", "account:read", "offline_access"], mcpMetadataUrl: () => "https://www.apogee.community/.well-known/oauth-protected-resource/mcp" },
+      MCP_DEFAULT_SCOPES: ["radar:read", "account:read", "offline_access"], mcpMetadataUrl: () => "https://www.apogee.community/.well-known/oauth-protected-resource/mcp",
+      MCP_SCOPES: ["radar:read", "account:read", "calendar:write", "collections:write"], mcpIssuer: () => "https://www.apogee.community/api/auth" },
     "@/lib/mcp/oauth": { authorizeMcpRequest: async req => req.headers.get("authorization") === "Bearer synthetic"
       ? state.identity : null },
     "@/lib/members/rate-limit": { consumeRateLimit: async () => state.allowed },
@@ -19,7 +20,7 @@ function fixture() {
       state.calls.push({ id, tool, args }); return { items: [{ id: "radar-synthetic", title: "Oportunidade sintética" }] };
     } },
   });
-  return { state, route: () => load("app/mcp/route.ts") };
+  return { state, route: () => load("app/mcp/route.ts"), metadata: () => load("app/.well-known/oauth-protected-resource/mcp/route.ts") };
 }
 function request(body, extra = {}) {
   return new Request("https://www.apogee.community/mcp", { method: "POST", headers: {
@@ -85,8 +86,10 @@ test("MCP rejects oversized bodies, foreign origins and account quota exhaustion
   state.allowed = false;
   assert.equal((await route().POST(request({}, header))).status, 429);
 });
-test("MCP metadata and token challenges are public without wildcard credential CORS", async () => {
-  const { route } = fixture(); const response = await route().OPTIONS(new Request("https://www.apogee.community/mcp", { method: "OPTIONS", headers: { Origin: "https://chatgpt.com" } }));
+test("MCP metadata advertises refresh access without wildcard credential CORS", async () => {
+  const { route, metadata } = fixture(); const response = await route().OPTIONS(new Request("https://www.apogee.community/mcp", { method: "OPTIONS", headers: { Origin: "https://chatgpt.com" } }));
   assert.equal(response.status, 204); assert.equal(response.headers.get("access-control-allow-credentials"), null);
   assert.match(response.headers.get("access-control-expose-headers"), /WWW-Authenticate/i);
+  const advertised = await metadata().GET().json();
+  assert.ok(advertised.scopes_supported.includes("offline_access"), "connection builders must discover refresh access before tool discovery");
 });
