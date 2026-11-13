@@ -5,7 +5,7 @@ import {explainerCatalog,explainerId,explainerWindowOpen,nextExplainer,automatic
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage} from './policy.mjs';
-import {buildRequest,cacheKey,cmsDraft,validateArticle} from './editorial.mjs';
+import {buildRequest,cacheKey,cmsDraft,validateArticle,SEO_GUIDELINES} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
 import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap} from './corroboration.mjs';
 
@@ -180,9 +180,13 @@ export class Store {
     const {day,week}=periodKeys(at);
     return tx`select d.document->>'category' as category,d.document->>'subcategory' as subcategory,
       count(*) filter(where a.day=${day}::date)::int as day,count(*) filter(where a.week=${week}::date)::int as week
-      from blog_worker.attempt a join blog_worker.candidate c on c.id=a.candidate_id
+      from (select distinct on (t.candidate_id) t.* from blog_worker.attempt t
+        join blog_worker.candidate c on c.id=t.candidate_id
+        where t.kind='text' and ((c.post_id is not null and t.state='confirmed' and t.reason is null)
+          or (c.post_id is null and t.state in ('reserved','unknown')))
+        order by t.candidate_id,t.finished_at desc nulls first,t.ordinal desc) a
       join blog_worker.dossier_version d on d.candidate_id=a.candidate_id and d.revision=a.dossier_revision
-      where a.kind='text' and (a.state in ('reserved','unknown') or c.post_id is not null) group by 1,2`;
+      group by 1,2`;
   }
   async checkResearchBudget(policy){
     return this.sql.begin(async tx=>{const {control,at}=await lock(tx);if(control.paused)fail('paused');await subscriptionBudget(tx,policy,at);});
@@ -466,7 +470,7 @@ export class Store {
       if(hash(candidate.evidence)!==candidate.evidence_hash || candidate.reason==='source_changed_after_reservation')return holdAfterCharge(tx,candidate.id,cost);
       const draft=cmsDraft(effective,article);
       const [{post_id}]=await tx`select blog_worker.import_draft(${candidate.id},${tx.json(draft)}) as post_id`;
-      await tx`update blog_worker.candidate set artifact=${tx.json({article,evidence:effective.evidence,corroboration:corroboration??null,dossier_revision:version?.revision??null,cache_key:attempt.cache_key,human_review_required:true})} where id=${candidate.id}`;
+      await tx`update blog_worker.candidate set artifact=${tx.json({article,evidence:effective.evidence,corroboration:corroboration??null,dossier_revision:version?.revision??null,cache_key:attempt.cache_key,seo:{guideline_id:SEO_GUIDELINES.id,sources:SEO_GUIDELINES.sources,prepared_in_same_call:true,human_review_required:true},human_review_required:true})} where id=${candidate.id}`;
       if(attempt.policy.automatic_image_generation_enabled){
         const brief=coverBrief(article);
         await tx`select blog_worker.queue_cover(${candidate.id},${brief.prompt},${brief.alt},${brief.caption})`;

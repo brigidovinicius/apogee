@@ -48,6 +48,9 @@ test('SEO/GEO review accepts generated references and rejects unsafe or absent c
   assert.deepEqual(sourceReferences(body.replaceAll('\n','\r')),sourceReferences(body));
   for(const url of ['http://nasa.gov/article','javascript:alert(1)','https://user:secret@nasa.gov/article'])assert.equal(sourceReferences(body.replace('https://www.nasa.gov/article/',url)).length,0);
   assert.equal(sourceReferences('Texto sem fontes').length,0);
+  for(const suffix of [' (2015-03-01) · consulta em 13/11/2026',' (data de publicação não informada) · consulta em 13/11/2026']){
+    assert.deepEqual(sourceReferences(body.replace(' (2026-11-04)',suffix)),[{title:'NASA test',url:'https://www.nasa.gov/article/'}]);
+  }
   const checks=editorialChecks({title:'Título informativo',body,seoTitle:'Título de busca',seoDescription:'Descrição de busca',hasCover:true,noIndex:true});
   assert.equal(checks.every(c=>c.ok),true);assert.match(checks.at(-1).label,/bloqueada/);
 });

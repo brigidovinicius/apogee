@@ -68,7 +68,7 @@ export async function getPipelineDashboard(page = 1) {
     from blog_worker.google_access a join blog_worker.subscription s using(singleton) where a.singleton=true` : [];
   const production = dossiers_ready ? await sql<{ category: string; subcategory: string | null; drafts: number; complete: number; researching: number; compared: number; primary_pending: number; independent_pending: number; unavailable: number; format_pending: number; factual_pending: number; review_held: number; news: number; explainers: number }[]>`
     with scope as (select c.id,c.post_id,c.content_kind,c.status,c.evidence_hash,c.artifact,c.published_at,c.reason,v.source_hash,v.document,v.assessment,j.state as image_state,
-      exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='text' and a.day=(now() at time zone 'America/Sao_Paulo')::date) as today
+      exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='text' and a.state='confirmed' and a.reason is null and a.day=(now() at time zone 'America/Sao_Paulo')::date) as today
       from blog_worker.candidate c left join lateral(select source_hash,document,assessment from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) v on true
       left join blog_worker.image_job j on j.candidate_id=c.id)
     select coalesce(document->>'category',artifact->'research'->'topic'->>'category') as category,

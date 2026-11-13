@@ -7,7 +7,7 @@ import {join} from 'node:path';
 import {createServer} from 'node:net';
 import {spawnSync} from 'node:child_process';
 import postgres from 'postgres';
-import {normalizeItem} from '../src/editorial.mjs';
+import {normalizeItem,cmsDraft} from '../src/editorial.mjs';
 import {Store,migrate} from '../src/store.mjs';
 import {tick} from '../src/worker.mjs';
 import {openAIProvider} from '../src/provider.mjs';
@@ -304,7 +304,7 @@ try{
     assert.equal(calls,2);assert.equal((await store.summary()).usage.held_micro_usd,'16000');assert.equal((await cms.listAdminPosts(1)).total,0);
   });
   await check('CMS insert failure rolls back settlement and crash recovery does not regenerate',async()=>{
-    await setup();const r=await store.reserve(options()),slug='apogee-'+r.candidate.id.slice(0,24);
+    await setup();const r=await store.reserve(options()),slug=cmsDraft(r.candidate,JSON.parse(completed.text)).slug;
     await admin`insert into public.blog_post(slug,title,excerpt,body,category,author_name) values(${slug},'Existing fixture','Fixture excerpt','Fixture body','estudos','Synthetic Editor')`;
     await assert.rejects(()=>store.finish(r,completed),e=>e.code==='23505');
     const [a]=await admin`select state,charged_micro_usd from blog_worker.attempt`;assert.equal(a.state,'reserved');assert.equal(a.charged_micro_usd,null);
@@ -717,6 +717,7 @@ try{
       await dossier(c,document);
       const r=await store.reserveComparison({...googleOptions(),candidateId:c.id});assert.equal(r.status,'reserved');
       assert.equal((await store.finish(r,{outcome:'completed',text:JSON.stringify({claims:document.claims}),usage:smallUsage})).status,'comparison_ready');
+      if(i===0){const invalid=await store.reserve({...googleOptions(),candidateId:c.id});assert.equal((await store.finish(invalid,{outcome:'completed',text:'{}',usage:smallUsage})).status,'repair_pending');}
       const text=await store.reserve({...googleOptions(),candidateId:c.id});
       const result=await store.finish(text,{...googleCompleted,usage:smallUsage});assert.equal(result.status,'draft');
       assert.equal((await admin`select category from public.blog_post where id=${result.post_id}`)[0].category,{ciencia:'ciencias',tecnologia:'tecnologia',negocios:'empreendedorismo'}[topics[i][0]]);
@@ -732,7 +733,14 @@ try{
     assert.ok(dashboard.candidates.filter(c=>c.post_id).every(c=>c.topic_category&&c.topic_subcategory!==undefined));
     assert.equal((await admin`select count(*)::int as n from public.blog_post where status='draft' and published_at is null and scheduled_at is null`)[0].n,10);
     assert.equal((await admin`select count(*)::int as n from blog_worker.attempt where charged_micro_usd<>0`)[0].n,0);
-    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,30);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,31);
+    const usage=await store.productionUsage();assert.equal(usage.reduce((n,r)=>n+r.day,0),10,'a repaired article occupies only one daily slot');
+    assert.equal(usage.reduce((n,r)=>n+r.week,0),10,'cost attempts do not become weekly articles');
+    assert.equal((await admin`select count(*)::int as n from blog_worker.candidate where artifact->'seo'->>'guideline_id'='google-search-editorial-2026-11-13' and artifact->'seo'->>'prepared_in_same_call'='true'`)[0].n,10,'each new draft keeps the applied SEO guideline version without another call');
+    const yesterday=new Date(Date.now()-86400000),old=periodKeys(yesterday);
+    await admin`update blog_worker.attempt set day=${old.day}::date,week=${old.week}::date where reason='invalid_structure'`;
+    assert.equal((await store.productionUsage()).reduce((n,r)=>n+r.day,0),10,'a failed attempt from yesterday does not move today’s completed article');
+    assert.equal((await store.productionUsage(runtime,yesterday)).reduce((n,r)=>n+r.day,0),0,'a failed attempt is not a completed article on its original day');
     await assert.rejects(()=>runtime`update blog_worker.research_reference set definition='{}'::jsonb`,/permission denied/);
     await reset();await operator.attestSubscription(subscription());
     const failed=candidate(1);await store.ingest(failed);await dossier(failed,dossierFixture(1));
