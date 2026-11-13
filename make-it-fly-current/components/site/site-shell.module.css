@@ -91,6 +91,13 @@
   opacity: 0.7;
 }
 
+.desktopNavigation .mcpLink {
+  flex-shrink: 0;
+  gap: .5rem;
+  text-decoration: underline;
+  text-underline-offset: .25em;
+}
+
 .desktopNavigation a::after {
   position: absolute;
   right: 0;

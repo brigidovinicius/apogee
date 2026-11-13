@@ -2,11 +2,13 @@ import { toNextJsHandler } from "better-auth/next-js";
 import { getAuth } from "@/lib/members/auth";
 import { memberClientIp } from "@/lib/members/client-ip";
 import { reportAuthTrustRejection } from "@/lib/members/auth-diagnostics";
+import { handleMcpOAuth, isMcpOAuthPath, mcpOAuthPreflight } from "@/lib/mcp/oauth-http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export const { GET, POST } = toNextJsHandler((request) => {
+  if (isMcpOAuthPath(new URL(request.url).pathname)) return handleMcpOAuth(request, bounded => getAuth().handler(bounded));
   // Sem IP confiável o limitador do provedor não roda. Recusar antes de inicializar auth/banco.
   if (!memberClientIp(request.headers)) {
     const id = reportAuthTrustRejection(request);
@@ -18,3 +20,5 @@ export const { GET, POST } = toNextJsHandler((request) => {
   }
   return getAuth().handler(request);
 });
+
+export const OPTIONS = mcpOAuthPreflight;

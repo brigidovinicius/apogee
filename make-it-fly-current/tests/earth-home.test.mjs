@@ -77,6 +77,7 @@ test("public catalogue outages keep the catalogue link without inventing entries
 test("both opening Radar calls to action navigate to the opportunities catalogue", async () => {
   const { SiteHeader } = await load("components/site/site-header.tsx", {
     "./site-mobile-navigation": { SiteMobileNavigation: () => null },
+    "./mcp-connect-link": { McpConnectLink: () => null },
     "./site-shell.module.css": { __esModule: true, default: {} },
   });
   const { createScrollProgress } = await load("components/home/earth-radar/scroll-progress.ts");

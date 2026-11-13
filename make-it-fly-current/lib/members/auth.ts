@@ -16,6 +16,11 @@ import { billingConfig, RADAR_ACCESS_PATH, radarBillingEnabled } from "@/lib/bil
 import { radarPurchaseNeedsVerification } from "@/lib/billing/store";
 import { supervisedRegistrationEnabled } from "./protection";
 import { PASSWORD_RESET_EXPIRES_IN } from "./password-recovery";
+import { oauthProvider } from "@better-auth/oauth-provider";
+import { mcpEnabled } from "@/lib/mcp/config";
+import { mcpOAuthOptions } from "@/lib/mcp/oauth-config";
+import * as mcpSchema from "@/lib/mcp/schema";
+import { captureMcpConsentSnapshot, registerMcpAuthorizationCode } from "@/lib/mcp/families";
 
 function createAuth() {
   const secret = process.env.BETTER_AUTH_SECRET;
@@ -33,7 +38,7 @@ function createAuth() {
     secret,
     baseURL: applicationOrigin(),
     trustedOrigins: [applicationOrigin()],
-    database: drizzleAdapter(getDb(), { provider: "pg", schema, transaction: true }),
+    database: drizzleAdapter(getDb(), { provider: "pg", schema: { ...schema, ...mcpSchema }, transaction: true }),
     verification: { storeIdentifier: { default: "plain", overrides: { "reset-password:": "hashed" } } },
     emailAndPassword: {
       enabled: true,
@@ -70,7 +75,10 @@ function createAuth() {
       },
     },
     hooks: {
-      before: createAuthMiddleware(enforceMemberAuthAbuse),
+      before: createAuthMiddleware(async context => {
+        await enforceMemberAuthAbuse(context);
+        await captureMcpConsentSnapshot(context);
+      }),
       after: createAuthMiddleware(async (ctx): Promise<void> => {
         // Cobre o formulário (Server Action) e a API. Só o cadastro concluído
         // de quem tem compra paga pendente recebe este envio automático.
@@ -152,6 +160,9 @@ function createAuth() {
       defaultCookieAttributes: { httpOnly: true, sameSite: "lax" },
     },
     databaseHooks: {
+      verification: {
+        create: { before: async value => { await registerMcpAuthorizationCode(value); } },
+      },
       user: {
         create: {
           // Vale também para chamadas diretas a /api/auth/sign-up/email.
@@ -188,6 +199,7 @@ function createAuth() {
       },
     },
     plugins: [
+      ...(mcpEnabled() ? [oauthProvider(mcpOAuthOptions())] : []),
       username({
         displayUsername: false,
         minUsernameLength: 3,
