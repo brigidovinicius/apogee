@@ -34,6 +34,7 @@ export function McpSetup({ resource }: { resource: string }) {
     <h3>No ChatGPT</h3><ol className={styles.steps}>
       <li>No ChatGPT, abra <strong>Plugins</strong>, toque em <strong>+</strong> e escolha <strong>Add custom MCP server</strong>.</li>
       <li>Use o nome <strong>Apogee</strong>, cole o endereço acima em <strong>Server URL</strong> e escolha <strong>OAuth</strong> na autenticação.</li>
+      <li>Em <strong>Configurações avançadas de OAuth</strong>, mantenha <strong>Registro dinâmico de clientes (DCR)</strong> e inclua <strong>offline_access</strong> nos <strong>Escopos básicos</strong>. Isso permite renovar a conexão até você desconectá-la.</li>
       <li>Entre com sua conta Apogee e confira as permissões solicitadas. Crie o plugin e instale-o. Em uma conversa, use <strong>@Apogee</strong>.</li>
     </ol>
     <p className={styles.hint}>A opção de conexão depende do seu plano e das permissões do seu espaço no ChatGPT. <a href="https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt" target="_blank" rel="noopener noreferrer">Ver instruções da OpenAI</a>.</p>
