@@ -1010,6 +1010,27 @@ try{
     const dashboard=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();assert.ok(dashboard.production.every(t=>t.drafts===1&&t.complete===1));
     assert.equal((await store.summary()).usage.charged_micro_usd,'0');
   });
+  await check('optimized dated reservation completes text and cover near the daily ceiling but cannot exceed it',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const plan={...explainerCatalog[0],terms:['mecanismo','limites']};
+    await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});
+    const id=explainerId(plan);await compareHybrid(id);
+    await admin`insert into blog_worker.operator_event(actor_id,action,target,detail) values('test-completion','google_diagnostic_usage','near-limit',${admin.json({quota_used:163800})})`;
+    const completion={day:periodKeys(new Date()).day,calls_cap:80,tokens_reserved_per_call:30000,authorization_reference:'Explicit synthetic allowance with unchanged daily and weekly ceilings'};
+    const options={...hybridOptions(),candidateId:id,policy:{...hybridPolicy,google_daily_completion:completion}};
+    await assert.rejects(()=>store.reserve(options),/google_token_limit/);
+    options.policy.google_daily_completion={...completion,tokens_reserved_per_call:15000};
+    const writing=await store.reserve(options);assert.equal(writing.status,'reserved');
+    assert.equal((await store.finish(writing,{outcome:'completed',text:JSON.stringify(hybridText),usage:smallHybridUsage})).status,'draft');
+    const image=await store.reserveImage(options);assert.equal(image.status,'reserved');
+    assert.equal((await store.finish(image,{outcome:'completed',image:webpFixture(),usage:smallHybridUsage})).status,'cover_ready');
+    await admin`insert into blog_worker.operator_event(actor_id,action,target,detail) values('test-completion','google_diagnostic_usage','hard-limit',${admin.json({quota_used:1000})})`;
+    await assert.rejects(()=>store.checkResearchBudget(options.policy),/google_token_limit/);
+    const [ledger]=await admin`select count(*)::int as n from blog_worker.attempt where quota_reserved=15000`;
+    assert.equal(ledger.n,2);
+    const [post]=await admin`select status,seo_noindex,scheduled_at from public.blog_post`;
+    assert.deepEqual(post,{status:'draft',seo_noindex:true,scheduled_at:null});
+  });
   await check('CLI once, status and healthcheck use only the isolated DB with shipped generation off',async()=>{
     await reset();const health=join(directory,'health.json');
     const env={PATH:process.env.PATH,TMPDIR:directory,BLOG_LOCAL_TEST:'1',BLOG_DATABASE_URL:`postgres://blog_runtime@127.0.0.1:${port}/postgres`,BLOG_HEALTH_FILE:health};

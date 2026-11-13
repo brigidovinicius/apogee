@@ -17,3 +17,17 @@ Uma autorização excepcional pode ser registrada em `google_daily_completion`, 
 A autorização não é incluída na configuração pública padrão. O operador deve registrá-la apenas para a data e o propósito autorizados. Ela não altera recibos passados, não transforma saldo de API em assinatura e não habilita uma API paga. A disponibilidade da contingência OpenAI exige verificação própria antes de usá-la; nenhuma chamada OpenAI faz parte dos testes.
 
 Os testes automatizados usam fontes, imagens e provedores sintéticos; a leitura dos sites oficiais não usa IA. A validação final da apuração real e da geração deve registrar separadamente os artigos efetivamente completos, a compatibilidade, as fontes, os créditos e o consumo confirmado. Dez testes simulados não significam dez matérias reais criadas.
+# Complemento de consumo na mesma janela autorizada
+
+A exceção com data pode reservar entre 15 mil e 30 mil tokens por chamada e
+limitar a até 80 chamadas, para acomodar a autorização posterior de continuar
+as chamadas incluídas. O teto real continua em 180 mil tokens/dia e 900 mil/semana;
+a verificação da cota Google e sua reserva de 20% continuam obrigatórias.
+A exceção expira à meia-noite de Brasília. O consumo já registrado não é alterado,
+e nenhum fallback de API é ativado por essa mudança.
+
+O teste com banco cobre a conclusão de texto e capa com 164 mil tokens já
+contabilizados: a reserva de 30 mil bloqueia, a de 15 mil permite, e um consumo
+posterior acima da margem bloqueia novamente. Todas as saídas ficam em rascunho,
+sem indexação ou agendamento.
+
