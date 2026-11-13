@@ -1,6 +1,6 @@
-# Apogee no ChatGPT — candidato local
+# Apogee no ChatGPT e no Claude
 
-Continuação do MCP do Radar (`ca2b38b`) na branch `feat/mcp-radar-20261112`. Escopo confirmado pelo usuário: botão no site e consulta ao perfil próprio, com organização de calendário e coleções. Publicado e ativado em 13/11/2026, com opção adicional Claude. Consulte o [registro de produção e a pendência da conexão pessoal](releases/mcp-20261113-production.md).
+Continuação do MCP do Radar (`ca2b38b`) na branch `feat/mcp-radar-20261112`. Escopo confirmado pelo usuário: botão no site e consulta ao perfil próprio, com organização de calendário e coleções. Publicado e ativado em 13/11/2026, com opção adicional Claude. A conexão pessoal ChatGPT, a emissão de renovação e uma consulta real ao Radar foram validadas; consulte o [registro de produção](releases/mcp-20261113-production.md).
 
 ## Entrada pelo site
 
@@ -35,7 +35,7 @@ Tokens antigos não recebem os escopos novos. Clientes cadastrados na versão an
 
 Não há ferramentas de pagamento, documentos de proteção, administração, edição de perfil, publicação, compartilhamento ou ativação de alertas. Escritas declaram `readOnlyHint:false`; alterações/remoções e possíveis efeitos externos usam as anotações correspondentes.
 
-## Validação e ativação
+## Validação da etapa local
 
 | Verificação final | Resultado |
 | --- | --- |
@@ -48,7 +48,7 @@ Não há ferramentas de pagamento, documentos de proteção, administração, ed
 | Edições simultâneas | Regressão reproduziu a perda de dados antes da correção e passou depois. Revisão independente confirmou o encerramento do achado, sem novas regressões concretas. |
 | Guia de conexão | Renderização React, entradas desktop/móvel/rodapé, flag desligada, cópia e recuperação de falha de clipboard passaram. |
 
-Evidências em `.local/mcp-radar-20261112/{account-full-test-final.log,account-typecheck.log,account-lint.log,account-build.log,account-concurrency-red.log,account-concurrency-green.log,account-shell-test.log}` (não versionadas). Não houve instalação real no ChatGPT/Claude, teste com conta pessoal, conexão Google real ou teste visual em navegador nesta etapa.
+Evidências locais em `.local/mcp-radar-20261112/{account-full-test-final.log,account-typecheck.log,account-lint.log,account-build.log,account-concurrency-red.log,account-concurrency-green.log,account-shell-test.log}` (não versionadas). A etapa local não incluiu contas pessoais ou testes visuais; a conexão e a consulta ChatGPT posteriores estão comprovadas no registro de produção.
 
 Todos os comandos pesados foram executados em sequência com `python3 /Users/viniciusbrigido/.codex/npm-queue/npm-queue.py --command ...`, após consulta ao status da fila. Nenhum servidor existente foi encerrado. O build removeu `DATABASE_URL`, `RADAR_ACADEMICO_API_URL` e `RADAR_ACADEMICO_API_TOKEN` do ambiente e usou somente configuração sintética de autenticação, sem arquivos `.env` locais ou consultas a banco/catálogo reais. O artefato `.next/standalone/server.js` foi gerado. Dependências e lockfile não foram alterados nesta continuação.
 
@@ -58,4 +58,4 @@ Comando de lint executado no diretório `make-it-fly-current` pelo mesmo wrapper
 npm exec eslint lib/mcp lib/opportunities/collections.ts components/members/mcp-setup.tsx components/members/member-bar.tsx components/site/mcp-connect-link.tsx components/site/site-header.tsx components/site/site-footer.tsx app/layout.tsx app/mcp/route.ts app/.well-known/oauth-protected-resource/mcp/route.ts app/membros/integracoes/mcp tests/mcp-account.test.mjs tests/mcp-setup.test.mjs tests/mcp-app-integration.test.mjs tests/mcp-http.test.mjs tests/mcp-oauth-flow.test.mjs tests/mcp-pages.test.mjs tests/helpers/mcp-test-database.mjs tests/deployment-isolation.test.mjs tests/earth-home.test.mjs
 ```
 
-Não foram adicionadas migrações nesta continuação. A implantação inicial ainda exige a migração OAuth `0016_mcp_oauth.sql` do candidato anterior e o histórico existente das funcionalidades habilitadas. Publicação, migração e instalação real continuam pendentes de autorização própria, conforme `AGENTS.md`.
+Não foram adicionadas migrações nesta ampliação da conta. A implantação inicial usou a migração OAuth `0016_mcp_oauth.sql` do candidato anterior e o histórico existente das funcionalidades habilitadas. Publicação, migração com backup e conexão pessoal ChatGPT foram autorizadas explicitamente e concluídas, conforme o registro de produção.

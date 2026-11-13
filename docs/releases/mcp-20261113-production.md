@@ -31,7 +31,7 @@ O ChatGPT descobriu automaticamente issuer, recurso, DCR e PKCE e chegou ao cons
 
 [PR #161](https://github.com/brigidovinicius/apogee/pull/161), integrada em `05cda6d`, anuncia `offline_access` também nos metadados do recurso e orienta sua inclusão nos escopos básicos do ChatGPT. O provedor já o suportava; conexões existentes não foram ampliadas. O contraste dos botões foi corrigido e conferido visualmente.
 
-**Revisão publicada final:** `bc960a7fe7cd56179d53aa56c4158b7336c9f852`. **Imagem:** `sha256:3f271894c822e84fe88228297ec5b278a326dde094971f6a9e8c1f5601d01d65`. Healthcheck `healthy`, zero reinícios após a troca; flag ativa. Rollback imediato de código para `589290f` preserva o banco aditivo e a flag.
+Revisão intermediária de renovação: `bc960a7fe7cd56179d53aa56c4158b7336c9f852`, imagem `sha256:3f271894c822e84fe88228297ec5b278a326dde094971f6a9e8c1f5601d01d65`. Foi substituída pelo ajuste de consentimento registrado abaixo.
 
 ## Validação observada
 
@@ -45,14 +45,23 @@ O ChatGPT descobriu automaticamente issuer, recurso, DCR e PKCE e chegou ao cons
 | Botões e guia | Confirmados em navegador autenticado; links ChatGPT/Claude visíveis, cópia do endereço confirmada e instrução de renovação publicada. |
 | Dados de usuários | Nenhuma oportunidade gratuita consumida, pagamento vinculado, perfil editado, agenda/coleção real alterada ou e-mail enviado. |
 
-## Conexão pessoal no ChatGPT — pendência explícita
+## Conexão pessoal no ChatGPT — concluída
 
 ### Correção da aceitação de consentimento
 
 Após autorização explícita para substituir o rascunho e conectar a conta com os quatro escopos da aplicação e renovação até revogação, o fluxo real encontrou `401 invalid_request: request not found` ao aceitar. A API em processo do OAuth Provider 1.7.14 precisa de `Request` para continuar no endpoint de autorização; apenas os headers não bastavam. O ajuste fornece esse contexto e define `asResponse:false`, mantendo as verificações de origem, assinatura, sessão e concessão por usuário.
 
-O teste de integração passou a executar a Server Action `decideMcpConsent` real, sem `prompt=consent` artificial: falhou antes da correção e passou depois, verificando código, família imutável, token, consulta via SDK, revogação e reconexão. Os 59 testes MCP passaram; lint terminou com zero erros e um aviso preexistente de imagem na galeria. Revisão independente sem achados relevantes. A publicação do ajuste e a nova tentativa no ChatGPT seguem em andamento.
+O teste de integração passou a executar a Server Action `decideMcpConsent` real, sem `prompt=consent` artificial: falhou antes da correção e passou depois, verificando código, família imutável, token, consulta via SDK, revogação e reconexão. Os 59 testes MCP passaram; lint terminou com zero erros e um aviso preexistente de imagem na galeria. Revisão independente sem achados relevantes.
 
-O rascunho inicial foi excluído e substituído com autorização pessoal explícita. O novo aplicativo solicita os cinco escopos, incluindo `offline_access`, e chegou ao consentimento com callback `chatgpt.com`. **A chamada autenticada no ChatGPT aguarda a publicação da correção acima e a conclusão do callback.** A opção Claude foi publicada, mas não foi conectada a uma conta pessoal Claude.
+### Publicação final e evidência real
 
-Evidências locais não versionadas em `.local/mcp-radar-20261112/`: `release-full-tests.log`, `release-integrated-tests.log`, `release-lint.log`, `refresh-discovery-tests.log`, `refresh-discovery-lint.log`, `published-buttons.jpg` e `test-draft-confirmation.jpg`. Logs de build isolados na VPS em `/opt/apogee-site/deploy-logs/mcp-{636fd79,589290f,bc960a7}-*.log`. Não persistir URLs OAuth assinadas ou tokens nesses relatórios.
+- [PR #163](https://github.com/brigidovinicius/apogee/pull/163) integrada em `78028ebf7f2e386359be03efbf43ac87da51fc80`, após os seis gates do [CI 43460155655](https://github.com/brigidovinicius/apogee/actions/runs/43460155655) passarem, incluindo os 783 testes do site. O candidato preserva o painel do PR #158 (`17ed786`, merge `c6ddeb0`). Árvore do app conferida como idêntica ao merge final.
+- **Revisão publicada:** `6f1d1977b28ebf1ca1910c89be7b23829f828922`. **Imagem:** `sha256:0329711083ce09edc1128876d010d81dc48f83c085843e3bf3447c4c69756125`. Build Docker e TypeScript passaram. A suíte na imagem isolada passou 782/783 após montar referências externas somente para leitura; a exceção exige Git, ausente nessa imagem, e seus nove testes passaram no repositório local completo. O CI completo também passou nesse contexto.
+- Troca exclusiva de `web` sob `flock` em `/opt/apogee-site/deploy.lock`, após o responsável pelo blog concluir a troca independente do worker. SHA/imagem anteriores e checkout limpo foram conferidos antes da troca. Healthcheck `healthy`, zero reinícios, `APOGEE_MCP_ENABLED=true`; IDs dos demais serviços do projeto preservados. Home e metadados públicos responderam 200. Sem nova migração ou alteração de configuração. Rollback imediato: imagem/revisão `bc960a7`, preservando tabelas e flag.
+- O rascunho inicial foi excluído e substituído com autorização pessoal explícita. O novo aplicativo solicita os cinco escopos, incluindo `offline_access`; a retomada retornou ao ChatGPT e o aplicativo passou a oferecer uso no chat.
+- **Consulta real concluída:** `search_opportunities` com `pageSize=3` e `deadlineWindow="abertas"` retornou três oportunidades, com links Apogee e oficiais. A atividade da Apogee e a resposta ficaram visíveis no chat. Nenhum calendário, coleção, perfil ou pagamento real foi alterado.
+- Conferência adicional no banco, em transação somente leitura, retornou os cinco escopos e `access_active=true`, `refresh_active=true`, `family_active=true`, sem ler ou imprimir credenciais. A emissão de renovação foi confirmada; não se esperou a expiração do token para observar uma rotação automática real. Rotação e revogação foram verificadas nos testes sintéticos.
+
+A opção Claude foi publicada, com o mesmo endpoint e login Apogee, mas não foi conectada a uma conta pessoal Claude. A conexão validada é pessoal no ChatGPT; não houve submissão ao diretório público de aplicativos.
+
+Evidências locais não versionadas em `.local/mcp-radar-20261112/`: logs anteriores, `consent-action-red.log`, `consent-action-green.log`, `consent-action-tests.log`, `consent-action-lint.log`, `consent-action-repository-context.log`, `published-buttons.jpg` e `chatgpt-radar-validated.jpg`. Logs isolados na VPS em `/opt/apogee-site/deploy-logs/mcp-{636fd79,589290f,bc960a7,6f1d197}-*.log`. Não persistir URLs OAuth assinadas ou tokens nesses relatórios.
