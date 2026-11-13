@@ -1,6 +1,6 @@
 # Apogee no ChatGPT — candidato local
 
-Continuação do MCP do Radar (`ca2b38b`) na branch `feat/mcp-radar-20261112`. Escopo confirmado pelo usuário: botão no site e consulta ao perfil próprio, com organização de calendário e coleções. Ainda não publicado ou conectado a uma conta real do ChatGPT/Claude.
+Continuação do MCP do Radar (`ca2b38b`) na branch `feat/mcp-radar-20261112`. Escopo confirmado pelo usuário: botão no site e consulta ao perfil próprio, com organização de calendário e coleções. Publicado e ativado em 13/11/2026, com opção adicional Claude. Consulte o [registro de produção e a pendência da conexão pessoal](releases/mcp-20261113-production.md).
 
 ## Entrada pelo site
 
