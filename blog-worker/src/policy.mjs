@@ -113,8 +113,8 @@ export function validateGooglePolicy(p) {
   if(completion!==undefined&&(p.schema_version!==3||!completion||typeof completion!=='object'
     ||!/^\d{4}-\d{2}-\d{2}$/.test(completion.day??'')||!Number.isFinite(Date.parse(completion.day+'T12:00:00Z'))
     ||new Date(completion.day+'T12:00:00Z').toISOString().slice(0,10)!==completion.day
-    ||!Number.isSafeInteger(completion.calls_cap)||completion.calls_cap<p.google_daily_calls_cap||completion.calls_cap>60
-    ||completion.tokens_reserved_per_call!==30000
+    ||!Number.isSafeInteger(completion.calls_cap)||completion.calls_cap<p.google_daily_calls_cap||completion.calls_cap>80
+    ||!Number.isSafeInteger(completion.tokens_reserved_per_call)||completion.tokens_reserved_per_call<15000||completion.tokens_reserved_per_call>30000
     ||typeof completion.authorization_reference!=='string'||completion.authorization_reference.length<20))fail('google_completion_policy');
   if(p.schema_version===3 && (p.multisource_required!==true || p.minimum_compatibility_basis_points!==9000 || p.critical_fact_confirmation_required!==true || p.per_topic_daily_cap!==1 || p.per_topic_weekly_cap!==7))fail('google_policy');
   if(p.input_counting_mode!=='local_byte_bound' || p.image_size!=='1536x1024')fail('google_policy');
