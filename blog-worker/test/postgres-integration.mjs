@@ -954,7 +954,7 @@ try{
     const completeClaims=hybridClaims(latest.document),omittedClaims=completeClaims.slice(0,1);
     const forgedAssessment=assessDossier({...latest.document,claims:omittedClaims},{comparisonVerified:true});
     await assert.rejects(()=>admin.begin(async tx=>{
-      await tx`update blog_worker.attempt set state='confirmed' where id=${repeated.id}`;
+      await tx`update blog_worker.attempt set state='confirmed',charged_micro_usd=0 where id=${repeated.id}`;
       await tx`select blog_worker.record_assisted_comparison(${id},${repeated.id},${tx.json(omittedClaims)},${tx.json(forgedAssessment)})`;
     }),/critical_fact_omitted/);
     assert.equal((await store.finish(repeated,{outcome:'completed',text:JSON.stringify({claims:completeClaims}),usage:smallHybridUsage})).status,'comparison_ready');
