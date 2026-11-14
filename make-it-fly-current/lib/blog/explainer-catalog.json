@@ -705,12 +705,12 @@
     "question": "Como órbitas polares permitem observar diferentes regiões da Terra?",
     "terms": [
       "polar",
+      "inclination",
       "rotates",
-      "region",
-      "orbit"
+      "longitude"
     ],
     "urls": [
-      "https://science.nasa.gov/earth/earth-observatory/catalog-of-earth-satellite-orbits/",
+      "https://science.nasa.gov/learn/basics-of-space-flight/chapter5-1/",
       "https://www.esa.int/articles/about-us/directorates/science/spacecraft-orbits"
     ]
   }
