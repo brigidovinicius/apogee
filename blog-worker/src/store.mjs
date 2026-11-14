@@ -173,7 +173,8 @@ export class Store {
   async researchProgress(id,progress){
     const {day}=periodKeys(new Date());
     // Only bounded operational metadata is mutable; captured texts and dossier history are immutable.
-    await this.sql`update blog_worker.candidate c set artifact=jsonb_set(coalesce(artifact,'{}'::jsonb),'{research}',${this.sql.json({...progress,day,at:new Date().toISOString()})}::jsonb)
+    await this.sql`update blog_worker.candidate c set artifact=jsonb_set(coalesce(artifact,'{}'::jsonb),'{research}',
+      jsonb_strip_nulls(jsonb_build_object('source_discovery',c.artifact->'research'->'source_discovery')) || ${this.sql.json({...progress,day,at:new Date().toISOString()})}::jsonb)
       where c.id=${id} and c.post_id is null and c.reason is distinct from 'operator_hold' and c.reason is distinct from 'retention'
       and c.reason is distinct from 'source_changed_after_reservation'
       and not exists(select 1 from blog_worker.attempt where candidate_id=c.id and (kind='text' or state in ('reserved','unknown')))`;
@@ -252,7 +253,7 @@ export class Store {
       where (s.definition->>'enabled'='true' and s.definition->>'feed_content_approved'='true' or r.definition->>'enabled'='true' and r.definition->>'content_approved'='true')
       and d.captured_at>now()-interval '7 days' order by (d.document->>'extraction_method'='public_article') desc nulls last,d.captured_at desc limit 2000`;
     const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id,captured_at:r.captured_at}));
-    const ranked=candidates.map((candidate,index)=>({candidate,index,priority:researchPriority(candidate)})).sort((a,b)=>b.priority-a.priority||a.index-b.index).map(v=>v.candidate);
+    const ranked=candidates.map((candidate,index)=>({candidate,index,priority:researchPriority(candidate,at)})).filter(v=>v.priority>=0).sort((a,b)=>b.priority-a.priority||a.index-b.index).map(v=>v.candidate);
     const plan=balancedResearchCandidates(ranked,usage,1000);
     const due=c=>!c.artifact?.research?.next_at||Date.parse(c.artifact.research.next_at)<=Date.now();
     let publicReadUsed=false,publicReadRequests=0;
@@ -487,7 +488,7 @@ export class Store {
       if(hash(candidate.evidence)!==candidate.evidence_hash || candidate.reason==='source_changed_after_reservation')return holdAfterCharge(tx,candidate.id,cost);
       const draft=cmsDraft(effective,article);
       const [{post_id}]=await tx`select blog_worker.import_draft(${candidate.id},${tx.json(draft)}) as post_id`;
-      await tx`update blog_worker.candidate set artifact=${tx.json({article,evidence:effective.evidence,corroboration:corroboration??null,dossier_revision:version?.revision??null,cache_key:attempt.cache_key,seo:{guideline_id:SEO_GUIDELINES.id,sources:SEO_GUIDELINES.sources,prepared_in_same_call:true,human_review_required:true},human_review_required:true})} where id=${candidate.id}`;
+      await tx`update blog_worker.candidate set artifact=jsonb_strip_nulls(jsonb_build_object('research',artifact->'research')) || ${tx.json({article,evidence:effective.evidence,corroboration:corroboration??null,dossier_revision:version?.revision??null,cache_key:attempt.cache_key,seo:{guideline_id:SEO_GUIDELINES.id,sources:SEO_GUIDELINES.sources,prepared_in_same_call:true,human_review_required:true},human_review_required:true})} where id=${candidate.id}`;
       if(attempt.policy.automatic_image_generation_enabled){
         const brief=coverBrief(article);
         await tx`select blog_worker.queue_cover(${candidate.id},${brief.prompt},${brief.alt},${brief.caption})`;

@@ -6,7 +6,7 @@ import {join,resolve,relative,isAbsolute,extname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {fail,subscriptionUsage} from './policy.mjs';
 import {articleSchema} from './editorial.mjs';
-import {validateWebp} from './images.mjs';
+import {validateWebp,validateRasterQuality} from './images.mjs';
 
 export const sessionSettings=Object.freeze({useG1Credits:false,modelProvider:'',gcp:{},agentMode:'',toolPermission:'request-review',allowNonWorkspaceAccess:false,
   enableTerminalSandbox:true,disableSlashCommands:true,notifications:false,showTips:false,showFeedbackSurvey:false,
@@ -80,6 +80,7 @@ export async function readGeneratedImage({path,conversationId,artifactDirectoryP
   const sharp=(await import('sharp')).default;
   const input=await readFile(file),meta=await sharp(input,{limitInputPixels:20000000,animated:false}).metadata();
   if(!['png','jpeg','webp'].includes(meta.format)||meta.pages>1||!meta.width||!meta.height)fail('invalid_image');
+  validateRasterQuality(meta,await sharp(input,{limitInputPixels:20000000}).stats());
   const output=await sharp(input,{limitInputPixels:20000000}).rotate().resize(1536,1024,{fit:'cover'}).webp({quality:80}).toBuffer();
   validateWebp(output);return output;
 }
@@ -128,7 +129,7 @@ export function googleSubscriptionProvider({binary,sha256,runner=runCli,env=proc
       if(kind==='text')return {outcome:'completed',text:JSON.stringify(parseArticleOutput(data)),usage:data.usage};
       const image=await readImageOutput(data,{folder,startedAt,imageReader});
       return {outcome:'completed',image,usage:data.usage};
-    }catch{return {outcome:'rejected',reason:kind==='image'?'invalid_image':'invalid_structure',usage:data.usage};}
+    }catch(error){return {outcome:'rejected',reason:kind==='image'?(['image_resolution','image_uniform'].includes(error?.code)?error.code:'invalid_image'):'invalid_structure',usage:data.usage};}
   };
   let checkedQuota;
   const diagnosticUsage=async()=>{

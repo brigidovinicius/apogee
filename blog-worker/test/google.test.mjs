@@ -110,7 +110,8 @@ test('real image artifact is decoded, normalized and symlink inputs remain denie
   const home=await realpath(await mkdtemp(join(tmpdir(),'google-artifact-'))),conversationId='12345678-1234-1234-1234-123456789012';
   const folder=join(home,'.gemini/antigravity-cli/brain',conversationId);await mkdir(folder,{recursive:true});
   const sharp=(await import('sharp')).default,path=join(folder,'cover.png');
-  await sharp({create:{width:64,height:64,channels:3,background:'#123456'}}).png().toFile(path);
+  const pixels=Buffer.alloc(800*600*3);for(let i=0;i<pixels.length;i++)pixels[i]=(i*31+Math.floor(i/2400))%256;
+  await sharp(pixels,{raw:{width:800,height:600,channels:3}}).png().toFile(path);
   const opts={path,conversationId,artifactDirectoryPath:folder,startedAt:Date.now()-1000,workdir:home,home};
   const bytes=await readGeneratedImage(opts),meta=await sharp(bytes).metadata();
   assert.equal(meta.format,'webp');assert.equal(meta.width,1536);assert.equal(meta.height,1024);

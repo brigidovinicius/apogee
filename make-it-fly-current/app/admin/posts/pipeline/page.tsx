@@ -1,3 +1,4 @@
+import { SourceDiscoveryDetails } from "@/components/blog/source-discovery";
 import { referenceCatalog, taxonomy } from "@/lib/blog/corroboration.mjs";
 import { manageDossier } from "./dossie/actions";
 import { editorialChecks, seoGuidelines } from "@/lib/blog/editorial-review";
@@ -11,6 +12,7 @@ import { managePipeline } from "./actions";
 import styles from "./pipeline.module.css";
 
 export const dynamic = "force-dynamic";
+
 const money = (value: string | number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "USD", minimumFractionDigits: 4, maximumFractionDigits: 6 }).format(Number(value) / 1_000_000);
 const date = (value: Date | null | undefined) => value ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(new Date(value)) : "Ainda não verificado";
 const dailyTopics = Object.entries(taxonomy).flatMap(([category, value]) => [null, ...Object.keys(value.subcategories)].map(subcategory => ({ category, subcategory, label: value.label + " / " + (subcategory ? value.subcategories[subcategory] : "Geral") })));
@@ -87,6 +89,7 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
       {data.candidates.length ? data.candidates.map(c => <article key={c.id} className={styles.panel}>
         <div className={styles.row}><div><span className={styles.badge}>{c.topic_category && taxonomy[c.topic_category] ? taxonomy[c.topic_category].label + (c.topic_subcategory ? " / " + (taxonomy[c.topic_category].subcategories[c.topic_subcategory] ?? c.topic_subcategory) : " / Geral") : EDITORIAS[c.editoria as keyof typeof EDITORIAS] ?? c.editoria} · {states[c.post_status ?? (c.status === "ready" && c.generation_ready ? "verified_ready" : c.status)]}</span><h3>{c.post_title ?? c.title}</h3><p className={styles.muted}>{c.content_kind === "explainer" ? "Explicativo · planejado em " : "Notícia · "}{date(c.published_at)} · {c.source_id}</p></div><a href={c.url} target="_blank" rel="noopener noreferrer">Conferir fonte ↗</a></div>
         {c.reason ? <p>{pipelineReason(c.reason)}</p> : null}{c.research_stage ? <p>Pesquisa: {pipelineReason(c.research_stage)}{c.research_next_at ? ` · nova tentativa a partir de ${date(new Date(c.research_next_at))}` : ""}</p> : null}
+        {c.source_discovery ? <SourceDiscoveryDetails discovery={c.source_discovery} className={styles.details} /> : null}
         {c.status === "ready" && !c.generation_ready ? <p>Conclua o dossiê e a comparação das fontes antes de solicitar a redação.</p> : null}
         <div className={styles.actions}>
           {c.status === "ready" ? <>{c.generation_ready ? <Command intent="generate" candidate={c.id} disabled={!available}>Criar texto e capa</Command> : null}<Command intent="hold" candidate={c.id}>Reter pauta</Command></> : null}
