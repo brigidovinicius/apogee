@@ -54,6 +54,7 @@ test('an old excerpt gap is not a world fact, while scientific and evidential li
 test('a rejected question can refresh actual evidence once per day, without reopening written, held or exhausted work',()=>{
   const p=explainerCatalog[0],c={explainer_key:p.key,has_dossier:true,first_attempt_day:'2026-11-11',reason:'critical_fact_unresolved',attempts:1,comparisons:1,pending:false,text_attempts:false,assessment:{eligible:false}};
   assert.equal(explainerRecoveryEligible(c),true);assert.equal(nextExplainer([p],[],[c],now)?.key,p.key);
+  assert.equal(explainerRecoveryEligible({...c,reason:'independence_unverified'}),true);
   for(const change of [{post_id:1},{attempts:2},{comparisons:0},{pending:true},{text_attempts:true},{reason:'operator_hold'},{assessment:{eligible:true}}])assert.equal(explainerRecoveryEligible({...c,...change}),false);
   assert.equal(nextExplainer([p],[],[{...c,artifact:{research:{day:'2026-11-12',tries:1}}}],now),null);
   const d=explanatory(),metadata=structuredClone(d);metadata.documents[0].capture_id='new-capture';metadata.documents[0].consulted_at='2026-11-12T15:01:00Z';
@@ -92,6 +93,19 @@ test('new questions cannot recycle most of the critical evidence of an existing 
   const d=explanatory();assert.equal(explainerOverlap(d,[d]),true);
   const different=structuredClone(d);different.claims[0].cells= different.claims[0].cells.map(c=>({...c,quote:'A análise independente discute limitações de método.'}));
   assert.equal(explainerOverlap(d,[different]),false);
+});
+test('late guide sections remain selectable without enlarging the provider request',()=>{
+  const plan={...explainerCatalog[0],terms:['alpha','beta','gamma']};
+  const captures=plan.urls.map((url,i)=>{
+    const text='General introductory context. '.repeat(600)+`Reference author ${i}. Alpha beta gamma define the mechanism and its explicit limitations. `.repeat(12);
+    const d=extractArticle(`<h1>Public reference guide</h1><main>${text}</main>`,url);
+    return {...d,checked_at:now.toISOString(),rights_reference:'Approved public synthetic excerpt'};
+  });
+  const d=automaticExplainerDossier(plan,captures,policy,now);assert.ok(d);
+  assert.ok(d.documents.every(doc=>doc.excerpt_offset>12000));
+  for(const doc of d.documents){const c=captures.find(x=>x.url===doc.url);assert.equal([...c.text].slice(doc.excerpt_offset,doc.excerpt_offset+[...doc.text].length).join(''),doc.text);}
+  assert.ok(Buffer.byteLength(JSON.stringify(buildComparisonRequest(d,policy)))+1024<=policy.input_tokens_cap_including_overhead);
+  assert.equal(extractArticle(`<h1>Bounded public guide</h1><main>${'Bounded context. '.repeat(4000)}</main>`,plan.urls[0]).text.length,48000);
 });
 test('explanatory text has an explicit format and dates without adding invented source publication dates',()=>{
   const c={...candidate(),editorial:explanatory().editorial};c.evidence[0].published_at=null;c.evidence[0].consulted_at=now.toISOString();

@@ -946,10 +946,11 @@ try{
     assert.equal((await admin`select count(*)::int as n from blog_worker.dossier_version where candidate_id=${id}`)[0].n,2);
     await admin`update blog_worker.candidate set artifact=null where id=${id}`;
     const updated={...plan,urls:plan.urls.map(url=>url+'?expanded=1')};
-    const result=await store.prepareAutomaticExplainer(hybridPolicy,{plans:[updated],read:async(url,budget)=>{budget.used++;const doc=guide(updated,url);doc.text+=' Novo contexto sintético com limitações documentadas.';doc.content_hash=hash(doc.text);return doc;},at:hybridAt()});
+    const result=await store.prepareAutomaticExplainer(hybridPolicy,{plans:[updated],read:async(url,budget)=>{budget.used++;const doc=guide(updated,url);doc.text='Contexto introdutório geral. '.repeat(600)+doc.text+' Novo contexto sintético com limitações documentadas.';doc.content_hash=hash(doc.text);return doc;},at:hybridAt()});
     assert.equal(result.prepared,1,JSON.stringify(result));assert.equal((await store.nextAutomaticWork(hybridPolicy)).method,'reserveComparison');
     const [latest]=await admin`select * from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
     assert.equal(latest.revision,3);assert.equal(latest.actor_id,'automatic_research_recovery');assert.equal(latest.reviewed_by,null);
+    assert.ok(latest.document.documents.every(doc=>doc.excerpt_offset>12000));
     const repeated=await store.reserveComparison({...hybridOptions(),candidateId:id});
     const completeClaims=hybridClaims(latest.document),omittedClaims=completeClaims.slice(0,1);
     const forgedAssessment=assessDossier({...latest.document,claims:omittedClaims},{comparisonVerified:true});

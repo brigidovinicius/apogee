@@ -11,7 +11,7 @@ BEGIN
    THEN RETURN false; END IF;
  SELECT * INTO previous FROM blog_worker.dossier_version WHERE candidate_id=c.id ORDER BY revision DESC LIMIT 1;
  IF previous.candidate_id IS NOT NULL THEN
-  IF c.content_kind<>'explainer' OR c.reason IS NULL OR c.reason NOT IN ('compatibility_below_90','critical_fact_unresolved')
+  IF c.content_kind<>'explainer' OR c.reason IS NULL OR c.reason NOT IN ('compatibility_below_90','critical_fact_unresolved','independence_unverified')
     OR previous.actor_id IS DISTINCT FROM 'google_assisted' OR previous.reviewed_by IS NOT NULL
     OR previous.assessment->>'eligible' IS DISTINCT FROM 'false'
     OR previous.source_hash IS DISTINCT FROM c.evidence_hash
@@ -50,7 +50,7 @@ BEGIN
   SELECT * INTO captured FROM blog_worker.captured_document WHERE id=doc->>'capture_id';
   IF c.content_kind='explainer' THEN
    IF captured.document->'published_at' IS DISTINCT FROM doc->'published_at' OR jsonb_typeof(doc->'excerpt_offset') IS DISTINCT FROM 'number' OR coalesce(doc->>'excerpt_offset','') !~ '^[0-9]+$'
-     OR (doc->>'excerpt_offset')::integer NOT BETWEEN 0 AND 12000
+     OR (doc->>'excerpt_offset')::integer NOT BETWEEN 0 AND 48000
      OR jsonb_typeof(doc->'consulted_at') IS DISTINCT FROM 'string'
      OR (doc->>'consulted_at')::timestamptz IS DISTINCT FROM coalesce((captured.document->>'checked_at')::timestamptz,captured.captured_at)
      OR NOT ((doc->>'consulted_at')::timestamptz BETWEEN now()-interval '24 hours' AND now()+interval '15 minutes') THEN RAISE EXCEPTION 'unapproved_research_snapshot'; END IF;

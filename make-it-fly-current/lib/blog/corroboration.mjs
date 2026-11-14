@@ -50,7 +50,7 @@ export function validateDossier(value) {
       || !(d.published_at === null || (typeof d.published_at === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(d.published_at) && Number.isFinite(Date.parse(d.published_at)) && new Date(d.published_at.slice(0,10)+'T12:00:00Z').toISOString().slice(0,10)===d.published_at.slice(0,10))) || !['primary', 'independent', 'derivative', 'context'].includes(d.kind)
       || typeof d.same_event !== 'boolean' || !string(d.independence_note, 0, 1000)) reject('invalid_dossier_document');
     if (isExplainer(value) && (typeof d.same_subject !== 'boolean' || d.same_event !== false
-      || !Number.isSafeInteger(d.excerpt_offset) || d.excerpt_offset < 0 || d.excerpt_offset > 12000
+      || !Number.isSafeInteger(d.excerpt_offset) || d.excerpt_offset < 0 || d.excerpt_offset > 48000
       || typeof d.consulted_at !== 'string' || !Number.isFinite(Date.parse(d.consulted_at)))) reject('invalid_explainer_document');
     urls.push(referenceUrl(d.url, ref)); referenceUrl(d.origin_url);
     if (d.kind === 'independent' && !string(d.independence_note, 20, 1000)) reject('independence_unverified');

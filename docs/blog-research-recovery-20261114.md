@@ -11,6 +11,9 @@ Google e o orçamento não eram o bloqueio observado.
   com duas instituições cadastradas por pergunta. Melhora também as referências
   específicas para ramificações Git e modelos de implantação em nuvem.
 - Usa o maior excerto contíguo que couber no teto de entrada já existente.
+- Preserva até 48 mil caracteres públicos por captura, permitindo selecionar
+  seções posteriores aos primeiros 12 mil. O excerto e o pedido de IA conservam
+  seus limites anteriores; offsets continuam conferidos contra o original.
 - Permite reapurar uma pergunta ainda não escrita após uma única comparação
   factual rejeitada, somente com evidência textual diferente. Trocar a data ou o
   identificador da captura não basta. Prioriza perguntas novas e limita leituras

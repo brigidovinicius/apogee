@@ -18,7 +18,7 @@ export function validateExplainerCatalog(plans=catalog){
 }
 export const explainerCatalog=Object.freeze(validateExplainerCatalog());
 export const explainerId=plan=>hash('explainer:'+plan.key);
-export const EXPLAINER_RECOVERY_REASONS=Object.freeze(['compatibility_below_90','critical_fact_unresolved']);
+export const EXPLAINER_RECOVERY_REASONS=Object.freeze(['compatibility_below_90','critical_fact_unresolved','independence_unverified']);
 export function explainerRecoveryEligible(c){
   return !!c&&!c.post_id&&c.has_dossier&&EXPLAINER_RECOVERY_REASONS.includes(c.reason)
     &&c.attempts===1&&c.comparisons===1&&!c.pending&&!c.text_attempts&&!c.assessment?.eligible
