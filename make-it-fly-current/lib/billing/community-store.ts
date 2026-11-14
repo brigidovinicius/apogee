@@ -14,5 +14,10 @@ export async function communityMembership(userId: string, livemode: boolean) {
   const access=await communityAccess(userId,livemode);
   const rows=await getSql()`select id,status,cancel_at_period_end from community_subscription
     where user_id=${userId} and livemode=${livemode} order by updated_at desc limit 1`;
-  return {...access, subscription:rows[0] ? {id:String(rows[0].id),status:String(rows[0].status),cancelAtPeriodEnd:rows[0].cancel_at_period_end === true}:null};
+  const [invoice] = rows[0] ? await getSql()`select status,fraud_review_required from community_invoice
+    where subscription_id=${String(rows[0].id)}
+    order by (period_start<=now()) desc,
+      case when period_start<=now() then period_start end desc, period_start asc limit 1` : [];
+  const paymentStatus = invoice ? invoice.fraud_review_required ? "fraud" : String(invoice.status) : null;
+  return {...access, paymentStatus, subscription:rows[0] ? {id:String(rows[0].id),status:String(rows[0].status),cancelAtPeriodEnd:rows[0].cancel_at_period_end === true}:null};
 }

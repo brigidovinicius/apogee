@@ -1,4 +1,4 @@
-import { localFunctionalReview } from "@/lib/offer-preview";
+import { localFunctionalReview, localStripeSandboxReview } from "@/lib/offer-preview";
 import { REVIEW_EVENTS } from "./review-catalogue";
 import { readDiscovery, stageEnd } from "./discovery";
 import "server-only";
@@ -169,7 +169,7 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
  * or credentials are exposed to browsers. Failures remain explicit.
  */
 export async function listRadarOpportunities(calendar = false): Promise<StudentOpportunity[]> {
-  if (localFunctionalReview()) return REVIEW_EVENTS;
+  if (localFunctionalReview() || localStripeSandboxReview()) return REVIEW_EVENTS;
   if (!radarApiUrl || !radarApiToken) throw new Error("Catálogo indisponível");
 
   try {

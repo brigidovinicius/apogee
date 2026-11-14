@@ -1,7 +1,7 @@
 # Apogee — PRD geral da plataforma
 
-- **Versão:** 0.3 · 14 de novembro de 2026
-- **Estado:** PRD e prévia visual aprovados; assinatura anual e cota implementadas localmente para validação, sem publicação.
+- **Versão:** 0.4 · 14 de novembro de 2026
+- **Estado:** prévia funcional aprovada; checkout anual validado no ambiente de teste da Stripe, aguardando revisão antes de publicar.
 - **Horizonte:** novembro de 2026 a março de 2027.
 - **Responsável pela decisão de produto:** Vinicius.
 - **Base técnica examinada:** `d6a422d8207cb04eefe9819c082f948dc5a4de30`, branch principal em 14/11/2026.
@@ -318,7 +318,13 @@ A contagem de eventos está resolvida em D05/D06. As pendências não reabrem a 
 - Renovação paga adiciona o respectivo período. Falha de renovação não estende o período anterior. Cancelar a renovação mantém o período já pago. Reembolso integral ou disputa suspende o direito anual da fatura; reembolso parcial mantém o período. Alerta de fraude exige revisão operacional. Estas regras operacionais são apresentadas para validação.
 - Direitos administrativos, legados e compras antigas válidas do Radar têm precedência sobre a assinatura. Encerrar ou reembolsar a comunidade não remove esses direitos.
 - A venda avulsa pelo endpoint do Radar foi encerrada; a conciliação das compras antigas e a confirmação de e-mail continuam disponíveis. O portal anual não permite trocar para mensalidade ou outro plano.
-- Prévia funcional: contas sintéticas, autenticação real e PostgreSQL exclusivo no computador. Operações de pagamento são bloqueadas nessa prévia. Os testes de integração usam respostas Stripe sintéticas; o checkout Stripe em sandbox e sua configuração ainda precisam ser validados.
+- Prévia funcional: contas sintéticas, autenticação real e PostgreSQL exclusivo no computador. Operações de pagamento são bloqueadas nessa prévia. Os testes de integração isolados usam respostas sintéticas. Em 14/11/2026 o checkout e os webhooks foram também validados no ambiente de teste da Stripe, conforme o relatório `docs/stripe-annual-sandbox-validation-20261114.md`. A configuração e ativação de produção continuam pendentes.
 - Learn e Perks continuam sujeitos à especificação e confirmação das entregas antes da venda. Esta implementação não cria LMS, benefícios ou parcerias fictícios.
 
 O detalhamento técnico e os critérios de liberação estão em `docs/community-annual-access-review-20261114.md`. A publicação exige nova autorização após a revisão deste candidato.
+
+## 19. Resultado da validação Stripe — 14/11/2026
+
+O proprietário aprovou a prévia funcional e autorizou a validação em teste, mantendo a revisão antes de publicar. Dois checkouts anuais foram concluídos no modo test da APOGEE, um após tentativa recusada. Compra, portal, cancelamento, renovação paga e recusada com Test Clock, reembolso integral e conciliação posterior foram conferidos com 21 webhooks reais de teste aceitos. A conta de controle permaneceu limitada e o acesso legado foi preservado.
+
+A tela foi ajustada para identificar corretamente reembolso e pendência financeira, com preservação dos direitos antigos. O relatório de evidências distingue fatos observados na Stripe, verificações locais e limites do avanço temporal. Essa validação não criou ou ativou oferta live, não alterou banco/segredos de produção e não autorizou publicação.

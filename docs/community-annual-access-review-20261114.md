@@ -1,3 +1,5 @@
+> Atualização posterior: a prévia funcional foi aprovada e a validação Stripe em teste foi concluída. Consulte `docs/stripe-annual-sandbox-validation-20261114.md`. As pendências de sandbox abaixo registram a situação histórica deste candidato anterior; produção segue sem alterações.
+
 # Comunidade anual e cota do Radar — candidato local para validação
 
 Data: 14/11/2026. Branch local: `feat/annual-membership-quota-20261114`.

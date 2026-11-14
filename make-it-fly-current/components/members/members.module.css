@@ -294,6 +294,12 @@
   transition: background-color 160ms ease;
 }
 
+/* Preserve the action label when the page's generic link rule inherits panel text. */
+.page a.primary,
+.page a.primary:visited {
+  color: #ffffff;
+}
+
 .primary:hover {
   background: var(--ink);
 }

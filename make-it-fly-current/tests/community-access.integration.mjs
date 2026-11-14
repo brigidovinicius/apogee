@@ -122,6 +122,7 @@ test('cancellation keeps the paid period; failed renewal and out of order events
 test('full refund and disputes remove only annual rights; stale paid events do not restore them; legacy rights survive',async()=>{
   model.charge.amount_refunded=100;await fulfill(event('evt_partial','charge.refunded'));assert.equal((await access('paid',false)).active,true);
   model.charge.amount_refunded=amount;await fulfill(event('evt_refund','charge.refunded'));assert.equal((await access('paid',false)).active,false);
+  assert.equal((await load('lib/billing/community-store.ts').communityMembership('paid',false)).paymentStatus,'refunded');
   await fulfill(event('evt_stale_paid'));assert.equal((await access('paid',false)).active,false);
   await sql`insert into radar_legacy_access(user_id) values('paid')`;assert.equal((await access('paid',false)).source,'legacy');
   await sql`delete from radar_legacy_access where user_id='paid'`;model.charge.amount_refunded=0;model.charge.disputed=true;
@@ -157,7 +158,7 @@ test('local review paths cannot enable data fixtures or billing bypasses in prod
   const old={node:process.env.NODE_ENV,flag:process.env.APOGEE_FUNCTIONAL_REVIEW,preview:process.env.APOGEE_LOCAL_PREVIEW,url:process.env.DATABASE_URL};
   try {
     process.env.NODE_ENV='production';process.env.APOGEE_FUNCTIONAL_REVIEW='1';process.env.APOGEE_LOCAL_PREVIEW='1';process.env.DATABASE_URL='postgres://example@127.0.0.1/test';
-    const guards=load('lib/offer-preview.ts');assert.equal(guards.localFunctionalReview(),false);assert.equal(guards.localOfferPreview(),false);
+    const guards=load('lib/offer-preview.ts');assert.equal(guards.localFunctionalReview(),false);assert.equal(guards.localOfferPreview(),false);process.env.APOGEE_STRIPE_SANDBOX_REVIEW='1';assert.equal(guards.localStripeSandboxReview(),false);delete process.env.APOGEE_STRIPE_SANDBOX_REVIEW;
   } finally {
     for(const [name,value] of Object.entries({NODE_ENV:old.node,APOGEE_FUNCTIONAL_REVIEW:old.flag,APOGEE_LOCAL_PREVIEW:old.preview,DATABASE_URL:old.url})) {if(value===undefined)delete process.env[name];else process.env[name]=value;}
   }
