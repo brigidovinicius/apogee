@@ -12,7 +12,7 @@ const second = { ...first, id: "radar-second" };
 
 function fixture() {
   const state = { member: { id: "member-a", name: "Pessoa", username: "pessoa", role: "member" }, selected: null, active: false,
-    claims: 0, catalogueReads: 0, authenticatedPaths: [], calendarEnabled: false, approved: false };
+    events: new Set(), claims: 0, catalogueReads: 0, authenticatedPaths: [], calendarEnabled: false, approved: false };
   const load = opportunityLoader({
     "@/lib/members/dal": { requireSignedInMember: async path => {
       state.authenticatedPaths.push(path);
@@ -23,7 +23,11 @@ function fixture() {
     "@/lib/members/protection": { adultAccess: async () => state.approved },
     "@/lib/opportunities/personal-calendar": { personalCalendarEnabled: () => state.calendarEnabled, savedOpportunities: async () => [] },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => { state.catalogueReads++; return [first, second]; } },
-    "./detail-store": { freeRadarOpportunity: async () => state.selected,
+    "./detail-store": {
+      isFreeRadarEvent: item => item.categories.includes("eventos"),
+      freeRadarState: async () => { const ids=[...new Set([...state.events,...(state.selected?[state.selected]:[])])];
+        return { selected:state.selected,previousEvent:state.selected,eventIds:[...state.events],readableIds:ids,used:ids.length,remaining:Math.max(0,10-ids.length),limit:10 }; },
+      claimFreeRadarEvent: async (_user,id) => { state.claims++; if(state.events.has(id))return true;if(state.events.size>=10)return false;state.events.add(id);return true; },
       claimFreeRadarOpportunity: async (_user, id) => { state.claims++; state.selected ??= id; return state.selected === id; } },
     "next/navigation": { notFound: () => { throw Error("NOT_FOUND"); }, redirect: path => { throw Error(`REDIRECT:${path}`); } },
     "@/components/members/member-bar": { MemberBar: () => null },
@@ -53,21 +57,21 @@ test("GET/prefetch does not consume or reveal a detail; explicit opening consume
   assert.equal((await detail(second.id)).status, "available");
   assert.equal(state.claims, 0);
   assert.equal((await detail(first.id, true)).opportunity.officialUrl, first.officialUrl);
-  assert.equal(state.selected, first.id);
+  assert.ok(state.events.has(first.id));
   assert.equal((await detail(first.id)).status, "free");
   assert.equal((await detail(first.id, true)).status, "free");
   assert.equal(state.claims, 1);
-  assert.equal((await detail(second.id, true)).status, "purchase");
-  assert.equal((await detail(second.id)).opportunity, null);
-  assert.equal(state.selected, first.id);
+  assert.equal((await detail(second.id, true)).status, "free");
+  assert.equal((await detail(second.id)).opportunity.id,second.id);
+  assert.ok(state.events.has(first.id));
 });
 
-test("the current free-slot backend keeps one winner pending the approved quota migration", async () => {
+test("concurrent new events are both readable while quota remains", async () => {
   const { state, detail } = fixture();
   const result = await Promise.all([detail(first.id, true), detail(second.id, true)]);
-  assert.deepEqual(result.map(item => item.status).sort(), ["free", "purchase"]);
-  assert.equal(result.filter(item => item.opportunity).length, 1);
-  assert.ok([first.id, second.id].includes(state.selected));
+  assert.deepEqual(result.map(item => item.status).sort(), ["free", "free"]);
+  assert.equal(result.filter(item => item.opportunity).length, 2);
+  assert.equal(state.events.size,2);
 });
 
 test("existing access opens all details without using a free selection, including after purchase", async () => {
@@ -114,6 +118,7 @@ test("first navigation opens automatically without a free-access notice, while G
 test("a blocked detail presents the community and never starts a checkout", async () => {
   const { state, load } = fixture();
   state.selected = first.id;
+  state.events = new Set([first.id,...Array.from({length:9},(_,i)=>`already-${i}`)]);
   const page = load("app/membros/oportunidades/[id]/page.tsx").default;
   const html = renderToStaticMarkup(await page({ params: Promise.resolve({ id: second.id }) }));
   assert.match(html, /Conhecer a Comunidade Apogee/);
@@ -135,10 +140,12 @@ test("a lost free-choice race shows the community without an automatic payment a
   const available = opening(await Page({ params: Promise.resolve({ id: first.id }) }));
   assert.equal(typeof available.props.action, "function");
   state.selected = second.id;
+  state.events = new Set([second.id,...Array.from({length:9},(_,i)=>`already-${i}`)]);
   const blocked = await Page({ params: Promise.resolve({ id: first.id }) });
   assert.equal(opening(blocked), null);
   assert.doesNotMatch(renderToStaticMarkup(blocked), /Abrindo checkout|\/api\/radar\/checkout/);
   state.selected = null;
+  state.events.clear();
   const another = opening(await Page({ params: Promise.resolve({ id: second.id }) }));
   assert.notEqual(available.key, another.key);
   assert.equal(state.claims, 0);

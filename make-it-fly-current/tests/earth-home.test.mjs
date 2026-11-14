@@ -59,7 +59,8 @@ test("Earth homepage has an honest empty state instead of demonstration opportun
 });
 
 test("public catalogue outages keep the catalogue link without inventing entries", async () => {
-  const { HomeRadar } = await load("components/home/home-radar.tsx", {
+  const { HomeRadar } = opportunityLoader({
+    "@/lib/offer-preview": { localOfferPreview:()=>false },
     "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return createElement("a", props, children); } },
     "@/lib/opportunities/access": { listPublicOpportunities: async () => { throw new Error("offline"); } },
     "@/lib/home-opportunities": helpers,
@@ -67,7 +68,7 @@ test("public catalogue outages keep the catalogue link without inventing entries
     "./earth-radar/earth-radar-list": { EarthRadarList },
     "./home-radar-list": { HomeRadarList: () => null },
     "./editorial-home.module.css": { __esModule: true, default: {} },
-  });
+  })("components/home/home-radar.tsx");
   const html = renderToStaticMarkup(await HomeRadar({ presentation: "earth" }));
   assert.match(html, /temporariamente indisponível/);
   assert.match(html, /href="\/oportunidades"/);
@@ -91,7 +92,7 @@ test("both opening Radar calls to action navigate to the opportunities catalogue
     "./earth-radar.module.css": { __esModule: true, default: {} },
   });
   const html = renderToStaticMarkup(createElement(EarthRadarPreview, { radar: null }));
-  assert.match(html, /href="\/oportunidades">Oportunidades<\/a>/);
+  assert.match(html, /href="\/oportunidades">Radar<\/a>/);
   assert.match(html, /href="\/oportunidades">Explorar o Radar<\/a>/);
   assert.doesNotMatch(html, /href="#radar"/);
 });

@@ -19,10 +19,11 @@ test("a return awaiting the webhook cannot offer another purchase or grant acces
   assert.doesNotMatch(html, /Comprar acesso vitalício|Seu acesso ao Radar está liberado/);
   html = await render({ payment: "cancelled" });
   assert.match(html, /O checkout foi encerrado/);
-  assert.match(html, /Comprar acesso vitalício/);
+  assert.match(html, /Conhecer a Comunidade Apogee/);
+  assert.doesNotMatch(html,/Comprar acesso vitalício|\/api\/radar\/checkout/);
   active = true;
   html = await render({ payment: "received" });
-  assert.match(html, /Seu acesso ao Radar está liberado/);
+  assert.match(html, /Seu acesso ao Radar está preservado/);
   assert.match(html, /href="\/membros\/oportunidades\/second"/);
   assert.doesNotMatch(html, /Comprar acesso vitalício|Aguardando a confirmação/);
 });

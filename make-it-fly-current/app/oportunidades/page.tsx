@@ -11,7 +11,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import styles from "@/components/opportunities/opportunities.module.css";
 import { listPublicOpportunityPage } from "@/lib/opportunities/access";
-import { memberRadarLoginHref } from "@/lib/opportunities/navigation";
+import { memberRadarLoginHref, memberRadarPath } from "@/lib/opportunities/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +62,7 @@ export default async function OpportunitiesPage({ searchParams }: {
         </section>
 
         <p><Link href="/calendarios">Explorar calendários de oportunidades →</Link></p>
-        <RadarOfferIntro />
+        <RadarOfferIntro next={memberRadarPath(params)} />
         {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
       </main>
 

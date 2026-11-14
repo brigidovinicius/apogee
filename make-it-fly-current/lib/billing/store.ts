@@ -1,5 +1,6 @@
 import "server-only";
 import { getSql } from "@/lib/members/db";
+import { communityAccess } from "./community-store";
 
 export type RadarPurchase = {
   sessionId: string; paymentIntentId: string; userId: string | null; email: string | null;
@@ -36,7 +37,7 @@ export async function recordRadarEvent(eventId: string, eventType: string, sessi
   });
 }
 
-export type RadarAccess = { active: boolean; source: "admin" | "legacy" | "stripe" | null };
+export type RadarAccess = { active: boolean; source: "admin" | "legacy" | "stripe" | "community" | null };
 
 // Consulta privada, sem reivindicar a compra antes de comprovar o e-mail.
 export async function radarPurchaseNeedsVerification(userId: string, livemode: boolean): Promise<boolean> {
@@ -48,12 +49,12 @@ export async function radarPurchaseNeedsVerification(userId: string, livemode: b
 }
 
 export async function radarAccess(userId: string, livemode: boolean, options: { claimPurchases?: boolean } = {}): Promise<RadarAccess> {
-  return getSql().begin(async tx => {
+  const prior = await getSql().begin(async tx => {
     const [user] = await tx`select id, email, email_verified, role, blocked from "user" where id = ${userId} for update`;
     if (!user || user.blocked) return { active: false, source: null };
-    if (user.role === "admin") return { active: true, source: "admin" };
+    if (user.role === "admin") return { active: true, source: "admin" as const };
     const legacy = await tx`select user_id from radar_legacy_access where user_id = ${userId}`;
-    if (legacy.length) return { active: true, source: "legacy" };
+    if (legacy.length) return { active: true, source: "legacy" as const };
     // Payment Links não trazem uma identidade de membro confiável. O vínculo
     // só ocorre após provar o controle do mesmo e-mail no Better Auth.
     if (user.email_verified && options.claimPurchases !== false) {
@@ -67,6 +68,9 @@ export async function radarAccess(userId: string, livemode: boolean, options: { 
             and livemode = ${livemode} and status = 'paid' limit 1`
       : await tx`select session_id from radar_purchase
           where user_id = ${userId} and livemode = ${livemode} and status = 'paid' limit 1`;
-    return { active: paid.length > 0, source: paid.length ? "stripe" : null };
+    return {active:paid.length>0,source:paid.length ? "stripe" as const : null};
   });
+  if(prior.active) return prior;
+  const annual=await communityAccess(userId,livemode);
+  return {active:annual.active,source:annual.active ? "community" : null};
 }

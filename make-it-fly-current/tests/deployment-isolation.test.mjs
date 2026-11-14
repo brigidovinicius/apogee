@@ -63,10 +63,11 @@ test("the single root layout preserves the approved visual wrapper and relocated
   const file = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const visual = file.statements.filter(statement => !(ts.isVariableStatement(statement)
     && statement.declarationList.declarations.some(declaration => declaration.name.getText(file) === "metadata"))
-    && !(ts.isImportDeclaration(statement) && ["next/link", "next/server", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link", "@/components/site/site-legal-links", "@/lib/site-legal-links", "@/lib/mcp/config", "@/components/site/mcp-connect-link"].includes(statement.moduleSpecifier.text)))
+    && !(ts.isImportDeclaration(statement) && ["next/link", "next/server", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link", "@/components/site/site-legal-links", "@/lib/site-legal-links", "@/lib/mcp/config", "@/components/site/mcp-connect-link", "@/lib/offer-preview", "@/components/community/offer-preview"].includes(statement.moduleSpecifier.text)))
     .map(statement => statement.getText(file)).join("\n").replaceAll("../fonts/", "./fonts/")
     // On-demand font fetching changes network priority, not typography.
     .replaceAll("  preload: false,\n", "")
+    .replace("        {!localOfferPreview() && <JourneyTracker />}\n", "")
     .replace("        <JourneyTracker />\n", "")
     .replace("        <MakeItFlyScrollRestoration />\n", "")
     .replace("        <SkipLink />\n", '        <a className="skip-link" href="#experiencia">\n          Pular para o conteúdo\n        </a>\n')
@@ -82,6 +83,7 @@ test("the single root layout preserves the approved visual wrapper and relocated
     // The context provider adds no DOM, including on the legacy event route.
     .replace("          <McpAvailabilityProvider enabled={mcpEnabled()}>\n", "")
     .replace("          </McpAvailabilityProvider>\n", "")
+    .replace("            <ApogeeDesignSystem>{localOfferPreview() && <OfferPreviewToolbar />}{children}</ApogeeDesignSystem>", "        {children}")
     .replace("            <ApogeeDesignSystem>{children}</ApogeeDesignSystem>", "        {children}");
   assert.equal(sha256(visual), "bb2dbfad30652ec73ab9929b3732b448473f74112cbcb0cdaac56663c16f2cc0",
     "the event wrapper stays identical after removing metadata, analytics and the tested route-aware boundary");
@@ -174,6 +176,12 @@ test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surf
     "app/membros/forum/[categoria]/[topico]/page.tsx", "app/membros/forum/[categoria]/novo/page.tsx",
     "app/membros/forum/[categoria]/page.tsx", "app/membros/layout.tsx", "app/membros/oportunidades/[id]/page.tsx", "app/membros/oportunidades/page.tsx", "app/membros/page.tsx",
     "app/membros/perfil/[username]/page.tsx", "app/membros/perfil/configurar/page.tsx", "app/membros/perfil/editar/page.tsx", "app/membros/radar/acesso/page.tsx", "app/oportunidades/avisos/page.tsx", "app/oportunidades/page.tsx", "app/page.tsx",
+    "app/previa/[screen]/page.tsx",
+    "app/previa/validacao/page.tsx",
+    "app/membros/assinatura/page.tsx",
+    "app/api/comunidade/assinatura/cancelar/route.ts",
+    "app/api/comunidade/assinatura/checkout/route.ts",
+    "app/api/comunidade/assinatura/portal/route.ts",
   ].sort());
   for (const path of ["pages", "src/pages", "app/(publicado)/page.tsx", "app/(publicado)/layout.tsx", "app/(teste)/teste-terra/page.tsx", "app/(teste)/layout.tsx"]) {
     assert.equal(existsSync(new URL(path, root)), false, `${path} must not expose another page`);

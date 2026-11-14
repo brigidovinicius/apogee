@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { communityBillingEnabled } from "@/lib/billing/community-config";
 import { COMMUNITY_SIGNUP_PATH } from "@/content/community-offer";
 import styles from "./community-offer.module.css";
 
 export function CommunityPlans({ preview = false, next }: { preview?: boolean; next?: string }) {
+  const annual = `/membros/assinatura${next ? `?next=${encodeURIComponent(next)}` : ""}`;
+  const available = !preview && communityBillingEnabled();
   const signup = preview ? "/previa/entrada" : next ? `/membros/cadastro?next=${encodeURIComponent(next)}` : COMMUNITY_SIGNUP_PATH;
   return <div className={styles.scope}>
     <div className={styles.plans}>
@@ -20,13 +23,13 @@ export function CommunityPlans({ preview = false, next }: { preview?: boolean; n
         <div className={`${styles.price} ${styles.annualPrice}`}><strong>R$ 1.438,80</strong><span>/ano</span></div>
         <div>
           <p className={styles.note}>Equivalente a R$ 119,90 por mês. A contratação é anual.</p>
-          <p className={styles.note}>Forma de pagamento, renovação e cancelamento em definição.</p>
+          <p className={styles.note}>Cobrança anual de R$ 1.438,80, com renovação automática. Cancele a renovação antes da próxima cobrança.</p>
         </div>
         <ul><li>Radar completo incluído na assinatura.</li><li>Trilhas de IA aplicada conforme o programa do plano.</li><li>Conexões, atividades e projetos da comunidade.</li><li>Perks conforme disponibilidade e elegibilidade.</li></ul>
-        <div className={styles.actions}><Link className={styles.button} href={signup} prefetch={false}>Começar pela entrada gratuita</Link></div>
+        <div className={styles.actions}><Link className={styles.button} href={available ? annual : signup} prefetch={false}>{available ? "Assinar a comunidade anual" : "Começar pela entrada gratuita"}</Link></div>
         <p className={styles.note}>Os acessos antigos do Radar são preservados.</p>
       </article>
     </div>
-    <p className={styles.reviewNote}>Assinatura anual proposta para revisão. A contratação ainda não está disponível. O programa das trilhas, as atividades e os benefícios incluídos serão apresentados antes da adesão.</p>
+    <p className={styles.reviewNote}>{available ? "Consulte as entregas e condições antes de confirmar sua assinatura." : "A contratação anual será disponibilizada após a validação. A entrada gratuita continua disponível."}</p>
   </div>;
 }

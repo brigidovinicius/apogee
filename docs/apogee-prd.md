@@ -1,12 +1,12 @@
 # Apogee — PRD geral da plataforma
 
-- **Versão:** 0.2 · 14 de novembro de 2026
-- **Estado:** aprovado pelo proprietário em 14/11/2026; adequação das páginas em prévia local.
+- **Versão:** 0.3 · 14 de novembro de 2026
+- **Estado:** PRD e prévia visual aprovados; assinatura anual e cota implementadas localmente para validação, sem publicação.
 - **Horizonte:** novembro de 2026 a março de 2027.
 - **Responsável pela decisão de produto:** Vinicius.
 - **Base técnica examinada:** `d6a422d8207cb04eefe9819c082f948dc5a4de30`, branch principal em 14/11/2026.
 
-Este PRD consolida a oferta, as jornadas e as prioridades gerais da Apogee. O PRD do Radar permanece como especificação especializada do catálogo e da coleta. O documento distingue decisões confirmadas, propostas para revisão e dependências. Esta atualização é exclusivamente documental e não altera a aplicação em produção.
+Este PRD consolida a oferta, as jornadas e as prioridades gerais da Apogee. O PRD do Radar permanece como especificação especializada do catálogo e da coleta. O documento distingue decisões confirmadas, propostas para revisão e dependências. A implementação funcional desta oferta foi autorizada para revisão local. Nenhuma alteração desta etapa foi publicada em produção.
 
 ## 1. Decisões confirmadas em 14/11/2026
 
@@ -58,7 +58,7 @@ Pagamento ou assinatura não substituem verificações de conta, maioridade ou p
 
 ### Limites desta entrega documental
 
-Esta etapa atualiza somente a documentação. Alterações nas páginas, CTAs, metadados, checkout, permissões, banco e produção ficam para a próxima etapa, após a revisão. Não há criação de preços no provedor, cobrança, envio de mensagens, campanha, migração ou cadastro de contatos de teste em produção.
+A revisão documental e a prévia das páginas foram aprovadas. A etapa atual implementa localmente a assinatura anual, sua gestão e a cota real de eventos, com preservação dos direitos anteriores. Publicação, migração de produção, configuração de preços no provedor e cobrança real permanecem fora desta autorização.
 
 ### Fora do primeiro lançamento proposto
 
@@ -87,7 +87,7 @@ Uma assinatura reúne os quatro pilares e inclui acesso completo ao Radar. A ofe
 | Condição comercial | Estado nesta revisão |
 | --- | --- |
 | Comunidade: contratação exclusivamente anual. | Periodicidade confirmada pelo proprietário em D08. |
-| Preço anual proposto: R$ 1.438,80/ano, equivalente a R$ 119,90/mês. | Mantém a referência já apresentada; confirmar valor, forma de pagamento, eventual parcelamento, renovação e cancelamento antes de vender. O equivalente mensal não constitui uma opção de contratação mensal. |
+| Preço anual proposto: R$ 1.438,80/ano, equivalente a R$ 119,90/mês. | Mantém a referência já apresentada; valor mantido na prévia aprovada. A implementação local prevê cobrança integral anual, renovação automática e cancelamento da renovação ao final do período pago; estas condições operacionais entram na validação antes de vender. Não foi implementado parcelamento. O equivalente mensal não constitui uma opção de contratação mensal. |
 | Valor avulso do Radar. | Retirado da nova oferta por D03; nenhum novo preço avulso é definido. |
 | Cursos adicionais vendidos à parte. | Pendente. As trilhas incluídas na assinatura e eventuais ofertas adicionais precisam ser identificadas. |
 | Ingressos de experiências para assinantes. | Inclusão, capacidade, reserva, prioridade e eventuais custos pendentes. |
@@ -103,7 +103,7 @@ O cenário estratégico de 2.000 membros a R$ 119,90 corresponde a R$ 239.800 me
 3. Reabrir um evento já liberado não consome consulta, inclusive em outro dispositivo ou sessão.
 4. A décima consulta distinta é permitida. A tentativa de liberar o décimo primeiro evento apresenta o CTA da comunidade.
 5. Sair da conta, trocar de navegador ou limpar armazenamento local não reinicia o saldo.
-6. A regra confirmada refere-se a eventos. O tratamento gratuito das demais categorias é uma decisão pendente; esta cota não se estende implicitamente a bolsas, cursos, editais e carreira.
+6. A regra confirmada refere-se a eventos. Esta cota não se estende a bolsas, cursos, editais e carreira. Para preservar o comportamento anterior, essas categorias continuam com a escolha gratuita única existente, separada dos 10 eventos; eventual ampliação depende de decisão própria.
 
 ### Comportamento funcional proposto
 
@@ -309,3 +309,16 @@ A contagem de eventos está resolvida em D05/D06. As pendências não reabrem a 
 **Aprovação em 14/11/2026:** o proprietário aprovou o PRD e autorizou a adequação das páginas com apresentação de prévia local antes de publicar. As decisões pendentes da seção 16 continuam registradas.
 
 **Próxima entrega:** revisão da prévia local das páginas. A ativação da assinatura e a migração da cota do Radar exigem a conclusão das dependências funcionais.
+
+## 18. Implementação funcional local para validação — 14/11/2026
+
+- A cota grava até dez IDs distintos classificados em `eventos`, com trava por conta, posições de 1 a 10 e unicidade no PostgreSQL. Somente a ação de abertura consome; GET, listagem, busca e conector não consomem.
+- A escolha gratuita anterior permanece legível. Quando comprovadamente classificada como evento no catálogo, conta como a primeira das dez; uma escolha anterior de outra categoria não consome a cota de eventos. Não se inventa classificação para ficha ausente do catálogo. Nenhum direito anterior é removido.
+- Assinatura e faturas anuais possuem registros próprios. Acesso exige fatura paga do produto e preço anual exatos, vinculados à conta, no ambiente correto e dentro do período pago. Retorno do checkout e assinatura pendente não concedem acesso.
+- Renovação paga adiciona o respectivo período. Falha de renovação não estende o período anterior. Cancelar a renovação mantém o período já pago. Reembolso integral ou disputa suspende o direito anual da fatura; reembolso parcial mantém o período. Alerta de fraude exige revisão operacional. Estas regras operacionais são apresentadas para validação.
+- Direitos administrativos, legados e compras antigas válidas do Radar têm precedência sobre a assinatura. Encerrar ou reembolsar a comunidade não remove esses direitos.
+- A venda avulsa pelo endpoint do Radar foi encerrada; a conciliação das compras antigas e a confirmação de e-mail continuam disponíveis. O portal anual não permite trocar para mensalidade ou outro plano.
+- Prévia funcional: contas sintéticas, autenticação real e PostgreSQL exclusivo no computador. Operações de pagamento são bloqueadas nessa prévia. Os testes de integração usam respostas Stripe sintéticas; o checkout Stripe em sandbox e sua configuração ainda precisam ser validados.
+- Learn e Perks continuam sujeitos à especificação e confirmação das entregas antes da venda. Esta implementação não cria LMS, benefícios ou parcerias fictícios.
+
+O detalhamento técnico e os critérios de liberação estão em `docs/community-annual-access-review-20261114.md`. A publicação exige nova autorização após a revisão deste candidato.

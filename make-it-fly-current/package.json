@@ -29,7 +29,9 @@
     "billing:migrate": "node scripts/radar-billing-migrate.mjs",
     "test:billing": "node scripts/test-radar-billing.mjs",
     "store:drops:migrate": "node scripts/store-drops-migrate.mjs",
-    "radar:free:migrate": "node scripts/radar-free-opportunity-migrate.mjs"
+    "radar:free:migrate": "node scripts/radar-free-opportunity-migrate.mjs",
+    "community:access:migrate": "node scripts/community-access-migrate.mjs",
+    "test:community-access": "node --test --test-concurrency=1 tests/community-access.integration.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

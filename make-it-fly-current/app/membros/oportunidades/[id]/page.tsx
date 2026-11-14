@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatCalendarDate } from "@/components/opportunities/calendar-list";
 import { MemberBar } from "@/components/members/member-bar";
 import { OpportunityCard } from "@/components/opportunities/opportunities-board";
+import { RadarQuota } from "@/components/community/radar-quota";
 import { RadarCommunityGate } from "@/components/community/radar-offer-intro";
 import { AutomaticDetailOpening } from "@/components/opportunities/automatic-detail-opening";
 import { radarOpportunityDetail } from "@/lib/opportunities/detail-access";
@@ -25,6 +26,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
     <MemberBar member={result.member} current="radar" />
     <div className={styles.opportunityDetail}>
       <p><Link href="/membros/oportunidades">← Voltar ao Radar</Link></p>
+      {result.quota ? <RadarQuota used={result.quota.used} limit={result.quota.limit} /> : null}
       {result.opportunity ? <>
         <h1 className={styles.title}>{result.opportunity.title}</h1>
         <OpportunityCard opportunity={result.opportunity} detailed />

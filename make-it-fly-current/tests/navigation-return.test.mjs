@@ -46,12 +46,13 @@ test("the public page uses the same filtered login destination in its header and
   const tree = await Page({ searchParams: Promise.resolve({ categoria: "competicoes", pagina: "2" }) });
   const expected = "/membros/entrar?next=%2Fmembros%2Foportunidades%3Fcategoria%3Dcompeticoes%26pagina%3D2";
   assert.equal(nodes(tree, (node) => node.type === "SiteHeader")[0].props.memberHref, expected);
-  assert.equal(nodes(tree, (node) => node.type === "Link" && node.props.href.startsWith("/membros/entrar"))[0].props.href, expected);
+  assert.equal(nodes(tree,node=>typeof node.type === "function" && node.type.name === "RadarOfferIntro")[0].props.next,memberRadarPath(new URLSearchParams("categoria=competicoes&pagina=2")));
 });
 
 test("member route and data guard keep Radar state when authentication or onboarding redirects", async () => {
   const destinations = [];
   const guards = {
+    "@/lib/billing/store": { radarAccess:async()=>({active:true}) },
     "@/lib/members/dal": { requireSignedInMember: async (next) => { destinations.push(next); return { id: "local-fixture" }; } },
     "@/lib/billing/access": { requireRadarAccess: async () => {} },
     "@/lib/admin/access": { requireAdmin: async () => {} },

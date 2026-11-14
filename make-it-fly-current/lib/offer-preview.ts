@@ -4,3 +4,9 @@ import "server-only";
 export function localOfferPreview() {
   return process.env.NODE_ENV === "development" && process.env.APOGEE_LOCAL_PREVIEW === "1";
 }
+
+/** Functional review uses isolated loopback data; it cannot enable a production bypass. */
+export function localFunctionalReview() {
+  if (process.env.NODE_ENV !== "development" || process.env.APOGEE_FUNCTIONAL_REVIEW !== "1" || process.env.STRIPE_MODE !== "test") return false;
+  try { return new URL(process.env.DATABASE_URL ?? "").hostname === "127.0.0.1"; } catch { return false; }
+}
