@@ -834,6 +834,21 @@ try{
       assert.equal(await store.nextAutomaticWork(auto),null);
     }
   });
+  await check('discovered source leads survive operational updates without approving an article',async()=>{
+    await reset();const c=candidate();await store.ingest(c);
+    const discovery={registered:[{url:'https://www.nasa.gov/news-release/synthetic/',name:'NASA',publisher:'nasa',kind:'primary'}],unregistered:[],images:[],rights_status:'review_required'};
+    await store.researchProgress(c.id,{stage:'source_links_discovered',topic:{category:'tecnologia',subcategory:'ia'},source_discovery:discovery});
+    await store.researchProgress(c.id,{stage:'research_independent_missing',tries:1});
+    const [row]=await admin`select artifact,post_id from blog_worker.candidate where id=${c.id}`;
+    assert.deepEqual(row.artifact.research.source_discovery,discovery);assert.equal(row.post_id,null);
+    assert.equal((await admin`select * from blog_worker.dossier_version where candidate_id=${c.id}`).length,0);
+    await operator.attestSubscription(subscription());await googleDossier();
+    const reservation=await store.reserve(googleOptions());
+    assert.equal((await store.finish(reservation,{...googleCompleted,usage:googleUsage})).status,'draft');
+    const [written]=await admin`select artifact,post_id from blog_worker.candidate where id=${c.id}`;
+    assert.deepEqual(written.artifact.research.source_discovery,discovery);assert.ok(written.post_id);
+    const [draft]=await admin`select status from public.blog_post where id=${written.post_id}`;assert.equal(draft.status,'draft');
+  });
   await check('new cached corroboration wakes a candidate in network backoff without making a page request',async()=>{
     await reset();await operator.attestSubscription(subscription());
     const approved=[{...source,id:'SRC01',url:'https://www.nasa.gov/news-release/feed/',article_hosts:['www.nasa.gov'],editoria:'ciencia-espaco'}, {...source,id:'REF27',url:'https://www.space.com/feeds/all',article_hosts:['www.space.com'],editoria:'ciencia-espaco'}];

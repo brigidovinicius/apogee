@@ -3,6 +3,7 @@ import {referenceCatalog,referenceUrl} from './corroboration.mjs';
 import {getFeed} from './http.mjs';
 import {hash,fail} from './policy.mjs';
 import {canonicalResearchUrl} from './research-links.mjs';
+import {isIP} from 'node:net';
 
 export const ARTICLE_EXTRACTION_VERSION='public-article-v5-bounded-guide-context';
 export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$|periodico_e_jornalismo$)/.test(r.role));
@@ -68,6 +69,7 @@ function textOf(node){
 }
 const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
 const visible=node=>{for(let n=node;n;n=n.parentNode){const a=attrs(n);if(a.hidden!==undefined||a['aria-hidden']==='true'||/display\s*:\s*none|visibility\s*:\s*hidden/i.test(a.style??''))return false;}return true;};
+const mediaLink=(value,base)=>{try{if(typeof value!=='string'||!value)return null;const url=canonicalResearchUrl(value,base),u=new URL(url);return !isIP(u.hostname)&&u.hostname.includes('.')&&!/\.(?:local|internal|invalid|test|example)$/.test(u.hostname)?url:null;}catch{return null;}};
 export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={}){
   if(Buffer.byteLength(html)>3145728)fail('research_page_size');
   const tree=parse(html),nodes=[];const visit=n=>{nodes.push(n);for(const c of n.childNodes??[])visit(c);};visit(tree);
@@ -121,7 +123,22 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   // publisher places them after the main prose. Never scan recommendations.
   if(new URL(url).hostname.replace(/^www\./,'')==='sciencedaily.com')for(const n of nodes.filter(n=>/^(?:journal_references|story_source)$/.test(attrs(n).id??'')))walk(n);
   const related_urls=[...new Set(bodyNodes.filter(n=>n.tagName==='a').map(n=>{try{return canonicalResearchUrl(attrs(n).href,url);}catch{return null;}}).filter(Boolean))].slice(0,150);
-  return {url:referenceUrl(url),title:title.slice(0,220),published_at:date&&Number.isFinite(+date)?date.toISOString():null,text,content_hash:hash(text),related_urls,doi:meta.citation_doi??null,extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,evidence_scope:restricted?'public_abstract':'public_article',snapshot_hash:hash(html)};
+  const declaredImage=[own[0]?.image].flat().find(v=>v&&typeof v==='object');
+  const image_candidates=[],imageSeen=new Set();
+  const addImage=(value,alt='')=>{
+    const image=mediaLink(value,url);if(!image)return;
+    if(imageSeen.has(image)){const previous=image_candidates.find(v=>v.url===image);if(previous&&!previous.alt)previous.alt=clean(alt).slice(0,200);return;}
+    if(image_candidates.length>=3)return;
+    const declared=mediaLink(declaredImage?.contentUrl??declaredImage?.url,url)===image;
+    imageSeen.add(image);image_candidates.push({url:image,source_url:referenceUrl(url),alt:clean(alt).slice(0,200),
+      credit:declared?clean(declaredImage?.creditText??declaredImage?.copyrightNotice??'').slice(0,240)||null:null,
+      license_url:declared?mediaLink(declaredImage?.license,url):null,rights_status:'review_required'});
+  };
+  if(!restricted){
+    addImage(meta['og:image']??declaredImage?.contentUrl??declaredImage?.url,meta['og:image:alt']);
+    for(const n of bodyNodes.filter(n=>n.tagName==='img'&&visible(n))){const a=attrs(n);if(a.width&&Number(a.width)<320||a.height&&Number(a.height)<180)continue;addImage(a.src,a.alt);}
+  }
+  return {url:referenceUrl(url),title:title.slice(0,220),published_at:date&&Number.isFinite(+date)?date.toISOString():null,text,content_hash:hash(text),related_urls,image_candidates,doi:meta.citation_doi??null,extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,evidence_scope:restricted?'public_abstract':'public_article',snapshot_hash:hash(html)};
 }
 
 export function createArticleReader({download=getFeed,clock=Date.now}={}){
