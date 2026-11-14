@@ -7,7 +7,8 @@ import { publicationIssue } from "@/lib/ingestion/publication";
 import { eventHasNotStarted } from "@/lib/ingestion/event-start";
 import { parsePdf } from "@/lib/ingestion/parse-pdf";
 import type { OfficialSource, OpportunityCandidate } from "@/lib/ingestion/types";
-import { isDiscoveredPageSource, normalizeDiscoveredPage, singleOpportunityArticle, discoveredPageFailureReason } from "@/lib/ingestion/discovered-page";
+import { isDiscoveredPageSource, singleOpportunityArticle, discoveredPageFailureReason } from "@/lib/ingestion/discovered-page";
+import { prepareDiscoveredPage } from "@/lib/ingestion/international-discovered-page";
 
 type Lead = { id: string; target_id: string; url: string; title: string; excerpt?: string };
 type Prepared = { source: OfficialSource; candidate: OpportunityCandidate } | { reason: string; retry?: boolean };
@@ -32,8 +33,9 @@ export async function prepareLeadCandidate(lead: Lead, sources: OfficialSource[]
   if (isDiscoveredPageSource(source)) {
     const page = await fetchOfficialResource(lead.url, source, 2 * 1024 * 1024);
     if (!/text\/html|application\/xhtml/i.test(page.contentType)) return { reason: "unsupported_content" };
-    candidate = normalizeDiscoveredPage(page.body.toString("utf8"), source);
-    if (!candidate) return { reason: discoveredPageFailureReason(page.body.toString('utf8')) };
+    const prepared = await prepareDiscoveredPage(page.body.toString("utf8"), source);
+    if ('reason' in prepared) return { reason: prepared.reason };
+    candidate = prepared.candidate;
   } else if (pages) {
     const supplementUrl = pages === 2 ? programmeSupplementUrl(source.id) : null;
     if (source.listingUrls.length !== 1 ||

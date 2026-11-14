@@ -13,6 +13,7 @@ import { runScheduledLeadProcessing } from "@/lib/discovery/process-leads";
 import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
 import { loadActiveOfficialSources } from "@/lib/ingestion/official-source-registry";
 import { prepareSourceExpansion } from "@/lib/discovery/source-expansion";
+import { recheckKnownOpportunities } from "@/lib/ingestion/recheck";
 
 const parent = "https://official.example.org/";
 const target = "exp-source-expansion-test";
@@ -41,7 +42,7 @@ beforeEach(async () => {
   url = parent + "calls/research"; title = "Bolsa de pesquisa em tecnologia";
   deadline = "31/12/2099"; parentHasLink = true; changeOrganizer = false;
   await state.db!.exec("delete from discovery_leads; delete from ingestion_runs; delete from opportunity_management_events; delete from opportunity_revisions; delete from opportunity_sources; delete from opportunities; delete from official_sources where id like 'auto-page-%' or id='disabled-test'");
-  await state.db!.query("update discovery_targets set organizer='Instituto oficial',official_url=$2,official_verified_url=$2 where id=$1", [target, parent]);
+  await state.db!.query("update discovery_targets set organizer='Instituto oficial',official_url=$2,official_verified_url=$2,topics='{}' where id=$1", [target, parent]);
   vi.mocked(fetchOfficialResource).mockImplementation(async requested => {
     if (requested === parent) return resource(parentHasLink ? `<main><a href="${url}">${title}</a></main>` : "<main>Sem chamada</main>");
     if (changeOrganizer) await state.db!.query("update discovery_targets set organizer='Operador alterou' where id=$1", [target]);
@@ -54,6 +55,87 @@ async function addLead(legacy = false) {
   await state.db!.query(`insert into discovery_leads(target_id,url,title,processing_status,processing_reason,processing_attempts)
     values($1,$2,$3,$4,$5,$6)`, [target, url, title, legacy ? "blocked" : "pending", legacy ? "scope_unverified" : null, legacy ? 1 : 0]);
 }
+
+it.each([
+  {rules:'Open to entrants from all countries.',published:1,reason:null},
+  {rules:'The hackathon is not open to residents of Brazil.',published:0,reason:'eligibility_br_excluded'},
+  {rules:'Only accepted teams may take part.',published:0,reason:'eligibility_br_unconfirmed'},
+])('checks international rules inside native publication: $reason',async ({rules,published,reason})=>{
+  title='Hackathon de tecnologia';
+  await state.db!.query("update discovery_targets set topics=array['competicoes','eventos','eligibility-br-required']where id=$1",[target]);
+  await addLead();
+  vi.mocked(fetchOfficialResource).mockImplementation(async requested=>{
+    if(requested===parent)return resource(`<a href="${url}">${title}</a>`);
+    if(requested===url)return resource(`<main><h1>${title}</h1><p>Open to developers worldwide.</p><p>Inscrições abertas até 31/12/2099 pelo formulário de inscrição.</p><a href="${url}/rules">Official rules</a></main>`);
+    if(requested===url+'/rules')return resource(`<main><h1>Official rules</h1><p>${rules}</p></main>`);
+    throw Error('Unexpected request');
+  });
+  expect(await runScheduledLeadProcessing()).toMatchObject({created:published,published,sourcesRegistered:published,
+    ...(reason?{reasons:{[reason]:1}}:{})});
+  const rows=(await state.db!.query<{evidence_json:Record<string,unknown>}>('select evidence_json from opportunities')).rows;
+  expect(rows).toHaveLength(published);
+  if(published)expect(rows[0].evidence_json.eligibility_br).toMatchObject({source_url:url,supporting_url:url+'/rules',supporting_sha256:expect.stringMatching(/^[a-f0-9]{64}$/)});
+});
+
+it('adds global event discovery without reactivating paused targets on repeat',async()=>{
+  const sql=await readFile(new URL('../../scripts/global-hackathon-discovery-20261113.sql',import.meta.url),'utf8');
+  const ids=['global-wemakedevs-hackathons','global-google-developer-events','global-kiro-events'];
+  try {
+    await state.db!.exec(sql);
+    const rows=(await state.db!.query<{id:string;topics:string[];official_url:string;official_verified_url:string}>('select id,topics,official_url,official_verified_url from discovery_targets where id=any($1)',[ids])).rows;
+    expect(rows).toHaveLength(3);
+    for(const row of rows){expect(row.topics).toContain('eligibility-br-required');expect(row.official_verified_url).toBe(row.official_url);}
+    await state.db!.query('update discovery_targets set enabled=false,priority=1 where id=$1',[ids[0]]);
+    await state.db!.exec(sql);
+    expect((await state.db!.query('select enabled,priority from discovery_targets where id=$1',[ids[0]])).rows).toEqual([{enabled:false,priority:1}]);
+  } finally {await state.db!.query('delete from discovery_targets where id=any($1)',[ids]);}
+});
+
+it('preserves organizer authority when a global structured event carries the Brazil policy', async () => {
+  title = 'Hackathon de tecnologia';
+  const calendar = 'https://luma.com/official-calendar';
+  url = 'https://luma.com/workshop-global';
+  await state.db!.query("update discovery_targets set topics=array['competicoes','eventos','eligibility-br-required'],official_url=$2,official_verified_url=$2 where id=$1", [target, calendar]);
+  await addLead();
+  const event = {
+    '@type': 'Event', name: title, url, startDate: '2099-12-01T09:00:00Z',
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+    location: { '@type': 'VirtualLocation', url: calendar },
+    organizer: { '@type': 'Organization', name: 'Instituto oficial', url: calendar },
+    description: 'Open to developers worldwide.',
+    offers: { '@type': 'Offer', url, price: '0', priceCurrency: 'USD', availability: 'https://schema.org/InStock' },
+  };
+  vi.mocked(fetchOfficialResource).mockImplementation(async requested => resource(requested === calendar
+    ? `<a href="${url}">${title}</a>`
+    : `<script type="application/ld+json">${JSON.stringify(event)}</script><main><h1>${title}</h1><p>Open to developers worldwide.</p><a href="${url}">Register</a></main>`));
+  expect(await runScheduledLeadProcessing()).toMatchObject({ created: 1, published: 1 });
+  const source = (await loadActiveOfficialSources()).find(s => s.id.startsWith('auto-page-'))!;
+  expect(source.notes).toContain('radar:eligibility-br-required:v1');
+  expect(source.notes).toMatch(/; authority=https:\/\/luma\.com\/official-calendar$/);
+});
+
+it('withdraws an automatically published international event when its linked rules exclude Brazil on recheck',async()=>{
+  title='Hackathon de tecnologia';
+  await state.db!.query("update discovery_targets set topics=array['competicoes','eventos','eligibility-br-required']where id=$1",[target]);
+  await addLead();
+  let excluded=false;
+  vi.mocked(fetchOfficialResource).mockImplementation(async requested=>{
+    if(requested===parent)return resource(`<a href="${url}">${title}</a>`);
+    if(requested===url)return resource(`<main><h1>${title}</h1><p>Open to developers worldwide.</p><p>Inscrições abertas até 31/12/2099 pelo formulário de inscrição.</p><a href="${url}/rules">Official rules</a></main>`);
+    if(requested===url+'/rules')return resource(`<main><h1>Rules</h1><p>${excluded?'Not open to residents of Brazil.':'Open to entrants from all countries.'}</p></main>`);
+    throw Error('Unexpected request');
+  });
+  expect(await runScheduledLeadProcessing()).toMatchObject({created:1,published:1});
+  const source=(await loadActiveOfficialSources()).find(s=>s.id.startsWith('auto-page-'))!;
+  expect(source.notes).toContain('radar:eligibility-br-required:v1');
+  await state.db!.query('update opportunities set next_source_check_at=now()where official_source_id=$1',[source.id]);
+  excluded=true;
+  expect(await recheckKnownOpportunities(source,1,async body=>body.toString('utf8'))).toMatchObject({failed:0,published:0,pagesChecked:2});
+  expect((await state.db!.query('select published_at,publication_issue from opportunities')).rows)
+    .toEqual([{published_at:null,publication_issue:'unconfirmed_on_recheck'}]);
+  expect((await state.db!.query("select action from opportunity_management_events where action='withdraw'")).rows).toEqual([{action:'withdraw'}]);
+});
 
 it('adds the requested space discovery sources idempotently and preserves later administrator settings',async()=>{
   const sql=await readFile(new URL('../../scripts/space-discovery-targets-20261112.sql',import.meta.url),'utf8');

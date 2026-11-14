@@ -13,7 +13,8 @@ import { PDAI_SOURCE_ID, capesPdaiTerminalEvidence } from "./normalize-capes-pda
 import { PDSE_SOURCE_ID, capesPdseTerminalEvidence } from "./normalize-capes-pdse";
 import { ingestionFailureReason } from "./failure-reason";
 import { sourceCheckHours } from "./source-check-policy";
-import { isDiscoveredPageSource, normalizeDiscoveredPage } from "./discovered-page";
+import { isDiscoveredPageSource } from "./discovered-page";
+import { prepareDiscoveredPage } from "./international-discovered-page";
 
 import { EVG_SOURCE_ID, normalizeEvgCourse, type EvgPolicy } from "./normalize-evg-courses";
 
@@ -104,7 +105,10 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
           const start = Math.max(0, text.search(/inscriç(?:ão|ões)|prazo/i));
           statusEvidence = text.slice(start, start + 1000);
         }
-        if (isDiscoveredPageSource(source)) candidate = normalizeDiscoveredPage(response.body.toString("utf8"), source);
+        if (isDiscoveredPageSource(source)) {
+          const prepared = await prepareDiscoveredPage(response.body.toString("utf8"), source, () => { pagesChecked += 1; return true; });
+          candidate = 'candidate' in prepared ? prepared.candidate : null;
+        }
         else if (source.id === EVG_SOURCE_ID) candidate = normalizeEvgCourse(response.body.toString("utf8"), row.source_page_url, source, evgPolicy);
         else if (source.id === FULBRIGHT_SOURCE_ID) candidate = normalizeFulbright(response.body.toString("utf8"), row.source_page_url, source);
         else if (source.id === "acate-audited-events") {

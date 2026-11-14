@@ -4,7 +4,7 @@ import type { PoolClient } from "pg";
 import { candidateUrl, discoveryEdge, sameDiscoveryScope } from "./documents";
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
-import { normalizeDiscoveredPage, discoveredPageFailureReason } from "@/lib/ingestion/discovered-page";
+import { prepareDiscoveredPage, internationalEligibilityNote } from "@/lib/ingestion/international-discovered-page";
 import { publicationIssue } from "@/lib/ingestion/publication";
 import { validCategories } from "@/lib/ingestion/categories";
 import { structuredEvents } from "@/lib/ingestion/structured-events";
@@ -41,7 +41,7 @@ function pageSource(lead: ExpansionLead): OfficialSource {
     sourceType: "official_reference", baseUrl: lead.url, allowedDomains: [url.hostname],
     allowedPathPrefixes: [url.pathname], listingUrls: [lead.url], extractionMode: "html",
     audienceScope: [], geographicScope: [], categories: lead.target_topics ?? [], priority: Math.min(70, lead.target_priority ?? 0), active: true,
-    notes: `radar:discovery-page:v1; target=${lead.target_id}; authority=${lead.target_official_url}`,
+    notes: `radar:discovery-page:v1; target=${lead.target_id}${internationalEligibilityNote(lead.target_topics)}; authority=${lead.target_official_url}`,
   };
 }
 
@@ -85,8 +85,9 @@ export async function prepareSourceExpansion(lead: ExpansionLead): Promise<Prepa
     const events = structuredEvents(resource.body.toString("utf8"));
     if (events.length !== 1 || !eventOrganizerVerified(events[0], source)) return { reason: "source_authority_unverified" };
   }
-  const candidate = normalizeDiscoveredPage(resource.body.toString("utf8"), source);
-  if (!candidate) return { reason: discoveredPageFailureReason(resource.body.toString('utf8')) };
+  const prepared = await prepareDiscoveredPage(resource.body.toString("utf8"), source);
+  if ('reason' in prepared) return { reason: prepared.reason };
+  const candidate = prepared.candidate;
   if (candidate.requiresManualReview || !validCategories(candidate.categories)) return { reason: "candidate_unconfirmed" };
   const issue = publicationIssue(candidate, source);
   if (issue) return { reason: issue };

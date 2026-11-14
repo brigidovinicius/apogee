@@ -25,6 +25,7 @@ export type ProcessingLead = {
 };
 
 export const LEAD_PROCESSING_REASONS = new Set([
+  "eligibility_br_excluded", "eligibility_br_unconfirmed",
   "scope_unverified", "source_unavailable", "source_changed", "target_unavailable", "target_changed", "lead_changed", "irrelevant_link",
   "candidate_unconfirmed", "detail_layout_unrecognized", "unsupported_source", "unsupported_content", "listing_or_ambiguous", "expired", "event_started",
   "invalid_source", "source_conflict", "status_unconfirmed", "invalid_deadline", "application_route_unconfirmed",
