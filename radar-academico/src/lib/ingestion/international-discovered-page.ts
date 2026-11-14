@@ -31,32 +31,34 @@ function eligibility(text: string): 'excluded' | 'eligible' | 'unknown' {
 
 function documentText(html: string) {
   const $ = cheerio.load(html);
+  // Rules links can live in navigation or a footer; their placement must not
+  // make the linked restrictions disappear. Promotional text stays excluded.
+  const links = $('a[href]').toArray().map(node => ({ label: $(node).text().trim(), href: $(node).attr('href')! }));
   $('script,style,noscript,nav,header,footer,aside').remove();
   $('p,div,li,h1,h2,h3,h4,h5,h6,br').append(' ');
   // Transport already bounds the document to 2 MiB. Do not truncate an
   // exclusion list that appears after a long introduction to the rules.
-  return { $, text: $('body').text().replace(/\s+/gu, ' ').trim() };
+  return { links, text: $('body').text().replace(/\s+/gu, ' ').trim() };
 }
 
 /** One additional rules page, within the same audited host/path and request budget. */
 export async function prepareDiscoveredPage(html: string, source: OfficialSource, reserveRulePage: () => boolean = () => true): Promise<{ candidate: OpportunityCandidate } | { reason: string }> {
   let proof: { source_url: string; excerpt: string; supporting_url?: string; supporting_sha256?: string } | undefined;
   if (requiresBrazilEligibility(source)) {
-    const { $, text } = documentText(html);
+    const { links: pageLinks, text } = documentText(html);
     if (eligibility(text) === 'excluded') return { reason: 'eligibility_br_excluded' } as const;
     const links = new Set<string>();
     let invalidLink = false;
-    $('a[href]').each((_, element) => {
-      const label = $(element).text().trim();
-      if (!/\brules?\b|\bregulamentos?\b|\beligibility\b|\beligibilidade\b|\bterms\s*(?:and|&)\s*conditions\b|\btermos\s+e\s+condi[çc][õo]es\b/iu.test(label)) return;
+    for (const { label, href } of pageLinks) {
+      if (!/\brules?\b|\bregulamentos?\b|\beligibility\b|\beligibilidade\b|\bterms\s*(?:and|&)\s*conditions\b|\btermos\s+e\s+condi[çc][õo]es\b/iu.test(label)) continue;
       try {
-        const url = new URL($(element).attr('href')!, source.baseUrl); url.hash = '';
+        const url = new URL(href, source.baseUrl); url.hash = '';
         const base = new URL(source.baseUrl), childPrefix = base.pathname.replace(/\/$/, '') + '/';
         const linkScope = { ...source, id: 'eligibility-link-proof' };
         if (url.origin !== base.origin || !(url.pathname === base.pathname || url.pathname.startsWith(childPrefix)) || !isOfficialSourceUrl(url.href, [linkScope])) invalidLink = true;
         else links.add(url.href);
       } catch { invalidLink = true; }
-    });
+    }
     if (invalidLink || links.size > 1) return { reason: 'eligibility_br_unconfirmed' } as const;
     let evidenceText: string;
     let evidenceUrl = source.baseUrl;
