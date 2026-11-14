@@ -7,6 +7,8 @@ export const dynamic = "force-dynamic";
 
 const processingName = { pending: "Na fila automática", processing: "Verificando", retry: "Nova tentativa agendada", blocked: "Publicação automática retida", completed: "Processado", ignored: "Preservado sem publicação" };
 const reasonName: Record<string, string> = {
+  eligibility_br_excluded: "O regulamento exclui residentes no Brasil.",
+  eligibility_br_unconfirmed: "A elegibilidade para residentes no Brasil ainda não foi comprovada.",
   scope_unverified: "Fonte de destino ainda não verificada para publicação.",
   source_authority_unverified: "O destino precisa de uma página oficial verificada no seu próprio domínio.",
   source_link_missing: "O link não aparece mais na página oficial consultada.",

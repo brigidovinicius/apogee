@@ -15,7 +15,8 @@ import { normalizeProgrammeCatalogue, programmeCataloguePageCount, programmeSupp
 import { isAuditedAcateEventUrl, normalizeAcateEvent } from "./normalize-acate-events";
 import { FULBRIGHT_SOURCE_ID, normalizeFulbright } from "./normalize-fulbright";
 import { ingestionFailureReason } from "./failure-reason";
-import { isDiscoveredPageSource, normalizeDiscoveredPage } from "./discovered-page";
+import { isDiscoveredPageSource } from "./discovered-page";
+import { prepareDiscoveredPage, requiresBrazilEligibility } from "./international-discovered-page";
 
 import { EVG_SOURCE_ID, EVG_POLICY_URL, normalizeEvgPolicy, normalizeEvgCourse, isEvgCourseUrl, parseEvgListing, type EvgPolicy } from "./normalize-evg-courses";
 
@@ -77,9 +78,12 @@ async function ingestSource(
     result.pagesChecked += 1;
     if (isDiscoveredPageSource(source)) {
       if (!/text\/html|application\/xhtml/i.test(resource.contentType)) throw new Error("Conteúdo da oportunidade não confirmado");
-      const candidate = normalizeDiscoveredPage(resource.body.toString("utf8"), source);
-      if (candidate) result.discovered.push(candidate);
-      else result.ignored += 1;
+      const prepared = await prepareDiscoveredPage(resource.body.toString("utf8"), source, () => {
+        if (budget.remaining < 1) return false;
+        budget.remaining -= 1; result.pagesChecked += 1; return true;
+      });
+      if ('candidate' in prepared) result.discovered.push(prepared.candidate);
+      else { result.ignored += 1; result.warnings.push(prepared.reason); }
       result.nextListingIndex = 0;
       result.nextLinkOffset = 0;
       return result;
@@ -218,7 +222,7 @@ async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
     // one page budget, rather than repeating its URLs for a few records per cycle.
     const recheckLimit = cataloguePages
       ? budget.remaining >= cataloguePages * 2 ? 200 : 0
-      : Math.min(source.id === EVG_SOURCE_ID ? 6 : 2, Math.max(0, budget.remaining - 2));
+      : Math.min(source.id === EVG_SOURCE_ID ? 6 : 2, Math.floor(Math.max(0, budget.remaining - 2) / (requiresBrazilEligibility(source) ? 2 : 1)));
     const rechecked = await recheckKnownOpportunities(source, recheckLimit, detailText, evgPolicy);
     budget.remaining -= rechecked.pagesChecked + rechecked.failed;
     const result = await ingestSource(source, budget, maxCandidates, evgPolicy);
