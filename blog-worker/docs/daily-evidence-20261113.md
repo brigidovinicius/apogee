@@ -30,4 +30,3 @@ O teste com banco cobre a conclusão de texto e capa com 164 mil tokens já
 contabilizados: a reserva de 30 mil bloqueia, a de 15 mil permite, e um consumo
 posterior acima da margem bloqueia novamente. Todas as saídas ficam em rascunho,
 sem indexação ou agendamento.
-

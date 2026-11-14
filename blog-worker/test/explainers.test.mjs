@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {explainerCatalog,validateExplainerCatalog,explainerWindowOpen,nextExplainer,automaticExplainerDossier,explainerExcerpt} from '../src/explainers.mjs';
-import {validateDossier,assessDossier,scopeVerified,buildComparisonRequest,explainerOverlap} from '../src/corroboration.mjs';
+import {explainerCatalog,validateExplainerCatalog,explainerWindowOpen,nextExplainer,automaticExplainerDossier,explainerExcerpt,explainerRecoveryEligible,explainerEvidenceHash} from '../src/explainers.mjs';
+import {validateDossier,assessDossier,scopeVerified,buildComparisonRequest,explainerOverlap,validateComparison,isEvidenceGapClaim} from '../src/corroboration.mjs';
 import {buildRequest,cmsDraft,validateArticle} from '../src/editorial.mjs';
 import {validatePolicy,hash} from '../src/policy.mjs';
 import {ARTICLE_EXTRACTION_VERSION,referenceForUrl,articleSource,extractArticle} from '../src/article-research.mjs';
@@ -11,7 +11,7 @@ import {dossierFixture} from './corroboration-fixture.mjs';
 const now=new Date('2026-11-12T15:00:00Z'),policy={...defaultPolicy,automatic_explainers_enabled:true,explainer_after_local_hour:10};
 const explanatory=()=>{const d=dossierFixture(1);return {...d,event_key:'explainer:synthetic-concept-1',editorial:{kind:'explainer',key:'synthetic-concept-1',question:'Como funciona o conceito sintético usado neste teste?',as_of:now.toISOString()},documents:d.documents.map(doc=>({...doc,same_event:false,same_subject:true,excerpt_offset:0,consulted_at:now.toISOString()}))};};
 test('curated explainer questions cover all ten topics, stay distinct and use separate registered authors',()=>{
-  assert.equal(explainerCatalog.length,36);assert.equal(new Set(explainerCatalog.map(p=>p.category+'/'+p.subcategory)).size,10);
+  assert.ok(explainerCatalog.length>=37);assert.equal(new Set(explainerCatalog.map(p=>p.category+'/'+p.subcategory)).size,10);
   assert.throws(()=>validateExplainerCatalog([...explainerCatalog,explainerCatalog[0]]),/invalid_explainer_catalog/);
   assert.throws(()=>validateExplainerCatalog([{...explainerCatalog[0],urls:['https://www.nasa.gov/a','https://www.nasa.gov/b']}]),/invalid_explainer_sources/);
   assert.throws(()=>validateExplainerCatalog([{...explainerCatalog[0],urls:['https://127.0.0.1/a','https://www.esa.int/b']}]),/invalid_reference_url/);
@@ -37,6 +37,30 @@ test('same subject never impersonates a same-event news validation',()=>{
   const wrongKey=structuredClone(d);wrongKey.editorial.key='another-subject';assert.throws(()=>validateDossier(wrongKey),/invalid_explainer_scope/);
   const request=buildComparisonRequest(d,policy);assert.equal(JSON.parse(request.input).editorial.question,d.editorial.question);assert.match(request.instructions,/FORMATO EXPLICATIVO/);
 });
+test('recovery cannot omit or downgrade a previously unresolved critical fact to reach 90 percent',()=>{
+  const d=explanatory();d.previous_critical_claims=d.claims.filter(c=>c.critical).map(({id,text})=>({id,text}));
+  const request=buildComparisonRequest(d,policy);assert.deepEqual(JSON.parse(request.input).previous_critical_claims,d.previous_critical_claims);
+  assert.match(request.instructions,/nunca elimine ou rebaixe/);
+  assert.throws(()=>validateComparison({claims:[]},d),/critical_fact_omitted/);
+  const changed=structuredClone(d.claims);changed[0].critical=false;assert.throws(()=>validateComparison({claims:changed},d),/critical_fact_omitted/);
+  assert.equal(assessDossier(validateComparison({claims:d.claims},d),{comparisonVerified:true}).eligible,true);
+});
+test('an old excerpt gap is not a world fact, while scientific and evidential limitations remain protected',()=>{
+  assert.equal(isEvidenceGapClaim('As evidências fornecidas nos textos não detalham os tipos de nuvem.'),true);
+  for(const text of ['O estudo não confirma causalidade.','As evidências não confirmam a hipótese.','O experimento não concluiu a estrutura prevista.'])assert.equal(isEvidenceGapClaim(text),false);
+  const d=explanatory(),claims=structuredClone(d.claims);claims[0].text='As evidências fornecidas nos textos não detalham o mecanismo.';
+  assert.throws(()=>validateComparison({claims},d),/invalid_claim/);
+});
+test('a rejected question can refresh actual evidence once per day, without reopening written, held or exhausted work',()=>{
+  const p=explainerCatalog[0],c={explainer_key:p.key,has_dossier:true,first_attempt_day:'2026-11-11',reason:'critical_fact_unresolved',attempts:1,comparisons:1,pending:false,text_attempts:false,assessment:{eligible:false}};
+  assert.equal(explainerRecoveryEligible(c),true);assert.equal(nextExplainer([p],[],[c],now)?.key,p.key);
+  assert.equal(explainerRecoveryEligible({...c,reason:'independence_unverified'}),true);
+  for(const change of [{post_id:1},{attempts:2},{comparisons:0},{pending:true},{text_attempts:true},{reason:'operator_hold'},{assessment:{eligible:true}}])assert.equal(explainerRecoveryEligible({...c,...change}),false);
+  assert.equal(nextExplainer([p],[],[{...c,artifact:{research:{day:'2026-11-12',tries:1}}}],now),null);
+  const d=explanatory(),metadata=structuredClone(d);metadata.documents[0].capture_id='new-capture';metadata.documents[0].consulted_at='2026-11-12T15:01:00Z';
+  assert.equal(explainerEvidenceHash(d),explainerEvidenceHash(metadata));metadata.documents[0].text+=' Fresh source context.';
+  assert.notEqual(explainerEvidenceHash(d),explainerEvidenceHash(metadata));
+});
 test('explainer still rejects 89 percent, a critical disagreement, and nonliteral quotations',()=>{
   const d=explanatory();const ten=dossierFixture(10,9);d.claims=ten.claims;assert.equal(assessDossier(d,{comparisonVerified:true}).percentage,90);
   d.claims[1].cells[1].status='not_mentioned';d.claims[1].cells[1].quote='';assert.ok(assessDossier(d,{comparisonVerified:true}).blockers.includes('compatibility_below_90'));
@@ -54,7 +78,7 @@ test('an unrelated redirect or a lone incidental term cannot spend a comparison'
   assert.ok(explainerExcerpt('Orbital debris and collision risks require tracking and careful context. '.repeat(20),['orbital debris','collision','tracking'],1200));
 });
 test('new explanatory questions replenish six missing topics without rewriting held or written questions',()=>{
-  const added=explainerCatalog.slice(30);
+  const added=explainerCatalog.slice(30,36);
   assert.equal(added.length,6);assert.equal(new Set(added.map(p=>p.category+'/'+p.subcategory)).size,6);
   assert.ok(added.every(p=>!explainerCatalog.slice(0,30).some(q=>q.key===p.key||q.question===p.question)));
 });
@@ -69,6 +93,19 @@ test('new questions cannot recycle most of the critical evidence of an existing 
   const d=explanatory();assert.equal(explainerOverlap(d,[d]),true);
   const different=structuredClone(d);different.claims[0].cells= different.claims[0].cells.map(c=>({...c,quote:'A análise independente discute limitações de método.'}));
   assert.equal(explainerOverlap(d,[different]),false);
+});
+test('late guide sections remain selectable without enlarging the provider request',()=>{
+  const plan={...explainerCatalog[0],terms:['alpha','beta','gamma']};
+  const captures=plan.urls.map((url,i)=>{
+    const text='General introductory context. '.repeat(600)+`Reference author ${i}. Alpha beta gamma define the mechanism and its explicit limitations. `.repeat(12);
+    const d=extractArticle(`<h1>Public reference guide</h1><main>${text}</main>`,url);
+    return {...d,checked_at:now.toISOString(),rights_reference:'Approved public synthetic excerpt'};
+  });
+  const d=automaticExplainerDossier(plan,captures,policy,now);assert.ok(d);
+  assert.ok(d.documents.every(doc=>doc.excerpt_offset>12000));
+  for(const doc of d.documents){const c=captures.find(x=>x.url===doc.url);assert.equal([...c.text].slice(doc.excerpt_offset,doc.excerpt_offset+[...doc.text].length).join(''),doc.text);}
+  assert.ok(Buffer.byteLength(JSON.stringify(buildComparisonRequest(d,policy)))+1024<=policy.input_tokens_cap_including_overhead);
+  assert.equal(extractArticle(`<h1>Bounded public guide</h1><main>${'Bounded context. '.repeat(4000)}</main>`,plan.urls[0]).text.length,48000);
 });
 test('explanatory text has an explicit format and dates without adding invented source publication dates',()=>{
   const c={...candidate(),editorial:explanatory().editorial};c.evidence[0].published_at=null;c.evidence[0].consulted_at=now.toISOString();

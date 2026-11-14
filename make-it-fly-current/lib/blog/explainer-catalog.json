@@ -375,7 +375,7 @@
     ],
     "urls": [
       "https://cloud.google.com/learn/what-is-cloud-computing",
-      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-cloud-computing/"
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-are-private-public-hybrid-clouds"
     ]
   },
   {
@@ -406,7 +406,7 @@
       "changes"
     ],
     "urls": [
-      "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F",
+      "https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell",
       "https://docs.github.com/en/get-started/using-git/about-git"
     ]
   },
@@ -568,6 +568,150 @@
     "urls": [
       "https://legacy.sba.gov/business-guide/manage-your-business/marketing-sales",
       "https://business.gov.au/marketing-and-advertising/identify-your-target-market"
+    ]
+  },
+  {
+    "key": "armazenamento-ssd-hdd-1",
+    "category": "tecnologia",
+    "subcategory": "hardware-robotica",
+    "question": "Como SSDs e discos rígidos diferem no armazenamento e acesso aos dados?",
+    "terms": [
+      "SSD",
+      "HDD",
+      "storage",
+      "moving parts"
+    ],
+    "urls": [
+      "https://www.intel.com/content/www/us/en/gaming/resources/ssd-v-hdd.html",
+      "https://support.microsoft.com/en-us/windows/experience/compatibility/all-about-ssd-hdd-and-storage-types"
+    ]
+  },
+  {
+    "key": "maquinas-virtuais-isolamento-1",
+    "category": "tecnologia",
+    "subcategory": null,
+    "question": "Como máquinas virtuais executam sistemas independentes sobre o mesmo hardware?",
+    "terms": [
+      "virtual machine",
+      "hypervisor",
+      "operating system",
+      "physical"
+    ],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-a-virtual-machine",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-a-virtual-machine/"
+    ]
+  },
+  {
+    "key": "fluxo-caixa-entradas-saidas-1",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "Como o fluxo de caixa registra entradas e saídas de dinheiro de uma empresa?",
+    "terms": [
+      "cash flow",
+      "cash",
+      "income",
+      "expenses"
+    ],
+    "urls": [
+      "https://business.gov.au/guide/guide-to-managing-cash-flow",
+      "https://legacy.sba.gov/business-guide/manage-your-business/manage-your-finances"
+    ]
+  },
+  {
+    "key": "custos-iniciais-recorrentes-1",
+    "category": "negocios",
+    "subcategory": "empreendedorismo-startups",
+    "question": "Como distinguir custos iniciais e despesas recorrentes ao abrir uma empresa?",
+    "terms": [
+      "costs",
+      "expenses",
+      "running",
+      "one-time"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/plan-your-business/calculate-your-startup-costs",
+      "https://business.gov.au/Planning/New-businesses/Calculate-the-start-up-costs-of-your-business"
+    ]
+  },
+  {
+    "key": "experimentos-ab-controle-variantes-1",
+    "category": "negocios",
+    "subcategory": "marketing",
+    "question": "Como testes A/B comparam uma versão de controle e uma variante em campanhas de marketing?",
+    "terms": [
+      "control",
+      "treatment",
+      "variant",
+      "performance"
+    ],
+    "urls": [
+      "https://developers.google.com/google-ads/api/docs/experiments/overview",
+      "https://learn.microsoft.com/en-us/dynamics365/customer-insights/journeys/real-time-marketing-ab-tests-in-marketing-journeys"
+    ]
+  },
+  {
+    "key": "regressao-classificacao-previsoes-1",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Como regressão e classificação produzem tipos diferentes de previsão no aprendizado de máquina?",
+    "terms": [
+      "regression",
+      "classification",
+      "numeric",
+      "label"
+    ],
+    "urls": [
+      "https://developers.google.com/machine-learning/intro-to-ml/what-is-ml",
+      "https://learn.microsoft.com/en-us/dotnet/machine-learning/resources/tasks"
+    ]
+  },
+  {
+    "key": "git-estados-preparacao-commit-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Qual é a diferença entre alterar arquivos, prepará-los e registrar um commit no Git?",
+    "terms": [
+      "staging",
+      "working directory",
+      "modified",
+      "commit"
+    ],
+    "urls": [
+      "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F",
+      "https://docs.github.com/en/get-started/using-git/about-git"
+    ]
+  },
+  {
+    "key": "atmosfera-janelas-observacao-1",
+    "category": "ciencia",
+    "subcategory": null,
+    "question": "Como a atmosfera terrestre limita observações astronômicas em diferentes faixas de luz?",
+    "terms": [
+      "atmosphere",
+      "radio",
+      "visible",
+      "blocked"
+    ],
+    "urls": [
+      "https://science.nasa.gov/ems/01_intro/",
+      "https://www.esa.int/pl/articles/about-us/directorates/science/integral/the-electromagnetic-spectrum"
+    ]
+  },
+  {
+    "key": "orbitas-polares-cobertura-1",
+    "category": "ciencia",
+    "subcategory": "aeroespacial",
+    "question": "Como órbitas polares permitem observar diferentes regiões da Terra?",
+    "terms": [
+      "polar",
+      "inclination",
+      "rotates",
+      "longitude"
+    ],
+    "urls": [
+      "https://science.nasa.gov/learn/basics-of-space-flight/chapter5-1/",
+      "https://www.esa.int/articles/about-us/directorates/science/spacecraft-orbits"
     ]
   }
 ]
