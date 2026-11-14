@@ -1,5 +1,7 @@
 # Deploy rotineiro da Apogee na VPS
 
+Registro Radar internacional de 14/11/2026: [release, fontes e validação](radar-global-events-release-20261114.md).
+
 Este é o procedimento padrão para publicar uma revisão já aprovada da Apogee. O canal normal é **Git + SSH usando o alias `apogee-vps`**. O Web Console da Hostinger é apenas contingência para recuperar acesso SSH; ele não é parte do fluxo de deploy normal.
 
 ## Regras

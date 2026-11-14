@@ -9,6 +9,7 @@ import { detectDeadline } from './detect-deadline';
 import { classifyApplicationRoute } from './classify-application-route';
 import { confirmedTerminalStatus, deadlineIsCurrent } from './publication';
 import { normalizeServiceEvent } from './normalize-service-event';
+import { normalizeWeMakeDevsHackathon } from './normalize-wemakedevs';
 
 export const isDiscoveredPageSource = (source: Pick<OfficialSource, "id">) => source.id.startsWith("auto-page-");
 const clean = (text: string) => text.normalize("NFC").replace(/\s+/gu, " ").trim();
@@ -108,6 +109,8 @@ export function singleOpportunityArticle(html: string) {
 
 /** A detail page must identify one opportunity; navigation and mixed listings fail closed. */
 export function normalizeDiscoveredPage(html: string, source: OfficialSource): OpportunityCandidate | null {
+  const weMakeDevs = normalizeWeMakeDevsHackathon(html, source);
+  if (weMakeDevs !== undefined) return weMakeDevs;
   const events = structuredEvents(html);
   if (events.length && (new URL(source.baseUrl).hostname !== "luma.com" ||
     events[0].eventAttendanceMode === "https://schema.org/OnlineEventAttendanceMode")) {
