@@ -20,7 +20,7 @@ O servidor atende somente o loopback local. O usuário determinou o uso do naveg
 ## Mudanças apresentadas
 
 - Home alinhada à proposta de comunidade com Radar, Learn, Perks e Community, mantendo a composição e a identidade existentes.
-- Página da comunidade com os quatro pilares, entrada gratuita, planos mensal/anual propostos e condições de disponibilidade.
+- Página da comunidade com os quatro pilares, entrada gratuita, assinatura exclusivamente anual e condições de disponibilidade.
 - CTAs de entrada com destino próprio, substituindo o diálogo que remetia ao evento.
 - Comunicação das 10 consultas de eventos distintos, sem renovação automática e sem consumir outra consulta ao reabrir.
 - Retirada do preço avulso do Radar e do checkout automático nos percursos visuais de detalhes bloqueados.
@@ -49,7 +49,7 @@ As páginas protegidas reais mantêm autenticação e autorização; a área de 
 - 30 testes focados aprovados: detalhes e direitos do Radar, ausência de checkout automático, finalidade da captura, metadados e seleção de oportunidades da Home.
 - `git diff --check` aprovado antes do registro local.
 - Interface conferida em 390 px nas seis páginas da prévia; comunidade, evento e Radar também em 320 px; comunidade em 768 px; comunidade, planos e Home em 1440 px. Sem transbordamento horizontal nas conferências registradas.
-- Alternância mensal/anual apresenta o total anual equivalente e mantém os valores como proposta.
+- Na primeira versão, a alternância mensal/anual foi conferida. A revisão posterior do proprietário substitui essa oferta pela assinatura exclusivamente anual, com total anual em destaque e equivalente mensal informativo.
 - Consulta demonstrativa aumenta o saldo uma vez; reabertura mantém o saldo; a 11ª ficha leva à comunidade; eventos liberados continuam abrindo após o limite.
 - Simulação de acesso antigo permite continuar sem consumir a cota.
 - Formulário vazio apresenta os três erros esperados; envio demonstrativo válido move o foco à confirmação e não cria requisição ao endpoint de contatos.
@@ -81,3 +81,11 @@ APOGEE_LOCAL_PREVIEW=1 /Users/viniciusbrigido/.codex/npm-queue/npm-queue.py --co
 ```
 
 O worktree inicialmente criado em Documents apresentou arquivos `dataless` indisponíveis para leitura. Foi preservado; o trabalho efetivo continuou no diretório temporário acima.
+
+## Revisão — assinatura exclusivamente anual
+
+Em 14/11/2026 o proprietário definiu a contratação da comunidade somente no plano anual. A opção mensal e o seletor de periodicidade foram retirados; a entrada gratuita permanece.
+
+A prévia destaca R$ 1.438,80/ano, com o equivalente de R$ 119,90/mês apenas para comparação. O valor continua sendo a referência proposta anteriormente; a forma de pagamento, a renovação e o cancelamento seguem pendentes antes de vender. O PRD registra a decisão em D08 e a FAQ esclarece a periodicidade.
+
+Validação desta revisão: renderização da página no navegador interno, total anual e equivalente mensal visíveis, ausência do seletor mensal e captura atualizada. `git diff --check` aprovado. A alteração de apresentação não exigiu novos testes pesados; o servidor de prévia permanece na fila global. Nenhuma cobrança ou publicação foi ativada.

@@ -1,12 +1,8 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
 import { COMMUNITY_SIGNUP_PATH } from "@/content/community-offer";
 import styles from "./community-offer.module.css";
 
 export function CommunityPlans({ preview = false, next }: { preview?: boolean; next?: string }) {
-  const [annual, setAnnual] = useState(false);
   const signup = preview ? "/previa/entrada" : next ? `/membros/cadastro?next=${encodeURIComponent(next)}` : COMMUNITY_SIGNUP_PATH;
   return <div className={styles.scope}>
     <div className={styles.plans}>
@@ -19,20 +15,18 @@ export function CommunityPlans({ preview = false, next }: { preview?: boolean; n
         <p className={styles.note}>As 10 consultas não se renovam automaticamente.</p>
       </article>
       <article className={`${styles.plan} ${styles.featured}`} aria-labelledby="community-plan-title">
-        <h3 id="community-plan-title">Continue com a comunidade.</h3>
-        <p>Radar completo, aprendizado prático, conexões e benefícios em uma assinatura.</p>
-        <div className={styles.billing} role="group" aria-label="Visualizar plano proposto">
-          <button type="button" aria-pressed={!annual} onClick={() => setAnnual(false)}>Mensal</button>
-          <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)}>Anual</button>
-        </div>
-        <div aria-live="polite" aria-atomic="true"><div className={styles.price}><strong>{annual ? "R$ 119,90" : "R$ 145"}</strong><span>{annual ? "/mês equivalente" : "/mês"}</span></div>
-          <p className={styles.note}>{annual ? "Equivalente a R$ 1.438,80 por ano. Forma de cobrança e cancelamento em definição." : "Valor proposto para a assinatura mensal."}</p>
+        <h3 id="community-plan-title">Comunidade anual.</h3>
+        <p>Radar completo, aprendizado prático, conexões e benefícios em uma assinatura anual.</p>
+        <div className={`${styles.price} ${styles.annualPrice}`}><strong>R$ 1.438,80</strong><span>/ano</span></div>
+        <div>
+          <p className={styles.note}>Equivalente a R$ 119,90 por mês. A contratação é anual.</p>
+          <p className={styles.note}>Forma de pagamento, renovação e cancelamento em definição.</p>
         </div>
         <ul><li>Radar completo incluído na assinatura.</li><li>Trilhas de IA aplicada conforme o programa do plano.</li><li>Conexões, atividades e projetos da comunidade.</li><li>Perks conforme disponibilidade e elegibilidade.</li></ul>
         <div className={styles.actions}><Link className={styles.button} href={signup} prefetch={false}>Começar pela entrada gratuita</Link></div>
         <p className={styles.note}>Os acessos antigos do Radar são preservados.</p>
       </article>
     </div>
-    <p className={styles.reviewNote}>Planos propostos para revisão. A contratação da assinatura ainda não está disponível. O programa das trilhas, as atividades e os benefícios incluídos serão apresentados antes da adesão.</p>
+    <p className={styles.reviewNote}>Assinatura anual proposta para revisão. A contratação ainda não está disponível. O programa das trilhas, as atividades e os benefícios incluídos serão apresentados antes da adesão.</p>
   </div>;
 }

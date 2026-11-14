@@ -1,6 +1,6 @@
 # Apogee — PRD geral da plataforma
 
-- **Versão:** 0.1 · 14 de novembro de 2026
+- **Versão:** 0.2 · 14 de novembro de 2026
 - **Estado:** aprovado pelo proprietário em 14/11/2026; adequação das páginas em prévia local.
 - **Horizonte:** novembro de 2026 a março de 2027.
 - **Responsável pela decisão de produto:** Vinicius.
@@ -19,6 +19,7 @@ Este PRD consolida a oferta, as jornadas e as prioridades gerais da Apogee. O PR
 | D05 | Oferecer até 10 consultas gratuitas de eventos. | A conta gratuita pode liberar os detalhes de até 10 eventos distintos. |
 | D06 | Contar eventos distintos por conta, sem renovação automática; reabrir o mesmo evento não consome outra consulta. | A cota é compartilhada entre dispositivos e não se reinicia a cada mês, dia ou sessão. |
 | D07 | Apresentar primeiro o PRD para revisão. | As páginas e regras de produção entram na etapa posterior à revisão deste documento. |
+| D08 | Disponibilizar a assinatura da comunidade somente anualmente. | Retirar a opção mensal da oferta e da prévia; manter a entrada gratuita. Esta decisão substitui a periodicidade mensal do planejamento estratégico. |
 
 Os demais preços, eventos e benefícios do documento estratégico permanecem como referências de planejamento, nas condições indicadas neste PRD.
 
@@ -85,8 +86,8 @@ Uma assinatura reúne os quatro pilares e inclui acesso completo ao Radar. A ofe
 
 | Condição comercial | Estado nesta revisão |
 | --- | --- |
-| Comunidade mensal: R$ 145/mês. | Proposta do documento estratégico; confirmar antes de configurar e vender. |
-| Anual: equivalente a R$ 119,90/mês, total equivalente de R$ 1.438,80/ano. | Proposta; confirmar cobrança, eventual parcelamento, renovação e cancelamento. |
+| Comunidade: contratação exclusivamente anual. | Periodicidade confirmada pelo proprietário em D08. |
+| Preço anual proposto: R$ 1.438,80/ano, equivalente a R$ 119,90/mês. | Mantém a referência já apresentada; confirmar valor, forma de pagamento, eventual parcelamento, renovação e cancelamento antes de vender. O equivalente mensal não constitui uma opção de contratação mensal. |
 | Valor avulso do Radar. | Retirado da nova oferta por D03; nenhum novo preço avulso é definido. |
 | Cursos adicionais vendidos à parte. | Pendente. As trilhas incluídas na assinatura e eventuais ofertas adicionais precisam ser identificadas. |
 | Ingressos de experiências para assinantes. | Inclusão, capacidade, reserva, prioridade e eventuais custos pendentes. |
@@ -285,7 +286,7 @@ Os eventos com OpenAI de novembro/dezembro constam como previstos no documento e
 | --- | --- | --- | --- |
 | Q01 | Qual o acesso gratuito às categorias que não são eventos? Manter a amostra atual ou definir regra própria? | Produto/proprietário. | Antes do novo bloqueio de detalhes. |
 | Q02 | A oportunidade gratuita anterior, quando for evento, compõe a cota de 10 ou fica como direito adicional? | Produto e análise técnica. | Antes da migração; preservar seu acesso em qualquer escolha. |
-| Q03 | Quais preços da comunidade, cobrança anual, renovação, cancelamento, período e tratamento de falhas serão adotados? | Proprietário e operação comercial. | Antes de configurar ou ativar assinatura. |
+| Q03 | Confirmar o preço anual, a forma de pagamento, eventual parcelamento, renovação, cancelamento e tratamento de falhas. A contratação exclusivamente anual já está definida. | Proprietário e operação comercial. | Antes de configurar ou ativar assinatura. |
 | Q04 | Quais trilhas, atividades e recursos estão incluídos no primeiro pacote? Haverá cursos adicionais? | Produto e conteúdo. | Antes da oferta final e venda. |
 | Q05 | Qual canal gratuito e ação real de entrada serão utilizados? Como se relacionam à conta e aos espaços pagos? | Proprietário e comunidade. | Antes dos CTAs de entrada. |
 | Q06 | Quais perks estão formalizados e quais regras de ingresso, reserva e capacidade valem por experiência? | Parcerias e produção. | Antes de anunciar cada entrega. |
@@ -302,6 +303,8 @@ A contagem de eventos está resolvida em D05/D06. As pendências não reabrem a 
 - Base técnica: `make-it-fly-current/lib/opportunities/detail-access.ts`, `detail-store.ts`, `lib/billing/`, `lib/members/schema.ts`, `lib/mcp/radar.ts`, `content/community.ts` e páginas relacionadas, na revisão indicada no início.
 
 **Histórico v0.1 — 14/11/2026:** criação do PRD geral com oferta integrada, entrada gratuita, direitos antigos preservados, retirada da nova oferta avulsa e cota de 10 eventos distintos por conta.
+
+**Histórico v0.2 — 14/11/2026:** assinatura da comunidade exclusivamente anual por decisão do proprietário; opção mensal retirada da oferta e da prévia. Mantidos o preço anual como referência proposta, a entrada gratuita e os direitos antigos do Radar.
 
 **Aprovação em 14/11/2026:** o proprietário aprovou o PRD e autorizou a adequação das páginas com apresentação de prévia local antes de publicar. As decisões pendentes da seção 16 continuam registradas.
 

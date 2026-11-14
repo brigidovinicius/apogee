@@ -21,9 +21,7 @@
 .price strong { font-size:3.2rem; line-height:1.05; letter-spacing:-.06em; font-weight:500; }
 .price span { color:#c6d8e8; font-size:.85rem; }
 .plan .note { color:#b4c9dc; font-size:.76rem; line-height:1.8; }
-.billing { display:inline-flex; gap:4px; border:1px solid #557590; padding:4px; border-radius:5px; margin-top:24px; align-self:flex-start; }
-.billing button { border:0; min-height:40px; padding:8px 15px; border-radius:3px; color:#c8dbe9; background:transparent; font:inherit; cursor:pointer; }
-.billing button[aria-pressed=true] { background:#b9d3ee; color:#07182d; }
+.annualPrice strong { font-size:clamp(2rem,4vw,3.2rem); white-space:nowrap; }
 .reviewNote { font-size:.78rem; line-height:1.8; color:#b1c7d9; border-left:2px solid #8bb5d7; padding-left:16px; margin-top:25px; max-width:78ch; }
 .intro { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; padding:26px; margin-block:24px; border:1px solid #cdd8e4; border-left:4px solid #315b81; border-radius:4px; background:#f2f6fa; }
 .intro h2 { margin:0 0 10px; font-size:1.25rem; line-height:1.3; letter-spacing:-.025em; }
