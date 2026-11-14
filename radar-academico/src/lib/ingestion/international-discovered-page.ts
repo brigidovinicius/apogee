@@ -5,6 +5,7 @@ import { isOfficialSourceUrl } from './validate-url';
 import { structuredEvents } from './structured-events';
 import { singleOpportunityArticle, normalizeDiscoveredPage, discoveredPageFailureReason } from './discovered-page';
 import type { OfficialSource, OpportunityCandidate } from './types';
+import { weMakeDevsEligibilityText, isWeMakeDevsHackathonSource } from './normalize-wemakedevs';
 
 export const BRAZIL_ELIGIBILITY_TOPIC = 'eligibility-br-required';
 const policyNote = 'radar:eligibility-br-required:v1';
@@ -21,6 +22,7 @@ function eligibility(text: string): 'excluded' | 'eligible' | 'unknown' {
     !/\b(?:only|exclusively).{0,25}\b(?:residents?|citizens?|based in).{0,100}\b(?:brazil|brasil)\b/u.test(value)) return 'unknown';
   // Require a participation statement. A registration button near a mention
   // of Brazil or a worldwide sponsor does not establish geographic eligibility.
+  if (/\bwho can (?:take part|participate)\? (?:developers|participants|entrants) from anywhere in the world\b/u.test(value)) return 'eligible';
   if (/\b(?:open|welcome) to (?:(?:all|eligible) )?(?:participants?|entrants?|developers?|startups?|teams?|students?|anyone|people|residents?) (?:from )?(?:worldwide|anywhere(?: in the world)?|any country|all countries|around the world|brazil|brasil)\b/u.test(value) ||
     /\b(?:participation|entry|applications?) (?:is|are) open (?:worldwide|to (?:all countries|brazil|brasil))\b/u.test(value) ||
     /\b(?:open worldwide|brazilians? (?:are eligible|may apply|can participate)|residents? (?:of|in) (?:brazil|brasil) (?:are eligible|may apply|can participate)|(?:aberto|aberta) (?:a|para) (?:participantes|pessoas|equipes|estudantes|residentes) (?:de|do|em) (?:todo o mundo|qualquer pais|brasil)|(?:residentes no brasil|brasileiros) podem participar)\b/u.test(value)) return 'eligible';
@@ -73,7 +75,7 @@ export async function prepareDiscoveredPage(html: string, source: OfficialSource
     } else {
       // A footer's worldwide community slogan is not participation evidence.
       const events = structuredEvents(html);
-      evidenceText = singleOpportunityArticle(html)?.text ?? (events.length === 1 && typeof events[0].description === 'string' ? events[0].description : '');
+      evidenceText = singleOpportunityArticle(html)?.text || weMakeDevsEligibilityText(html, source) || (events.length === 1 && typeof events[0].description === 'string' ? events[0].description : '');
     }
     const result = eligibility(evidenceText);
     if (result !== 'eligible') return { reason: result === 'excluded' ? 'eligibility_br_excluded' : 'eligibility_br_unconfirmed' } as const;
@@ -83,7 +85,7 @@ export async function prepareDiscoveredPage(html: string, source: OfficialSource
       ...(rulesHash ? { supporting_url: evidenceUrl, supporting_sha256: rulesHash } : {}) };
   }
   const candidate = normalizeDiscoveredPage(html, source);
-  if (!candidate) return { reason: discoveredPageFailureReason(html) };
+  if (!candidate) return { reason: isWeMakeDevsHackathonSource(source) ? 'candidate_unconfirmed' : discoveredPageFailureReason(html) };
   if (proof) candidate.evidenceJson.eligibility_br = proof;
   return { candidate };
 }

@@ -48,6 +48,18 @@ export function discoveryDocument(resource: DiscoveryResource, url: string, root
   if (html) {
     const $ = cheerio.load(text);
     $("header,aside").remove();
+    // This audited organizer's index labels the section "Hackathons" but its
+    // creative card names (e.g. Toggle Wars) omit that word. Preserve that
+    // explicit context only for dated, same-host children of this exact index.
+    if (url === 'https://www.wemakedevs.org/hackathons' && root === url &&
+      $('h1').length === 1 && $('h1').text().trim() === 'Hackathons') {
+      $('a[href]').each((_, node) => {
+        const next = resolved($(node).attr('href') ?? '', url);
+        if (next && new URL(next).origin === new URL(root).origin &&
+          /^\/hackathons\/[a-z0-9-]+\/?$/.test(new URL(next).pathname) &&
+          /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d/i.test($(node).text())) $(node).prepend('Hackathon: ');
+      });
+    }
     // Institutional Plone pages share gov.br navigation with other agencies.
     // Only the bounded content and its pagination supply discovery links.
     const plone = $('#content #content-core');
