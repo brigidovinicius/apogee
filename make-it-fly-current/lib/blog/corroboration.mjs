@@ -14,6 +14,9 @@ export const scopeVerified = d => d.documents.length > 0 && d.documents.every(do
   ? doc.same_event === false && doc.same_subject === true : doc.same_event === true);
 const stable = v => Array.isArray(v) ? v.map(stable) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, stable(v[k])])) : v;
 export const dossierHash = v => createHash('sha256').update(typeof v === 'string' ? v : JSON.stringify(stable(v))).digest('hex');
+// A statement about an earlier excerpt omitting information is operational
+// history, rather than a claim about the subject. Study limitations stay facts.
+export const isEvidenceGapClaim=text=>/^(?:as evidências fornecidas nos textos|os documentos fornecidos|os textos fornecidos|as fontes fornecidas) não (?:detalham|mencionam|abordam)\b/i.test(text);
 const reject = code => { throw Object.assign(new Error(code), { code }); };
 const string = (v, min, max) => typeof v === 'string' && v.trim() === v && v.length >= min && v.length <= max && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(v);
 export function referenceUrl(value, reference) {
@@ -34,6 +37,9 @@ export function validateDossier(value) {
     || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.editorial.key) || !string(value.editorial.question, 20, 220)
     || value.event_key !== 'explainer:' + value.editorial.key || typeof value.editorial.as_of !== 'string'
     || !/^\d{4}-\d{2}-\d{2}T/.test(value.editorial.as_of) || !Number.isFinite(Date.parse(value.editorial.as_of)))) reject('invalid_explainer_scope');
+  if(value.previous_critical_claims!==undefined&&(!isExplainer(value)||!Array.isArray(value.previous_critical_claims)
+    ||value.previous_critical_claims.length<1||value.previous_critical_claims.length>16
+    ||value.previous_critical_claims.some(c=>!/^C[1-9]\d?$/.test(c.id??'')||!string(c.text,8,500))))reject('invalid_research_history');
   if (!unique(value.claims.map(c => String(c.text).normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim()))) reject('duplicate_claim');
   if (Buffer.byteLength(JSON.stringify(value)) > 180000 || !unique(value.documents.map(d => d.id)) || !unique(value.claims.map(c => c.id))) reject('invalid_dossier');
   const urls = [];
@@ -112,6 +118,8 @@ export function approvedEvidence(dossier, verification) {
 }
 export function validateComparison(value, dossier) {
   if (!value || Object.keys(value).join() !== 'claims' || !Array.isArray(value.claims)) reject('invalid_comparison');
+  if(value.claims.some(c=>isEvidenceGapClaim(c.text)))reject('invalid_claim');
+  if((dossier.previous_critical_claims??[]).some(previous=>!value.claims.some(c=>c.critical===true&&c.text===previous.text)))reject('critical_fact_omitted');
   return validateDossier({ ...dossier, claims: value.claims });
 }
 // Different questions can use the same reference guide, but cannot recycle

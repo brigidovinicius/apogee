@@ -1,5 +1,5 @@
 import catalog from '../../make-it-fly-current/lib/blog/explainer-catalog.json' with {type:'json'};
-import {referenceUrl,validateDossier,dossierHash,buildComparisonRequest} from './corroboration.mjs';
+import {referenceUrl,validateDossier,dossierHash,buildComparisonRequest,isEvidenceGapClaim} from './corroboration.mjs';
 import {referenceForUrl,primaryReference,ARTICLE_EXTRACTION_VERSION} from './article-research.mjs';
 import {TOPICS,topicKey} from './automatic-research.mjs';
 import {fail,hash,periodKeys} from './policy.mjs';
@@ -18,18 +18,29 @@ export function validateExplainerCatalog(plans=catalog){
 }
 export const explainerCatalog=Object.freeze(validateExplainerCatalog());
 export const explainerId=plan=>hash('explainer:'+plan.key);
+export const EXPLAINER_RECOVERY_REASONS=Object.freeze(['compatibility_below_90','critical_fact_unresolved']);
+export function explainerRecoveryEligible(c){
+  return !!c&&!c.post_id&&c.has_dossier&&EXPLAINER_RECOVERY_REASONS.includes(c.reason)
+    &&c.attempts===1&&c.comparisons===1&&!c.pending&&!c.text_attempts&&!c.assessment?.eligible
+    &&(!c.document||c.document.claims.some(v=>v.critical&&!isEvidenceGapClaim(v.text)));
+}
+export const explainerEvidenceHash=d=>dossierHash(d.documents.map(v=>({id:v.id,url:v.url,title:v.title,
+  published_at:v.published_at,text:v.text,rights_reference:v.rights_reference,kind:v.kind,
+  origin_url:v.origin_url,same_event:v.same_event,same_subject:v.same_subject,independence_note:v.independence_note})));
 export function explainerWindowOpen(policy,at=new Date()){
   return policy.automatic_explainers_enabled===true&&Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/Sao_Paulo',hour:'2-digit',hourCycle:'h23'}).format(at))>=policy.explainer_after_local_hour;
 }
 export function nextExplainer(plans,usage,existing,at=new Date()){
   const byKey=new Map(existing.map(c=>[c.explainer_key,c]));
-  return plans.find(p=>{
+  const eligible=plans.filter(p=>{
     if(usage.some(u=>topicKey(u)===topicKey(p)&&(u.day>=1||u.week>=7)))return false;
     const c=byKey.get(p.key);if(!c)return true;
     const r=c.artifact?.research;
-    return !c.post_id&&!c.first_attempt_day&&!c.has_dossier&&!['operator_hold','retention','source_changed_after_reservation'].includes(c.reason)
-      &&(!r?.next_at||Date.parse(r.next_at)<=+at)&&!(r?.day===periodKeys(at).day&&r.tries>=3);
-  })??null;
+    const recovery=explainerRecoveryEligible(c);
+    return !c.post_id&&((!c.first_attempt_day&&!c.has_dossier)||recovery)&&!['operator_hold','retention','source_changed_after_reservation'].includes(c.reason)
+      &&(!r?.next_at||Date.parse(r.next_at)<=+at)&&!(r?.day===periodKeys(at).day&&r.tries>=(recovery?1:3));
+  });
+  return eligible.find(p=>!byKey.get(p.key)?.has_dossier)??eligible[0]??null;
 }
 // A contiguous context window, selected by the editorial subject, never by
 // whether sentences agree. Exact originals, offset and source dates are kept.
@@ -53,7 +64,7 @@ export function explainerExcerpt(text,terms,bytes){
   if(!best||best.found<Math.min(2,terms.length))return null;
   return {text:best.text,excerpt_offset:best.excerpt_offset};
 }
-export function automaticExplainerDossier(plan,captures,policy,at=new Date()){
+export function automaticExplainerDossier(plan,captures,policy,at=new Date(),{previousCriticalClaims=[]}={}){
   const chosen=plan.urls.map(url=>captures.find(s=>(referenceUrl(s.url)===referenceUrl(url)||s.requested_url===url)
     &&s.extraction_method==='public_article'&&s.extraction_version===ARTICLE_EXTRACTION_VERSION
     &&Number.isFinite(Date.parse(s.checked_at??s.captured_at))&&Date.parse(s.checked_at??s.captured_at)<=+at
@@ -61,7 +72,9 @@ export function automaticExplainerDossier(plan,captures,policy,at=new Date()){
   if(chosen.some(s=>!s))return null;
   if(new Set(chosen.map(s=>referenceForUrl(s.url)?.publisher)).size!==chosen.length)return null;
   if(new Set(chosen.map(s=>s.text.normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim())).size!==chosen.length)return null;
-  for(let total=6000;total>=1500;total-=500){
+  // Use the largest contiguous context that fits the existing request ceiling.
+  // A fixed short excerpt can omit definitions and qualifications in long guides.
+  for(let total=8500;total>=1500;total-=500){
     const documents=chosen.map((s,i)=>{
       const excerpt=explainerExcerpt(s.text,plan.terms,Math.floor(total/chosen.length));if(!excerpt)return null;
       const ref=referenceForUrl(s.url);
@@ -72,7 +85,8 @@ export function automaticExplainerDossier(plan,captures,policy,at=new Date()){
     });
     if(documents.some(d=>!d))continue;
     const d=validateDossier({schema_version:1,event_key:'explainer:'+plan.key,category:plan.category,subcategory:plan.subcategory,
-      editorial:{kind:'explainer',key:plan.key,question:plan.question,as_of:at.toISOString()},documents,claims:[]});
+      editorial:{kind:'explainer',key:plan.key,question:plan.question,as_of:at.toISOString()},documents,claims:[],
+      ...(previousCriticalClaims.length?{previous_critical_claims:previousCriticalClaims}:{})});
     try{buildComparisonRequest(d,policy);}catch{continue;}
     return d;
   }

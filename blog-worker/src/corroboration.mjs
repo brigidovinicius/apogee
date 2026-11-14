@@ -19,6 +19,10 @@ export function buildComparisonRequest(dossier, policy, repair=false) {
     body.instructions+=' FORMATO EXPLICATIVO: os documentos tratam de um conceito comum, não de um mesmo acontecimento. A pergunta editorial define o escopo. Compare apenas fatos que respondem a ela, incluindo limites e contexto essenciais. Não procure uma data de anúncio comum nem apresente um guia antigo como descoberta recente. Guias produzidos por instituições diferentes podem ser análises independentes de conhecimento estabelecido; verifique autoria e dependência, sem alegar validação experimental independente. A pergunta não permite omitir divergências ou transformar aconselhamento particular em regra universal. Não inclua números, desempenho comercial ou regras nacionais sem confirmação pertinente nas fontes.';
     const input=JSON.parse(body.input);input.editorial=d.editorial;body.input=JSON.stringify(input);
   }
+  if(d.previous_critical_claims?.length){
+    const input=JSON.parse(body.input);input.previous_critical_claims=d.previous_critical_claims;body.input=JSON.stringify(input);
+    body.instructions+=' REAPURAÇÃO: reavalie TODOS os fatos críticos anteriores em previous_critical_claims. Copie seu text exatamente e mantenha critical=true, incluindo quando continuarem sem confirmação ou forem contraditos. Acrescente fatos necessários, mas nunca elimine ou rebaixe um fato crítico para aumentar a porcentagem.';
+  }
   if (Buffer.byteLength(JSON.stringify(body)) + 1024 > policy.input_tokens_cap_including_overhead) fail('input_limit');
   return body;
 }
