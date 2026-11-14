@@ -1,3 +1,6 @@
+import { localOfferPreview } from "@/lib/offer-preview";
+import { OfferPreviewPage } from "@/components/community/offer-preview";
+import { RadarOfferIntro } from "@/components/community/radar-offer-intro";
 import { CalendarSaveProvider } from "@/components/opportunities/save-opportunity";
 import { calendarSaveState } from "@/lib/opportunities/personal-calendar";
 import { calendarReturnPath } from "@/lib/opportunities/calendar-navigation";
@@ -31,6 +34,7 @@ export const metadata: Metadata = {
 export default async function OpportunitiesPage({ searchParams }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  if (localOfferPreview()) return <OfferPreviewPage screen="radar" />;
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(await searchParams)) {
     if (typeof value === "string") params.set(key, value);
@@ -58,7 +62,7 @@ export default async function OpportunitiesPage({ searchParams }: {
         </section>
 
         <p><Link href="/calendarios">Explorar calendários de oportunidades →</Link></p>
-        <p className={styles.memberCta}><Link href={memberHref}>Entre na comunidade Apogee para explorar o Radar na área de membros →</Link></p>
+        <RadarOfferIntro />
         {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
       </main>
 

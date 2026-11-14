@@ -38,7 +38,7 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
           <p className={styles.eyebrow}>Área de membros · Radar de oportunidades</p>
           <h1 className={styles.title}>Radar de oportunidades</h1>
           <p className={styles.lead}>
-            Escolha uma oportunidade para acessar os detalhes grátis. Para explorar as demais, compre o acesso vitalício por R$ 49,00
+            Descubra seu próximo passo no Radar. Conheça a entrada gratuita com até 10 eventos distintos e a assinatura da comunidade com Radar completo incluído. Seus acessos anteriores são preservados.
           </p>
         </div>
       </header>

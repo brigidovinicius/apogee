@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatCalendarDate } from "@/components/opportunities/calendar-list";
 import { MemberBar } from "@/components/members/member-bar";
 import { OpportunityCard } from "@/components/opportunities/opportunities-board";
+import { RadarCommunityGate } from "@/components/community/radar-offer-intro";
 import { AutomaticDetailOpening } from "@/components/opportunities/automatic-detail-opening";
 import { radarOpportunityDetail } from "@/lib/opportunities/detail-access";
 import { adultAccess } from "@/lib/members/protection";
@@ -29,13 +30,11 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
         <OpportunityCard opportunity={result.opportunity} detailed />
         {canSave ? <form data-behavior-action={saved ? "remove_saved" : "save"} action={toggleSaved.bind(null,id,saved)}><button className={styles.primary}>{saved ? "Remover dos salvos" : "Salvar no meu calendário"}</button><Link href="/membros/meu-calendario"> Meu calendário</Link></form> : hasCalendar ? <p>Para usar o calendário pessoal, <Link href="/membros/protecao">conclua a verificação da conta</Link>.</p> : null}
         {result.opportunity.discovery?.editions.map(edition=><section key={edition.id}><h2>{edition.name}</h2><ol>{edition.stages.map(stage=><li key={stage.id}><strong>{stage.name}</strong>: <time dateTime={stage.start}>{formatCalendarDate(stage.start)}</time>{stage.end ? <> a <time dateTime={stage.end}>{formatCalendarDate(stage.end)}</time></> : null} · <a data-behavior-action="official_link" href={stage.sourceUrl} target="_blank" rel="noopener noreferrer">Fonte oficial</a></li>)}</ol></section>)}
-      </> : <AutomaticDetailOpening
+      </> : result.status === "purchase" ? <RadarCommunityGate next={opportunityDetailPath(id)} /> : <AutomaticDetailOpening
         key={`${id}:${result.status}`}
-        checkout={result.status === "purchase"}
-        action={result.status === "purchase"
-          ? `/api/radar/checkout?next=${encodeURIComponent(opportunityDetailPath(id))}`
-          : openFreeOpportunity.bind(null, id)}
+        action={openFreeOpportunity.bind(null, id)}
       />}
+
     </div>
   </div>;
 }

@@ -33,7 +33,7 @@ export function EditorialHome() {
     <main id="experiencia" tabIndex={-1}>
       <section className={styles.intro} aria-labelledby="home-title">
         <h1 id="home-title">Um lugar para o seu próximo salto.</h1>
-        <div className={styles.introActions}><p>Aprenda a usar IA no dia a dia, troque experiências na comunidade gratuita e descubra novas possibilidades no evento gratuito Codex Community.</p><div><Link className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={18} /></Link><Link className={styles.heroSecondary} href="/oportunidades" prefetch={false}>Explorar oportunidades</Link></div></div>
+        <div className={styles.introActions}><p>Conhecimento, ferramentas, oportunidades e gente para construir mais. Conheça a comunidade que reúne Radar, Learn, Perks e Community, com uma entrada gratuita.</p><div><Link className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={18} /></Link><Link className={styles.heroSecondary} href="/oportunidades" prefetch={false}>Explorar oportunidades</Link></div></div>
       </section>
 
       <RedBullSupport />
@@ -90,10 +90,10 @@ export function EditorialHome() {
 
       <section className={styles.community} aria-labelledby="home-community-title">
         <div className={styles.communityCopy}>
-          <p>Comunidade Apogee · gratuita</p>
+          <p>Comunidade Apogee</p>
           <h2 id="home-community-title">Juntos, mais longe.</h2>
-          <p>Troque experiências sobre IA, descubra oportunidades e encontre novas perspectivas para seus projetos em uma comunidade gratuita.</p>
-          <Link className={styles.inlineAction} href="/comunidade" prefetch={false}>Conhecer a comunidade gratuita<ArrowUpRight aria-hidden="true" size={18} /></Link>
+          <p>Explore o Radar, aprenda a aplicar IA e encontre pessoas para construir junto. Comece gratuitamente e conheça as entregas da assinatura.</p>
+          <Link className={styles.inlineAction} href="/comunidade" prefetch={false}>Conhecer a Comunidade Apogee<ArrowUpRight aria-hidden="true" size={18} /></Link>
         </div>
         <article className={styles.experience} aria-labelledby="home-experience-title">
           <Image className={styles.eventArt} src="/brand/apogee-star.svg" alt="" width={703} height={870} sizes="144px" />

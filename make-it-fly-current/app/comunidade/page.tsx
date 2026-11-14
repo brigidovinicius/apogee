@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { radarDetailReturnPath } from "@/lib/opportunities/detail-path";
+import { localOfferPreview } from "@/lib/offer-preview";
 import { CommunitySalesPage } from "@/components/community/community-sales-page";
 
-const description = "Comunidade gratuita da Apogee no WhatsApp: IA no dia a dia, oportunidades e curadoria. Conheça também a primeira turma de IA em preparação.";
+const description = "Conheça a Comunidade Apogee: Radar, Learn, Perks e Community. Comece gratuitamente com até 10 eventos distintos no Radar e descubra a assinatura.";
 
 export const metadata: Metadata = {
   title: "Comunidade Apogee",
@@ -17,6 +19,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary", title: "Comunidade Apogee", description },
 };
 
-export default function CommunityPage() {
-  return <CommunitySalesPage />;
+export default async function CommunityPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const params = await searchParams;
+  return <CommunitySalesPage preview={localOfferPreview()} next={radarDetailReturnPath(params.next)} />;
 }

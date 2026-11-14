@@ -11,7 +11,7 @@ const subscribeToHydration = () => () => {};
 const clientSnapshot = () => true;
 const serverSnapshot = () => false;
 
-export function ContactCaptureForm() {
+export function ContactCaptureForm({ preview = false }: { preview?: boolean }) {
   const campaign: ContactCampaign = "codex";
   const hydrated = useSyncExternalStore(subscribeToHydration, clientSnapshot, serverSnapshot);
   const id = useId();
@@ -37,6 +37,7 @@ export function ContactCaptureForm() {
     setErrors(next);
     setFailure("");
     if (next.name || next.email || next.consent) { (next.name ? name : next.email ? email : consent).focus(); return; }
+    if (preview) { form.reset(); setSubmitted(true); return; }
     const data = new FormData(form);
     setPending(true);
     try {
@@ -56,11 +57,11 @@ export function ContactCaptureForm() {
   }
 
   if (submitted) return <div ref={confirmation} tabIndex={-1} className={styles.captureConfirmation} role="status" aria-labelledby={`${id}-confirmation`}>
-    <span className={styles.confirmationIcon}><Check size={24} aria-hidden="true" /></span><p className={styles.eyebrow}>Inscrição registrada</p>
+    <span className={styles.confirmationIcon}><Check size={24} aria-hidden="true" /></span><p className={styles.eyebrow}>{preview ? "Demonstração concluída" : "Inscrição registrada"}</p>
     <h2 id={`${id}-confirmation`}>Você deu o primeiro passo.</h2>
-    <p>Seu contato foi registrado. As orientações de acesso ao evento serão enviadas para o e-mail informado.</p>
+    <p>{preview ? "Demonstração concluída. Nenhum contato foi registrado e nenhum e-mail será enviado." : "Seu contato foi registrado. As orientações de acesso ao evento serão enviadas para o e-mail informado."}</p>
     <p className={styles.formPurpose}>Este cadastro não cria uma conta nem inscreve você em outros comunicados.</p>
-    <Link className={styles.subtleLink} href="/comunidade" prefetch={false}>Conhecer a comunidade gratuita<ArrowUpRight size={16} aria-hidden="true" /></Link>
+    <Link className={styles.subtleLink} href="/comunidade" prefetch={false}>Conhecer a Comunidade Apogee<ArrowUpRight size={16} aria-hidden="true" /></Link>
   </div>;
 
   return <form className={styles.captureForm} noValidate onSubmit={submit} aria-labelledby={`${id}-title`} aria-busy={pending}>

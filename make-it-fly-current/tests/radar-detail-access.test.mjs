@@ -62,7 +62,7 @@ test("GET/prefetch does not consume or reveal a detail; explicit opening consume
   assert.equal(state.selected, first.id);
 });
 
-test("concurrent distinct selections have one winner and the loser must purchase", async () => {
+test("the current free-slot backend keeps one winner pending the approved quota migration", async () => {
   const { state, detail } = fixture();
   const result = await Promise.all([detail(first.id, true), detail(second.id, true)]);
   assert.deepEqual(result.map(item => item.status).sort(), ["free", "purchase"]);
@@ -111,38 +111,36 @@ test("first navigation opens automatically without a free-access notice, while G
   assert.doesNotMatch(opened, /Sua primeira oportunidade|Esta é sua oportunidade gratuita|Abrindo detalhes/);
 });
 
-test("another detail opens checkout directly by POST and a concurrent free claim retains its destination", async () => {
+test("a blocked detail presents the community and never starts a checkout", async () => {
   const { state, load } = fixture();
   state.selected = first.id;
   const page = load("app/membros/oportunidades/[id]/page.tsx").default;
-  const checkoutHtml = renderToStaticMarkup(await page({ params: Promise.resolve({ id: second.id }) }));
-  assert.match(checkoutHtml, /action="\/api\/radar\/checkout\?next=%2Fmembros%2Foportunidades%2Fradar-second"/);
-  assert.match(checkoutHtml, /method="post"/);
-  assert.match(checkoutHtml, /Abrindo checkout…/);
-  assert.doesNotMatch(checkoutHtml, /Radar para a vida toda|Comprar acesso vitalício|R\$ 49|REQUISITO_PRIVADO/);
-  const { openFreeOpportunity } = load("app/membros/oportunidades/[id]/actions.ts");
-  await assert.rejects(openFreeOpportunity(second.id), /REDIRECT:\/membros\/oportunidades\/radar-second$/);
-  const html = renderToStaticMarkup(await page({ params: Promise.resolve({ id: first.id }) }));
-  assert.ok(html.includes(first.eligibility));
+  const html = renderToStaticMarkup(await page({ params: Promise.resolve({ id: second.id }) }));
+  assert.match(html, /Conhecer a Comunidade Apogee/);
+  assert.match(html, /href="\/comunidade\?next=%2Fmembros%2Foportunidades%2Fradar-second#planos"/);
+  assert.doesNotMatch(html, /\/api\/radar\/checkout|Abrindo checkout|method="post"|REQUISITO_PRIVADO/);
+  assert.equal(state.claims, 0);
+  const preserved = renderToStaticMarkup(await page({ params: Promise.resolve({ id: first.id }) }));
+  assert.ok(preserved.includes(first.eligibility));
 });
 
-test("a lost free-choice race and a different opportunity receive fresh opening state", async () => {
+test("a lost free-choice race shows the community without an automatic payment and keeps the opened event", async () => {
   const { state, load } = fixture();
   const Page = load("app/membros/oportunidades/[id]/page.tsx").default;
   const opening = node => {
     if (!node?.props) return null;
-    if ("checkout" in node.props && "action" in node.props) return node;
-    return [node.props.children].flat().map(opening).find(Boolean);
+    if ("action" in node.props) return node;
+    return [node.props.children].flat().map(opening).find(Boolean) ?? null;
   };
   const available = opening(await Page({ params: Promise.resolve({ id: first.id }) }));
+  assert.equal(typeof available.props.action, "function");
   state.selected = second.id;
-  const purchase = opening(await Page({ params: Promise.resolve({ id: first.id }) }));
-  assert.equal(available.props.checkout, false);
-  assert.equal(purchase.props.checkout, true);
-  assert.notEqual(available.key, purchase.key, "checkout must not retain the already-submitted free-opening effect");
+  const blocked = await Page({ params: Promise.resolve({ id: first.id }) });
+  assert.equal(opening(blocked), null);
+  assert.doesNotMatch(renderToStaticMarkup(blocked), /Abrindo checkout|\/api\/radar\/checkout/);
   state.selected = null;
   const another = opening(await Page({ params: Promise.resolve({ id: second.id }) }));
-  assert.notEqual(available.key, another.key, "a different opportunity must open on navigation");
+  assert.notEqual(available.key, another.key);
   assert.equal(state.claims, 0);
 });
 

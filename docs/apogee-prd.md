@@ -1,7 +1,7 @@
 # Apogee — PRD geral da plataforma
 
 - **Versão:** 0.1 · 14 de novembro de 2026
-- **Estado:** para revisão do proprietário, antes de alterar as páginas.
+- **Estado:** aprovado pelo proprietário em 14/11/2026; adequação das páginas em prévia local.
 - **Horizonte:** novembro de 2026 a março de 2027.
 - **Responsável pela decisão de produto:** Vinicius.
 - **Base técnica examinada:** `d6a422d8207cb04eefe9819c082f948dc5a4de30`, branch principal em 14/11/2026.
@@ -303,4 +303,6 @@ A contagem de eventos está resolvida em D05/D06. As pendências não reabrem a 
 
 **Histórico v0.1 — 14/11/2026:** criação do PRD geral com oferta integrada, entrada gratuita, direitos antigos preservados, retirada da nova oferta avulsa e cota de 10 eventos distintos por conta.
 
-**Próxima entrega:** revisão deste documento pelo proprietário. Páginas e regras de acesso permanecem para a etapa seguinte.
+**Aprovação em 14/11/2026:** o proprietário aprovou o PRD e autorizou a adequação das páginas com apresentação de prévia local antes de publicar. As decisões pendentes da seção 16 continuam registradas.
+
+**Próxima entrega:** revisão da prévia local das páginas. A ativação da assinatura e a migração da cota do Radar exigem a conclusão das dependências funcionais.

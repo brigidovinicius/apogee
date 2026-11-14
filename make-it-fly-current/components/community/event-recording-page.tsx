@@ -6,7 +6,7 @@ import { CommunityJoinButton, FunnelFaq, FunnelFooter, FunnelHeader } from "./co
 import { RecordingCaptureForm } from "./recording-capture-form";
 import styles from "./community-sales-page.module.css";
 
-export function EventRecordingPage() {
+export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
   return <div className={styles.page} data-recording-page>
     <FunnelHeader page="recording" />
     <main id="experiencia" tabIndex={-1}>
@@ -16,7 +16,7 @@ export function EventRecordingPage() {
           <Link className={[styles.primary, styles.mobileCaptureLink].join(" ")} href="#inscricao">Quero assistir gratuitamente <ArrowUpRight size={18} aria-hidden="true" /></Link>
           <div className={styles.recordingArtwork} aria-hidden="true"><Image src="/brand/apogee-star.svg" alt="" width={703} height={870} priority /><div className={styles.recordingArtLabel}><CirclePlay size={28} strokeWidth={1.2} /><span>Codex Community<small>IA para o dia a dia</small></span></div></div>
         </div>
-        <div id="inscricao" className={styles.captureCard}><RecordingCaptureForm /></div>
+        <div id="inscricao" className={styles.captureCard}><RecordingCaptureForm preview={preview} /></div>
       </section>
       <section id="como-funciona" className={styles.section} aria-labelledby="recording-steps-title"><div className={styles.sectionHeading}><p className={styles.eyebrow}>O que você vai aprender</p><h2 id="recording-steps-title">Conhecimento para colocar<br />em prática.</h2><p>Explore aplicações da IA para o trabalho e a vida pessoal. Amplie seu repertório e encontre ideias para experimentar na sua rotina.</p></div>
         <ol className={styles.recordingSteps}>
@@ -25,7 +25,7 @@ export function EventRecordingPage() {
           <li><Users size={26} strokeWidth={1.3} aria-hidden="true" /><span className={styles.stepNumber}>03</span><h3>Encontre por onde começar.</h3><p>Identifique tarefas em que a IA pode ser útil e leve novas ideias para experimentar na sua realidade.</p></li>
         </ol>
       </section>
-      <section className={[styles.section, styles.recordingCommunity].join(" ")} aria-labelledby="recording-community-title"><div><p className={styles.eyebrow}>Comunidade Apogee</p><h2 id="recording-community-title">Mais ideias.<br />Mais conexões.</h2><p>Conheça o grupo gratuito para trocar experiências sobre IA, descobrir oportunidades e acompanhar a curadoria da Apogee. A participação na comunidade é opcional.</p></div><div className={styles.communityActions}><CommunityJoinButton label="Conhecer o grupo gratuito" /><Link className={styles.subtleLink} href="/comunidade" prefetch={false}>Conhecer a comunidade <ArrowUpRight size={16} aria-hidden="true" /></Link></div></section>
+      <section className={[styles.section, styles.recordingCommunity].join(" ")} aria-labelledby="recording-community-title"><div><p className={styles.eyebrow}>Comunidade Apogee</p><h2 id="recording-community-title">Mais ideias.<br />Mais conexões.</h2><p>Continue com o Radar, as aplicações de IA e as conexões da Apogee. Conheça a entrada gratuita e a assinatura que reúne os quatro pilares. A inscrição neste evento é independente da comunidade.</p></div><div className={styles.communityActions}><CommunityJoinButton preview={preview} /><Link className={styles.subtleLink} href="/comunidade#planos" prefetch={false}>Conhecer a assinatura <ArrowUpRight size={16} aria-hidden="true" /></Link></div></section>
       <FunnelFaq id="duvidas" title="Sobre o evento." items={RECORDING_FAQ} />
     </main><FunnelFooter />
   </div>;
