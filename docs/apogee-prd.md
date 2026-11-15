@@ -1,12 +1,12 @@
 # Apogee — PRD geral da plataforma
 
-- **Versão:** 0.4 · 14 de novembro de 2026
-- **Estado:** prévia funcional aprovada; checkout anual validado no ambiente de teste da Stripe, aguardando revisão antes de publicar.
+- **Versão:** 0.5 · 15 de novembro de 2026
+- **Estado:** deploy das alterações anteriores autorizado, sujeito ao preflight operacional; caixa de ferramentas incluída no planejamento e aguardando revisão antes de implementar.
 - **Horizonte:** novembro de 2026 a março de 2027.
 - **Responsável pela decisão de produto:** Vinicius.
 - **Base técnica examinada:** `d6a422d8207cb04eefe9819c082f948dc5a4de30`, branch principal em 14/11/2026.
 
-Este PRD consolida a oferta, as jornadas e as prioridades gerais da Apogee. O PRD do Radar permanece como especificação especializada do catálogo e da coleta. O documento distingue decisões confirmadas, propostas para revisão e dependências. A implementação funcional desta oferta foi autorizada para revisão local. Nenhuma alteração desta etapa foi publicada em produção.
+Este PRD consolida a oferta, as jornadas e as prioridades gerais da Apogee. O PRD do Radar permanece como especificação especializada do catálogo e da coleta. O [PRD da área interna de membros](members-area-prd.md) detalha a nova caixa de ferramentas. O documento distingue decisões confirmadas, propostas para revisão e dependências. Em 15/11/2026 o proprietário autorizou o deploy das alterações anteriores e pediu planejamento da caixa de ferramentas antes de implementá-la. Autorização e publicação concluída são estados distintos.
 
 ## 1. Decisões confirmadas em 14/11/2026
 
@@ -20,6 +20,8 @@ Este PRD consolida a oferta, as jornadas e as prioridades gerais da Apogee. O PR
 | D06 | Contar eventos distintos por conta, sem renovação automática; reabrir o mesmo evento não consome outra consulta. | A cota é compartilhada entre dispositivos e não se reinicia a cada mês, dia ou sessão. |
 | D07 | Apresentar primeiro o PRD para revisão. | As páginas e regras de produção entram na etapa posterior à revisão deste documento. |
 | D08 | Disponibilizar a assinatura da comunidade somente anualmente. | Retirar a opção mensal da oferta e da prévia; manter a entrada gratuita. Esta decisão substitui a periodicidade mensal do planejamento estratégico. |
+| D09 | Incluir uma caixa de ferramentas dentro da área de membros, com links por categorias, como Vídeo > Google Flow. | Especificação detalhada no PRD da área interna; apresentar planejamento antes de implementar. Decisão de 15/11/2026. |
+| D10 | Disponibilizar a caixa de ferramentas somente para assinantes anuais. | Exigir direito anual vigente no servidor; o acesso antigo ao Radar permanece independente. Decisão de 15/11/2026. |
 
 Os demais preços, eventos e benefícios do documento estratégico permanecem como referências de planejamento, nas condições indicadas neste PRD.
 
@@ -58,7 +60,7 @@ Pagamento ou assinatura não substituem verificações de conta, maioridade ou p
 
 ### Limites desta entrega documental
 
-A revisão documental e a prévia das páginas foram aprovadas. A etapa atual implementa localmente a assinatura anual, sua gestão e a cota real de eventos, com preservação dos direitos anteriores. Publicação, migração de produção, configuração de preços no provedor e cobrança real permanecem fora desta autorização.
+A revisão documental, a prévia das páginas e a validação Stripe de teste foram apresentadas. O proprietário autorizou em 15/11/2026 o deploy das alterações anteriores. A execução continua dependente da conferência da revisão, histórico de migrações, preservação de direitos, backup e configuração correta de produção. A caixa de ferramentas entra somente como planejamento nesta versão; sua implementação aguarda revisão.
 
 ### Fora do primeiro lançamento proposto
 
@@ -167,6 +169,7 @@ A ambição estratégica de superar R$ 10 mil em valor potencial agregado de ben
 | U05 | Como assinante, quero saber por onde começar para produzir um resultado na primeira semana. | Próxima atividade, trilha e recurso relevantes na área de membros. |
 | U06 | Como assinante, quero entender cobrança e cancelamento para administrar a contratação. | Plano, situação, período e atendimento claros. |
 | U07 | Como responsável pela operação, quero manter entregas e benefícios atualizados. | Gestão protegida com status e responsáveis. |
+| U08 | Como assinante anual, quero encontrar ferramentas úteis por categoria para escolher o recurso adequado à minha tarefa. | Caixa de ferramentas, por exemplo Vídeo > Google Flow, com descrição e link oficial. Planejamento detalhado no PRD da área interna. |
 
 Aquisição: conteúdo ou evento → experiência gratuita → conta e primeira consulta/atividade → apresentação da comunidade → contratação voluntária → primeiro resultado → retorno semanal.
 
@@ -214,7 +217,7 @@ Acesso antigo: autenticação → reconhecimento do direito → Radar liberado �
 | `/evento-openai` | Manter a oferta gratuita da campanha e apresentar o próximo passo para conhecer a comunidade, respeitando a finalidade do cadastro. |
 | Radar e detalhes | Explicar descoberta, cota, saldo e assinatura; preservar contexto e direitos antigos. |
 | `/membros/radar/acesso` | Apresentar direito vigente, saldo e comunidade. Retirar o percurso de nova compra avulsa. |
-| Área de membros | Organizar acesso aos pilares, próximos passos e gestão da assinatura. |
+| Área de membros | Organizar acesso aos pilares, próximos passos e gestão da assinatura. Planejar Caixa de ferramentas com categorias e links, exclusiva de assinantes anuais; implementação posterior à revisão específica. |
 | Learn e Perks | Criar as páginas mínimas necessárias para entregar conteúdos e benefícios disponíveis. |
 | Administração | Incorporar gestão das entregas e leitura dos direitos; distinguir lead, conta, participação gratuita e assinatura. |
 | Navegação, metadados e documentos comerciais | Alinhar rótulos, descrições, links e condições à versão aprovada. |
@@ -306,6 +309,8 @@ A contagem de eventos está resolvida em D05/D06. As pendências não reabrem a 
 
 **Histórico v0.2 — 14/11/2026:** assinatura da comunidade exclusivamente anual por decisão do proprietário; opção mensal retirada da oferta e da prévia. Mantidos o preço anual como referência proposta, a entrada gratuita e os direitos antigos do Radar.
 
+**Histórico v0.5 — 15/11/2026:** autorização de deploy das alterações já revisadas e inclusão do PRD da área interna com caixa de ferramentas por categoria. Exclusividade anual confirmada; nenhuma implementação da caixa de ferramentas nesta entrega documental.
+
 **Aprovação em 14/11/2026:** o proprietário aprovou o PRD e autorizou a adequação das páginas com apresentação de prévia local antes de publicar. As decisões pendentes da seção 16 continuam registradas.
 
 **Próxima entrega:** revisão da prévia local das páginas. A ativação da assinatura e a migração da cota do Radar exigem a conclusão das dependências funcionais.
@@ -328,3 +333,9 @@ O detalhamento técnico e os critérios de liberação estão em `docs/community
 O proprietário aprovou a prévia funcional e autorizou a validação em teste, mantendo a revisão antes de publicar. Dois checkouts anuais foram concluídos no modo test da APOGEE, um após tentativa recusada. Compra, portal, cancelamento, renovação paga e recusada com Test Clock, reembolso integral e conciliação posterior foram conferidos com 21 webhooks reais de teste aceitos. A conta de controle permaneceu limitada e o acesso legado foi preservado.
 
 A tela foi ajustada para identificar corretamente reembolso e pendência financeira, com preservação dos direitos antigos. O relatório de evidências distingue fatos observados na Stripe, verificações locais e limites do avanço temporal. Essa validação não criou ou ativou oferta live, não alterou banco/segredos de produção e não autorizou publicação.
+
+## 20. Área interna e caixa de ferramentas — planejamento de 15/11/2026
+
+A área de membros já era contemplada neste PRD em nível geral. O novo [PRD da área interna](members-area-prd.md) detalha a caixa de ferramentas: catálogo curado com categorias, descrição breve e links oficiais, começando pelo exemplo Vídeo > Google Flow. O acesso é exclusivo de assinantes anuais com direito vigente; cancelamento mantém o período pago e o direito antigo do Radar não é alterado nem convertido em acesso aos novos recursos.
+
+O planejamento propõe catálogo e curadoria administrativa mínimos, integração à navegação interna, validação dos perfis de acesso e prévia local antes de publicar. O pedido atual autoriza a documentação e a apresentação do plano, sem implementar a caixa de ferramentas. O deploy autorizado das alterações anteriores é acompanhado separadamente.
