@@ -4,7 +4,7 @@ import { applicationOrigin } from "@/lib/members/mail";
 import { isGeneratedGoogleUsername } from "@/lib/members/validation";
 import { radarAccess } from "@/lib/billing/store";
 import { RADAR_ACCESS_PATH } from "@/lib/billing/config";
-import { freeRadarOpportunity } from "@/lib/opportunities/detail-store";
+import { freeRadarState } from "@/lib/opportunities/detail-store";
 import { listRadarOpportunities } from "@/lib/opportunities/radar-client";
 import { opportunityCardData } from "@/lib/opportunities/card-data";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
@@ -18,9 +18,9 @@ export class RadarToolError extends Error {
   constructor(readonly code: string, message: string, readonly nextUrl?: string) { super(message); }
 }
 
-type Rights = { fullAccess: boolean; freeOpportunityId: string | null };
+type Rights = { fullAccess: boolean; freeOpportunityIds: string[] };
 function canRead(item: StudentOpportunity, rights: Rights) {
-  return rights.fullAccess || rights.freeOpportunityId === item.id;
+  return rights.fullAccess || rights.freeOpportunityIds.includes(item.id);
 }
 function serialize(item: StudentOpportunity, rights: Rights) {
   const allowed = canRead(item, rights);
@@ -54,9 +54,12 @@ export async function readRadarTool(userId: string, name: string, args: unknown)
     throw new RadarToolError("profile_required", "Conclua seu perfil na Apogee para continuar.", `${applicationOrigin()}/membros/perfil/configurar`);
   }
   const access = await radarAccess(member.id, process.env.STRIPE_MODE !== "test", { claimPurchases: false });
-  const rights: Rights = { fullAccess: access.active, freeOpportunityId: access.active ? null : await freeRadarOpportunity(member.id) };
-  if (name === "get_radar_access") return { ...rights, readOnly: true, accessUrl: `${applicationOrigin()}${RADAR_ACCESS_PATH}` };
-  const items = await listRadarOpportunities(name !== "search_opportunities");
+  const items = await listRadarOpportunities(true);
+  const quota = access.active ? null : await freeRadarState(member.id,items);
+  const rights: Rights = { fullAccess: access.active, freeOpportunityIds: quota?.readableIds ?? [] };
+  if (name === "get_radar_access") return { ...rights, freeOpportunityId: quota?.selected ?? null,
+    eventQuota: quota ? { used:quota.used, remaining:quota.remaining, limit:quota.limit, renews:false } : null,
+    readOnly: true, accessUrl: `${applicationOrigin()}${RADAR_ACCESS_PATH}` };
   if (name === "get_opportunity") {
     const { id } = mcpToolSchemas.get_opportunity.parse(args);
     const item = items.find(item => item.id === id && (isOpportunityOpen(item) || calendarEntries([item]).length > 0));

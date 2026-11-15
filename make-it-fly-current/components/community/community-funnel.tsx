@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, MessageCircle, Plus, X } from "lucide-react";
-import { useId, useRef } from "react";
+import { ArrowUpRight, Plus } from "lucide-react";
+import { COMMUNITY_SIGNUP_PATH } from "@/content/community-offer";
 import { useSiteLegalLinks } from "@/components/site/site-legal-links";
 import styles from "./community-sales-page.module.css";
 
@@ -12,24 +12,14 @@ export function FunnelHeader({ page }: { page: "community" | "recording" }) {
     <Link className={styles.brand} href="/comunidade" prefetch={false} aria-label="Comunidade Apogee - início"><Image src="/brand/apogee-star.svg" alt="" width={24} height={30} /><span>Apogee<small>{page === "community" ? "Comunidade" : "Codex Community"}</small></span></Link>
     <nav className={styles.navigation} aria-label="Navegação principal">
       <Link href={page === "community" ? "#comunidade" : "/comunidade"} prefetch={false}>A comunidade</Link>
-      <Link href={page === "community" ? "#cursos" : "#como-funciona"}>{page === "community" ? "Cursos de IA" : "O que aprender"}</Link>
-      <Link href={page === "community" ? "/evento-openai" : "#duvidas"} prefetch={false}>{page === "community" ? "Evento gratuito" : "Dúvidas"}</Link>
+      <Link href={page === "community" ? "#learn" : "#como-funciona"}>{page === "community" ? "Learn" : "O que aprender"}</Link>
+      <Link href={page === "community" ? "#planos" : "#duvidas"}>{page === "community" ? "Planos" : "Dúvidas"}</Link>
     </nav><Link className={styles.previewBadge} href="/">Conheça a Apogee</Link>
   </header>;
 }
 
-export function CommunityJoinButton({ label = "Participar gratuitamente", secondary = false }: { label?: string; secondary?: boolean }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const id = useId();
-  return <>
-    <button className={secondary ? styles.secondary : styles.primary} type="button" onClick={() => dialog.current?.showModal()} aria-haspopup="dialog" aria-controls={id}>{label}<ArrowUpRight size={18} aria-hidden="true" /></button>
-    <dialog ref={dialog} id={id} className={styles.dialog} aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`} onClick={event => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>
-      <button type="button" className={styles.closeButton} aria-label="Fechar convite da comunidade" onClick={() => dialog.current?.close()}><X size={20} aria-hidden="true" /></button>
-      <MessageCircle className={styles.dialogIcon} size={32} strokeWidth={1.3} aria-hidden="true" /><p className={styles.eyebrow}>Comunidade Apogee · gratuita</p><h2 id={`${id}-title`}>Explore o universo<br />Apogee.</h2>
-      <p id={`${id}-description`}>Conecte-se com ideias, oportunidades e aplicações de IA para o dia a dia. Comece conhecendo o evento gratuito da Apogee.</p>
-      <Link className={styles.primary} href="/evento-openai#inscricao" prefetch={false} onClick={() => dialog.current?.close()}>Conhecer o evento gratuito <ArrowUpRight size={18} aria-hidden="true" /></Link>
-    </dialog>
-  </>;
+export function CommunityJoinButton({ label = "Começar gratuitamente", secondary = false, preview = false, next }: { label?: string; secondary?: boolean; preview?: boolean; next?: string }) {
+  return <Link className={secondary ? styles.secondary : styles.primary} href={preview ? "/previa/entrada" : next ? `/membros/cadastro?next=${encodeURIComponent(next)}` : COMMUNITY_SIGNUP_PATH} prefetch={false}>{label}<ArrowUpRight size={18} aria-hidden="true" /></Link>;
 }
 
 export function FunnelFaq({ id, title, items }: { id: string; title: string; items: readonly { question: string; answer: string }[] }) {

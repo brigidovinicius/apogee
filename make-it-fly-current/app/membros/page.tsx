@@ -1,3 +1,5 @@
+import { MemberOfferOverview } from "@/components/community/member-offer-overview";
+import { radarAccess } from "@/lib/billing/store";
 import { interfaceText } from "@/lib/presentation-text.mjs";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -7,35 +9,26 @@ import styles from "@/components/members/members.module.css";
 import { requireMember } from "@/lib/members/dal";
 import { listCategories } from "@/lib/members/forum";
 
-export const metadata: Metadata = { title: "Fórum" };
+export const metadata: Metadata = { title: "Sua comunidade | Apogee" };
 
-export default async function ForumHomePage() {
+export default async function MemberHomePage() {
   const member = await requireMember("/membros");
   const categories = await listCategories();
+  const access = await radarAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null);
 
   return (
     <div className={styles.container}>
-      <MemberBar member={member} current="forum" />
+      <MemberBar member={member} current="home" />
       <header className={styles.pageHead}>
         <div>
           <p className={styles.eyebrow}>Comunidade Apogee</p>
-          <h1 className={styles.title}>Fórum</h1>
-          <p className={styles.lead}>Olá, {interfaceText(member.name).split(" ")[0]}. Escolha uma categoria para conversar</p>
+          <h1 className={styles.title}>Sua comunidade.</h1>
+          <p className={styles.lead}>Conhecimento, oportunidades e conexões para construir mais.</p>
         </div>
       </header>
 
-      <section className={styles.radarEntry} aria-labelledby="radar-entry-title">
-        <div>
-          <p className={styles.radarEntryEyebrow}>Área exclusiva para membros</p>
-          <h2 id="radar-entry-title">Radar de Oportunidades</h2>
-          <p>
-            Encontre bolsas, programas e intercâmbios com critérios, apoios, prazos e fontes oficiais
-          </p>
-        </div>
-        <Link className={styles.radarEntryLink} href="/membros/oportunidades">
-          Abrir Radar completo <span aria-hidden="true">→</span>
-        </Link>
-      </section>
+      <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={access?.source === "community"} />
+      <section id="forum" aria-labelledby="member-forum-title"><h2 id="member-forum-title">Conversas da comunidade</h2>
 
       {categories.length === 0 ? (
         <p className={styles.empty}>Nenhuma categoria criada ainda</p>
@@ -66,6 +59,7 @@ export default async function ForumHomePage() {
           ))}
         </ul>
       )}
+      </section>
     </div>
   );
 }

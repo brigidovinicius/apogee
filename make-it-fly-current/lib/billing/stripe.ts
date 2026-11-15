@@ -1,7 +1,7 @@
 import "server-only";
 import Stripe from "stripe";
-import { billingConfig } from "./config";
+import { stripeKey } from "./community-config";
 
 export function stripeClient() {
-  return new Stripe(billingConfig().key, { maxNetworkRetries: 1, timeout: 10_000 });
+  return new Stripe(stripeKey(), { maxNetworkRetries: 1, timeout: 10_000 });
 }

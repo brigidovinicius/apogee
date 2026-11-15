@@ -25,7 +25,7 @@ export default async function PreviewPage({params}:Props) {
   const {slug}=await params,item=await find(slug),canonical=publicOpportunityPath(item);
   if(canonical!==`/oportunidades/${slug}`)permanentRedirect(canonical);
   return <div className={styles.page}><SiteHeader current="opportunities"/><main className={styles.main}>
-    <div className={styles.hero}><Link href="/oportunidades">← Radar</Link><h1>{displayOpportunityTitle(item.title)}</h1><p>Faça login para abrir sua oportunidade gratuita ou usar seu acesso vitalício.</p><Link className={styles.action} href={opportunityDetailPath(item.id)}>Abrir detalhes</Link></div>
+    <div className={styles.hero}><Link href="/oportunidades">← Radar</Link><h1>{displayOpportunityTitle(item.title)}</h1><p>Entre na sua conta para consultar os detalhes e usar seus acessos do Radar. Conheça também a entrada gratuita e a assinatura da comunidade.</p><Link className={styles.action} href={opportunityDetailPath(item.id)}>Abrir detalhes</Link></div>
     <OpportunityCard opportunity={item} detailHref={opportunityDetailPath(item.id)}/>
   </main><SiteFooter/></div>;
 }

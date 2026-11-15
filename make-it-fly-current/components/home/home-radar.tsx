@@ -1,3 +1,5 @@
+import { localOfferPreview } from "@/lib/offer-preview";
+import { OfferRadarDemo } from "@/components/community/offer-preview";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { listPublicOpportunities } from "@/lib/opportunities/access";
@@ -8,6 +10,7 @@ import { LiveCatalogueRefresh } from "@/components/opportunities/live-refresh";
 import styles from "./editorial-home.module.css";
 
 export async function HomeRadar({ presentation = "editorial", classNames }: { presentation?: "editorial" | "earth"; classNames?: Record<string, string> }) {
+  if (localOfferPreview()) return <OfferRadarDemo compact />;
   const catalogue = await listPublicOpportunities().catch(() => null);
   if (catalogue === null) {
     return <><LiveCatalogueRefresh /><div className={classNames?.catalogueMessage ?? styles.catalogueMessage}>

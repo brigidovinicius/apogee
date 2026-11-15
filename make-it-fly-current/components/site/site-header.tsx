@@ -19,7 +19,7 @@ type SiteHeaderProps = {
 
 const navigation: ReadonlyArray<{ href: string; label: string; section?: SiteSection }> = [
   { href: "/", label: "Início", section: "home" },
-  { href: "/oportunidades", label: "Oportunidades", section: "opportunities" },
+  { href: "/oportunidades", label: "Radar", section: "opportunities" },
   { href: "/blog", label: "Blog", section: "blog" },
   { href: "/galeria", label: "Galeria", section: "gallery" },
   { href: "/loja", label: "Loja", section: "store" },

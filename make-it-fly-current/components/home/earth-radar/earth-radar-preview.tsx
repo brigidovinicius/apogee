@@ -121,7 +121,7 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
         </div>
       </section>
       <section className={styles.membership} id="acesso" aria-labelledby="preview-access-title">
-        <div className={styles["membership-inner"]}><div><h2 id="preview-access-title">O Radar completo, para sempre</h2><p>Explore uma oportunidade gratuitamente e depois tenha acesso vitalício ao Radar por R$ 49</p></div><Link prefetch={false} className={styles["membership-cta"]} href="/membros/radar/acesso">Conhecer o acesso vitalício</Link></div>
+        <div className={styles["membership-inner"]}><div><h2 id="preview-access-title">Um próximo passo com a comunidade</h2><p>Comece com até 10 eventos distintos gratuitamente e conheça a assinatura com o Radar completo incluído</p></div><Link prefetch={false} className={styles["membership-cta"]} href="/comunidade#planos">Conhecer a comunidade</Link></div>
       </section>
     </main>
     <SiteFooter />

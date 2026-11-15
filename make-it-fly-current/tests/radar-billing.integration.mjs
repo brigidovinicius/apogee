@@ -148,6 +148,7 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
     // while the real current auth adapter needs the additive protection schema.
     // This is the disposable fixture only; operational migrations use the journal.
     await sql.unsafe(await readFile(new URL("../drizzle/0010_supervised_registration.sql", import.meta.url), "utf8"));
+    await sql.unsafe(await readFile(new URL("../drizzle/0017_community_annual.sql", import.meta.url), "utf8"));
     auth = load("lib/members/auth.ts").getAuth();
     const buyer = await signup("buyer@example.test", "buyer");
     const other = await signup("other@example.test", "other");
@@ -171,13 +172,13 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       const Page = pageLoad("app/membros/radar/acesso/page.tsx").default;
       const beforeHtml = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
       assert.match(beforeHtml, /Confirme seu e-mail para liberar o Radar/);
-      assert.match(beforeHtml, /Reenviar e-mail de confirmação/);
+      assert.match(beforeHtml, /Reenviar confirmação/);
       assert.doesNotMatch(beforeHtml, /action="\/api\/radar\/checkout"/);
       const target = new URL(mail.text.match(/http:\/\/localhost:35441\/api\/auth\/verify-email\?\S+/)[0]);
       assert.equal(target.searchParams.get("callbackURL"), `${origin}/membros/radar/acesso`);
       assert.equal((await auth.handler(new Request(target, { headers: { cookie: owner.cookie } }))).status, 302);
       assert.deepEqual(await radarAccess(owner.id, false), { active: true, source: "stripe" });
-      assert.match(renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) })), /Seu acesso ao Radar está liberado/);
+      assert.match(renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) })), /Seu acesso ao Radar está preservado/);
       assert.equal((await radarAccess(other.id, false)).active, false);
       const count = mails.length;
       await deliver(event(session));
@@ -240,28 +241,16 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       assert.equal((await radarAccess(buyer.id, false)).active, false);
       assert.equal((await sql`select role from "user" where id = ${buyer.id}`)[0].role, "member");
     });
-    await t.test("origem e sessão são obrigatórias; checkout não confia no destinatário do navegador", async () => {
-      assert.equal((await sql`select email_verified from "user" where id = ${buyer.id}`)[0].email_verified, false);
-      assert.equal(await load("lib/members/protection.ts").adultAccess(buyer.id), false, "new buyer has no community review");
-      assert.equal((await buy()).status, 401);
-      const beforeExpired = createCount;
-      const expired = await checkout.POST(new Request(`${origin}/api/radar/checkout?next=%2Fmembros%2Foportunidades%2Fradar-second`, {
-        method: "POST", headers: { ...headers(), Accept: "text/html", "sec-fetch-mode": "navigate" },
-      }));
-      assert.equal(expired.status, 303, "expired form session returns to login instead of a JSON page");
-      const login = new URL(expired.headers.get("location"));
-      assert.equal(login.pathname, "/membros/entrar");
-      assert.equal(login.searchParams.get("next"), "/membros/oportunidades/radar-second");
-      assert.equal(createCount, beforeExpired, "expired login cannot create a payment session");
-      assert.equal((await checkout.POST(new Request(`${origin}/api/radar/checkout`, { method: "POST", headers: { ...headers(buyer.cookie), Origin: "https://evil.test" } }))).status, 403);
-      const response = await buy(buyer, { userId: other.id, amount: 1, price: "price_wrong" });
-      assert.equal(response.status, 303);
-      assert.ok(response.headers.get("location").startsWith("https://checkout.stripe.com/"));
-      const session = [...sessions.values()].at(-1);
-      assert.equal(session.client_reference_id, buyer.id);
-      assert.equal(session.metadata.radar_user_id, buyer.id);
-      assert.equal((await radarAccess(buyer.id, false)).active, false);
-      await assert.rejects(requireRadarAccess(buyer.id), /REDIRECT:\/membros\/radar\/acesso/);
+    await t.test("venda avulsa encerrada mantém guarda de origem e não cria cobranças",async()=>{
+      const before=createCount;
+      assert.equal((await buy()).status,410);
+      assert.equal((await buy(buyer,{userId:other.id,amount:1,price:"price_wrong"})).status,410);
+      assert.equal((await checkout.POST(new Request(`${origin}/api/radar/checkout`,{method:"POST",headers:{...headers(buyer.cookie),Origin:"https://evil.test"}}))).status,403);
+      const navigation=await checkout.POST(new Request(`${origin}/api/radar/checkout?next=%2Fmembros%2Foportunidades%2Fradar-second`,{method:"POST",headers:{...headers(),Accept:"text/html"}}));
+      assert.equal(navigation.status,303);
+      assert.equal(new URL(navigation.headers.get("location")).pathname,"/comunidade");
+      assert.equal(createCount,before);
+      assert.equal((await radarAccess(buyer.id,false)).active,false);
     });
     await t.test("retorno do checkout e evento sem assinatura não concedem acesso", async () => {
       const session = fixture("unsigned", buyer.id);
@@ -297,16 +286,16 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       }));
       assert.equal(recover.status, 303);
       const retry = new URL(recover.headers.get("location"));
-      assert.equal(retry.pathname, "/membros/radar/acesso");
+      assert.equal(retry.pathname, "/comunidade");
       assert.equal(retry.searchParams.get("next"), "/membros/oportunidades/radar-second");
-      assert.equal(retry.searchParams.get("checkout"), "unavailable");
+      assert.equal(retry.searchParams.get("checkout"), null);
       failProvider = false;
       assert.equal((await deliver(input)).status, 200);
       assert.deepEqual(await radarAccess(buyer.id, false), { active: true, source: "stripe" });
       await requireRadarAccess(buyer.id);
       assert.equal((await radarAccess(other.id, false)).active, false);
       const before = createCount;
-      assert.equal((await buy(buyer)).headers.get("location"), `${origin}/membros/oportunidades`);
+      assert.equal((await buy(buyer)).status,410);
       assert.equal(createCount, before);
     });
     await t.test("reentrega concorrente gera somente uma compra e um recibo", async () => {
@@ -325,8 +314,7 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       assert.equal((await radarAccess(owner.id, false)).active, false);
       const beforeCheckout = createCount;
       const pending = await checkout.POST(new Request(`${origin}/api/radar/checkout?next=%2Fmembros%2Foportunidades%2Fradar-second`, { method: "POST", headers: headers(owner.cookie) }));
-      assert.equal(pending.status, 303);
-      assert.equal(pending.headers.get("location"), `${origin}/membros/radar/acesso?next=%2Fmembros%2Foportunidades%2Fradar-second`);
+      assert.equal(pending.status, 410);
       assert.equal(createCount, beforeCheckout, "an already-paid Payment Link awaits email proof without another checkout");
       const response = await verification.POST(new Request(`${origin}/api/radar/verify-email`, { method: "POST", headers: headers(owner.cookie) }));
       assert.equal(response.status, 303);
@@ -365,7 +353,7 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       assert.equal((await radarAccess(owner.id, false)).active, true);
       await sql`update "user" set blocked = true where id = ${owner.id}`;
       assert.equal((await radarAccess(owner.id, false)).active, false);
-      assert.equal((await buy(owner)).status, 401);
+      assert.equal((await buy(owner)).status, 410);
     });
     await t.test("reembolso parcial mantém o direito; reembolso concorrente prevalece sobre confirmação antiga", async () => {
       const owner = await signup("race@example.test", "racebuyer");
@@ -438,18 +426,14 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       // The free slot is distinct from an unlimited paid/legacy/admin right.
       assert.equal((await radarAccess(owner.id, false)).active, false);
       const pendingCheckout = await checkout.POST(new Request(`${origin}/api/radar/checkout?next=%2Fmembros%2Foportunidades%2Fradar-second`, { method: "POST", headers: headers(owner.cookie) }));
-      assert.equal(pendingCheckout.status, 303);
-      const createdRequest = requests.filter(item => item.path === "/v1/checkout/sessions" && item.method === "POST").at(-1);
-      const checkoutFields = new URLSearchParams(createdRequest.body);
-      assert.equal(checkoutFields.get("success_url"), `${origin}/membros/radar/acesso?payment=received&next=%2Fmembros%2Foportunidades%2Fradar-second`);
-      assert.equal(checkoutFields.get("cancel_url"), `${origin}/membros/radar/acesso?payment=cancelled&next=%2Fmembros%2Foportunidades%2Fradar-second`);
+      assert.equal(pendingCheckout.status, 410);
       const purchase = fixture("free_upgrade", owner.id);
       await deliver(event(purchase));
       assert.equal((await radarAccess(owner.id, false)).active, true);
       assert.equal(await freeRadarOpportunity(owner.id), chosen);
       // A returning paid user is not charged again and retains the selected detail.
       const paidResponse = await checkout.POST(new Request(`${origin}/api/radar/checkout?next=%2Fmembros%2Foportunidades%2Fradar-second`, { method: "POST", headers: headers(owner.cookie) }));
-      assert.equal(paidResponse.headers.get("location"), `${origin}/membros/oportunidades/radar-second`);
+      assert.equal(paidResponse.status,410);
       await sql`update drizzle.__drizzle_migrations set hash = 'invalid' where id = 8`;
       await assert.rejects(migrateRadarFreeOpportunity(sql), /Histórico divergente/);
       const source = await readFile(new URL("../drizzle/0007_radar_free_opportunity.sql", import.meta.url), "utf8");

@@ -1,5 +1,7 @@
 # Radar Apogee — PRD
 
+**Direção comercial aprovada, 14/11/2026:** o [PRD geral da Apogee](apogee-prd.md) consolida a comunidade com Radar incluído, a entrada gratuita com 10 eventos distintos por conta, a preservação dos acessos antigos e a retirada da nova oferta avulsa do Radar. Este documento mantém a especificação especializada do catálogo e o histórico de decisões. A adequação das páginas está em prévia local; as regras da aplicação em produção permanecem inalteradas.
+
 Revisão: 14/10/2026. Decisões vigentes do proprietário: publicação automática, painel de gerenciamento do catálogo ao vivo, sete categorias principais e meta mínima de mil oportunidades. Substitui a proposta anterior de revisão humana e a divisão em seis categorias da especificação legada. A migração e o deploy da primeira versão foram autorizados e executados; evidências no [registro de produção](radar-production-20261014.md).
 
 O [brief integral](radar-product-brief.md) preserva os requisitos, exemplos e referências recebidos. Este PRD registra as decisões vigentes e o recorte inicial, sem descartar as demais capacidades. O andamento e os limites estão no [registro de execução](radar-live-execution.md).

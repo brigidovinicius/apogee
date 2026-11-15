@@ -6,13 +6,16 @@ import { AvatarInitials } from "./avatar-initials";
 import styles from "./members.module.css";
 import { mcpEnabled } from "@/lib/mcp/config";
 
-export function MemberBar({ member, current }: { member: CurrentMember; current?: "forum" | "perfil" | "radar" }) {
+export function MemberBar({ member, current }: { member: CurrentMember; current?: "home" | "forum" | "perfil" | "radar" }) {
   return (
     <div className={styles.memberBar}>
       {member.role === "admin" ? <AdminModeSwitcher mode="user" /> : null}
       <nav aria-label="Navegação da área de membros">
         <span className={styles.memberNavLabel}>Área de membros</span>
-        <Link href="/membros" aria-current={current === "forum" ? "page" : undefined}>
+        <Link href="/membros" aria-current={current === "home" ? "page" : undefined}>
+          Minha comunidade
+        </Link>
+        <Link href="/membros#forum" aria-current={current === "forum" ? "page" : undefined}>
           Fórum
         </Link>
         <Link href="/membros/oportunidades" aria-current={current === "radar" ? "page" : undefined}>

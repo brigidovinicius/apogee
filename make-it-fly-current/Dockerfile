@@ -35,6 +35,7 @@ COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-avatar-migrate.mj
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-invitations-migrate.mjs ./scripts/members-invitations-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/radar-billing-migrate.mjs ./scripts/radar-billing-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/radar-free-opportunity-migrate.mjs ./scripts/radar-free-opportunity-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/community-access-migrate.mjs ./scripts/community-access-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/mcp-oauth-migrate.mjs ./scripts/mcp-oauth-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/google-calendar-worker.mjs ./scripts/google-calendar-worker.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/collection-digest-worker.mjs ./scripts/collection-digest-worker.mjs

@@ -9,6 +9,7 @@ import {
   integer,
   jsonb,
   primaryKey,
+  smallint,
   pgTable,
   text,
   timestamp,
@@ -474,3 +475,42 @@ export const radarCalendarDigestJob=pgTable('radar_calendar_digest_job',{
 export const radarCalendarDigestBudget=pgTable('radar_calendar_digest_budget',{
   day:date('day').primaryKey(),attempts:integer('attempts').notNull().default(0),
 },table=>[check('radar_calendar_digest_budget_attempts_check',sql`${table.attempts}>=0`)]);
+
+// Assinatura anual separada dos direitos vitalícios do Radar.
+export const communityCustomer = pgTable("community_customer", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  livemode: boolean("livemode").notNull(), customerId: text("customer_id").notNull(),
+}, t => [primaryKey({ columns: [t.userId, t.livemode] }), uniqueIndex("community_customer_customer_id_livemode_key").on(t.customerId,t.livemode)]);
+export const communityCheckoutAttempt = pgTable("community_checkout_attempt", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  livemode: boolean("livemode").notNull(), requestKey: text("request_key").notNull(),
+  returnPath: text("return_path").notNull(), expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+}, t => [primaryKey({ columns: [t.userId,t.livemode] })]);
+export const communitySubscription = pgTable("community_subscription", {
+  id: text("id").primaryKey(), userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  customerId: text("customer_id").notNull(), livemode: boolean("livemode").notNull(), status: text("status").notNull(),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [index("community_subscription_owner_idx").on(t.userId,t.livemode)]);
+export const communityInvoice = pgTable("community_invoice", {
+  id: text("id").primaryKey(), subscriptionId: text("subscription_id").notNull().references(() => communitySubscription.id, { onDelete: "cascade" }),
+  amount: integer("amount").notNull(), currency: text("currency").notNull(),
+  periodStart: timestamp("period_start", { withTimezone: true }).notNull(), periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+  status: text("status").notNull(), fraudReviewRequired: boolean("fraud_review_required").notNull().default(false),
+  paymentIntentId: text("payment_intent_id"), chargeId: text("charge_id"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [index("community_invoice_access_idx").on(t.subscriptionId,t.periodEnd),
+  check("community_invoice_amount_check",sql`${t.amount}=143880`), check("community_invoice_currency_check",sql`${t.currency}='brl'`),
+  check("community_invoice_period_end_check",sql`${t.periodEnd}>${t.periodStart}`),
+  check("community_invoice_status_check",sql`${t.status} in ('paid','unpaid','refunded','disputed','fraud')`)]);
+export const communityStripeEvent = pgTable("community_stripe_event", {
+  eventId: text("event_id").primaryKey(), eventType: text("event_type").notNull(),
+  processedAt: timestamp("processed_at", { withTimezone: true }).notNull().defaultNow(),
+});
+export const radarFreeEvent = pgTable("radar_free_event", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  opportunityId: text("opportunity_id").notNull(), slot: smallint("slot").notNull(),
+  openedAt: timestamp("opened_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [primaryKey({ columns: [t.userId,t.opportunityId] }),uniqueIndex("radar_free_event_user_id_slot_key").on(t.userId,t.slot),
+  check("radar_free_event_opportunity_id_check",sql`${t.opportunityId} ~ '^[A-Za-z0-9_-]{1,200}$'`),
+  check("radar_free_event_slot_check",sql`${t.slot} between 1 and 10`)]);

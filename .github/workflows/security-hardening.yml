@@ -32,6 +32,9 @@ jobs:
           cache-dependency-path: ${{ matrix.app }}/package-lock.json
       - run: npm ci --no-fund --no-audit
       - run: npm test
+      - name: Annual community access and ten-event quota on disposable PostgreSQL
+        if: matrix.app == 'make-it-fly-current'
+        run: PG_BIN="$(pg_config --bindir)" npm run test:community-access
       - name: Blog worker without provider calls
         if: matrix.app == 'make-it-fly-current'
         run: |

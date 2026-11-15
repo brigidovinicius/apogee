@@ -23,7 +23,7 @@ export function SiteFooter() {
         </div>
         <nav aria-label="Navegação do rodapé">
           <Link href="/">Início</Link>
-          <Link href="/oportunidades">Oportunidades</Link>
+          <Link href="/oportunidades">Radar</Link>
           <Link href="/blog">Blog</Link>
           <Link href="/galeria">Galeria</Link>
           <Link href="/loja">Loja</Link>
