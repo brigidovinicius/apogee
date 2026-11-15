@@ -1,3 +1,4 @@
+import { SourceDiscoveryDetails } from "@/components/blog/source-discovery";
 import { referenceCatalog, taxonomy } from "@/lib/blog/corroboration.mjs";
 import { manageDossier } from "./dossie/actions";
 import { editorialChecks, seoGuidelines } from "@/lib/blog/editorial-review";
@@ -6,11 +7,13 @@ import Image from "next/image";
 import { AdminNotice, AdminPageHeader, MetricCard, adminStyles } from "@/components/admin/admin-ui";
 import { requireAdmin } from "@/lib/admin/access";
 import { getPipelineDashboard } from "@/lib/blog/pipeline";
+import { focusedEditorial, focusProgress, extraBatch } from "@/lib/blog/editorial-plan.mjs";
 import { EDITORIAS, pipelineMessages, pipelineReason, type PipelineSource } from "@/lib/blog/pipeline-validation";
 import { managePipeline } from "./actions";
 import styles from "./pipeline.module.css";
 
 export const dynamic = "force-dynamic";
+
 const money = (value: string | number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "USD", minimumFractionDigits: 4, maximumFractionDigits: 6 }).format(Number(value) / 1_000_000);
 const date = (value: Date | null | undefined) => value ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(new Date(value)) : "Ainda não verificado";
 const dailyTopics = Object.entries(taxonomy).flatMap(([category, value]) => [null, ...Object.keys(value.subcategories)].map(subcategory => ({ category, subcategory, label: value.label + " / " + (subcategory ? value.subcategories[subcategory] : "Geral") })));
@@ -47,6 +50,10 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
   if (!data) return <div className={adminStyles.content}><AdminPageHeader title="Central Editorial" description="Da captação à revisão, todo o fluxo do blog em um lugar." aside={<Link href="/admin/posts">Voltar aos artigos</Link>} /><AdminNotice title="Preparada para instalação" description="O pipeline ainda não está instalado no banco deste ambiente. Após a instalação e o primeiro contato do worker, fontes, fila e consumo aparecerão aqui." /></div>;
   const { control, benefit, usage, quota, subscription, googleAccess } = data, p = control.snapshot;
   const google = p?.provider === "google_subscription";
+  const focused = focusedEditorial(p);
+  const extra = extraBatch({ editorial_focus: p?.editorial_focus, google_daily_completion: p?.extra_batch });
+  const progressRows = focused ? focusProgress(data.production, p).map(item => ({ key: item.key, label: item.label, target: item.target, item }))
+    : dailyTopics.map(t => ({ key: t.category + "/" + t.subcategory, label: t.label, target: 1, item: data.production.find(v => v.category === t.category && v.subcategory === t.subcategory) }));
   const alive = control.alive;
   const busy = data.commands.some(c => ["queued", "running"].includes(c.state));
   const available = alive && !control.paused && !!p?.generation_enabled && !busy;
@@ -69,13 +76,14 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
       <MetricCard label={google ? "Chamadas Google hoje" : "Consumo hoje"} value={google ? `${quota.day_calls} / ${p?.daily_calls_cap}` : money(usage.day)} detail={google ? "Assinatura, sem créditos extras" : p ? `Teto diário ${money(p.daily_cap)}` : "Aguardando configuração"} />
       <MetricCard label={google ? "Uso local hoje" : "Reservas pendentes"} value={google ? Number(quota.day_tokens).toLocaleString("pt-BR") : money(usage.held)} detail={google ? "Tokens contabilizados e reservados" : "Valor retido até confirmar a cobrança"} />
     </div>
-    {google ? <section id="producao" className={styles.panel}><h2>Produção de hoje · meta de dez matérias</h2>
-      <p>Uma matéria diferente por tópico, incluindo três gerais. Só conta como completa após texto, fontes validadas em pelo menos 90% e capa com crédito. Tudo permanece em rascunho para revisão.</p>
+    {google ? <section id="producao" className={styles.panel}><h2>{extra ? "Lote extra de hoje · dez matérias" : "Produção de hoje · meta de dez matérias"}</h2>
+      <p>{focused ? "Quatro matérias de Tecnologia, três de Inteligência Artificial e três de Negócios. IA tem uma meta própria e não é contada novamente em Tecnologia. " : "Uma matéria diferente por tópico, incluindo três gerais. "}Só conta como completa após texto, fontes validadas em pelo menos 90% e capa com crédito. Tudo permanece em rascunho para revisão.</p>
+      {extra ? <p>Os dez artigos anteriores permanecem no histórico e nos limites de consumo. Esta tabela acompanha somente o lote adicional autorizado. Total de textos criados hoje: {data.production.reduce((n, t) => n + t.drafts, 0)}.</p> : null}
       <p>Hoje: {data.production.reduce((n, t) => n + t.news, 0)} notícias e {data.production.reduce((n, t) => n + t.explainers, 0)} explicativos. {p?.automatic_explainers ? `Notícias têm prioridade; a partir das ${p.explainer_after_local_hour}h de Brasília, explicativos podem completar os tópicos restantes.` : "Complemento por explicativos desativado."}</p>
-      <div className={`${styles.tableWrap} ${styles.dailyProgress}`}><table role="table"><caption>Progresso diário · horário de Brasília</caption><thead><tr role="row"><th>Tópico</th><th>Texto criado</th><th>Com capa</th><th>Apuração</th></tr></thead><tbody role="rowgroup">{dailyTopics.map(t => {
-        const item = data.production.find(v => v.category === t.category && v.subcategory === t.subcategory);
+      <div className={`${styles.tableWrap} ${styles.dailyProgress}`}><table role="table"><caption>Progresso diário · horário de Brasília</caption><thead><tr role="row"><th>{focused ? "Foco editorial" : "Tópico"}</th><th>Texto criado</th><th>Com capa</th><th>Apuração</th></tr></thead><tbody role="rowgroup">{progressRows.map(t => {
+        const { item } = t;
         const waiting = item ? [item.review_held ? `${item.review_held} pauta${item.review_held === 1 ? " retida" : "s retidas"} para revisão` : "", item.factual_pending ? `${item.factual_pending} com fatos ainda não validados` : "", item.primary_pending ? `${item.primary_pending} aguardam fonte primária` : "", item.independent_pending ? `${item.independent_pending} aguardam cobertura independente` : "", item.unavailable ? `${item.unavailable} com fonte indisponível` : "", item.format_pending ? `${item.format_pending} com comparação retida por formato` : ""].filter(Boolean).join(" · ") : "";
-        return <tr role="row" key={t.category + "/" + t.subcategory}><td role="cell">{t.label}</td><td role="cell" data-label="Texto criado">{item?.drafts ?? 0} / 1</td><td role="cell" data-label="Com capa">{item?.complete ?? 0} / 1</td><td role="cell" data-label="Andamento">{item?.complete ? `Texto e capa concluídos${item.explainers ? " · explicativo" : " · notícia"}` : item?.drafts ? "Texto criado · capa pendente" : item?.compared ? "Fontes validadas; aguarda redação" : waiting || (item?.researching ? "Cruzando fontes" : "Aguardando pauta e fontes")}</td></tr>;
+        return <tr role="row" key={t.key}><td role="cell">{t.label}</td><td role="cell" data-label="Texto criado">{item?.drafts ?? 0} / {t.target}</td><td role="cell" data-label="Com capa">{item?.complete ?? 0} / {t.target}</td><td role="cell" data-label="Andamento">{item && item.complete >= t.target ? `Texto e capa concluídos${item.explainers ? " · explicativo" : " · notícia"}` : item?.drafts ? `${item.complete} de ${t.target} completas${item.drafts > item.complete ? " · capa pendente" : " · aguardando novas pautas"}` : item?.compared ? "Fontes validadas; aguarda redação" : waiting || (item?.researching ? "Cruzando fontes" : "Aguardando pauta e fontes")}</td></tr>;
       })}</tbody></table></div>
       <p className={styles.muted}>A meta depende de notícias com evidência suficiente e da cota incluída. Falta de fontes, divergência crítica ou limite de consumo retém a matéria e aparece no histórico. Comparações rejeitadas não ocupam a vaga de produção do tópico.</p>
     </section> : null}
@@ -87,6 +95,7 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
       {data.candidates.length ? data.candidates.map(c => <article key={c.id} className={styles.panel}>
         <div className={styles.row}><div><span className={styles.badge}>{c.topic_category && taxonomy[c.topic_category] ? taxonomy[c.topic_category].label + (c.topic_subcategory ? " / " + (taxonomy[c.topic_category].subcategories[c.topic_subcategory] ?? c.topic_subcategory) : " / Geral") : EDITORIAS[c.editoria as keyof typeof EDITORIAS] ?? c.editoria} · {states[c.post_status ?? (c.status === "ready" && c.generation_ready ? "verified_ready" : c.status)]}</span><h3>{c.post_title ?? c.title}</h3><p className={styles.muted}>{c.content_kind === "explainer" ? "Explicativo · planejado em " : "Notícia · "}{date(c.published_at)} · {c.source_id}</p></div><a href={c.url} target="_blank" rel="noopener noreferrer">Conferir fonte ↗</a></div>
         {c.reason ? <p>{pipelineReason(c.reason)}</p> : null}{c.research_stage ? <p>Pesquisa: {pipelineReason(c.research_stage)}{c.research_next_at ? ` · nova tentativa a partir de ${date(new Date(c.research_next_at))}` : ""}</p> : null}
+        {c.source_discovery ? <SourceDiscoveryDetails discovery={c.source_discovery} className={styles.details} /> : null}
         {c.status === "ready" && !c.generation_ready ? <p>Conclua o dossiê e a comparação das fontes antes de solicitar a redação.</p> : null}
         <div className={styles.actions}>
           {c.status === "ready" ? <>{c.generation_ready ? <Command intent="generate" candidate={c.id} disabled={!available}>Criar texto e capa</Command> : null}<Command intent="hold" candidate={c.id}>Reter pauta</Command></> : null}

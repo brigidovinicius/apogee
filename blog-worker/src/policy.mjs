@@ -1,4 +1,5 @@
 import {createHash} from 'node:crypto';
+import {FOCUSED_EDITORIAL_PLAN,focusedEditorial} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 
 export class Blocked extends Error { constructor(code) { super(code); this.code=code; } }
 export const fail=code=>{throw new Blocked(code);};
@@ -110,12 +111,17 @@ export function validateGooglePolicy(p) {
   const caps={new_drafts_per_day_cap:p.schema_version===3?10:1,new_drafts_per_week_cap:p.schema_version===3?70:5,concurrency:1,input_tokens_cap_including_overhead:p.schema_version===3?12000:8000,billed_output_tokens_cap_including_reasoning:2000,max_primary_evidence_documents:p.schema_version===3?10:2,max_provider_attempts_per_article_including_repairs:p.schema_version===3?3:2,google_daily_calls_cap:p.schema_version===3?40:3,google_weekly_calls_cap:p.schema_version===3?280:15,google_daily_tokens_cap:180000,google_weekly_tokens_cap:900000,google_tokens_reserved_per_call:60000,google_max_invocations_per_call:1,google_timeout_seconds:150};
   for(const [k,max] of Object.entries(caps))if(!Number.isSafeInteger(p[k])||p[k]<1||p[k]>max)fail('google_policy_limit');
   const completion=p.google_daily_completion;
+  if(p.editorial_focus!==undefined&&(p.editorial_focus!==FOCUSED_EDITORIAL_PLAN||p.schema_version!==3||p.new_drafts_per_day_cap!==10))fail('google_editorial_focus');
   if(completion!==undefined&&(p.schema_version!==3||!completion||typeof completion!=='object'
     ||!/^\d{4}-\d{2}-\d{2}$/.test(completion.day??'')||!Number.isFinite(Date.parse(completion.day+'T12:00:00Z'))
     ||new Date(completion.day+'T12:00:00Z').toISOString().slice(0,10)!==completion.day
     ||!Number.isSafeInteger(completion.calls_cap)||completion.calls_cap<p.google_daily_calls_cap||completion.calls_cap>80
     ||!Number.isSafeInteger(completion.tokens_reserved_per_call)||completion.tokens_reserved_per_call<15000||completion.tokens_reserved_per_call>30000
     ||typeof completion.authorization_reference!=='string'||completion.authorization_reference.length<20))fail('google_completion_policy');
+  if(completion&&(completion.extra_drafts!==undefined||completion.baseline_post_ids!==undefined)
+    &&(!focusedEditorial(p)||completion.extra_drafts!==10||!Array.isArray(completion.baseline_post_ids)
+      ||completion.baseline_post_ids.length!==10||new Set(completion.baseline_post_ids).size!==10
+      ||completion.baseline_post_ids.some(id=>!Number.isSafeInteger(id)||id<1)))fail('google_completion_policy');
   if(p.schema_version===3 && (p.multisource_required!==true || p.minimum_compatibility_basis_points!==9000 || p.critical_fact_confirmation_required!==true || p.per_topic_daily_cap!==1 || p.per_topic_weekly_cap!==7))fail('google_policy');
   if(p.input_counting_mode!=='local_byte_bound' || p.image_size!=='1536x1024')fail('google_policy');
   return Object.freeze(structuredClone(p));

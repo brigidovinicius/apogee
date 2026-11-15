@@ -32,6 +32,14 @@ test('dated completion allowance expires at Brasilia midnight and cannot enlarge
   for(const bad of [{calls_cap:81},{calls_cap:39},{day:'2026-02-30'},{tokens_reserved_per_call:14999},{tokens_reserved_per_call:30001},{tokens_reserved_per_call:15000.5},{authorization_reference:''}])assert.throws(()=>validatePolicy({...p,google_daily_completion:{...completion,...bad}}),/google_completion_policy/);
   for(const bad of [{google_daily_tokens_cap:180001},{google_weekly_calls_cap:281},{google_use_g1_credits:true}])assert.throws(()=>validatePolicy({...policy,...bad}));
 });
+test('extra ten require the focused plan, ten distinct baseline posts and a dated authorization',()=>{
+  const completion={day:'2026-11-15',calls_cap:80,tokens_reserved_per_call:15000,authorization_reference:'User explicitly requested ten additional drafts today',extra_drafts:10,baseline_post_ids:Array.from({length:10},(_,i)=>41+i)};
+  const focused={...p,editorial_focus:'technology-ai-business-4-3-3',google_daily_completion:completion};
+  validatePolicy(focused);
+  for(const change of [{editorial_focus:'other'},{editorial_focus:undefined},{new_drafts_per_day_cap:20}])assert.throws(()=>validatePolicy({...focused,...change}));
+  for(const change of [{extra_drafts:20},{baseline_post_ids:[41]},{baseline_post_ids:Array(10).fill(41)},{baseline_post_ids:[...completion.baseline_post_ids.slice(0,9),0]}])assert.throws(()=>validatePolicy({...focused,google_daily_completion:{...completion,...change}}));
+  assert.equal(validatePolicy(focused).google_daily_tokens_cap,180000);assert.equal(validatePolicy(focused).google_weekly_calls_cap,280);
+});
 test('official CLI pins binary/settings, checks quota without generation and returns structured text once',async()=>{
   const dir=await mkdtemp(join(tmpdir(),'google-fixture-')),binary=join(dir,'agy');await writeFile(binary,'fake');
   let calls=0;
@@ -110,7 +118,8 @@ test('real image artifact is decoded, normalized and symlink inputs remain denie
   const home=await realpath(await mkdtemp(join(tmpdir(),'google-artifact-'))),conversationId='12345678-1234-1234-1234-123456789012';
   const folder=join(home,'.gemini/antigravity-cli/brain',conversationId);await mkdir(folder,{recursive:true});
   const sharp=(await import('sharp')).default,path=join(folder,'cover.png');
-  await sharp({create:{width:64,height:64,channels:3,background:'#123456'}}).png().toFile(path);
+  const pixels=Buffer.alloc(800*600*3);for(let i=0;i<pixels.length;i++)pixels[i]=(i*31+Math.floor(i/2400))%256;
+  await sharp(pixels,{raw:{width:800,height:600,channels:3}}).png().toFile(path);
   const opts={path,conversationId,artifactDirectoryPath:folder,startedAt:Date.now()-1000,workdir:home,home};
   const bytes=await readGeneratedImage(opts),meta=await sharp(bytes).metadata();
   assert.equal(meta.format,'webp');assert.equal(meta.width,1536);assert.equal(meta.height,1024);

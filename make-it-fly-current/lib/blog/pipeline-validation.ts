@@ -41,6 +41,7 @@ export function pipelineReason(code: string | null | undefined): string {
     explainer_false_freshness: "O título do explicativo sugere uma novidade que as fontes não comprovam.",
     primary_found: "Fonte primária localizada; buscando análise independente.",
     primary_linked: "Pauta vinculada à fonte primária do acontecimento.",
+    source_links_discovered: "Referências e sugestões de mídia encontradas; validação ainda necessária.",
     research_primary_missing: "Ainda não há link para uma fonte primária cadastrada.",
     research_primary_stale: "Fonte primária fora da janela de atualidade.",
     research_independent_missing: "Aguardando cobertura independente do mesmo acontecimento.",
@@ -99,7 +100,7 @@ export function pipelineReason(code: string | null | undefined): string {
     source_changed_after_reservation: "Fonte alterada após o início", source_approval_changed: "Aprovação da fonte mudou", input_limit: "Dossiê maior que o limite",
     image_prompt_limit: "Descrição visual maior que o limite", worker_interrupted: "Execução interrompida; verificar histórico",
     operator_pause: "Pausa solicitada pelo editor", operator_hold: "Pauta retida pelo editor", invalid_structure: "Texto fora do formato esperado",
-    unsupported_numbers: "Número sem suporte no dossiê", copied_passage: "Trecho semelhante à fonte", invalid_image: "Arquivo de imagem inválido",
+    unsupported_numbers: "Número sem suporte no dossiê", copied_passage: "Trecho semelhante à fonte", invalid_image: "Arquivo de imagem inválido", image_resolution: "Capa com resolução ou enquadramento insuficiente", image_uniform: "Capa vazia ou praticamente uniforme",
     waiting_for_editor: "Aguardando pedido do editor", no_approved_sources: "Nenhuma fonte aprovada", storage_cap: "Limite de armazenamento atingido",
   };
   return code ? reasons[code] ?? "Verificação necessária" : "—";
