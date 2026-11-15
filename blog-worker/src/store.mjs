@@ -583,7 +583,7 @@ export class Store {
     return this.sql.begin(async tx=>{
       await lock(tx);
       for(const s of config.sources)await tx`insert into blog_worker.source_catalog(id,definition) values(${s.id},${tx.json(s)}) on conflict do nothing`;
-      const snapshot={provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:googleUsageLimits(config.policy).dailyCalls??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:config.policy.google_daily_tokens_cap??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
+      const snapshot={provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:googleUsageLimits(config.policy).dailyCalls??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:googleUsageLimits(config.policy).dailyTokens??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
         automatic_access_validation:config.policy.google_automatic_access_validation_enabled===true,automatic_explainers:config.policy.automatic_explainers_enabled===true,explainer_after_local_hour:config.policy.explainer_after_local_hour??null,operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
         organization_id:identity?.organization_id??null,project_id:identity?.project_id??null,
         article_cap:config.policy.article_budget_micro_usd_cap_including_all_attempts,daily_cap:config.policy.daily_budget_micro_usd_cap,
@@ -694,5 +694,5 @@ async function subscriptionBudget(tx,policy,at) {
     ) q`;
   const limits=googleUsageLimits(policy,at);
   if(q.day_calls>=limits.dailyCalls || q.week_calls>=policy.google_weekly_calls_cap)fail('google_call_limit');
-  if(n(q.day_tokens)+limits.reservedTokens>policy.google_daily_tokens_cap || n(q.week_tokens)+limits.reservedTokens>policy.google_weekly_tokens_cap)fail('google_token_limit');
+  if(n(q.day_tokens)+limits.reservedTokens>limits.dailyTokens || n(q.week_tokens)+limits.reservedTokens>policy.google_weekly_tokens_cap)fail('google_token_limit');
 }

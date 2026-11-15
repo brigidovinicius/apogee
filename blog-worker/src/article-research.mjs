@@ -101,10 +101,10 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
     :guideHost==='www.intel.com'||guideHost==='intel.com'
       ?usable(nodes.filter(n=>attrs(n).id==='articleSFBody'&&attrs(n)['data-component']==='articleSFBody')):[];
   const completeGuide=guideParts.length?{nodeName:'#document-fragment',childNodes:guideParts}:guideHost==='esa.int'&&nodes.some(n=>/(?:^|\s)articles-modules(?:\s|$)/.test(attrs(n).class??''))?landmarks[0]:null;
-  // Google's public /learn guides use labelled sections without an article or
+  // Google's public /learn and /discover guides use labelled sections without an article or
   // main landmark. Permit that known guide shell only; gated/hidden content is
   // still excluded above and by textOf. Never use arbitrary page bodies.
-  const googleGuide=new URL(url).hostname==='cloud.google.com'&&new URL(url).pathname.startsWith('/learn/')
+  const googleGuide=new URL(url).hostname==='cloud.google.com'&&/^\/(?:learn|discover)\//.test(new URL(url).pathname)
     &&nodes.some(n=>n.tagName==='section'&&/(?:^|\s)cws-jump-section(?:\s|$)/.test(attrs(n).class??''));
   const roots=restricted?usable(abstracts):completeGuide?[completeGuide]:usable(bodies).length?usable(bodies):usable(articles).length?usable(articles):landmarks.length?landmarks:googleGuide?usable(nodes.filter(n=>n.tagName==='body')):[];
   const root=roots.sort((a,b)=>textOf(b).length-textOf(a).length)[0];if(!root)fail(bodies.length||articles.length?'research_text_insufficient':'research_article_missing');
