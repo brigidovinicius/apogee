@@ -1,6 +1,6 @@
 # Apogee — PRD da área interna de membros
 
-- **Versão:** 0.1 · 15 de novembro de 2026.
+- **Versão:** 0.2 · 15 de novembro de 2026.
 - **Estado:** planejamento para revisão; a caixa de ferramentas ainda não foi implementada.
 - **Decisor de produto:** Vinicius.
 - **Relação com o produto:** detalha a experiência interna do [PRD geral](apogee-prd.md), preservando a oferta anual e os direitos existentes do Radar.
@@ -123,3 +123,12 @@ Integrações com APIs, ferramentas embutidas, compartilhamento de contas, venda
 - Designar quem mantém a curadoria e atende relatos de links incorretos.
 
 O conteúdo do documento estratégico fornecido é referência de produto. A inclusão da caixa de ferramentas, sua exclusividade anual e a revisão antes de implementar decorrem das instruções diretas do proprietário nesta conversa.
+
+
+## 11. Integração à oferta e ao próximo ciclo de implementação
+
+Conferência de 15/11/2026: a Caixa de Ferramentas já integra a especificação, mas permanece sem catálogo e rota no código publicado examinado. A página de vendas deve citá-la como recurso da assinatura anual em preparação, sem link para uma rota inexistente ou promessa de acesso imediato. O próximo ciclo deve implementar e validar F01–F10 antes de mudar esse estado.
+
+O início da área interna deve organizar Radar, Caixa de Ferramentas, Benefícios e Trilha, esta última inicialmente parcial. Os estados vazios, de preparação e de acesso restrito devem ser distintos. Acesso antigo ao Radar não concede automaticamente os demais recursos. A captura do evento gratuito continua um percurso separado da aquisição da assinatura.
+
+O [prompt de conclusão da jornada](handoffs/apogee-offer-complete-prompt-20261115.md) reúne o diagnóstico, os fluxos e o aceite de implementação em ambiente isolado. A autorização de deploy do design de Comunidade e Loja não autoriza publicar essas novas funcionalidades nem ativar cobranças.

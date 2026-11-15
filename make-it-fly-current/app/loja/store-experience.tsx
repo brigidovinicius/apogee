@@ -1,11 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { ArrowUp, ArrowUpRight, Plus, X } from "lucide-react";
-import Link from "next/link";
+import { ArrowUpRight, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { SiteHeader } from "@/components/site/site-header";
+import { EditorialPageShell } from "@/components/site/editorial-page-shell";
 import { products, type StoreProduct } from "@/lib/store/products";
 import { DROP_CONSENT_TEXT } from "@/lib/store/drop-consent";
 import styles from "./loja.module.css";
@@ -17,7 +16,7 @@ function ProductGallery({ product, onBuy }: { product: StoreProduct; onBuy: () =
   return (
     <article className={styles.product} aria-labelledby={`title-${product.slug}`}>
       <button className={styles.mainPhoto} type="button" onClick={() => dialog.current?.showModal()} aria-label={`Ampliar foto de ${product.name}`} aria-haspopup="dialog">
-        <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="(max-width: 700px) 100vw, 50vw" preload={active === 0} />
+        <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw" loading="lazy" />
         <span className={styles.enlarge} aria-hidden="true">Ampliar <Plus size={14} aria-hidden="true" /></span>
       </button>
       <div className={styles.thumbnails} role="group" aria-label={`Fotos de ${product.name}`}>
@@ -28,7 +27,7 @@ function ProductGallery({ product, onBuy }: { product: StoreProduct; onBuy: () =
         ))}
         <span>{active + 1} / {product.photos.length}</span>
       </div>
-      <div className={styles.productHeading}><h2 id={`title-${product.slug}`}>{product.name}</h2><span>{product.detail}</span></div>
+      <div className={styles.productHeading}><h3 id={`title-${product.slug}`}>{product.name}</h3><span>{product.detail}</span></div>
       <p>{product.description}</p>
       <button data-behavior-action="store_interest" className={styles.productLink} type="button" onClick={onBuy} aria-haspopup="dialog" aria-controls="drop-purchase-dialog" aria-label={`Comprar ${product.name}`}>Comprar <ArrowUpRight size={18} aria-hidden="true" /></button>
       <dialog ref={dialog} className={styles.photoDialog} aria-label={`Foto ampliada de ${product.name}`} onClick={(event) => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
@@ -103,14 +102,18 @@ export function StoreExperience() {
   }, [selectedProduct]);
 
   return (
-    <div className={styles.page}>
-      <SiteHeader current="store" tone="light" />
-      <main id="experiencia">
+    <EditorialPageShell current="store" className={styles.page}>
+      <main id="experiencia" tabIndex={-1}>
         <section className={styles.intro} aria-labelledby="store-title">
-          <div><p>Apogee Builders Club</p><h1 id="store-title">Vista o que<br />você cria</h1></div>
-          <div className={styles.introCopy}><p>Building the future · Made to create</p><p>Conheça as peças da Apogee e acompanhe os próximos drops</p></div>
+          <div><p className={styles.eyebrow}>Coleção Apogee</p><h1 id="store-title">Vista o que<br />você cria.</h1></div>
+          <p className={styles.introCopy}>A estrela, a comunidade e a vontade de construir. Peças que fazem parte da Apogee.</p>
         </section>
-        <section className={styles.collection} aria-label="Produtos Apogee" id="produtos">
+        <section className={styles.showcase} aria-labelledby="showcase-title">
+          <div className={styles.showcasePhoto}><Image src={products[0].photos[0].src} alt={products[0].photos[0].alt} width={1254} height={1254} sizes="(max-width: 760px) 100vw, 55vw" preload /></div>
+          <div className={styles.showcaseCopy}><p className={styles.eyebrow}>Apogee Builders Club</p><h2 id="showcase-title">Uma marca<br />para levar junto.</h2><p>Peças que levam a estrela e a vontade de construir para o seu dia a dia.</p><a className={styles.collectionLink} href="#produtos">Conhecer a coleção <ArrowUpRight size={18} aria-hidden="true" /></a><p className={styles.availability}>Acompanhe as peças e as novidades dos próximos drops.</p></div>
+        </section>
+        <section className={styles.collection} aria-labelledby="collection-title" id="produtos">
+          <h2 className={styles.collectionTitle} id="collection-title">A coleção.</h2>
           {products.map(product => <ProductGallery key={product.slug} product={product} onBuy={() => setSelectedProduct(product)} />)}
         </section>
         <dialog ref={purchaseDialog} id="drop-purchase-dialog" className={styles.purchaseDialog}
@@ -121,7 +124,6 @@ export function StoreExperience() {
           {selectedProduct ? <DropSignup key={selectedProduct.slug} productName={selectedProduct.name} /> : null}
         </dialog>
       </main>
-      <footer className={styles.footer}><Link href="/" aria-label="Apogee - início"><Image src="/brand/apogee-logo-navy.svg" alt="Apogee" width={112} height={69} /></Link><p>Building the future</p><a href="#produtos">Voltar aos produtos <ArrowUp size={16} aria-hidden="true" /></a></footer>
-    </div>
+    </EditorialPageShell>
   );
 }
