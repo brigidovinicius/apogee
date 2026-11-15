@@ -11,6 +11,8 @@ import {hashPassword} from 'better-auth/crypto';
 import {nativeCommunityDatabase} from '../tests/helpers/community-native-db.mjs';
 import {migrateCommunityAccess} from './community-access-migrate.mjs';
 import {migrateMemberToolbox} from './member-toolbox-migrate.mjs';
+import {migrateMemberDeliverables} from './member-deliverables-migrate.mjs';
+import {starterTrack,starterModule,starterActivities} from '../content/member-starter.mjs';
 import {opportunityLoader} from '../tests/helpers/load-opportunity-module.mjs';
 
 assert.equal(process.env.APOGEE_RUN_STRIPE_SANDBOX,'1','Explicit sandbox flag required.');
@@ -52,7 +54,7 @@ try {
   },{idempotencyKey:`${run}-portal`});
   assert.equal(portal.livemode,false);
   evidence.product=product.id;evidence.price=price.id;evidence.portal=portal.id;await save();
-  db=await nativeCommunityDatabase();await migrateCommunityAccess(db.sql,{apply:true,expectedRole:'apogee_local'});await migrateMemberToolbox(db.sql,{apply:true,expectedRole:'apogee_local'});
+  db=await nativeCommunityDatabase();await migrateCommunityAccess(db.sql,{apply:true,expectedRole:'apogee_local'});await migrateMemberToolbox(db.sql,{apply:true,expectedRole:'apogee_local'});await migrateMemberDeliverables(db.sql,{apply:true,expectedRole:'apogee_local'});
   const password=await hashPassword('RevisaoLocal2026!');
   for(const username of ['sandboxcompra','sandboxrecusa','sandboxcontrole','sandboxlegado','sandboxciclo']) {
     const id=userId(username);
@@ -62,12 +64,21 @@ try {
     if(username!=='sandboxlegado')for(let n=1;n<=10;n++)await db.sql`insert into radar_free_event(user_id,opportunity_id,slot) values(${id},${'review-event-'+n},${n})`;
   }
   await db.sql`insert into radar_legacy_access(user_id) values(${userId('sandboxlegado')})`;
+  const editor=userId('sandboxciclo');
+  await db.sql`insert into member_learning_track(id,name,description,status,reviewed_by) values(${starterTrack.id},${starterTrack.name},${starterTrack.description},'published',${editor})`;
+  await db.sql`insert into member_learning_module(id,track_id,name,description,deliverable,status,reviewed_by) values(${starterModule.id},${starterTrack.id},${starterModule.name},${starterModule.description},${starterModule.deliverable},'published',${editor})`;
+  for(const [order,a] of starterActivities.entries()) await db.sql`insert into member_learning_activity(id,module_id,name,instructions,status,sort_order,reviewed_by) values(${a.id},${starterModule.id},${a.name},${a.instructions},'published',${order},${editor})`;
+  await db.sql`insert into member_tool_category(id,slug,name,status) values('local-video','video','Vídeo','published')`;
+  await db.sql`insert into member_tool(id,category_id,name,description,url,status,reviewed_at,reviewed_by) values('local-flow','local-video','Google Flow','Criação de vídeos com inteligência artificial.','https://labs.google/fx/tools/flow','published',now(),${editor})`;
+
   const {COMMUNITY_STRIPE_EVENTS}=opportunityLoader()('lib/billing/community-fulfillment.ts');
   let resolveSecret,rejectSecret;
   const secretPromise=new Promise((resolve,reject)=>{resolveSecret=resolve;rejectSecret=reject;});
   const secretTimer=setTimeout(()=>rejectSecret(Error('Stripe listener readiness timeout.')),30000);
-  listener=spawn(process.env.APOGEE_STRIPE_CLI ?? '/private/tmp/apogee-stripe-cli-v1.55.11/stripe',[
-    '--config',`${db.dir}/stripe-cli.toml`,'--color','off','listen','--skip-update','--latest','--events-from','@self','--events',COMMUNITY_STRIPE_EVENTS.join(','),'--forward-to',`${origin}/api/stripe/webhook`],
+  const cli=process.env.APOGEE_STRIPE_CLI ?? '/opt/homebrew/bin/stripe';
+  const cliHelp=execFileSync(cli,['--config',`${db.dir}/stripe-cli.toml`,'listen','--help'],{encoding:'utf8'});
+  listener=spawn(cli,[
+    '--config',`${db.dir}/stripe-cli.toml`,'--color','off','listen','--skip-update','--latest',...(cliHelp.includes('--events-from')?['--events-from','@self']:[]),'--events',COMMUNITY_STRIPE_EVENTS.join(','),'--forward-to',`${origin}/api/stripe/webhook`],
     {env:{...process.env,STRIPE_API_KEY:credentials.key},stdio:['ignore','pipe','pipe']});
   listener.once('error',rejectSecret);listener.once('exit',code=>{if(!closing)rejectSecret(Error(`Stripe listener exited: ${code}`));});
   for(const stream of [listener.stdout,listener.stderr])createInterface({input:stream}).on('line',line=>{
@@ -75,7 +86,8 @@ try {
     log(`[stripe-cli] ${line}`);
   });
   const webhookSecret=await secretPromise;
-  const env={...process.env,NODE_ENV:'development',APOGEE_LOCAL_PREVIEW:'1',APOGEE_FUNCTIONAL_REVIEW:'0',APOGEE_STRIPE_SANDBOX_REVIEW:'1',
+  const inherited=Object.fromEntries(['PATH','HOME','TMPDIR','LANG','PG_BIN'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]));
+  const env={...inherited,NODE_OPTIONS:'--max-old-space-size=1536',NEXT_TELEMETRY_DISABLED:'1',NODE_ENV:'development',APOGEE_LOCAL_PREVIEW:'1',APOGEE_FUNCTIONAL_REVIEW:'0',APOGEE_STRIPE_SANDBOX_REVIEW:'1',
     DATABASE_URL:db.url,DATABASE_SSL_MODE:'disable',DATABASE_POOL_MAX:'2',BETTER_AUTH_URL:origin,BETTER_AUTH_SECRET:randomBytes(32).toString('hex'),
     STRIPE_MODE:'test',STRIPE_SECRET_KEY:credentials.key,STRIPE_WEBHOOK_SECRET:webhookSecret,
     STRIPE_COMMUNITY_PRODUCT_ID:product.id,STRIPE_COMMUNITY_ANNUAL_PRICE_ID:price.id,STRIPE_COMMUNITY_PORTAL_CONFIGURATION_ID:portal.id,

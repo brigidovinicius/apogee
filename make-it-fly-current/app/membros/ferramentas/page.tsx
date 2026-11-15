@@ -22,7 +22,7 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
       <LockKeyhole size={28} strokeWidth={1.5} aria-hidden="true" /><h2 id="toolbox-gate-title">Um recurso da assinatura anual.</h2>
       <p>A caixa de ferramentas reúne links por categoria, com uma orientação breve para escolher por onde começar.</p>
       <p>O catálogo está disponível para assinantes anuais durante o período pago. Seus acessos anteriores ao Radar continuam preservados.</p>
-      <div className={styles.actions}><Link className={styles.primary} href="/comunidade#planos" prefetch={false}>Conhecer a assinatura anual <ArrowUpRight size={17} aria-hidden="true" /></Link><Link href="/membros/oportunidades">Continuar no Radar</Link></div>
+      <div className={styles.actions}><Link className={styles.primary} href="/comunidade?next=%2Fmembros%2Fferramentas#planos" prefetch={false}>Conhecer a assinatura anual <ArrowUpRight size={17} aria-hidden="true" /></Link><Link href="/membros/oportunidades">Continuar no Radar</Link></div>
     </section> : <>
       {access.source === "admin" ? <p className={styles.preview}>Prévia administrativa · <Link href="/admin/ferramentas">Organizar ferramentas</Link></p> : <p className={styles.access}>Incluída na sua assinatura anual. Abrir ferramentas não consome consultas do Radar.</p>}
       {!categories.length ? <section className={styles.empty}><FolderOpen size={30} strokeWidth={1.5} aria-hidden="true" /><h2>Estamos organizando a caixa.</h2><p>As ferramentas aparecerão aqui conforme a curadoria publicar as primeiras fichas.</p><Link href="/membros">Voltar para a comunidade</Link></section> : <>

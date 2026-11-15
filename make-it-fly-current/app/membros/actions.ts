@@ -102,7 +102,7 @@ export async function completeUsername(_: FormState, form: FormData): Promise<Fo
     if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {
       return { errors: { username: "Esse nome de usuário já está em uso." }, values };
     }
-    console.error("[membros] erro ao concluir nome de usuário", error);
+    console.error("[membros] erro ao concluir nome de usuário");
     return { message: "Não foi possível salvar o nome de usuário agora.", values };
   }
 

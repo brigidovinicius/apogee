@@ -536,3 +536,36 @@ export const memberTool = pgTable("member_tool", {
   check("member_tool_url_check",sql`${t.url} ~ '^https://[^[:space:]]+$' and length(${t.url})<=2048`),check("member_tool_conditions_check",sql`${t.conditions} is null or length(${t.conditions})<=280`),
   check("member_tool_status_check",sql`${t.status} in ('draft','published','archived')`),check("member_tool_order_check",sql`${t.sortOrder} between 0 and 9999`),
   check("member_tool_version_check",sql`${t.version}>=1`),check("member_tool_review_check",sql`${t.status}<>'published' or ${t.reviewedAt} is not null`)]);
+
+// Member deliverables stay separate from legacy Radar rights and payment ledgers.
+const editorialColumns = () => ({
+  status: text("status").notNull().default("draft"), sortOrder: integer("sort_order").notNull().default(0),
+  reviewedBy: text("reviewed_by").notNull().references(() => user.id), reviewedAt: timestamp("reviewed_at", { withTimezone: true }).notNull().defaultNow(),
+});
+export const memberBenefit = pgTable("member_benefit", {
+  id: text("id").primaryKey(), name: text("name").notNull(), partner: text("partner").notNull(), description: text("description").notNull(),
+  evidenceUrl: text("evidence_url").notNull().default(""), eligibility: text("eligibility").notNull().default(""), availability: text("availability").notNull().default(""),
+  startsAt: timestamp("starts_at", { withTimezone: true }), endsAt: timestamp("ends_at", { withTimezone: true }),
+  redemption: text("redemption").notNull().default(""), redemptionUrl: text("redemption_url").notNull().default(""), ...editorialColumns(),
+}, t => [check("member_benefit_status_check", sql`${t.status} in ('draft','published','archived')`), check("member_benefit_sort_order_check", sql`${t.sortOrder} between 0 and 10000`),
+  check("member_benefit_check", sql`${t.endsAt} is null or ${t.startsAt} is null or ${t.endsAt}>${t.startsAt}`),
+  check("member_benefit_check1", sql`${t.status}<>'published' or (length(${t.evidenceUrl})>0 and length(${t.eligibility})>0 and length(${t.availability})>0 and length(${t.redemption})>0 and ${t.startsAt} is not null and ${t.endsAt} is not null)`)]);
+export const memberLearningTrack = pgTable("member_learning_track", {
+  id: text("id").primaryKey(), name: text("name").notNull(), description: text("description").notNull(), ...editorialColumns(),
+}, t => [check("member_learning_track_status_check", sql`${t.status} in ('draft','published','preparing','archived')`), check("member_learning_track_sort_order_check", sql`${t.sortOrder} between 0 and 10000`)]);
+export const memberLearningModule = pgTable("member_learning_module", {
+  id: text("id").primaryKey(), trackId: text("track_id").notNull().references(() => memberLearningTrack.id), name: text("name").notNull(),
+  description: text("description").notNull(), deliverable: text("deliverable").notNull(), ...editorialColumns(),
+}, t => [index("member_learning_module_track_order").on(t.trackId, t.sortOrder, t.id), check("member_learning_module_status_check", sql`${t.status} in ('draft','published','preparing','archived')`), check("member_learning_module_sort_order_check", sql`${t.sortOrder} between 0 and 10000`)]);
+export const memberLearningActivity = pgTable("member_learning_activity", {
+  id: text("id").primaryKey(), moduleId: text("module_id").notNull().references(() => memberLearningModule.id), name: text("name").notNull(),
+  instructions: text("instructions").notNull(), resourceUrl: text("resource_url").notNull().default(""), ...editorialColumns(),
+}, t => [index("member_learning_activity_module_order").on(t.moduleId, t.sortOrder, t.id), check("member_learning_activity_status_check", sql`${t.status} in ('draft','published','preparing','archived')`), check("member_learning_activity_sort_order_check", sql`${t.sortOrder} between 0 and 10000`)]);
+export const memberLearningProgress = pgTable("member_learning_progress", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }), activityId: text("activity_id").notNull().references(() => memberLearningActivity.id),
+  completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [primaryKey({ columns: [t.userId, t.activityId] })]);
+export const memberDeliverableAudit = pgTable("member_deliverable_audit", {
+  id: text("id").primaryKey(), actorId: text("actor_id").notNull().references(() => user.id), entityType: text("entity_type").notNull(),
+  entityId: text("entity_id").notNull(), action: text("action").notNull(), status: text("status").notNull(), createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [check("member_deliverable_audit_entity_type_check", sql`${t.entityType} in ('benefit','track','module','activity')`), check("member_deliverable_audit_action_check", sql`${t.action} in ('create','update')`)]);

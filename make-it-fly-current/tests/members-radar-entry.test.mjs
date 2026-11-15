@@ -13,6 +13,7 @@ test("a área autenticada apresenta os quatro recursos aprovados e preserva o ac
   const {opportunityLoader}=await import("./helpers/load-opportunity-module.mjs");
   const {renderToStaticMarkup}=await import("react-dom/server");
   const page=opportunityLoader({
+    "@/lib/billing/community-store":{communityAccess:async()=>({active:false})},
     "@/lib/billing/store":{radarAccess:async()=>({active:true,source:"legacy"})},
     "@/lib/members/dal":{requireMember:async()=>({id:"a",name:"Ana Apogee",username:"ana"})},
     "@/lib/members/forum":{listCategories:async()=>[]},

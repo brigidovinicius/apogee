@@ -1,4 +1,5 @@
 import "server-only";
+import { communityReturnPath } from "./community-navigation";
 import { randomUUID } from "node:crypto";
 import { getSql } from "@/lib/members/db";
 import { applicationOrigin } from "@/lib/members/mail";
@@ -9,8 +10,9 @@ import { validAnnualPrice } from "./community-fulfillment";
 import { stripeClient } from "./stripe";
 
 export async function annualCheckout(userId:string,next:string) {
+  next=communityReturnPath(next);
   const config=communityBillingConfig(),stripe=stripeClient();
-  if((await communityAccess(userId,config.livemode)).active) return `${applicationOrigin()}${COMMUNITY_ACCESS_PATH}`;
+  if((await communityAccess(userId,config.livemode)).active) return `${applicationOrigin()}${COMMUNITY_ACCESS_PATH}?next=${encodeURIComponent(next)}`;
   const price=await stripe.prices.retrieve(config.price);
   if(!validAnnualPrice(price,config)) throw new BillingError(503,"Plano anual indisponível.");
   const attempt=await getSql().begin(async tx=>{

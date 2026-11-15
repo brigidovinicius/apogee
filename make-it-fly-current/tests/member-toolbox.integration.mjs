@@ -129,7 +129,7 @@ test("administrative reads, Server Actions and the writer reject ordinary, revok
   assert.ok(invalidated.includes("/membros/ferramentas"));
 });
 test("unsafe URLs and invalid input are rejected before persistence and no prices are invented",async()=>{
-  for(const url of ["javascript:alert(1)","data:text/html,test","http://example.org","https://user:pass@example.org","https://127.0.0.1","https://localhost","https://example.local","https://example.org:444/","https://example.org/?access_token=secret","https://example.org/?email=person@example.org","https://example.org\\@evil.com"]){
+  for(const url of ["javascript:alert(1)","data:text/html,test","http://example.org","https://user:pass@example.org","https://127.0.0.1","https://localhost","https://example.local","https://example.org:444/","https://example.org/?access_token=secret","https://example.org/?email=person@example.org","https://example.org/#access_token=secret","https://example.org/?contact=private","https://example.org\\@evil.com"]){
     await assert.rejects(store.writeToolboxTool("admin",toolForm({url})),undefined,url);
   }
   await assert.rejects(store.writeToolboxCategory("admin",categoryForm({name:"<script>"})),/texto simples/);

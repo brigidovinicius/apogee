@@ -6,8 +6,8 @@ export function MemberOfferOverview({ name, radarFullAccess, preview = false, an
   const pillars = [
     { name: "Radar", icon: Compass, text: "Encontre eventos, programas e oportunidades para agir.", href: preview ? "/oportunidades" : "/membros/oportunidades", action: "Abrir o Radar" },
     { name: "Caixa de ferramentas", icon: Wrench, text: "Links por categoria para encontrar o recurso da sua tarefa. Exclusivo da assinatura anual.", href: preview ? "/previa/validacao" : "/membros/ferramentas", action: "Conhecer a caixa" },
-    { name: "Benefícios", icon: Gift, text: "Entenda os benefícios e as condições de cada oferta.", href: "/comunidade#perks", action: "Conhecer os benefícios" },
-    { name: "Trilha", icon: BookOpen, text: "Conheça a proposta de IA aplicada e os conteúdos previstos para o plano.", href: "/comunidade#learn", action: "Conhecer a trilha" },
+    { name: "Benefícios", icon: Gift, text: "Entenda os benefícios e as condições de cada oferta.", href: preview ? "/comunidade#perks" : "/membros/beneficios", action: "Ver benefícios" },
+    { name: "Trilha", icon: BookOpen, text: "Atividades práticas, módulos disponíveis e seu próximo passo na trilha inicial parcial.", href: preview ? "/comunidade#learn" : "/membros/trilha", action: "Continuar na trilha" },
   ];
   return <section className={`${styles.scope} ${styles.overview}`} aria-labelledby="member-offer-title">
     <h2 id="member-offer-title">{name}, qual é seu próximo passo?</h2>

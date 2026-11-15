@@ -49,11 +49,7 @@ export function toolUrl(value: string) {
       /(?:^|\.)(?:localhost|local|internal|test|invalid)$/i.test(url.hostname)) {
     throw new ToolboxInputError("Use um link HTTPS de um site público, sem credenciais ou portas alternativas.");
   }
-  for (const key of url.searchParams.keys()) {
-    if (/(?:token|secret|password|api.?key|session|email|authorization)/i.test(key)) {
-      throw new ToolboxInputError("Use o link público da ferramenta, sem tokens, sessão ou dados pessoais.");
-    }
-  }
+  if (url.search || url.hash) throw new ToolboxInputError("Use o link público da ferramenta, sem parâmetros, tokens, sessão ou dados pessoais.");
   return url.href;
 }
 export function categoryInput(data: FormData) {

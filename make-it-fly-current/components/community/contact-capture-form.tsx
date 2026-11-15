@@ -59,8 +59,9 @@ export function ContactCaptureForm({ preview = false }: { preview?: boolean }) {
   if (submitted) return <div ref={confirmation} tabIndex={-1} className={styles.captureConfirmation} role="status" aria-labelledby={`${id}-confirmation`}>
     <span className={styles.confirmationIcon}><Check size={24} aria-hidden="true" /></span><p className={styles.eyebrow}>{preview ? "Demonstração concluída" : "Inscrição registrada"}</p>
     <h2 id={`${id}-confirmation`}>Você deu o primeiro passo.</h2>
-    <p>{preview ? "Demonstração concluída. Nenhum contato foi registrado e nenhum e-mail será enviado." : "Seu contato foi registrado. As orientações de acesso ao evento serão enviadas para o e-mail informado."}</p>
+    <p>{preview ? "Demonstração concluída. Nenhum contato foi registrado e nenhum e-mail será enviado." : "Sua solicitação foi registrada. A equipe usará o e-mail informado para orientar o acesso ao evento. Este formulário não envia o acesso automaticamente."}</p>
     <p className={styles.formPurpose}>Este cadastro não cria uma conta nem inscreve você em outros comunicados.</p>
+    {!preview ? <p>Se precisar de ajuda, escreva para <a href="mailto:contato@apogee.community">contato@apogee.community</a>.</p> : null}
     <Link className={styles.subtleLink} href="/comunidade" prefetch={false}>Conhecer a Comunidade Apogee<ArrowUpRight size={16} aria-hidden="true" /></Link>
   </div>;
 

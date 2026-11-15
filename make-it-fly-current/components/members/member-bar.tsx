@@ -6,7 +6,7 @@ import { AvatarInitials } from "./avatar-initials";
 import styles from "./members.module.css";
 import { mcpEnabled } from "@/lib/mcp/config";
 
-export function MemberBar({ member, current }: { member: CurrentMember; current?: "home" | "forum" | "perfil" | "radar" | "ferramentas" }) {
+export function MemberBar({ member, current }: { member: CurrentMember; current?: "home" | "forum" | "perfil" | "radar" | "ferramentas" | "beneficios" | "trilha" | "assinatura" | "suporte" }) {
   return (
     <div className={styles.memberBar}>
       {member.role === "admin" ? <AdminModeSwitcher mode="user" /> : null}
@@ -27,6 +27,10 @@ export function MemberBar({ member, current }: { member: CurrentMember; current?
         <Link href={`/membros/perfil/${member.username}`} aria-current={current === "perfil" ? "page" : undefined}>
           Meu perfil
         </Link>
+        <Link href="/membros/beneficios" aria-current={current === "beneficios" ? "page" : undefined}>Benefícios</Link>
+        <Link href="/membros/trilha" aria-current={current === "trilha" ? "page" : undefined}>Trilha</Link>
+        <Link href="/membros/assinatura" aria-current={current === "assinatura" ? "page" : undefined}>Assinatura</Link>
+        <Link href="/membros/suporte" aria-current={current === "suporte" ? "page" : undefined}>Suporte</Link>
         <Link href="/membros/protecao">Cadastro protegido</Link>
         {mcpEnabled() && <Link href="/membros/integracoes/mcp">Incluir no meu ChatGPT</Link>}
         {mcpEnabled() && <Link href="/membros/integracoes/mcp#claude">Incluir no meu Claude</Link>}

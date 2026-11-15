@@ -33,7 +33,9 @@
     "community:access:migrate": "node scripts/community-access-migrate.mjs",
     "members:toolbox:migrate": "node scripts/member-toolbox-migrate.mjs",
     "test:member-toolbox": "node --test --test-concurrency=1 tests/member-toolbox.integration.mjs",
-    "test:community-access": "node --test --test-concurrency=1 tests/community-access.integration.mjs"
+    "test:community-access": "node --test --test-concurrency=1 tests/community-access.integration.mjs",
+    "members:deliverables:migrate": "node scripts/member-deliverables-migrate.mjs",
+    "test:member-deliverables": "node --test --test-concurrency=1 tests/member-deliverables.integration.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

@@ -5,6 +5,11 @@ export function localOfferPreview() {
   return process.env.NODE_ENV === "development" && process.env.APOGEE_LOCAL_PREVIEW === "1";
 }
 
+/** Static studies simulate forms; functional/sandbox review must use real handlers. */
+export function localStaticOfferPreview() {
+  return localOfferPreview() && !localFunctionalReview() && !localStripeSandboxReview();
+}
+
 /** Functional review uses isolated loopback data; it cannot enable a production bypass. */
 export function localFunctionalReview() {
   if (process.env.NODE_ENV !== "development" || process.env.APOGEE_FUNCTIONAL_REVIEW !== "1" || process.env.STRIPE_MODE !== "test") return false;

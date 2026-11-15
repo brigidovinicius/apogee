@@ -6,6 +6,7 @@ import { getSql } from "@/lib/members/db";
 import { BillingError } from "@/lib/billing/config";
 import { communityFailure } from "@/lib/billing/community-http";
 import { communityBillingConfig,COMMUNITY_ACCESS_PATH } from "@/lib/billing/community-config";
+import { communityReturnPath } from "@/lib/billing/community-navigation";
 import { stripeClient } from "@/lib/billing/stripe";
 
 export async function POST(request:Request) {
@@ -25,7 +26,7 @@ export async function POST(request:Request) {
       (configuration.features.subscription_cancel.enabled && configuration.features.subscription_cancel.mode !== "at_period_end")) {
       throw new BillingError(503,"Gestão da assinatura temporariamente indisponível.");
     }
-    const session=await stripe.billingPortal.sessions.create({customer:String(owner.customer_id),configuration:portal,return_url:`${applicationOrigin()}${COMMUNITY_ACCESS_PATH}`});
+    const session=await stripe.billingPortal.sessions.create({customer:String(owner.customer_id),configuration:portal,return_url:`${applicationOrigin()}${COMMUNITY_ACCESS_PATH}?next=${encodeURIComponent(communityReturnPath(new URL(request.url).searchParams.get("next")))}`});
     if(new URL(session.url).origin !== "https://billing.stripe.com") throw new BillingError(503,"Gestão da assinatura indisponível.");
     return Response.redirect(session.url,303);
   } catch(error) { return communityFailure(request,error); }
