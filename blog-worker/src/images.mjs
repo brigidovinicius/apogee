@@ -31,10 +31,10 @@ const briefText=(value,bytes)=>{let result='';for(const char of String(value??''
 export function coverBrief(article) {
   const topic=(article.title+' '+article.excerpt).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
   const scene=/marketing|campanha|publicidade/.test(topic)?'Bastidores de campanha: câmera, mesa e embalagens genéricas sem marcas.'
-    :/\bia\b|\bai\b|machine learning|aprendizado de maquina|inteligencia artificial/.test(topic)?'Mesa de trabalho com notebook, caderno e periféricos; sem robô humanoide ou cérebro luminoso.'
+    :/\bia\b|\bai\b|\bllm\b|\brag\b|embeddings|agentes? de ia|machine learning|aprendizado de maquina|inteligencia artificial/.test(topic)?'Mesa de trabalho com notebook, caderno e periféricos; sem robô humanoide ou cérebro luminoso.'
     :/ssd|hdd|chip|gpu|hardware|processador|robo/.test(topic)?'Componentes eletrônicos plausíveis, conectores e ferramentas sobre bancada de manutenção.'
-    :/git|software|codigo|aplicativo/.test(topic)?'Estação de desenvolvimento, teclado e monitor desfocado, sem código ou dados legíveis.'
-    :/negocio|empresa|mercado|startup|empreend/.test(topic)?'Mesa de reunião com caderno e calculadora, materiais cotidianos e pessoas não identificáveis.'
+    :/git|software|codigo|aplicativo|criptografia|banco de dados|seguranca digital|\bdns\b|\bhttp/.test(topic)?'Estação de desenvolvimento, teclado e monitor desfocado, sem código ou dados legíveis.'
+    :/negocio|empresa|mercado|startup|empreend|contabil|competencia|receita|vendas|conversao|fluxo de caixa/.test(topic)?'Mesa de reunião com caderno e calculadora, materiais cotidianos e pessoas não identificáveis.'
     :/nasa|orbita|espaco|satelite|voyager/.test(topic)?'Instrumentação e antenas em contexto terrestre; não inventar a aparência da missão citada.'
     :/neuro|glia|cerebro|celula/.test(topic)?'Bancada de microscopia com lâmina e instrumentos; sem simular resultados científicos.'
     :'Objetos concretos ligados ao assunto em ambiente cotidiano, sem cenas de acontecimentos reais.';

@@ -15,6 +15,7 @@ COPY --from=editorial-contract lib/blog/corroboration.mjs /make-it-fly-current/l
 COPY --from=editorial-contract lib/blog/reference-catalog.json /make-it-fly-current/lib/blog/reference-catalog.json
 COPY --from=editorial-contract lib/blog/explainer-catalog.json /make-it-fly-current/lib/blog/explainer-catalog.json
 COPY --from=editorial-contract lib/blog/seo-guidelines.json /make-it-fly-current/lib/blog/seo-guidelines.json
+COPY --from=editorial-contract lib/blog/editorial-plan.mjs /make-it-fly-current/lib/blog/editorial-plan.mjs
 USER node
 ENTRYPOINT ["/app/bin/keyring-session.sh"]
 CMD ["node", "src/cli.mjs", "run"]

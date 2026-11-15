@@ -3,6 +3,7 @@ import {enrichResearch,enrichSelectedEvidence,researchPriority,defaultArticleRea
 import {articleSource,referenceForUrl,ARTICLE_EXTRACTION_VERSION} from './article-research.mjs';
 import {explainerCatalog,explainerId,explainerWindowOpen,nextExplainer,automaticExplainerDossier,explainerRecoveryEligible,explainerEvidenceHash} from './explainers.mjs';
 import {randomUUID} from 'node:crypto';
+import {baselinePostIds,dailyDraftCap,topicAvailable,extraBatch} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle,SEO_GUIDELINES} from './editorial.mjs';
@@ -179,11 +180,13 @@ export class Store {
       and c.reason is distinct from 'source_changed_after_reservation'
       and not exists(select 1 from blog_worker.attempt where candidate_id=c.id and (kind='text' or state in ('reserved','unknown')))`;
   }
-  async productionUsage(tx=this.sql,at=new Date()){
+  async productionUsage(tx=this.sql,at=new Date(),policy=null){
     const {day,week}=periodKeys(at);
+    const baseline=baselinePostIds(policy,at);
     return tx`select d.document->>'category' as category,d.document->>'subcategory' as subcategory,
-      count(*) filter(where a.day=${day}::date)::int as day,count(*) filter(where a.week=${week}::date)::int as week
-      from (select distinct on (t.candidate_id) t.* from blog_worker.attempt t
+      count(*) filter(where a.day=${day}::date)::int as day,count(*) filter(where a.week=${week}::date)::int as week,
+      count(*) filter(where a.day=${day}::date and a.written_post_id=any(${baseline}::int[]))::int as baseline_day
+      from (select distinct on (t.candidate_id) t.*,c.post_id as written_post_id from blog_worker.attempt t
         join blog_worker.candidate c on c.id=t.candidate_id
         where t.kind='text' and ((c.post_id is not null and t.state='confirmed' and t.reason is null)
           or (c.post_id is null and t.state in ('reserved','unknown')))
@@ -198,14 +201,14 @@ export class Store {
     if(!explainerWindowOpen(policy,at))return null;
     const [control]=await this.sql`select paused from blog_worker.control where singleton=true`;
     if(control?.paused)return null;
-    const usage=await this.productionUsage(),existing=await this.sql`select c.id,c.explainer_key,c.post_id,c.first_attempt_day,c.reason,c.artifact,
+    const usage=await this.productionUsage(this.sql,at,policy),existing=await this.sql`select c.id,c.explainer_key,c.post_id,c.first_attempt_day,c.reason,c.artifact,
       v.document,v.assessment,v.revision is not null as has_dossier,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison') as comparisons,
       exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='text') as text_attempts,
       exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.state in ('reserved','unknown')) as pending
       from blog_worker.candidate c left join lateral(select * from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1)v on true where content_kind='explainer'`;
-    const plan=nextExplainer(plans,usage,existing,at);if(!plan)return null;
+    const plan=nextExplainer(plans,usage,existing,at,policy);if(!plan)return null;
     const id=explainerId(plan),source=articleSource(referenceForUrl(plan.urls[0])),previous=existing.find(c=>c.id===id),recovering=explainerRecoveryEligible(previous);
     // Planning time is distinct from the actual source publication dates kept
     // in the immutable captured documents and the final references.
@@ -242,7 +245,7 @@ export class Store {
   async prepareAutomaticResearch(policy,{read,at=new Date()}={}){
     const [control]=await this.sql`select paused from blog_worker.control where singleton=true`;
     if(control?.paused)return {prepared:0};
-    const {day}=periodKeys(at),usage=await this.productionUsage();
+    const {day}=periodKeys(at),usage=await this.productionUsage(this.sql,at,policy);
     const candidates=await this.sql`select * from (select c.*,row_number() over(partition by c.source_id order by c.score desc,c.published_at desc) as source_rank
       from blog_worker.candidate c where c.content_kind='news' and c.post_id is null and c.first_attempt_day is null and c.published_at>now()-interval '7 days'
       and c.reason is distinct from 'source_changed_after_reservation' and c.reason is distinct from 'operator_hold' and c.reason is distinct from 'retention'
@@ -254,7 +257,7 @@ export class Store {
       and d.captured_at>now()-interval '7 days' order by (d.document->>'extraction_method'='public_article') desc nulls last,d.captured_at desc limit 2000`;
     const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id,captured_at:r.captured_at}));
     const ranked=candidates.map((candidate,index)=>({candidate,index,priority:researchPriority(candidate,at)})).filter(v=>v.priority>=0).sort((a,b)=>b.priority-a.priority||a.index-b.index).map(v=>v.candidate);
-    const plan=balancedResearchCandidates(ranked,usage,1000);
+    const plan=balancedResearchCandidates(ranked,usage,1000,policy,at);
     const due=c=>!c.artifact?.research?.next_at||Date.parse(c.artifact.research.next_at)<=Date.now();
     let publicReadUsed=false,publicReadRequests=0;
     const prepare=async(candidate,topic,{allowNetwork=true,freshOnly=false}={})=>{
@@ -313,7 +316,7 @@ export class Store {
       where j.state='pending' and c.status='draft' and c.reason is distinct from 'source_changed_after_reservation'
       and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='image') order by j.created_at limit 1`;
     if(policy.automatic_image_generation_enabled&&image)return {method:'reserveImage',candidateId:image.candidate_id};
-    const usage=await this.productionUsage();
+    const at=new Date(),usage=await this.productionUsage(this.sql,at,policy);
     const rows=await this.sql`select c.id,c.status,c.reason,c.first_attempt_day,v.document,v.assessment,
       v.actor_id='automatic_research_recovery' and exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' and a.dossier_revision<v.revision) as refreshed_research,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts,
@@ -323,8 +326,7 @@ export class Store {
       where c.post_id is null and c.reason is distinct from 'source_changed_after_reservation' and c.reason is distinct from 'operator_hold' and c.published_at>now()-interval '7 days'
       and c.status in ('ready','held','discovered') order by c.score desc,c.published_at desc limit 100`;
     for(const c of rows){
-      const used=usage.find(u=>u.category===c.document.category&&u.subcategory===c.document.subcategory);
-      if(used&&(used.day>=policy.per_topic_daily_cap||used.week>=policy.per_topic_weekly_cap))continue;
+      if(!topicAvailable(policy,usage,c.document,at))continue;
       if(c.attempts>=policy.max_provider_attempts_per_article_including_repairs)continue;
       if(c.status==='ready'&&c.assessment.eligible&&c.assessment.comparison_verified)return {method:'reserve',candidateId:c.id};
       if(!c.attempts&&!c.assessment.comparison_verified&&c.document.documents.length>=2&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
@@ -379,17 +381,16 @@ export class Store {
         }
       }
       const {day,week}=periodKeys(at);
-      let counts,topic;
+      let counts;
       if(google&&policy.schema_version===3){
-        const usage=await this.productionUsage(tx,at);
+        const usage=await this.productionUsage(tx,at,policy);
         counts={day:usage.reduce((n,u)=>n+u.day,0),week:usage.reduce((n,u)=>n+u.week,0)};
-        topic=usage.find(u=>u.category===version.document.category&&u.subcategory===version.document.subcategory);
-        if(topic&&(topic.day>=policy.per_topic_daily_cap||topic.week>=policy.per_topic_weekly_cap))fail('topic_frequency');
+        if(!topicAvailable(policy,usage,version.document,at))fail('topic_frequency');
         const [duplicate]=await tx`select a.id from blog_worker.attempt a join blog_worker.dossier_version v on v.candidate_id=a.candidate_id and v.revision=a.dossier_revision
           where a.candidate_id<>${candidate.id} and (v.document->>'event_key'=${version.document.event_key} or (${!isExplainer(version.document)} and coalesce(v.document->'editorial'->>'kind','news')='news' and exists(select 1 from jsonb_array_elements(v.document->'documents') old_doc join jsonb_array_elements(${tx.json(version.document.documents)}::jsonb) new_doc on old_doc->>'url'=new_doc->>'url'))) limit 1`;
         if(duplicate)fail('duplicate_research_event');
       }else [counts]=await tx`select count(*) filter(where first_attempt_day=${day}::date)::int as day,count(*) filter(where first_attempt_week=${week}::date)::int as week from blog_worker.candidate`;
-      if((google||!candidate.first_attempt_day)&&(counts.day>=policy.new_drafts_per_day_cap||counts.week>=policy.new_drafts_per_week_cap))fail('draft_frequency');
+      if((google||!candidate.first_attempt_day)&&(counts.day>=dailyDraftCap(policy,at)||counts.week>=policy.new_drafts_per_week_cap))fail('draft_frequency');
 
       const attempts=await tx`select * from blog_worker.attempt where candidate_id=${candidate.id} and kind in ('text','comparison')`;
       if(attempts.length>=policy.max_provider_attempts_per_article_including_repairs)fail('attempt_limit');
@@ -587,7 +588,8 @@ export class Store {
         organization_id:identity?.organization_id??null,project_id:identity?.project_id??null,
         article_cap:config.policy.article_budget_micro_usd_cap_including_all_attempts,daily_cap:config.policy.daily_budget_micro_usd_cap,
         cycle_cap:config.policy.cycle_budget_micro_usd_cap,cycle_fraction:config.policy.cycle_grant_fraction_cap_basis_points,
-        per_day:config.policy.new_drafts_per_day_cap,per_week:config.policy.new_drafts_per_week_cap};
+        editorial_focus:config.policy.editorial_focus??null,extra_batch:extraBatch(config.policy),
+        per_day:dailyDraftCap(config.policy),per_week:config.policy.new_drafts_per_week_cap};
       await tx`update blog_worker.control set snapshot=${tx.json(snapshot)},heartbeat_at=now() where singleton=true`;
       // A crash during an operator command never silently dispatches it again.
       await tx`update blog_worker.command set state='blocked',result='{"reason":"worker_interrupted"}'::jsonb,finished_at=now()

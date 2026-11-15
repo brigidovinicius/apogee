@@ -1,0 +1,14 @@
+export const FOCUSED_EDITORIAL_PLAN: 'technology-ai-business-4-3-3';
+export type ExtraBatch = { day: string; extra_drafts: number; baseline_post_ids: number[] };
+export type EditorialSettings = { editorial_focus?: string | null; google_daily_completion?: ExtraBatch | null; extra_batch?: ExtraBatch | null; per_topic_daily_cap?: number; per_topic_weekly_cap?: number };
+export type Topic = { category: string; subcategory: string | null };
+export type ProductionPulse = Topic & { drafts: number; complete: number; news: number; explainers: number; researching: number; compared: number; primary_pending: number; independent_pending: number; unavailable: number; format_pending: number; factual_pending: number; review_held: number; baseline_drafts?: number; baseline_complete?: number; baseline_news?: number; baseline_explainers?: number };
+export type FocusProgress = Omit<ProductionPulse, 'category' | 'subcategory'> & { key: string; label: string; target: number };
+export const FOCUS_TARGETS: readonly Readonly<{ key: string; label: string; target: number }>[];
+export function focusedEditorial(policy?: EditorialSettings | null): boolean;
+export function focusPool(topic?: Topic | null): string | null;
+export function extraBatch(policy?: EditorialSettings | null, at?: Date): ExtraBatch | null;
+export function baselinePostIds(policy?: EditorialSettings | null, at?: Date): number[];
+export function dailyDraftCap(policy: EditorialSettings & { new_drafts_per_day_cap: number }, at?: Date): number;
+export function topicAvailable(policy: EditorialSettings | null, usage: (Topic & { day: number; week: number; baseline_day?: number })[], topic: Topic, at?: Date): boolean;
+export function focusProgress(rows: ProductionPulse[], snapshot?: EditorialSettings | null, at?: Date): FocusProgress[];

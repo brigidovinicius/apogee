@@ -16,6 +16,7 @@ import {dossierFixture} from './corroboration-fixture.mjs';
 import {assessDossier,dossierHash} from '../src/corroboration.mjs';
 import {hash,periodKeys} from '../src/policy.mjs';
 import {TOPICS,topicKey} from '../src/automatic-research.mjs';
+import {FOCUSED_EDITORIAL_PLAN,focusProgress} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 import {articleSource,referenceForUrl,ARTICLE_EXTRACTION_VERSION} from '../src/article-research.mjs';
 import {explainerCatalog,explainerId} from '../src/explainers.mjs';
 import {identity,policy,source,grant,price,candidate,completed,imagePolicy,imagePrice,imageUsage,webpFixture} from './fixtures.mjs';
@@ -1083,6 +1084,46 @@ try{
     assert.equal(ledger.n,2);
     const [post]=await admin`select status,seo_noindex,scheduled_at from public.blog_post`;
     assert.deepEqual(post,{status:'draft',seo_noindex:true,scheduled_at:null});
+  });
+  await check('focused extra batch creates exactly four Technology, three AI and three Business drafts without erasing the first ten',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const small={input_tokens:100,output_tokens:100,thinking_tokens:0,cache_read_tokens:0,total_tokens:200};
+    const original=[['ciencia',null],['ciencia','aeroespacial'],['ciencia','neurociencia'],['tecnologia',null],['tecnologia','ia'],['tecnologia','software-ferramentas'],['tecnologia','hardware-robotica'],['negocios',null],['negocios','marketing'],['negocios','empreendedorismo-startups']];
+    const baseline=[];let serial=100;
+    async function prepareTopic(topic){
+      const c=candidate(serial++);await store.ingest(c);
+      const document={...dossierFixture(1),event_key:'focus-unique-event-'+serial,category:topic[0],subcategory:topic[1]};
+      document.documents=document.documents.map(d=>({...d,url:d.url+'focus'+serial,origin_url:d.origin_url+'focus'+serial}));
+      await admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,source_hash,change_reason) values(${c.id},1,${admin.json(document)},${dossierHash(document)},${admin.json(assessDossier(document))},'test-editor',${c.evidence_hash},'Focused allocation synthetic fixture')`;
+      return {c,document};
+    }
+    async function completeTopic(topic,options){
+      const {c,document}=await prepareTopic(topic),opts={...options,candidateId:c.id};
+      const comparison=await store.reserveComparison(opts);assert.equal(comparison.status,'reserved');
+      assert.equal((await store.finish(comparison,{outcome:'completed',text:JSON.stringify({claims:document.claims}),usage:small})).status,'comparison_ready');
+      const text=await store.reserve(opts),post=await store.finish(text,{...googleCompleted,usage:small});assert.equal(post.status,'draft');
+      const image=await store.reserveImage(opts);assert.equal((await store.finish(image,{outcome:'completed',image:webpFixture(),usage:small})).status,'cover_ready');
+      return post.post_id;
+    }
+    for(const topic of original)baseline.push(await completeTopic(topic,googleOptions()));
+    const focusPolicy={...googleOptions().policy,editorial_focus:FOCUSED_EDITORIAL_PLAN,google_daily_completion:{day:periodKeys(new Date()).day,calls_cap:80,tokens_reserved_per_call:15000,extra_drafts:10,baseline_post_ids:baseline,authorization_reference:'Explicit user authorization for ten additional focused drafts today'}};
+    const focused={...googleOptions(),policy:focusPolicy};
+    const allocation=[['tecnologia',null],['tecnologia','software-ferramentas'],['tecnologia','hardware-robotica'],['tecnologia','software-ferramentas'],['tecnologia','ia'],['tecnologia','ia'],['tecnologia','ia'],['negocios',null],['negocios','marketing'],['negocios','empreendedorismo-startups']];
+    for(const topic of allocation)await completeTopic(topic,focused);
+    const blocked=await prepareTopic(['tecnologia','ia']);await assert.rejects(()=>store.reserveComparison({...focused,candidateId:blocked.c.id}),/topic_frequency/);
+    const science=await prepareTopic(['ciencia',null]);await assert.rejects(()=>store.reserveComparison({...focused,candidateId:science.c.id}),/topic_frequency/);
+    const usage=await store.productionUsage(runtime,new Date(),focusPolicy);
+    assert.equal(usage.reduce((n,u)=>n+u.day,0),20);assert.equal(usage.reduce((n,u)=>n+u.week,0),20);assert.equal(usage.reduce((n,u)=>n+u.baseline_day,0),10);
+    const [posts]=await admin`select count(*)::int as total,count(*) filter(where status<>'draft' or not seo_noindex or published_at is not null or scheduled_at is not null)::int as unsafe from public.blog_post`;
+    assert.deepEqual(posts,{total:20,unsafe:0});
+    const [ledger]=await admin`select count(*)::int as calls,count(*) filter(where provider<>'google_subscription' or charged_micro_usd<>0)::int as paid from blog_worker.attempt`;
+    assert.deepEqual(ledger,{calls:60,paid:0});
+    await store.syncPipeline({policy:focusPolicy,sources:[source],catalog:[]},identity);
+    const dashboard=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();
+    assert.equal(dashboard.control.snapshot.per_day,20);
+    assert.equal(dashboard.production.reduce((n,t)=>n+t.complete,0),20);
+    assert.deepEqual(focusProgress(dashboard.production,dashboard.control.snapshot).map(t=>[t.key,t.target,t.drafts,t.complete]),[['tecnologia',4,4,4],['ia',3,3,3],['negocios',3,3,3]]);
+    assert.equal(await store.nextAutomaticWork(focusPolicy),null);
   });
   await check('CLI once, status and healthcheck use only the isolated DB with shipped generation off',async()=>{
     await reset();const health=join(directory,'health.json');

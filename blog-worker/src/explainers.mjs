@@ -3,6 +3,7 @@ import {referenceUrl,validateDossier,dossierHash,buildComparisonRequest,isEviden
 import {referenceForUrl,primaryReference,ARTICLE_EXTRACTION_VERSION} from './article-research.mjs';
 import {TOPICS,topicKey} from './automatic-research.mjs';
 import {fail,hash,periodKeys} from './policy.mjs';
+import {topicAvailable} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 
 export function validateExplainerCatalog(plans=catalog){
   if(!Array.isArray(plans)||plans.length>200||new Set(plans.map(p=>p.key)).size!==plans.length)fail('invalid_explainer_catalog');
@@ -30,10 +31,10 @@ export const explainerEvidenceHash=d=>dossierHash(d.documents.map(v=>({id:v.id,u
 export function explainerWindowOpen(policy,at=new Date()){
   return policy.automatic_explainers_enabled===true&&Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/Sao_Paulo',hour:'2-digit',hourCycle:'h23'}).format(at))>=policy.explainer_after_local_hour;
 }
-export function nextExplainer(plans,usage,existing,at=new Date()){
+export function nextExplainer(plans,usage,existing,at=new Date(),policy=null){
   const byKey=new Map(existing.map(c=>[c.explainer_key,c]));
   const eligible=plans.filter(p=>{
-    if(usage.some(u=>topicKey(u)===topicKey(p)&&(u.day>=1||u.week>=7)))return false;
+    if(!topicAvailable(policy,usage,p,at))return false;
     const c=byKey.get(p.key);if(!c)return true;
     const r=c.artifact?.research;
     const recovery=explainerRecoveryEligible(c);
