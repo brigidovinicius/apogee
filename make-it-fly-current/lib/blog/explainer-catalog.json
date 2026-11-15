@@ -713,5 +713,117 @@
       "https://science.nasa.gov/learn/basics-of-space-flight/chapter5-1/",
       "https://www.esa.int/articles/about-us/directorates/science/spacecraft-orbits"
     ]
+  },
+  {
+    "key": "zero-trust-acesso-minimo-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Por que o modelo Zero Trust verifica cada acesso e limita permissões nas empresas?",
+    "terms": [
+      "zero trust",
+      "identity",
+      "least",
+      "access"
+    ],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-zero-trust",
+      "https://learn.microsoft.com/en-us/security/zero-trust/zero-trust-overview"
+    ]
+  },
+  {
+    "key": "passkeys-acesso-sem-senha-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como as passkeys usam chaves criptográficas e o desbloqueio do dispositivo para autenticar usuários?",
+    "terms": [
+      "passkey",
+      "public",
+      "private",
+      "device"
+    ],
+    "urls": [
+      "https://developers.google.com/identity/passkeys",
+      "https://learn.microsoft.com/en-us/windows/security/identity-protection/passkeys/"
+    ]
+  },
+  {
+    "key": "dns-resolucao-nomes-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como o DNS traduz nomes de domínio em endereços e encaminha consultas na internet?",
+    "terms": [
+      "DNS",
+      "domain",
+      "IP",
+      "recursive"
+    ],
+    "urls": [
+      "https://developers.google.com/speed/public-dns/docs/intro",
+      "https://learn.microsoft.com/en-us/azure/dns/dns-domain-delegation"
+    ]
+  },
+  {
+    "key": "rag-contexto-bases-empresas-1",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Como RAG combina busca em documentos com modelos de linguagem para responder sobre dados de uma empresa?",
+    "terms": [
+      "RAG",
+      "retrieve",
+      "prompt",
+      "knowledge"
+    ],
+    "urls": [
+      "https://cloud.google.com/blog/products/ai-machine-learning/rag-quickstart-with-ray-langchain-and-huggingface",
+      "https://learn.microsoft.com/en-us/azure/ai-foundry/concepts/retrieval-augmented-generation"
+    ]
+  },
+  {
+    "key": "embeddings-similaridade-vetores-1",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Como embeddings representam dados em vetores e permitem buscar conteúdos por similaridade?",
+    "terms": [
+      "embedding",
+      "vector",
+      "similar",
+      "data"
+    ],
+    "urls": [
+      "https://developers.google.com/machine-learning/crash-course/embeddings",
+      "https://learn.microsoft.com/en-us/azure/cosmos-db/gen-ai/vector-embeddings"
+    ]
+  },
+  {
+    "key": "financiamento-divida-participacao-1",
+    "category": "negocios",
+    "subcategory": "empreendedorismo-startups",
+    "question": "O que diferencia financiar uma empresa por dívida de receber investimento em troca de participação?",
+    "terms": [
+      "equity",
+      "debt",
+      "loan",
+      "ownership"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/plan-your-business/fund-your-business",
+      "https://business.gov.au/finance/funding/choose-your-funding"
+    ]
+  },
+  {
+    "key": "balanco-ativos-passivos-patrimonio-1",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "O que o balanço patrimonial mostra sobre ativos, passivos e patrimônio de uma empresa?",
+    "terms": [
+      "balance sheet",
+      "assets",
+      "liabilities",
+      "equity"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/document/support--glossary-business-financial-terms",
+      "https://business.gov.au/finance/financial-tools-and-templates/key-financial-terms"
+    ]
   }
 ]

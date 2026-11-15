@@ -1,5 +1,6 @@
 import {referenceCatalog,referenceUrl,validateDossier,dossierHash,buildComparisonRequest,taxonomy} from './corroboration.mjs';
 import {primaryDocument,primaryReference,referenceForUrl,independentReference,ARTICLE_EXTRACTION_VERSION} from './article-research.mjs';
+import {focusedEditorial,topicAvailable} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 
 const referenceById=new Map(referenceCatalog.map(r=>[r.id,r]));
 export function sourceReference(id){const key=String(id).replace(/^ARTICLE_/,'');return referenceById.get({SRC01:'REF22',SRC02:'REF22',SRC03:'REF22'}[key]??key);}
@@ -45,11 +46,11 @@ export function researchTopic(c){
   if(/tecnolog|technology|inovacao|innovation|computacao|computacion|computing|computational|computador|computer|\bcloud\b|\bnuvem\b|\bdados\b|\bdata\b|\bdigital\b|internet|ciber|cyber|programacao|programming|\bcodigo\b|\bcode\b|\bapi\b/.test(t))return {category:'tecnologia',subcategory:null};
   return null;
 }
-export function balancedResearchCandidates(rows,usage=[],limit=30){
-  const pools=TOPICS.map(topic=>({topic,rows:rows.filter(c=>{const t=researchTopic(c);return t&&t.category===topic.category&&(topic.subcategory===null||t.subcategory===topic.subcategory);})}));
+export function balancedResearchCandidates(rows,usage=[],limit=30,policy=null,at=new Date()){
+  const pools=TOPICS.map(topic=>({topic,rows:rows.filter(c=>{const t=researchTopic(c);return t&&t.category===topic.category&&((!focusedEditorial(policy)&&topic.subcategory===null)||t.subcategory===topic.subcategory);})}));
   const selected=[],seen=new Set();
   for(let round=0;round<limit&&selected.length<limit;round++)for(const pool of pools){
-    if(usage.some(u=>u.category===pool.topic.category&&u.subcategory===pool.topic.subcategory&&u.day>=1))continue;
+    if(!topicAvailable(policy,usage,pool.topic,at))continue;
     const candidate=pool.rows.find(c=>!seen.has(c.id));if(!candidate)continue;
     seen.add(candidate.id);selected.push({candidate,topic:pool.topic});if(selected.length===limit)break;
   }
