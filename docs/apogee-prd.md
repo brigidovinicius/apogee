@@ -1,7 +1,7 @@
 # Apogee — PRD geral da plataforma
 
-- **Versão:** 0.6 · 15 de novembro de 2026
-- **Estado:** deploy das alterações anteriores autorizado, sujeito ao preflight operacional; caixa de ferramentas incluída no planejamento e aguardando revisão antes de implementar.
+- **Versão:** 0.7 · 15 de novembro de 2026
+- **Estado:** conclusão funcional em worktree isolado para revisão; nenhuma nova publicação, migração real ou ativação de cobrança autorizada. Os registros de deploy anteriores são históricos.
 - **Horizonte:** novembro de 2026 a março de 2027.
 - **Responsável pela decisão de produto:** Vinicius.
 - **Base técnica examinada:** `d6a422d8207cb04eefe9819c082f948dc5a4de30`, branch principal em 14/11/2026.
@@ -360,3 +360,18 @@ Community permanece o ambiente de convivência, orientação e experiências da 
 A página `/comunidade` vende e explica a oferta. A página `/evento-openai` captura inscrições do evento gratuito Codex Community; `/gravacao` redireciona para ela. São percursos distintos: lead do evento não vira conta, participante de grupo ou assinante automaticamente. Cada uso dos dados respeita a finalidade e o consentimento próprios.
 
 O deploy de apresentação autorizado neste chat abrange somente Comunidade e Loja, preservando a Home e as demais rotas, inclusive a captura do evento. Não inclui implementação da área interna, ativação Stripe ou migração de banco. O plano de execução da jornada completa está em [prompt para o próximo chat](handoffs/apogee-offer-complete-prompt-20261115.md).
+
+
+## 23. Conclusão da oferta em ambiente isolado — 15/11/2026
+
+A instrução atual do proprietário autoriza implementar e validar a jornada completa, preservando o design aprovado e os acessos antigos. Substitui o limite de planejamento das seções anteriores para esta implementação local, sem ampliar autorização de publicação.
+
+- Caixa de Ferramentas: catálogo e curadoria administrativa, integrados do lote `b2f63d7`; acesso anual e prévia administrativa explícita, sem usar legado do Radar como autorização.
+- Benefícios: catálogo privado, gestão de rascunho/publicação/arquivo, evidência do acordo somente administrativa, elegibilidade, disponibilidade, vigência e instruções/link oficial. Nenhum parceiro ou crédito fictício é cadastrado. Sem acordo confirmado, o estado é indisponível e não há resgate a prometer. Integrações de códigos, reservas e controle de estoque de parceiros dependem de um acordo que as exija.
+- Trilha: estrutura de trilha/módulo/atividade, publicação, ordenação e progresso por titular. O exercício original em `content/member-starter.mjs` tem três atividades reais para revisão editorial e é publicado apenas no banco da prévia; não é formação completa nem promessa de aula, mentor ou certificação.
+- Convivência: fórum e perfil existentes preservados. Suporte identificado em `/membros/suporte`, usando o canal já informado nos termos, sem promessa de prazo ainda não confirmado.
+- Assinatura: gestão existente preservada; operação administrativa e conciliação do histórico por consulta canônica acrescentadas. Conciliação não cria pagamento e continua bloqueada se a configuração anual estiver desativada.
+- Formulários: evento e drops mantêm finalidades distintas. A prévia funcional usa os handlers reais, sem simular cadastro. A confirmação do evento informa persistência e orientação manual, sem afirmar envio automático.
+- Migrações novas 0019/0020 são aditivas e aguardam o ensaio integrado em PostgreSQL próprio nesta execução. Nenhuma é executada em produção nesta autorização.
+
+Rotas, critérios e evidências finais ficam em `offer-completion-review-20261115.md` e `offer-completion-runbook-20261115.md`. Os resultados serão registrados após validação, distinguindo testes locais, sandbox externo e produção. Vendas permanecem dependentes da revisão concreta, conteúdo/benefícios anunciados, responsáveis e configuração live validada.
