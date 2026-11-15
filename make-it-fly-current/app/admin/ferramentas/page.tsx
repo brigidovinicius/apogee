@@ -19,8 +19,8 @@ export default async function ToolboxAdminPage({ searchParams }: { searchParams:
     <AdminPageHeader title="Caixa de ferramentas" description="Organize categorias e links oficiais para os assinantes anuais." aside={<Link href="/membros/ferramentas">Pré-visualizar como membro</Link>} />
     {query.salvo === "categoria" || query.salvo === "ferramenta" ? <AdminNotice tone="success" title={query.salvo === "categoria" ? "Categoria salva" : "Ferramenta salva"} description="A alteração já aparece abaixo. A visibilidade para o membro segue o estado da categoria e da ferramenta." /> : null}
     <div className={styles.editors}>
-      <ToolboxCategoryForm key={`${category?.id ?? 'new'}:${category?.version ?? 0}`} item={category} />
-      <ToolboxToolForm key={`${tool?.id ?? 'new'}:${tool?.version ?? 0}`} item={tool} categories={categories.map(c => ({ id:c.id,name:c.name,status:c.status }))} />
+      <ToolboxCategoryForm key={`category:${category?.id ?? 'new'}:${category?.version ?? 0}`} item={category} />
+      <ToolboxToolForm key={`tool:${tool?.id ?? 'new'}:${tool?.version ?? 0}`} item={tool} categories={categories.map(c => ({ id:c.id,name:c.name,status:c.status }))} />
     </div>
     <section aria-labelledby="categories-title"><h2 id="categories-title">Categorias · {categories.length}</h2>
       {!categories.length ? <p>Comece criando a categoria da primeira ferramenta.</p> : <ul className={styles.list}>{categories.map(c => <li className={styles.row} key={c.id}>
