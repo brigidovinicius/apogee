@@ -71,7 +71,7 @@ try{
     assert.ok(rows.every(r=>r.definition.enabled&&r.definition.content_approved&&r.definition.rights_reference.includes('sem reprodução integral')));
     const [privileges]=await runtime`select has_table_privilege(current_user,'blog_worker.research_reference','SELECT') as read,has_table_privilege(current_user,'blog_worker.research_reference','UPDATE') as write`;
     assert.deepEqual(privileges,{read:true,write:false});
-    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,11);
+    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,12);
     assert.ok((await runtime`select definition from blog_worker.research_reference where id='ARTICLE_PRIMARY_MICROSOFT_EDUCATION'`)[0].definition.article_hosts.includes('support.microsoft.com'));
   });
   await check('runtime cannot alter benefits or publish directly',async()=>{
@@ -899,6 +899,7 @@ try{
   const fakeGuideReader=plan=>async(url,budget)=>{budget.used+=1;return guide(plan,url);};
   function hybridClaims(d){
     const quote=d.documents[0].text.match(/O mecanismo sintético [^.]+\./)?.[0]??'O método tem limites explícitos e depende do contexto.';
+    if(d.previous_critical_claims?.length)return d.previous_critical_claims.map(c=>({...c,critical:true,cells:d.documents.map(x=>({document_id:x.id,status:'supports',quote:c.id==='C2'?'O método tem limites explícitos e depende do contexto.':quote,note:'Material sintético para reavaliar todos os fatos críticos anteriores.'}))}));
     return [{id:'C1',text:'O mecanismo do conceito está documentado nas duas referências sintéticas.',critical:true,cells:d.documents.map(x=>({document_id:x.id,status:'supports',quote,note:'Material sintético para verificar o fluxo.'}))}];
   }
   async function compareHybrid(id){
@@ -926,6 +927,43 @@ try{
     const post=await cms.getAdminPost(written.post_id);assert.match(post.body,/Artigo explicativo/);assert.match(post.body,/2015-03-01/);assert.match(post.body,/consulta em/);assert.equal(post.status,'draft');assert.equal(await cms.getPublicPost(post.slug),null);
     assert.equal((await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:async()=>assert.fail('topic already filled'),at:hybridAt()})),null);
     const dashboard=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();assert.equal(dashboard.production.reduce((n,t)=>n+t.explainers,0),1);assert.equal(dashboard.production.reduce((n,t)=>n+t.complete,0),1);
+  });
+  await check('fresh context recovers one factual rejection without resetting receipts, attempt caps or publication review',async()=>{
+    await reset();await operator.attestSubscription(subscription());const plan={...explainerCatalog[0],terms:['mecanismo','limites']},id=explainerId(plan);
+    await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});
+    const [v]=await admin`select document from blog_worker.dossier_version where candidate_id=${id}`;
+    const claims=hybridClaims(v.document);claims.push({id:'C2',text:'O método sintético depende do contexto e tem limites explícitos.',critical:true,cells:v.document.documents.map(d=>({document_id:d.id,status:'supports',quote:'O método tem limites explícitos e depende do contexto.',note:'Limites sintéticos do método.'}))});
+    claims[1].cells[1]={...claims[1].cells[1],status:'not_mentioned',quote:''};
+    const first=await store.reserveComparison({...hybridOptions(),candidateId:id});
+    const rejected=await store.finish(first,{outcome:'completed',text:JSON.stringify({claims}),usage:smallHybridUsage});
+    assert.equal(rejected.status,'comparison_ready');assert.equal(rejected.reason,'critical_fact_unresolved');
+    assert.equal(await store.nextAutomaticWork(hybridPolicy),null);
+    const [rejectedVersion]=await admin`select * from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+    const metadataOnly=structuredClone(rejectedVersion.document);metadataOnly.claims=[];metadataOnly.documents[0].capture_id='different-capture';metadataOnly.documents[0].consulted_at=new Date().toISOString();
+    assert.equal((await runtime`select blog_worker.prepare_automatic_research(${id},${runtime.json(metadataOnly)},${rejectedVersion.source_hash}) as prepared`)[0].prepared,false);
+    const unchanged=await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:async()=>assert.fail('fresh cache is sufficient'),at:hybridAt()});
+    assert.equal(unchanged.reason,'research_evidence_unchanged');
+    assert.equal((await admin`select count(*)::int as n from blog_worker.dossier_version where candidate_id=${id}`)[0].n,2);
+    await admin`update blog_worker.candidate set artifact=null where id=${id}`;
+    const updated={...plan,urls:plan.urls.map(url=>url+'?expanded=1')};
+    const result=await store.prepareAutomaticExplainer(hybridPolicy,{plans:[updated],read:async(url,budget)=>{budget.used++;const doc=guide(updated,url);doc.text='Contexto introdutório geral. '.repeat(600)+doc.text+' Novo contexto sintético com limitações documentadas.';doc.content_hash=hash(doc.text);return doc;},at:hybridAt()});
+    assert.equal(result.prepared,1,JSON.stringify(result));assert.equal((await store.nextAutomaticWork(hybridPolicy)).method,'reserveComparison');
+    const [latest]=await admin`select * from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+    assert.equal(latest.revision,3);assert.equal(latest.actor_id,'automatic_research_recovery');assert.equal(latest.reviewed_by,null);
+    assert.ok(latest.document.documents.every(doc=>doc.excerpt_offset>12000));
+    const repeated=await store.reserveComparison({...hybridOptions(),candidateId:id});
+    const completeClaims=hybridClaims(latest.document),omittedClaims=completeClaims.slice(0,1);
+    const forgedAssessment=assessDossier({...latest.document,claims:omittedClaims},{comparisonVerified:true});
+    await assert.rejects(()=>admin.begin(async tx=>{
+      await tx`update blog_worker.attempt set state='confirmed',charged_micro_usd=0 where id=${repeated.id}`;
+      await tx`select blog_worker.record_assisted_comparison(${id},${repeated.id},${tx.json(omittedClaims)},${tx.json(forgedAssessment)})`;
+    }),/critical_fact_omitted/);
+    assert.equal((await store.finish(repeated,{outcome:'completed',text:JSON.stringify({claims:completeClaims}),usage:smallHybridUsage})).status,'comparison_ready');
+    const written=await writeHybrid(id);assert.equal(written.status,'draft');
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt where candidate_id=${id}`)[0].n,3);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.post_review`)[0].n,0);
+    await assert.rejects(()=>admin`update public.blog_post set status='published',published_at=now() where id=${written.post_id}`,/blog_factual_review_required/);
+    assert.equal((await store.summary()).usage.charged_micro_usd,'0');
   });
   await check('one real guide URL can back distinct questions while news URL uniqueness and repeated critical-content holds survive',async()=>{
     await reset();await operator.attestSubscription(subscription());const first={...explainerCatalog[0],terms:['mecanismo','limites']};
@@ -993,7 +1031,7 @@ try{
     }
     for(let i=0;i<22;i++)await admin`insert into blog_worker.operator_event(actor_id,action,target,detail) values('test-completion','google_diagnostic_usage',${String(i)},${admin.json({quota_used:i===0?4276:4228})})`;
     const completionPolicy={...hybridPolicy,google_daily_completion:{day:periodKeys(new Date()).day,calls_cap:60,tokens_reserved_per_call:30000,authorization_reference:'Explicit synthetic allowance to complete todays batch'}};
-    for(const [i,original] of explainerCatalog.slice(30).entries()){
+    for(const [i,original] of explainerCatalog.slice(30,36).entries()){
       const plan={...original,terms:['mecanismo','limites']};
       assert.equal((await store.prepareAutomaticExplainer(completionPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()})).prepared,1);
       const id=explainerId(plan),options={...hybridOptions(),policy:completionPolicy,candidateId:id};

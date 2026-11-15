@@ -4,7 +4,7 @@ import {getFeed} from './http.mjs';
 import {hash,fail} from './policy.mjs';
 import {canonicalResearchUrl} from './research-links.mjs';
 
-export const ARTICLE_EXTRACTION_VERSION='public-article-v4-complete-guide-shells';
+export const ARTICLE_EXTRACTION_VERSION='public-article-v5-bounded-guide-context';
 export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$|periodico_e_jornalismo$)/.test(r.role));
 export const independentReference=r=>!!r&&!primaryReference(r)&&/jornalismo|divulgacao|analise_especialista|publicacao_especializada/.test(r.role);
 export function primaryDocument(document,reference=referenceForUrl(document.url)){
@@ -106,7 +106,9 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
     &&nodes.some(n=>n.tagName==='section'&&/(?:^|\s)cws-jump-section(?:\s|$)/.test(attrs(n).class??''));
   const roots=restricted?usable(abstracts):completeGuide?[completeGuide]:usable(bodies).length?usable(bodies):usable(articles).length?usable(articles):landmarks.length?landmarks:googleGuide?usable(nodes.filter(n=>n.tagName==='body')):[];
   const root=roots.sort((a,b)=>textOf(b).length-textOf(a).length)[0];if(!root)fail(bodies.length||articles.length?'research_text_insufficient':'research_article_missing');
-  const text=clean(textOf(root)).slice(0,12000);if(text.length<200)fail('research_text_insufficient');
+  // Keep late guide sections available for subject selection. The dossier and
+  // provider request retain their separate, smaller limits.
+  const text=clean(textOf(root)).slice(0,48000);if(text.length<200)fail('research_text_insufficient');
   const title=clean(meta['og:title']??textOf(nodes.find(n=>n.tagName==='h1')??{}))||fallbackTitle;
   if(title.length<3)fail('research_title_missing');
   const structuredDate=own.find(v=>typeof v.datePublished==='string')?.datePublished;

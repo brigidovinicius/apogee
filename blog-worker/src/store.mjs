@@ -1,16 +1,16 @@
 import {automaticDossier,balancedResearchCandidates,nextResearchCandidate} from './automatic-research.mjs';
 import {enrichResearch,enrichSelectedEvidence,researchPriority,defaultArticleReader} from './research-service.mjs';
 import {articleSource,referenceForUrl,ARTICLE_EXTRACTION_VERSION} from './article-research.mjs';
-import {explainerCatalog,explainerId,explainerWindowOpen,nextExplainer,automaticExplainerDossier} from './explainers.mjs';
+import {explainerCatalog,explainerId,explainerWindowOpen,nextExplainer,automaticExplainerDossier,explainerRecoveryEligible,explainerEvidenceHash} from './explainers.mjs';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle,SEO_GUIDELINES} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
-import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap} from './corroboration.mjs';
+import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap,isEvidenceGapClaim} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql','012-research-recovery.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -174,7 +174,9 @@ export class Store {
     const {day}=periodKeys(new Date());
     // Only bounded operational metadata is mutable; captured texts and dossier history are immutable.
     await this.sql`update blog_worker.candidate c set artifact=jsonb_set(coalesce(artifact,'{}'::jsonb),'{research}',${this.sql.json({...progress,day,at:new Date().toISOString()})}::jsonb)
-      where c.id=${id} and c.post_id is null and not exists(select 1 from blog_worker.attempt where candidate_id=c.id) and not exists(select 1 from blog_worker.dossier_version where candidate_id=c.id)`;
+      where c.id=${id} and c.post_id is null and c.reason is distinct from 'operator_hold' and c.reason is distinct from 'retention'
+      and c.reason is distinct from 'source_changed_after_reservation'
+      and not exists(select 1 from blog_worker.attempt where candidate_id=c.id and (kind='text' or state in ('reserved','unknown')))`;
   }
   async productionUsage(tx=this.sql,at=new Date()){
     const {day,week}=periodKeys(at);
@@ -196,9 +198,14 @@ export class Store {
     const [control]=await this.sql`select paused from blog_worker.control where singleton=true`;
     if(control?.paused)return null;
     const usage=await this.productionUsage(),existing=await this.sql`select c.id,c.explainer_key,c.post_id,c.first_attempt_day,c.reason,c.artifact,
-      exists(select 1 from blog_worker.dossier_version where candidate_id=c.id) as has_dossier from blog_worker.candidate c where content_kind='explainer'`;
+      v.document,v.assessment,v.revision is not null as has_dossier,
+      (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts,
+      (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison') as comparisons,
+      exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='text') as text_attempts,
+      exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.state in ('reserved','unknown')) as pending
+      from blog_worker.candidate c left join lateral(select * from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1)v on true where content_kind='explainer'`;
     const plan=nextExplainer(plans,usage,existing,at);if(!plan)return null;
-    const id=explainerId(plan),source=articleSource(referenceForUrl(plan.urls[0]));
+    const id=explainerId(plan),source=articleSource(referenceForUrl(plan.urls[0])),previous=existing.find(c=>c.id===id),recovering=explainerRecoveryEligible(previous);
     // Planning time is distinct from the actual source publication dates kept
     // in the immutable captured documents and the final references.
     await this.sql`insert into blog_worker.candidate(id,source_id,guid,url,event_key,title,editoria,score,published_at,evidence,evidence_hash,status,content_kind,explainer_key)
@@ -215,14 +222,16 @@ export class Store {
         await this.captureResearchDocument(candidate,doc);captures.unshift({...doc,capture_id:hash(doc)});
       }
       const own=captures.find(d=>d.url===plan.urls[0]||d.requested_url===plan.urls[0]);
-      if(own){
+      if(own&&!recovering){
         const primary=Object.fromEntries(Object.entries(own).filter(([key])=>!['capture_id','captured_at'].includes(key))),evidence=[{id:'E1',...primary}];
         await this.sql`update blog_worker.candidate c set url=${own.url},source_id=${own.source_id},evidence=${this.sql.json(evidence)},evidence_hash=${hash(evidence)}
           where c.id=${id} and c.post_id is null and c.first_attempt_day is null and c.reason is distinct from 'operator_hold' and c.reason is distinct from 'source_changed_after_reservation'
           and not exists(select 1 from blog_worker.dossier_version where candidate_id=c.id)`;
       }
       const [current]=await this.sql`select * from blog_worker.candidate where id=${id}`;
-      const document=automaticExplainerDossier(plan,captures,policy,new Date());
+      const document=automaticExplainerDossier(plan,captures,policy,new Date(),{previousCriticalClaims:recovering?previous.document.claims.filter(c=>c.critical&&!isEvidenceGapClaim(c.text)).map(({id,text})=>({id,text})):[]});
+      if(recovering&&document&&explainerEvidenceHash(document)===explainerEvidenceHash(previous.document))reason='research_evidence_unchanged';
+      else
       if(document&&(await this.sql`select blog_worker.prepare_automatic_research(${id},${this.sql.json(document)},${current.evidence_hash}) as prepared`)[0].prepared)return {prepared:1,kind:'explainer',requests:budget.used};
     }catch(error){reason=error.code??'research_source_unavailable';}
     const {day}=periodKeys(at),tries=candidate.artifact?.research?.day===day?Number(candidate.artifact.research.tries??0)+1:1;
@@ -305,6 +314,7 @@ export class Store {
     if(policy.automatic_image_generation_enabled&&image)return {method:'reserveImage',candidateId:image.candidate_id};
     const usage=await this.productionUsage();
     const rows=await this.sql`select c.id,c.status,c.reason,c.first_attempt_day,v.document,v.assessment,
+      v.actor_id='automatic_research_recovery' and exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' and a.dossier_revision<v.revision) as refreshed_research,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison') as comparisons,
       exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.state in ('reserved','unknown')) as pending
@@ -317,6 +327,7 @@ export class Store {
       if(c.attempts>=policy.max_provider_attempts_per_article_including_repairs)continue;
       if(c.status==='ready'&&c.assessment.eligible&&c.assessment.comparison_verified)return {method:'reserve',candidateId:c.id};
       if(!c.attempts&&!c.assessment.comparison_verified&&c.document.documents.length>=2&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
+      if(c.refreshed_research&&c.attempts===1&&!c.pending&&c.reason==='comparison_incomplete'&&!c.assessment.comparison_verified&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
       // One format-only repair. Never repeat a factual rejection or an unknown
       // request. It shares the existing article/day budgets; old receipts stay.
       if(!c.pending&&c.comparisons===1&&COMPARISON_FORMAT_ERRORS.includes(c.reason)&&c.document.documents.length>=2&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
@@ -381,7 +392,7 @@ export class Store {
 
       const attempts=await tx`select * from blog_worker.attempt where candidate_id=${candidate.id} and kind in ('text','comparison')`;
       if(attempts.length>=policy.max_provider_attempts_per_article_including_repairs)fail('attempt_limit');
-      const comparisonRepair=kind==='comparison'&&attempts.some(a=>a.kind==='comparison');
+      const comparisonRepair=kind==='comparison'&&attempts.some(a=>a.kind==='comparison'&&a.dossier_revision===version?.revision);
       const body=kind==='comparison'?buildComparisonRequest(version.document,policy,comparisonRepair):buildRequest(effective,policy,attempts.some(a=>a.kind==='text'));
       const key=kind==='comparison'?comparisonCacheKey(version.document,policy,comparisonRepair):cacheKey(effective,policy);
       const reserve=google?0:usageCost(price,policy.input_tokens_cap_including_overhead,policy.billed_output_tokens_cap_including_reasoning);
