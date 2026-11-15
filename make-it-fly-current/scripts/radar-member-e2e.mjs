@@ -86,27 +86,41 @@ try {
   assert.equal(new URL(prefetch.url).pathname, detailPath);
   assert.doesNotMatch(await prefetch.text(), /Equipes de estudantes|https:\/\/example.edu\/notice/);
   assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "0", "prefetch never consumes the free choice");
-  const formMarkup = [...firstDetail.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match => match[0]).find(form => form.includes("data-radar-detail-opening"));
-  assert.ok(formMarkup, "compiled Server Action form exists");
-  const decode = value => value.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-  const actionBody = new FormData();
-  for (const input of formMarkup.matchAll(/<input\b[^>]*>/g)) {
-    const name = input[0].match(/name="([^"]*)"/)?.[1];
-    if (name) actionBody.append(decode(name), decode(input[0].match(/value="([^"]*)"/)?.[1] ?? ""));
-  }
-  const opened = await fetch(origin + detailPath, { method: "POST", headers: { ...edgeHeaders, Cookie: cookie, Origin: origin }, body: actionBody, redirect: "manual" });
+  assert.equal((await database`select count(*) from radar_free_event`)[0].count, "0", "GET and prefetch never consume an event");
+  const openDetail = async (path, html) => {
+    const formMarkup = [...html.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match => match[0]).find(form => form.includes("data-radar-detail-opening"));
+    assert.ok(formMarkup, "compiled Server Action form exists");
+    const decode = value => value.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+    const actionBody = new FormData();
+    for (const input of formMarkup.matchAll(/<input\b[^>]*>/g)) {
+      const name = input[0].match(/name="([^"]*)"/)?.[1];
+      if (name) actionBody.append(decode(name), decode(input[0].match(/value="([^"]*)"/)?.[1] ?? ""));
+    }
+    return fetch(origin + path, { method: "POST", headers: { ...edgeHeaders, Cookie: cookie, Origin: origin }, body: actionBody, redirect: "manual" });
+  };
+  const opened = await openDetail(detailPath, firstDetail);
   assert.equal(opened.status, 303, "compiled Server Action opens the first choice");
   const freeDetail = await (await get(detailPath, cookie)).text();
   assert.match(freeDetail, /Equipes de estudantes/); assert.match(freeDetail, /https:\/\/example.edu\/notice/);
   assert.match(await (await get(detailPath, cookie)).text(), /Equipes de estudantes/, "reopening stays free");
-  const blockedSecond = await get("/membros/oportunidades/radar-event-1", cookie);
-  const blockedSecondHtml = await blockedSecond.text();
-  assert.equal(blockedSecond.status, 200);
-  assert.match(blockedSecondHtml, /action="\/api\/radar\/checkout\?next=%2Fmembros%2Foportunidades%2Fradar-event-1"/);
-  assert.match(blockedSecondHtml, /Abrindo checkout/);
-  assert.doesNotMatch(blockedSecondHtml, /Radar para a vida toda|Comprar acesso vitalício/);
-  assert.doesNotMatch(blockedSecondHtml, /Equipes de estudantes|https:\/\/example.edu\/notice/);
-  assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "1");
+  for (let index = 1; index < 10; index++) {
+    const path = `/membros/oportunidades/radar-event-${index}`;
+    const available = await (await get(path, cookie)).text();
+    assert.match(available, /Abrindo detalhes/);
+    assert.doesNotMatch(available, /Equipes de estudantes|https:\/\/example.edu\/notice/);
+    assert.equal((await database`select count(*) from radar_free_event`)[0].count, String(index));
+    assert.equal((await openDetail(path, available)).status, 303);
+    assert.match(await (await get(path, cookie)).text(), /Equipes de estudantes/);
+  }
+  const blocked = await get("/membros/oportunidades/radar-event-10", cookie);
+  const blockedHtml = await blocked.text();
+  assert.equal(blocked.status, 200);
+  assert.match(blockedHtml, /Conhecer a Comunidade Apogee/);
+  assert.match(blockedHtml, /href="\/comunidade\?next=%2Fmembros%2Foportunidades%2Fradar-event-10#planos"/);
+  assert.doesNotMatch(blockedHtml, /\/api\/radar\/checkout|Abrindo checkout|Equipes de estudantes|https:\/\/example.edu\/notice/);
+  assert.match(await (await get(detailPath, cookie)).text(), /Equipes de estudantes/, "the first event remains readable at the limit");
+  assert.equal((await database`select count(*) from radar_free_event`)[0].count, "10");
+  assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "0", "event quota does not replace the legacy selection");
   const second = await (await get("/membros/oportunidades?pagina=2", cookie)).text();
   assert.equal(titles(second).length, 6); assert.equal(titles(second).filter(title => titles(initial).includes(title)).length, 0);
   const allExams = await (await get("/membros/oportunidades?categoria=vestibular", cookie)).text();
@@ -125,7 +139,7 @@ try {
   assert.doesNotMatch(deniedAdminBody, /Radar · catálogo ao vivo|Criar oportunidade|CI Evento|CI IFSC Ingresso/);
   const invalid = await get("/membros/oportunidades", "better-auth.session_token=invalid.synthetic");
   const invalidBody = await invalid.text(); assert.doesNotMatch(invalidBody, /CI Evento|CI IFSC Ingresso/);
-  console.log("Authenticated Radar E2E OK: real session, cards without private data, compiled free-opening action, reopening, second-detail paywall, pagination, filters and access controls.");
+  console.log("Authenticated Radar E2E OK: real session, private-data isolation, ten distinct compiled opening actions, reopening, eleventh-event community gate, pagination, filters and access controls.");
 } catch (error) { console.error(logs); throw error; }
 finally {
   server.kill("SIGTERM");
