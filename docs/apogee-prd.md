@@ -22,6 +22,7 @@ Este PRD consolida a oferta, as jornadas e as prioridades gerais da Apogee. O PR
 | D08 | Disponibilizar a assinatura da comunidade somente anualmente. | Retirar a opção mensal da oferta e da prévia; manter a entrada gratuita. Esta decisão substitui a periodicidade mensal do planejamento estratégico. |
 | D09 | Incluir uma caixa de ferramentas dentro da área de membros, com links por categorias, como Vídeo > Google Flow. | Especificação detalhada no PRD da área interna; apresentar planejamento antes de implementar. Decisão de 15/11/2026. |
 | D10 | Disponibilizar a caixa de ferramentas somente para assinantes anuais. | Exigir direito anual vigente no servidor; o acesso antigo ao Radar permanece independente. Decisão de 15/11/2026. |
+| D11 | Oferecer Radar, Caixa de ferramentas, Benefícios e Trilha; a trilha ainda não estará completa. | A área interna deve identificar os módulos já disponíveis e o estado parcial da trilha. Benefícios e conteúdos concretos ainda precisam ser informados; não apresentar o planejamento como entrega concluída. Decisão de 15/11/2026. |
 
 Os demais preços, eventos e benefícios do documento estratégico permanecem como referências de planejamento, nas condições indicadas neste PRD.
 
@@ -150,7 +151,7 @@ Requisitos da transição:
 | Pilar | Entrega inicial proposta | Condição para anunciar como disponível | Evolução |
 | --- | --- | --- | --- |
 | **Apogee Radar** | Catálogo atualizado, busca, filtros e detalhes; acompanhamento conforme condições da conta e do pacote. | Serviço e permissões operacionais; cota, direitos antigos e assinatura coerentes. | Alertas por perfil e recomendações mais relevantes. |
-| **Apogee Learn** | Três trilhas curtas de IA aplicada, cada uma com resultado concreto e instruções. | Conteúdo acessível, revisado e incluído no plano anunciado. | Progresso, novas trilhas e desafios por área. |
+| **Apogee Learn** | Trilha de IA aplicada, inicialmente parcial, com módulos e entregáveis efetivamente disponíveis identificados. | Conteúdo acessível e revisado; estado parcial claramente informado. A decisão D11 substitui a hipótese anterior de três trilhas completas no lançamento. | Progresso, novos módulos e desafios por área. |
 | **Apogee Perks** | Catálogo simples dos benefícios formalizados, com regras e acesso ao resgate. | Acordo válido, elegibilidade, disponibilidade, vigência e procedimento comprovados. | Novos parceiros e acompanhamento de resgates. |
 | **Apogee Community** | Espaço de interação, orientação inicial e agenda confirmada. | Canal funcional, regras, moderação, responsável e cadência definidos. | Projetos coletivos, desafios, mentores e experiências. |
 
@@ -339,3 +340,5 @@ A tela foi ajustada para identificar corretamente reembolso e pendência finance
 A área de membros já era contemplada neste PRD em nível geral. O novo [PRD da área interna](members-area-prd.md) detalha a caixa de ferramentas: catálogo curado com categorias, descrição breve e links oficiais, começando pelo exemplo Vídeo > Google Flow. O acesso é exclusivo de assinantes anuais com direito vigente; cancelamento mantém o período pago e o direito antigo do Radar não é alterado nem convertido em acesso aos novos recursos.
 
 O planejamento propõe catálogo e curadoria administrativa mínimos, integração à navegação interna, validação dos perfis de acesso e prévia local antes de publicar. O pedido atual autoriza a documentação e a apresentação do plano, sem implementar a caixa de ferramentas. O deploy autorizado das alterações anteriores é acompanhado separadamente.
+
+O proprietário definiu os recursos da assinatura como Radar, Caixa de ferramentas, Benefícios e Trilha, esta última inicialmente parcial. A lista concreta de benefícios e módulos ainda não foi fornecida. Como a caixa de ferramentas permanece em planejamento, a publicação das páginas e da cota pode ocorrer com contratação anual desativada, sem declarar esses recursos como já entregues. A abertura de cobranças depende de especificar e disponibilizar as entregas anunciadas.

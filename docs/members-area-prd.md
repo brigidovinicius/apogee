@@ -17,6 +17,7 @@ Esta especificação detalha a nova caixa de ferramentas e sua integração à �
 | --- | --- |
 | Localização | Dentro da área de membros, com um acesso chamado **Caixa de ferramentas**. |
 | Conteúdo | Links de ferramentas úteis agrupados por categorias. Exemplo solicitado: **Vídeo > Google Flow**. |
+| Recursos da assinatura | **Radar, Caixa de ferramentas, Benefícios e Trilha**, informados pelo proprietário em 15/11/2026. A trilha estará parcial no início. |
 | Elegibilidade | **Somente assinantes anuais com direito vigente**, confirmado pelo proprietário em 15/11/2026. |
 | Cancelamento da renovação | Mantém a caixa de ferramentas até o fim do período pago elegível. |
 | Conta gratuita ou acesso antigo apenas ao Radar | Mantém seus direitos atuais; não recebe automaticamente acesso à caixa de ferramentas. |
@@ -45,6 +46,8 @@ Esta especificação detalha a nova caixa de ferramentas e sua integração à �
 ```
 
 Os nomes adicionais são uma proposta inicial editável. Só categorias com ferramentas publicadas aparecem para o assinante. A caixa de ferramentas é uma seção de utilidade da comunidade e pode apoiar Learn; permanece distinta dos benefícios comerciais formalizados em Perks.
+
+Os quatro acessos de produto propostos para o início da área interna serão **Radar**, **Caixa de ferramentas**, **Benefícios** (Perks) e **Trilha** (Learn). A trilha deve indicar os módulos efetivamente disponíveis e seu estado de desenvolvimento, sem apresentar módulos futuros como acessíveis. O proprietário ainda não forneceu a lista concreta de benefícios nem os primeiros módulos; esses conteúdos permanecem pendentes de cadastro e conferência. Esta especificação não amplia a implementação autorizada para além do planejamento da caixa de ferramentas.
 
 **Rota proposta:** `/membros/ferramentas`. A página terá título, explicação breve, navegação por categoria e uma lista de ferramentas. O atalho também aparecerá na página inicial e na navegação interna.
 
