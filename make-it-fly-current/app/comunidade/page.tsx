@@ -3,7 +3,7 @@ import { radarDetailReturnPath } from "@/lib/opportunities/detail-path";
 import { localOfferPreview } from "@/lib/offer-preview";
 import { CommunitySalesPage } from "@/components/community/community-sales-page";
 
-const description = "Conheça a Comunidade Apogee: Radar, Learn, Perks e Community. Comece gratuitamente com até 10 eventos distintos no Radar e descubra a assinatura.";
+const description = "Troque experiências sobre IA na comunidade gratuita da Apogee, descubra oportunidades e explore aplicações práticas para o trabalho e a rotina.";
 
 export const metadata: Metadata = {
   title: "Comunidade Apogee",
