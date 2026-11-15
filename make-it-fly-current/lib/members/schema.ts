@@ -514,3 +514,25 @@ export const radarFreeEvent = pgTable("radar_free_event", {
 }, t => [primaryKey({ columns: [t.userId,t.opportunityId] }),uniqueIndex("radar_free_event_user_id_slot_key").on(t.userId,t.slot),
   check("radar_free_event_opportunity_id_check",sql`${t.opportunityId} ~ '^[A-Za-z0-9_-]{1,200}$'`),
   check("radar_free_event_slot_check",sql`${t.slot} between 1 and 10`)]);
+
+export const memberToolCategory = pgTable("member_tool_category", {
+  id:text("id").primaryKey(),slug:text("slug").notNull().unique(),name:text("name").notNull(),description:text("description"),
+  status:text("status").notNull().default("draft"),sortOrder:integer("sort_order").notNull().default(0),version:integer("version").notNull().default(1),
+  createdAt:timestamp("created_at",{withTimezone:true}).notNull().defaultNow(),updatedAt:timestamp("updated_at",{withTimezone:true}).notNull().defaultNow(),
+  updatedBy:text("updated_by").references(()=>user.id,{onDelete:"set null"}),
+},t=>[index("member_tool_category_catalogue_idx").on(t.status,t.sortOrder,t.name),
+  check("member_tool_category_slug_check",sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and length(${t.slug})<=80`),
+  check("member_tool_category_name_check",sql`length(${t.name}) between 1 and 80`),check("member_tool_category_description_check",sql`${t.description} is null or length(${t.description})<=240`),
+  check("member_tool_category_status_check",sql`${t.status} in ('draft','published','archived')`),check("member_tool_category_order_check",sql`${t.sortOrder} between 0 and 9999`),check("member_tool_category_version_check",sql`${t.version}>=1`)]);
+export const memberTool = pgTable("member_tool", {
+  id:text("id").primaryKey(),categoryId:text("category_id").notNull().references(()=>memberToolCategory.id,{onDelete:"restrict"}),
+  name:text("name").notNull(),description:text("description").notNull(),url:text("url").notNull().unique(),conditions:text("conditions"),
+  status:text("status").notNull().default("draft"),sortOrder:integer("sort_order").notNull().default(0),version:integer("version").notNull().default(1),
+  reviewedAt:timestamp("reviewed_at",{withTimezone:true}),reviewedBy:text("reviewed_by").references(()=>user.id,{onDelete:"set null"}),
+  updatedBy:text("updated_by").references(()=>user.id,{onDelete:"set null"}),
+  createdAt:timestamp("created_at",{withTimezone:true}).notNull().defaultNow(),updatedAt:timestamp("updated_at",{withTimezone:true}).notNull().defaultNow(),
+},t=>[index("member_tool_catalogue_idx").on(t.categoryId,t.status,t.sortOrder,t.name),
+  check("member_tool_name_check",sql`length(${t.name}) between 1 and 100`),check("member_tool_description_check",sql`length(${t.description}) between 1 and 280`),
+  check("member_tool_url_check",sql`${t.url} ~ '^https://[^[:space:]]+$' and length(${t.url})<=2048`),check("member_tool_conditions_check",sql`${t.conditions} is null or length(${t.conditions})<=280`),
+  check("member_tool_status_check",sql`${t.status} in ('draft','published','archived')`),check("member_tool_order_check",sql`${t.sortOrder} between 0 and 9999`),
+  check("member_tool_version_check",sql`${t.version}>=1`),check("member_tool_review_check",sql`${t.status}<>'published' or ${t.reviewedAt} is not null`)]);

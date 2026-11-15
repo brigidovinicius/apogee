@@ -12,9 +12,14 @@ export default function FunctionalReviewPage() {
     <ul><li><strong>revisaolivre@example.test</strong>: saldo inicial de 10 eventos. Abra um evento, atualize e reabra para conferir que o saldo permanece.</li>
     <li><strong>revisaolimite@example.test</strong>: 10 eventos já consultados. Os eventos 01 a 10 reabrem; 11 e 12 apresentam a comunidade.</li>
     <li><strong>revisaolegado@example.test</strong>: acesso antigo ao Radar completo, sem consumir consultas.</li>
-    <li><strong>revisaoanual@example.test</strong>: período anual pago sintético, com renovação cancelada e acesso preservado até o fim do período.</li></ul>
+    <li><strong>revisaoanual@example.test</strong>: período anual pago sintético, com renovação cancelada; Radar e caixa de ferramentas disponíveis até o fim do período.</li>
+    <li><strong>revisaoadmin@example.test</strong>: curadoria da caixa de ferramentas e prévia administrativa. O papel administrativo é apenas desta conta fictícia local.</li>
+    <li><strong>revisaoexpirado@example.test</strong>: assinatura com período pago encerrado; caixa de ferramentas bloqueada.</li>
+    <li><strong>revisaoreembolso@example.test</strong>: fatura anual integralmente reembolsada; caixa de ferramentas bloqueada.</li></ul>
     <p><Link className={styles.primary} href="/membros/entrar?next=%2Fmembros%2Foportunidades">Entrar para validar o Radar</Link></p>
     <p><Link href="/membros/assinatura">Ver assinatura e renovação</Link> · <Link href="/comunidade#planos">Rever a oferta anual</Link></p>
-    <p>Pagamentos são bloqueados nesta prévia. Os testes automatizados validam a integração com respostas Stripe sintéticas; o checkout real em sandbox ainda precisa de validação.</p>
+    <p><Link className={styles.primary} href="/membros/ferramentas">Abrir a caixa de ferramentas</Link> · <Link href="/admin/ferramentas">Abrir a curadoria administrativa</Link></p>
+    <p>O exemplo publicado nesta prévia é Vídeo → Google Flow. As demais categorias estão vazias e aparecem apenas na curadoria. Alterações aqui ficam neste banco local, sem publicar em produção.</p>
+    <p>Pagamentos e envio de e-mail são bloqueados nesta prévia. Nenhuma assinatura ou concessão aqui representa uma cobrança real.</p>
   </main>;
 }

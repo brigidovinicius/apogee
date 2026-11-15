@@ -10,6 +10,7 @@ import Stripe from 'stripe';
 import {hashPassword} from 'better-auth/crypto';
 import {nativeCommunityDatabase} from '../tests/helpers/community-native-db.mjs';
 import {migrateCommunityAccess} from './community-access-migrate.mjs';
+import {migrateMemberToolbox} from './member-toolbox-migrate.mjs';
 import {opportunityLoader} from '../tests/helpers/load-opportunity-module.mjs';
 
 assert.equal(process.env.APOGEE_RUN_STRIPE_SANDBOX,'1','Explicit sandbox flag required.');
@@ -51,7 +52,7 @@ try {
   },{idempotencyKey:`${run}-portal`});
   assert.equal(portal.livemode,false);
   evidence.product=product.id;evidence.price=price.id;evidence.portal=portal.id;await save();
-  db=await nativeCommunityDatabase();await migrateCommunityAccess(db.sql,{apply:true,expectedRole:'apogee_local'});
+  db=await nativeCommunityDatabase();await migrateCommunityAccess(db.sql,{apply:true,expectedRole:'apogee_local'});await migrateMemberToolbox(db.sql,{apply:true,expectedRole:'apogee_local'});
   const password=await hashPassword('RevisaoLocal2026!');
   for(const username of ['sandboxcompra','sandboxrecusa','sandboxcontrole','sandboxlegado','sandboxciclo']) {
     const id=userId(username);

@@ -8,6 +8,7 @@ import styles from "./admin.module.css";
 const liveItems = [
   { href: "/admin", label: "Painel", exact: true },
   { href: "/admin/radar", label: "Radar", exact: false },
+  { href: "/admin/ferramentas", label: "Caixa de ferramentas", exact: false },
   { href: "/admin/posts", label: "Blog", exact: false },
   { href: "/admin/convites", label: "Convites", exact: false },
   { href: "/admin/comunidade", label: "Contatos do evento", exact: false },

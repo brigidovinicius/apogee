@@ -35,6 +35,9 @@ jobs:
       - name: Annual community access and ten-event quota on disposable PostgreSQL
         if: matrix.app == 'make-it-fly-current'
         run: PG_BIN="$(pg_config --bindir)" npm run test:community-access
+      - name: Annual-only member toolbox and curation on disposable PostgreSQL
+        if: matrix.app == 'make-it-fly-current'
+        run: PG_BIN="$(pg_config --bindir)" npm run test:member-toolbox
       - name: Blog worker without provider calls
         if: matrix.app == 'make-it-fly-current'
         run: |

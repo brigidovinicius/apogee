@@ -31,6 +31,8 @@
     "store:drops:migrate": "node scripts/store-drops-migrate.mjs",
     "radar:free:migrate": "node scripts/radar-free-opportunity-migrate.mjs",
     "community:access:migrate": "node scripts/community-access-migrate.mjs",
+    "members:toolbox:migrate": "node scripts/member-toolbox-migrate.mjs",
+    "test:member-toolbox": "node --test --test-concurrency=1 tests/member-toolbox.integration.mjs",
     "test:community-access": "node --test --test-concurrency=1 tests/community-access.integration.mjs"
   },
   "dependencies": {

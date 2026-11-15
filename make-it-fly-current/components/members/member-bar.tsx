@@ -6,7 +6,7 @@ import { AvatarInitials } from "./avatar-initials";
 import styles from "./members.module.css";
 import { mcpEnabled } from "@/lib/mcp/config";
 
-export function MemberBar({ member, current }: { member: CurrentMember; current?: "home" | "forum" | "perfil" | "radar" }) {
+export function MemberBar({ member, current }: { member: CurrentMember; current?: "home" | "forum" | "perfil" | "radar" | "ferramentas" }) {
   return (
     <div className={styles.memberBar}>
       {member.role === "admin" ? <AdminModeSwitcher mode="user" /> : null}
@@ -20,6 +20,9 @@ export function MemberBar({ member, current }: { member: CurrentMember; current?
         </Link>
         <Link href="/membros/oportunidades" aria-current={current === "radar" ? "page" : undefined}>
           Radar
+        </Link>
+        <Link href="/membros/ferramentas" prefetch={false} aria-current={current === "ferramentas" ? "page" : undefined}>
+          Caixa de ferramentas
         </Link>
         <Link href={`/membros/perfil/${member.username}`} aria-current={current === "perfil" ? "page" : undefined}>
           Meu perfil
