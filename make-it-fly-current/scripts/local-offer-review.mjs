@@ -9,8 +9,13 @@ import { migrateCommunityAccess } from "./community-access-migrate.mjs";
 import { migrateMemberToolbox } from "./member-toolbox-migrate.mjs";
 import { migrateMemberDeliverables } from "./member-deliverables-migrate.mjs";
 import { starterTrack, starterModule, starterActivities } from "../content/member-starter.mjs";
-const statePath='/private/tmp/apogee-offer-completion-review-state.json';
-const port=3472;
+// An explicit instance keeps a second review worktree from trying to resume
+// the first one's database. The fixture ownership marker remains mandatory.
+const instance=process.env.APOGEE_REVIEW_INSTANCE ?? '';
+if(instance && !/^[a-z0-9][a-z0-9-]{0,50}$/.test(instance))throw Error('Instância de revisão inválida.');
+const statePath=`/private/tmp/apogee-offer-completion-review${instance ? '-'+instance : ''}-state.json`;
+const port=Number(process.env.APOGEE_REVIEW_PORT ?? 3472);
+if(!Number.isInteger(port)||port<1024||port>65535)throw Error('Porta de revisão inválida.');
 const duration=Number(process.env.APOGEE_REVIEW_DURATION_SECONDS ?? 0);
 if(!Number.isInteger(duration)||duration<0||duration>900)throw Error('Duração de revisão inválida.');
 if(['.env','.env.local','.env.development','.env.development.local'].some(f=>existsSync(new URL('../'+f,import.meta.url)))) throw Error('A prévia exige worktree sem arquivos dotenv.');

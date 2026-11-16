@@ -14,6 +14,11 @@ export default async function LearningPage() {
     <header className={styles.pageHead}><div><p className={styles.eyebrow}>Comunidade Apogee</p><h1 className={styles.title}>Trilha inicial.</h1><p className={styles.lead}>Uma trilha em desenvolvimento, com atividades práticas e progresso privado. A formação está parcial.</p></div></header>
     <div className={local.section}>{!access.active ? <AnnualAccessNotice title="Trilha" next="/membros/trilha" /> : <>
       {next ? <p>Próximo passo: <a href={`#atividade-${next.id}`}>{next.name}</a>.</p> : activities.length ? <p role="status">Você concluiu as atividades disponíveis. Os próximos módulos serão identificados quando estiverem prontos.</p> : null}
+      {activities.length ? <section className={local.card} aria-labelledby="primeiro-resultado"><h2 id="primeiro-resultado">Seu primeiro resultado</h2>
+        <p>Nos primeiros sete dias, escolha uma atividade disponível e produza o entregável indicado no módulo. Se precisar de uma ferramenta, <Link href="/membros/ferramentas">consulte a Caixa de Ferramentas</Link> e confira as condições do fornecedor.</p>
+        <p>Marque a conclusão depois de conferir seu entregável. Abrir um link ou visitar esta página não significa que o resultado está pronto.</p>
+        <h3>Um próximo passo para a segunda semana</h3><p>Entre os dias 8 e 14, <Link href="/membros/oportunidades">volte ao Radar</Link>, escolha uma oportunidade disponível e confira requisitos, prazo e uma ação que você possa realizar. <Link href="/membros/meu-calendario">Seu calendário</Link> ajuda a retomar o acompanhamento. Não há promessa de aprovação ou de uma atividade futura ainda não confirmada.</p>
+      </section> : null}
       {!tracks.length ? <section className={local.card}><h2>Conteúdo em preparação</h2><p>Nenhum módulo foi publicado ainda. As atividades disponíveis aparecerão aqui após revisão, sem aulas ou certificações presumidas.</p><Link href="/membros/oportunidades">Explorar o Radar</Link></section> : tracks.map(t => <section key={t.id} className={local.card} aria-labelledby={`trilha-${t.id}`}>
         <h2 id={`trilha-${t.id}`}>{t.name}</h2><p>{t.description}</p>
         {modules.filter(m => m.track_id === t.id).map(m => {
