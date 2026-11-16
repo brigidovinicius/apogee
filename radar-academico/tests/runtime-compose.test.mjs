@@ -16,7 +16,7 @@ test("Compose keeps bootstrap credentials out of web and all database credential
     DATABASE_EDITOR_URL: "postgres://radar_editor:synthetic-editor-only@postgres/radar_sec05_test",
     CRON_SECRET: "synthetic-cron-only", RADAR_RESEND_API_KEY: "synthetic-mail-only",
   };
-  const render = () => JSON.parse(execFileSync("docker", ["compose", "--env-file", file, "-f", resolve("infra/vps/docker-compose.yml"), "--profile", "migrate", "config", "--format", "json"], {
+  const render = () => JSON.parse(execFileSync("docker", ["compose", "--env-file", file, "-f", resolve("infra/vps/docker-compose.yml"), "--profile", "migrate", "--profile", "ai", "config", "--format", "json"], {
     encoding: "utf8", env: { PATH: process.env.PATH, HOME: process.env.HOME }, stdio: "pipe",
   }));
   try {
@@ -34,6 +34,20 @@ test("Compose keeps bootstrap credentials out of web and all database credential
     assert.equal(services.scheduler.environment.RADAR_RESEND_API_KEY, undefined);
     assert.ok(!JSON.stringify(services.web).includes(env.RADAR_DB_PASSWORD));
     assert.equal(services.scheduler.environment.CRON_SECRET, env.CRON_SECRET);
+    const ai = services["ai-worker"];
+    assert.deepEqual(ai.profiles, ["ai"]);
+    assert.equal(ai.build.target, "ai-runner");
+    assert.deepEqual(Object.keys(ai.environment), ["RADAR_AI_ENABLED"]);
+    assert.equal(String(ai.environment.RADAR_AI_ENABLED), "false");
+    assert.deepEqual(Object.keys(ai.networks), ["internal"]);
+    assert.equal(ai.depends_on, undefined);
+    assert.equal(ai.ports, undefined);
+    assert.equal(ai.read_only, true);
+    for (const service of [services.web, services.scheduler]) {
+      assert.equal(service.depends_on?.["ai-worker"], undefined);
+      assert.equal(service.environment.RADAR_AI_ENABLED, undefined);
+      assert.equal(service.environment.OPENAI_API_KEY, undefined);
+    }
     await writeFile(file, Object.entries(env).filter(([key]) => key !== "DATABASE_READER_URL").map(([key, value]) => `${key}=${value}`).join("\n"));
     assert.throws(render, /DATABASE_READER_URL/);
   } finally {

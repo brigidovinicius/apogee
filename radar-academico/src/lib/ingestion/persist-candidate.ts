@@ -10,7 +10,7 @@ import { programmeCataloguePageCount } from "./programme-catalogue";
 import { calendarSource } from "./calendar-sources";
 
 export const candidateColumns = {
-  title: "title", institution: "institution", applicantType: "applicant_type", applicationRoute: "application_route",
+  employment: "employment", title: "title", institution: "institution", applicantType: "applicant_type", applicationRoute: "application_route",
   benefitType: "benefit_type", categories: "categories", isCourse: "is_course", nationallyEligible: "nationally_eligible",
   eventStartsAt: "event_starts_at",
   deadlineAt: "deadline_at", deadlinePrecision: "deadline_precision", stateCode: "state_code", cityName: "city_name",
@@ -42,7 +42,7 @@ export async function findCandidate(client: PoolClient, candidate: OpportunityCa
   if (foreign.rows[0]) return foreign.rows[0];
   const result = await client.query<StoredOpportunity>(
     `select * from opportunities where official_source_id=$1 and canonical_key=$2 order by created_at limit 2 for update`,
-    [candidate.officialSourceId, canonicalOpportunityKey(candidate.officialSourceId, candidate.title, candidate.sourcePageUrl)],
+    [candidate.officialSourceId, candidate.employment ? canonicalOpportunityKey(candidate.officialSourceId, candidate.employment.requisitionId) : canonicalOpportunityKey(candidate.officialSourceId, candidate.title, candidate.sourcePageUrl)],
   );
   if (result.rows.length > 1) throw new Error("Identidade ambígua; coleta não aplicada");
   if (result.rows[0]) return result.rows[0];
@@ -78,12 +78,15 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
   const issue = publicationIssue(incoming, source) ?? publicationIssue(candidate, source);
   const values: Record<string, unknown> = {};
   for (const [field, column] of Object.entries(candidateColumns)) values[column] = candidate[field as CandidateField] ?? null;
+  // Legacy admin clients do not erase structured employment data.
+  if (incoming.employment === undefined && existing?.employment) values.employment = existing.employment;
   values.is_course = candidate.isCourse === true;
   values.nationally_eligible = candidate.nationallyEligible === true;
   const scope = candidate.cityName ? "city" : candidate.stateCode ? "state" : candidate.nationallyEligible ? "country" : candidate.geographicScopeKind ?? "unknown";
   values.geographic_scope_kind = scope;
   values.country_code = candidate.countryCode ?? (scope === "state" || scope === "city" || candidate.nationallyEligible ? "BR" : null);
   Object.assign(values, {
+    ...(candidate.employment ? { job_missing_since: null, job_missing_checked_at: null } : {}),
     review_status: issue ? "needs_information" : "approved", publication_issue: issue,
     source_conflict: incoming.sourceConflict === true,
     extraction_method: incoming.extractionMethod, evidence_json: incoming.evidenceJson,
@@ -112,7 +115,7 @@ export async function persistCandidate(client: PoolClient, source: OfficialSourc
       where id=$${args.length}`, args);
     id = existing.id;
   } else {
-    Object.assign(values, { ingestion_origin: incoming.extractionMethod === "manual_assisted" ? "manual" : "automatic", official_source_id: source.id, canonical_key: canonicalOpportunityKey(source.id, incoming.title, incoming.sourcePageUrl),
+    Object.assign(values, { ingestion_origin: incoming.extractionMethod === "manual_assisted" ? "manual" : "automatic", official_source_id: source.id, canonical_key: canonicalOpportunityKey(source.id, incoming.employment?.requisitionId ?? incoming.title, incoming.sourcePageUrl),
       target_academic_levels: [candidate.applicantType], verified_at: now, verification_method: options.mode,
       next_source_check_at: options.mode === "admin" || incoming.extractionMethod === "manual_assisted"
         ? now : new Date(Date.parse(now) + sourceCheckHours(source.id) * 60 * 60 * 1000).toISOString(),

@@ -1,9 +1,12 @@
+import { readEmployment } from "../../../contracts/employment";
+import { jobUrlPostingId } from "./job-sources";
 import type { OpportunityCandidate, OfficialSource } from "./types";
 import { isOfficialSourceUrl } from "./validate-url";
 import { eventHasNotStarted } from "./event-start";
 import { explicitDatesToNumeric } from './explicit-dates';
 
 export function deadlineIsCurrent(candidate: Pick<OpportunityCandidate, "deadlineAt" | "deadlinePrecision"> & Partial<OpportunityCandidate>, now = new Date()) {
+  if (candidate.benefitType === "employment" && candidate.employment && candidate.deadlinePrecision === "not_informed") return !candidate.deadlineAt && candidate.opportunityStatus === "open";
   if (candidate.deadlinePrecision === "not_informed") return !candidate.deadlineAt && candidate.categories?.includes("eventos") === true &&
     candidate.opportunityStatus === "open" && eventHasNotStarted(candidate.eventStartsAt, now);
   if (candidate.deadlinePrecision === "continuous_flow") return !candidate.deadlineAt;
@@ -21,10 +24,24 @@ export function deadlineIsCurrent(candidate: Pick<OpportunityCandidate, "deadlin
 
 export function publicationIssue(candidate: OpportunityCandidate, source: OfficialSource, now = new Date()): string | null {
   if (!source.active || candidate.officialSourceId !== source.id || !isOfficialSourceUrl(candidate.sourcePageUrl, [source])) return "invalid_source";
+  if ((candidate.benefitType === "employment") !== Boolean(candidate.employment)) return "invalid_employment";
   if (candidate.sourceConflict) return "source_conflict";
   if (!["open", "upcoming"].includes(candidate.opportunityStatus)) return "status_unconfirmed";
   if (!deadlineIsCurrent(candidate, now)) return "invalid_deadline";
   if (candidate.applicationRoute === "unclear") return "application_route_unconfirmed";
+  if (candidate.benefitType === "employment") {
+    const job = readEmployment(candidate.employment);
+    if (!job || jobUrlPostingId(source.id, candidate.sourcePageUrl) !== job.postingId) return "invalid_employment";
+    if (job.workplace !== "remote") return "job_remote_unconfirmed";
+    if (job.brazilEligibility !== "confirmed") return "job_brazil_unconfirmed";
+    if (candidate.deadlinePrecision === "continuous_flow") return "invalid_deadline";
+    if (candidate.deadlinePrecision !== "not_informed" && !candidate.evidenceJson.deadline_at?.excerpt.trim()) return "missing_evidence";
+    for (const field of ["employment", "workplace", "brazil_eligibility", "registration_availability", "opportunity_status"]) {
+      const e = candidate.evidenceJson[field];
+      if (!e?.excerpt.trim() || e.source_url !== candidate.sourcePageUrl || !isOfficialSourceUrl(e.source_url, [source])) return "missing_evidence";
+    }
+    return null;
+  }
   const fields = candidate.deadlinePrecision === "not_informed" ? ["event_start", "registration_availability", "opportunity_status"] : ["deadline_at", "opportunity_status"];
   for (const field of fields) {
     const evidence = candidate.evidenceJson[field];

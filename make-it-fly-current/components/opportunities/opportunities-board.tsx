@@ -235,6 +235,11 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
             </select><span className={styles.fieldHint}>Apenas áreas identificadas na fonte.</span>
           </div>
           <div className={styles.locationField}>
+            <label htmlFor="opportunity-workplace">Modalidade de emprego</label>
+            <select id="opportunity-workplace" value={filters.workplace ?? ""} onChange={event => updateFilters({ ...filters, workplace: event.target.value as OpportunityFilters["workplace"] || null })}>
+              <option value="">Todas</option><option value="remote">Remoto</option><option value="hybrid">Híbrido</option><option value="onsite">Presencial</option>
+            </select>
+            <label><input type="checkbox" checked={filters.brazilJobs === true} onChange={event => updateFilters({ ...filters, brazilJobs: event.target.checked })} /> Empregos que aceitam residentes no Brasil</label>
             <label htmlFor="opportunity-format">Formato confirmado</label>
             <select id="opportunity-format" value={filters.format ?? ""} onChange={event => updateFilters({ ...filters, format: event.target.value as OpportunityFilters["format"] || null })}>
               <option value="">Todos os formatos</option><option value="online">Online</option><option value="presencial">Presencial</option><option value="hibrido">Híbrido</option>
@@ -390,7 +395,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
     <article className={`${styles.card} ${detailed ? styles.detailedCard : ""}`}>
       <div className={styles.cardTopline}>
         <span className={styles.kind}>{OPPORTUNITY_CATEGORIES.find(category => category.id === primaryOpportunityCategory(opportunity))?.label ?? opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
-        <span>{opportunity.level}</span>
+        <span>{opportunity.kind === "Emprego" ? "Emprego" : opportunity.level}</span>
       </div>
       <div className={styles.cardMain}>
         <p className={styles.organization} title={interfaceText(opportunity.organization)}>{interfaceText(opportunity.organization)}</p>
@@ -404,6 +409,12 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
           <dd className={styles.locationValue}><MapPin size={15} aria-hidden />{interfaceText(opportunity.location)}</dd>
         </div>}
       </dl>
+      {opportunity.employment && <p>Trabalho remoto · residentes no Brasil aceitos</p>}
+      {detailed && opportunity.employment && <dl className={styles.details}>
+        <div><dt>Experiência anunciada</dt><dd>{opportunity.employment.experienceYears === null ? "Não informada" : `${opportunity.employment.experienceYears}+ anos`}</dd></div>
+        <div><dt>Vínculo anunciado</dt><dd>{opportunity.employment.employmentType ?? "Não informado"}</dd></div>
+        <div><dt>Viagens e presença no cliente</dt><dd>{opportunity.employment.travelText ?? "Não informado na fonte oficial"}</dd></div>
+      </dl>}
       {detailed ? <details className={styles.cardDisclosure} open>
         <summary>Requisitos e condições</summary>
         <dl className={styles.details}>

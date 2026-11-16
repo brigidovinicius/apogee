@@ -1,5 +1,6 @@
 import { readDiscovery, type Discovery } from "./discovery";
 import "server-only";
+import { readEmployment } from "@/contracts/employment";
 import { isOpportunityCategory, type OpportunityCategory } from "./types";
 
 export type RadarEditorialSource = {
@@ -22,6 +23,7 @@ export type RadarEditorialSource = {
 type EditorialConfiguration = { url: string; token: string };
 
 export type RadarManagedOpportunity = {
+  employment?: import("@/contracts/employment").Employment | null;
   discovery?: Discovery;
   categories: OpportunityCategory[];
   version: number;
@@ -113,7 +115,7 @@ function editorialConfiguration(): EditorialConfiguration | null {
   }
 }
 
-async function requestEditorialApi(init: RequestInit, resource: "sources" | "opportunities" | "import" = "sources"): Promise<Response | null> {
+async function requestEditorialApi(init: RequestInit, resource: "sources" | "opportunities" | "import" | "budget" = "sources"): Promise<Response | null> {
   const config = editorialConfiguration();
   if (!config) return null;
   try {
@@ -164,7 +166,7 @@ function managedOpportunityFrom(value: unknown): RadarManagedOpportunity | null 
   }
   return {
     id, title, institution, applicantType, applicationRoute, deadlinePrecision, officialUrl, evidence,
-    discovery: readDiscovery(item.discovery),
+    discovery: readDiscovery(item.discovery), employment: readEmployment(item.employment),
     categories,
     version: Number(item.version), officialSourceId: String(item.officialSourceId), benefitType: String(item.benefitType),
     opportunityStatus: item.opportunityStatus as "open" | "upcoming" | "closed" | "result_published",
@@ -239,4 +241,21 @@ export async function mutateRadarEditorialSource(mutation: RadarEditorialMutatio
     body: JSON.stringify(mutation),
   });
   return response?.ok === true;
+}
+
+type BudgetLane = { cap_micro: number; spent_micro: number; reserved_micro: number; available_micro: number };
+export type RadarBudgetStatus = { enabled: boolean; budget_block: string | null; monthly: BudgetLane & {
+  period: string; opening_verified: boolean; warning_percent: number; streams: Record<"radar" | "jobs" | "reserve", BudgetLane>;
+} };
+export async function radarBudgetStatus(): Promise<RadarBudgetStatus | null> {
+  const response = await requestEditorialApi({ method: "GET" }, "budget");
+  if (!response?.ok) return null;
+  try {
+    const { status } = await response.json();
+    const lane = (v: BudgetLane) => v && [v.cap_micro, v.spent_micro, v.reserved_micro, v.available_micro].every(n => Number.isSafeInteger(n) && n >= 0);
+    if (typeof status?.enabled !== "boolean" || !/^\d{4}-\d{2}-01$/.test(status.monthly?.period) ||
+      typeof status.monthly.opening_verified !== "boolean" || !lane(status.monthly) ||
+      !["radar", "jobs", "reserve"].every(k => lane(status.monthly.streams?.[k]))) return null;
+    return status;
+  } catch { return null; }
 }

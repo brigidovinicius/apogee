@@ -1,3 +1,5 @@
+import { ingestJobSource } from "./ingest-jobs";
+import { jobBoard } from "./job-sources";
 import { recheckKnownOpportunities } from "./recheck";
 import { claimDueOfficialSources, completeScheduledSource, loadOfficialSource } from "./official-source-registry";
 import { deduplicateCandidates } from "./detect-duplicates";
@@ -207,6 +209,7 @@ async function runIngestion(options: OfficialSourceIngestionOptions = {}) {
     : boundedInteger(requestedMaxCandidates, 10, 1, 10);
   const source = await loadOfficialSource(options.sourceId);
   if (!source) throw new Error("Fonte oficial inválida, não verificada ou inativa");
+  if (jobBoard(source.id)) return ingestJobSource(source, maxCandidates);
   const activeSources: OfficialSource[] = [source];
   for (const source of activeSources.sort((a, b) => b.priority - a.priority)) {
     let evgPolicy: EvgPolicy | undefined;
@@ -261,7 +264,7 @@ export async function runScheduledOfficialSourceIngestion() {
     let failed = true;
     try {
       const report = await runOfficialSourceIngestion({ sourceId: source.id, maxPages: source.id === EVG_SOURCE_ID ? 10 : 5,
-        maxCandidates: programmeCataloguePageCount(source.id) ? undefined : 10 });
+        maxCandidates: programmeCataloguePageCount(source.id) || jobBoard(source.id) ? undefined : 10 });
       const sourceReport = report.sources[0];
       failed = sourceReport.failed > 0;
       reports.push({ sourceId: source.id, pagesChecked: report.pagesChecked,

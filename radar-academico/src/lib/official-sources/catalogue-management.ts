@@ -1,5 +1,7 @@
+import { readEmployment } from "../../../contracts/employment";
 import { parseDiscovery } from "@/lib/ingestion/discovery";
 import crypto from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
 import { parseEventStart } from "@/lib/ingestion/event-start";
 import { withAdminTransaction } from "@/lib/db/client";
 import { loadOfficialSource } from "@/lib/ingestion/official-source-registry";
@@ -13,7 +15,7 @@ export class CatalogueError extends Error { constructor(message: string, public 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const applicants = ["undergraduate_student","postgraduate_student","high_school_student","graduate_professional","professor","researcher","company","institution","mixed"];
 const routes = ["direct_student_application","direct_application","application_via_university","application_via_department","application_via_professor","application_via_project_coordinator","institutional_call","invitation_only"];
-const benefits = ["academic_scholarship","research_scholarship","extension_scholarship","monitor_scholarship","internship","financial_aid","housing_aid","mobility_aid","prize","project_funding","unpaid_opportunity","other"];
+const benefits = ["employment","academic_scholarship","research_scholarship","extension_scholarship","monitor_scholarship","internship","financial_aid","housing_aid","mobility_aid","prize","project_funding","unpaid_opportunity","other"];
 function text(input: Record<string, unknown>, key: string, max = 500) {
   const value = input[key];
   if (typeof value !== "string" || !value.trim() || value.length > max) throw new CatalogueError(`Campo inválido: ${key}`);
@@ -52,6 +54,16 @@ export function parseCatalogueCandidate(input: Record<string, unknown>): Opportu
     evidenceJson: { deadline_at: evidence, opportunity_status: evidence, requirements: evidence, ...(input.nationallyEligible ? { national_scope: evidence } : {}) },
     contentHash: "",
   };
+  if (input.employment !== undefined && input.employment !== null) {
+    const job = readEmployment(input.employment);
+    if (!job) throw new CatalogueError("Dados de emprego inválidos");
+    candidate.employment = job;
+    const proof = input.employmentEvidence as OpportunityCandidate["evidenceJson"] | undefined;
+    for (const field of ["employment", "workplace", "brazil_eligibility", "registration_availability", "opportunity_status"]) {
+      const e = proof?.[field];
+      if (e?.source_url === sourcePageUrl && typeof e.excerpt === "string" && e.excerpt.trim()) candidate.evidenceJson[field] = e;
+    }
+  }
   if (candidate.eventStartsAt && !candidate.categories?.includes("eventos")) throw new CatalogueError("Início do evento exige a categoria Eventos e comunidades");
   if (candidate.eventStartsAt) candidate.evidenceJson.event_start = evidence;
   if (candidate.deadlinePrecision === "not_informed") candidate.evidenceJson.registration_availability = evidence;
@@ -65,6 +77,11 @@ export async function manageCatalogue(method: "POST" | "PATCH" | "DELETE", input
   const actor = text(input, "actor", 128);
   if (!/^[a-zA-Z0-9:_-]+$/.test(actor)) throw new CatalogueError("Autor inválido");
   if (method !== "POST" && (typeof input.id !== "string" || !uuid.test(input.id) || !Number.isInteger(input.version) || Number(input.version) < 1)) throw new CatalogueError("Identificador ou versão inválida");
+  // Recover structured data for legacy PATCH clients before validating publication.
+  if (method === "PATCH") {
+    const stored = await withAdminTransaction(async client => (await client.query("select employment,evidence_json from opportunities where id=$1 and deleted_at is null", [input.id])).rows[0]);
+    if (stored?.employment) input = { ...input, employment: input.employment ?? stored.employment, employmentEvidence: stored.evidence_json };
+  }
   const candidate = method === "DELETE" ? null : parseCatalogueCandidate(input);
   const source = candidate ? await loadOfficialSource(candidate.officialSourceId) : null;
   if (candidate && source && input.discovery !== undefined) {
@@ -111,7 +128,7 @@ export async function manageCatalogue(method: "POST" | "PATCH" | "DELETE", input
       const value = candidate[field as CandidateField] ?? null;
       let prior = existing?.[column] ?? null;
       if (prior instanceof Date) prior = candidate.deadlinePrecision === "date_only" ? prior.toISOString().slice(0,10) : prior.toISOString();
-      const same = field === "categories" ? JSON.stringify(value) === JSON.stringify(prior) :
+      const same = field === "employment" ? isDeepStrictEqual(value, prior) : field === "categories" ? JSON.stringify(value) === JSON.stringify(prior) :
         field === "deadlineAt" && value && prior ? Date.parse(String(value)) === Date.parse(String(prior)) : value === prior;
       if (!same) Object.assign(overrides, { [field]: value });
     }
