@@ -69,7 +69,17 @@ try {
   assert.equal((await database`select role from public."user" where email='synthetic-radar@example.test'`)[0].role, "member");
   const community = await get("/membros", cookie);
   const communityBody = await community.text();
-  assert.ok(community.headers.get("location")?.includes("/membros/protecao") || /NEXT_REDIRECT[\s\S]*\/membros\/protecao/.test(communityBody), "pending community review remains enforced");
+  assert.equal(community.status, 200, "a pending member can discover the platform");
+  assert.match(communityBody, /Sua comunidade/);
+  assert.match(communityBody, /data-locked-preview="forum"/, "participation remains behind account review");
+  assert.match(communityBody, /Verificar minha conta/);
+  for (const section of ["ferramentas", "beneficios", "trilha"]) {
+    const preview = await get(`/membros/${section}`, cookie);
+    assert.equal(preview.status, 200, `the free member can navigate to ${section}`);
+    const html = await preview.text();
+    assert.match(html, new RegExp(`aria-hidden="true" inert="" data-locked-preview="${section}"`));
+    assert.match(html, /Conhecer a assinatura anual/);
+  }
   assert.equal((await database`select email_verified from public."user" where email='synthetic-radar@example.test'`)[0].email_verified, false);
   const response = await get("/membros/oportunidades", cookie); assert.equal(response.status, 200);
   const initial = await response.text(); assert.match(initial, /Radar de oportunidades/); assert.equal(titles(initial).length, 24); assert.doesNotMatch(initial, /CI IFSC Ingresso|CI IFC Ingresso/);
