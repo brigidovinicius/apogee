@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { SiteMobileNavigation } from "./site-mobile-navigation";
 import { McpConnectLink } from "./mcp-connect-link";
+import { AccountMenu } from "@/components/members/account-menu";
 import styles from "./site-shell.module.css";
 
 type SiteSection = "home" | "opportunities" | "members" | "blog" | "gallery" | "store";
@@ -70,7 +71,8 @@ export function SiteHeader({
 
         {adaptive ? desktopNavigation : <p className={styles.signature}>Ideias que abrem caminhos.</p>}
 
-        <Link
+        <div className={styles.headerActions}>
+        <AccountMenu fallback={<Link
           className={styles.memberLink}
           href={memberHref}
           prefetch={prefetch}
@@ -78,7 +80,7 @@ export function SiteHeader({
         >
           {memberLabel}
           {!adaptive && <ArrowUpRight aria-hidden="true" size={18} />}
-        </Link>
+        </Link>} />
 
         <SiteMobileNavigation>
             {links.map((item) => (
@@ -97,6 +99,7 @@ export function SiteHeader({
             <McpConnectLink />
             <McpConnectLink provider="claude" />
         </SiteMobileNavigation>
+        </div>
       </div>
       {!adaptive && <div className={styles.navigationBar}>{desktopNavigation}</div>}
     </header>

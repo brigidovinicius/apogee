@@ -55,6 +55,8 @@
   min-height: var(--apogee-control-min-height);
 }
 
+.headerActions { display: flex; justify-self: end; align-items: center; gap: .75rem; }
+
 .brand img {
   width: clamp(5.75rem, 9vw, 7rem);
   height: auto;
@@ -413,6 +415,9 @@
   }
   .header[data-editorial] .brand img { width: 5.5rem; }
   .header[data-editorial] .signature { justify-self: center; max-width: 12ch; font-size: 1.5rem; text-align: left; }
+  .header[data-editorial]:has([data-account-menu]) .signature { display: none; }
+  .header[data-editorial]:has([data-account-menu]) .headerInner { grid-template-columns: auto minmax(0, 1fr); }
+  .headerActions { gap: .5rem; }
   .header[data-editorial][data-tone] .memberLink { display: none; }
   .header[data-editorial] .mobileNavigation { position: relative; display: block; }
   .header[data-editorial][data-tone] .desktopNavigation { width: calc(100% - 2.5rem); justify-content: flex-start; gap: 1.5rem; }

@@ -17,7 +17,8 @@ export default async function ProtectionPage({searchParams}:{searchParams:Promis
   const member=await getCurrentMember();if(!member)redirect('/membros/entrar?next=%2Fmembros%2Fprotecao');
   const overview=await protectionOverview(member.id);const approved=await calendarAdultAccess(member.id);const access=await adultAccess(member.id);const query=await searchParams;const next=typeof query.next==='string'?safeNextPath(query.next):'/membros/meu-calendario';
   const google=await googleCalendarStatus(member.id);
-  return <div className={styles.page}><MemberBar member={member}/><h1>Cadastro protegido</h1>
+  return <div className={styles.page}><MemberBar member={member} current="protecao"/><h1>Cadastro protegido</h1>
+    <p><Link href="/membros">Voltar à minha comunidade</Link> · <Link href="/membros/suporte">Preciso de ajuda</Link></p>
     <p>A conta de acesso pertence a um adulto. Menores de 18 anos, inclusive menores de 16, participam por vínculo privado com o responsável. O menor não recebe login próprio, perfil público ou acesso ao fórum.</p>
     <p><Link href={next}>{next.startsWith('/membros/meu-calendario')&&next.endsWith('#google-calendar-heading')?'Voltar à conexão do Google Agenda':'Voltar ao calendário ou catálogo'}</Link></p><p><Link href="/privacidade#menores">Privacidade de crianças e adolescentes</Link></p>
     {query.resultado && <p role="status">{query.resultado==='ok'?'Solicitação registrada.':'Não foi possível concluir. Confira os dados e a confirmação de e-mail ou procure a equipe.'}</p>}

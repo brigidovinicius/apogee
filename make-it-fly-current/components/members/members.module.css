@@ -416,6 +416,7 @@
 }
 
 .memberBar > nav {
+  flex-basis: 100%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -456,10 +457,17 @@
 }
 
 .memberIdentity {
+  width: 100%;
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
 }
+
+.memberIdentity form { margin-left: auto; }
+.verificationNotice { padding: 1rem 1.25rem; border: 1px solid rgb(185 211 238 / 45%); border-radius: var(--apogee-radius-soft); line-height: 1.6; }
+.verificationNotice a { color: var(--sky); text-underline-offset: .2em; }
+.memberIdentity > span { min-width: 0; overflow-wrap: anywhere; }
+.memberBar > nav a { padding: .5rem .65rem; border-radius: var(--apogee-radius-soft); }
 
 /* Listas */
 

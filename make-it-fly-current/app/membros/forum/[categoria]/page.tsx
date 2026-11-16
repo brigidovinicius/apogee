@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { AvatarInitials } from "@/components/members/avatar-initials";
 import { formatDateTime, plural } from "@/components/members/format";
 import { MemberBar } from "@/components/members/member-bar";
+import { verificationPagePreview } from "@/components/members/member-page-access";
 import styles from "@/components/members/members.module.css";
 import { Pagination } from "@/components/members/pagination";
 import { requireMember } from "@/lib/members/dal";
@@ -24,6 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CategoryPage({ params, searchParams }: Props) {
   const { categoria } = await params;
   const basePath = `/membros/forum/${categoria}`;
+  const preview = await verificationPagePreview("forum", "Conversas da comunidade", basePath);
+  if (preview) return preview;
   const member = await requireMember(basePath);
   const category = await getCategory(categoria);
   if (!category) notFound();

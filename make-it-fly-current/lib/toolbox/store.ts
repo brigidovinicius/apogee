@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { requireMember } from "@/lib/members/dal";
+import { requireMember, requireSignedInMember } from "@/lib/members/dal";
 import { requireAdmin } from "@/lib/admin/access";
 import { getSql } from "@/lib/members/db";
 import { toolboxAccess } from "./access";
@@ -9,10 +9,11 @@ import type { ToolboxCategory, ManagedTool, MemberTool, MemberToolCategory, Tool
 
 export class ToolboxConflictError extends Error {}
 export async function memberToolbox(category: string | null = null) {
-  const member = await requireMember("/membros/ferramentas");
+  const member = await requireSignedInMember("/membros/ferramentas");
   const access = await toolboxAccess(member);
   // Never load or serialize catalogue fields for an ineligible account.
   if (!access.allowed) return { member, access, categories: [] as MemberToolCategory[], tools: [] as MemberTool[] };
+  await requireMember("/membros/ferramentas");
   const sql = getSql();
   const categories = await sql`select c.slug,c.name,c.description,count(t.id)::integer as count
     from member_tool_category c join member_tool t on t.category_id=c.id and t.status='published'

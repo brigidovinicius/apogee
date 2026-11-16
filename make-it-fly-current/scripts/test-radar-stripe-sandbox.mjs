@@ -126,6 +126,14 @@ try {
     assert.ok(response.headers.get("location")?.includes(destination) || html.includes("NEXT_REDIRECT") && html.includes(destination), `redirect to ${destination}`);
     return html;
   };
+  const assertCommunityPreview = async cookie => {
+    const response = await get("/membros", cookie);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, /Sua comunidade/);
+    assert.match(html, /data-locked-preview="forum"/, "account review still protects participation");
+    assert.match(html, /Verificar minha conta/);
+  };
   await assertRedirect(await get(firstPath), "/membros/entrar");
   const username = `radar${Date.now()}`;
   const email = `${username}@example.com`;
@@ -142,7 +150,7 @@ try {
   assert.doesNotMatch(denied, /Oportunidade sintética para validar o acesso\./);
   assert.doesNotMatch(denied, /https:\/\/example\.com\/sandbox/);
   assert.equal(user.emailVerified, false);
-  await assertRedirect(await get("/membros", cookie), "/membros/protecao");
+  await assertCommunityPreview(cookie);
   const firstHtml = await (await get(firstPath, cookie)).text();
   assert.match(firstHtml, /data-radar-detail-opening/);
   assert.doesNotMatch(firstHtml, /Sua primeira oportunidade|Use seu acesso gratuito|Abrir esta oportunidade grátis/);
@@ -247,7 +255,7 @@ try {
   assert.equal((await database`select role from "user" where id = ${user.id}`)[0].role, "member");
   const paidAgain=await fetch(`${origin}/api/radar/checkout?${returnQuery}`,{method:"POST",headers:{Origin:origin,Cookie:cookie},redirect:"manual"});
   assert.equal(paidAgain.status,303);assert.equal(paidAgain.headers.get("location"),origin+secondPath);
-  await assertRedirect(await get("/membros",cookie),"/membros/protecao");
+  await assertCommunityPreview(cookie);
   const events = await stripe.events.list({ type: "checkout.session.completed", limit: 100 });
   const event = events.data.find(item => item.data.object.id === sessionId);
   assert.ok(event, "Evento real de checkout encontrado na Stripe.");

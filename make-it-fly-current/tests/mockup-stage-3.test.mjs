@@ -42,7 +42,9 @@ test("a navegação responsiva do membro só expõe os destinos já implementado
   assert.match(styles, /@media \(max-width: 640px\)/);
 
   assert.match(radarPage, /await requireSignedInMember\(/);
-  for (const page of [memberPage, profilePage, editPage]) {
+  assert.match(memberPage, /await requireSignedInMember\(/);
+  assert.match(memberPage, /verified \? await listCategories\(\) : \[\]/);
+  for (const page of [profilePage, editPage]) {
     assert.match(page, /await requireMember\(/);
   }
 });

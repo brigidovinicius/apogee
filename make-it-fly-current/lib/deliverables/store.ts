@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { getSql } from "@/lib/members/db";
-import { requireAdmin, requireMember } from "@/lib/members/dal";
+import { requireAdmin, requireMember, requireSignedInMember } from "@/lib/members/dal";
 import { communityAccess } from "@/lib/billing/community-store";
 import { benefitSchema, trackSchema, moduleSchema, activitySchema, progressSchema, type DeliverableKind } from "./validation";
 
@@ -15,8 +15,9 @@ export type Activity = { id: string; module_id: string; name: string; instructio
 const benefitDates = (b: Benefit): Benefit => ({ ...b, starts_at: b.starts_at ? new Date(b.starts_at) : null, ends_at: b.ends_at ? new Date(b.ends_at) : null });
 
 export async function annualMember(next: string) {
-  const member = await requireMember(next);
+  const member = await requireSignedInMember(next);
   const access = await communityAccess(member.id, process.env.STRIPE_MODE !== "test");
+  if (access.active) await requireMember(next);
   return { member, access };
 }
 

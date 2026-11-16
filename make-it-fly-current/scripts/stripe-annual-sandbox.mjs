@@ -68,7 +68,7 @@ try {
     await db.sql`insert into "user"(id,name,email,email_verified,username,adult_declared) values(${id},'Pessoa Teste',${username+'@example.test'},true,${username},true)`;
     await db.sql`insert into account(id,account_id,provider_id,user_id,password) values(${id},${id},'credential',${id},${password})`;
     await db.sql`insert into member_adult_review(user_id,status,reviewed_at,evidence_reference) values(${id},'approved',now(),'sandbox_test_only')`;
-    if(username!=='sandboxlegado')for(let n=1;n<=10;n++)await db.sql`insert into radar_free_event(user_id,opportunity_id,slot) values(${id},${'review-event-'+n},${n})`;
+    if(username!=='sandboxlegado')for(let n=1;n<=10;n++)await db.sql`insert into radar_free_event(user_id,opportunity_id,slot) values(${id},${'radar-review-event-'+n},${n})`;
   }
   await db.sql`insert into radar_legacy_access(user_id) values(${userId('sandboxlegado')})`;
   const editor=userId('sandboxciclo');
