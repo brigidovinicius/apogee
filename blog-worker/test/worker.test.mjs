@@ -174,3 +174,10 @@ test('a changed response model or processing tier is treated as an unknown charg
     assert.deepEqual(await provider(reservation()),{outcome:'unknown'});
   }
 });
+
+test('hourly publication runs without an AI call even when generation is disabled',async()=>{
+  const config=await loadConfig(new URL('../config/',import.meta.url));let publications=0;
+  const store={recover:async()=>0,maintenance:async()=>({capture_allowed:false}),publishAutomatically:async()=>{publications++;return {status:'disabled'};}};
+  const result=await tick({store,config,provider:()=>assert.fail('no model call')});
+  assert.equal(result.generation.reason,'generation_disabled');assert.equal(result.publication.status,'disabled');assert.equal(publications,1);
+});

@@ -825,5 +825,165 @@
       "https://legacy.sba.gov/document/support--glossary-business-financial-terms",
       "https://business.gov.au/finance/financial-tools-and-templates/key-financial-terms"
     ]
+  },
+  {
+    "key": "maquinas-virtuais-hipervisor-isolamento-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como máquinas virtuais usam um hipervisor para executar sistemas operacionais isolados?",
+    "terms": [
+      "virtual machine",
+      "hypervisor",
+      "operating system",
+      "isolated"
+    ],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-a-virtual-machine",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-a-virtual-machine/"
+    ]
+  },
+  {
+    "key": "armazenamento-objetos-metadados-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como o armazenamento de objetos organiza arquivos e metadados sem uma hierarquia tradicional de pastas?",
+    "terms": [
+      "object storage",
+      "metadata",
+      "unstructured",
+      "object"
+    ],
+    "urls": [
+      "https://cloud.google.com/discover/object-vs-block-vs-file-storage",
+      "https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction"
+    ]
+  },
+  {
+    "key": "bancos-relacionais-tabelas-chaves-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como bancos relacionais usam tabelas, linhas e chaves para conectar informações?",
+    "terms": [
+      "relational",
+      "tables",
+      "rows",
+      "keys"
+    ],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-a-relational-database",
+      "https://learn.microsoft.com/en-us/azure/architecture/data-guide/technology-choices/understand-data-store-models"
+    ]
+  },
+  {
+    "key": "kubernetes-orquestracao-conteineres-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como o Kubernetes organiza a implantação e o gerenciamento de aplicações em contêineres?",
+    "terms": [
+      "Kubernetes",
+      "container",
+      "deployment",
+      "cluster"
+    ],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-kubernetes",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-kubernetes/"
+    ]
+  },
+  {
+    "key": "ocr-reconhecimento-textos-imagens-1",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Como o reconhecimento óptico de caracteres extrai texto de imagens e documentos?",
+    "terms": [
+      "OCR",
+      "text",
+      "images",
+      "recognition"
+    ],
+    "urls": [
+      "https://developers.google.com/ml-kit/vision/text-recognition/v2",
+      "https://learn.microsoft.com/en-us/azure/ai-services/computer-vision/overview-ocr"
+    ]
+  },
+  {
+    "key": "linguagem-natural-analise-textos-1",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Como o processamento de linguagem natural identifica informações em textos?",
+    "terms": [
+      "natural language",
+      "text",
+      "entities",
+      "sentiment"
+    ],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-natural-language-processing",
+      "https://learn.microsoft.com/en-us/azure/ai-services/language-service/overview"
+    ]
+  },
+  {
+    "key": "rotulagem-imagens-entidades-visuais-1",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Como modelos atribuem rótulos a imagens para descrever objetos e elementos visuais?",
+    "terms": [
+      "image",
+      "labels",
+      "objects",
+      "confidence"
+    ],
+    "urls": [
+      "https://developers.google.com/ml-kit/vision/image-labeling",
+      "https://learn.microsoft.com/en-us/azure/ai-services/computer-vision/concept-tagging-images"
+    ]
+  },
+  {
+    "key": "ponto-equilibrio-receitas-custos-1",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "O que o ponto de equilíbrio revela sobre receitas e custos de uma empresa?",
+    "terms": [
+      "break-even",
+      "revenue",
+      "costs",
+      "profit"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/es/node/56191",
+      "https://business.gov.au/finance/financial-tools-and-templates/key-financial-terms"
+    ]
+  },
+  {
+    "key": "custos-abertura-despesas-recorrentes-1",
+    "category": "negocios",
+    "subcategory": "empreendedorismo-startups",
+    "question": "Como distinguir custos de abertura de despesas recorrentes no planejamento de um negócio?",
+    "terms": [
+      "start-up costs",
+      "startup costs",
+      "monthly",
+      "running costs"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/business-guide/plan-your-business/calculate-your-startup-costs",
+      "https://business.gov.au/planning/new-businesses/calculate-the-start-up-costs-of-your-business"
+    ]
+  },
+  {
+    "key": "contas-receber-contas-pagar-1",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "O que diferencia contas a receber de contas a pagar na rotina de uma empresa?",
+    "terms": [
+      "accounts receivable",
+      "accounts payable",
+      "owed",
+      "money"
+    ],
+    "urls": [
+      "https://legacy.sba.gov/document/support--glossary-business-financial-terms",
+      "https://business.gov.au/finance/financial-tools-and-templates/key-financial-terms"
+    ]
   }
 ]
