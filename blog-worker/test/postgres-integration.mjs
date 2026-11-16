@@ -892,8 +892,8 @@ try{
   const hybridAt=(at=new Date())=>{
     // The worker's day is in Sao Paulo. After midnight UTC, advancing UTC
     // hours would incorrectly move an already-open window to the next day.
-    const open=new Date(`${periodKeys(at).day}T15:00:00Z`);
-    return at<open?open:at;
+    const day=periodKeys(at).day;
+    return +at<+new Date(day+'T10:00:00-03:00')?new Date(day+'T12:00:00-03:00'):at;
   };
   await check('hybrid test clock preserves the Sao Paulo day across UTC midnight',async()=>{
     for(const instant of ['2026-11-15T22:00:00Z','2026-11-16T01:00:00Z']){
@@ -1116,6 +1116,26 @@ try{
     const [ledger]=await admin`select count(*)::int as calls,count(*) filter(where charged_micro_usd<>0 or provider<>'google_subscription')::int as paid from blog_worker.attempt`;
     assert.deepEqual(ledger,{calls:3,paid:0});
     const [diagnostics]=await admin`select sum((detail->>'quota_used')::bigint)::int as used from blog_worker.operator_event where action='google_diagnostic_usage'`;assert.equal(diagnostics.used,205000);
+    const [post]=await admin`select status,seo_noindex,scheduled_at from public.blog_post`;assert.deepEqual(post,{status:'draft',seo_noindex:true,scheduled_at:null});
+  });
+  await check('the final draft reserves 220757 tokens under a dated 221000 cap while the 220000 cap still blocks',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const plan={...explainerCatalog.find(p=>p.category==='tecnologia'&&p.subcategory===null),terms:['mecanismo','limites']};
+    await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});
+    const id=explainerId(plan);await compareHybrid(id);
+    await admin`insert into blog_worker.operator_event(actor_id,action,target,detail) values('test-final-reservation','google_diagnostic_usage','prior-usage',${admin.json({quota_used:205557})})`;
+    const completion={day:periodKeys(new Date()).day,calls_cap:80,tokens_reserved_per_call:15000,tokens_cap:220000,extra_drafts:10,baseline_post_ids:Array.from({length:10},(_,i)=>10001+i),authorization_reference:'Synthetic dated authorization for the final private draft reservation'};
+    const options={...hybridOptions(),candidateId:id,policy:{...hybridPolicy,editorial_focus:FOCUSED_EDITORIAL_PLAN,google_daily_completion:completion}};
+    await assert.rejects(()=>store.reserve(options),/google_token_limit/);
+    options.policy.google_daily_completion={...completion,tokens_cap:221000};
+    const writing=await store.reserve(options);assert.equal(writing.status,'reserved');
+    const [held]=await admin`select quota_reserved from blog_worker.attempt where id=${writing.id}`;assert.equal(Number(held.quota_reserved),15000);
+    assert.equal((await store.finish(writing,{outcome:'completed',text:JSON.stringify(hybridText),usage:smallHybridUsage})).status,'draft');
+    await store.syncPipeline({policy:options.policy,sources:[source],catalog:[]},identity);
+    const [control]=await admin`select snapshot from blog_worker.control where singleton`;assert.equal(control.snapshot.daily_tokens_cap,221000);assert.equal(control.snapshot.weekly_tokens_cap,900000);
+    await admin`insert into blog_worker.operator_event(actor_id,action,target,detail) values('test-final-reservation','google_diagnostic_usage','new-boundary',${admin.json({quota_used:44})})`;
+    await assert.rejects(()=>store.checkResearchBudget(options.policy),/google_token_limit/);
+    const [ledger]=await admin`select count(*)::int as calls,count(*) filter(where charged_micro_usd<>0 or provider<>'google_subscription')::int as paid from blog_worker.attempt`;assert.deepEqual(ledger,{calls:2,paid:0});
     const [post]=await admin`select status,seo_noindex,scheduled_at from public.blog_post`;assert.deepEqual(post,{status:'draft',seo_noindex:true,scheduled_at:null});
   });
   await check('focused extra batch creates exactly four Technology, three AI and three Business drafts without erasing the first ten',async()=>{
