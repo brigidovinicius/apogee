@@ -12,7 +12,7 @@ export default async function LearningPage() {
   const next = tracks.flatMap(t => modules.filter(m => m.track_id === t.id).flatMap(m => activities.filter(a => a.module_id === m.id))).find(a => !a.completed_at);
   return <MemberWorkspace member={member} current="trilha"><div className={styles.container}>
     <header className={styles.pageHead}><div><p className={styles.eyebrow}>Comunidade Apogee</p><h1 className={styles.title}>Trilha inicial.</h1><p className={styles.lead}>Atividades práticas e seu progresso. Novos módulos em preparação.</p></div></header>
-    <div className={local.section}>{!access.active ? <AnnualAccessNotice title="Trilha" next="/membros/trilha" /> : <>
+    <div className={local.section}>{!access.allowed ? <AnnualAccessNotice title="Trilha" next="/membros/trilha" /> : <>
       {next ? <p>Próximo passo: <a href={`#atividade-${next.id}`}>{next.name}</a>.</p> : activities.length ? <p role="status">Você concluiu todas as atividades disponíveis.</p> : null}
       {!tracks.length ? <section className={local.card}><h2>Conteúdo em preparação</h2><p>As atividades aparecerão aqui quando forem publicadas.</p><Link href="/membros/oportunidades">Explorar o Radar</Link></section> : tracks.map(t => <section key={t.id} className={local.card} aria-labelledby={`trilha-${t.id}`}>
         <h2 id={`trilha-${t.id}`}>{t.name}</h2><p>{t.description}</p>

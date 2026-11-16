@@ -34,7 +34,7 @@ export function MemberBar({ member, current }: MemberBarProps) {
     { key: "suporte", href: "/membros/suporte", label: "Suporte" },
   ];
   return <MemberNavigation>
-    {member.role === "admin" ? <AdminModeSwitcher mode="user" /> : null}
+    {member.role === "admin" ? <AdminModeSwitcher mode="user" compact /> : null}
     <div className={styles.identity}>
       <AvatarInitials name={member.name} userId={member.id} image={member.image} size="small" />
       <span>@{member.username}</span>

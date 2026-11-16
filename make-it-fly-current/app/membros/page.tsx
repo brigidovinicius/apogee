@@ -32,7 +32,7 @@ export default async function MemberHomePage() {
         </div>
       </header>
 
-      <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} />
+      <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} contentAccess={member.role === "admin" || Boolean(annual?.active)} />
       {!verified ? <p className={styles.verificationNotice}>Verifique sua conta para participar da comunidade. <Link href="/membros/protecao?next=%2Fmembros">Verificar minha conta</Link></p> : null}
       <section id="forum" aria-labelledby="member-forum-title"><h2 id="member-forum-title">Conversas da comunidade</h2>
 

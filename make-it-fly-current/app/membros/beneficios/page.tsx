@@ -11,7 +11,7 @@ export default async function BenefitsPage() {
   const { member, access, benefits } = await memberBenefits();
   return <MemberWorkspace member={member} current="beneficios"><div className={styles.container}>
     <header className={styles.pageHead}><div><p className={styles.eyebrow}>Comunidade Apogee</p><h1 className={styles.title}>Benefícios.</h1><p className={styles.lead}>Ofertas de parceiros e condições de acesso.</p></div></header>
-    <div className={local.section}>{!access.active ? <AnnualAccessNotice title="Benefícios" next="/membros/beneficios" /> : !benefits.length ? <section className={local.card}><h2>Benefícios em preparação</h2><p>Ainda não há ofertas disponíveis. As condições e o resgate aparecerão aqui quando forem confirmados.</p><Link href="/membros/trilha">Continuar na Trilha inicial</Link></section> : benefits.map(b => <article className={local.card} key={b.id}>
+    <div className={local.section}>{!access.allowed ? <AnnualAccessNotice title="Benefícios" next="/membros/beneficios" /> : !benefits.length ? <section className={local.card}><h2>Benefícios em preparação</h2><p>Ainda não há ofertas disponíveis. As condições e o resgate aparecerão aqui quando forem confirmados.</p><Link href="/membros/trilha">Continuar na Trilha inicial</Link></section> : benefits.map(b => <article className={local.card} key={b.id}>
       <h2>{b.name}</h2><p>Parceiro: {b.partner}</p><p className={local.instructions}>{b.description}</p>
       <h3>Condições</h3><p className={local.instructions}>Elegibilidade: {b.eligibility}</p><p className={local.instructions}>Disponibilidade: {b.availability}</p>
       <p>Vigência: {b.starts_at ? date(b.starts_at) : "A confirmar"} até {b.ends_at ? date(b.ends_at) : "A confirmar"}.</p>

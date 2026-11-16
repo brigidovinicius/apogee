@@ -14,16 +14,18 @@ export type Activity = { id: string; module_id: string; name: string; instructio
 // Normalize at the boundary so valid published benefits also render after auth.
 const benefitDates = (b: Benefit): Benefit => ({ ...b, starts_at: b.starts_at ? new Date(b.starts_at) : null, ends_at: b.ends_at ? new Date(b.ends_at) : null });
 
-export async function annualMember(next: string) {
+export async function deliverableMember(next: string) {
   const member = await requireSignedInMember(next);
-  const access = await communityAccess(member.id, process.env.STRIPE_MODE !== "test");
-  if (access.active) await requireMember(next);
+  const annual = await communityAccess(member.id, process.env.STRIPE_MODE !== "test");
+  // Authorization is distinct from payment status; the role comes from the current DB row.
+  const access = { ...annual, allowed: member.role === "admin" || annual.active };
+  if (access.allowed) await requireMember(next);
   return { member, access };
 }
 
 export async function memberBenefits() {
-  const { member, access } = await annualMember("/membros/beneficios");
-  if (!access.active) return { member, access, benefits: [] as Benefit[] };
+  const { member, access } = await deliverableMember("/membros/beneficios");
+  if (!access.allowed) return { member, access, benefits: [] as Benefit[] };
   // Evidence and editor identifiers stay in administration, never member HTML/RSC.
   const benefits = await getSql()<Benefit[]>`select id,name,partner,description,eligibility,availability,starts_at,ends_at,redemption,redemption_url,status,sort_order
     from member_benefit where status='published' and starts_at<=now() and ends_at>now() order by sort_order,name,id`;
@@ -31,8 +33,8 @@ export async function memberBenefits() {
 }
 
 export async function memberLearning() {
-  const { member, access } = await annualMember("/membros/trilha");
-  if (!access.active) return { member, access, tracks: [] as Track[], modules: [] as LearningModule[], activities: [] as Activity[] };
+  const { member, access } = await deliverableMember("/membros/trilha");
+  if (!access.allowed) return { member, access, tracks: [] as Track[], modules: [] as LearningModule[], activities: [] as Activity[] };
   const sql = getSql();
   const tracks = await sql<Track[]>`select id,name,description,status,sort_order from member_learning_track where status='published' order by sort_order,name,id`;
   // Preparing modules disclose only their public title; no private unfinished material.
@@ -50,15 +52,16 @@ export async function memberLearning() {
 }
 
 export async function setLearningProgress(input: unknown) {
-  const { member, access } = await annualMember("/membros/trilha");
-  if (!access.active) throw Error("A Trilha exige assinatura anual vigente.");
+  const { member, access } = await deliverableMember("/membros/trilha");
+  if (!access.allowed) throw Error("A Trilha exige assinatura anual vigente.");
   const v = progressSchema.parse(input), sql = getSql();
   // Recheck account/right/content inside the mutation. Never accept a user ID.
   return sql.begin(async tx => {
-    await tx`select id from "user" where id=${member.id} for update`;
-    const eligible = await tx`select 1 from community_subscription s join community_invoice i on i.subscription_id=s.id
-      join "user" u on u.id=s.user_id where s.user_id=${member.id} and s.livemode=${process.env.STRIPE_MODE !== "test"}
-      and u.blocked=false and i.status='paid' and i.fraud_review_required=false and i.period_start<=now() and i.period_end>now() limit 1`;
+    const [account] = await tx`select id,role,blocked from "user" where id=${member.id} for update`;
+    if (!account || account.blocked) throw Error("Acesso indisponível para esta conta.");
+    const eligible = account.role === "admin" ? [account] : await tx`select 1 from community_subscription s join community_invoice i on i.subscription_id=s.id
+      where s.user_id=${member.id} and s.livemode=${process.env.STRIPE_MODE !== "test"}
+      and i.status='paid' and i.fraud_review_required=false and i.period_start<=now() and i.period_end>now() limit 1`;
     if (!eligible.length) throw Error("A Trilha exige assinatura anual vigente.");
     const content = await tx`select a.id from member_learning_activity a join member_learning_module m on m.id=a.module_id
       join member_learning_track t on t.id=m.track_id where a.id=${v.activityId} and a.status='published' and m.status='published' and t.status='published' for share of a,m,t`;

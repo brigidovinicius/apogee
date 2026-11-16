@@ -59,6 +59,23 @@ test("free and legacy members never load paid catalogues; paid members still req
   assert.equal(catalogueReads, 0);
 });
 
+test("administrator content access still requires account verification and never invents a paid subscription in the home", async () => {
+  const admin = { ...member, role: "admin" };
+  const load = opportunityLoader({ ...uiMocks,
+    "@/lib/members/dal": { requireSignedInMember: async () => admin, requireMember: async () => { throw Error("VERIFICATION_REQUIRED"); } },
+    "@/lib/members/db": { getSql: () => { throw Error("PRIVATE_READ"); } },
+    "@/lib/billing/community-store": { communityAccess: async () => ({ active: false }) },
+    "@/lib/billing/store": { radarAccess: async () => ({ active: true }) },
+    "@/lib/members/protection": { adultAccess: async () => true },
+    "@/lib/members/forum": { listCategories: async () => [] },
+  });
+  const deliverables = load("lib/deliverables/store.ts");
+  for (const read of [() => deliverables.memberBenefits(), () => deliverables.memberLearning(), () => deliverables.setLearningProgress({})]) await assert.rejects(read(), /VERIFICATION_REQUIRED/);
+  const html = renderToStaticMarkup(await load("app/membros/page.tsx").default());
+  assert.doesNotMatch(html, /Exclusivo da assinatura|Assinatura anual ativa|Prévia administrativa/);
+  assert.match(html, /href="\/membros\/trilha"/);
+});
+
 test("calendar and collection previews preserve the destination and respect verification and existing Radar rights", async () => {
   let state = { kind: "redirect", href: "/membros/protecao" };
   const gates = opportunityLoader({ ...uiMocks,

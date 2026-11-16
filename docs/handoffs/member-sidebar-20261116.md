@@ -1,6 +1,6 @@
 # Área de membros: navegação lateral e blog integrado
 
-Base: 28d60da. Branch: fix/member-sidebar-20261116. Implementação local, sem push ou deploy.
+Base: 28d60da. Branch: fix/member-sidebar-20261116. PR #189. Publicação autorizada em 16/11/2026; aguardando a CI final e o deploy.
 
 ## Resultado
 
@@ -23,4 +23,10 @@ Testes em produção foram de leitura com a sessão existente. Nenhum registro r
 
 A cópia validada está em /private/tmp/apogee-member-sidebar-20261116. A cópia em Documents sofreu leituras bloqueadas pelo iCloud, portanto usar uma pasta realmente local para novos builds. O script scripts/local-offer-review.mjs cria banco isolado e aceita APOGEE_REVIEW_DURATION_SECONDS=900, encerrando normalmente depois. Preservar a fila global e não interromper servidores de outros chats.
 
-A publicação continua sujeita à revisão e autorização previstas no AGENTS.md. Revalidar produção/main e trabalhos concorrentes antes de integrar; não substituir checkout nem copiar arquivos manualmente para o servidor. O patch não inclui mudanças de banco, pagamentos, Home ou evento.
+A publicação foi autorizada pelo proprietário após a revisão. Revalidar produção/main e trabalhos concorrentes antes de integrar; não substituir checkout nem copiar arquivos manualmente para o servidor. O patch não inclui mudanças de banco, pagamentos, Home pública ou evento.
+
+## Acesso administrativo solicitado após a revisão
+
+O proprietário pediu visualização completa com a conta administrativa, sem explicações de permissões no front. Trilha e benefícios agora autorizam o papel administrativo atual além da assinatura anual; o estado financeiro permanece independente. A verificação da conta continua obrigatória. O progresso é privado por usuário e revalida papel e bloqueio na transação. Revogação e bloqueio invalidam a operação mesmo com uma autorização anterior. Rascunhos, acordos internos e ofertas expiradas continuam fora das telas de membros.
+
+Os 13 testes de integração de entregáveis passaram, incluindo administrador sem assinatura, conta bloqueada, papel revogado, isolamento de progresso e regras dos membros comuns. A caixa de ferramentas já autorizava administradores; o aviso de prévia foi removido. O menu administrativo aparece compacto na área de membros, e a Home não mostra bloqueios de assinatura para administradores.
