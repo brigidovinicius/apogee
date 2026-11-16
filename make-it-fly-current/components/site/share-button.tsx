@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Share } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import styles from "./share-button.module.css";
 
@@ -16,7 +16,7 @@ export function ShareButton({ title, path, compact = false }: ShareButtonProps) 
   const feedbackId = useId();
   const url = new URL(path, "https://www.apogee.community").href;
 
-  async function share() {
+  async function copyLink() {
     if (pending.current) return;
     pending.current = true;
     setBusy(true);
@@ -24,22 +24,13 @@ export function ShareButton({ title, path, compact = false }: ShareButtonProps) 
     setCopied(false);
     setManual(false);
     try {
-      if (navigator.share) {
-        try {
-          await navigator.share({ title, url });
-          // Closing the system sheet doesn't prove delivery to another person.
-          return;
-        } catch (error) {
-          if (error instanceof Error && error.name === "AbortError") return;
-        }
-      }
       try {
         await navigator.clipboard.writeText(url);
         setCopied(true);
-        setStatus("Link copiado, cole onde quiser compartilhar");
+        setStatus("Link copiado.");
       } catch {
         setManual(true);
-        setStatus("Selecione e copie o link abaixo para compartilhar");
+        setStatus("Selecione e copie o link.");
       }
     } finally {
       pending.current = false;
@@ -48,11 +39,11 @@ export function ShareButton({ title, path, compact = false }: ShareButtonProps) 
   }
 
   return <div className={`${styles.share}${compact ? ` ${styles.compact}` : ""}`}>
-    <button type="button" className={styles.button} onClick={share} disabled={busy} aria-label={`Compartilhar ${title}`} aria-describedby={feedbackId}>
-      {copied ? <Check size={18} aria-hidden="true" /> : <Share size={18} aria-hidden="true" />}
-      {busy ? "Abrindo…" : copied ? "Link copiado" : "Compartilhar"}
+    <button type="button" className={styles.button} onClick={copyLink} disabled={busy} aria-label={`Copiar link de ${title}`} aria-describedby={feedbackId}>
+      {copied ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}
+      {busy ? "Copiando…" : copied ? "Link copiado" : "Copiar link"}
     </button>
-    <p className={styles.feedback} id={feedbackId} role="status" aria-atomic="true">{status || (compact ? "" : "Compartilha o link público desta página")}</p>
+    <p className={styles.feedback} id={feedbackId} role="status" aria-atomic="true">{status}</p>
     {manual ? <label className={styles.manual}>Link público
       <input type="url" readOnly value={url} onFocus={(event) => event.currentTarget.select()} />
     </label> : null}
