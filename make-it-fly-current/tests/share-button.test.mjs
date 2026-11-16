@@ -30,34 +30,26 @@ function harness(navigatorValue) {
   };
 }
 
-test('native sharing receives only the canonical public URL and makes no delivery claim', async () => {
-  const calls = [];
-  const view = harness({ share: async data => { calls.push(data); } });
+test('copying uses the canonical public URL even when native sharing would stay pending forever', async () => {
+  let nativeCalls = 0, copied;
+  const view = harness({ share: () => { nativeCalls++; return new Promise(() => {}); }, clipboard: { writeText: async url => { copied = url; } } });
   try {
+    assert.equal(view.render().props.children[1].props.children, '');
     await view.render().props.children[0].props.onClick();
-    assert.deepEqual(calls, [{ title: 'Radar | Apogee', url: 'https://www.apogee.community/oportunidades' }]);
-    assert.equal(view.render().props.children[1].props.children, 'Compartilha o link público desta página');
-  } finally { view.restore(); }
-});
-
-test('cancelling native sharing never copies a link or announces an error', async () => {
-  let copies = 0;
-  const view = harness({ share: async () => { throw new DOMException('Cancelled', 'AbortError'); }, clipboard: { writeText: async () => { copies++; } } });
-  try {
-    await view.render().props.children[0].props.onClick();
-    assert.equal(copies, 0);
-    assert.equal(view.render().props.children[2], null);
+    assert.equal(nativeCalls, 0);
+    assert.equal(copied, 'https://www.apogee.community/oportunidades');
+    assert.equal(view.render().props.children[1].props.children, 'Link copiado.');
     assert.equal(view.render().props.children[0].props.disabled, false);
   } finally { view.restore(); }
 });
 
-for (const nativeFailure of [false, true]) test(`clipboard fallback works with native sharing ${nativeFailure ? 'rejected' : 'unavailable'}`, async () => {
-  let copied;
-  const view = harness({ ...(nativeFailure ? { share: async () => { throw new Error('Unsupported'); } } : {}), clipboard: { writeText: async url => { copied = url; } } });
+for (const available of [true, false]) test(`copying recovers when clipboard is ${available ? 'denied' : 'unavailable'}`, async () => {
+  const view = harness(available ? { clipboard: { writeText: async () => { throw Error('Denied'); } } } : {});
   try {
     await view.render().props.children[0].props.onClick();
-    assert.equal(copied, 'https://www.apogee.community/oportunidades');
-    assert.match(view.render().props.children[1].props.children, /Link copiado/);
+    assert.match(view.render().props.children[1].props.children, /Selecione e copie/);
+    assert.equal(view.render().props.children[2].props.children[1].props.value, 'https://www.apogee.community/oportunidades');
+    assert.equal(view.render().props.children[0].props.disabled, false);
   } finally { view.restore(); }
 });
 
@@ -76,10 +68,10 @@ test('clipboard denial leaves a selectable link and persistent recovery instruct
   } finally { view.restore(); }
 });
 
-test('repeated activation opens only one pending share sheet', async () => {
+test('repeated activation starts only one pending clipboard operation', async () => {
   let calls = 0;
   let finish;
-  const view = harness({ share: () => { calls++; return new Promise(resolve => { finish = resolve; }); } });
+  const view = harness({ clipboard: { writeText: () => { calls++; return new Promise(resolve => { finish = resolve; }); } } });
   try {
     const click = view.render().props.children[0].props.onClick;
     const first = click();
@@ -98,7 +90,7 @@ test('a compact opportunity share copies its public detail and announces recover
   const view = harness({ clipboard: { writeText: async value => { copied = value; } } });
   try {
     const output = view.render(props);
-    assert.equal(output.props.children[0].props['aria-label'], 'Compartilhar NASA Space Apps');
+    assert.equal(output.props.children[0].props['aria-label'], 'Copiar link de NASA Space Apps');
     assert.equal(output.props.children[1].props.children, '');
     await output.props.children[0].props.onClick();
     assert.equal(copied, 'https://www.apogee.community/oportunidades/nasa-space-apps--radar-pilot');
