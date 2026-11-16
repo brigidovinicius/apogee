@@ -36,4 +36,4 @@ Rollback: desativar somente as fontes novas e restaurar a imagem anterior do web
 
 A seleção agendada de fontes API usa o registro `jobSourceIds()` parametrizado no SQL, evitando uma segunda lista fixa que deixaria novas fontes apenas na coleta manual. Continua exigindo fonte ativa e verificada, intervalo vencido e lease transacional; fontes API não registradas não são aceitas. O teste de integração cobre as cinco novas fontes, ausência de duplicação durante o lease e reagendamento em seis horas.
 
-Os arquivos públicos do container pertencem ao usuário restrito do runtime e o certificado público adicional é copiado explicitamente em modo 644. Isso evita que uma umask restritiva no checkout retire acesso de leitura. O conteúdo do certificado e os segredos existentes permanecem preservados.
+Os arquivos públicos do container pertencem ao usuário restrito do runtime e o diretório do certificado público adicional é normalizado em modo 755 e o certificado em modo 644. Isso evita que uma umask restritiva no checkout retire acesso de leitura. O conteúdo do certificado e os segredos existentes permanecem preservados.

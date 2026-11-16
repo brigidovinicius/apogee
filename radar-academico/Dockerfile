@@ -50,7 +50,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@napi-rs ./node_modu
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 # The NASA Space Apps origin serves an intermediate cross-signed by a root absent from this image.
 # This alternate intermediate chains to Node's existing SSL.com 2022 root.
-COPY --chmod=644 certs/sslcom-tls-issuing-rsa-ca-r1.pem ./certs/sslcom-tls-issuing-rsa-ca-r1.pem
+COPY certs/sslcom-tls-issuing-rsa-ca-r1.pem ./certs/sslcom-tls-issuing-rsa-ca-r1.pem
+RUN chmod 755 ./certs && chmod 644 ./certs/sslcom-tls-issuing-rsa-ca-r1.pem
 ENV NODE_EXTRA_CA_CERTS=/app/certs/sslcom-tls-issuing-rsa-ca-r1.pem
 USER nextjs
 EXPOSE 3000
