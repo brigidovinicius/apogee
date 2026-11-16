@@ -5,7 +5,7 @@ import { consumeRateLimit } from "@/lib/members/rate-limit";
 import { getSql } from "@/lib/members/db";
 import { BillingError } from "@/lib/billing/config";
 import { communityFailure } from "@/lib/billing/community-http";
-import { communityBillingConfig,COMMUNITY_ACCESS_PATH } from "@/lib/billing/community-config";
+import { communityServiceConfig,COMMUNITY_ACCESS_PATH } from "@/lib/billing/community-config";
 import { communityReturnPath } from "@/lib/billing/community-navigation";
 import { stripeClient } from "@/lib/billing/stripe";
 
@@ -15,7 +15,7 @@ export async function POST(request:Request) {
     if(request.headers.get("origin") !== applicationOrigin() || request.headers.get("sec-fetch-site") === "cross-site") throw new BillingError(403,"Origem não permitida.");
     const member=await getMemberFromHeaders(request.headers);
     if(!member) throw new BillingError(401,"Entre na sua conta para continuar.");
-    const {livemode}=communityBillingConfig();
+    const {livemode}=communityServiceConfig();
     if(!await consumeRateLimit(`annual-cancel:${member.id}`,10,3600)) throw new BillingError(429,"Aguarde antes de tentar novamente.");
     const rows=await getSql()`select s.id,s.customer_id from community_subscription s join community_customer c
       on c.user_id=s.user_id and c.customer_id=s.customer_id and c.livemode=s.livemode

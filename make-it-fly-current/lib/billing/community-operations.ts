@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import type Stripe from "stripe";
 import { requireAdmin } from "@/lib/members/dal";
 import { getSql } from "@/lib/members/db";
-import { communityBillingConfig } from "./community-config";
+import { communityServiceConfig } from "./community-config";
 import { stripeClient } from "./stripe";
 import { fulfillCommunityEvent } from "./community-fulfillment";
 
@@ -23,7 +23,7 @@ export async function listAnnualMemberships(page = 1) {
 export async function reconcileAnnualMembership(id: string) {
   await requireAdmin("/admin/assinaturas");
   if (!/^sub_[A-Za-z0-9]+$/.test(id)) throw Error("Assinatura inválida.");
-  const config = communityBillingConfig();
+  const config = communityServiceConfig();
   const [local] = await getSql()`select s.customer_id from community_subscription s
     join community_customer c on c.user_id=s.user_id and c.livemode=s.livemode and c.customer_id=s.customer_id
     where s.id=${id} and s.livemode=${config.livemode}`;

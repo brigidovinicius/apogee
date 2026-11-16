@@ -176,7 +176,52 @@ test('operator reconciliation is admin-only, mode/owner-bound and reads canonica
   assert.equal(model.checkoutCalls.length,calls);
   const list=await operations.listAnnualMemberships();assert.ok(list.rows.some(row=>row.id==='sub_Annual'));
   model.sub.customer='cus_Foreign';await assert.rejects(operations.reconcileAnnualMembership('sub_Annual'),/divergente/);model.sub.customer='cus_Annual';
-  process.env.COMMUNITY_BILLING_ENABLED='false';await assert.rejects(operations.reconcileAnnualMembership('sub_Annual'));process.env.COMMUNITY_BILLING_ENABLED='true';
+  process.env.COMMUNITY_BILLING_ENABLED='false';assert.equal(await operations.reconcileAnnualMembership('sub_Annual'),1);process.env.COMMUNITY_BILLING_ENABLED='true';
+});
+
+test('pausing new sales preserves signed payment processing, refunds, portal and cancellation; failures remain retryable',async()=>{
+  const previousModel=model,previousMember=member;
+  try {
+    resetModel();member='pause-paid';await seed(member);
+    model.sub.id='sub_Paused';model.sub.customer='cus_Paused';model.sub.latest_invoice='in_Paused';
+    model.invoice.id='in_Paused';model.invoice.customer='cus_Paused';model.invoice.parent.subscription_details.subscription='sub_Paused';
+    await sql`insert into community_customer(user_id,livemode,customer_id) values(${member},false,'cus_Paused')`;
+    process.env.COMMUNITY_BILLING_ENABLED='false';
+    const checkout=load('app/api/comunidade/assinatura/checkout/route.ts').POST;
+    assert.equal((await checkout(req('/api/comunidade/assinatura/checkout'))).status,503);
+    assert.equal(model.checkoutCalls.length,0,'a pause creates no Checkout session');
+    const route=load('app/api/stripe/webhook/route.ts').POST;
+    const deliver=async(id,type='invoice.paid')=>{
+      const body=JSON.stringify({...event(id,type),data:{object:{id:type==='charge.refunded'?'ch_Annual':'in_Paused'}}});
+      const signature=Stripe.webhooks.generateTestHeaderString({payload:body,secret:process.env.STRIPE_WEBHOOK_SECRET});
+      return route(new Request('https://apogee.test/api/stripe/webhook',{method:'POST',body,headers:{'stripe-signature':signature}}));
+    };
+    assert.equal((await deliver('evt_pause_paid')).status,200);
+    assert.equal((await access(member,false)).source,'community','a payment completed before the pause is still honored');
+    assert.equal((await deliver('evt_pause_paid')).status,200);
+    const [count]=await sql`select count(*)::int as n from community_invoice where id='in_Paused'`;assert.equal(count.n,1);
+    const portal=load('app/api/comunidade/assinatura/portal/route.ts').POST;
+    assert.equal((await portal(req('/api/comunidade/assinatura/portal'))).status,303);
+    const cancel=load('app/api/comunidade/assinatura/cancelar/route.ts').POST;
+    assert.equal((await cancel(req('/api/comunidade/assinatura/cancelar'))).status,303);
+    assert.equal(model.sub.cancel_at_period_end,true);assert.equal((await access(member,false)).active,true);
+    model.charge.amount_refunded=amount;
+    assert.equal((await deliver('evt_pause_refund','charge.refunded')).status,200);
+    assert.equal((await access(member,false)).active,false,'a pause must not hide refunds');
+    const retrieve=stripe.paymentIntents.retrieve;
+    stripe.paymentIntents.retrieve=async()=>{throw Error('synthetic provider outage');};
+    try {
+      assert.equal((await deliver('evt_pause_retry')).status,503);
+      const [receipt]=await sql`select count(*)::int as n from community_stripe_event where event_id='evt_pause_retry'`;assert.equal(receipt.n,0);
+    } finally {stripe.paymentIntents.retrieve=retrieve;}
+    assert.equal((await deliver('evt_pause_retry')).status,200,'the failed delivery remains processable');
+    delete process.env.STRIPE_COMMUNITY_ANNUAL_PRICE_ID;
+    assert.equal((await deliver('evt_pause_bad_config')).status,503,'partial configuration is never acknowledged as processed');
+    process.env.STRIPE_COMMUNITY_ANNUAL_PRICE_ID=price.id;
+    assert.equal((await deliver('evt_pause_bad_config')).status,200);
+  } finally {
+    model=previousModel;member=previousMember;process.env.COMMUNITY_BILLING_ENABLED='true';process.env.STRIPE_COMMUNITY_ANNUAL_PRICE_ID=price.id;
+  }
 });
 
 
