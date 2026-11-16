@@ -26,7 +26,7 @@ function serialize(item: StudentOpportunity, rights: Rights) {
   const allowed = canRead(item, rights);
   return {
     ...opportunityCardData(item),
-    ...(allowed ? { eligibility: item.eligibility, officialUrl: item.officialUrl, financials: item.financials, discovery: item.discovery } : {}),
+    ...(allowed ? { eligibility: item.eligibility, officialUrl: item.officialUrl, financials: item.financials, employment: item.employment, discovery: item.discovery } : {}),
     detailAccess: allowed ? (rights.fullAccess ? "full" : "free") : "locked",
     apogeeUrl: `${applicationOrigin()}${opportunityDetailPath(item.id)}`,
     deadlineUnknown: item.deadlineUnknown === true,

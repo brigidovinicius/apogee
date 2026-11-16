@@ -11,6 +11,7 @@ const liveQuery = `select
          o.verified_at::text as "verifiedAt",
          o.title,
          o.discovery,
+         o.employment,
          o.institution,
          o.benefit_type as "benefitType",
          o.categories,
@@ -39,7 +40,7 @@ const liveQuery = `select
          limit 1
        ) os on true
        where ${publishedOpportunityPredicate}
-       order by o.deadline_at nulls last`;
+       order by case when o.employment->>'roleFamily'='fde' and o.employment->>'workplace'='remote' and o.employment->>'brazilEligibility'='confirmed' then 0 else 1 end, o.deadline_at nulls last`;
 export async function listLiveCatalogue(management = false) {
   const rows = management ? await withAdminTransaction(async (client) => (await client.query(
     liveQuery.replace(publishedOpportunityPredicate, () => `(${publishedOpportunityPredicate}) or (${calendarOpportunityPredicate})`).replace('o.id,', `o.id, o.version, o.official_source_id as "officialSourceId", o.application_route as "applicationRoute", o.evidence_json as evidence,`)

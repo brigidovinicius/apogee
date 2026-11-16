@@ -32,6 +32,14 @@ jobs:
           cache-dependency-path: ${{ matrix.app }}/package-lock.json
       - run: npm ci --no-fund --no-audit
       - run: npm test
+      - name: Shared Radar budget and inert AI worker
+        if: matrix.app == 'radar-academico'
+        run: npm run test:ai-foundation
+      - name: Shared budget and job ingestion on disposable PostgreSQL
+        if: matrix.app == 'radar-academico'
+        run: |
+          RADAR_POSTGRES_BIN="$(pg_config --bindir)" npm run test:ai-postgres
+          RADAR_POSTGRES_BIN="$(pg_config --bindir)" npm run test:jobs-postgres
       - name: Annual community access and ten-event quota on disposable PostgreSQL
         if: matrix.app == 'make-it-fly-current'
         run: PG_BIN="$(pg_config --bindir)" npm run test:community-access

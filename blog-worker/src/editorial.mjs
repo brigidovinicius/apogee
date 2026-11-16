@@ -108,7 +108,8 @@ export function validateArticle(value,evidence,corroboration=null,editorial=null
     const words=p.text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim().split(' ');
     for(let i=0;i+16<=words.length;i++)if(normalized.includes(words.slice(i,i+16).join(' ')))fail('copied_passage');
   }
-  // These checks establish structure/provenance, not semantic truth. Human review remains mandatory.
+  // These checks establish structure/provenance, not semantic truth. Publication
+  // requires human review or a separately owner-authorized automatic receipt.
   return value;
 }
 export function cmsDraft(candidate,article) {

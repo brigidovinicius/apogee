@@ -2,6 +2,7 @@ import { localFunctionalReview, localStripeSandboxReview } from "@/lib/offer-pre
 import { REVIEW_EVENTS } from "./review-catalogue";
 import { readDiscovery, stageEnd } from "./discovery";
 import "server-only";
+import { readEmployment } from "@/contracts/employment";
 import {
   type EducationLevel,
   type OpportunityKind,
@@ -72,6 +73,7 @@ function dateOnly(value: string, precision = "exact_datetime") {
 }
 
 function kindFromRadar(value: string, isCourse: boolean): OpportunityKind {
+  if (value === "employment") return "Emprego";
   if (isCourse) return "Curso";
   if (value === "mobility_aid") return "Intercâmbio";
   if (value === "financial_aid" || value === "housing_aid") return "Auxílio";
@@ -96,7 +98,9 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
   const organization = stringValue(value.institution);
   const officialUrl = stringValue(value.officialUrl);
   const lastCheckedAt = stringValue(value.lastCheckedAt);
+  const employment = readEmployment(value.employment);
   const benefitType = stringValue(value.benefitType);
+  if ((benefitType === "employment") !== Boolean(employment)) return null;
   const isCourse = value.isCourse === true;
   const categories = Array.isArray(value.categories) && value.categories.every(isOpportunityCategory)
     ? [...new Set(value.categories)] : null;
@@ -120,17 +124,18 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
   const deadlineUnknown = deadlinePrecision === "not_informed";
   const discovery = readDiscovery(value.discovery);
   const hasCalendarStages = ["open", "upcoming", "closed", "result_published"].includes(String(value.opportunityStatus)) && discovery.editions.some(edition => edition.stages.some(stage => stageEnd(stage) >= Date.now()));
-  if (deadlineUnknown && !hasCalendarStages && (deadlineAt || !categories.includes("eventos") || !["open","closed","result_published"].includes(String(value.opportunityStatus)) || !eventStartsAt || !Number.isFinite(Date.parse(eventStartsAt)))) return null;
+  if (benefitType === "employment" && (!employment || employment.workplace !== "remote" || employment.brazilEligibility !== "confirmed" || Date.parse(lastCheckedAt) > Date.now() || Date.now() - Date.parse(lastCheckedAt) >= 48 * 3600_000)) return null;
+  if (deadlineUnknown && !employment && !hasCalendarStages && (deadlineAt || !categories.includes("eventos") || !["open","closed","result_published"].includes(String(value.opportunityStatus)) || !eventStartsAt || !Number.isFinite(Date.parse(eventStartsAt)))) return null;
   if (deadlinePrecision !== "continuous_flow" && !deadlineUnknown && !deadline && !hasCalendarStages) return null;
 
   const editorialNature = editorialNatureFromRadar(value);
   return {
     id: `radar-${id}`,
-    discovery,
+    discovery, employment,
     admissionProcess: isCourse && isRecord(value.admissionProcess) &&
       stringValue(value.admissionProcess.id) && stringValue(value.admissionProcess.title)
       ? { id: stringValue(value.admissionProcess.id)!, title: stringValue(value.admissionProcess.title)! } : null,
-    participationFormat: participationFormatFromRadar(value),
+    participationFormat: employment ? null : participationFormatFromRadar(value),
     explicitlyUnpaid: /^(?:não remunerad[oa]|sem remuneração)\b/iu.test(stringValue(value.amountText) ?? ""),
     entranceExam: entranceExamFromRadar(value),
     editorialNature,
@@ -141,7 +146,7 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     kind: kindFromRadar(benefitType, isCourse),
     categories,
     level: levelFromRadar(applicantType),
-    location: normalizedLocation.location.cityName
+    location: employment ? employment.locationText : normalizedLocation.location.cityName
       ? `${normalizedLocation.location.cityName} · ${normalizedLocation.location.stateCode}`
       : normalizedLocation.location.stateCode ?? (nationallyEligible ? "Brasil" : "Não informado na fonte pública"),
     stateCode: normalizedLocation.location.stateCode,
@@ -149,7 +154,7 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     nationallyEligible: nationallyEligible && normalizedLocation.location.stateCode === null,
     eligibility: normalizePublicText(stringValue(value.requirementsText) ?? "") || "Consulte o edital oficial para os critérios de elegibilidade.",
     benefit: stringValue(value.amountText) ?? "Consulte o edital oficial para o apoio previsto.",
-    summary: ["closed", "result_published"].includes(String(value.opportunityStatus)) ? "Inscrições encerradas. Acompanhe as próximas etapas confirmadas." : value.opportunityStatus === "upcoming" ? "Inscrições futuras confirmadas na fonte oficial." : "Oportunidade com inscrições abertas na fonte oficial.",
+    summary: employment ? `Emprego ${employment.workplace === "remote" ? "remoto" : employment.workplace} com elegibilidade para residentes no Brasil confirmada na fonte oficial.` : ["closed", "result_published"].includes(String(value.opportunityStatus)) ? "Inscrições encerradas. Acompanhe as próximas etapas confirmadas." : value.opportunityStatus === "upcoming" ? "Inscrições futuras confirmadas na fonte oficial." : "Oportunidade com inscrições abertas na fonte oficial.",
     opportunityStatus: ["closed", "result_published", "upcoming"].includes(String(value.opportunityStatus)) ? value.opportunityStatus as StudentOpportunity["opportunityStatus"] : "open",
     verificationMethod: value.verificationMethod === "admin" ? "admin" : "automatic",
     deadline,
@@ -232,6 +237,8 @@ function editorialFocusFromRadar(value: Record<string, unknown>, nature: Student
 /** amountText is legacy prose. Ambiguous or mixed statements remain ordinary notes. */
 export function financialsFromRadar(value: Record<string, unknown>): NonNullable<StudentOpportunity["financials"]> {
   const financials: NonNullable<StudentOpportunity["financials"]> = { benefits: [], costs: [], notes: [] };
+  const employment = readEmployment(value.employment);
+  if (employment?.salary) return { benefits: [{ label: "REMUNERAÇÃO", text: `${employment.salary.currency} ${employment.salary.min}–${employment.salary.max} / ${employment.salary.interval}` }], costs: [], notes: [] };
   const text = stringValue(value.amountText) ?? "";
   const benefitType = stringValue(value.benefitType);
   const stipend = ["research_scholarship", "extension_scholarship", "monitor_scholarship"].includes(benefitType ?? "");

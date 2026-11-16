@@ -10,6 +10,8 @@ const filterShape = {
   level: z.enum(EDUCATION_LEVELS).optional(),
   stateCode: z.enum(BRAZILIAN_STATE_CODES).optional().describe("UF; inclui oportunidades com elegibilidade nacional conforme o Radar."),
   cityName: z.string().trim().min(2).max(120).optional().describe("Cidade; informe também stateCode."),
+  workplace: z.enum(["remote", "hybrid", "onsite"]).optional().describe("Modalidade de emprego, separada de formato de evento ou curso."),
+  brazilJobs: z.boolean().optional().describe("Somente empregos com residência no Brasil comprovada como elegível."),
   format: z.enum(["online", "presencial", "hibrido"]).optional(),
   scope: z.literal("nacional").optional(),
   benefit: z.enum(["remunerado", "nao-remunerado", "premiacao", "gratuito"]).optional(),
