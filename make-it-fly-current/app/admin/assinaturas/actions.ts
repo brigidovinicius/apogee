@@ -3,7 +3,8 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/members/dal";
 import { consumeRateLimit } from "@/lib/members/rate-limit";
 import { reconcileAnnualMembership } from "@/lib/billing/community-operations";
-export async function reconcileMembership(_: { message?: string; ok?: boolean }, form: FormData) {
+export type ReconcileState = { message?: string; ok?: boolean };
+export async function reconcileMembership(_: ReconcileState, form: FormData): Promise<ReconcileState> {
   const actor = await requireAdmin("/admin/assinaturas");
   if (!await consumeRateLimit(`annual-reconcile:${actor.id}`, 6, 3600)) return { message: "Aguarde antes de conciliar novamente." };
   try {

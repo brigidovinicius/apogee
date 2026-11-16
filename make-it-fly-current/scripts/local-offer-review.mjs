@@ -11,6 +11,8 @@ import { migrateMemberDeliverables } from "./member-deliverables-migrate.mjs";
 import { starterTrack, starterModule, starterActivities } from "../content/member-starter.mjs";
 const statePath='/private/tmp/apogee-offer-completion-review-state.json';
 const port=3472;
+const duration=Number(process.env.APOGEE_REVIEW_DURATION_SECONDS ?? 0);
+if(!Number.isInteger(duration)||duration<0||duration>900)throw Error('Duração de revisão inválida.');
 if(['.env','.env.local','.env.development','.env.development.local'].some(f=>existsSync(new URL('../'+f,import.meta.url)))) throw Error('A prévia exige worktree sem arquivos dotenv.');
 let previous;
 try { previous=JSON.parse(await readFile(statePath,'utf8')); } catch(error) { if(error.code!=='ENOENT')throw error; }
@@ -59,6 +61,7 @@ try {
   for(const [order,a] of starterActivities.entries()) await db.sql`insert into member_learning_activity(id,module_id,name,instructions,status,sort_order,reviewed_by) values(${a.id},${starterModule.id},${a.name},${a.instructions},'published',${order},'revisaoadmin')`;
   await db.sql`insert into member_learning_module(id,track_id,name,description,deliverable,status,sort_order,reviewed_by) values('proximos-modulos',${starterTrack.id},'Próximos módulos','Conteúdos dependem de revisão editorial.','A definir após revisão.','preparing',1,'revisaoadmin')`;
   await db.sql.unsafe(await readFile(new URL('../sql/community-contacts.sql',import.meta.url),'utf8'));
+  await db.sql`insert into forum_category(slug,name,description) values('boas-vindas','Boas-vindas','Compartilhe seu próximo passo e troque experiências. Não publique senhas, dados de clientes ou informações pessoais de terceiros.') on conflict(slug) do nothing`;
   }
   await writeFile(statePath,JSON.stringify({url:db.url,dir:db.dir,data:db.data,pid:process.pid}),{mode:0o600});
 
@@ -71,5 +74,8 @@ try {
     GOOGLE_CLIENT_ID:'',GOOGLE_CLIENT_SECRET:'',MCP_ENABLED:'false',RADAR_GOOGLE_CALENDAR_ENABLED:'false'};
   console.log(`Prévia isolada em http://127.0.0.1:${port}/previa/validacao; dados sintéticos; email e cobrança bloqueados.`);
   server=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--webpack','-H','127.0.0.1','-p',String(port)],{env,stdio:'inherit'});
+  // A bounded QA session exits normally and preserves its own database. The
+  // final review omits this optional setting and stays available for the owner.
+  if(duration)setTimeout(()=>void close(),duration*1000);
   server.on('exit',code=>void close(code??1));
 } catch {console.error('Prévia funcional local não iniciada.');await close(1);}

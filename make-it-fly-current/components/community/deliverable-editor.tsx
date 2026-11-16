@@ -1,6 +1,6 @@
 "use client";
-import { useActionState, useId } from "react";
-import { saveEditorial } from "@/app/admin/beneficios/actions";
+import { useActionState, useId, useState } from "react";
+import { saveEditorial, type EditorialState } from "@/app/admin/beneficios/actions";
 import type { DeliverableKind } from "@/lib/deliverables/validation";
 import styles from "./deliverables.module.css";
 type Choice = { id: string; name: string };
@@ -19,17 +19,24 @@ const fields: Record<DeliverableKind, Field[]> = {
   activity: [{ key: "instructions", label: "Instruções completas e material autorizado", long: true, required: true }, { key: "resourceUrl", label: "Material externo oficial (opcional)", type: "url" }],
 };
 export function DeliverableEditor({ kind, values = {}, choices = [] }: { kind: DeliverableKind; values?: Record<string, string>; choices?: Choice[] }) {
-  const [state, action, pending] = useActionState(saveEditorial, {}), id = useId();
+  const id = useId();
+  const [data, setData] = useState<Record<string,string>>(() => ({ name: "", sortOrder: "0", status: "draft", ...values }));
+  const setField = (key: string, value: string) => setData(current => ({ ...current, [key]: value }));
+  const [state, action, pending] = useActionState(async (previous: EditorialState, form: FormData) => {
+    const result = await saveEditorial(previous, form);
+    if (result.ok && !values.id) setData({ name: "", sortOrder: "0", status: "draft" });
+    return result;
+  }, {});
   const parent = kind === "module" ? "trackId" : kind === "activity" ? "moduleId" : null;
   return <form action={action} aria-busy={pending} className={styles.editor}>
     <input type="hidden" name="kind" value={kind} />{values.id ? <input type="hidden" name="id" value={values.id} /> : null}
     <fieldset disabled={pending} className={styles.editor}>
       <legend>{values.id ? "Editar registro" : "Criar registro"}</legend>
-      <label htmlFor={`${id}-name`}>Nome<input id={`${id}-name`} name="name" defaultValue={values.name} maxLength={140} required /></label>
-      {parent ? <label htmlFor={`${id}-parent`}>{kind === "module" ? "Trilha" : "Módulo"}<select id={`${id}-parent`} name={parent} defaultValue={values[parent] ?? ""} required><option value="" disabled>Selecione</option>{choices.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label> : null}
-      {fields[kind].map(f => <label key={f.key} htmlFor={`${id}-${f.key}`}>{f.label}{f.long ? <textarea id={`${id}-${f.key}`} name={f.key} defaultValue={values[f.key]} maxLength={f.key === "instructions" ? 12000 : f.key === "redemption" ? 4000 : 2000} required={f.required} /> : <input id={`${id}-${f.key}`} name={f.key} type={f.type ?? "text"} defaultValue={values[f.key]} maxLength={1000} required={f.required} />}</label>)}
-      <label htmlFor={`${id}-order`}>Ordem<input id={`${id}-order`} name="sortOrder" type="number" min={0} max={10000} step={1} defaultValue={values.sortOrder ?? "0"} required /></label>
-      <label htmlFor={`${id}-status`}>Estado editorial<select id={`${id}-status`} name="status" defaultValue={values.status ?? "draft"}><option value="draft">Rascunho</option>{kind !== "benefit" ? <option value="preparing">Em preparação</option> : null}<option value="published">Publicado</option><option value="archived">Arquivado</option></select></label>
+      <label htmlFor={`${id}-name`}>Nome<input id={`${id}-name`} name="name" value={data.name ?? ""} onChange={e => setField("name", e.target.value)} maxLength={140} required /></label>
+      {parent ? <label htmlFor={`${id}-parent`}>{kind === "module" ? "Trilha" : "Módulo"}<select id={`${id}-parent`} name={parent} value={data[parent] ?? ""} onChange={e => setField(parent, e.target.value)} required><option value="" disabled>Selecione</option>{choices.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label> : null}
+      {fields[kind].map(f => <label key={f.key} htmlFor={`${id}-${f.key}`}>{f.label}{f.long ? <textarea id={`${id}-${f.key}`} name={f.key} value={data[f.key] ?? ""} onChange={e => setField(f.key, e.target.value)} maxLength={f.key === "instructions" ? 12000 : f.key === "redemption" ? 4000 : 2000} required={f.required} /> : <input id={`${id}-${f.key}`} name={f.key} type={f.type ?? "text"} value={data[f.key] ?? ""} onChange={e => setField(f.key, e.target.value)} maxLength={1000} required={f.required} />}</label>)}
+      <label htmlFor={`${id}-order`}>Ordem<input id={`${id}-order`} name="sortOrder" type="number" min={0} max={10000} step={1} value={data.sortOrder ?? "0"} onChange={e => setField("sortOrder", e.target.value)} required /></label>
+      <label htmlFor={`${id}-status`}>Estado editorial<select id={`${id}-status`} name="status" value={data.status ?? "draft"} onChange={e => setField("status", e.target.value)}><option value="draft">Rascunho</option>{kind !== "benefit" ? <option value="preparing">Em preparação</option> : null}<option value="published">Publicado</option><option value="archived">Arquivado</option></select></label>
       <p>{kind === "benefit" ? "Publicar exige comprovação, vigência, condições e resgate. Nenhum acordo é criado por este formulário." : "Publique somente material autorizado e revisado. Arquivar um módulo ou trilha restringe também seus conteúdos."}</p>
       <button disabled={pending || Boolean(parent && !choices.length)} type="submit">{pending ? "Salvando…" : "Salvar conteúdo"}</button>
     </fieldset>

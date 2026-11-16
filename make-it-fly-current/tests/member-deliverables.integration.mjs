@@ -91,14 +91,14 @@ test("private progress is idempotent, account-bound, restricted on expiry and in
 test("draft/archive/expiry and parent publication apply to direct reads and progress writes", async () => {
   actor = "admin"; await store.saveDeliverable("benefit", { ...benefit, id: benefitId, status: "archived" });
   await sql`update member_learning_module set status='preparing' where id=${moduleId}`;
-  actor = "paid"; assert.deepEqual((await store.memberBenefits()).benefits, []);
-  let t = await store.memberLearning(); assert.equal(t.modules[0].status, "preparing"); assert.equal(t.modules[0].description, ""); assert.deepEqual(t.activities, []);
+  actor = "paid"; assert.equal((await store.memberBenefits()).benefits.length, 0);
+  let t = await store.memberLearning(); assert.equal(t.modules[0].status, "preparing"); assert.equal(t.modules[0].description, ""); assert.equal(t.activities.length, 0);
   await assert.rejects(store.setLearningProgress({ activityId, completed: true }), /indisponível/);
   await sql`update member_learning_module set status='published' where id=${moduleId}`;
   await sql`update member_learning_track set status='archived' where id=${trackId}`;
-  t = await store.memberLearning(); assert.deepEqual(t.modules, []); assert.deepEqual(t.activities, []);
+  t = await store.memberLearning(); assert.equal(t.modules.length, 0); assert.equal(t.activities.length, 0);
   await sql`update member_benefit set status='published',ends_at=now()-interval '1 day' where id=${benefitId}`;
-  assert.deepEqual((await store.memberBenefits()).benefits, []);
+  assert.equal((await store.memberBenefits()).benefits.length, 0);
 });
 test("synthetic backup restores schema, quotas and legacy rights without modifying the source", async () => {
   const bin = process.env.PG_BIN ?? "/opt/homebrew/bin", dump = path.join(db.dir, "offer.dump");

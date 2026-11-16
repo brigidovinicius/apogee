@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Trilha inicial", robots: { index: false, follow: false } };
 export default async function LearningPage() {
   const { member, access, tracks, modules, activities } = await memberLearning();
-  const next = modules.flatMap(m => activities.filter(a => a.module_id === m.id)).find(a => !a.completed_at);
+  const next = tracks.flatMap(t => modules.filter(m => m.track_id === t.id).flatMap(m => activities.filter(a => a.module_id === m.id))).find(a => !a.completed_at);
   return <div className={styles.container}><MemberBar member={member} current="trilha" />
     <header className={styles.pageHead}><div><p className={styles.eyebrow}>Comunidade Apogee</p><h1 className={styles.title}>Trilha inicial.</h1><p className={styles.lead}>Uma trilha em desenvolvimento, com atividades práticas e progresso privado. A formação está parcial.</p></div></header>
     <div className={local.section}>{!access.active ? <AnnualAccessNotice title="Trilha" next="/membros/trilha" /> : <>

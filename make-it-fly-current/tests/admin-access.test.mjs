@@ -62,11 +62,12 @@ test("curation redirects to the authorized live catalogue management", async () 
   assert.match(editor, /<PostEditor post=\{null\}/);
   assert.match(blogActions, /await requireAdmin\(/);
   assert.match(blogActions, /revalidatePath\("\/blog"\)/);
-  for (const label of ["Moderação", "Assinaturas", "Conciliação", "Fila e jobs", "Auditoria"]) {
+  for (const label of ["Moderação", "Assinaturas", "Fila e jobs", "Auditoria"]) {
     assert.match(navigation, new RegExp(`"${label}"`));
   }
   assert.match(navigation, /aria-disabled="true"/);
   assert.match(navigation, /href: "\/admin\/radar"/);
+  assert.match(navigation, /href: "\/admin\/assinaturas", label: "Assinaturas"/);
 
   assert.match(radarPage, /await requireAdmin\("\/admin\/radar"\)/);
   assert.match(radarPage, /catálogo ao vivo/);
