@@ -30,9 +30,9 @@ test('calendar month boundaries cannot renew the November 18 allocation',()=>{
   assert.equal(decideMode(receipt(),Date.parse('2026-12-19')).mode,'BASE_CREDITO');
   assert.equal(decideMode(receipt(),now).mode,'AMPLIADO');
 });
-test('runtime is inert even if enabled accidentally; no secrets enter its status',()=>{
+test('runtime requires dedicated credentials and never echoes existing process keys',()=>{
   assert.deepEqual(runtimeStatus({}),{mode:'BASE',reason:'disabled'});
-  assert.deepEqual(runtimeStatus({RADAR_AI_ENABLED:'true',OPENAI_API_KEY:'do-not-print'}),{mode:'BASE_CONTROLE',reason:'transport_disabled'});
+  assert.deepEqual(runtimeStatus({RADAR_AI_ENABLED:'true',OPENAI_API_KEY:'do-not-print'}),{mode:'BASE_CONTROLE',reason:'credentials_unavailable'});
 });
 test('requests bind complete text bytes, output and identity; tools cannot bypass cost bounds',()=>{
   const body={model:'test-model',max_output_tokens:120,input:'Ação',tools:[]};

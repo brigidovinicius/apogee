@@ -23,13 +23,13 @@ test("Docker context includes runtime catalogues while excluding research and cr
     await put(".dockerignore", await readFile(new URL(".dockerignore", project)));
     await put("Dockerfile", "FROM scratch\nCOPY . /\n");
     for (const path of imports) await put(path, '{"synthetic":"runtime-catalogue"}');
-    for (const path of ["src/__tests__/expansion.test.ts", "tests/docker-context.test.mjs", "references/private-research.txt", "references/radar-expansion-20261030/targets.json", "references/radar-expansion-20261030/access-audit.json"]) await put(path, "synthetic-research-only");
-    for (const path of [".env", ".env.production", "infra/vps/.env", "infra/vps/.env.local"]) await put(path, "SYNTHETIC_SECRET=fixture-only\n");
+    for (const path of ["src/__tests__/expansion.test.ts", "tests/docker-context.test.mjs", "ai-worker/node_modules/synthetic.txt", "references/private-research.txt", "references/radar-expansion-20261030/targets.json", "references/radar-expansion-20261030/access-audit.json"]) await put(path, "synthetic-research-only");
+    for (const path of [".env", ".env.production", "infra/vps/.env", "infra/vps/.env.local", "ai-worker/.env.local"]) await put(path, "SYNTHETIC_SECRET=fixture-only\n");
     await put(".env.example", "SYNTHETIC_PLACEHOLDER=example\n");
     execFileSync("docker", ["build", "--progress=quiet", "--output", `type=tar,dest=${archive}`, context], { stdio: "pipe", timeout: 45_000 });
     const files = new Set(execFileSync("tar", ["-tf", archive], { encoding: "utf8" }).split("\n").map(path => path.replace(/^\.\//, "").replace(/\/$/, "")));
     for (const path of imports) assert.ok(files.has(path), `Runtime catalogue missing: ${path}`);
-    for (const path of [".env", ".env.production", "infra/vps/.env", "infra/vps/.env.local", "src/__tests__/expansion.test.ts", "tests/docker-context.test.mjs", "references/private-research.txt", "references/radar-expansion-20261030/targets.json", "references/radar-expansion-20261030/access-audit.json"]) assert.ok(!files.has(path), `Excluded file entered build context: ${path}`);
+    for (const path of [".env", ".env.production", "infra/vps/.env", "infra/vps/.env.local", "ai-worker/.env.local", "ai-worker/node_modules/synthetic.txt", "src/__tests__/expansion.test.ts", "tests/docker-context.test.mjs", "references/private-research.txt", "references/radar-expansion-20261030/targets.json", "references/radar-expansion-20261030/access-audit.json"]) assert.ok(!files.has(path), `Excluded file entered build context: ${path}`);
     assert.ok(files.has(".env.example"));
   } finally {
     // Exclusively the synthetic temporary context and archive created by this test.

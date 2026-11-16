@@ -15,11 +15,14 @@ test("Compose keeps bootstrap credentials out of web and all database credential
     DATABASE_READER_URL: "postgres://radar_reader:synthetic-reader-only@postgres/radar_sec05_test",
     DATABASE_EDITOR_URL: "postgres://radar_editor:synthetic-editor-only@postgres/radar_sec05_test",
     CRON_SECRET: "synthetic-cron-only", RADAR_RESEND_API_KEY: "synthetic-mail-only",
+    RADAR_AI_KEY_PATH: join(dir, "ai.env"), RADAR_AI_DATABASE_URL_PATH: join(dir, "ai-db"),
   };
   const render = () => JSON.parse(execFileSync("docker", ["compose", "--env-file", file, "-f", resolve("infra/vps/docker-compose.yml"), "--profile", "migrate", "--profile", "ai", "config", "--format", "json"], {
     encoding: "utf8", env: { PATH: process.env.PATH, HOME: process.env.HOME }, stdio: "pipe",
   }));
   try {
+    await writeFile(env.RADAR_AI_KEY_PATH, "SYNTHETIC_KEY=fixture-only\n", { mode: 0o600 });
+    await writeFile(env.RADAR_AI_DATABASE_URL_PATH, "synthetic-db-only\n", { mode: 0o600 });
     await writeFile(file, Object.entries(env).map(([key, value]) => `${key}=${value}`).join("\n"), { mode: 0o600 });
     const { services } = render();
     assert.equal(services.web.environment.DATABASE_READER_URL, env.DATABASE_READER_URL);
@@ -37,9 +40,10 @@ test("Compose keeps bootstrap credentials out of web and all database credential
     const ai = services["ai-worker"];
     assert.deepEqual(ai.profiles, ["ai"]);
     assert.equal(ai.build.target, "ai-runner");
-    assert.deepEqual(Object.keys(ai.environment), ["RADAR_AI_ENABLED"]);
+    assert.deepEqual(Object.keys(ai.environment).sort(), ["RADAR_AI_DATABASE_URL_FILE", "RADAR_AI_ENABLED", "RADAR_AI_KEY_FILE", "RADAR_AI_ORGANIZATION_ID", "RADAR_AI_PROJECT_ID"]);
     assert.equal(String(ai.environment.RADAR_AI_ENABLED), "false");
-    assert.deepEqual(Object.keys(ai.networks), ["internal"]);
+    assert.deepEqual(Object.keys(ai.networks).sort(), ["ai_egress", "internal"]);
+    assert.deepEqual(ai.secrets.map(item => item.source).sort(), ["radar_ai_database_url", "radar_ai_openai_env"]);
     assert.equal(ai.depends_on, undefined);
     assert.equal(ai.ports, undefined);
     assert.equal(ai.read_only, true);
@@ -52,6 +56,6 @@ test("Compose keeps bootstrap credentials out of web and all database credential
     assert.throws(render, /DATABASE_READER_URL/);
   } finally {
     // Remove exclusivamente o arquivo sintético criado pelo próprio teste.
-    await unlink(file); await rmdir(dir);
+    await unlink(file); await unlink(env.RADAR_AI_KEY_PATH); await unlink(env.RADAR_AI_DATABASE_URL_PATH); await rmdir(dir);
   }
 });

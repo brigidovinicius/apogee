@@ -8,6 +8,7 @@ import { AiStore } from '../store.mjs';
 import { dispatch } from '../dispatch.mjs';
 import { prepareRequest } from '../policy.mjs';
 import { processOne } from '../queue.mjs';
+import { createOpenAIProvider } from '../openai.mjs';
 let db,store,worker;
 const hash='a'.repeat(64);
 async function migrate(target){
@@ -39,7 +40,8 @@ beforeEach(async()=>{
     insert into radar_ai.cycle values('cycle','radar','org-test','project-test',date_trunc('month',now() at time zone 'America/Sao_Paulo') at time zone 'America/Sao_Paulo',(date_trunc('month',now() at time zone 'America/Sao_Paulo')+interval '1 month') at time zone 'America/Sao_Paulo',50000000);
     insert into radar_ai.attestation values('cycle',50000000,now()-interval '1 minute',now()+interval '1 hour',true,'synthetic-billing-proof');
     update radar_ai.control set enabled=true,cycle_id='cycle',organization_id='org-test',project_id='project-test';
-    insert into radar_ai.price values('test-model','v1',true,now()+interval '1 day',100000,500000,0);`);
+    insert into radar_ai.price values('test-model','v1',true,now()+interval '1 day',100000,500000,0);
+    insert into radar_ai.response_tariff values('test-model','v1',true,now()+interval '1 day',100000,10000,100000,500000);`);
 });
 const reserve=(key='radar:test:0001',envelope='evaluation',inputBound=12000,outputLimit=1500)=>store.reserve({key,envelope,inputBound,outputLimit,requestHash:hash,model:'test-model'});
 const monthSql = "date_trunc('month',now() at time zone 'America/Sao_Paulo')::date";
@@ -118,8 +120,44 @@ test('reserve uses real SQL prices, preserves identities and rejects tampering',
   assert.equal((await store.reserve({key:'radar:test:0001',envelope:'evaluation',inputBound:12000,outputLimit:1500,requestHash:'b'.repeat(64),model:'test-model'})).reason,'identity_conflict');
   assert.equal((await reserve('radar:test:0002','blog')).reason,'invalid_envelope');
 });
+test('response tariff is mandatory, bound to the approved version and worst-case reservation rate',async()=>{
+  await db.exec('update radar_ai.response_tariff set cache_write_micro_per_million=125000');
+  assert.equal((await reserve()).reason,'price_unverified');
+  await db.exec('update radar_ai.price set input_micro_per_million=125000');
+  const r=await reserve();assert.equal(r.maximum_micro,2250);assert.equal(r.response_tariff.cache_write_micro_per_million,125000);
+  assert.equal(r.organization_id,'org-test');assert.equal(r.project_id,'project-test');
+  await db.exec("update radar_ai.response_tariff set price_version='another'");
+  assert.equal((await store.markSent(r.id)).reason,'price_changed');
+  assert.equal((await reserve('radar:price:0002')).reason,'price_unverified');
+  await db.exec('delete from radar_ai.response_tariff');assert.equal((await reserve('radar:price:0003')).reason,'price_unverified');
+});
+test('account edits after reservation cannot send to the old provider target',async()=>{
+  const r=await reserve();
+  await db.exec("update radar_ai.control set project_id='changed';update radar_ai.cycle set project_id='changed'");
+  assert.equal((await store.markSent(r.id)).reason,'allocation_unverified');
+  await assert.rejects(store.query('select radar_ai.budget_mark_sent($1)',[r.id]));
+  await assert.rejects(store.query("select radar_ai.budget_reserve('bypass:0001','evaluation',$1,'test-model',12000,1500,'jobs','normal')",[hash]));
+});
+test('transport dispatch records actual token receipt exactly once under the shared ledger',async()=>{
+  await db.exec("update radar_ai.control set organization_id='org-synthetic123',project_id='proj_synthetic123';update radar_ai.cycle set organization_id='org-synthetic123',project_id='proj_synthetic123'");
+  let calls=0;
+  const provider=createOpenAIProvider({apiKey:'sk-synthetic_not_a_real_key_12345',organizationId:'org-synthetic123',projectId:'proj_synthetic123',fetchImpl:async()=>{
+    calls++;return new Response(JSON.stringify({id:'resp_synthetic1234',model:'test-model',service_tier:'default',status:'completed',
+      output:[{type:'message',role:'assistant',content:[{type:'output_text',text:'source quote'}]}],
+      usage:{input_tokens:1000,output_tokens:100,total_tokens:1100,input_tokens_details:{cached_tokens:200,cache_write_tokens:300}}}),{headers:{'content-type':'application/json','x-request-id':'req_synthetic'}});
+  }});
+  const request=prepareRequest('jobs:transport:0001','extraction',{model:'test-model',input:'fixture',max_output_tokens:500,store:false,service_tier:'default'},{stream:'jobs'});
+  assert.equal((await dispatch({store,provider,request,onBase:()=>null})).mode,'AMPLIADO');
+  await dispatch({store,provider,request,onBase:()=>null});assert.equal(calls,1);
+  const op=(await db.query('select * from radar_ai.operation')).rows[0];
+  assert.equal(Number(op.actual_micro),132);assert.equal(op.provider_receipt.responseId,'resp_synthetic1234');
+  assert.equal(Number((await store.status()).monthly.streams.jobs.spent_micro),132);
+  assert.equal((await store.finish(op.id,'confirmed',0,null,{...op.provider_receipt,responseId:'resp_another12345'})).accepted,false);
+  assert.equal((await db.query('select provider_receipt from radar_ai.operation')).rows[0].provider_receipt.responseId,'resp_synthetic1234');
+  await assert.rejects(store.query('select * from radar_ai.response_tariff'));
+});
 test('two concurrent reservations at the remaining allocation cannot exceed it',async()=>{
-  await db.exec('update radar_ai.cycle set cap_micro=10; update radar_ai.price set fixed_micro=10,input_micro_per_million=0,output_micro_per_million=0');
+  await db.exec('update radar_ai.cycle set cap_micro=10; update radar_ai.price set fixed_micro=10,input_micro_per_million=0,output_micro_per_million=0; update radar_ai.response_tariff set input_micro_per_million=0,cached_input_micro_per_million=0,cache_write_micro_per_million=0,output_micro_per_million=0');
   const rows=await Promise.all([reserve('radar:cent:0001'),reserve('radar:cent:0002')]);
   assert.deepEqual(rows.map(r=>r.status).sort(),['blocked','reserved']);
 });
@@ -225,6 +263,15 @@ test('queued content survives JSONB ordering, produces only one private proposal
   assert.equal((await db.query('select radar_ai.read_proposal($1,$2) as r',[task.id,'0'.repeat(64)])).rows[0].r,null);
   await db.query("select set_config('app.is_admin','false',false)");
   await assert.rejects(db.query('select radar_ai.read_proposal($1,$2)',[task.id,task.revision]));
+});
+test('incomplete model output is charged once, held and never exposed as a complete proposal',async()=>{
+  await enqueue();let calls=0;
+  const provider=async()=>{calls++;return {costMicro:100,value:{complete:false,text:'unfinished'}};};
+  assert.equal((await processOne({store,provider})).reason,'incomplete_response');
+  await processOne({store,provider});assert.equal(calls,1);
+  assert.equal((await db.query('select count(*)::int as count from radar_ai.proposal')).rows[0].count,0);
+  assert.equal((await db.query('select state from radar_ai.task')).rows[0].state,'held');
+  assert.equal(Number((await store.status()).monthly.spent_micro),100);
 });
 test('new revision rejects the old task lease and late proposal without resending',async()=>{
   await enqueue();const {task}=await store.claimTask();

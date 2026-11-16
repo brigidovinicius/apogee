@@ -32,9 +32,11 @@ jobs:
           cache-dependency-path: ${{ matrix.app }}/package-lock.json
       - run: npm ci --no-fund --no-audit
       - run: npm test
-      - name: Shared Radar budget and inert AI worker
+      - name: Shared Radar budget and isolated AI worker without provider calls
         if: matrix.app == 'radar-academico'
-        run: npm run test:ai-foundation
+        run: |
+          npm ci --prefix ai-worker --omit=dev --ignore-scripts --no-fund --no-audit
+          npm run test:ai-foundation
       - name: Shared budget and job ingestion on disposable PostgreSQL
         if: matrix.app == 'radar-academico'
         run: |
