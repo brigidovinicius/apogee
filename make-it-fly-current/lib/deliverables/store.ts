@@ -5,10 +5,14 @@ import { requireAdmin, requireMember } from "@/lib/members/dal";
 import { communityAccess } from "@/lib/billing/community-store";
 import { benefitSchema, trackSchema, moduleSchema, activitySchema, progressSchema, type DeliverableKind } from "./validation";
 
-export type Benefit = { id: string; name: string; partner: string; description: string; eligibility: string; availability: string; starts_at: Date | null; ends_at: Date | null; redemption: string; redemption_url: string; evidence_url?: string; status: string; sort_order: number };
-export type Track = { id: string; name: string; description: string; status: string; sort_order: number };
+export class DeliverableConflictError extends Error {}
+export type Benefit = { id: string; name: string; partner: string; description: string; eligibility: string; availability: string; starts_at: Date | null; ends_at: Date | null; redemption: string; redemption_url: string; evidence_url?: string; revision?: string; status: string; sort_order: number };
+export type Track = { id: string; name: string; description: string; status: string; sort_order: number; revision?: string };
 export type LearningModule = Track & { track_id: string; deliverable: string };
-export type Activity = { id: string; module_id: string; name: string; instructions: string; resource_url: string; status: string; sort_order: number; completed_at?: Date | null };
+export type Activity = { id: string; module_id: string; name: string; instructions: string; resource_url: string; status: string; sort_order: number; completed_at?: Date | null; revision?: string };
+// Drizzle configures the shared postgres-js client to return raw timestamps.
+// Normalize at the boundary so valid published benefits also render after auth.
+const benefitDates = (b: Benefit): Benefit => ({ ...b, starts_at: b.starts_at ? new Date(b.starts_at) : null, ends_at: b.ends_at ? new Date(b.ends_at) : null });
 
 export async function annualMember(next: string) {
   const member = await requireMember(next);
@@ -22,7 +26,7 @@ export async function memberBenefits() {
   // Evidence and editor identifiers stay in administration, never member HTML/RSC.
   const benefits = await getSql()<Benefit[]>`select id,name,partner,description,eligibility,availability,starts_at,ends_at,redemption,redemption_url,status,sort_order
     from member_benefit where status='published' and starts_at<=now() and ends_at>now() order by sort_order,name,id`;
-  return { member, access, benefits };
+  return { member, access, benefits: benefits.map(benefitDates) };
 }
 
 export async function memberLearning() {
@@ -67,10 +71,10 @@ export async function adminDeliverables() {
   await requireAdmin("/admin/trilha");
   const sql = getSql();
   return {
-    benefits: await sql<Benefit[]>`select * from member_benefit order by sort_order,name,id`,
-    tracks: await sql<Track[]>`select * from member_learning_track order by sort_order,name,id`,
-    modules: await sql<LearningModule[]>`select * from member_learning_module order by sort_order,name,id`,
-    activities: await sql<Activity[]>`select * from member_learning_activity order by sort_order,name,id`,
+    benefits: (await sql<Benefit[]>`select b.*,md5(to_jsonb(b)::text) as revision from member_benefit b order by sort_order,name,id`).map(benefitDates),
+    tracks: await sql<Track[]>`select t.*,md5(to_jsonb(t)::text) as revision from member_learning_track t order by sort_order,name,id`,
+    modules: await sql<LearningModule[]>`select m.*,md5(to_jsonb(m)::text) as revision from member_learning_module m order by sort_order,name,id`,
+    activities: await sql<Activity[]>`select a.*,md5(to_jsonb(a)::text) as revision from member_learning_activity a order by sort_order,name,id`,
   };
 }
 
@@ -79,14 +83,22 @@ export async function saveDeliverable(kind: DeliverableKind, input: unknown) {
   const sql = getSql();
   const v = ({ benefit: benefitSchema, track: trackSchema, module: moduleSchema, activity: activitySchema }[kind]).parse(input);
   const id = v.id ?? randomUUID();
+  const table = { benefit: "member_benefit", track: "member_learning_track", module: "member_learning_module", activity: "member_learning_activity" }[kind];
+  let revision = "";
   await sql.begin(async tx => {
     // Account may have been revoked since rendering. Repeat authorization under a lock.
     const admins = await tx`select id from "user" where id=${actor.id} and role='admin' and blocked=false for share`;
     if (!admins.length) throw Error("Administração indisponível para esta conta.");
+    if (v.id) {
+      const [previous] = await tx`select md5(to_jsonb(record)::text) as revision from ${tx(table)} record where id=${id} for update`;
+      if (!v.revision || !previous || previous.revision !== v.revision) {
+        throw new DeliverableConflictError("Esta ficha mudou em outra edição. Seus campos foram preservados; copie o que deseja manter e recarregue a página antes de revisar e salvar.");
+      }
+    }
     if (kind === "benefit") {
       const b = benefitSchema.parse(input);
       await tx`insert into member_benefit(id,name,partner,description,evidence_url,eligibility,availability,starts_at,ends_at,redemption,redemption_url,status,sort_order,reviewed_by)
-        values(${id},${b.name},${b.partner},${b.description},${b.evidenceUrl},${b.eligibility},${b.availability},${b.startsAt ? new Date(b.startsAt) : null},${b.endsAt ? new Date(b.endsAt) : null},${b.redemption},${b.redemptionUrl},${b.status},${b.sortOrder},${actor.id})
+        values(${id},${b.name},${b.partner},${b.description},${b.evidenceUrl},${b.eligibility},${b.availability},${b.startsAt ? new Date(b.startsAt).toISOString() : null},${b.endsAt ? new Date(b.endsAt).toISOString() : null},${b.redemption},${b.redemptionUrl},${b.status},${b.sortOrder},${actor.id})
         on conflict(id) do update set name=excluded.name,partner=excluded.partner,description=excluded.description,evidence_url=excluded.evidence_url,
           eligibility=excluded.eligibility,availability=excluded.availability,starts_at=excluded.starts_at,ends_at=excluded.ends_at,redemption=excluded.redemption,
           redemption_url=excluded.redemption_url,status=excluded.status,sort_order=excluded.sort_order,reviewed_by=excluded.reviewed_by,reviewed_at=now()`;
@@ -104,6 +116,8 @@ export async function saveDeliverable(kind: DeliverableKind, input: unknown) {
         on conflict(id) do update set module_id=excluded.module_id,name=excluded.name,instructions=excluded.instructions,resource_url=excluded.resource_url,status=excluded.status,sort_order=excluded.sort_order,reviewed_by=excluded.reviewed_by,reviewed_at=now()`;
     }
     await tx`insert into member_deliverable_audit(id,actor_id,entity_type,entity_id,action,status) values(${randomUUID()},${actor.id},${kind},${id},${v.id ? "update" : "create"},${v.status})`;
+    const [saved] = await tx`select md5(to_jsonb(record)::text) as revision from ${tx(table)} record where id=${id}`;
+    revision = String(saved.revision);
   });
-  return id;
+  return { id, revision };
 }

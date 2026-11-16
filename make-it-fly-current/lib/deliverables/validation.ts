@@ -17,7 +17,8 @@ export const officialUrl = z.string().trim().max(1000).refine(value => {
 }, "Use uma URL HTTPS oficial, pública, sem credenciais, parâmetros ou fragmentos.");
 
 const common = {
-  id: identifier.optional(), name: text(140), status: z.enum(["draft", "published", "preparing", "archived"]),
+  id: identifier.optional(), revision: z.string().regex(/^[a-f0-9]{32}$/, "Reabra a ficha para carregar sua revisão.").optional(),
+  name: text(140), status: z.enum(["draft", "published", "preparing", "archived"]),
   sortOrder: z.coerce.number().int().min(0).max(10000),
 };
 const date = z.string().refine(v => !v || /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v, "Data inválida.");

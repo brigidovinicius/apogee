@@ -21,15 +21,20 @@ const fields: Record<DeliverableKind, Field[]> = {
 export function DeliverableEditor({ kind, values = {}, choices = [] }: { kind: DeliverableKind; values?: Record<string, string>; choices?: Choice[] }) {
   const id = useId();
   const [data, setData] = useState<Record<string,string>>(() => ({ name: "", sortOrder: "0", status: "draft", ...values }));
+  // Keep the revision paired with these fields. A refresh of another row must
+  // never attach a newer revision to this still-unsaved local draft.
+  const [revision, setRevision] = useState(values.revision ?? "");
   const setField = (key: string, value: string) => setData(current => ({ ...current, [key]: value }));
   const [state, action, pending] = useActionState(async (previous: EditorialState, form: FormData) => {
     const result = await saveEditorial(previous, form);
     if (result.ok && !values.id) setData({ name: "", sortOrder: "0", status: "draft" });
+    if (result.ok && result.revision) setRevision(result.revision);
     return result;
   }, {});
   const parent = kind === "module" ? "trackId" : kind === "activity" ? "moduleId" : null;
   return <form action={action} aria-busy={pending} className={styles.editor}>
     <input type="hidden" name="kind" value={kind} />{values.id ? <input type="hidden" name="id" value={values.id} /> : null}
+    {values.id ? <input type="hidden" name="revision" value={revision} /> : null}
     <fieldset disabled={pending} className={styles.editor}>
       <legend>{values.id ? "Editar registro" : "Criar registro"}</legend>
       <label htmlFor={`${id}-name`}>Nome<input id={`${id}-name`} name="name" value={data.name ?? ""} onChange={e => setField("name", e.target.value)} maxLength={140} required /></label>
