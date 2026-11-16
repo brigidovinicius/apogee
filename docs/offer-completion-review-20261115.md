@@ -1,6 +1,6 @@
 # Oferta Apogee — candidato isolado para revisão
 
-Estado: candidato funcional isolado para revisão, com prévia persistente em http://127.0.0.1:3472/previa/validacao. Sem deploy, migração real, email a contatos reais ou cobrança live. Os checks do PR são o gate da revisão final; resultados locais e sandbox estão discriminados abaixo.
+Estado da revisão inicial: candidato funcional isolado em http://127.0.0.1:3472/previa/validacao, sem alteração de produção naquela etapa. Após essa entrega, o proprietário autorizou testar tudo e executar o deploy se validado. A prévia foi encerrada preservando seu banco para liberar a fila. A continuação da release integra a main `0c0ec0e`, a curadoria privada transacional, a separação entre pausa de vendas e gestão de contratos, a revisão concorrente das fichas e o suporte público. Os checks do candidato integrado são o gate atual; evidência anterior não os substitui. Ativação de vendas live e publicação do exercício continuam pendentes.
 
 ## Alterações e limites
 
@@ -8,7 +8,7 @@ Estado: candidato funcional isolado para revisão, com prévia persistente em ht
 - Caixa de Ferramentas integrada de `b2f63d7`, com 0019, categorias/fichas/curadoria e acesso anual no servidor. O lote de origem tinha 786 testes gerais, 10 integrações próprias, 12 anuais e build aprovados; isso é evidência do lote anterior, não substitui a validação integrada atual.
 - Benefícios, Trilha parcial, progresso privado e curadoria adicionados com 0020. Nenhum parceiro, crédito, cupom ou aula fictícia. Exercício original de três atividades disponível apenas no banco de revisão, pendente de aprovação editorial para publicar.
 - Área interna tem quatro destinos reais, mantendo fórum, perfil, Radar, calendário, coleções e assinatura. Suporte reutiliza o canal informado nos termos.
-- Operação anual lista o ambiente configurado e permite conciliação protegida por consulta canônica de assinatura/faturas. Não cria cobranças. Vendas e conciliação continuam desligadas na prévia comum e na produção observada.
+- Operação anual lista o ambiente configurado e permite conciliação protegida por consulta canônica de assinatura/faturas. Não cria cobranças. Pausar novas vendas preserva os contratos existentes quando a configuração do serviço está completa; produção observada ainda não possui produto/preço anuais e mantém novas vendas desativadas.
 - Funil mantém finalidade e consentimento separados de evento e drops. A confirmação do evento distingue persistência de envio manual. A prévia funcional deixou de simular sucesso do formulário público.
 - Retorno permitido entre oferta/login/assinatura/recursos preservado sem open redirect ou query arbitrária. Pequenas mudanças de texto/navegação funcional; Home, estilos globais, fotos da Loja e composição pública aprovada preservados.
 
@@ -36,7 +36,7 @@ Estado: candidato funcional isolado para revisão, com prévia persistente em ht
 | `/api/radar/checkout` | Nova compra avulsa encerrada. | 410 JSON ou encaminhamento seguro à comunidade; histórico preservado. |
 | `/mcp`, integrações ChatGPT/Claude | Leitura conforme escopo e direito. | Sem liberação/consumo por listagem; mesma decisão de acesso do Radar. |
 | `/admin/{ferramentas,beneficios,trilha}` | Curadoria e publicação. | Administração no servidor, repetida na mutação; assinatura não concede papel. |
-| `/admin/assinaturas` | Períodos, faturas e conciliação. | Administração, ambiente/vínculo verificados; bloqueada pela configuração anual desativada. |
+| `/admin/assinaturas` | Períodos, faturas e conciliação. | Administração e ambiente/vínculo verificados; gestão independente da pausa de novas vendas, indisponível com configuração de serviço incompleta. |
 | `/admin/comunidade`, `/admin/loja/drops` | Operação dos interesses. | Contatos somente para administrador; finalidade e evidências preservadas. |
 | `/previa/validacao` | Roteiro e contas sintéticas. | Apenas revisão explícita em desenvolvimento e banco loopback; não exposta em produção. |
 
@@ -80,6 +80,6 @@ A matriz HTTP/RSC executou **123/123 verificações** sobre nove perfis mais vis
 3. Designar responsáveis por curadoria, conteúdo, moderação, suporte e envio das orientações do evento; confirmar capacidade/cadência antes de prometer.
 4. Verificar no provedor o domínio/entrega transacional e, no Google, audiência/callback. Os testes locais usam destinatários sintéticos/interceptação; presença no runtime não comprova entrega nem login OAuth real.
 5. Configurar e validar produto/preço/portal/webhook anuais live no ambiente proprietário, sob autorização própria. Hoje estão ausentes e a flag está false.
-6. Backup/inventário reais, restauração isolada, migrações 0019/0020 e deploy do SHA aprovado, cada qual com autorização. Este trabalho não altera produção.
+6. Na continuação autorizada: backup/inventário reais e restauração isolada já conferidos; ensaio das migrações 0019/0020, curadoria e publicação aguardam a validação do candidato final. Registrar os resultados efetivos na evidência de release.
 
 Métodos: [runbook da oferta](offer-completion-runbook-20261115.md), [plano por arquivos](offer-completion-plan-20261115.md), [validação Stripe desta execução](stripe-annual-offer-validation-20261115.md) e [histórico anterior](stripe-annual-sandbox-validation-20261114.md). Fontes oficiais conferidas: [Google Flow](https://labs.google/fx/tools/flow), [webhooks Stripe](https://docs.stripe.com/webhooks), [testes Billing](https://docs.stripe.com/billing/testing), [portal](https://docs.stripe.com/customer-management/configure-portal).
