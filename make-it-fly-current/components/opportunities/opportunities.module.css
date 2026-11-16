@@ -257,6 +257,36 @@
   border-block: 1px solid rgb(185 211 238 / 18%);
 }
 
+.jobShortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.jobShortcuts button {
+  min-height: var(--apogee-control-min-height, 44px);
+  padding: 0.65rem 0.9rem;
+  border: 1px solid currentColor;
+  border-radius: var(--apogee-control-radius, 4px);
+  color: #fff;
+  background: transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.jobShortcuts button:hover,
+.jobShortcuts button[aria-pressed="true"] {
+  background: var(--opportunity-sky, #b9d3ee);
+  color: var(--opportunity-ink, #07182d);
+}
+
+.board .jobShortcuts button:focus-visible {
+  outline: 2px solid #b9d3ee;
+  outline-offset: 4px;
+}
+
 .filterTrigger {
   display: inline-flex;
   align-items: center;

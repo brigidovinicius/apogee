@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Radar de oportunidades",
-  description: "Oportunidades estudantis completas para membros da comunidade Apogee.",
+  description: "Empregos, eventos e oportunidades para membros da comunidade Apogee.",
 };
 
 export default async function MemberOpportunitiesPage({ searchParams }: {
@@ -45,7 +45,7 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
           <p className={styles.eyebrow}>Oportunidades</p>
           <h1 className={styles.title}>Radar de oportunidades</h1>
           <p className={styles.lead}>
-            Encontre eventos, programas e oportunidades para participar.
+            Encontre empregos, eventos, programas e oportunidades para o seu próximo passo.
           </p>
         </div>
       </header>

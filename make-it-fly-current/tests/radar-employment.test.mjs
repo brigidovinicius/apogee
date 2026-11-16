@@ -6,6 +6,7 @@ const load=opportunityLoader();
 const {toOpportunity}=load('lib/opportunities/radar-client.ts');
 const types=load('lib/opportunities/types.ts');
 const {rankOpportunities}=load('lib/opportunities/ranking.ts');
+const {buildOpportunityPage}=load('lib/opportunities/catalogue.ts');
 const employment={version:1,provider:'ashby',postingId:'posting',requisitionId:'requisition',roleFamily:'fde',
   workplace:'remote',brazilEligibility:'confirmed',locationText:'Remote Brazil',employmentType:'FullTime',experienceYears:2,
   languages:['English'],travelText:null,publishedAt:null,salary:null};
@@ -14,6 +15,31 @@ function row(patch={}) {return {id:'job1',title:'Forward Deployed Engineer',inst
   deadlineAt:null,deadlinePrecision:'not_informed',eventStartsAt:null,opportunityStatus:'open',
   officialUrl:'https://jobs.ashbyhq.com/whippy/8013f907-e90f-4e3d-92c2-d14808891efb',
   lastCheckedAt:new Date().toISOString(),requirementsText:'Original requirements',amountText:'Remuneração não informada na fonte oficial.',employment,...patch};}
+test('remote Brazil shortcut clears incompatible course/location criteria and keeps search through server pagination',()=>{
+  const previous={...types.EMPTY_OPPORTUNITY_FILTERS,kind:'Curso',category:'formacao',format:'online',scope:'nacional',
+    stateCode:'SC',cityName:'Florianópolis',level:'Graduação',benefit:'gratuito',deadlineWindow:'7dias',query:'Engineer'};
+  const next=types.opportunityJobShortcutFilters(previous,'remote-brazil');
+  const url=types.setOpportunityFilterSearchParams(new URLSearchParams('pagina=4&utm_source=qa'),next);url.delete('pagina');
+  assert.equal(url.get('utm_source'),'qa');assert.equal(url.get('busca'),'Engineer');
+  for(const key of ['categoria','formato','abrangencia','uf','cidade','formacao','beneficio','prazo']) assert.equal(url.has(key),false,key);
+  const job=toOpportunity(row());
+  const course={...job,id:'course',kind:'Curso',employment:undefined,deadline:'2099-12-31',deadlineUnknown:false,participationFormat:'online'};
+  const page=buildOpportunityPage([job,course],url);
+  assert.equal(page.page,1);assert.deepEqual(page.opportunities.map(item=>item.id),[job.id]);
+  assert.equal(page.filters.workplace,'remote');assert.equal(page.filters.brazilJobs,true);
+});
+test('job shortcuts return to all types and retain an explicit empty job result',()=>{
+  const job=toOpportunity(row());
+  const course={...job,id:'course',kind:'Curso',employment:undefined,deadline:'2099-12-31',deadlineUnknown:false,participationFormat:'online'};
+  const remote=types.opportunityJobShortcutFilters(types.EMPTY_OPPORTUNITY_FILTERS,'remote-brazil');
+  const jobs=types.opportunityJobShortcutFilters(remote,'jobs');
+  assert.equal(jobs.workplace,undefined);assert.equal(jobs.brazilJobs,undefined);
+  const params=types.setOpportunityFilterSearchParams(new URLSearchParams(),jobs);
+  assert.equal(buildOpportunityPage([course],params).total,0);
+  assert.equal(buildOpportunityPage([course],params).filters.kind,'Emprego');
+  const all=types.setOpportunityFilterSearchParams(params,types.opportunityJobShortcutFilters(jobs,'all'));
+  assert.equal(all.toString(),'');assert.equal(buildOpportunityPage([job,course],all).total,2);
+});
 test('employment survives the Radar bridge, keeps unknown deadlines and is separate from online courses',()=>{
   const item=toOpportunity(row());assert.ok(item);assert.equal(item.kind,'Emprego');assert.equal(item.deadlineUnknown,true);
   assert.equal(item.participationFormat,null);assert.deepEqual(item.employment,employment);

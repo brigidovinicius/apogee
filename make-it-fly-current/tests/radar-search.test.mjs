@@ -152,7 +152,7 @@ test("public payloads never gain requirements, source links or cached search doc
 test("empty results provide query guidance, explicit broadening and a calendar path", () => {
   const catalogue = page("nonexistentword", [item()], { categoria: "eventos", uf: "SP" });
   const html = renderToStaticMarkup(React.createElement(OpportunitiesBoard, { opportunities: [], catalogue, editorialFeed: true }));
-  assert.match(html, /Buscar evento, tema ou instituição/);
+  assert.match(html, /Buscar oportunidade, emprego ou instituição/);
   assert.match(html, /Nenhuma oportunidade encontrada para sua busca/);
   assert.match(html, /Buscar em todas as categorias e locais/);
   assert.match(html, /calendarios\/eventos\?busca=nonexistentword/);

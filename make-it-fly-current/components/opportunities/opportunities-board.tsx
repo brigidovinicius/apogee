@@ -33,6 +33,7 @@ import {
   type StudentOpportunity,
   dateInBrazil,
   opportunityFiltersFromSearchParams,
+  opportunityJobShortcutFilters,
   sanitizeOpportunityFilters,
   setOpportunityFilterSearchParams,
 } from "@/lib/opportunities/types";
@@ -146,8 +147,8 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
             const query = new FormData(event.currentTarget).get("busca");
             updateFilters({ ...filters, query: String(query ?? "").trim().slice(0, 100) || null });
           }}>
-            <label htmlFor="opportunity-query">Buscar evento, tema ou instituição</label>
-            <input key={filters.query ?? ""} id="opportunity-query" name="busca" type="search" maxLength={100} list="opportunity-search-suggestions" defaultValue={filters.query ?? ""} placeholder="Ex.: Red Hat Summit, tecnologia, USP" />
+            <label htmlFor="opportunity-query">Buscar oportunidade, emprego ou instituição</label>
+            <input key={filters.query ?? ""} id="opportunity-query" name="busca" type="search" maxLength={100} list="opportunity-search-suggestions" defaultValue={filters.query ?? ""} placeholder="Ex.: FDE, tecnologia, USP" />
             <OpportunitySearchSuggestions id="opportunity-search-suggestions" />
             <button type="submit">Buscar</button>
           </form>
@@ -170,6 +171,15 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
           Ingresso por vestibular <span>({coverage.byCategory.vestibular})</span>
         </button>
       </nav>
+
+      <div className={styles.jobShortcuts} role="group" aria-label="Filtros rápidos de empregos">
+        <button type="button" aria-pressed={!filters.kind && !filters.workplace && !filters.brazilJobs}
+          onClick={() => updateFilters(opportunityJobShortcutFilters(filters, "all"))}>Todos os tipos</button>
+        <button type="button" aria-pressed={filters.kind === "Emprego" && !filters.workplace && !filters.brazilJobs}
+          onClick={() => updateFilters(opportunityJobShortcutFilters(filters, "jobs"))}>Empregos</button>
+        <button type="button" aria-pressed={filters.kind === "Emprego" && filters.workplace === "remote" && filters.brazilJobs === true}
+          onClick={() => updateFilters(opportunityJobShortcutFilters(filters, "remote-brazil"))}>Empregos remotos para o Brasil</button>
+      </div>
 
       <div className={styles.filterToolbar}>
         <button
@@ -361,7 +371,7 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
           </h3>
           <p>
             {filters.query
-              ? "Tente parte do nome do evento, outro tema ou a instituição. Os filtros selecionados também limitam os resultados."
+              ? "Tente parte do nome da oportunidade, outro tema ou a instituição. Os filtros selecionados também limitam os resultados."
               : activeFilterCount > 0
               ? "Limpe ou ajuste os filtros para explorar outras chamadas verificadas pela Apogee."
               : "Novas chamadas verificadas aparecerão aqui assim que estiverem disponíveis."}

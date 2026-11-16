@@ -16,18 +16,18 @@ import { memberRadarLoginHref, memberRadarPath } from "@/lib/opportunities/navig
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Oportunidades estudantis | Apogee",
+  title: "Radar de oportunidades | Apogee",
   description:
-    "Descubra eventos, hackathons, competições, projetos, bolsas e intercâmbios com prazos e fontes oficiais.",
+    "Descubra empregos, eventos, hackathons, projetos, bolsas e intercâmbios com fontes oficiais.",
   alternates: { canonical: "/oportunidades" },
   openGraph: {
-    title: "Oportunidades estudantis | Apogee",
-    description: "Eventos, hackathons, projetos, bolsas e intercâmbios com prazos e fontes oficiais.",
+    title: "Radar de oportunidades | Apogee",
+    description: "Empregos, eventos, hackathons, projetos, bolsas e intercâmbios com fontes oficiais.",
     url: "/oportunidades", siteName: "Apogee", locale: "pt_BR", type: "website",
   },
   twitter: {
-    card: "summary", title: "Oportunidades estudantis | Apogee",
-    description: "Eventos, hackathons, projetos, bolsas e intercâmbios com prazos e fontes oficiais.",
+    card: "summary", title: "Radar de oportunidades | Apogee",
+    description: "Empregos, eventos, hackathons, projetos, bolsas e intercâmbios com fontes oficiais.",
   },
 };
 
@@ -57,7 +57,7 @@ export default async function OpportunitiesPage({ searchParams }: {
         <section className={styles.hero} aria-labelledby="opportunities-title">
           <h1 id="opportunities-title">Radar de oportunidades</h1>
           <p className={styles.lead}>
-            Descubra eventos, hackathons, projetos e experiências para o seu próximo passo
+            Descubra empregos, eventos, hackathons e experiências para o seu próximo passo
           </p>
         </section>
 
