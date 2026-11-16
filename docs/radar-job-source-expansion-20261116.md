@@ -28,6 +28,12 @@ NextLink Labs não foi incluída: o quadro atual estava vazio. Anúncios antigos
 
 ## Publicação operacional
 
-Após CI completo e revisão: conferir main, checkout limpo, capacidade, inventário e backup restaurável do Radar; construir a imagem exata; aplicar somente a 0057; atualizar apenas o web e o scheduler do Radar. Preservar o site/blog, o worker de IA e as configurações montadas. Verificar e ativar individualmente as cinco fontes homologadas, iniciar uma coleta limitada e conferir catálogo público, filtros e ledger antes/depois.
+Após CI completo e revisão: conferir main, checkout limpo, capacidade, inventário e backup restaurável do Radar; construir a imagem exata; aplicar somente a 0057; atualizar somente o web do Radar, preservando o scheduler que usa o mesmo endpoint. Preservar o site/blog, o worker de IA e as configurações montadas. Verificar e ativar individualmente as cinco fontes homologadas, iniciar uma coleta limitada e conferir catálogo público, filtros e ledger antes/depois.
 
-Rollback: desativar somente as fontes novas e restaurar a imagem anterior do web/scheduler; manter dados, migração aditiva, tombstones e edições do administrador. O registro operacional e os SHAs efetivamente publicados serão guardados na pasta privada de evidências desta tarefa.
+Rollback: desativar somente as fontes novas e restaurar a imagem anterior do web; manter dados, migração aditiva, tombstones e edições do administrador. O registro operacional e os SHAs efetivamente publicados serão guardados na pasta privada de evidências desta tarefa.
+
+## Seleção automática e empacotamento
+
+A seleção agendada de fontes API usa o registro `jobSourceIds()` parametrizado no SQL, evitando uma segunda lista fixa que deixaria novas fontes apenas na coleta manual. Continua exigindo fonte ativa e verificada, intervalo vencido e lease transacional; fontes API não registradas não são aceitas. O teste de integração cobre as cinco novas fontes, ausência de duplicação durante o lease e reagendamento em seis horas.
+
+Os arquivos públicos do container pertencem ao usuário restrito do runtime e o certificado público adicional é copiado explicitamente em modo 644. Isso evita que uma umask restritiva no checkout retire acesso de leitura. O conteúdo do certificado e os segredos existentes permanecem preservados.

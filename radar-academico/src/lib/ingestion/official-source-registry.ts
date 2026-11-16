@@ -1,3 +1,4 @@
+import { jobSourceIds } from "./job-sources";
 import { withAdminTransaction } from "@/lib/db/client";
 import { officialSourceRegistry, getOfficialSource } from "@/lib/official-sources/registry";
 import type { OfficialSource } from "./types";
@@ -67,7 +68,7 @@ export async function claimDueOfficialSources(limit: number): Promise<OfficialSo
       `with due as (
          select id from official_sources
          where active=true and verification_status='verified'
-           and (extraction_mode in ('rss','html') or (extraction_mode='api' and id in ('jobs-whippy','jobs-n8n','jobs-nortal','jobs-gitlab')) or (
+           and (extraction_mode in ('rss','html') or (extraction_mode='api' and id=any($2::text[])) or (
              extraction_mode='manual_assisted' and exists (
                select 1 from opportunities o where o.official_source_id=official_sources.id
                  and o.deleted_at is null and (o.next_source_check_at is null or o.next_source_check_at<=now())
@@ -80,7 +81,7 @@ export async function claimDueOfficialSources(limit: number): Promise<OfficialSo
        update official_sources as source
        set next_crawl_at=now() + interval '10 minutes', updated_at=now()
        from due where source.id=due.id returning source.*`,
-      [limit],
+      [limit, jobSourceIds()],
     )).rows,
   );
   return rows.map(toOfficialSource);
