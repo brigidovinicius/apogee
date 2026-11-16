@@ -7,7 +7,8 @@ export class AiStore {
       [request.key, request.envelope, request.requestHash, request.model, request.inputBound, request.outputLimit, request.stream ?? 'radar', request.purpose ?? 'normal'])).rows[0].result;
   }
   async markSent(id) { return (await this.query('select radar_ai.mark_sent($1) as result', [id])).rows[0].result; }
-  async finish(id, outcome, cost = null, reason = null) {
+  async finish(id, outcome, cost = null, reason = null, receipt = null) {
+    if (outcome === 'confirmed' && receipt) return (await this.query('select radar_ai.finish_response($1,$2,$3) as result', [id, cost, receipt])).rows[0].result;
     return (await this.query('select radar_ai.finish($1,$2,$3,$4) as result', [id, outcome, cost, reason])).rows[0].result;
   }
   async recover() { return (await this.query('select radar_ai.recover() as result')).rows[0].result; }

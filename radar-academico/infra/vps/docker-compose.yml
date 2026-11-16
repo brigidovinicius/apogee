@@ -105,8 +105,13 @@ services:
     init: true
     environment:
       RADAR_AI_ENABLED: ${RADAR_AI_ENABLED:-false}
-    # No key, elevated database credential, web/scheduler dependency, ports or blog network.
-    networks: [internal]
+      RADAR_AI_ORGANIZATION_ID: ${RADAR_AI_ORGANIZATION_ID:-}
+      RADAR_AI_PROJECT_ID: ${RADAR_AI_PROJECT_ID:-}
+      RADAR_AI_KEY_FILE: /run/secrets/radar_ai_openai_env
+      RADAR_AI_DATABASE_URL_FILE: /run/secrets/radar_ai_database_url
+    # Dedicated key and restricted login; never the web/blog or migration credentials.
+    secrets: [radar_ai_openai_env, radar_ai_database_url]
+    networks: [internal, ai_egress]
     read_only: true
     tmpfs: [/tmp]
     mem_limit: 96m
@@ -140,7 +145,15 @@ volumes:
   radar_pgdata:
     name: radar_academico_pgdata
 
+secrets:
+  radar_ai_openai_env:
+    file: ${RADAR_AI_KEY_PATH:-/etc/apogee/radar-ai/openai.env}
+  radar_ai_database_url:
+    file: ${RADAR_AI_DATABASE_URL_PATH:-/etc/apogee/radar-ai/database-url}
+
 networks:
+  ai_egress:
+    name: radar_ai_egress
   internal:
     name: radar_academico_internal
     internal: true

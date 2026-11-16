@@ -1,11 +1,11 @@
 import { writeFile, rename, readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { base } from './policy.mjs';
+import { createRuntime, publicStatus } from './runtime.mjs';
 
 export function runtimeStatus(env) {
   if (env.RADAR_AI_ENABLED !== 'true') return base('disabled', 'BASE');
-  // Activation requires a separately reviewed transport. Environment alone cannot enable calls.
-  return base('transport_disabled');
+  return base('credentials_unavailable');
 }
 
 async function main() {
@@ -16,12 +16,18 @@ async function main() {
     return;
   }
   if (!['check', 'run'].includes(process.argv[2] || 'check')) throw new Error('invalid_command');
-  let stop = false, wake;
+  let stop = false, wake, runtime;
   const halt = () => { stop = true; wake?.(); };
   process.on('SIGTERM', halt); process.on('SIGINT', halt);
   try {
     do {
-      const status = { component: 'radar-ai-worker', alive: true, at: new Date().toISOString(), ...runtimeStatus(process.env) };
+      let result;
+      try {
+        runtime ??= await createRuntime(process.env);
+        // check never claims a task or makes a paid request.
+        result = process.argv[2] === 'run' ? await runtime.tick() : await runtime.check();
+      } catch { result = runtimeStatus(process.env); }
+      const status = publicStatus(result);
       if (process.argv[2] === 'run') {
         await writeFile(file + '.tmp', JSON.stringify(status), { mode: 0o600 });
         await rename(file + '.tmp', file);
@@ -30,6 +36,6 @@ async function main() {
       if (process.argv[2] !== 'run' || stop) break;
       await new Promise(resolve => { const timer = setTimeout(resolve, 60_000); wake = () => { clearTimeout(timer); resolve(); }; });
     } while (!stop);
-  } finally { process.off('SIGTERM', halt); process.off('SIGINT', halt); }
+  } finally { await runtime?.close(); process.off('SIGTERM', halt); process.off('SIGINT', halt); }
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
