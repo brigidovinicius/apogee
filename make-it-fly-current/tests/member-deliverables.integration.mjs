@@ -47,11 +47,11 @@ test("editorial validation refuses unsafe destinations and benefits lacking conf
 });
 let benefitId, trackId, moduleId, activityId;
 test("protected editorial creation, ordering, updating, publication and audit persist in real DB", async () => {
-  benefitId = await store.saveDeliverable("benefit", benefit);
-  trackId = await store.saveDeliverable("track", { name: "TRACK_PRIVATE_FIXTURE", description: "Original synthetic exercise", status: "published", sortOrder: 1 });
-  moduleId = await store.saveDeliverable("module", { trackId, name: "Module fixture", description: "Test task", deliverable: "A verified task outline", status: "published", sortOrder: 1 });
-  activityId = await store.saveDeliverable("activity", { moduleId, name: "ACTIVITY_PRIVATE_FIXTURE", instructions: "PRIVATE_INSTRUCTIONS: choose a task and check your result", resourceUrl: "", status: "published", sortOrder: 1 });
-  await store.saveDeliverable("benefit", { ...benefit, id: benefitId, sortOrder: 7 });
+  benefitId = (await store.saveDeliverable("benefit", benefit)).id;
+  trackId = (await store.saveDeliverable("track", { name: "TRACK_PRIVATE_FIXTURE", description: "Original synthetic exercise", status: "published", sortOrder: 1 })).id;
+  moduleId = (await store.saveDeliverable("module", { trackId, name: "Module fixture", description: "Test task", deliverable: "A verified task outline", status: "published", sortOrder: 1 })).id;
+  activityId = (await store.saveDeliverable("activity", { moduleId, name: "ACTIVITY_PRIVATE_FIXTURE", instructions: "PRIVATE_INSTRUCTIONS: choose a task and check your result", resourceUrl: "", status: "published", sortOrder: 1 })).id;
+  await store.saveDeliverable("benefit", { ...benefit, id: benefitId, revision: (await store.adminDeliverables()).benefits[0].revision, sortOrder: 7 });
   assert.equal((await store.adminDeliverables()).benefits[0].sort_order, 7);
   const [audit] = await sql`select count(*)::int as n from member_deliverable_audit`; assert.equal(audit.n, 5);
   actor = "free0"; await assert.rejects(store.adminDeliverables(), /ADMIN/); await assert.rejects(store.saveDeliverable("benefit", benefit), /ADMIN/);
@@ -86,13 +86,14 @@ test("private progress is idempotent, account-bound, restricted on expiry and in
   assert.equal((await store.memberLearning()).activities[0].completed_at, null);
   await sql`update community_invoice set status='fraud',fraud_review_required=true where id='in_paid'`;
   await assert.rejects(store.setLearningProgress({ activityId, completed: true }), /anual/);
-  await sql`update community_invoice set status='paid',fraud_review_required=false where id='in_paid'`;
+  // Keep the risk marker; later checks use the independent cancelled-but-paid
+  // account instead of clearing a risk hold to make a fixture eligible.
   const [after] = await sql`select count(*)::int as n from radar_free_event`; assert.equal(before.n, after.n);
 });
 test("draft/archive/expiry and parent publication apply to direct reads and progress writes", async () => {
-  actor = "admin"; await store.saveDeliverable("benefit", { ...benefit, id: benefitId, status: "archived" });
+  actor = "admin"; await store.saveDeliverable("benefit", { ...benefit, id: benefitId, revision: (await store.adminDeliverables()).benefits[0].revision, status: "archived" });
   await sql`update member_learning_module set status='preparing' where id=${moduleId}`;
-  actor = "paid"; assert.equal((await store.memberBenefits()).benefits.length, 0);
+  actor = "cancelled"; assert.equal((await store.memberBenefits()).benefits.length, 0);
   let t = await store.memberLearning(); assert.equal(t.modules[0].status, "preparing"); assert.equal(t.modules[0].description, ""); assert.equal(t.activities.length, 0);
   await assert.rejects(store.setLearningProgress({ activityId, completed: true }), /indisponível/);
   await sql`update member_learning_module set status='published' where id=${moduleId}`;
@@ -148,4 +149,52 @@ test("event operations normalize the shared Drizzle driver's raw timestamp befor
   assert.equal(result.total,1);assert.equal(result.rows[0].email,"lead@example.test");
   assert.ok(result.rows[0].consented_at instanceof Date);
   assert.match(result.rows[0].consented_at.toISOString(),/^\d{4}-/);
+});
+
+test("all editorial kinds reject stale concurrent edits without overwriting the winner or adding false audit entries", async () => {
+  actor = "admin";
+  const inputs = {
+    benefit: { ...benefit, status: "draft" },
+    track: { name: "Concurrent track", description: "Synthetic", status: "draft", sortOrder: 0 },
+    module: { trackId, name: "Concurrent module", description: "Synthetic", deliverable: "Synthetic outline", status: "draft", sortOrder: 0 },
+    activity: { moduleId, name: "Concurrent activity", instructions: "Synthetic instructions", resourceUrl: "", status: "draft", sortOrder: 0 },
+  };
+  for (const [kind, input] of Object.entries(inputs)) {
+    const saved = await store.saveDeliverable(kind, input);
+    const [before] = await sql`select count(*)::int as n from member_deliverable_audit`;
+    const attempts = await Promise.allSettled([
+      store.saveDeliverable(kind, { ...input, ...saved, name: "First concurrent edit" }),
+      store.saveDeliverable(kind, { ...input, ...saved, name: "Second concurrent edit" }),
+    ]);
+    assert.equal(attempts.filter(r => r.status === "fulfilled").length, 1, kind);
+    assert.match(attempts.find(r => r.status === "rejected").reason.message, /mudou em outra edição/, kind);
+    const [after] = await sql`select count(*)::int as n from member_deliverable_audit`;
+    assert.equal(after.n, before.n + 1, kind);
+    await assert.rejects(store.saveDeliverable(kind, { ...input, id: saved.id }), /mudou em outra edição/, kind);
+    const winner = attempts.find(r => r.status === "fulfilled").value;
+    assert.notEqual(winner.revision, saved.revision, kind);
+    const again = await store.saveDeliverable(kind, { ...input, ...winner, name: "Reviewed current edit" });
+    assert.notEqual(again.revision, winner.revision, kind);
+  }
+});
+
+test("benefits render real validity dates with the shared Drizzle driver and never serialize agreement evidence", async () => {
+  actor = "admin";
+  const saved = await store.saveDeliverable("benefit", benefit);
+  const admin = await store.adminDeliverables();
+  const item = admin.benefits.find(b => b.id === saved.id);
+  assert.ok(item.starts_at instanceof Date);assert.ok(item.ends_at instanceof Date);
+  actor = "cancelled";
+  const state = await store.memberBenefits();
+  const visible = state.benefits.find(b => b.id === saved.id);
+  assert.ok(visible.starts_at instanceof Date);assert.ok(visible.ends_at instanceof Date);
+  assert.equal(visible.evidence_url, undefined);
+  const { renderToStaticMarkup } = await import("react-dom/server");
+  const page = opportunityLoader({
+    "next/link": { __esModule: true, default: "a" },
+    "@/lib/deliverables/store": { memberBenefits: async () => state },
+    "@/components/members/member-bar": { MemberBar: () => null },
+  })("app/membros/beneficios/page.tsx").default;
+  const html = renderToStaticMarkup(await page());
+  assert.match(html, /Vigência:/);assert.match(html, /2026/);assert.doesNotMatch(html, /example.org\/agreement/);
 });
