@@ -21,5 +21,6 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
       {!params.error && token.success ? <ResetPasswordForm token={token.data} next={next} /> : <p role="alert">{PASSWORD_RESET_INVALID}</p>}
     </div>
     <p className={styles.switchAuth}><Link href={`${FORGOT_PASSWORD_PATH}?next=${encodeURIComponent(next)}`}>Solicitar novo link</Link></p>
+    <p className={styles.switchAuth}><Link href="/membros/suporte">Preciso de ajuda para recuperar o acesso</Link></p>
   </div>;
 }
