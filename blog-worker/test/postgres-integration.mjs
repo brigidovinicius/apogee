@@ -1,6 +1,7 @@
 // Own temporary PostgreSQL cluster only. Never reads DATABASE_URL, .env or an API key.
 // Run via the global npm queue; BLOG_TEST_PG_BIN must point to existing native PostgreSQL tools.
 import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
 import {mkdtemp,readFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -46,7 +47,7 @@ try{
     GRANT INSERT,UPDATE ON blog_worker.candidate,blog_worker.attempt,blog_worker.source_state,blog_worker.control,blog_worker.image_job,blog_worker.source_catalog,blog_worker.command,blog_worker.captured_document,blog_worker.quota_observation TO blog_runtime;
     GRANT DELETE ON blog_worker.candidate,blog_worker.captured_document,blog_worker.quota_observation TO blog_runtime;
     GRANT USAGE ON SEQUENCE blog_worker.quota_observation_id_seq TO blog_runtime;
-    GRANT EXECUTE ON FUNCTION blog_worker.claim_google_access(text,text),blog_worker.settle_google_access(uuid,jsonb),blog_worker.prepare_automatic_research(text,jsonb,text),blog_worker.record_assisted_comparison(text,uuid,jsonb,jsonb),blog_worker.import_draft(text,jsonb),blog_worker.queue_cover(text,text,text,text),blog_worker.import_cover(text,text) TO blog_runtime;`);
+    GRANT EXECUTE ON FUNCTION blog_worker.claim_google_access(text,text),blog_worker.settle_google_access(uuid,jsonb),blog_worker.prepare_automatic_research(text,jsonb,text),blog_worker.record_assisted_comparison(text,uuid,jsonb,jsonb),blog_worker.import_draft(text,jsonb),blog_worker.queue_cover(text,text,text,text),blog_worker.import_cover(text,text),blog_worker.schedule_automatic_publication() TO blog_runtime;`);
   await admin.unsafe(`CREATE ROLE blog_editor LOGIN;
     GRANT USAGE ON SCHEMA public,blog_worker TO blog_editor;
     GRANT SELECT ON ALL TABLES IN SCHEMA blog_worker TO blog_editor;
@@ -61,6 +62,7 @@ try{
   async function reset(){
     await admin.unsafe('TRUNCATE blog_worker.google_access,blog_worker.subscription,blog_worker.source_catalog,blog_worker.command,blog_worker.operator_event,blog_worker.attempt,blog_worker.candidate,blog_worker.benefit,blog_worker.source_state,public.blog_post_event,public.blog_post RESTART IDENTITY CASCADE');
     await admin`update blog_worker.control set paused=false,reason=null`;
+    await admin`update blog_worker.publication_policy set enabled=false`;
   }
   async function setup({benefit=grant(),items=[candidate()]}={}){await reset();await operator.attestGrant(benefit,identity);for(const c of items)await store.ingest(c);}
   const options=(overrides={})=>({policy,catalog:[price()],identity,sources:[source],...overrides});
@@ -72,7 +74,7 @@ try{
     assert.ok(rows.every(r=>r.definition.enabled&&r.definition.content_approved&&r.definition.rights_reference.includes('sem reprodução integral')));
     const [privileges]=await runtime`select has_table_privilege(current_user,'blog_worker.research_reference','SELECT') as read,has_table_privilege(current_user,'blog_worker.research_reference','UPDATE') as write`;
     assert.deepEqual(privileges,{read:true,write:false});
-    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,12);
+    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,13);
     assert.ok((await runtime`select definition from blog_worker.research_reference where id='ARTICLE_PRIMARY_MICROSOFT_EDUCATION'`)[0].definition.article_hosts.includes('support.microsoft.com'));
   });
   await check('runtime cannot alter benefits or publish directly',async()=>{
@@ -1167,6 +1169,99 @@ try{
     assert.equal(dashboard.production.reduce((n,t)=>n+t.complete,0),20);
     assert.deepEqual(focusProgress(dashboard.production,dashboard.control.snapshot).map(t=>[t.key,t.target,t.drafts,t.complete]),[['tecnologia',4,4,4],['ia',3,3,3],['negocios',3,3,3]]);
     assert.equal(await store.nextAutomaticWork(focusPolicy),null);
+  });
+  const publicationImage=await createRequire(join(process.env.BLOG_TEST_CMS_DEPENDENCIES_FROM??process.cwd(),'package.json'))('sharp')({create:{width:1536,height:1024,channels:3,background:'#abc'}}).webp().toBuffer();
+  async function publicationDraft(category='tecnologia',subcategory=null){
+    await operator.attestSubscription(subscription());
+    const plan={...explainerCatalog.find(p=>p.category===category&&p.subcategory===subcategory),terms:['mecanismo','limites']};
+    await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});
+    const id=explainerId(plan);await compareHybrid(id);const written=await writeHybrid(id);
+    const image=await store.reserveImage({...hybridOptions(),candidateId:id});
+    assert.equal((await store.finish(image,{outcome:'completed',image:publicationImage,usage:smallHybridUsage})).status,'cover_ready');
+    return {id,post:written.post_id};
+  }
+  async function authorizePublication(){
+    await admin`update blog_worker.publication_policy set enabled=true,starts_on=(now() at time zone 'America/Sao_Paulo')::date,intake_not_before=now()-interval '1 minute',first_hour=0,last_hour=23,authorization_reference='Synthetic owner authorization for native automatic hourly publication'`;
+  }
+  await check('hourly slots use Brasilia, never catch up into the same hour and roll over explicitly',async()=>{
+    const cases=[['2026-11-16T08:00:00Z','2026-11-16',[], '2026-11-16T13:00:00.000Z'],['2026-11-16T13:00:01Z','2026-11-16',[],'2026-11-16T14:00:00.000Z'],['2026-11-16T13:00:00Z','2026-11-16',['2026-11-16T13:00:00Z'],'2026-11-16T14:00:00.000Z'],['2026-11-16T22:00:01Z','2026-11-16',[],null],['2026-11-17T02:59:59Z','2026-11-17',[],'2026-11-17T13:00:00.000Z']];
+    for(const [at,day,taken,expected] of cases){const [r]=await admin`select blog_worker.hourly_publication_slot(${at}::timestamptz,${day}::date,10,19,${admin.array(taken,1184)}) as slot`;assert.equal(r.slot?.toISOString()??null,expected);}
+  });
+  await check('automatic publication is owner enabled, does not forge human review and schedules an exact private draft once',async()=>{
+    await reset();const c=await publicationDraft();
+    assert.deepEqual(await store.publishAutomatically(),{status:'disabled'});
+    await assert.rejects(()=>runtime`update blog_worker.publication_policy set enabled=true`,/permission denied/);
+    await assert.rejects(()=>runtime`insert into blog_worker.publication_receipt(candidate_id) values(${c.id})`,/permission denied/);
+    await authorizePublication();
+    const result=await store.publishAutomatically();assert.equal(result.status,'scheduled');assert.equal(result.post_id,c.post);
+    const [p]=await admin`select status,seo_noindex,scheduled_at,published_at,slug,cover_media_id from public.blog_post where id=${c.post}`;
+    assert.equal(p.status,'scheduled');assert.equal(p.seo_noindex,false);assert.equal(p.published_at,null);assert.ok(+p.scheduled_at>=Date.now()-1000);
+    assert.equal((await admin`select count(*)::int n from blog_worker.post_review`)[0].n,0);
+    assert.equal((await store.publishAutomatically()).status,'idle');
+    assert.equal(await cms.getPublicPost(p.slug),null);assert.equal(await cms.getPostMediaImage(p.cover_media_id,false),null);assert.equal((await cms.listPublicPostUrls()).length,0);
+    assert.equal((await admin`select count(*)::int n from blog_worker.publication_receipt`)[0].n,1);
+    await assert.rejects(()=>admin`update public.blog_post set body=body||' Unreviewed change' where id=${c.post}`,/blog_factual_review_required/);
+    await assert.rejects(()=>admin`update public.blog_post set scheduled_at=scheduled_at+interval '1 hour' where id=${c.post}`,/blog_factual_review_required/);
+    await assert.rejects(()=>runtime`update public.blog_post set status='published' where id=${c.post}`,/permission denied/);
+    // Advance only this isolated fixture's slot to exercise the actual public CMS queries.
+    const [due]=await admin`update blog_worker.publication_receipt set scheduled_at=date_trunc('hour',now())-interval '1 hour' where post_id=${c.post} returning scheduled_at`;
+    await admin`update public.blog_post set scheduled_at=${due.scheduled_at} where id=${c.post}`;
+    assert.equal((await cms.getPublicPost(p.slug)).id,c.post);assert.ok(await cms.getPostMediaImage(p.cover_media_id,false));assert.equal((await cms.listPublicPostUrls())[0].slug,p.slug);
+  });
+  await check('publication refuses prior drafts, future authorization, a paused worker and missing native image receipts',async()=>{
+    await reset();const c=await publicationDraft();await authorizePublication();
+    await admin`update blog_worker.publication_policy set intake_not_before=now()+interval '1 minute'`;
+    assert.equal((await store.publishAutomatically()).status,'idle');
+    await authorizePublication();await admin`update blog_worker.publication_policy set starts_on=starts_on+1`;
+    assert.equal((await store.publishAutomatically()).reason,'publication_start_day');
+    await authorizePublication();await admin`update blog_worker.control set paused=true`;
+    assert.equal((await store.publishAutomatically()).reason,'paused');await admin`update blog_worker.control set paused=false`;
+    await admin`update blog_worker.attempt set reason='invalid_image' where candidate_id=${c.id} and kind='image'`;
+    assert.equal((await store.publishAutomatically()).status,'idle');
+    assert.equal((await admin`select status from public.blog_post where id=${c.post}`)[0].status,'draft');
+  });
+  await check('automatic publication holds edited content, altered media credit, stale evidence and factual failures',async()=>{
+    await reset();const c=await publicationDraft();await authorizePublication();
+    await admin`update public.blog_post set body=body||' Edited after generation' where id=${c.post}`;
+    assert.equal((await store.publishAutomatically()).status,'idle');
+    await admin`update public.blog_post p set body=c.artifact->'generated_post'->>'body' from blog_worker.candidate c where p.id=c.post_id`;
+    await admin`update public.blog_post p set revision=j.expected_revision+1 from blog_worker.image_job j where p.id=j.post_id`;
+    await admin`update public.blog_media set caption=null where post_id=${c.post}`;assert.equal((await store.publishAutomatically()).status,'idle');
+    await admin`update public.blog_media m set caption=j.caption from blog_worker.image_job j where m.post_id=j.post_id`;
+    await admin`update blog_worker.candidate set reason='source_changed_after_reservation' where id=${c.id}`;assert.equal((await store.publishAutomatically()).status,'idle');
+    await admin`update blog_worker.candidate set reason='human_review_required' where id=${c.id}`;
+    await admin`update blog_worker.dossier_version set assessment=jsonb_set(assessment,'{percentage}','89') where candidate_id=${c.id}`;
+    assert.equal((await store.publishAutomatically()).status,'idle');
+    assert.equal((await admin`select count(*)::int n from blog_worker.publication_receipt`)[0].n,0);
+  });
+  await check('two publication instances serialize and never duplicate a slot or receipt',async()=>{
+    await reset();await publicationDraft();await authorizePublication();
+    const results=await Promise.all([store.publishAutomatically(),second.publishAutomatically()]);
+    assert.equal(results.filter(r=>r.status==='scheduled').length,1);assert.equal(results.filter(r=>r.status==='idle').length,1);
+    assert.equal((await admin`select count(*)::int n from blog_worker.publication_receipt`)[0].n,1);
+    assert.equal((await admin`select count(*)::int n from blog_worker.attempt`)[0].n,3);
+  });
+  await check('ten native articles reserve ten distinct whole-hour slots in the exact 4/3/3 allocation without new model calls',async()=>{
+    await reset();await operator.attestSubscription(subscription());await authorizePublication();
+    const allocation=[['tecnologia',null],['tecnologia','software-ferramentas'],['tecnologia','hardware-robotica'],['tecnologia',null],['tecnologia','ia'],['tecnologia','ia'],['tecnologia','ia'],['negocios',null],['negocios','marketing'],['negocios','empreendedorismo-startups']];
+    let serial=7000;const policy={...googlePolicy,editorial_focus:FOCUSED_EDITORIAL_PLAN};
+    for(const topic of allocation){
+      const c=candidate(serial++);await store.ingest(c);const document={...dossierFixture(1),event_key:'publication-native-event-'+serial,category:topic[0],subcategory:topic[1]};
+      document.documents=document.documents.map(d=>({...d,url:d.url+'publication'+serial,origin_url:d.origin_url+'publication'+serial}));
+      await admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,source_hash,change_reason) values(${c.id},1,${admin.json(document)},${dossierHash(document)},${admin.json(assessDossier(document))},'test-editor',${c.evidence_hash},'Native automatic publication fixture')`;
+      const opts={...googleOptions(),policy,candidateId:c.id};
+      const comparison=await store.reserveComparison(opts);await store.finish(comparison,{outcome:'completed',text:JSON.stringify({claims:document.claims}),usage:smallHybridUsage});
+      const text=await store.reserve(opts);assert.equal((await store.finish(text,{...googleCompleted,usage:smallHybridUsage})).status,'draft');
+      const image=await store.reserveImage(opts);await store.finish(image,{outcome:'completed',image:publicationImage,usage:smallHybridUsage});
+      assert.equal((await store.publishAutomatically()).status,'scheduled');
+    }
+    const rows=await admin`select topic,count(*)::int n from blog_worker.publication_receipt group by topic order by topic`;
+    assert.deepEqual(Array.from(rows),[{topic:'ai',n:3},{topic:'business',n:3},{topic:'technology',n:4}]);
+    const [r]=await admin`select count(*)::int n,count(distinct scheduled_at)::int slots,bool_and(extract(minute from scheduled_at)=0 and extract(second from scheduled_at)=0) aligned from blog_worker.publication_receipt`;
+    assert.deepEqual(r,{n:10,slots:10,aligned:true});
+    assert.equal((await admin`select count(*)::int n from blog_worker.attempt`)[0].n,30);
+    assert.equal((await admin`select count(*)::int n from blog_worker.post_review`)[0].n,0);
+    assert.equal((await admin`select count(*)::int n from public.blog_post where status='scheduled' and not seo_noindex`)[0].n,10);
   });
   await check('CLI once, status and healthcheck use only the isolated DB with shipped generation off',async()=>{
     await reset();const health=join(directory,'health.json');

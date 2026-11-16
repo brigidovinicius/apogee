@@ -11,7 +11,7 @@ import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,valida
 import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap,isEvidenceGapClaim} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql','012-research-recovery.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql','012-research-recovery.sql','013-hourly-publication.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -489,7 +489,7 @@ export class Store {
       if(hash(candidate.evidence)!==candidate.evidence_hash || candidate.reason==='source_changed_after_reservation')return holdAfterCharge(tx,candidate.id,cost);
       const draft=cmsDraft(effective,article);
       const [{post_id}]=await tx`select blog_worker.import_draft(${candidate.id},${tx.json(draft)}) as post_id`;
-      await tx`update blog_worker.candidate set artifact=jsonb_strip_nulls(jsonb_build_object('research',artifact->'research')) || ${tx.json({article,evidence:effective.evidence,corroboration:corroboration??null,dossier_revision:version?.revision??null,cache_key:attempt.cache_key,seo:{guideline_id:SEO_GUIDELINES.id,sources:SEO_GUIDELINES.sources,prepared_in_same_call:true,human_review_required:true},human_review_required:true})} where id=${candidate.id}`;
+      await tx`update blog_worker.candidate set artifact=jsonb_strip_nulls(jsonb_build_object('research',artifact->'research')) || ${tx.json({article,generated_post:draft,evidence:effective.evidence,corroboration:corroboration??null,dossier_revision:version?.revision??null,cache_key:attempt.cache_key,seo:{guideline_id:SEO_GUIDELINES.id,sources:SEO_GUIDELINES.sources,prepared_in_same_call:true,human_review_required:true},human_review_required:true})} where id=${candidate.id}`;
       if(attempt.policy.automatic_image_generation_enabled){
         const brief=coverBrief(article);
         await tx`select blog_worker.queue_cover(${candidate.id},${brief.prompt},${brief.alt},${brief.caption})`;
@@ -579,11 +579,19 @@ export class Store {
       return {status:media_id?'cover_ready':'cover_review',post_id:candidate.post_id,media_id,charged_micro_usd:cost};
     });
   }
+  async publishAutomatically() {
+    const [installed]=await this.sql`select to_regprocedure('blog_worker.schedule_automatic_publication()') is not null as ready`;
+    if(!installed.ready)return {status:'disabled',reason:'publication_not_installed'};
+    const [{result}]=await this.sql`select blog_worker.schedule_automatic_publication() as result`;
+    return result;
+  }
   async syncPipeline(config,identity) {
     return this.sql.begin(async tx=>{
       await lock(tx);
       for(const s of config.sources)await tx`insert into blog_worker.source_catalog(id,definition) values(${s.id},${tx.json(s)}) on conflict do nothing`;
-      const snapshot={provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:googleUsageLimits(config.policy).dailyCalls??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:googleUsageLimits(config.policy).dailyTokens??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
+      const [publicationInstalled]=await tx`select to_regclass('blog_worker.publication_policy') is not null as ready`;
+      const publication=publicationInstalled.ready?(await tx`select enabled,starts_on,first_hour,last_hour from blog_worker.publication_policy where singleton`)[0]:{enabled:false};
+      const snapshot={automatic_publication:publication,provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:googleUsageLimits(config.policy).dailyCalls??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:googleUsageLimits(config.policy).dailyTokens??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
         automatic_access_validation:config.policy.google_automatic_access_validation_enabled===true,automatic_explainers:config.policy.automatic_explainers_enabled===true,explainer_after_local_hour:config.policy.explainer_after_local_hour??null,operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
         organization_id:identity?.organization_id??null,project_id:identity?.project_id??null,
         article_cap:config.policy.article_budget_micro_usd_cap_including_all_attempts,daily_cap:config.policy.daily_budget_micro_usd_cap,
