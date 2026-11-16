@@ -2,7 +2,7 @@
 
 ## Parecer
 
-O candidato local `40dbfc46fd2594f3829bf82442f3b1beacd1032b` implementa e testa as lacunas comprovadas. **Não está liberado para abrir vendas.** Faltam conteúdo/acordos, operação e configuração/aceite live. Este chat não publicou, migrou produção, enviou mensagens a pessoas ou ativou cobranças.
+O candidato da branch `feat/community-launch-validation-20261115`, no [PR #183](https://github.com/brigidovinicius/apogee/pull/183), implementa as lacunas comprovadas. A validação local completa inicial corresponde ao código `40dbfc46fd2594f3829bf82442f3b1beacd1032b`; os acréscimos posteriores e o CI exato são identificados abaixo. **Não está liberado para abrir vendas.** Faltam conteúdo/acordos, operação e configuração/aceite live. Este chat não publicou, migrou produção, enviou mensagens a pessoas ou ativou cobranças.
 
 A base foi `73b90ff`, preservando o design aprovado e os módulos já implementados. Trabalho em clone isolado `community-launch-validation-20261115`, sem editar a árvore do chat de release. Sem nova dependência, schema ou migração; hashes de 0019/0020 preservados.
 
@@ -75,3 +75,13 @@ O [texto completo do exercício](review/starter-exercise-20261115.md) “Um prim
 | 3 — ativação/rollback | Semântica da pausa corrigida e runbook | Aceite dos Gates 1/2 e autorização da versão concreta para cobrar | Proprietário | Pausa não bloqueia contratos/gestão | **Sim.** |
 
 Referências: [mapa de rotas/direitos](community-launch-routes-rights-20261115.md), [D/U/R/F](community-launch-traceability-20261115.md), [indicadores](community-launch-metrics-20261115.md), [operação/ativação/rollback](community-launch-operation-20261115.md), [runbook técnico existente](offer-completion-runbook-20261115.md). Nenhum indicador nulo é resultado zero e nenhuma captura sintética comprova operação live.
+
+
+## Verificações adicionais após abrir o PR
+
+- O proprietário autorizou enviar a branch e abrir PR para CI; isso não autoriza merge, deploy, publicação editorial ou ativação. O PR #183 é rascunho. A primeira execução remota em `3c63dd2` encontrou uma fixture do Radar que esperava evento aberto após 15/11; reaproveitada a correção existente `b71f239` do trabalho proprietário, testando aberto/encerrado com relógio fixo, sem alterar ingestão de produção. A execução final deve ser lida no PR antes de marcar o gate de CI.
+- A revisão do relatório separa **pagantes vigentes** de **contas aptas a acessar**: bloqueio ou verificação pendente não apagam uma fatura paga. Administradores e contas sintéticas identificadas continuam excluídos da base live. A regressão PostgreSQL verifica as duas contagens e a normalização.
+- Consulta Resend somente leitura, dentro da VPS, retornou HTTP 401 com `restricted_api_key`; a resposta sanitizada indicou permissão restrita e não chave inválida. Isso é limitação da chave de envio para consultar `/domains`, **não falha de envio comprovada**. Nenhuma chave foi extraída/rotacionada e nenhum email foi enviado. Domínio/entrega permanecem dependentes da conferência proprietária ([contrato oficial](https://resend.com/docs/api-reference/domains/list-domains)).
+
+
+Validação proporcional dos ajustes finais: relatório READ ONLY com pagante bloqueado separado de acesso elegível aprovado em PostgreSQL sintético (fila 2167); fixture de ingestão do Radar com os dois lados do prazo, **17/17 testes aprovados** (fila 2168). A main `6a12ac9` foi integrada, preservando o trabalho de vagas/orçamento do Radar e o worker do blog. O conflito limitou-se ao relógio da mesma fixture; mantidos os dois cenários aberto/encerrado. Nenhuma lógica de ingestão foi alterada para passar o teste.

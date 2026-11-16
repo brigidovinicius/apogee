@@ -17,12 +17,14 @@ export async function communityLaunchMetrics(sql, { from, to, mode, asOf = new D
     const [counts] = await tx`with bounds as (
         select ${from}::date::timestamp at time zone 'America/Sao_Paulo' as start,
           ${to}::date::timestamp at time zone 'America/Sao_Paulo' as finish,${snapshot}::timestamptz as reference
-      ), accounts as (
-        select u.id,u.created_at from "user" u,bounds b where u.role='member' and not u.blocked and u.email_verified and u.created_at<=b.reference
+      ), members as (
+        select u.id,u.created_at,u.blocked,u.email_verified from "user" u,bounds b where u.role='member' and u.created_at<=b.reference
           and (${mode === "test"} or lower(u.email) !~ '@(example\\.(test|invalid|com|org|net)|[^@]+\\.invalid|[^@]+\\.test)$')
+      ), accounts as (
+        select id,created_at from members where not blocked and email_verified
       ), ledger as (
         select s.user_id,s.cancel_at_period_end,i.* from community_subscription s join community_invoice i on i.subscription_id=s.id
-          join accounts a on a.id=s.user_id where s.livemode=${mode === "live"}
+          join members a on a.id=s.user_id where s.livemode=${mode === "live"}
       ), paid as (
         select * from ledger where status='paid' and not fraud_review_required
       ), active as (
@@ -40,6 +42,7 @@ export async function communityLaunchMetrics(sql, { from, to, mode, asOf = new D
           where e.opened_at>=a.created_at and e.opened_at<least(b.finish,b.reference)
             and date_trunc('week',e.opened_at at time zone 'America/Sao_Paulo')=date_trunc('week',a.created_at at time zone 'America/Sao_Paulo')) as first_event_same_week,
         (select count(distinct user_id)::int from active) as annual_accounts_current,
+        (select count(distinct p.user_id)::int from active p join accounts a on a.id=p.user_id) as annual_accounts_access_eligible,
         (select count(distinct user_id)::int from active where cancel_at_period_end) as active_accounts_renewal_cancelled,
         (select count(*)::int from ledger where fraud_review_required or status in ('fraud','disputed')) as invoices_requiring_review,
         (select count(*)::int from community_checkout_attempt c join accounts a on a.id=c.user_id,bounds b
@@ -73,7 +76,7 @@ export async function communityLaunchMetrics(sql, { from, to, mode, asOf = new D
       // or refund amounts; progress may be reopened. Never invent exact cohorts.
       conversion30Days: null, activation7Days: null, returnDays8To14: null, cashReceivedCents: null, churn: null,
       limitations: [
-        "Snapshot operacional: contas atualmente verificadas/não bloqueadas; exclui administradores e, em live, domínios sintéticos reservados. Outras contas de teste exigem inventário operacional.",
+        "Pagantes vigentes e elegibilidade de acesso são separados: bloqueio/verificação pendente não apagam pagamento. Cadastro/coorte usa contas atualmente verificadas/não bloqueadas. Exclui administradores e, em live, domínios sintéticos reservados; outros testes exigem inventário.",
         "Primeira consulta cobre radar_free_event. Escolhas anteriores sem taxonomia persistida não são classificadas por inferência. A coorte corrente pode estar incompleta.",
         "Tentativas de checkout são apenas as linhas retidas por conta/ambiente; uma nova tentativa substitui a anterior. Não são cliques, sessões concluídas ou receita.",
         "Lead e conta são contados separadamente. Não há atribuição individual de campanha, conversão automática ou junção por coincidência de email.",

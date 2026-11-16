@@ -29,12 +29,13 @@ test("launch report is read-only, aggregate, mode-bound and distinguishes normal
     const [before] = await sql`select count(*)::int as n from community_invoice`;
     const report = await communityLaunchMetrics(probe, options);
     assert.equal(report.readOnly,true);assert.equal(report.synthetic,true);
-    assert.equal(report.counts.annual_accounts_current,1);
+    assert.equal(report.counts.annual_accounts_current,2,"a blocked payer remains a financial subscriber");
+    assert.equal(report.counts.annual_accounts_access_eligible,1,"payment and permission are independent");
     assert.equal(report.counts.active_accounts_renewal_cancelled,1);
     assert.equal(report.counts.verified_accounts_created,6);
     assert.equal(report.counts.free_cohort_accounts,5);
     assert.equal(report.counts.first_event_same_week,1);
-    assert.equal(report.normalizedAnnualCents,143880);assert.equal(report.normalizedMonthlyCents,11990);
+    assert.equal(report.normalizedAnnualCents,287760);assert.equal(report.normalizedMonthlyCents,23980);
     for (const key of ["cashReceivedCents","conversion30Days","activation7Days","returnDays8To14","churn"]) assert.equal(report[key],null,key);
     assert.equal(report.counts.event_orientation_requests,null);assert.equal(report.consentedDailyBehavior,null);
     const live = await communityLaunchMetrics(probe, { ...options,mode:"live" });
