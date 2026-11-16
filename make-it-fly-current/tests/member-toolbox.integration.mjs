@@ -84,7 +84,7 @@ test("only paid annual periods in the correct mode open the catalogue; legacy Ra
 });
 test("member HTML never exposes links to free or legacy accounts and safe external links are explicit",async()=>{
   const Page=load("app/membros/ferramentas/page.tsx").default;
-  for(const id of ["free","legacy"]){current=id;const html=renderToStaticMarkup(await Page({searchParams:Promise.resolve({})}));assert.match(html,/Conhecer a assinatura anual/);assert.match(html,/acessos anteriores ao Radar/);assert.doesNotMatch(html,/labs\.google|Google Flow|category-video/);}
+  for(const id of ["free","legacy"]){current=id;const html=renderToStaticMarkup(await Page({searchParams:Promise.resolve({})}));assert.match(html,/Conhecer a assinatura anual/);assert.match(html,/Caixa de ferramentas para assinantes anuais/);assert.match(html,/href="\/membros\/oportunidades"/);assert.doesNotMatch(html,/labs\.google|Google Flow|category-video/);}
   current="paid";const html=renderToStaticMarkup(await Page({searchParams:Promise.resolve({categoria:"video"})}));
   assert.match(html,/Google Flow/);assert.match(html,/target="_blank"/);assert.match(html,/rel="noopener noreferrer"/);assert.match(html,/referrerPolicy="no-referrer"/);assert.match(html,/abre em nova aba/);
   assert.doesNotMatch(html,/reviewed_by|reviewer_name|version=/);
