@@ -73,21 +73,36 @@ export function actualUsageCost(price,usage) {
 }
 export function validateGrant(g,at,identity) {
   const now=+at;
-  const shared=g?.billing_scope==='authorized_shared_organization';
-  const scope=shared
-    ? g.organization_id==='org-approved-shared' && g.project_id==='proj-approved-shared'
-      && g.no_paid_balance===false && g.no_paid_billing===false && g.dedicated_project===false
-      && typeof g.authorization_reference==='string' && g.authorization_reference.length>=20
-      && g.credit_safety_buffer_micro_usd===1000000 && Number(g.remaining_micro_usd)>1000000
-    : g?.no_paid_balance===true && g?.no_paid_billing===true && g?.dedicated_project===true;
+  // A project budget or a recent balance observation does not choose which
+  // organization credits pay a request. Never reinstate the shared paid pool.
+  if(g && (g.billing_scope!=='isolated_free_credit_organization' || g.no_paid_balance!==true
+    || g.no_paid_billing!==true || g.dedicated_project!==true))fail('free_credit_isolation_required');
   if(!g || g.state!=='granted' || g.balance_type!=='included_subscription_benefit_only'
+    || !identity?.organization_id || !identity?.project_id
     || g.organization_id!==identity.organization_id || g.project_id!==identity.project_id
-    || !g.provider_grant_id || !g.verification_reference || !scope || g.no_auto_recharge!==true || g.revoked_at
+    || !g.provider_grant_id || !g.verification_reference || g.no_auto_recharge!==true || g.revoked_at
     || !integer(Number(g.amount_micro_usd)) || Number(g.amount_micro_usd)<1
     || !integer(Number(g.remaining_micro_usd)) || Number(g.remaining_micro_usd)>Number(g.amount_micro_usd)
     || !(Date.parse(g.starts_at)<=now) || !(Date.parse(g.expires_at)>now+300000)
-    || !Number.isFinite(Date.parse(g.verified_at)) || Date.parse(g.verified_at)>now || now-Date.parse(g.verified_at)>(shared?900000:86400000))fail('benefit_unverified');
+    || !Number.isFinite(Date.parse(g.verified_at)) || Date.parse(g.verified_at)>now || now-Date.parse(g.verified_at)>900000)fail('benefit_unverified');
   return g;
+}
+// This reports authorization only, never claims that API generation is active.
+export function freeCreditStatus(grants,identity,at=new Date()) {
+  if(!Array.isArray(grants)||grants.length!==1)return {eligible:false,reason:'benefit_unverified'};
+  try {
+    const g=validateGrant(grants[0],at,identity);
+    if(Number(g.remaining_micro_usd)===0)return {eligible:false,reason:'free_credit_exhausted'};
+    return {eligible:true,reason:null,expires_at:g.expires_at};
+  }catch(error){if(error instanceof Blocked)return {eligible:false,reason:error.code};throw error;}
+}
+export function authorizeFreeCreditDispatch(reservation,identity,at=new Date()) {
+  try {
+    const g=validateGrant(reservation.credit_grant,at,identity);
+    if(!Number.isSafeInteger(reservation.reserved_micro_usd)||reservation.reserved_micro_usd<1
+      || reservation.reserved_micro_usd>Number(g.remaining_micro_usd))fail('free_credit_reservation_required');
+    return null;
+  }catch(error){if(error instanceof Blocked)return {outcome:'not_sent',reason:error.code};throw error;}
 }
 export function cycleCap(policy,grant) {
   return Math.min(policy.cycle_budget_micro_usd_cap,Number(BigInt(grant.amount_micro_usd)*BigInt(policy.cycle_grant_fraction_cap_basis_points)/10000n));

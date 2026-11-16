@@ -68,6 +68,29 @@ try{
   const options=(overrides={})=>({policy,catalog:[price()],identity,sources:[source],...overrides});
   async function check(name,run){await run();passed++;console.log('PASS '+name);}
 
+  await check('free-credit authorization diagnostics are read-only and never reserve API calls',async()=>{
+    await reset();assert.deepEqual(await store.openAICreditStatus(identity),{eligible:false,reason:'benefit_unverified'});
+    await operator.attestGrant(grant(),identity);
+    const status=await runtime.begin(async tx=>{
+      await tx`set transaction read only`;
+      return new Store(tx).openAICreditStatus(identity);
+    });
+    assert.equal(status.eligible,true);
+    assert.equal((await admin`select count(*)::int as count from blog_worker.attempt`)[0].count,0);
+  });
+
+  await check('legacy mixed-balance grants cannot authorize text or images, even after an old attestation',async()=>{
+    await setup();const g={...grant(),billing_scope:'authorized_shared_organization',no_paid_balance:false,no_paid_billing:false,
+      dedicated_project:false,credit_safety_buffer_micro_usd:1000000,authorization_reference:'Historical authorization is insufficient for free-credit-only use'};
+    await assert.rejects(()=>operator.attestGrant(g,identity),/free_credit_isolation_required/);
+    await admin`update blog_worker.benefit set attestation=${admin.json(g)}`;
+    assert.deepEqual(await store.openAICreditStatus(identity),{eligible:false,reason:'free_credit_isolation_required'});
+    await assert.rejects(()=>store.reserve(options()),/free_credit_isolation_required/);
+    await assert.rejects(()=>store.reserveImage(options({policy:imagePolicy,catalog:[price(),imagePrice()]})),/free_credit_isolation_required/);
+    assert.equal((await admin`select count(*)::int as count from blog_worker.attempt`)[0].count,0);
+    assert.equal((await admin`select paused from blog_worker.control`)[0].paused,false);
+  });
+
   await check('new marketing and startup references are available to research without runtime registry-write privileges',async()=>{
     const rows=await runtime`select id,definition from blog_worker.research_reference where id in ('ARTICLE_REF45','ARTICLE_REF46','ARTICLE_REF47') order by id`;
     assert.deepEqual(rows.map(r=>r.id),['ARTICLE_REF45','ARTICLE_REF46','ARTICLE_REF47']);
@@ -1413,6 +1436,11 @@ try{
     assert.equal(state.alive,true);assert.equal(state.generation.reason,'generation_disabled');assert.equal(state.collection.sources,0);
     assert.equal(JSON.parse(await readFile(health,'utf8')).generation.reason,'generation_disabled');assert.equal(cli('healthcheck').status,0);
     assert.equal(JSON.parse(cli('status').stdout).usage.attempts,0);
+    const credits=cli('check-openai-credits');assert.equal(credits.status,0);
+    assert.deepEqual(JSON.parse(credits.stdout),{status:'credit_authorization_checked',eligible:false,reason:'benefit_unverified',
+      api_generation_active:false,active_provider:'google_subscription',provider_calls:0,key_configured:false,
+      auto_recharge_enabled:false,paid_balance_fallback_enabled:false});
+    assert.equal((await admin`select count(*)::int as count from blog_worker.attempt`)[0].count,0);
     const migration=cli('migrate');assert.equal(migration.status,1);assert.equal(JSON.parse(migration.stderr).reason,'explicit_execution_required');
   });
   console.log(JSON.stringify({status:'passed',integration_checks:passed,database:'isolated_native_postgresql',provider_calls:0}));

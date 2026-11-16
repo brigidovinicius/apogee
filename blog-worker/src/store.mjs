@@ -5,7 +5,7 @@ import {explainerCatalog,explainerId,explainerWindowOpen,nextExplainer,automatic
 import {randomUUID} from 'node:crypto';
 import {baselinePostIds,dailyDraftCap,topicAvailable,extraBatch} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 import {readFile} from 'node:fs/promises';
-import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits} from './policy.mjs';
+import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits,freeCreditStatus} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle,SEO_GUIDELINES} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
 import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap,isEvidenceGapClaim,resolveComparisonQuotes} from './corroboration.mjs';
@@ -41,6 +41,11 @@ export async function lock(tx) {
 }
 export class Store {
   constructor(sql){this.sql=sql;}
+  async openAICreditStatus(identity) {
+    // Read only: no attestation, reservation, provider request or quota change.
+    const rows=await this.sql`select * from blog_worker.benefit where starts_at<=now() and expires_at>now() and revoked_at is null`;
+    return freeCreditStatus(rows.map(benefit),identity);
+  }
   async attestSubscription(record){
     return this.sql.begin(async tx=>{const {at}=await lock(tx);validateSubscription(record,at);
       await tx`insert into blog_worker.subscription(singleton,account_email,plan,verified_at,valid_until,attestation) values(true,${record.account_email},${record.plan},${record.verified_at},${record.valid_until},${tx.json(record)}) on conflict(singleton) do update set account_email=excluded.account_email,plan=excluded.plan,verified_at=excluded.verified_at,valid_until=excluded.valid_until,attestation=excluded.attestation`;
@@ -426,7 +431,7 @@ export class Store {
         values(${id},${candidate.id},${grant?.id??null},${kind},${attempts.filter(a=>a.kind===kind).length+1},${key},${hash(body)},${tx.json(price)},${tx.json(recordedPolicy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?googleUsageLimits(policy,at).reservedTokens:0},${version?.revision??null},${version?.document_hash??null})`;
       await tx`update blog_worker.candidate set first_attempt_day=coalesce(first_attempt_day,${day}::date),
         first_attempt_week=coalesce(first_attempt_week,${week}::date) where id=${candidate.id}`;
-      return {status:'reserved',id,kind,candidate:effective,body,reserved_micro_usd:reserve,policy,identity,not_after:new Date(+at+180000).toISOString()};
+      return {status:'reserved',id,kind,candidate:effective,body,reserved_micro_usd:reserve,policy,identity,...(google?{}:{credit_grant:grant}),not_after:new Date(+at+180000).toISOString()};
     });
   }
   async finish(reservation,result) {
@@ -555,7 +560,7 @@ export class Store {
       await tx`insert into blog_worker.attempt(id,candidate_id,benefit_id,kind,ordinal,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,provider,quota_reserved)
         values(${id},${job.candidate_id},${grant?.id??null},'image',${previousImages.length+1},${hash(body)},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?googleUsageLimits(policy,at).reservedTokens:0})`;
       await tx`update blog_worker.image_job set state='reserved',updated_at=now() where candidate_id=${job.candidate_id}`;
-      return {status:'reserved',kind:'image',id,candidate_id:job.candidate_id,body,policy,identity,reserved_micro_usd:reserve,not_after:new Date(+at+180000).toISOString()};
+      return {status:'reserved',kind:'image',id,candidate_id:job.candidate_id,body,policy,identity,...(google?{}:{credit_grant:grant}),reserved_micro_usd:reserve,not_after:new Date(+at+180000).toISOString()};
     });
   }
   async finishImage(reservation,result) {

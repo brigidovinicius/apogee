@@ -25,7 +25,7 @@ async function main(env=process.env,args=process.argv.slice(2)) {
   const directory=pathToFileURL(resolve(env.BLOG_CONFIG_DIR??fileURLToPath(new URL('../config/',import.meta.url)))+'/');
   const config=await loadConfig(directory);
   if(command==='check'){console.log(JSON.stringify({status:'configuration_valid',generation_enabled:config.policy.generation_enabled,enabled_sources:config.sources.filter(s=>s.enabled).length,approved_prices:config.catalog.filter(p=>p.approved).length}));return;}
-  if(!['run','once','status','migrate','attest-grant','attest-subscription','reconcile','correct-image-price','resume'].includes(command))fail('invalid_command');
+  if(!['run','once','status','check-openai-credits','migrate','attest-grant','attest-subscription','reconcile','correct-image-price','resume'].includes(command))fail('invalid_command');
   const admin=['migrate','attest-grant','attest-subscription','reconcile','correct-image-price','resume'].includes(command);
   if(admin&&!args.includes('--execute'))fail('explicit_execution_required');
   const sql=await database(env,admin),store=new Store(sql);
@@ -34,6 +34,11 @@ async function main(env=process.env,args=process.argv.slice(2)) {
     if(command==='status'){console.log(JSON.stringify(await store.summary()));return;}
     if(command==='resume'){console.log(JSON.stringify(await store.resume()));return;}
     const identity={organization_id:env.BLOG_OPENAI_ORGANIZATION_ID,project_id:env.BLOG_OPENAI_PROJECT_ID};
+    if(command==='check-openai-credits'){
+      console.log(JSON.stringify({status:'credit_authorization_checked',...await store.openAICreditStatus(identity),
+        api_generation_active:false,active_provider:config.policy.provider,provider_calls:0,
+        key_configured:!!env.BLOG_OPENAI_API_KEY,auto_recharge_enabled:false,paid_balance_fallback_enabled:false}));return;
+    }
     if(command==='attest-grant'||command==='attest-subscription'||command==='reconcile'||command==='correct-image-price'){
       const at=args.indexOf('--file');if(at<0||!args[at+1])fail('grant_file_missing');
       const record=JSON.parse(await readFile(args[at+1],'utf8'));

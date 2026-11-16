@@ -1,5 +1,5 @@
 import {boundedJson} from './http.mjs';
-import {fail,hash} from './policy.mjs';
+import {fail,hash,authorizeFreeCreditDispatch} from './policy.mjs';
 import {openAIImageProvider} from './images.mjs';
 
 const ORIGIN='https://api.openai.com/v1/responses';
@@ -11,6 +11,8 @@ export function openAIProvider({apiKey,identity,fetcher=fetch,now=Date.now}) {
   const images=openAIImageProvider({apiKey,identity,fetcher,now});
   return async reservation=>{
     if(reservation.kind==='image')return images(reservation);
+    const blocked=authorizeFreeCreditDispatch(reservation,identity,new Date(now()));
+    if(blocked)return blocked;
     const body=reservation.body,p=reservation.policy;
     if(body.model!==p.model_id || body.tools.length || body.max_output_tokens!==p.billed_output_tokens_cap_including_reasoning
       || body.store!==false || body.background!==false || body.service_tier!=='default'
@@ -35,6 +37,9 @@ export function openAIProvider({apiKey,identity,fetcher=fetch,now=Date.now}) {
       }
       if(inputTokens>p.input_tokens_cap_including_overhead)return {outcome:'not_sent',reason:'input_limit'};
       if(!(Date.parse(reservation.not_after)>now()+90000))return {outcome:'not_sent',reason:'reservation_expired'};
+      // Counting may have taken time. Recheck expiry and scope before generation.
+      const blocked=authorizeFreeCreditDispatch(reservation,identity,new Date(now()));
+      if(blocked)return blocked;
       const response=await fetcher(ORIGIN,{method:'POST',redirect:'error',headers:{...headers,'X-Client-Request-Id':reservation.id},
         body:JSON.stringify(body),signal:AbortSignal.timeout(90000)});
       // Even an HTTP error can have an uncertain charge. Never release or retry based only on status.

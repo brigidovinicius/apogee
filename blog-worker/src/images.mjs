@@ -1,5 +1,5 @@
 import {createHash} from 'node:crypto';
-import {fail} from './policy.mjs';
+import {fail,authorizeFreeCreditDispatch} from './policy.mjs';
 import {boundedJson} from './http.mjs';
 
 const integer=n=>Number.isSafeInteger(n)&&n>=0;
@@ -75,6 +75,8 @@ export function validateWebp(buffer) {
 }
 export function openAIImageProvider({apiKey,identity,fetcher=fetch,now=Date.now}) {
   return async reservation=>{
+    const blocked=authorizeFreeCreditDispatch(reservation,identity,new Date(now()));
+    if(blocked)return blocked;
     const body=reservation.body,p=reservation.policy;
     if(body.model!==p.image_model_id||body.quality!==p.image_quality||body.size!==p.image_size||body.n!==1
       ||body.output_format!=='webp'||body.output_compression!==80||body.background!=='opaque'||body.moderation!=='auto'

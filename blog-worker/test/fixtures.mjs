@@ -11,6 +11,7 @@ export function price(at=new Date()) {return {model:policy.model_id,provider:'op
   input_micro_usd_per_million:1000000,output_micro_usd_per_million:4000000,fixed_micro_usd:0,input_counting_free_verified:true,
   verified_at:at.toISOString(),valid_until:new Date(+at+86400000).toISOString(),evidence_url:'https://developers.openai.com/api/docs/pricing'};}
 export function grant(at=new Date()) {return {...identity,provider_grant_id:'grant-test',state:'granted',balance_type:'included_subscription_benefit_only',
+  billing_scope:'isolated_free_credit_organization',
   amount_micro_usd:16000000,remaining_micro_usd:16000000,starts_at:new Date(+at-3600000).toISOString(),expires_at:new Date(+at+86400000).toISOString(),
   verified_at:at.toISOString(),no_paid_balance:true,no_auto_recharge:true,no_paid_billing:true,dedicated_project:true,verification_reference:'synthetic-fixture-not-a-provider-grant'};}
 export function candidate(number=1,editoria='ia',at=new Date()) {return normalizeItem({title:'Research update number '+number,
@@ -21,7 +22,7 @@ export const article={title:'Pesquisa apresenta método experimental',excerpt:'U
   paragraphs:[{text:'O comunicado institucional apresenta uma proposta para avaliar sistemas experimentais e descreve o estágio inicial do estudo.',sourceIds:['E1']},
     {text:'Os resultados ainda exigem novas avaliações antes de uma aplicação prática. O anúncio não confirma um lançamento comercial.',sourceIds:['E1']}]};
 export const completed={outcome:'completed',text:JSON.stringify(article),usage:{input_tokens:1000,output_tokens:500,total_tokens:1500,input_tokens_details:{cached_tokens:0,cache_write_tokens:0},output_tokens_details:{reasoning_tokens:100}}};
-export function reservation(at=new Date()) {return {id:'00000000-0000-0000-0000-000000000001',policy,body:buildRequest(candidate(1,'ia',at),policy),not_after:new Date(+at+180000).toISOString()};}
+export function reservation(at=new Date()) {return {id:'00000000-0000-0000-0000-000000000001',policy,credit_grant:grant(at),reserved_micro_usd:16000,body:buildRequest(candidate(1,'ia',at),policy),not_after:new Date(+at+180000).toISOString()};}
 
 export const imagePolicy={...policy,automatic_image_generation_enabled:true,input_counting_mode:'local_byte_bound'};
 export const imagePrice=()=>({model:'gpt-image-2',billing_mode:'standard',provider:'openai_api',currency:'USD',approved:true,quality:'medium',size:'1536x1024',
