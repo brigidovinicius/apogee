@@ -4,19 +4,20 @@ import { resolve } from 'node:path';
 const server=await createServer({configFile:false,envFile:false,root:process.cwd(),logLevel:'error',
   resolve:{alias:{'@':resolve('src')}},server:{middlewareMode:true,hmr:false},appType:'custom',optimizeDeps:{noDiscovery:true}});
 try{
-  const {jobSource}=await server.ssrLoadModule('/src/lib/ingestion/job-sources.ts');
+  const {jobSource,jobSourceIds}=await server.ssrLoadModule('/src/lib/ingestion/job-sources.ts');
   const {fetchPublicJobApi}=await server.ssrLoadModule('/src/lib/ingestion/job-api.ts');
   const {parseJobFeed}=await server.ssrLoadModule('/src/lib/ingestion/job-feed.ts');
+  const {publicationIssue}=await server.ssrLoadModule('/src/lib/ingestion/publication.ts');
   const result=[];
-  for(const id of ['jobs-whippy','jobs-nortal','jobs-n8n','jobs-gitlab']){
+  for(const id of (process.argv.length>2?process.argv.slice(2):jobSourceIds())){
     try{
       // This descriptor is in memory only; no stored source is activated.
       const source={...jobSource(id),active:true};
       const resource=await fetchPublicJobApi(source);
       const feed=parseJobFeed(JSON.parse(resource.body.toString('utf8')),source);
-      result.push({source:id,bytes:resource.body.byteLength,listedRequisitions:feed.listedRequisitions.length,
+      result.push({source:id,bytes:resource.body.byteLength,hash:resource.hash,listedRequisitions:feed.listedRequisitions.length,
         candidates:feed.candidates.map(c=>({title:c.title,url:c.sourcePageUrl,roleFamily:c.employment.roleFamily,
-          workplace:c.employment.workplace,brazilEligibility:c.employment.brazilEligibility,status:c.opportunityStatus}))});
+          workplace:c.employment.workplace,brazilEligibility:c.employment.brazilEligibility,status:c.opportunityStatus,publicationIssue:publicationIssue(c,source),eligibilityEvidence:c.evidenceJson.brazil_eligibility,workplaceEvidence:c.evidenceJson.workplace}))});
     }catch(e){result.push({source:id,error:e.message});process.exitCode=1;}
   }
   console.log(JSON.stringify({checkedAt:new Date().toISOString(),readOnly:true,paidApiCalls:0,sources:result},null,2));

@@ -5,8 +5,14 @@ const boards = {
   "jobs-n8n": { company: "n8n", board: "n8n", provider: "ashby" },
   "jobs-nortal": { company: "Nortal", board: "nortal", provider: "greenhouse" },
   "jobs-gitlab": { company: "GitLab", board: "gitlab", provider: "greenhouse" },
+  "jobs-latamcent": { company: "LatamCent", board: "latamcent", provider: "ashby" },
+  "jobs-truelogic": { company: "Truelogic", board: "truelogic", provider: "ashby" },
+  "jobs-elevenlabs": { company: "ElevenLabs", board: "ElevenLabs", provider: "ashby" },
+  "jobs-telnyx": { company: "Telnyx", board: "telnyx54", provider: "greenhouse" },
+  "jobs-oscilar": { company: "Oscilar", board: "oscilar", provider: "ashby" },
 } as const;
 
+export function jobSourceIds() { return Object.keys(boards); }
 export function jobBoard(id: string) { return boards[id as keyof typeof boards] ?? null; }
 export function jobFeedUrl(id: string) {
   const b = jobBoard(id);
