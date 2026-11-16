@@ -15,7 +15,8 @@ test("a área autenticada apresenta os quatro recursos aprovados e preserva o ac
   const page=opportunityLoader({
     "@/lib/billing/community-store":{communityAccess:async()=>({active:false})},
     "@/lib/billing/store":{radarAccess:async()=>({active:true,source:"legacy"})},
-    "@/lib/members/dal":{requireMember:async()=>({id:"a",name:"Ana Apogee",username:"ana"})},
+    "@/lib/members/dal":{requireSignedInMember:async()=>({id:"a",name:"Ana Apogee",username:"ana"})},
+    "@/lib/members/protection":{adultAccess:async()=>true},
     "@/lib/members/forum":{listCategories:async()=>[]},
     "@/components/members/member-bar":{MemberBar:()=>null},
     "next/link":{__esModule:true,default:"a"},

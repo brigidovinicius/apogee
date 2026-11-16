@@ -8,6 +8,8 @@
 
 Este PRD consolida a oferta, as jornadas e as prioridades gerais da Apogee. O PRD do Radar permanece como especificação especializada do catálogo e da coleta. O [PRD da área interna de membros](members-area-prd.md) detalha a nova caixa de ferramentas. O documento distingue decisões confirmadas, propostas para revisão e dependências. Em 15/11/2026 o proprietário autorizou o deploy das alterações anteriores e pediu planejamento da caixa de ferramentas antes de implementá-la. Autorização e publicação concluída são estados distintos.
 
+**Decisão de navegação de 16/11/2026:** contas autenticadas sem assinatura conhecem a plataforma completa por prévias das áreas exclusivas, com desfoque e interação bloqueada. O servidor continua protegendo dados e ações pagos. Cadastro pendente não deve impedir a apresentação do início e dos recursos; a participação e o uso privado mantêm seus requisitos. A conta e a saída ficam disponíveis no cabeçalho compartilhado. Detalhes e evidências no [PRD da área interna](members-area-prd.md) e na [revisão deste lote](member-experience-review-20261116.md).
+
 ## 1. Decisões confirmadas em 14/11/2026
 
 | ID | Decisão do proprietário | Consequência para o produto |

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { connection } from "next/server";
+import { headers } from "next/headers";
+import { getSessionCookie } from "better-auth/cookies";
+import { getCurrentMember } from "@/lib/members/dal";
+import { AccountProvider, type AccountIdentity } from "@/components/members/account-menu";
 import type { ReactNode } from "react";
 import { JourneyTracker } from "@/components/analytics/JourneyTracker";
 import { ApogeeDesignSystem } from "@/components/site/apogee-design-system";
@@ -84,6 +88,9 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   // Legal approvals are runtime configuration, absent from the build image.
   await connection();
+  // Public visitors never initialize auth or query the members database here.
+  const member = getSessionCookie(await headers()) ? await getCurrentMember().catch(() => null) : null;
+  const account: AccountIdentity | null = member ? { name: member.name, username: member.username, role: member.role } : null;
   return (
     <html
       lang="pt-BR"
@@ -104,7 +111,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <SkipLink />
         <SiteLegalLinksProvider value={getSiteLegalLinks()}>
           <McpAvailabilityProvider enabled={mcpEnabled()}>
-            <ApogeeDesignSystem>{localOfferPreview() && <OfferPreviewToolbar sandbox={localStripeSandboxReview()} />}{children}</ApogeeDesignSystem>
+            <AccountProvider account={account}><ApogeeDesignSystem>{localOfferPreview() && <OfferPreviewToolbar sandbox={localStripeSandboxReview()} />}{children}</ApogeeDesignSystem></AccountProvider>
           </McpAvailabilityProvider>
         </SiteLegalLinksProvider>
       </body>

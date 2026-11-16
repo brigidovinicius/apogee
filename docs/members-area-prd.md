@@ -5,6 +5,20 @@
 - **Decisor de produto:** Vinicius.
 - **Relação com o produto:** detalha a experiência interna do [PRD geral](apogee-prd.md), preservando a oferta anual e os direitos existentes do Radar.
 
+## Revisão da navegação logada — 16/11/2026
+
+Decisão direta do proprietário: a conta comum sem assinatura deve conhecer toda a plataforma, com as áreas exclusivas borradas e sem interação liberada. A apresentação de uma área não concede acesso ao seu conteúdo.
+
+- O início e as prévias de Ferramentas, Benefícios e Trilha são navegáveis por conta autenticada, inclusive com conferência de cadastro pendente. O catálogo privado não é consultado nem enviado no HTML/RSC dessas prévias.
+- O desfoque usa elementos ilustrativos estáticos, sem links, formulários ou registros privados; o bloco é `inert` e fica fora da árvore acessível. O aviso legível informa a restrição e o próximo passo.
+- Conta gratuita mantém a cota existente de eventos do Radar. Calendário e coleções respeitam o acesso completo ao Radar, inclusive direitos antigos; a prévia mantém o usuário na seção escolhida.
+- Cadastro pendente permite conhecer a navegação. Fórum, perfis, conteúdo pago e mutações mantêm as verificações atuais. A estrutura do fórum pode ser apresentada sem consultar conversas privadas.
+- “Minha conta” e “Sair da conta” ficam no cabeçalho compartilhado, incluindo páginas públicas. A navegação interna identifica conta, saída, recurso atual, calendário, coleções, assinatura e suporte.
+- Troca ou saída de conta informa outras abas da Apogee para atualizar a sessão; não armazena identidade ou credenciais no mecanismo de aviso.
+- Benefícios sem acordo confirmado permanecem em preparação. A nova apresentação não anuncia vantagens, licenças, aulas ou resgates inexistentes.
+
+Implementação e evidências deste lote: [revisão de navegação](member-experience-review-20261116.md). Publicação continua sendo um gate separado após revisão da versão concreta.
+
 ## 1. Problema e objetivo
 
 O membro precisa encontrar recursos úteis sem procurar links em conversas dispersas. A área interna deve orientar o próximo passo e reunir os acessos da comunidade. A caixa de ferramentas será um catálogo curado de links externos organizado por finalidade.

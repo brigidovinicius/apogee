@@ -132,7 +132,8 @@ export async function signIn(_: FormState, form: FormData): Promise<FormState> {
 
 export async function signOut(): Promise<void> {
   await getAuth().api.signOut({ headers: await headers() });
-  redirect("/membros/entrar");
+  revalidatePath("/", "layout");
+  redirect("/membros/entrar", RedirectType.replace);
 }
 
 async function postingAllowed(userId: string) {

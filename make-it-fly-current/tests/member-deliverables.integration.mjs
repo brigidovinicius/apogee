@@ -22,8 +22,10 @@ before(async () => {
   await sql`insert into drizzle.__drizzle_migrations(hash,created_at) values(${createHash("sha256").update(source).digest("hex")},${predecessor.when})`;
   for (const id of users) await sql`insert into "user"(id,name,email,email_verified,role,adult_declared,blocked) values(${id},'Pessoa Sintética',${id + "@example.test"},true,${id === "admin" ? "admin" : "member"},true,${id === "blocked"})`;
   process.env.STRIPE_MODE = "test";
+  const signedIn = async () => { if (!actor || actor === "blocked") throw Error("AUTH"); return { id: actor, role: actor === "admin" ? "admin" : "member" }; };
   load = opportunityLoader({ "@/lib/members/db": { getSql: () => sql }, "@/lib/members/dal": {
-    requireMember: async () => { if (!actor || actor === "blocked") throw Error("AUTH"); return { id: actor, role: actor === "admin" ? "admin" : "member" }; },
+    requireMember: signedIn,
+    requireSignedInMember: signedIn,
     requireAdmin: async () => { if (actor !== "admin") throw Error("ADMIN"); return { id: actor, role: "admin" }; },
   } });
   store = load("lib/deliverables/store.ts"); validations = load("lib/deliverables/validation.ts");
