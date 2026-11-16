@@ -37,12 +37,13 @@ export function prepareRequest(key, envelope, body, { stream = 'radar', purpose 
   if (!Object.hasOwn(LIMITS.streams, stream) || !['normal','recheck','recovery'].includes(purpose) || stream === 'reserve' && purpose === 'normal') throw Error('invalid_budget_stream');
   if (!/^[a-zA-Z0-9:_-]{8,160}$/.test(key) || !Object.hasOwn(LIMITS.envelopes, envelope)) throw new Error('invalid_operation');
   if (!body || typeof body !== 'object' || Array.isArray(body) || !/^[a-z0-9][a-z0-9.-]{1,79}$/.test(body.model || '')) throw new Error('invalid_request');
-  const allowed = ['model', 'input', 'instructions', 'max_output_tokens', 'tools', 'background', 'store', 'stream'];
+  const allowed = ['model', 'input', 'instructions', 'max_output_tokens', 'tools', 'background', 'store', 'stream', 'service_tier'];
   if (Object.keys(body).some(key => !allowed.includes(key)) || typeof body.input !== 'string' ||
     (body.instructions !== undefined && typeof body.instructions !== 'string')) throw new Error('text_only_request_required');
   if (!Number.isSafeInteger(body.max_output_tokens) || body.max_output_tokens < 1 || body.max_output_tokens > 8000) throw new Error('invalid_output_limit');
   if (body.tools !== undefined && (!Array.isArray(body.tools) || body.tools.length)) throw new Error('tools_not_supported');
   if (body.background || body.store || body.stream) throw new Error('unsupported_request_mode');
+  if (body.service_tier !== undefined && body.service_tier !== 'default') throw new Error('unsupported_service_tier');
   const serialized = JSON.stringify(Object.fromEntries(Object.keys(body).sort().map(key => [key, body[key]])));
   const inputBound = Buffer.byteLength(serialized, 'utf8') + 4096;
   if (inputBound > 64_000) throw new Error('input_limit');

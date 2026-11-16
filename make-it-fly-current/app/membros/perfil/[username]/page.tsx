@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AvatarInitials } from "@/components/members/avatar-initials";
 import { formatDateTime, formatMonthYear, plural } from "@/components/members/format";
-import { MemberBar } from "@/components/members/member-bar";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import { verificationPagePreview } from "@/components/members/member-page-access";
 import styles from "@/components/members/members.module.css";
 import { requireMember } from "@/lib/members/dal";
@@ -30,8 +30,8 @@ export default async function ProfilePage({ params }: Props) {
   const isOwn = profile.id === member.id;
 
   return (
-    <div className={styles.container}>
-      <MemberBar member={member} current={isOwn ? "perfil" : undefined} />
+    <MemberWorkspace member={member} current={isOwn ? "perfil" : undefined}><div className={styles.container}>
+
       <header className={styles.pageHead}>
         <div className={styles.profileHead}>
           <AvatarInitials name={profile.name} userId={profile.id} image={profile.image} size="large" />
@@ -98,6 +98,6 @@ export default async function ProfilePage({ params }: Props) {
           </ul>
         )}
       </section>
-    </div>
+    </div></MemberWorkspace>
   );
 }

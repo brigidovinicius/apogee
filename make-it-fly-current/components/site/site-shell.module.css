@@ -428,3 +428,5 @@
   .header[data-editorial] .brand img { width: 4.75rem; }
   .header[data-editorial] .signature { font-size: 1.375rem; }
 }
+
+.header[data-compact] .headerInner { grid-template-columns: auto 1fr; min-height: 5rem; }

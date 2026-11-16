@@ -6,7 +6,7 @@ import { CalendarSaveProvider } from "@/components/opportunities/save-opportunit
 import { calendarSaveState } from "@/lib/opportunities/personal-calendar";
 import { calendarReturnPath } from "@/lib/opportunities/calendar-navigation";
 import type { Metadata } from "next";
-import { MemberBar } from "@/components/members/member-bar";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
 import styles from "@/components/members/members.module.css";
 import { requireSignedInMember } from "@/lib/members/dal";
@@ -38,19 +38,19 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
   const saveState=await calendarSaveState(catalogue?.opportunities.map(item=>item.id)??[],returnTo);
 
   return (
-    <div className={styles.container}>
-      <MemberBar member={member} current="radar" />
+    <MemberWorkspace member={member} current="radar"><div className={styles.container}>
+
       <header className={styles.pageHead}>
         <div>
-          <p className={styles.eyebrow}>Área de membros · Radar de oportunidades</p>
+          <p className={styles.eyebrow}>Oportunidades</p>
           <h1 className={styles.title}>Radar de oportunidades</h1>
           <p className={styles.lead}>
-            Descubra seu próximo passo no Radar. Conheça a entrada gratuita com até 10 eventos distintos e a assinatura da comunidade com Radar completo incluído. Seus acessos anteriores são preservados.
+            Encontre eventos, programas e oportunidades para participar.
           </p>
         </div>
       </header>
       {quota ? <RadarQuota used={quota.used} limit={quota.limit} /> : access.active ? <p>Seu acesso ao Radar completo está ativo.</p> : null}
       {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
-    </div>
+    </div></MemberWorkspace>
   );
 }

@@ -91,7 +91,7 @@ test("member navigation reveals the admin switch only for an authorized role", a
   ]);
 
   assert.match(memberBar, /member\.role === "admin"/);
-  assert.match(memberBar, /<AdminModeSwitcher mode="user" \/>/);
+  assert.match(memberBar, /<AdminModeSwitcher mode="user" compact \/>/);
   assert.match(switcher, /href="\/admin"/);
   assert.match(auth, /role: "member"/);
   assert.match(auth, /input: false/);

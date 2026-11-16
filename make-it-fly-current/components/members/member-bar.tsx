@@ -1,50 +1,54 @@
 import Link from "next/link";
+import { BookOpen, CalendarDays, Compass, Gift, House, Layers, MessageCircle, Newspaper, Wrench } from "lucide-react";
 import { signOut } from "@/app/membros/actions";
 import { AdminModeSwitcher } from "@/components/admin/admin-mode-switcher";
 import type { CurrentMember } from "@/lib/members/dal";
 import { AvatarInitials } from "./avatar-initials";
-import styles from "./members.module.css";
 import { mcpEnabled } from "@/lib/mcp/config";
 import { SignOutButton } from "./account-menu";
 import { personalCalendarEnabled } from "@/lib/opportunities/personal-calendar";
 import { collectionsEnabled } from "@/lib/opportunities/collections";
+import { MemberNavigation } from "./member-navigation";
+import styles from "./member-navigation.module.css";
 
-export function MemberBar({ member, current }: { member: CurrentMember; current?: "home" | "forum" | "perfil" | "radar" | "calendario" | "colecoes" | "protecao" | "ferramentas" | "beneficios" | "trilha" | "assinatura" | "suporte" }) {
-  return (
-    <div className={styles.memberBar}>
-      {member.role === "admin" ? <AdminModeSwitcher mode="user" /> : null}
-      <div className={styles.memberIdentity}>
-        <AvatarInitials name={member.name} userId={member.id} image={member.image} size="small" />
-        <span>@{member.username}</span>
-        <form action={signOut}><SignOutButton /></form>
-      </div>
-      <nav aria-label="Navegação da área de membros">
-        <span className={styles.memberNavLabel}>Área de membros</span>
-        <Link href="/membros" aria-current={current === "home" ? "page" : undefined}>
-          Minha comunidade
-        </Link>
-        <Link href="/membros#forum" aria-current={current === "forum" ? "page" : undefined}>
-          Fórum
-        </Link>
-        <Link href="/membros/oportunidades" aria-current={current === "radar" ? "page" : undefined}>
-          Radar
-        </Link>
-        {personalCalendarEnabled() ? <Link href="/membros/meu-calendario" prefetch={false} aria-current={current === "calendario" ? "page" : undefined}>Meu calendário</Link> : null}
-        {collectionsEnabled() ? <Link href="/membros/colecoes" prefetch={false} aria-current={current === "colecoes" ? "page" : undefined}>Minhas coleções</Link> : null}
-        <Link href="/membros/ferramentas" prefetch={false} aria-current={current === "ferramentas" ? "page" : undefined}>
-          Caixa de ferramentas
-        </Link>
-        <Link href={`/membros/perfil/${member.username}`} aria-current={current === "perfil" ? "page" : undefined}>
-          Meu perfil
-        </Link>
-        <Link href="/membros/beneficios" aria-current={current === "beneficios" ? "page" : undefined}>Benefícios</Link>
-        <Link href="/membros/trilha" aria-current={current === "trilha" ? "page" : undefined}>Trilha</Link>
-        <Link href="/membros/assinatura" aria-current={current === "assinatura" ? "page" : undefined}>Assinatura</Link>
-        <Link href="/membros/suporte" aria-current={current === "suporte" ? "page" : undefined}>Suporte</Link>
-        <Link href="/membros/protecao" aria-current={current === "protecao" ? "page" : undefined}>Cadastro protegido</Link>
-        {mcpEnabled() && <Link href="/membros/integracoes/mcp">Incluir no meu ChatGPT</Link>}
-        {mcpEnabled() && <Link href="/membros/integracoes/mcp#claude">Incluir no meu Claude</Link>}
-      </nav>
+export type MemberSection = "home" | "forum" | "perfil" | "radar" | "calendario" | "colecoes" | "protecao" | "ferramentas" | "beneficios" | "trilha" | "assinatura" | "suporte" | "blog" | "integracoes";
+export type MemberBarProps = { member: CurrentMember; current?: MemberSection };
+
+export function MemberBar({ member, current }: MemberBarProps) {
+  const links = [
+    { key: "home", href: "/membros", label: "Início", icon: House },
+    { key: "trilha", href: "/membros/trilha", label: "Trilha de aprendizagem", icon: BookOpen },
+    { key: "beneficios", href: "/membros/beneficios", label: "Benefícios", icon: Gift },
+    { key: "ferramentas", href: "/membros/ferramentas", label: "Caixa de ferramentas", icon: Wrench },
+    { key: "radar", href: "/membros/oportunidades", label: "Radar", icon: Compass },
+    { key: "blog", href: "/membros/blog", label: "Blog", icon: Newspaper },
+    { key: "forum", href: "/membros#forum", label: "Fórum", icon: MessageCircle },
+    ...(personalCalendarEnabled() ? [{ key: "calendario", href: "/membros/meu-calendario", label: "Meu calendário", icon: CalendarDays }] : []),
+    ...(collectionsEnabled() ? [{ key: "colecoes", href: "/membros/colecoes", label: "Minhas coleções", icon: Layers }] : []),
+  ];
+  const account = [
+    { key: "perfil", href: `/membros/perfil/${member.username}`, label: "Meu perfil" },
+    { key: "assinatura", href: "/membros/assinatura", label: "Assinatura" },
+    { key: "protecao", href: "/membros/protecao", label: "Verificação da conta" },
+    ...(mcpEnabled() ? [{ key: "integracoes", href: "/membros/integracoes/mcp", label: "ChatGPT e Claude" }] : []),
+    { key: "suporte", href: "/membros/suporte", label: "Suporte" },
+  ];
+  return <MemberNavigation>
+    {member.role === "admin" ? <AdminModeSwitcher mode="user" compact /> : null}
+    <div className={styles.identity}>
+      <AvatarInitials name={member.name} userId={member.id} image={member.image} size="small" />
+      <span>@{member.username}</span>
+      <form action={signOut}><SignOutButton compact /></form>
     </div>
-  );
+    <nav aria-label="Navegação da área de membros" className={styles.links}>
+      {links.map(({ key, href, label, icon: Icon }) => <Link key={key} href={href} prefetch={false} aria-current={current === key ? "page" : undefined}><Icon size={18} strokeWidth={1.6} aria-hidden="true" /><span>{label}</span></Link>)}
+    </nav>
+    <details className={styles.account} open={account.some(link => link.key === current)}>
+      <summary>Sua conta</summary>
+      <nav aria-label="Configurações da conta" className={styles.links}>
+        {account.map(({ key, href, label }) => <Link key={key} href={href} prefetch={false} aria-current={current === key ? "page" : undefined}>{label}</Link>)}
+      </nav>
+    </details>
+
+  </MemberNavigation>;
 }

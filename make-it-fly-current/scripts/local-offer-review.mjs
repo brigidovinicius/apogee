@@ -66,6 +66,15 @@ try {
   await db.sql.unsafe(await readFile(new URL('../sql/community-contacts.sql',import.meta.url),'utf8'));
   await db.sql`insert into forum_category(slug,name,description) values('boas-vindas','Boas-vindas','Compartilhe seu próximo passo e troque experiências. Não publique senhas, dados de clientes ou informações pessoais de terceiros.') on conflict(slug) do nothing`;
   }
+  // Local-only published/draft fixtures exercise member Blog pagination and visibility.
+  for (let index = 1; index <= 14; index++) {
+    await db.sql`insert into blog_post(slug,title,excerpt,body,category,status,author_id,author_name,published_at)
+      values(${'revisao-local-'+index},${'Artigo de revisão '+index},'Conteúdo sintético para validar a navegação do Blog.',
+        'Este artigo existe apenas no ambiente local de testes.\n\nNavegue entre os temas e volte à lista pelo menu lateral.',
+        ${index % 2 ? 'tecnologia' : 'ciencias'},'published','revisaoadmin','Revisão local',now()) on conflict(slug) do nothing`;
+  }
+  await db.sql`insert into blog_post(slug,title,excerpt,body,category,status,author_id,author_name)
+    values('rascunho-local','Rascunho privado de revisão','Não publicado','PRIVATE_BLOG_DRAFT','tecnologia','draft','revisaoadmin','Revisão local') on conflict(slug) do nothing`;
   await writeFile(statePath,JSON.stringify({url:db.url,dir:db.dir,data:db.data,pid:process.pid}),{mode:0o600});
 
   // Inherit only execution settings; no production credentials or dotenv are copied.

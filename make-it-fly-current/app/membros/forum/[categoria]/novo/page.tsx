@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MemberBar } from "@/components/members/member-bar";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import { verificationPagePreview } from "@/components/members/member-page-access";
 import styles from "@/components/members/members.module.css";
 import { TopicForm } from "@/components/members/topic-form";
@@ -19,8 +19,8 @@ export default async function NewTopicPage({ params }: { params: Promise<{ categ
   if (!category) notFound();
 
   return (
-    <div className={styles.container}>
-      <MemberBar member={member} current="forum" />
+    <MemberWorkspace member={member} current="forum"><div className={styles.container}>
+
       <ol className={styles.breadcrumbs}>
         <li>
           <Link href="/membros">Fórum</Link>
@@ -34,6 +34,6 @@ export default async function NewTopicPage({ params }: { params: Promise<{ categ
       <div className={styles.panel} style={{ marginTop: "2rem" }}>
         <TopicForm category={category.slug} />
       </div>
-    </div>
+    </div></MemberWorkspace>
   );
 }

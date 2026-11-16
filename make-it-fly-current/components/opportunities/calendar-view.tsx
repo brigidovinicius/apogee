@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { opportunityDetailPath } from '@/lib/opportunities/detail-path';
 import { calendarEntries,publicOpportunityPath } from '@/lib/opportunities/discovery';
 import { calendarEntryOverlaps, calendarNavigationQuery, calendarPeriodRange, filterCalendarEntries, shiftCalendarMonth, type CalendarFilters } from '@/lib/opportunities/calendar-filters';
 import { dateInBrazil,type StudentOpportunity } from '@/lib/opportunities/types';
@@ -7,6 +8,7 @@ import { CalendarMonth } from './calendar-month';
 import { SaveOpportunityButton } from './save-opportunity';
 import styles from './calendar.module.css';
 export function CalendarView({items,filters,path='/membros/meu-calendario',query=''}:{items:readonly StudentOpportunity[];filters:CalendarFilters;path?:string;query?:string}) {
+  const member=path.startsWith('/membros/');
   const today=dateInBrazil();
   const entries=calendarEntries(items);
   const month=filters.month??today.slice(0,7);
@@ -33,8 +35,8 @@ export function CalendarView({items,filters,path='/membros/meu-calendario',query
     <p role="status">{visible.length} {visible.length===1?'etapa encontrada':'etapas encontradas'} neste recorte.</p>
     {filters.view==='month'?<>
       <CalendarMonth entries={visible} month={month} selectedDay={selectedDay} today={today} path={path} query={query}/>
-      <section id="agenda-do-dia" aria-label={'Agenda de '+selectedDay}><CalendarList items={items} entries={visible.filter(e=>calendarEntryOverlaps(e,selectedDay,selectedDay))} allStages selectedDay={selectedDay}/></section>
-    </>:visible.length>0?<CalendarList items={items} entries={visible} allStages startDate={range.start}/>:<p className={styles.empty}>Nenhuma etapa para estes filtros. Ajuste o período ou use Limpar. A agenda reúne as próximas etapas disponíveis; meses anteriores podem não ter histórico completo.</p>}
-    {undated.length>0&&<section><h2>Próxima data a anunciar</h2><ul className={styles.list}>{undated.map(i=><li className={styles.row} key={i.id}><Link href={publicOpportunityPath(i)}>{i.title}</Link><SaveOpportunityButton id={i.id} title={i.title}/></li>)}</ul><p>As oportunidades aparecem no mês quando uma próxima data for confirmada.</p></section>}
+      <section id="agenda-do-dia" aria-label={'Agenda de '+selectedDay}><CalendarList member={member} items={items} entries={visible.filter(e=>calendarEntryOverlaps(e,selectedDay,selectedDay))} allStages selectedDay={selectedDay}/></section>
+    </>:visible.length>0?<CalendarList member={member} items={items} entries={visible} allStages startDate={range.start}/>:<p className={styles.empty}>Nenhuma etapa para estes filtros. Ajuste o período ou use Limpar. A agenda reúne as próximas etapas disponíveis; meses anteriores podem não ter histórico completo.</p>}
+    {undated.length>0&&<section><h2>Próxima data a anunciar</h2><ul className={styles.list}>{undated.map(i=><li className={styles.row} key={i.id}><Link href={member ? opportunityDetailPath(i.id) : publicOpportunityPath(i)}>{i.title}</Link><SaveOpportunityButton id={i.id} title={i.title}/></li>)}</ul><p>As oportunidades aparecem no mês quando uma próxima data for confirmada.</p></section>}
   </>;
 }

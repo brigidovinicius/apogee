@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireSignedInMember } from "@/lib/members/dal";
 import { mcpEnabled, mcpResource } from "@/lib/mcp/config";
 import { listMcpConnections } from "@/lib/mcp/connections";
-import { MemberBar } from "@/components/members/member-bar";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import { McpSetup } from "@/components/members/mcp-setup";
 import { disconnectMcp } from "./actions";
 import styles from "@/components/members/members.module.css";
@@ -16,8 +16,7 @@ export default async function McpConnectionsPage({ searchParams }: { searchParam
   const member = await requireSignedInMember("/membros/integracoes/mcp");
   const connections = await listMcpConnections(member.id);
   const params = await searchParams;
-  return <>
-    <MemberBar member={member} />
+  return <MemberWorkspace member={member} current="integracoes">
     <div className={styles.container}>
       <h1 className={styles.title}>Conexões de IA</h1>
       <p className={styles.lead}>Leve o Radar e as funções da sua conta para o ChatGPT ou o Claude, com o acesso que você já tem na Apogee.</p>
@@ -33,5 +32,5 @@ export default async function McpConnectionsPage({ searchParams }: { searchParam
         </form>
       </div>) : <p>Nenhum aplicativo conectado.</p>}
     </div>
-  </>;
+  </MemberWorkspace>;
 }

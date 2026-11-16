@@ -1,0 +1,25 @@
+.sidebar { position: sticky; top: 1.5rem; min-width: 0; color: #f4f8fc; font-family: var(--font-inter), Arial, sans-serif; font-size: .875rem; }
+.navigation { max-height: calc(100dvh - 3rem); overflow-y: auto; overscroll-behavior: contain; padding: .25rem .75rem .25rem 0; scrollbar-width: thin; }
+.links { display: grid; gap: .25rem; }
+.links a { display: flex; align-items: center; gap: .75rem; min-height: 44px; padding: .65rem .75rem; border-radius: .35rem; color: #c4d3e1; line-height: 1.4; text-decoration: none; }
+.links svg { flex: none; }
+.links a:hover { background: #18344e; color: white; }
+.links a[aria-current="page"] { color: #07182d; background: #b9d3ee; font-weight: 600; }
+.account { margin-top: 1rem; padding-top: .75rem; border-top: 1px solid #31465b; }
+.account summary { padding: .75rem; cursor: pointer; color: #c4d3e1; min-height: 44px; }
+.identity { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: .55rem; margin-bottom: 1rem; padding: 0 .25rem 1rem; border-bottom: 1px solid #31465b; font-size: .75rem; }
+.identity > span { min-width: 0; overflow-wrap: anywhere; }
+.identity form { margin: 0; }
+.identity button { min-height: 44px; padding: .4rem; background: transparent; color: #f4f8fc; border: 0; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; }
+.sidebar :is(a,button,summary):focus-visible { outline: 2px solid #b9d3ee; outline-offset: 2px; }
+.toggle { display: none; }
+.skip { position: absolute; top: 0; left: 0; transform: translateY(-200vh); }
+.skip:focus { transform: none; z-index: 3; background: #b9d3ee; color: #07182d; padding: .75rem; }
+@media (max-width: 900px) {
+  .sidebar { position: static; }
+  .toggle { display: flex; align-items: center; gap: .75rem; width: 100%; min-height: 48px; padding: .75rem 1rem; border: 1px solid #58718a; border-radius: .35rem; background: #10263b; color: #f4f8fc; font: inherit; text-align: left; cursor: pointer; }
+  .navigation { display: none; max-height: none; padding: 1rem .25rem .25rem; }
+  .navigation[data-open="true"] { display: block; }
+  .identity { max-width: 25rem; }
+}
+@media (prefers-reduced-motion: reduce) { .sidebar * { scroll-behavior: auto; } }

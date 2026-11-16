@@ -25,9 +25,9 @@ test("a área autenticada apresenta os quatro recursos aprovados e preserva o ac
   assert.match(html,/href="\/membros\/oportunidades"/);
   for(const resource of ["Radar","Caixa de ferramentas","Benefícios","Trilha"]) assert.ok(html.includes(resource));
   assert.match(html,/href="\/membros\/ferramentas"/);
-  assert.match(html,/Exclusivo da assinatura anual/);
+  assert.match(html,/Exclusivo da assinatura/);
   assert.match(html,/Conversas da comunidade/);
-  assert.match(html,/acesso anterior ao Radar está preservado/);
+  assert.match(html,/Radar completo ativo/);
 });
 
 test("visitantes continuam redirecionados e não recebem os dados completos do Radar", async () => {

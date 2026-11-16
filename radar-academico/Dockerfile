@@ -12,15 +12,22 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# Optional foundation worker: no Next build, public server, blog files or API transport.
+# Dedicated PostgreSQL client only; independent from the web dependency graph/build.
+FROM node:22-alpine AS ai-deps
+WORKDIR /app/ai-worker
+COPY ai-worker/package.json ai-worker/package-lock.json ./
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+
+# Optional worker: no Next build, public server or blog files.
 FROM node:22-alpine AS ai-runner
 WORKDIR /app
 ARG APOGEE_RELEASE_SHA=local
-LABEL org.opencontainers.image.title="Radar AI foundation" \
+LABEL org.opencontainers.image.title="Radar AI worker" \
       org.opencontainers.image.revision="${APOGEE_RELEASE_SHA}"
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 radarai && adduser --system --uid 1001 radarai
 COPY --chown=radarai:radarai ai-worker ./ai-worker
+COPY --from=ai-deps --chown=radarai:radarai /app/ai-worker/node_modules ./ai-worker/node_modules
 USER radarai
 CMD ["node", "ai-worker/cli.mjs", "run"]
 

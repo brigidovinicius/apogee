@@ -5,7 +5,7 @@ import { interfaceText } from "@/lib/presentation-text.mjs";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { formatDateTime } from "@/components/members/format";
-import { MemberBar } from "@/components/members/member-bar";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import styles from "@/components/members/members.module.css";
 import { requireSignedInMember } from "@/lib/members/dal";
 import { adultAccess } from "@/lib/members/protection";
@@ -23,18 +23,17 @@ export default async function MemberHomePage() {
   const annual = await communityAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null);
 
   return (
-    <div className={styles.container}>
-      <MemberBar member={member} current="home" />
+    <MemberWorkspace member={member} current="home"><div className={styles.container}>
+
       <header className={styles.pageHead}>
         <div>
-          <p className={styles.eyebrow}>Comunidade Apogee</p>
-          <h1 className={styles.title}>Sua comunidade.</h1>
-          <p className={styles.lead}>Conhecimento, oportunidades e conexões para construir mais.</p>
+          <h1 className={styles.title}>Minha comunidade</h1>
+
         </div>
       </header>
 
-      <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} />
-      {!verified ? <p className={styles.verificationNotice}>Seu cadastro precisa de verificação para participar e acessar conteúdo protegido. Você já pode conhecer a plataforma. <Link href="/membros/protecao?next=%2Fmembros">Verificar minha conta</Link></p> : null}
+      <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} contentAccess={member.role === "admin" || Boolean(annual?.active)} />
+      {!verified ? <p className={styles.verificationNotice}>Verifique sua conta para participar da comunidade. <Link href="/membros/protecao?next=%2Fmembros">Verificar minha conta</Link></p> : null}
       <section id="forum" aria-labelledby="member-forum-title"><h2 id="member-forum-title">Conversas da comunidade</h2>
 
       {!verified ? <LockedMemberArea kind="forum" next="/membros#forum" reason="verification" /> : categories.length === 0 ? (
@@ -67,6 +66,6 @@ export default async function MemberHomePage() {
         </ul>
       )}
       </section>
-    </div>
+    </div></MemberWorkspace>
   );
 }

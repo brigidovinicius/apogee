@@ -167,7 +167,10 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       assert.equal((await sql`select user_id from radar_purchase where session_id = ${session.id}`)[0].user_id, null);
       const pageLoad = opportunityLoader({
         "@/lib/members/db": { getSql: () => sql },
-        "@/lib/members/dal": { requireSignedInMember: async () => ({ id: owner.id }) },
+        "@/lib/members/dal": { requireSignedInMember: async () => {
+          const [member] = await sql`select id,name,username,image,role from "user" where id=${owner.id}`;
+          return { ...member, nameNeedsConfirmation: false };
+        } },
       });
       const Page = pageLoad("app/membros/radar/acesso/page.tsx").default;
       const beforeHtml = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));

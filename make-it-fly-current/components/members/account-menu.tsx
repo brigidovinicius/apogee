@@ -25,10 +25,10 @@ export function AccountProvider({ account, children }: { account: AccountIdentit
   return <AccountContext.Provider value={account}>{children}</AccountContext.Provider>;
 }
 
-export function SignOutButton() {
+export function SignOutButton({ compact = false }: { compact?: boolean }) {
   const { pending } = useFormStatus();
-  return <button className={styles.signOut} type="submit" disabled={pending}>
-    <LogOut size={17} aria-hidden="true" />{pending ? "Saindo…" : "Sair da conta"}
+  return <button className={styles.signOut} type="submit" disabled={pending} aria-label="Sair da conta">
+    <LogOut size={17} aria-hidden="true" />{pending ? "Saindo…" : compact ? "Sair" : "Sair da conta"}
   </button>;
 }
 

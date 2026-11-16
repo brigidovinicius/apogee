@@ -10,7 +10,7 @@ import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 import { migrateCommunityAccess } from "../scripts/community-access-migrate.mjs";
 import { migrateMemberDeliverables } from "../scripts/member-deliverables-migrate.mjs";
 let db, sql, store, actor = "admin", validations, load;
-const users = ["admin", "free0", "free9", "free10", "legacy", "paid", "cancelled", "expired", "refunded", "other", "blocked"];
+const users = ["admin", "revoked-admin", "blocked-admin", "free0", "free9", "free10", "legacy", "paid", "cancelled", "expired", "refunded", "other", "blocked"];
 const benefit = { name: "BENEFIT_PRIVATE_FIXTURE", partner: "Synthetic partner", description: "Synthetic agreement for isolation test only", evidenceUrl: "https://example.org/agreement", eligibility: "Annual account", availability: "One use per account, verified by the fixture partner", startsAt: "2026-01-01", endsAt: "2099-01-01", redemption: "Follow the confirmed partner instructions", redemptionUrl: "https://example.org/redeem", status: "published", sortOrder: 1 };
 before(async () => {
   db = await nativeCommunityDatabase(); sql = db.sql;
@@ -20,9 +20,9 @@ before(async () => {
   const predecessor = journal[19], source = await readFile(new URL(`../drizzle/${predecessor.tag}.sql`, import.meta.url), "utf8");
   await sql.unsafe(source);
   await sql`insert into drizzle.__drizzle_migrations(hash,created_at) values(${createHash("sha256").update(source).digest("hex")},${predecessor.when})`;
-  for (const id of users) await sql`insert into "user"(id,name,email,email_verified,role,adult_declared,blocked) values(${id},'Pessoa Sintética',${id + "@example.test"},true,${id === "admin" ? "admin" : "member"},true,${id === "blocked"})`;
+  for (const id of users) await sql`insert into "user"(id,name,email,email_verified,role,adult_declared,blocked) values(${id},'Pessoa Sintética',${id + "@example.test"},true,${id === "admin" || id === "blocked-admin" ? "admin" : "member"},true,${id === "blocked" || id === "blocked-admin"})`;
   process.env.STRIPE_MODE = "test";
-  const signedIn = async () => { if (!actor || actor === "blocked") throw Error("AUTH"); return { id: actor, role: actor === "admin" ? "admin" : "member" }; };
+  const signedIn = async () => { if (!actor) throw Error("AUTH"); const [member] = await sql`select id,role,blocked from "user" where id=${actor}`; if (!member || member.blocked) throw Error("AUTH"); return { id: member.id, role: member.role }; };
   load = opportunityLoader({ "@/lib/members/db": { getSql: () => sql }, "@/lib/members/dal": {
     requireMember: signedIn,
     requireSignedInMember: signedIn,
@@ -58,22 +58,43 @@ test("protected editorial creation, ordering, updating, publication and audit pe
   const [audit] = await sql`select count(*)::int as n from member_deliverable_audit`; assert.equal(audit.n, 5);
   actor = "free0"; await assert.rejects(store.adminDeliverables(), /ADMIN/); await assert.rejects(store.saveDeliverable("benefit", benefit), /ADMIN/);
 });
-test("all required profiles get only their annual rights; legacy and administrative roles alone grant no paid catalogue", async () => {
+test("ordinary accounts need annual rights; current administrators can read published content without a subscription", async () => {
   for (const id of ["paid", "cancelled", "expired", "refunded", "blocked"]) {
     await sql`insert into community_subscription(id,user_id,customer_id,livemode,status,cancel_at_period_end) values(${"sub_" + id},${id},${"cus_" + id},false,'active',${id === "cancelled"})`;
     await sql`insert into community_invoice(id,subscription_id,amount,currency,period_start,period_end,status) values(${"in_" + id},${"sub_" + id},143880,'brl',now()-interval '1 year',${id === "expired" ? new Date(Date.now() - 10000) : new Date(Date.now() + 86400000)},${id === "refunded" ? "refunded" : "paid"})`;
   }
   await sql`insert into radar_legacy_access(user_id) values('legacy')`;
   for (const id of ["free9", "free10"]) for (let i = 1; i <= (id === "free9" ? 9 : 10); i++) await sql`insert into radar_free_event(user_id,opportunity_id,slot) values(${id},${"fixture-event-" + i},${i})`;
-  for (actor of ["free0", "free9", "free10", "legacy", "expired", "refunded", "admin", "other"]) {
+  for (actor of ["free0", "free9", "free10", "legacy", "expired", "refunded", "revoked-admin", "other"]) {
     const b = await store.memberBenefits(), t = await store.memberLearning();
-    assert.equal(b.access.active, false, actor); assert.deepEqual(b.benefits, [], actor);
+    assert.equal(b.access.active, false, actor); assert.equal(b.access.allowed, false, actor); assert.deepEqual(b.benefits, [], actor);
     assert.deepEqual(t.activities, [], actor); assert.deepEqual(t.tracks, [], actor);
     assert.ok(!JSON.stringify({ b, t }).includes("PRIVATE_FIXTURE"), actor);
   }
   for (actor of ["paid", "cancelled"]) { assert.equal((await store.memberBenefits()).benefits.length, 1); assert.equal((await store.memberLearning()).activities.length, 1); }
+  actor = "admin";
+  const adminBenefits = await store.memberBenefits(), adminLearning = await store.memberLearning();
+  assert.equal(adminBenefits.access.allowed, true); assert.equal(adminBenefits.access.active, false);
+  assert.equal(adminBenefits.benefits.length, 1); assert.equal(adminLearning.activities.length, 1);
+  assert.doesNotMatch(JSON.stringify(adminBenefits.benefits), /evidence_url|example.org\/agreement|reviewed_by/);
+  assert.equal((await sql`select count(*)::int as n from community_subscription where user_id='admin'`)[0].n, 0);
   actor = null; await assert.rejects(store.memberBenefits(), /AUTH/);
-  actor = "blocked"; await assert.rejects(store.memberLearning(), /AUTH/);
+  for (actor of ["blocked", "blocked-admin"]) { await assert.rejects(store.memberLearning(), /AUTH/); await assert.rejects(store.memberBenefits(), /AUTH/); }
+});
+test("administrator progress stays account-bound and the transaction rejects blocked or revoked roles despite stale authorization", async () => {
+  actor = "admin";
+  await store.setLearningProgress({ activityId, completed: true });
+  assert.ok((await store.memberLearning()).activities[0].completed_at);
+  actor = "paid"; assert.equal((await store.memberLearning()).activities[0].completed_at, null);
+  actor = "admin"; await assert.rejects(store.setLearningProgress({ activityId, completed: true, userId: "paid" }));
+  await store.setLearningProgress({ activityId, completed: false });
+  assert.equal((await store.memberLearning()).activities[0].completed_at, null);
+  for (const id of ["revoked-admin", "blocked-admin"]) {
+    const stale = async () => ({ id, role: "admin" });
+    const staleStore = opportunityLoader({ "@/lib/members/db": { getSql: () => sql }, "@/lib/members/dal": { requireSignedInMember: stale, requireMember: stale } })("lib/deliverables/store.ts");
+    await assert.rejects(staleStore.setLearningProgress({ activityId, completed: true }), /anual|indisponível/);
+    assert.equal((await sql`select count(*)::int as n from member_learning_progress where user_id=${id}`)[0].n, 0);
+  }
 });
 test("private progress is idempotent, account-bound, restricted on expiry and independent of the Radar quota", async () => {
   actor = "paid";
@@ -95,6 +116,9 @@ test("private progress is idempotent, account-bound, restricted on expiry and in
 test("draft/archive/expiry and parent publication apply to direct reads and progress writes", async () => {
   actor = "admin"; await store.saveDeliverable("benefit", { ...benefit, id: benefitId, revision: (await store.adminDeliverables()).benefits[0].revision, status: "archived" });
   await sql`update member_learning_module set status='preparing' where id=${moduleId}`;
+  assert.equal((await store.memberLearning()).activities.length, 0);
+  assert.equal((await store.memberBenefits()).benefits.length, 0);
+  await assert.rejects(store.setLearningProgress({ activityId, completed: true }), /indisponível/);
   actor = "cancelled"; assert.equal((await store.memberBenefits()).benefits.length, 0);
   let t = await store.memberLearning(); assert.equal(t.modules[0].status, "preparing"); assert.equal(t.modules[0].description, ""); assert.equal(t.activities.length, 0);
   await assert.rejects(store.setLearningProgress({ activityId, completed: true }), /indisponível/);

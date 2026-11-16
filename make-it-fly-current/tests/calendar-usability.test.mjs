@@ -67,3 +67,19 @@ test('failed writes and malformed requests never queue sync or report saved',asy
  assert.equal((await actions.saveOpportunityFromCard('../invalid',true,'/')).ok,false);
  assert.equal(state.queued,0);
 });
+
+test('member calendar details stay inside the workspace and public calendars keep public links', async () => {
+ const React = (await import('react')).default;
+ const { renderToStaticMarkup } = await import('react-dom/server');
+ const { CalendarList } = opportunityLoader({
+  'next/link': { __esModule:true, default:({children,...props})=>React.createElement('a',props,children) },
+  './save-opportunity': { SaveOpportunityButton:()=>null },
+ })('components/opportunities/calendar-list.tsx');
+ const item={id:'radar-review-event-1',title:'Evento de revisão',organization:'Revisão local'};
+ const entries=[{key:'registration',item,stage:{kind:'registration',name:'Inscrição',start:'2099-12-31',checkedAt:'2026-11-16'}}];
+ const memberHtml=renderToStaticMarkup(CalendarList({items:[item],entries,member:true}));
+ const publicHtml=renderToStaticMarkup(CalendarList({items:[item],entries}));
+ assert.match(memberHtml,/href="\/membros\/oportunidades\/radar-review-event-1"/);
+ assert.match(publicHtml,/href="\/oportunidades\//);
+ assert.doesNotMatch(publicHtml,/href="\/membros\/oportunidades/);
+});

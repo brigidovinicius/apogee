@@ -9,6 +9,7 @@ import styles from "./site-shell.module.css";
 type SiteSection = "home" | "opportunities" | "members" | "blog" | "gallery" | "store";
 
 type SiteHeaderProps = {
+  compact?: boolean;
   current?: SiteSection;
   memberHref?: string;
   memberLabel?: string;
@@ -28,6 +29,7 @@ const navigation: ReadonlyArray<{ href: string; label: string; section?: SiteSec
 ];
 
 export function SiteHeader({
+  compact = false,
   current,
   memberHref = "/membros",
   memberLabel = "Membros",
@@ -54,7 +56,7 @@ export function SiteHeader({
     </nav>
   );
   return (
-    <header className={styles.header} data-tone={adaptive ? tone : "light"} data-adaptive={adaptive || undefined} data-editorial={!adaptive || undefined}>
+    <header className={styles.header} data-tone={adaptive ? tone : "light"} data-adaptive={adaptive || undefined} data-editorial={!adaptive || undefined} data-compact={compact || undefined}>
       <div className={styles.headerInner}>
         <Link className={styles.brand} href="/" aria-label="Apogee - início" prefetch={prefetch}>
           <Image
@@ -69,7 +71,7 @@ export function SiteHeader({
           {adaptive && <Image className={styles.adaptiveNavy} src="/brand/apogee-logo-navy.svg" alt="" width={1595} height={986} sizes="112px" />}
         </Link>
 
-        {adaptive ? desktopNavigation : <p className={styles.signature}>Ideias que abrem caminhos.</p>}
+        {!compact && (adaptive ? desktopNavigation : <p className={styles.signature}>Ideias que abrem caminhos.</p>)}
 
         <div className={styles.headerActions}>
         <AccountMenu fallback={<Link
@@ -82,7 +84,7 @@ export function SiteHeader({
           {!adaptive && <ArrowUpRight aria-hidden="true" size={18} />}
         </Link>} />
 
-        <SiteMobileNavigation>
+        {!compact && <SiteMobileNavigation>
             {links.map((item) => (
               <Link
                 href={item.href}
@@ -98,10 +100,10 @@ export function SiteHeader({
             </Link>
             <McpConnectLink />
             <McpConnectLink provider="claude" />
-        </SiteMobileNavigation>
+        </SiteMobileNavigation>}
         </div>
       </div>
-      {!adaptive && <div className={styles.navigationBar}>{desktopNavigation}</div>}
+      {!compact && !adaptive && <div className={styles.navigationBar}>{desktopNavigation}</div>}
     </header>
   );
 }
