@@ -25,7 +25,7 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
   const pending = membership.subscription && !["canceled","incomplete_expired"].includes(membership.subscription.status);
   return <div className={styles.container}>
     <MemberBar member={member} current="assinatura" />
-    <header className={styles.pageHead}><div><p className={styles.eyebrow}>Comunidade Apogee</p><h1 className={styles.title}>Sua assinatura anual.</h1><p className={styles.lead}>Radar completo, aprendizado prático, conexões e benefícios.</p></div></header>
+    <header className={styles.pageHead}><div><p className={styles.eyebrow}>Comunidade Apogee</p><h1 className={styles.title}>Sua assinatura anual.</h1><p className={styles.lead}>Radar completo, Caixa de Ferramentas e Trilha inicial parcial.</p></div></header>
     {reviewing ? <p role="note">Validação local com contas e pagamentos sintéticos. Nenhuma cobrança ou alteração na Stripe é realizada aqui.</p> : null}
     {params.billing_error ? <p role="alert">{params.billing_error === "409" ? "Já existe uma assinatura ou um pagamento em andamento. Confira o estado abaixo antes de tentar novamente." : params.billing_error === "403" ? "Conclua a verificação da sua conta antes de contratar." : params.billing_error === "429" ? "Muitas tentativas. Aguarde alguns minutos antes de tentar novamente." : "Não foi possível concluir a operação. Confira o estado abaixo antes de tentar novamente."}</p> : null}
     {params.payment === "received" ? <p role="status">{membership.active ? "Pagamento confirmado. Sua assinatura anual está ativa." : "Recebemos seu retorno do checkout. Confira abaixo o estado do pagamento; atualize esta página em instantes se a confirmação ainda estiver pendente."}</p> : null}
@@ -34,7 +34,7 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
     {legacy ? <p>Seu acesso antigo ao Radar está preservado e independe desta assinatura.</p> : null}
     <section className={styles.panel} aria-labelledby="annual-plan-title"><h2 id="annual-plan-title">Comunidade anual · R$ 1.438,80 por ano</h2>
       <p>Equivalente a R$ 119,90 por mês. Cobrança integral anual, com renovação automática pelo mesmo período. Não há contratação mensal.</p>
-      <p>Inclui Radar completo e Caixa de Ferramentas. A Trilha inicial é parcial; Benefícios dependem de acordos confirmados, disponibilidade e elegibilidade. <Link href="/comunidade">Confira as entregas do plano</Link>.</p>
+      <p>Inclui Radar completo, Caixa de Ferramentas, fórum e o exercício “Um primeiro resultado com IA”, com três atividades. A Trilha é parcial; os próximos módulos e os benefícios de parceiros estão em preparação. Não há benefícios de parceiros disponíveis neste lançamento. <Link href="/comunidade">Confira as entregas do plano</Link>.</p>
       {membership.active && membership.paidUntil ? <>
         <p role="status"><strong>Assinatura ativa. Acesso pago até {date(membership.paidUntil)}.</strong></p>
         <p>{membership.subscription?.cancelAtPeriodEnd ? "A renovação está cancelada. Seu acesso continua até o fim do período pago." : "A renovação automática está habilitada. Você pode cancelá-la antes da próxima cobrança."}</p>
