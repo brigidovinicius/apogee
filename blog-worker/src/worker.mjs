@@ -79,7 +79,12 @@ export async function tick({store,config,identity,provider,download}) {
     async function perform(method){
       let reservation;
       try{if(provider.preflight){const quota=await provider.preflight();if(store.observeQuota)await store.observeQuota(quota,'before');}reservation=await store[method](options);}
-      catch(error){if(error instanceof Blocked)return {status:'blocked',reason:error.code};throw error;}
+      catch(error){
+        if(error instanceof Blocked){
+          if(!command&&!config.policy.operator_commands_only&&config.policy.provider==='google_subscription'&&options.candidateId&&error.code==='input_limit'&&store.deferAutomaticWork)await store.deferAutomaticWork(options.candidateId,error.code);
+          return {status:'blocked',reason:error.code};
+        }throw error;
+      }
       if(reservation.status!=='reserved')return reservation;
       let result;try{result=await provider(reservation);}catch{result={outcome:'unknown'};}
       const completed=await store.finish(reservation,result);

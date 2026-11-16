@@ -1410,5 +1410,49 @@
     ],
     "collection_enabled": false,
     "collection_approval_reference": "Pauta de escrita para IA solicitada pelo titular em 2026-11-16; somente excertos públicos para apuração, sem ativar feed contínuo."
+  },
+  {
+    "id": "PRIMARY_STE80_PROJECT",
+    "name": "STE80 Humanizer — documentação do projeto",
+    "publisher": "dodaios",
+    "url": "https://github.com/Dodaios/ste80-humanizer",
+    "hosts": [
+      "github.com"
+    ],
+    "allowed_urls": [
+      "https://github.com/Dodaios/ste80-humanizer"
+    ],
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "projeto_software_proprio",
+    "access": "pagina_publica_lida",
+    "collection_enabled": false,
+    "collection_approval_reference": "Ampliação da apuração e fluxo automático solicitados pelo titular em 2026-11-16; somente documentação pública deste projeto, sem instalação ou execução."
+  },
+  {
+    "id": "PRIMARY_STE_SKILL",
+    "name": "ASD-STE100 — implementação independente",
+    "publisher": "prithivrajmu",
+    "url": "https://github.com/prithivrajmu/asd-ste100",
+    "hosts": [
+      "github.com"
+    ],
+    "allowed_urls": [
+      "https://github.com/prithivrajmu/asd-ste100"
+    ],
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "projeto_software_proprio",
+    "access": "pagina_publica_lida",
+    "collection_enabled": false,
+    "collection_approval_reference": "Ampliação da apuração e fluxo automático solicitados pelo titular em 2026-11-16; somente documentação pública deste projeto, sem instalação ou execução."
   }
 ]

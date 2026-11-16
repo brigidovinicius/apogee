@@ -1,17 +1,17 @@
 import {automaticDossier,balancedResearchCandidates,nextResearchCandidate} from './automatic-research.mjs';
 import {enrichResearch,enrichSelectedEvidence,researchPriority,defaultArticleReader} from './research-service.mjs';
 import {articleSource,referenceForUrl,ARTICLE_EXTRACTION_VERSION} from './article-research.mjs';
-import {explainerCatalog,explainerId,explainerWindowOpen,nextExplainer,automaticExplainerDossier,explainerRecoveryEligible,explainerEvidenceHash} from './explainers.mjs';
+import {explainerCatalog,explainerId,explainerWindowOpen,nextExplainer,automaticExplainerDossier,explainerRecoveryEligible,explainerEvidenceHash,expandExplainerSources,editorialAttemptLimit} from './explainers.mjs';
 import {randomUUID} from 'node:crypto';
 import {baselinePostIds,dailyDraftCap,topicAvailable,extraBatch} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle,SEO_GUIDELINES} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
-import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap,isEvidenceGapClaim} from './corroboration.mjs';
+import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap,isEvidenceGapClaim,resolveComparisonQuotes} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql','012-research-recovery.sql','013-hourly-publication.sql','014-ste-editorial-references.sql','015-research-provenance-kinds.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql','012-research-recovery.sql','013-hourly-publication.sql','014-ste-editorial-references.sql','015-research-provenance-kinds.sql','016-autonomous-evidence-recovery.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -160,7 +160,7 @@ export class Store {
     return this.sql.begin(async tx=>{
       const [approved]=await tx`select definition from blog_worker.research_reference where id=${document.source_id} and definition->>'enabled'='true' and definition->>'content_approved'='true'`;
       if(!approved)fail('research_reference_unapproved');
-      const u=new URL(document.url);if(u.protocol!=='https:'||u.username||u.password||!approved.definition.article_hosts.includes(u.hostname))fail('research_reference_unapproved');
+      const u=new URL(document.url);if(u.protocol!=='https:'||u.username||u.password||!approved.definition.article_hosts.includes(u.hostname)||(approved.definition.allowed_urls&&!approved.definition.allowed_urls.includes(document.url)))fail('research_reference_unapproved');
       const [c]=await tx`select * from blog_worker.candidate where id=${candidate.id} for update`;if(!c)return false;
       await tx`insert into blog_worker.captured_document(id,candidate_id,source_id,url,snapshot_hash,document)
         values(${hash(document)},${c.id},${document.source_id},${document.url},${hash(document)},${tx.json(document)}) on conflict do nothing`;
@@ -205,26 +205,33 @@ export class Store {
       v.document,v.assessment,v.revision is not null as has_dossier,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison') as comparisons,
+      (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' and a.state='confirmed' and a.reason=any(${COMPARISON_FORMAT_ERRORS}::text[])) as format_failures,
       exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='text') as text_attempts,
       exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.state in ('reserved','unknown')) as pending
       from blog_worker.candidate c left join lateral(select * from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1)v on true where content_kind='explainer'`;
-    const plan=nextExplainer(plans,usage,existing,at,policy);if(!plan)return null;
+    let plan=nextExplainer(plans,usage,existing,at,policy);if(!plan)return null;
     const id=explainerId(plan),source=articleSource(referenceForUrl(plan.urls[0])),previous=existing.find(c=>c.id===id),recovering=explainerRecoveryEligible(previous);
     // Planning time is distinct from the actual source publication dates kept
     // in the immutable captured documents and the final references.
     await this.sql`insert into blog_worker.candidate(id,source_id,guid,url,event_key,title,editoria,score,published_at,evidence,evidence_hash,status,content_kind,explainer_key)
       values(${id},${source.id},${id},${plan.urls[0]},${hash('explainer:'+plan.key)},${plan.question},${scopeEditoria(plan)},45,${at},'[]'::jsonb,${hash([])},'discovered','explainer',${plan.key}) on conflict do nothing`;
     const [candidate]=await this.sql`select * from blog_worker.candidate where id=${id}`;
+    const cacheUrls=[...new Set([...plan.urls,...(plan.additional_sources??[]).map(s=>s.url)])];
     const rows=await this.sql`select id as capture_id,source_id,document,captured_at from blog_worker.captured_document
-      where (url=any(${plan.urls}::text[]) or document->>'requested_url'=any(${plan.urls}::text[])) and captured_at>now()-interval '24 hours' order by captured_at desc`;
+      where (url=any(${cacheUrls}::text[]) or document->>'requested_url'=any(${cacheUrls}::text[])) and captured_at>now()-interval '24 hours' order by captured_at desc`;
     const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id,captured_at:r.captured_at}));
+    const requiredUrls=[...plan.urls];if(recovering)plan=expandExplainerSources(plan,captures);
+    const unavailable=[];
     const budget={used:0,max:8,deadline:Date.now()+30000};let reason='explainer_sources_missing';
     try{
       for(const url of plan.urls){
         if(captures.some(d=>(d.url===url||d.requested_url===url)&&d.extraction_version===ARTICLE_EXTRACTION_VERSION&&Date.parse(d.checked_at??d.captured_at)<=+at&&+at-Date.parse(d.checked_at??d.captured_at)<86400000))continue;
-        const doc={...await read(url,budget),requested_url:url,checked_at:new Date().toISOString()};
-        await this.captureResearchDocument(candidate,doc);captures.unshift({...doc,capture_id:hash(doc)});
+        try{
+          const doc={...await read(url,budget),requested_url:url,checked_at:new Date().toISOString()};
+          await this.captureResearchDocument(candidate,doc);captures.unshift({...doc,capture_id:hash(doc)});
+        }catch(error){if(requiredUrls.includes(url))throw error;unavailable.push({url,reason:error.code??'research_source_unavailable'});}
       }
+      if(recovering){const retained=plan.urls.map((url,i)=>({url,provenance:plan.provenance[i]})).filter(v=>requiredUrls.includes(v.url)||captures.some(c=>c.url===v.url||c.requested_url===v.url));plan={...plan,urls:retained.map(v=>v.url),provenance:retained.map(v=>v.provenance)};}
       const own=captures.find(d=>d.url===plan.urls[0]||d.requested_url===plan.urls[0]);
       if(own&&!recovering){
         const primary=Object.fromEntries(Object.entries(own).filter(([key])=>!['capture_id','captured_at'].includes(key))),evidence=[{id:'E1',...primary}];
@@ -233,13 +240,18 @@ export class Store {
           and not exists(select 1 from blog_worker.dossier_version where candidate_id=c.id)`;
       }
       const [current]=await this.sql`select * from blog_worker.candidate where id=${id}`;
-      const document=automaticExplainerDossier(plan,captures,policy,new Date(),{previousCriticalClaims:recovering?previous.document.claims.filter(c=>c.critical&&!isEvidenceGapClaim(c.text)).map(({id,text})=>({id,text})):[]});
-      if(recovering&&document&&explainerEvidenceHash(document)===explainerEvidenceHash(previous.document))reason='research_evidence_unchanged';
+      const unchangedCaptures=recovering&&plan.urls.length===previous.document.documents.length&&plan.urls.every((url,i)=>{const old=previous.document.documents[i],current=captures.find(d=>d.url===url||d.requested_url===url);return old.url===url&&current?.capture_id===old.capture_id;});
+      const document=unchangedCaptures?null:automaticExplainerDossier(plan,captures,policy,new Date(),{
+        previousCriticalClaims:recovering?previous.document.claims.filter(c=>c.critical&&!isEvidenceGapClaim(c.text)).map(({id,text})=>({id,text})):[],
+        previousUnresolvedClaims:recovering?(previous.assessment.claims??[]).filter(c=>c.status!=='convergent'&&!isEvidenceGapClaim(c.text)).map(({id,text,critical})=>({id,text,critical})):[],
+        previousDocuments:recovering&&plan.urls.length>previous.document.documents.length?previous.document.documents:[]});
+      if(unchangedCaptures||recovering&&document&&explainerEvidenceHash(document)===explainerEvidenceHash(previous.document))reason='research_evidence_unchanged';
       else
-      if(document&&(await this.sql`select blog_worker.prepare_automatic_research(${id},${this.sql.json(document)},${current.evidence_hash}) as prepared`)[0].prepared)return {prepared:1,kind:'explainer',requests:budget.used};
+      if(document&&(await this.sql`select blog_worker.prepare_automatic_research(${id},${this.sql.json(document)},${current.evidence_hash}) as prepared`)[0].prepared)return {prepared:1,kind:'explainer',requests:budget.used,...(recovering?{recovery:true,unavailable_sources:unavailable}:{})};
     }catch(error){reason=error.code??'research_source_unavailable';}
     const {day}=periodKeys(at),tries=candidate.artifact?.research?.day===day?Number(candidate.artifact.research.tries??0)+1:1;
-    await this.researchProgress(id,{stage:reason,topic:{category:plan.category,subcategory:plan.subcategory},kind:'explainer',tries,next_at:new Date(+at+3600000).toISOString()});
+    await this.researchProgress(id,{stage:reason,topic:{category:plan.category,subcategory:plan.subcategory},kind:'explainer',tries,
+      ...(recovering?{recovery_day:day,recovery_tries:candidate.artifact?.research?.recovery_day===day?Number(candidate.artifact.research.recovery_tries??0)+1:1}:{}),next_at:new Date(+at+3600000).toISOString()});
     return {prepared:0,kind:'explainer',reason,requests:budget.used};
   }
   async prepareAutomaticResearch(policy,{read,at=new Date()}={}){
@@ -321,16 +333,17 @@ export class Store {
       v.actor_id='automatic_research_recovery' and exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' and a.dossier_revision<v.revision) as refreshed_research,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison') as comparisons,
+      (select coalesce(jsonb_agg(jsonb_build_object('id',a.id,'kind',a.kind,'state',a.state,'reason',a.reason)),'[]'::jsonb) from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('comparison','text')) as attempt_history,
       exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.state in ('reserved','unknown')) as pending
       from blog_worker.candidate c join lateral(select * from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) v on true
       where c.post_id is null and c.reason is distinct from 'source_changed_after_reservation' and c.reason is distinct from 'operator_hold' and c.published_at>now()-interval '7 days'
-      and c.status in ('ready','held','discovered') order by c.score desc,c.published_at desc limit 100`;
+      and c.status in ('ready','held','discovered') order by case when c.status='ready' and v.assessment->>'eligible'='true' then 0 when c.reason='comparison_incomplete' and v.assessment->>'comparison_verified'='false' then 1 when c.reason=any(${COMPARISON_FORMAT_ERRORS}::text[]) then 2 else 3 end,c.score desc,c.published_at desc limit 100`;
     for(const c of rows){
       if(!topicAvailable(policy,usage,c.document,at))continue;
-      if(c.attempts>=policy.max_provider_attempts_per_article_including_repairs)continue;
+      if(c.attempts>=editorialAttemptLimit(policy,c.document,c.attempt_history))continue;
       if(c.status==='ready'&&c.assessment.eligible&&c.assessment.comparison_verified)return {method:'reserve',candidateId:c.id};
       if(!c.attempts&&!c.assessment.comparison_verified&&c.document.documents.length>=2&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
-      if(c.refreshed_research&&c.attempts===1&&!c.pending&&c.reason==='comparison_incomplete'&&!c.assessment.comparison_verified&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
+      if(c.refreshed_research&&c.attempts<=2&&!c.pending&&c.reason==='comparison_incomplete'&&!c.assessment.comparison_verified&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
       // One format-only repair. Never repeat a factual rejection or an unknown
       // request. It shares the existing article/day budgets; old receipts stay.
       if(!c.pending&&c.comparisons===1&&COMPARISON_FORMAT_ERRORS.includes(c.reason)&&c.document.documents.length>=2&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
@@ -393,7 +406,9 @@ export class Store {
       if((google||!candidate.first_attempt_day)&&(counts.day>=dailyDraftCap(policy,at)||counts.week>=policy.new_drafts_per_week_cap))fail('draft_frequency');
 
       const attempts=await tx`select * from blog_worker.attempt where candidate_id=${candidate.id} and kind in ('text','comparison')`;
-      if(attempts.length>=policy.max_provider_attempts_per_article_including_repairs)fail('attempt_limit');
+      if(attempts.length>=editorialAttemptLimit(policy,version?.document,attempts))fail('attempt_limit');
+      if(kind==='comparison'&&version.assessment.comparison_verified)fail('research_evidence_unchanged');
+      if(kind==='comparison'&&attempts.filter(a=>a.kind==='comparison').length>=2&&editorialAttemptLimit(policy,version.document,attempts)!==4)fail('comparison_attempt_limit');
       const comparisonRepair=kind==='comparison'&&attempts.some(a=>a.kind==='comparison'&&a.dossier_revision===version?.revision);
       const body=kind==='comparison'?buildComparisonRequest(version.document,policy,comparisonRepair):buildRequest(effective,policy,attempts.some(a=>a.kind==='text'));
       const key=kind==='comparison'?comparisonCacheKey(version.document,policy,comparisonRepair):cacheKey(effective,policy);
@@ -406,7 +421,7 @@ export class Store {
       if(!google && (n(spent.cycle)+reserve>cycleCap(policy,grant) || n(spent.cycle)+reserve>grant.remaining_micro_usd-(grant.credit_safety_buffer_micro_usd??0)))fail('cycle_budget');
       if(!google && n(spent.day)+reserve>policy.daily_budget_micro_usd_cap)fail('daily_budget');
       if(!google && n(spent.article)+reserve>policy.article_budget_micro_usd_cap_including_all_attempts)fail('article_budget');
-      const id=randomUUID(),recordedPolicy=kind==='comparison'?{...policy,comparison_prompt_version:COMPARISON_PROMPT_VERSION}:policy;
+      const id=randomUUID(),recordedPolicy={...policy,...(kind==='comparison'?{comparison_prompt_version:COMPARISON_PROMPT_VERSION}:{}),effective_editorial_attempts_cap:editorialAttemptLimit(policy,version?.document,attempts)};
       await tx`insert into blog_worker.attempt(id,candidate_id,benefit_id,kind,ordinal,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,provider,quota_reserved,dossier_revision,dossier_hash)
         values(${id},${candidate.id},${grant?.id??null},${kind},${attempts.filter(a=>a.kind===kind).length+1},${key},${hash(body)},${tx.json(price)},${tx.json(recordedPolicy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?googleUsageLimits(policy,at).reservedTokens:0},${version?.revision??null},${version?.document_hash??null})`;
       await tx`update blog_worker.candidate set first_attempt_day=coalesce(first_attempt_day,${day}::date),
@@ -451,7 +466,7 @@ export class Store {
         if(!version||version.source_hash!==candidate.evidence_hash||version.revision!==attempt.dossier_revision||version.document_hash!==attempt.dossier_hash)return holdAfterCharge(tx,candidate.id,cost);
         if(attempt.kind==='comparison'){
           let suggestion;
-          try{if(result.outcome==='completed')suggestion=validateComparison(JSON.parse(result.text),version.document);}catch(error){reason=error.code??'invalid_comparison';}
+          try{if(result.outcome==='completed')suggestion=validateComparison(resolveComparisonQuotes(JSON.parse(result.text),version.document),version.document);}catch(error){reason=error.code??'invalid_comparison';}
           if(suggestion){
             const assessment=assessDossier(suggestion,{comparisonVerified:true});
             if(isExplainer(suggestion)&&assessment.eligible){
@@ -577,6 +592,16 @@ export class Store {
       const [{media_id}]=await tx`select blog_worker.import_cover(${attempt.candidate_id},${randomUUID()}) as media_id`;
       if(!media_id)await tx`update blog_worker.image_job set reason='post_changed_requires_review' where candidate_id=${attempt.candidate_id}`;
       return {status:media_id?'cover_ready':'cover_review',post_id:candidate.post_id,media_id,charged_micro_usd:cost};
+    });
+  }
+  async deferAutomaticWork(candidateId,reason){
+    if(reason!=='input_limit')return false;
+    return this.sql.begin(async tx=>{
+      const rows=await tx`update blog_worker.candidate c set status='held',reason=${reason},
+          artifact=jsonb_set(coalesce(artifact,'{}'::jsonb),'{automatic_hold}',jsonb_build_object('reason',${reason}::text,'at',now(),'provider_calls',0))
+        where c.id=${candidateId} and c.post_id is null and (c.status='ready' or c.reason='comparison_incomplete')
+          and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and (a.kind='text' or a.state in ('reserved','unknown'))) returning c.id`;
+      return rows.length>0;
     });
   }
   async publishAutomatically() {
