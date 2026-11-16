@@ -69,3 +69,9 @@ Os horários são persistidos em `scheduled_at`. Site, artigo, imagem e sitemap 
 A geração e a revalidação Google continuam no container Linux com `restart: unless-stopped`, volumes persistentes e limites de consumo. Para preparar a janela de publicação, a configuração privada pode antecipar o complemento por explicativos para as 6h. A exceção de consumo de 15/11 expira normalmente; a publicação não acrescenta chamadas de IA.
 
 Pausar a geração impede novos agendamentos pelo publisher; agendamentos já gravados continuam válidos. Para interromper também publicações futuras, desative a política e devolva explicitamente os agendamentos futuros dessa política para rascunho. Em rollback, preserve recibos e a migração, desative a política e restaure somente as imagens de serviço/configuração anteriores; não remova artigos nem histórico.
+
+### Pauta de escrita técnica aeronáutica e IA
+
+A biblioteca inclui a pauta solicitada pelo titular a partir da Plustag em 16/11/2026. O FAQ da ASD é a fonte primária; a TechScribe oferece análise própria; a repercussão da Plustag conserva a origem comum dos fatos sobre a norma e o papel de fonte derivada. A matriz recebe essas informações de procedência e mantém todos os fatos críticos e o mínimo de 90%. A comparação real continua obrigatória.
+
+A leitura adicional se limita aos contêineres públicos verificados de duas páginas, incluindo todos os painéis do FAQ e as ressalvas do artigo técnico. Robots, controles de acesso, nosnippet, limites de entrada e snapshots permanecem aplicáveis. A atualização 014 acrescenta três referências sem ativar RSS, conceder escrita ao runtime ou mudar publicação e cobrança. O artigo ocupa uma vaga de IA e utiliza os limites existentes da assinatura Google; capas externas não são licenciadas por esse cadastro.

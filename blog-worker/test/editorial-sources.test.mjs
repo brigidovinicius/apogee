@@ -19,7 +19,9 @@ test('approved specialist sources are distinct publications; shipped feeds still
     assert.throws(()=>validateSources([{...s,enabled:true}]),/collection_unapproved/);
     assert.throws(()=>validateSources([{...s,feed_content_approved:true}]),/rights_unapproved/);
   }
-  assert.equal(publishers.size,3);assert.equal(referenceCatalog.filter(r=>r.id.startsWith('REF')).length,47);
+  assert.equal(publishers.size,3);assert.equal(referenceCatalog.filter(r=>r.id.startsWith('REF')).length,48);
+  assert.equal(referenceCatalog.find(r=>r.id==='REF_PLUSTAG').collection_enabled,false);
+  assert.equal(sources.some(s=>s.id==='REF_PLUSTAG'),false,'A pauta solicitada não ativa um feed contínuo');
 });
 test('specialist context supplies the topic without overriding headline focus or accepting shopping roundups',()=>{
   const c=(id,title)=>({source_id:id,editoria:'startups',title,evidence:[]});

@@ -5,7 +5,7 @@ import {hash,fail} from './policy.mjs';
 import {canonicalResearchUrl} from './research-links.mjs';
 import {isIP} from 'node:net';
 
-export const ARTICLE_EXTRACTION_VERSION='public-article-v5-bounded-guide-context';
+export const ARTICLE_EXTRACTION_VERSION='public-article-v6-public-ste-guides';
 export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$|periodico_e_jornalismo$)/.test(r.role));
 export const independentReference=r=>!!r&&!primaryReference(r)&&/jornalismo|divulgacao|analise_especialista|publicacao_especializada/.test(r.role);
 export function primaryDocument(document,reference=referenceForUrl(document.url)){
@@ -32,7 +32,7 @@ export function referenceForUrl(value){
 }
 const hostsFor=r=>[...new Set((r.hosts??[host(r.url)]).flatMap(h=>[h,'www.'+h]))];
 export function articleSource(r){return {id:'ARTICLE_'+r.id,reference_id:r.id,name:r.name,editoria:r.categories[0]==='negocios'?'startups':r.categories[0]==='ciencia'?'ciencia-espaco':'tecnologia',type:'article',url:r.url,
-  article_hosts:hostsFor(r),enabled:true,content_approved:true,feed_content_approved:true,interval_minutes:1440,keywords:[],collection_approval_reference:'Pesquisa multifonte autorizada pelo titular em 2026-11-11; somente páginas públicas dos sites de referência',
+  article_hosts:hostsFor(r),enabled:true,content_approved:true,feed_content_approved:true,interval_minutes:1440,keywords:[],collection_approval_reference:r.collection_approval_reference??'Pesquisa multifonte autorizada pelo titular em 2026-11-11; somente páginas públicas dos sites de referência',
   rights_reference:'Excerto de página pública para apuração e atribuição; sem reprodução integral, acesso restrito ou licença de imagens; respeitar robots.txt'};}
 
 // RFC 9309: most-specific agent group, longest matching rule; Allow wins ties.
@@ -100,7 +100,15 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
     ?usable(nodes.filter(n=>n.tagName==='article'&&/(?:^|\s)editorial-article__main(?:\s|$)/.test(attrs(n).class??'')))
     :guideHost==='www.intel.com'||guideHost==='intel.com'
       ?usable(nodes.filter(n=>attrs(n).id==='articleSFBody'&&attrs(n)['data-component']==='articleSFBody')):[];
-  const completeGuide=guideParts.length?{nodeName:'#document-fragment',childNodes:guideParts}:guideHost==='esa.int'&&nodes.some(n=>/(?:^|\s)articles-modules(?:\s|$)/.test(attrs(n).class??''))?landmarks[0]:null;
+  // Public FAQ panels are ordinary expandable answers, not authenticated content.
+  // These exact, inspected pages have no main/article landmark. Retain every
+  // FAQ section (including limits) and the expert's complete article container.
+  const steFaqParts=guideHost==='asd-ste100.org'&&new URL(url).pathname==='/STE_faq.html'
+    ?usable(nodes.filter(n=>n.tagName==='section'&&/(?:^|\s)list1(?:\s|$)/.test(attrs(n).class??''))):[];
+  const steExpertParts=guideHost==='techscribe.co.uk'&&new URL(url).pathname==='/techw/asd-simplified-technical-english.htm'
+    ?usable(nodes.filter(n=>n.tagName==='div'&&/(?:^|\s)mainbody(?:\s|$)/.test(attrs(n).class??''))):[];
+  const steParts=steFaqParts.length>=2?steFaqParts:steExpertParts;
+  const completeGuide=guideParts.length?{nodeName:'#document-fragment',childNodes:guideParts}:steParts.length?{nodeName:'#document-fragment',childNodes:steParts}:guideHost==='esa.int'&&nodes.some(n=>/(?:^|\s)articles-modules(?:\s|$)/.test(attrs(n).class??''))?landmarks[0]:null;
   // Google's public /learn and /discover guides use labelled sections without an article or
   // main landmark. Permit that known guide shell only; gated/hidden content is
   // still excluded above and by textOf. Never use arbitrary page bodies.

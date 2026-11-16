@@ -74,8 +74,20 @@ try{
     assert.ok(rows.every(r=>r.definition.enabled&&r.definition.content_approved&&r.definition.rights_reference.includes('sem reprodução integral')));
     const [privileges]=await runtime`select has_table_privilege(current_user,'blog_worker.research_reference','SELECT') as read,has_table_privilege(current_user,'blog_worker.research_reference','UPDATE') as write`;
     assert.deepEqual(privileges,{read:true,write:false});
-    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,13);
+    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,14);
     assert.ok((await runtime`select definition from blog_worker.research_reference where id='ARTICLE_PRIMARY_MICROSOFT_EDUCATION'`)[0].definition.article_hosts.includes('support.microsoft.com'));
+  });
+  await check('STE editorial references are available without enabling feeds, modifying prior settings or expanding runtime grants',async()=>{
+    const ids=['ARTICLE_EXPERT_TECHSCRIBE','ARTICLE_PRIMARY_ASD_STE','ARTICLE_REF_PLUSTAG'];
+    const rows=await runtime`select id,definition from blog_worker.research_reference where id in ${runtime(ids)} order by id`;
+    assert.deepEqual(rows.map(r=>r.id),ids);
+    assert.ok(rows.every(r=>r.definition.content_approved&&r.definition.collection_approval_reference.includes('2026-11-16')&&r.definition.rights_reference.includes('sem reprodução integral')));
+    const [privileges]=await runtime`select has_table_privilege(current_user,'blog_worker.research_reference','UPDATE') as write,has_table_privilege(current_user,'public.blog_post','UPDATE') as publish,has_table_privilege(current_user,'blog_worker.publication_policy','UPDATE') as policy`;
+    assert.deepEqual(privileges,{write:false,publish:false,policy:false});
+    await admin`update blog_worker.research_reference set definition=jsonb_set(definition,'{enabled}','false'::jsonb) where id='ARTICLE_REF_PLUSTAG'`;
+    assert.equal(await migrate(admin),'already_applied');
+    assert.equal((await runtime`select definition->>'enabled' as enabled from blog_worker.research_reference where id='ARTICLE_REF_PLUSTAG'`)[0].enabled,'false');
+    await admin`update blog_worker.research_reference set definition=jsonb_set(definition,'{enabled}','true'::jsonb) where id='ARTICLE_REF_PLUSTAG'`;
   });
   await check('runtime cannot alter benefits or publish directly',async()=>{
     await assert.rejects(()=>runtime`insert into blog_worker.benefit(id) values('forged')`,/permission denied/);
