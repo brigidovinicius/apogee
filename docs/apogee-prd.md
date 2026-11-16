@@ -375,3 +375,12 @@ A instrução atual do proprietário autoriza implementar e validar a jornada co
 - Migrações novas 0019/0020 são aditivas e aguardam o ensaio integrado em PostgreSQL próprio nesta execução. Nenhuma é executada em produção nesta autorização.
 
 Rotas, critérios e evidências finais ficam em `offer-completion-review-20261115.md` e `offer-completion-runbook-20261115.md`. Os resultados serão registrados após validação, distinguindo testes locais, sandbox externo e produção. Vendas permanecem dependentes da revisão concreta, conteúdo/benefícios anunciados, responsáveis e configuração live validada.
+
+
+## Ativação comercial autorizada — 16/11/2026
+
+O proprietário autorizou atualizar a página, configurar Stripe live, testar a jornada e ativar as vendas anuais somente após validação. O preço permanece R$ 1.438,80 por ano, cobrado integralmente e com renovação automática. Não ativar Stripe Tax; não criar plano mensal, trial, desconto ou parcelamento nesta entrega. A configuração histórica do Radar permanece independente.
+
+A oferta inicial declara Radar completo, Caixa de Ferramentas, fórum e o exercício “Um primeiro resultado com IA”, com três atividades. A formação é parcial, sem prometer data para os próximos módulos. Benefícios sem acordo confirmado ficam explicitamente em preparação, fora do que está disponível na contratação. Não é necessário completar a formação para abrir as vendas; o início informado precisa estar publicado e acessível ao assinante vigente.
+
+A publicação da cópia, a configuração live e a ativação da flag são etapas distintas. Registrar a revisão e os resultados em `annual-live-activation-20261116.md`, sem anunciar ativação antes da conferência do runtime e do percurso público.

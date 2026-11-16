@@ -150,3 +150,10 @@ Curadoria de Benefícios e Trilha registra ator, data, entidade, ação e estado
 O exercício original “Um primeiro resultado com IA” está preparado para revisão: escolher tarefa e critérios, preparar um pedido com dados permitidos, conferir o resultado e decidir o próximo passo. O banco da prévia contém esse material; a migração operacional não semeia conteúdo automaticamente. A publicação editorial e os conteúdos posteriores dependem da revisão do proprietário.
 
 O mapa de testes F01–F10 e da jornada fica no relatório de revisão integrado; o estado de produção continua separado.
+
+
+## Conteúdo inicial e venda anual — 16/11/2026
+
+No prosseguimento autorizado da ativação anual, a trilha inicial terá um módulo com três atividades: escolher uma tarefa pequena; preparar um pedido e proteger os dados; conferir o resultado e decidir o próximo passo. O entregável é um roteiro curto com tarefa, dados permitidos, critérios de qualidade e avaliação final. O material original corresponde a `content/member-starter.mjs`; o restante da formação continua em preparação.
+
+A administração existente publica o conteúdo pelo fluxo de curadoria e mantém a auditoria da sessão. Não semear permissões, assinaturas nem progresso de contas reais. A formação parcial não bloqueia o lançamento. Benefícios não formalizados permanecem indisponíveis, com esse estado explícito antes da contratação. A Caixa já publicada permanece exclusiva anual, independente dos acessos antigos do Radar.

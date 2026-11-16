@@ -4,11 +4,11 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
-function render(props = {}) {
+function render(props = {}, enabled = false) {
   const load = opportunityLoader({
     "next/image": { __esModule: true, default: ({ preload, ...props }) => { void preload; return React.createElement("img", props); } },
     "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return React.createElement("a", props, children); } },
-    "@/lib/billing/community-config": { communityBillingEnabled: () => false },
+    "@/lib/billing/community-config": { communityBillingEnabled: () => enabled },
   });
   return renderToStaticMarkup(React.createElement(load("components/community/community-sales-page.tsx").CommunitySalesPage, props));
 }
@@ -16,7 +16,7 @@ function render(props = {}) {
 test("sales page retains the complete offer and honest delivery states with working section links", () => {
   const html = render();
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-  for (const text of ["Caixa de Ferramentas", "Benefícios", "Trilha de IA aplicada", "Google Flow", "R$ 1.438,80", "R$ 119,90", "10 eventos distintos", "direitos são preservados", "inicialmente de forma parcial", "ainda está em preparação", "independente da assinatura"]) assert.ok(html.includes(text), text);
+  for (const text of ["Caixa de Ferramentas", "Benefícios", "Trilha de IA aplicada", "Google Flow", "R$ 1.438,80", "R$ 119,90", "10 eventos distintos", "direitos são preservados", "disponível de forma parcial", "Não há benefícios de parceiros disponíveis neste lançamento", "independente da assinatura"]) assert.ok(html.includes(text), text);
   for (const id of ["comunidade", "radar", "ferramentas", "learn", "perks", "planos", "participar", "duvidas"]) assert.ok(html.includes(`id="${id}"`), id);
   for (const [, id] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(html.includes(`id="${id}"`), `broken section link: ${id}`);
   assert.match(html, /href="\/evento-openai"/);
@@ -30,4 +30,17 @@ test("sales layout preserves the preview and safe return-destination contract", 
   const preview = render({ preview: true, next: destination });
   assert.match(preview, /href="\/previa\/entrada"/);
   assert.doesNotMatch(preview, /href="\/membros\/cadastro/);
+});
+
+
+test("annual sales link is enabled only by the commercial switch and never by preview", () => {
+  const next = "/membros/ferramentas?categoria=video";
+  const active = render({ next }, true);
+  assert.ok(active.includes(`/membros/assinatura?next=${encodeURIComponent(next)}`));
+  assert.match(active, /Assinar a comunidade anual/);
+  assert.match(active, /Cobrança anual de R\$ 1\.438,80, com renovação automática/);
+  assert.doesNotMatch(active, /O catálogo ainda está em preparação|valor proposto|serão apresentados antes da adesão/);
+  assert.match(active, /formação ainda não está completa/);
+  const preview = render({ preview: true, next }, true);
+  assert.doesNotMatch(preview, /Assinar a comunidade anual|href="\/membros\/assinatura/);
 });
