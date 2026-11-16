@@ -82,4 +82,3 @@ A matriz HTTP/RSC executou **123/123 verificações** sobre nove perfis mais vis
 6. Backup/inventário reais, restauração isolada, migrações 0019/0020 e deploy do SHA aprovado, cada qual com autorização. Este trabalho não altera produção.
 
 Métodos: [runbook da oferta](offer-completion-runbook-20261115.md), [plano por arquivos](offer-completion-plan-20261115.md), [validação Stripe desta execução](stripe-annual-offer-validation-20261115.md) e [histórico anterior](stripe-annual-sandbox-validation-20261114.md). Fontes oficiais conferidas: [Google Flow](https://labs.google/fx/tools/flow), [webhooks Stripe](https://docs.stripe.com/webhooks), [testes Billing](https://docs.stripe.com/billing/testing), [portal](https://docs.stripe.com/customer-management/configure-portal).
-
