@@ -7,7 +7,7 @@ import type { DeliverableKind } from "@/lib/deliverables/validation";
 import { z } from "zod";
 export type EditorialState = { message?: string; ok?: boolean; revision?: string };
 const fields = {
-  benefit: ["partner", "description", "evidenceUrl", "eligibility", "availability", "startsAt", "endsAt", "redemption", "redemptionUrl"],
+  benefit: ["partner", "description", "evidenceUrl", "eligibility", "availability", "startsAt", "endsAt", "redemption", "redemptionUrl", "categoryId", "providerLabel", "providerAccess", "sourceUrl"],
   track: ["description"], module: ["trackId", "description", "deliverable"], activity: ["moduleId", "instructions", "resourceUrl"],
 };
 export async function saveEditorial(_: EditorialState, form: FormData): Promise<EditorialState> {
@@ -22,6 +22,6 @@ export async function saveEditorial(_: EditorialState, form: FormData): Promise<
   let saved;
   try { saved = await saveDeliverable(kind as DeliverableKind, input); }
   catch (error) { return { message: error instanceof DeliverableConflictError ? error.message : error instanceof z.ZodError ? error.issues[0]?.message : "Não foi possível salvar. Confira os vínculos e tente novamente." }; }
-  for (const path of ["/admin/beneficios", "/admin/trilha", "/membros/beneficios", "/membros/trilha"]) revalidatePath(path);
+  for (const path of ["/admin/beneficios", "/admin/trilha", "/membros/beneficios", "/membros/trilha"]) revalidatePath(path, "layout");
   return { ok: true, revision: saved.revision, message: "Conteúdo salvo. Confira o estado editorial antes de anunciar disponibilidade." };
 }

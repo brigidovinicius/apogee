@@ -218,9 +218,10 @@ test("benefits render real validity dates with the shared Drizzle driver and nev
   const { renderToStaticMarkup } = await import("react-dom/server");
   const page = opportunityLoader({
     "next/link": { __esModule: true, default: "a" },
-    "@/lib/deliverables/store": { memberBenefits: async () => state },
+    "@/lib/benefits/store": { memberBenefitDetail: async () => ({ ...state, benefit: { ...visible, category_name: null, provider_label: "", provider_access: "unconfirmed", saved: false } }) },
+    "@/components/benefits/member-forms": { BenefitSaveButton: () => null, BenefitStartForm: () => null },
     "@/components/members/member-bar": { MemberBar: () => null },
-  })("app/membros/beneficios/page.tsx").default;
-  const html = renderToStaticMarkup(await page());
-  assert.match(html, /Vigência:/);assert.match(html, /2026/);assert.doesNotMatch(html, /example.org\/agreement/);
+  })("app/membros/beneficios/[id]/page.tsx").default;
+  const html = renderToStaticMarkup(await page({ params: Promise.resolve({ id: saved.id }) }));
+  assert.match(html, /Vigência/);assert.match(html, /2026/);assert.doesNotMatch(html, /example.org\/agreement/);
 });

@@ -171,3 +171,11 @@ O mapa de testes F01–F10 e da jornada fica no relatório de revisão integrado
 No prosseguimento autorizado da ativação anual, a trilha inicial terá um módulo com três atividades: escolher uma tarefa pequena; preparar um pedido e proteger os dados; conferir o resultado e decidir o próximo passo. O entregável é um roteiro curto com tarefa, dados permitidos, critérios de qualidade e avaliação final. O material original corresponde a `content/member-starter.mjs`; o restante da formação continua em preparação.
 
 A administração existente publica o conteúdo pelo fluxo de curadoria e mantém a auditoria da sessão. Não semear permissões, assinaturas nem progresso de contas reais. A formação parcial não bloqueia o lançamento. Benefícios não formalizados permanecem indisponíveis, com esse estado explícito antes da contratação. A Caixa já publicada permanece exclusiva anual, independente dos acessos antigos do Radar.
+
+## Benefícios: candidato local para revisão — 16/11/2026
+
+O proprietário autorizou implementar e testar antes de publicar: busca, categorias, ofertas salvas e histórico individual. A implementação local mantém o catálogo e a ficha por oferta, incluindo variantes de uma mesma ferramenta. Anual vigente e administrador navegam; contas gratuitas, expiradas ou com direito apenas ao Radar mantêm a prévia borrada e bloqueada, sem dados privados.
+
+As novas rotas são `/membros/beneficios/salvos`, `/membros/beneficios/resgates` e `/membros/beneficios/[id]`. A migração aditiva 0021 mantém as entregas existentes e acrescenta categorias, organização da oferta, salvos e resgates. Toda mutação confere conta, direito e conteúdo no servidor. O início do resgate é idempotente por membro/oferta e não confirma vantagem recebida; confirmação administrativa exige referência privada de conferência.
+
+Ofertas comerciais ainda não formalizadas ficam em rascunho. A prévia local usa três ofertas sintéticas publicadas para exercitar os fluxos e pode carregar as candidatas reais de manifesto privado apenas como rascunho. Nenhuma parceria, API, banco real ou nova versão em produção é ativada por esta etapa. O plano e os critérios de revisão estão em `benefits-workspace-plan-20261116.md` e `benefits-workspace-runbook-20261116.md`.
