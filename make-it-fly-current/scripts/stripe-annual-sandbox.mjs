@@ -5,7 +5,7 @@ import {spawn,execFileSync} from 'node:child_process';
 import {randomBytes} from 'node:crypto';
 import {createServer} from 'node:http';
 import {createInterface} from 'node:readline';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import Stripe from 'stripe';
 import {hashPassword} from 'better-auth/crypto';
 import {nativeCommunityDatabase} from '../tests/helpers/community-native-db.mjs';
@@ -34,7 +34,8 @@ const userId=username=>`${run}:${username}`;
 const redact=value=>String(value).replace(/\b(?:sk|rk|pk)_(?:test|live)_[A-Za-z0-9]+/g,'[REDACTED_KEY]').replace(/whsec_[A-Za-z0-9]+/g,'[REDACTED_WEBHOOK]');
 const log=(message)=>console.log(redact(message));
 let db,listener,server,control,closing=false,clockCase=null;
-const evidence={run,account:expectedAccount,livemode:false,startedAt:new Date().toISOString(),actions:[]};
+let evidence={run,account:expectedAccount,livemode:false,startedAt:new Date().toISOString(),actions:[]};
+try { const old=JSON.parse(await readFile(`${artifacts}/evidence.json`,'utf8'));if(old.run===run && old.account===expectedAccount && old.livemode===false){evidence=old;clockCase=old.clockCase??null;} } catch(error){if(error.code!=='ENOENT')throw error;}
 async function save(){await writeFile(`${artifacts}/evidence.json`,JSON.stringify(evidence,null,2));}
 async function stop(code=0){
   if(closing)return;closing=true;
@@ -54,7 +55,13 @@ try {
   },{idempotencyKey:`${run}-portal`});
   assert.equal(portal.livemode,false);
   evidence.product=product.id;evidence.price=price.id;evidence.portal=portal.id;await save();
-  db=await nativeCommunityDatabase();await migrateCommunityAccess(db.sql,{apply:true,expectedRole:'apogee_local'});await migrateMemberToolbox(db.sql,{apply:true,expectedRole:'apogee_local'});await migrateMemberDeliverables(db.sql,{apply:true,expectedRole:'apogee_local'});
+  let previous;
+  try { previous=JSON.parse(await readFile('/private/tmp/apogee-stripe-sandbox-state.json','utf8')); } catch(error){if(error.code!=='ENOENT')throw error;}
+  if(previous?.run===run && previous.account===expectedAccount && previous.livemode===false && previous.dir) {
+    try { db=await nativeCommunityDatabase({directory:previous.dir,preserve:true}); } catch(error){if(error.code!=='ENOENT')throw error;}
+  }
+  db??=await nativeCommunityDatabase({preserve:true});await migrateCommunityAccess(db.sql,{apply:true,expectedRole:'apogee_local'});await migrateMemberToolbox(db.sql,{apply:true,expectedRole:'apogee_local'});await migrateMemberDeliverables(db.sql,{apply:true,expectedRole:'apogee_local'});
+  if(!db.resumed) {
   const password=await hashPassword('RevisaoLocal2026!');
   for(const username of ['sandboxcompra','sandboxrecusa','sandboxcontrole','sandboxlegado','sandboxciclo']) {
     const id=userId(username);
@@ -71,6 +78,7 @@ try {
   await db.sql`insert into member_tool_category(id,slug,name,status) values('local-video','video','Vídeo','published')`;
   await db.sql`insert into member_tool(id,category_id,name,description,url,status,reviewed_at,reviewed_by) values('local-flow','local-video','Google Flow','Criação de vídeos com inteligência artificial.','https://labs.google/fx/tools/flow','published',now(),${editor})`;
 
+  }
   const {COMMUNITY_STRIPE_EVENTS}=opportunityLoader()('lib/billing/community-fulfillment.ts');
   let resolveSecret,rejectSecret;
   const secretPromise=new Promise((resolve,reject)=>{resolveSecret=resolve;rejectSecret=reject;});
@@ -87,7 +95,7 @@ try {
   });
   const webhookSecret=await secretPromise;
   const inherited=Object.fromEntries(['PATH','HOME','TMPDIR','LANG','PG_BIN'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]));
-  const env={...inherited,NODE_OPTIONS:'--max-old-space-size=1536',NEXT_TELEMETRY_DISABLED:'1',NODE_ENV:'development',APOGEE_LOCAL_PREVIEW:'1',APOGEE_FUNCTIONAL_REVIEW:'0',APOGEE_STRIPE_SANDBOX_REVIEW:'1',
+  const env={...inherited,NODE_OPTIONS:'--max-old-space-size=2048',NEXT_TELEMETRY_DISABLED:'1',NODE_ENV:'development',APOGEE_LOCAL_PREVIEW:'1',APOGEE_FUNCTIONAL_REVIEW:'0',APOGEE_STRIPE_SANDBOX_REVIEW:'1',
     DATABASE_URL:db.url,DATABASE_SSL_MODE:'disable',DATABASE_POOL_MAX:'2',BETTER_AUTH_URL:origin,BETTER_AUTH_SECRET:randomBytes(32).toString('hex'),
     STRIPE_MODE:'test',STRIPE_SECRET_KEY:credentials.key,STRIPE_WEBHOOK_SECRET:webhookSecret,
     STRIPE_COMMUNITY_PRODUCT_ID:product.id,STRIPE_COMMUNITY_ANNUAL_PRICE_ID:price.id,STRIPE_COMMUNITY_PORTAL_CONFIGURATION_ID:portal.id,
@@ -117,6 +125,7 @@ try {
   }
   async function action(name){
     if(name==='status')return snapshot();
+    if(name==='finish'){await snapshot();setTimeout(()=>void stop(),150);return {stopping:true};}
     if(name==='refund'){
       const [owned]=await db.sql`select i.payment_intent_id from community_invoice i join community_subscription s on s.id=i.subscription_id where s.user_id=${userId('sandboxcompra')} and s.livemode=false and i.status='paid' order by i.period_start desc limit 1`;
       assert.ok(owned?.payment_intent_id);const intent=await stripe.paymentIntents.retrieve(owned.payment_intent_id);assert.equal(intent.livemode,false);
@@ -167,6 +176,6 @@ try {
     catch(error){log(`Control ${name}: ${error.message}`);res.writeHead(503,{'Content-Type':'application/json'});res.end(JSON.stringify({error:redact(error.message)}));}
   });
   await new Promise((resolve,reject)=>{control.once('error',reject);control.listen(controlPort,'127.0.0.1',resolve);});
-  await writeFile('/private/tmp/apogee-stripe-sandbox-state.json',JSON.stringify({run,account:expectedAccount,livemode:false,product:product.id,price:price.id,portal:portal.id,database:db.url,controlPort,token,pid:process.pid}),{mode:0o600});
+  await writeFile('/private/tmp/apogee-stripe-sandbox-state.json',JSON.stringify({run,account:expectedAccount,livemode:false,product:product.id,price:price.id,portal:portal.id,database:db.url,dir:db.dir,data:db.data,controlPort,token,pid:process.pid}),{mode:0o600});
   await snapshot();log(`Sandbox ready: ${run}; account=${expectedAccount}; livemode=false; ${origin}/previa/stripe`);
 } catch(error){log(`Sandbox not started: ${error.message}`);await stop(1);}

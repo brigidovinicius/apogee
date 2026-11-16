@@ -67,7 +67,7 @@ try {
 
   // Inherit only execution settings; no production credentials or dotenv are copied.
   const inherited=Object.fromEntries(['PATH','HOME','TMPDIR','LANG','PG_BIN'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]));
-  const env={...inherited,NODE_OPTIONS:'--max-old-space-size=1536',NEXT_TELEMETRY_DISABLED:'1',NODE_ENV:'development',APOGEE_LOCAL_PREVIEW:'1',APOGEE_FUNCTIONAL_REVIEW:'1',
+  const env={...inherited,NODE_OPTIONS:'--max-old-space-size=2048',NEXT_TELEMETRY_DISABLED:'1',NODE_ENV:'development',APOGEE_LOCAL_PREVIEW:'1',APOGEE_FUNCTIONAL_REVIEW:'1',
     DATABASE_URL:db.url,DATABASE_SSL_MODE:'disable',DATABASE_POOL_MAX:'2',BETTER_AUTH_URL:`http://127.0.0.1:${port}`,BETTER_AUTH_SECRET:randomBytes(32).toString('hex'),
     STRIPE_MODE:'test',STRIPE_SECRET_KEY:'',STRIPE_WEBHOOK_SECRET:'',COMMUNITY_BILLING_ENABLED:'false',RADAR_BILLING_ENABLED:'false',
     MEMBERS_EMAIL_ENABLED:'false',MEMBERS_RESEND_API_KEY:'',MEMBERS_SUPERVISED_REGISTRATION_ENABLED:'true',

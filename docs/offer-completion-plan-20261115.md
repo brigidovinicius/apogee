@@ -8,7 +8,7 @@ Autorização: implementação, testes com dados sintéticos e revisão. Sem dep
 - Base: web efetivamente servido `4dfef55ed3c85880c6f4a772ec3262bd2d29316e`; ancestral `b6810ce` preserva Comunidade completa e Loja aprovadas. Integradas ancestralidade de `origin/main` (`4f1d6ad`) e documentação `2bcaa63`, sem substituir o visual por main.
 - VPS consultada somente para leitura: checkout limpo `b6810ce`, container `4dfef55`, healthy, zero reinícios, cobrança anual false, lock disponível. Há trabalho editorial de outro chat; esta execução não publica.
 - Código existente: autenticação/proteção, consentimentos separados de evento e drops, administração de contatos, cota transacional de dez eventos, preservação legada, checkout anual, conciliação, portal e cancelamento. Validação anterior é histórica; será repetida proporcionalmente no candidato.
-- Caixa de Ferramentas em implementação por outro chat (`feat/member-toolbox-20261115`), ainda sem commit ao iniciar. Não editar sua árvore. Integração depende do commit e revisão. Mensagem de coordenação bloqueada pela revisão automática; autorização solicitada sem bloquear o restante.
+- Caixa de Ferramentas coordenada com o chat proprietário após autorização explícita do usuário. Integrados `b2f63d7` e correção `a3a5a4a`, sem editar sua árvore. A prévia anterior foi encerrada pelo proprietário, com autorização específica, preservando seu banco.
 - Faltam: catálogos/gestão de Benefícios e Trilha/progresso, quatro destinos internos reais, operação consolidada e evidências finais. Conteúdos e acordos não são presumidos.
 
 ## Lotes e arquivos
@@ -27,3 +27,7 @@ Visitante; lead; gratuita com 0/9/10 consultas; legado; anual ativo; renovação
 ## Dependências do proprietário
 
 Acordos e regras de benefícios; materiais autorizados da Trilha; responsável editorial/suporte; configuração live anual e email/OAuth no ambiente proprietário antes de vender. Perguntas agrupadas enviadas, trabalho independente continua. Se não houver conteúdo confirmado, registros permanecem em preparação e as vendas bloqueadas.
+
+## Execução
+
+Lotes de implementação concluídos em commits próprios; revisão estática corrigiu retenção do formulário após erro e ordenação do próximo passo entre trilhas. Integrações PostgreSQL: 14 anuais, dez da Caixa, nove de entregas; mais seis checks com Better Auth real/email interceptado. Unidade: 791. Sandbox integrado detalhado em `stripe-annual-offer-validation-20261115.md`. O exercício original de três atividades foi preparado apenas para revisão, sem publicação automática. Resultados finais de UI, CI e links estão em `offer-completion-review-20261115.md`.

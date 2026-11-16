@@ -41,6 +41,9 @@ jobs:
       - name: Member benefits and learning PostgreSQL integration
         if: matrix.app == 'make-it-fly-current'
         run: PG_BIN="$(pg_config --bindir)" npm run test:member-deliverables
+      - name: Member signup, verification and recovery with intercepted email
+        if: matrix.app == 'make-it-fly-current'
+        run: PG_BIN="$(pg_config --bindir)" npm run test:member-auth-journey
       - name: Blog worker without provider calls
         if: matrix.app == 'make-it-fly-current'
         run: |
