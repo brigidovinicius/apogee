@@ -1,0 +1,11 @@
+.workspace { display: grid; grid-template-columns: 15rem minmax(0, 1fr); align-items: start; gap: clamp(1.5rem, 3vw, 3rem); width: min(100%, 90rem); margin-inline: auto; }
+.content { min-width: 0; }
+.content > div[class] { width: 100%; max-width: none; min-height: 0; margin: 0; }
+.content h1 { font-size: clamp(2rem, 3.5vw, 3.25rem) !important; line-height: 1.1 !important; }
+.content :is(h1,h2,h3,h4,p,a) { overflow-wrap: anywhere; }
+.content:focus { outline: none; }
+:global([data-apogee-design] main):has(.workspace) { padding: 2rem clamp(1rem, 3vw, 3rem) 4rem; }
+@media (max-width: 900px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+  :global([data-apogee-design] main):has(.workspace) { padding-top: 1rem; }
+}

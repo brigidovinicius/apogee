@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MemberBar } from "@/components/members/member-bar";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import { verificationPagePreview } from "@/components/members/member-page-access";
 import styles from "@/components/members/members.module.css";
 import { ProfileForm } from "@/components/members/profile-form";
@@ -18,8 +18,8 @@ export default async function EditProfilePage() {
   if (!profile) redirect("/membros/entrar");
 
   return (
-    <div className={styles.container}>
-      <MemberBar member={member} current="perfil" />
+    <MemberWorkspace member={member} current="perfil"><div className={styles.container}>
+
       <ol className={styles.breadcrumbs}>
         <li>
           <Link href={`/membros/perfil/${member.username}`}>Meu perfil</Link>
@@ -30,6 +30,6 @@ export default async function EditProfilePage() {
       <div className={styles.panel} style={{ marginTop: "2rem", maxWidth: "40rem" }}>
         <ProfileForm name={profile.name} userId={member.id} bio={profile.bio ?? ""} image={profile.image} />
       </div>
-    </div>
+    </div></MemberWorkspace>
   );
 }

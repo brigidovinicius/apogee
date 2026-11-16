@@ -2,7 +2,7 @@ import { personalCalendarEnabled, savedOpportunities } from "@/lib/opportunities
 import { toggleSaved } from "@/app/membros/meu-calendario/actions";
 import Link from "next/link";
 import { formatCalendarDate } from "@/components/opportunities/calendar-list";
-import { MemberBar } from "@/components/members/member-bar";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import { OpportunityCard } from "@/components/opportunities/opportunities-board";
 import { RadarQuota } from "@/components/community/radar-quota";
 import { RadarCommunityGate } from "@/components/community/radar-offer-intro";
@@ -22,8 +22,8 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   const hasCalendar = personalCalendarEnabled() && result.status === "unlimited";
   const canSave = hasCalendar && await adultAccess(result.member.id);
   const saved = canSave ? (await savedOpportunities(result.member.id)).some(s=>s.id===id && !s.removedAt) : false;
-  return <div className={styles.container}>
-    <MemberBar member={result.member} current="radar" />
+  return <MemberWorkspace member={result.member} current="radar"><div className={styles.container}>
+
     <div className={styles.opportunityDetail}>
       <p><Link href="/membros/oportunidades">← Voltar ao Radar</Link></p>
       {result.quota ? <RadarQuota used={result.quota.used} limit={result.quota.limit} /> : null}
@@ -38,5 +38,5 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
       />}
 
     </div>
-  </div>;
+  </div></MemberWorkspace>;
 }

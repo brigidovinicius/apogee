@@ -12,7 +12,7 @@ import { CalendarFilters } from "@/components/opportunities/calendar-filters";
 import { readCalendarFilters,filterCalendarItems,calendarFilterQuery } from "@/lib/opportunities/calendar-filters";
 import { listSavedCalendarFilters } from "@/lib/opportunities/saved-calendar-filters";
 import { saveCalendarFilter,deleteCalendarFilter } from "./filter-actions";
-import { MemberBar } from "@/components/members/member-bar";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import { calendarPagePreview } from "@/components/members/member-page-access";
 import { toggleSaved } from "./actions";
 import styles from "@/components/opportunities/calendar.module.css";
@@ -35,7 +35,7 @@ export default async function MyCalendarPage({searchParams}:{searchParams:Promis
   const source=catalogue?live:live.filter(i=>active.some(s=>s.id===i.id));
   const items=filterCalendarItems(source,filters);
   const saveState=await calendarSaveState(items.map(item=>item.id),returnTo);
-  return <div className={styles.page}><div className={styles.main}><MemberBar member={member} current="calendario"/>
+  return <MemberWorkspace member={member} current="calendario"><div className={styles.page}><div className={styles.main}>
     <div className={styles.hero}><h1>Meu calendário</h1><p>As próximas etapas das oportunidades que você salvou.</p><Link href="/calendarios">Explorar calendários</Link></div>
     <GoogleCalendar status={googleStatus} result={typeof query.google==="string"?query.google:undefined} returnTo={returnTo}/>
     <nav aria-label="Origem do calendário"><Link className={styles.action} href="/membros/meu-calendario">Minhas oportunidades salvas</Link><Link className={styles.action} href="/membros/meu-calendario?catalogo=1">Explorar catálogo com filtros</Link></nav>
@@ -48,5 +48,5 @@ export default async function MyCalendarPage({searchParams}:{searchParams:Promis
     <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><CalendarView items={items} filters={filters} query={paramsQuery.toString()}/></CalendarSaveProvider>
     {catalogue&&<p>Salve diretamente nas etapas da agenda. Se o Google Agenda estiver conectado, as oportunidades salvas serão sincronizadas.</p>}
     <h2>Oportunidades salvas</h2>{active.length ? <ul>{active.map(s=><li key={s.id}>{s.snapshot.title}{!live.some(i=>i.id===s.id)?" · Sem próximas etapas disponíveis":""}<form action={toggleSaved.bind(null,s.id,true)}><button className={styles.action}>Remover</button></form></li>)}</ul>:<p>Explore o catálogo e use Salvar na minha agenda.</p>}
-  </div></div>;
+  </div></div></MemberWorkspace>;
 }

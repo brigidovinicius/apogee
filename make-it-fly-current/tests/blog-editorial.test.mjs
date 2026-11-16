@@ -51,3 +51,23 @@ test('listagem mantém tema e página nas consultas e não exibe capa vinculada 
   assert.ok(!html.includes('Capa de outro artigo'));
   assert.ok(!html.includes(item.coverMediaId));
 });
+
+test('member blog keeps filters, pagination and article links within the member area', async () => {
+  const load = opportunityLoader({ ...frame, '@/lib/blog/data': {
+    listPublicPosts: async () => ({ posts: [post], total: 25, pages: 3 }), getCoverMedia: async () => [],
+  } });
+  const tree = await load('components/blog/blog-index.tsx').BlogIndex({ searchParams: Promise.resolve({ tema: 'ciencias', pagina: '2' }), member: true });
+  const html = renderToStaticMarkup(tree);
+  assert.match(html, /href="\/membros\/blog\/teste"/);
+  assert.match(html, /href="\/membros\/blog\?tema=ciencias&amp;pagina=3"/);
+  assert.doesNotMatch(html, /<main|href="\/blog/);
+});
+
+test('member article returns to member blog while sharing the public canonical article', async () => {
+  const load = opportunityLoader({ ...frame, '@/lib/blog/data': { getPublicPost: async () => post, listPostMedia: async () => [] } });
+  const tree = await load('components/blog/blog-article.tsx').BlogArticle({ params: Promise.resolve({ slug: 'teste' }), member: true });
+  const html = renderToStaticMarkup(tree);
+  assert.match(html, /href="\/membros\/blog"/);
+  assert.match(html, /https:\/\/www.apogee.community\/blog\/teste/);
+  assert.doesNotMatch(html, /<main/);
+});

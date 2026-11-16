@@ -35,7 +35,7 @@ test("only a server-confirmed admin receives the switch in either shell", async 
   assert.match(layout, /showModeSwitcher=\{member\?\.role === "admin"\}/);
   assert.match(shell, /showModeSwitcher \? \(/);
   assert.match(shell, /<AdminModeSwitcher mode="admin" \/>/);
-  assert.match(memberBar, /member\.role === "admin" \? <AdminModeSwitcher mode="user" \/> : null/);
+  assert.match(memberBar, /member\.role === "admin" \? <AdminModeSwitcher mode="user" compact \/> : null/);
   assert.doesNotMatch(memberBar, /role=\{member\.role\}|mode=\{member\.role\}/);
 });
 

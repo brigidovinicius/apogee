@@ -2,7 +2,7 @@ import { interfaceText } from "@/lib/presentation-text.mjs";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { MemberBar } from "@/components/members/member-bar";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import { verificationPagePreview } from "@/components/members/member-page-access";
 import styles from "@/components/members/members.module.css";
 import { Pagination } from "@/components/members/pagination";
@@ -36,8 +36,8 @@ export default async function TopicPage({ params, searchParams }: Props) {
   const { posts, pages } = await listPosts(topic.id, page);
 
   return (
-    <div className={styles.container}>
-      <MemberBar member={member} current="forum" />
+    <MemberWorkspace member={member} current="forum"><div className={styles.container}>
+
       <ol className={styles.breadcrumbs}>
         <li>
           <Link href="/membros">Fórum</Link>
@@ -71,6 +71,6 @@ export default async function TopicPage({ params, searchParams }: Props) {
           <ReplyForm topic={String(topic.id)} />
         </div>
       </section>
-    </div>
+    </div></MemberWorkspace>
   );
 }

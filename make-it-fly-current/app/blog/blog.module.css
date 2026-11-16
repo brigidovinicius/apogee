@@ -91,3 +91,13 @@
   .articleBody { font-size: 1.125rem; line-height: 1.72; }
   .articleByline { display: grid; }
 }
+
+/* The same published articles remain inside member navigation. */
+.page[data-member-blog] { min-height: 0; padding: clamp(1rem, 2vw, 2rem); border-radius: .35rem; }
+.page[data-member-blog] :is(.main,.articleMain) { width: 100%; padding: 0; }
+.page[data-member-blog] .hero { grid-template-columns: 1fr; padding-top: 0; }
+.page[data-member-blog] .hero .eyebrow { display: none; }
+.page[data-member-blog] .frontGrid { grid-template-columns: 1fr; gap: 1.5rem; }
+.page[data-member-blog] .leadCard { border: 0; padding: 0; }
+.page[data-member-blog] .grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+@media (max-width: 640px) { .page[data-member-blog] .grid { grid-template-columns: 1fr; } }

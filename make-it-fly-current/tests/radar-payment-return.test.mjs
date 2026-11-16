@@ -7,6 +7,7 @@ import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 test("a return awaiting the webhook cannot offer another purchase or grant access from the URL", async () => {
   let active = false;
   const Page = opportunityLoader({
+    "@/components/members/member-bar": { MemberBar: () => null },
     "@/lib/members/dal": { requireSignedInMember: async () => ({ id: "pending-buyer" }) },
     "@/lib/billing/config": { RADAR_ACCESS_PATH: "/membros/radar/acesso", radarBillingEnabled: () => true, billingConfig: () => ({ livemode: false }) },
     "@/lib/billing/store": { radarAccess: async () => ({ active }), radarPurchaseNeedsVerification: async () => false },

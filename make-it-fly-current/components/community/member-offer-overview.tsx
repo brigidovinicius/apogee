@@ -2,17 +2,16 @@ import Link from "next/link";
 import { BookOpen, Compass, Gift, Wrench, LockKeyhole } from "lucide-react";
 import styles from "./community-offer.module.css";
 
-export function MemberOfferOverview({ name, radarFullAccess, preview = false, annual = false }: { annual?: boolean; name: string; radarFullAccess: boolean | null; preview?: boolean }) {
+export function MemberOfferOverview({ name, radarFullAccess, preview = false, annual = false, contentAccess = annual }: { annual?: boolean; contentAccess?: boolean; name: string; radarFullAccess: boolean | null; preview?: boolean }) {
   const pillars = [
     { name: "Radar", icon: Compass, text: "Encontre eventos, programas e oportunidades para agir.", href: preview ? "/oportunidades" : "/membros/oportunidades", action: "Abrir o Radar" },
-    { name: "Caixa de ferramentas", icon: Wrench, text: "Links por categoria para encontrar o recurso da sua tarefa. Exclusivo da assinatura anual.", href: preview ? "/previa/validacao" : "/membros/ferramentas", action: "Conhecer a caixa" },
-    { name: "Benefícios", icon: Gift, text: "Entenda os benefícios e as condições de cada oferta.", href: preview ? "/comunidade#perks" : "/membros/beneficios", action: "Ver benefícios" },
-    { name: "Trilha", icon: BookOpen, text: "Atividades práticas, módulos disponíveis e seu próximo passo na trilha inicial parcial.", href: preview ? "/comunidade#learn" : "/membros/trilha", action: "Continuar na trilha" },
+    { name: "Caixa de ferramentas", icon: Wrench, text: "Recursos de IA organizados por tarefa.", href: preview ? "/previa/validacao" : "/membros/ferramentas", action: "Abrir ferramentas" },
+    { name: "Benefícios", icon: Gift, text: "Ofertas e condições dos parceiros.", href: preview ? "/comunidade#perks" : "/membros/beneficios", action: "Ver benefícios" },
+    { name: "Trilha", icon: BookOpen, text: "Atividades práticas e seu progresso.", href: preview ? "/comunidade#learn" : "/membros/trilha", action: "Continuar na trilha" },
   ];
   return <section className={`${styles.scope} ${styles.overview}`} aria-labelledby="member-offer-title">
-    <h2 id="member-offer-title">{name}, qual é seu próximo passo?</h2>
-    <p>Explore uma oportunidade, conheça uma aplicação de IA ou continue uma conversa. A comunidade conecta os caminhos para você construir mais.</p>
-    <div className={styles.pillarGrid}>{pillars.map(item => <article className={styles.pillar} key={item.name}><item.icon size={24} strokeWidth={1.5} aria-hidden="true" /><h3>{item.name}</h3>{item.name !== "Radar" && !annual ? <p><LockKeyhole size={14} aria-hidden="true" /> Exclusivo da assinatura</p> : null}<p>{item.text}</p><Link prefetch={false} href={item.href}>{item.action}</Link></article>)}</div>
-    <p className={styles.access}>{radarFullAccess === null ? "Confira seu acesso no Radar para conhecer as condições da sua conta." : annual ? "Sua assinatura anual inclui o Radar completo durante o período pago." : radarFullAccess ? "Seu acesso anterior ao Radar está preservado. A assinatura dos demais pilares é uma escolha adicional." : "A entrada gratuita permite consultar até 10 eventos distintos. Conheça a assinatura para acessar o Radar completo e as entregas incluídas no plano."} <Link href="/comunidade#planos" prefetch={false}>Conhecer os planos da comunidade</Link> <Link href="/membros/assinatura">Assinatura e pagamentos</Link></p>
+    <h2 id="member-offer-title">Olá, {name}</h2>
+    <div className={styles.pillarGrid}>{pillars.map(item => <article className={styles.pillar} key={item.name}><item.icon size={24} strokeWidth={1.5} aria-hidden="true" /><h3>{item.name}</h3>{item.name !== "Radar" && !contentAccess ? <p><LockKeyhole size={14} aria-hidden="true" /> Exclusivo da assinatura</p> : null}<p>{item.text}</p><Link prefetch={false} href={item.href}>{item.action}</Link></article>)}</div>
+    <p className={styles.access}>{annual ? "Assinatura anual ativa." : radarFullAccess ? "Radar completo ativo." : radarFullAccess === false ? "Conta gratuita: até 10 eventos distintos no Radar." : ""} <Link href="/membros/assinatura">Ver meu acesso</Link></p>
   </section>;
 }
