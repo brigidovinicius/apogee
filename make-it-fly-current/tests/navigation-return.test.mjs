@@ -82,7 +82,9 @@ test("shared navigation marks only a defined current section and preserves the c
   });
   const { SiteHeader } = headerLoad("components/site/site-header.tsx");
   const memberHref = "/membros/entrar?next=%2Fmembros%2Foportunidades%3Fcategoria%3Deventos";
-  const unknown = nodes(SiteHeader({ memberHref }), node => node.type === "Link");
+  const tree = SiteHeader({ memberHref });
+  const accountFallback = nodes(tree, node => node.props?.fallback)[0].props.fallback;
+  const unknown = [...nodes(tree, node => node.type === "Link"), ...nodes(accountFallback, node => node.type === "Link")];
   assert.equal(unknown.filter(node => node.props["aria-current"] === "page").length, 0);
   assert.equal(unknown.filter(node => node.props.href === memberHref).length, 2);
   for (const adaptive of [false, true]) {

@@ -9,7 +9,8 @@ export default function FunctionalReviewPage() {
   return <main className={styles.container}><h1 className={styles.title}>Valide o acesso real por conta.</h1>
     <p>Estas contas e os 12 eventos são fictícios. A autenticação, a gravação das consultas e as regras de acesso usam o código real e um PostgreSQL exclusivo desta prévia.</p>
     <p>Senha de todas as contas locais: <code>RevisaoLocal2026!</code>. Entre com o e-mail abaixo. Para trocar de conta, use Sair na área de membros.</p>
-    <ul><li><strong>revisaolivre@example.test</strong>: saldo inicial de 10 eventos. Abra um evento, atualize e reabra para conferir que o saldo permanece.</li>
+    <ul><li><strong>revisaopendente@example.test</strong>: conta gratuita com e-mail e conferência pendentes. Conhece a plataforma com prévias bloqueadas, sem ler conteúdo privado.</li>
+    <li><strong>revisaolivre@example.test</strong>: saldo inicial de 10 eventos. Abra um evento, atualize e reabra para conferir que o saldo permanece.</li>
     <li><strong>revisaonove@example.test</strong>: nove eventos liberados; apenas mais um evento novo pode ser liberado.</li>
     <li><strong>revisaocancelada@example.test</strong>: renovação cancelada, mantendo o acesso anual no período pago.</li>
     <li><strong>revisaolimite@example.test</strong>: 10 eventos já consultados. Os eventos 01 a 10 reabrem; 11 e 12 apresentam a comunidade.</li>

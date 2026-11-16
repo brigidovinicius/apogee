@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MemberBar } from "@/components/members/member-bar";
+import { verificationPagePreview } from "@/components/members/member-page-access";
 import styles from "@/components/members/members.module.css";
 import { TopicForm } from "@/components/members/topic-form";
 import { requireMember } from "@/lib/members/dal";
@@ -11,6 +12,8 @@ export const metadata: Metadata = { title: "Novo tópico" };
 
 export default async function NewTopicPage({ params }: { params: Promise<{ categoria: string }> }) {
   const { categoria } = await params;
+  const preview = await verificationPagePreview("forum", "Nova conversa", `/membros/forum/${categoria}/novo`);
+  if (preview) return preview;
   const member = await requireMember(`/membros/forum/${categoria}/novo`);
   const category = await getCategory(categoria);
   if (!category) notFound();

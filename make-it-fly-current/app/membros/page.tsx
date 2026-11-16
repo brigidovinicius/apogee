@@ -7,14 +7,17 @@ import Link from "next/link";
 import { formatDateTime } from "@/components/members/format";
 import { MemberBar } from "@/components/members/member-bar";
 import styles from "@/components/members/members.module.css";
-import { requireMember } from "@/lib/members/dal";
+import { requireSignedInMember } from "@/lib/members/dal";
+import { adultAccess } from "@/lib/members/protection";
+import { LockedMemberArea } from "@/components/members/locked-member-area";
 import { listCategories } from "@/lib/members/forum";
 
 export const metadata: Metadata = { title: "Sua comunidade | Apogee" };
 
 export default async function MemberHomePage() {
-  const member = await requireMember("/membros");
-  const categories = await listCategories();
+  const member = await requireSignedInMember("/membros");
+  const verified = await adultAccess(member.id);
+  const categories = verified ? await listCategories() : [];
   const access = await radarAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null);
 
   const annual = await communityAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null);
@@ -31,9 +34,10 @@ export default async function MemberHomePage() {
       </header>
 
       <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} />
+      {!verified ? <p className={styles.verificationNotice}>Seu cadastro precisa de verificação para participar e acessar conteúdo protegido. Você já pode conhecer a plataforma. <Link href="/membros/protecao?next=%2Fmembros">Verificar minha conta</Link></p> : null}
       <section id="forum" aria-labelledby="member-forum-title"><h2 id="member-forum-title">Conversas da comunidade</h2>
 
-      {categories.length === 0 ? (
+      {!verified ? <LockedMemberArea kind="forum" next="/membros#forum" reason="verification" /> : categories.length === 0 ? (
         <p className={styles.empty}>Nenhuma categoria criada ainda</p>
       ) : (
         <ul className={styles.list}>

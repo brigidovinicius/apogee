@@ -11,6 +11,6 @@ export default function StripeReviewPage() {
     <p>Senha das contas locais: <code>RevisaoLocal2026!</code>.</p>
     <ul><li><strong>sandboxcompra@example.test</strong>: compra e cancelamento da renovação.</li><li><strong>sandboxrecusa@example.test</strong>: tentativa de cartão recusado e nova tentativa.</li><li><strong>sandboxcontrole@example.test</strong>: dez consultas, sem assinatura.</li><li><strong>sandboxlegado@example.test</strong>: acesso antigo preservado.</li></ul>
     <p><Link className={styles.primary} href="/membros/entrar?next=%2Fmembros%2Fassinatura">Entrar para validar a assinatura</Link></p>
-    <p><Link href="/membros/assinatura">Assinatura e pagamentos</Link> · <Link href="/membros/oportunidades/review-event-11">Conferir acesso ao evento 11</Link></p>
+    <p><Link href="/membros/assinatura">Assinatura e pagamentos</Link> · <Link href="/membros/oportunidades/radar-review-event-11">Conferir acesso ao evento 11</Link></p>
   </main>;
 }

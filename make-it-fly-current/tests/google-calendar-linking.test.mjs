@@ -39,6 +39,7 @@ test('the server retains connection intent when the browser omits the fragment f
   browser.hash='';
   let destination;
   const page=opportunityLoader({
+    '@/components/members/member-page-access':{calendarPagePreview:async()=>null},
     '@/lib/opportunities/personal-calendar':{requireCalendarMember:async next=>{destination=next;throw Error('pending-verification');}},
   })('app/membros/meu-calendario/page.tsx');
   await assert.rejects(page.default({searchParams:Promise.resolve(Object.fromEntries(browser.searchParams))}),/pending-verification/);

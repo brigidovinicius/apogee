@@ -5,11 +5,19 @@ import type { CurrentMember } from "@/lib/members/dal";
 import { AvatarInitials } from "./avatar-initials";
 import styles from "./members.module.css";
 import { mcpEnabled } from "@/lib/mcp/config";
+import { SignOutButton } from "./account-menu";
+import { personalCalendarEnabled } from "@/lib/opportunities/personal-calendar";
+import { collectionsEnabled } from "@/lib/opportunities/collections";
 
-export function MemberBar({ member, current }: { member: CurrentMember; current?: "home" | "forum" | "perfil" | "radar" | "ferramentas" | "beneficios" | "trilha" | "assinatura" | "suporte" }) {
+export function MemberBar({ member, current }: { member: CurrentMember; current?: "home" | "forum" | "perfil" | "radar" | "calendario" | "colecoes" | "protecao" | "ferramentas" | "beneficios" | "trilha" | "assinatura" | "suporte" }) {
   return (
     <div className={styles.memberBar}>
       {member.role === "admin" ? <AdminModeSwitcher mode="user" /> : null}
+      <div className={styles.memberIdentity}>
+        <AvatarInitials name={member.name} userId={member.id} image={member.image} size="small" />
+        <span>@{member.username}</span>
+        <form action={signOut}><SignOutButton /></form>
+      </div>
       <nav aria-label="Navegação da área de membros">
         <span className={styles.memberNavLabel}>Área de membros</span>
         <Link href="/membros" aria-current={current === "home" ? "page" : undefined}>
@@ -21,6 +29,8 @@ export function MemberBar({ member, current }: { member: CurrentMember; current?
         <Link href="/membros/oportunidades" aria-current={current === "radar" ? "page" : undefined}>
           Radar
         </Link>
+        {personalCalendarEnabled() ? <Link href="/membros/meu-calendario" prefetch={false} aria-current={current === "calendario" ? "page" : undefined}>Meu calendário</Link> : null}
+        {collectionsEnabled() ? <Link href="/membros/colecoes" prefetch={false} aria-current={current === "colecoes" ? "page" : undefined}>Minhas coleções</Link> : null}
         <Link href="/membros/ferramentas" prefetch={false} aria-current={current === "ferramentas" ? "page" : undefined}>
           Caixa de ferramentas
         </Link>
@@ -31,19 +41,10 @@ export function MemberBar({ member, current }: { member: CurrentMember; current?
         <Link href="/membros/trilha" aria-current={current === "trilha" ? "page" : undefined}>Trilha</Link>
         <Link href="/membros/assinatura" aria-current={current === "assinatura" ? "page" : undefined}>Assinatura</Link>
         <Link href="/membros/suporte" aria-current={current === "suporte" ? "page" : undefined}>Suporte</Link>
-        <Link href="/membros/protecao">Cadastro protegido</Link>
+        <Link href="/membros/protecao" aria-current={current === "protecao" ? "page" : undefined}>Cadastro protegido</Link>
         {mcpEnabled() && <Link href="/membros/integracoes/mcp">Incluir no meu ChatGPT</Link>}
         {mcpEnabled() && <Link href="/membros/integracoes/mcp#claude">Incluir no meu Claude</Link>}
       </nav>
-      <div className={styles.memberIdentity}>
-        <AvatarInitials name={member.name} userId={member.id} image={member.image} size="small" />
-        <span>@{member.username}</span>
-        <form action={signOut}>
-          <button className={styles.linkButton} type="submit">
-            Sair
-          </button>
-        </form>
-      </div>
     </div>
   );
 }
