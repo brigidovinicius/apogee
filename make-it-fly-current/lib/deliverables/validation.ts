@@ -26,6 +26,8 @@ export const benefitSchema = z.strictObject({
   ...common, status: z.enum(["draft", "published", "archived"]), partner: text(140), description: text(2000),
   evidenceUrl: officialUrl, eligibility: z.string().trim().max(2000), availability: z.string().trim().max(1000),
   startsAt: date, endsAt: date, redemption: z.string().trim().max(4000), redemptionUrl: officialUrl,
+  categoryId: z.union([identifier, z.literal("")]).optional(), providerLabel: z.string().trim().max(140).optional(),
+  providerAccess: z.enum(["unconfirmed", "free", "premium", "included"]).optional(), sourceUrl: officialUrl.optional(),
 }).superRefine((v, ctx) => {
   if (v.startsAt && v.endsAt && v.endsAt <= v.startsAt) ctx.addIssue({ code: "custom", message: "A vigência final deve ser posterior à inicial." });
   if (v.status === "published" && (!v.evidenceUrl || !v.eligibility || !v.availability || !v.startsAt || !v.endsAt || !v.redemption)) {

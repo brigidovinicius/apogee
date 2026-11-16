@@ -8,6 +8,8 @@ import { nativeCommunityDatabase } from "../tests/helpers/community-native-db.mj
 import { migrateCommunityAccess } from "./community-access-migrate.mjs";
 import { migrateMemberToolbox } from "./member-toolbox-migrate.mjs";
 import { migrateMemberDeliverables } from "./member-deliverables-migrate.mjs";
+import { migrateMemberBenefits } from "./member-benefits-migrate.mjs";
+import { seedBenefitsReview } from "./seed-benefits-review.mjs";
 import { starterTrack, starterModule, starterActivities } from "../content/member-starter.mjs";
 const instance=process.env.APOGEE_REVIEW_INSTANCE??'offer-completion';
 if(!/^[a-z0-9-]{1,64}$/.test(instance))throw Error('Instância de revisão inválida.');
@@ -31,6 +33,7 @@ try {
   await migrateCommunityAccess(db.sql,{apply:true,expectedRole:'apogee_local'});
   await migrateMemberToolbox(db.sql,{apply:true,expectedRole:'apogee_local'});
   await migrateMemberDeliverables(db.sql,{apply:true,expectedRole:'apogee_local'});
+  await migrateMemberBenefits(db.sql,{apply:true,expectedRole:'apogee_local'});
   if(!db.resumed) {
   const password=await hashPassword('RevisaoLocal2026!');
   for(const username of ['revisaopendente','revisaolivre','revisaonove','revisaolimite','revisaolegado','revisaoanual','revisaocancelada','revisaoadmin','revisaoexpirado','revisaoreembolso']) {
@@ -66,6 +69,7 @@ try {
   await db.sql.unsafe(await readFile(new URL('../sql/community-contacts.sql',import.meta.url),'utf8'));
   await db.sql`insert into forum_category(slug,name,description) values('boas-vindas','Boas-vindas','Compartilhe seu próximo passo e troque experiências. Não publique senhas, dados de clientes ou informações pessoais de terceiros.') on conflict(slug) do nothing`;
   }
+  if(process.env.APOGEE_BENEFITS_REVIEW==='1') await seedBenefitsReview(db.sql,process.env.APOGEE_BENEFIT_DRAFT_MANIFEST);
   // Local-only published/draft fixtures exercise member Blog pagination and visibility.
   for (let index = 1; index <= 14; index++) {
     await db.sql`insert into blog_post(slug,title,excerpt,body,category,status,author_id,author_name,published_at)
@@ -79,7 +83,7 @@ try {
 
   // Inherit only execution settings; no production credentials or dotenv are copied.
   const inherited=Object.fromEntries(['PATH','HOME','TMPDIR','LANG','PG_BIN'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]));
-  const env={...inherited,NODE_OPTIONS:'--max-old-space-size=2048',NEXT_TELEMETRY_DISABLED:'1',NODE_ENV:'development',APOGEE_LOCAL_PREVIEW:'1',APOGEE_FUNCTIONAL_REVIEW:'1',
+  const env={...inherited,NODE_OPTIONS:'--max-old-space-size=2048',NEXT_TELEMETRY_DISABLED:'1',NODE_ENV:'development',APOGEE_LOCAL_PREVIEW:'1',APOGEE_FUNCTIONAL_REVIEW:'1',APOGEE_BENEFITS_REVIEW:process.env.APOGEE_BENEFITS_REVIEW==='1'?'1':'0',
     DATABASE_URL:db.url,DATABASE_SSL_MODE:'disable',DATABASE_POOL_MAX:'2',BETTER_AUTH_URL:`http://127.0.0.1:${port}`,BETTER_AUTH_SECRET:randomBytes(32).toString('hex'),
     STRIPE_MODE:'test',STRIPE_SECRET_KEY:'',STRIPE_WEBHOOK_SECRET:'',COMMUNITY_BILLING_ENABLED:'false',RADAR_BILLING_ENABLED:'false',
     MEMBERS_EMAIL_ENABLED:'false',MEMBERS_RESEND_API_KEY:'',MEMBERS_SUPERVISED_REGISTRATION_ENABLED:'true',
