@@ -38,8 +38,17 @@ test('dated token allowance requires the identified extra batch and expires with
   assert.equal(googleUsageLimits(policy,new Date('2026-11-16T02:59:59Z')).dailyTokens,220000);
   assert.equal(googleUsageLimits(policy,new Date('2026-11-16T03:00:00Z')).dailyTokens,180000);
   assert.equal(policy.google_daily_tokens_cap,180000);assert.equal(policy.google_weekly_tokens_cap,900000);
-  for(const change of [{tokens_cap:220001},{tokens_cap:179999},{tokens_cap:200000.5},{extra_drafts:undefined},{baseline_post_ids:undefined}])assert.throws(()=>validatePolicy({...policy,google_daily_completion:{...completion,...change}}));
+  for(const change of [{tokens_cap:221001},{tokens_cap:179999},{tokens_cap:200000.5},{extra_drafts:undefined},{baseline_post_ids:undefined}])assert.throws(()=>validatePolicy({...policy,google_daily_completion:{...completion,...change}}));
   assert.throws(()=>validatePolicy({...policy,editorial_focus:undefined}));
+});
+test('the last-draft reservation margin is dated and cannot enlarge call or weekly limits',()=>{
+  const completion={day:'2026-11-15',calls_cap:80,tokens_reserved_per_call:15000,tokens_cap:221000,extra_drafts:10,baseline_post_ids:Array.from({length:10},(_,i)=>41+i),authorization_reference:'Explicit dated authorization for the final private draft reservation margin'};
+  const policy=validatePolicy({...p,editorial_focus:'technology-ai-business-4-3-3',google_daily_completion:completion});
+  assert.deepEqual(googleUsageLimits(policy,new Date('2026-11-16T02:59:59Z')),{dailyCalls:80,reservedTokens:15000,dailyTokens:221000});
+  assert.deepEqual(googleUsageLimits(policy,new Date('2026-11-16T03:00:00Z')),{dailyCalls:40,reservedTokens:60000,dailyTokens:180000});
+  assert.equal(policy.google_weekly_tokens_cap,900000);assert.equal(policy.google_weekly_calls_cap,280);
+  assert.throws(()=>validatePolicy({...policy,google_daily_completion:{...completion,calls_cap:81}}));
+  assert.throws(()=>validatePolicy({...policy,google_daily_completion:{...completion,tokens_reserved_per_call:14999}}));
 });
 test('extra ten require the focused plan, ten distinct baseline posts and a dated authorization',()=>{
   const completion={day:'2026-11-15',calls_cap:80,tokens_reserved_per_call:15000,authorization_reference:'User explicitly requested ten additional drafts today',extra_drafts:10,baseline_post_ids:Array.from({length:10},(_,i)=>41+i)};
