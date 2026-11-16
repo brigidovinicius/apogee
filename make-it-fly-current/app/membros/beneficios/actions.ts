@@ -25,6 +25,6 @@ export async function startBenefitAction(_: BenefitActionState, form: FormData):
   try { result = await startBenefitRedemption({ benefitId: form.get("benefitId") }); }
   catch (error) { return failure(error); }
   invalidate();
-  const message = result.status === "confirmed" ? "Este resgate já foi confirmado. Reabrir as instruções não cria outro pedido." : result.status === "rejected" ? "Este resgate consta como não aprovado. Reabrir as instruções não altera o resultado." : "Resgate iniciado. Siga as instruções abaixo. O benefício ainda depende da validação do parceiro.";
+  const message = result.status === "confirmed" ? "Este resgate já foi confirmado. Reabrir as instruções não cria outro pedido." : result.status === "rejected" ? "Este resgate consta como não aprovado. Reabrir as instruções não altera o resultado." : "Resgate iniciado. Siga as instruções da oferta. O benefício ainda depende da validação do parceiro.";
   return { ok: true, destination: result.destination, redemptionStatus: result.status, message };
 }
