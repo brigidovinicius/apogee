@@ -17,10 +17,20 @@ const required=['verified_grant_required','blog_scope_only','unknown_charge_hold
   'block_without_valid_benefit','block_on_insufficient_reserved_budget','reuse_unchanged_dossier_result','human_review_required_in_pilot'];
 export function validatePolicy(p) {
   if(p?.provider==='google_subscription')return validateGooglePolicy(p);
+  const hybrid=p?.editorial_pipeline==='google_multisource_v1';
+  if(p?.editorial_pipeline!==undefined&&!hybrid)fail('invalid_policy');
+  if(hybrid){
+    validateGooglePolicy(p.editorial_policy);
+    if(p.editorial_policy.schema_version!==3||p.model_id!=='gpt-6-luna'||p.automatic_image_generation_enabled!==false
+      ||p.input_counting_mode!=='local_byte_bound'||p.operator_commands_only!==false)fail('invalid_policy');
+  }
   if(p?.schema_version!==1 || p.provider!=='openai_api' || p.allowed_balance_type!=='included_subscription_benefit_only'
     || p.timezone!=='America/Sao_Paulo' || p.budget_currency!=='USD' || typeof p.generation_enabled!=='boolean'
     || typeof p.policy_id!=='string' || !p.policy_id || disabled.some(k=>p[k]!==false) || required.some(k=>p[k]!==true))fail('invalid_policy');
-  for(const [k,max] of Object.entries(ceilings))if(!Number.isSafeInteger(p[k])||p[k]<1||p[k]>max)fail('policy_limit');
+  const caps=hybrid?{...ceilings,new_drafts_per_day_cap:10,new_drafts_per_week_cap:70,input_tokens_cap_including_overhead:12000,
+    max_primary_evidence_documents:10,max_provider_attempts_per_article_including_repairs:3}:ceilings;
+  for(const [k,max] of Object.entries(caps))if(!Number.isSafeInteger(p[k])||p[k]<1||p[k]>max)fail('policy_limit');
+  if(hybrid&&['new_drafts_per_day_cap','new_drafts_per_week_cap','max_primary_evidence_documents','max_provider_attempts_per_article_including_repairs'].some(k=>p[k]!==p.editorial_policy[k]))fail('invalid_policy');
   // Newer canonical model IDs are versioned names rather than date-suffixed snapshots.
   // Only the explicitly reviewed canonical ID is admitted; no family aliases or automatic resolver.
   if(p.model_id!==null && (typeof p.model_id!=='string' || (p.model_id!=='gpt-6-luna'&&!/^gpt-[a-z0-9.-]+-\d{4}-\d{2}-\d{2}$/.test(p.model_id)) || /codex/i.test(p.model_id)))fail('model_not_pinned');
@@ -38,6 +48,7 @@ export function periodKeys(at) {
   return {day,week:monday.toISOString().slice(0,10)};
 }
 const integer=x=>Number.isSafeInteger(x)&&x>=0;
+const instant=x=>x instanceof Date?+x:Date.parse(x);
 export function selectPrice(catalog,policy,at) {
   if(!policy.generation_enabled)fail('generation_disabled');
   const entries=catalog.filter(p=>p.model===policy.model_id);
@@ -73,9 +84,11 @@ export function actualUsageCost(price,usage) {
 }
 export function validateGrant(g,at,identity) {
   const now=+at;
-  // A project budget or a recent balance observation does not choose which
-  // organization credits pay a request. Never reinstate the shared paid pool.
-  if(g && (g.billing_scope!=='isolated_free_credit_organization' || g.no_paid_balance!==true
+  // A soft budget cannot choose the paying credit. A shared organization needs
+  // an enforced organization-wide cap covering every month until grant expiry.
+  const capped=g?.billing_scope==='verified_organization_hard_limit';
+  if(capped)validateCreditEnvelope(g,at);
+  else if(g && (g.billing_scope!=='isolated_free_credit_organization' || g.no_paid_balance!==true
     || g.no_paid_billing!==true || g.dedicated_project!==true))fail('free_credit_isolation_required');
   if(!g || g.state!=='granted' || g.balance_type!=='included_subscription_benefit_only'
     || !identity?.organization_id || !identity?.project_id
@@ -84,8 +97,26 @@ export function validateGrant(g,at,identity) {
     || !integer(Number(g.amount_micro_usd)) || Number(g.amount_micro_usd)<1
     || !integer(Number(g.remaining_micro_usd)) || Number(g.remaining_micro_usd)>Number(g.amount_micro_usd)
     || !(Date.parse(g.starts_at)<=now) || !(Date.parse(g.expires_at)>now+300000)
-    || !Number.isFinite(Date.parse(g.verified_at)) || Date.parse(g.verified_at)>now || now-Date.parse(g.verified_at)>900000)fail('benefit_unverified');
+    || !Number.isFinite(Date.parse(g.verified_at)) || Date.parse(g.verified_at)>now || now-Date.parse(g.verified_at)>(capped?31*86400000:900000))fail('benefit_unverified');
   return g;
+}
+export function creditEnvelopeMonths(start,end){
+  const a=new Date(start),b=new Date(instant(end)-1);
+  if(!Number.isFinite(+a)||!Number.isFinite(+b)||+b<+a)fail('credit_envelope_unverified');
+  return (b.getUTCFullYear()-a.getUTCFullYear())*12+b.getUTCMonth()-a.getUTCMonth()+1;
+}
+export function validateCreditEnvelope(g,at){
+  const months=creditEnvelopeMonths(g.starts_at,g.expires_at),limit=g.organization_monthly_limit_micro_usd,margin=g.credit_safety_buffer_micro_usd;
+  if(g.organization_hard_limit_enforced!==true||g.hard_limit_scope!=='all_organization_projects'
+    ||g.dedicated_blog_key!==true||g.no_auto_recharge!==true||g.limit_change_invalidates_authorization!==true
+    ||!integer(limit)||limit<1||limit>10000000||!integer(margin)||margin<20000000
+    ||months>2||instant(g.expires_at)-instant(g.starts_at)>31*86400000
+    ||!(instant(g.hard_limit_verified_at)<=instant(g.verified_at))
+    ||instant(g.verified_at)-instant(g.hard_limit_verified_at)>900000
+    ||instant(g.hard_limit_valid_until)!==instant(g.expires_at)||!(instant(g.hard_limit_valid_until)>+at+300000)
+    ||!/^https:\/\/platform\.openai\.com\/settings\/organization\/limits$/.test(g.hard_limit_evidence_url??'')
+    ||!Number.isSafeInteger(Number(g.remaining_micro_usd))||limit*months+margin>Number(g.remaining_micro_usd))fail('credit_envelope_unverified');
+  return {months,maximum_organization_spend_micro_usd:limit*months,margin_micro_usd:margin};
 }
 // This reports authorization only, never claims that API generation is active.
 export function freeCreditStatus(grants,identity,at=new Date()) {

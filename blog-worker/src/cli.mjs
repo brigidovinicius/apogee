@@ -6,6 +6,7 @@ import {Blocked,fail} from './policy.mjs';
 import {Store,migrate} from './store.mjs';
 import {loadConfig,tick,heartbeat,healthy} from './worker.mjs';
 import {googleSubscriptionProvider} from './google-provider.mjs';
+import {openAIProvider} from './provider.mjs';
 
 export async function database(env,administrative=false) {
   const raw=env[administrative?'BLOG_MIGRATION_DATABASE_URL':'BLOG_DATABASE_URL'];
@@ -35,9 +36,10 @@ async function main(env=process.env,args=process.argv.slice(2)) {
     if(command==='resume'){console.log(JSON.stringify(await store.resume()));return;}
     const identity={organization_id:env.BLOG_OPENAI_ORGANIZATION_ID,project_id:env.BLOG_OPENAI_PROJECT_ID};
     if(command==='check-openai-credits'){
-      console.log(JSON.stringify({status:'credit_authorization_checked',...await store.openAICreditStatus(identity),
-        api_generation_active:false,active_provider:config.policy.provider,provider_calls:0,
-        key_configured:!!env.BLOG_OPENAI_API_KEY,auto_recharge_enabled:false,paid_balance_fallback_enabled:false}));return;
+      const credit=await store.openAICreditStatus(identity),circuit=await store.apiCircuit(),key=env.BLOG_OPENAI_API_KEY??env.OPENAI_API_KEY;
+      console.log(JSON.stringify({status:'credit_authorization_checked',...credit,
+        api_generation_active:config.openai.enabled&&credit.eligible&&!circuit.blocked&&!!key,active_provider:config.policy.provider,provider_calls:0,
+        key_configured:!!key,auto_recharge_enabled:false,paid_balance_fallback_enabled:false}));return;
     }
     if(command==='attest-grant'||command==='attest-subscription'||command==='reconcile'||command==='correct-image-price'){
       const at=args.indexOf('--file');if(at<0||!args[at+1])fail('grant_file_missing');
@@ -53,7 +55,9 @@ async function main(env=process.env,args=process.argv.slice(2)) {
         const current=await loadConfig(directory);
         if(current.policy.provider!=='google_subscription')fail('paid_api_disabled');
         const provider=current.policy.generation_enabled?googleSubscriptionProvider({binary:env.BLOG_GOOGLE_CLI_PATH,sha256:env.BLOG_GOOGLE_CLI_SHA256,env}):null;
-        state={component:'blog-worker',at:new Date().toISOString(),alive:true,...await tick({store,config:current,identity,provider})};
+        let apiProvider=null;
+        if(current.openai.enabled){try{apiProvider=openAIProvider({apiKey:env.BLOG_OPENAI_API_KEY??env.OPENAI_API_KEY,identity});}catch{/* Google stays available if the optional credential is missing. */}}
+        state={component:'blog-worker',at:new Date().toISOString(),alive:true,...await tick({store,config:current,identity,provider,apiProvider})};
       }catch(error){state={component:'blog-worker',at:new Date().toISOString(),alive:false,reason:error instanceof Blocked?error.code:'internal_error'};}
       await heartbeat(file,state);console.log(JSON.stringify(state));
       if(command==='once'||stopped)break;

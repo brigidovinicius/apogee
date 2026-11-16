@@ -14,6 +14,14 @@ export function grant(at=new Date()) {return {...identity,provider_grant_id:'gra
   billing_scope:'isolated_free_credit_organization',
   amount_micro_usd:16000000,remaining_micro_usd:16000000,starts_at:new Date(+at-3600000).toISOString(),expires_at:new Date(+at+86400000).toISOString(),
   verified_at:at.toISOString(),no_paid_balance:true,no_auto_recharge:true,no_paid_billing:true,dedicated_project:true,verification_reference:'synthetic-fixture-not-a-provider-grant'};}
+export function cappedGrant(at=new Date()){
+  const g={...grant(at),billing_scope:'verified_organization_hard_limit',amount_micro_usd:100000000,remaining_micro_usd:100000000,
+    no_paid_balance:false,no_paid_billing:false,dedicated_project:false,dedicated_blog_key:true,
+    organization_hard_limit_enforced:true,hard_limit_scope:'all_organization_projects',organization_monthly_limit_micro_usd:10000000,
+    credit_safety_buffer_micro_usd:20000000,hard_limit_verified_at:at.toISOString(),limit_change_invalidates_authorization:true,
+    hard_limit_evidence_url:'https://platform.openai.com/settings/organization/limits'};
+  return {...g,hard_limit_valid_until:g.expires_at};
+}
 export function candidate(number=1,editoria='ia',at=new Date()) {return normalizeItem({title:'Research update number '+number,
   link:'https://example.org/research/'+number,isoDate:at.toISOString(),guid:'item-'+number,
   contentSnippet:'Researchers announced a new method for testing experimental software. The institutional announcement describes an early study and explains that additional evaluation is still required before practical use. No commercial launch or broad performance guarantee was announced.'},{...source,editoria},at);}

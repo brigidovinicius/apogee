@@ -11,7 +11,7 @@ import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,valida
 import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap,isEvidenceGapClaim,resolveComparisonQuotes} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql','012-research-recovery.sql','013-hourly-publication.sql','014-ste-editorial-references.sql','015-research-provenance-kinds.sql','016-autonomous-evidence-recovery.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql','012-research-recovery.sql','013-hourly-publication.sql','014-ste-editorial-references.sql','015-research-provenance-kinds.sql','016-autonomous-evidence-recovery.sql','017-capped-openai-text.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -26,6 +26,12 @@ export async function migrate(sql) {
   });
 }
 const scopeEditoria=d=>d.category==='ciencia'?'ciencia-espaco':d.category==='negocios'?'startups':d.subcategory==='ia'?'ia':'tecnologia';
+const hybrid=p=>p?.editorial_pipeline==='google_multisource_v1';
+const pendingRequest=async(tx,google)=>{
+  const [pending]=await tx`select id from blog_worker.attempt where state='reserved' or (state='unknown'
+    and not(${google} and provider='openai_api' and policy->>'editorial_pipeline' is not distinct from 'google_multisource_v1')) limit 1`;
+  if(pending)fail('request_pending');
+};
 async function assertDraftAccess(tx){
   const [access]=await tx`select has_function_privilege(current_user,'blog_worker.import_draft(text,jsonb)','EXECUTE') as draft,
     has_function_privilege(current_user,'blog_worker.queue_cover(text,text,text,text)','EXECUTE') as queue,
@@ -41,10 +47,15 @@ export async function lock(tx) {
 }
 export class Store {
   constructor(sql){this.sql=sql;}
-  async openAICreditStatus(identity) {
+  async openAICreditStatus(identity,sql=this.sql) {
     // Read only: no attestation, reservation, provider request or quota change.
-    const rows=await this.sql`select * from blog_worker.benefit where starts_at<=now() and expires_at>now() and revoked_at is null`;
+    const rows=await sql`select * from blog_worker.benefit where starts_at<=now() and expires_at>now() and revoked_at is null`;
     return freeCreditStatus(rows.map(benefit),identity);
+  }
+  async apiCircuit(sql=this.sql){
+    const [ready]=await sql`select to_regclass('blog_worker.openai_circuit') is not null as ready`;
+    if(!ready.ready)return {blocked:true,reason:'openai_disabled'};
+    return (await sql`select blocked,reason from blog_worker.openai_circuit where singleton`)[0];
   }
   async attestSubscription(record){
     return this.sql.begin(async tx=>{const {at}=await lock(tx);validateSubscription(record,at);
@@ -151,9 +162,10 @@ export class Store {
   async recover() {
     return this.sql.begin(async tx=>{
       await lock(tx);
-      const stale=await tx`update blog_worker.attempt set state='unknown',reason='worker_interrupted' where state='reserved' and created_at<now()-interval '5 minutes' returning candidate_id`;
+      const stale=await tx`update blog_worker.attempt set state='unknown',reason='worker_interrupted' where state='reserved' and created_at<now()-interval '5 minutes' returning candidate_id,policy`;
       if(stale.length){
-        await tx`update blog_worker.control set paused=true,reason='unknown_charge',updated_at=now() where singleton=true`;
+        if(stale.some(r=>!hybrid(r.policy)))await tx`update blog_worker.control set paused=true,reason='unknown_charge',updated_at=now() where singleton=true`;
+        if(stale.some(r=>hybrid(r.policy)))await tx`select blog_worker.block_openai('unknown_charge')`;
         await tx`update blog_worker.candidate set status='held',reason='unknown_charge' where id in ${tx(stale.map(r=>r.candidate_id))}`;
         await tx`update blog_worker.image_job set state='held',reason='unknown_charge',updated_at=now() where state='reserved' and candidate_id in ${tx(stale.map(r=>r.candidate_id))}`;
       }
@@ -194,7 +206,7 @@ export class Store {
       from (select distinct on (t.candidate_id) t.*,c.post_id as written_post_id from blog_worker.attempt t
         join blog_worker.candidate c on c.id=t.candidate_id
         where t.kind='text' and ((c.post_id is not null and t.state='confirmed' and t.reason is null)
-          or (c.post_id is null and t.state in ('reserved','unknown')))
+          or (c.post_id is null and (t.state='reserved' or (t.state='unknown' and not(t.provider='openai_api' and t.policy->>'editorial_pipeline' is not distinct from 'google_multisource_v1')))))
         order by t.candidate_id,t.finished_at desc nulls first,t.ordinal desc) a
       join blog_worker.dossier_version d on d.candidate_id=a.candidate_id and d.revision=a.dossier_revision
       group by 1,2`;
@@ -364,6 +376,12 @@ export class Store {
       if(control.paused)fail('paused');
       await assertDraftAccess(tx);
       const google=policy.provider==='google_subscription';
+      const multisource=google||hybrid(policy),editorial=hybrid(policy)?policy.editorial_policy:policy;
+      if(hybrid(policy)){
+        if(kind!=='text'||!candidateId)fail('invalid_policy');
+        const [circuit]=await tx`select blocked from blog_worker.openai_circuit where singleton`;
+        if(circuit?.blocked!==false)fail('openai_circuit_open');
+      }
       if(kind==='comparison'&&(!google||!candidateId))fail('comparison_requires_google');
       const price=google?{model:policy.model_id,provider:policy.provider,billing_mode:'subscription_no_overages'}:selectPrice(catalog,policy,at);assertWindow(at);
       let grant;
@@ -372,22 +390,21 @@ export class Store {
         const rows=await tx`select * from blog_worker.benefit where starts_at<=${at} and expires_at>${at} and revoked_at is null`;
         if(rows.length!==1)fail('benefit_unverified');grant=validateGrant(benefit(rows[0]),at,identity);
       }
-      const [pending]=await tx`select id from blog_worker.attempt where state in ('reserved','unknown') limit 1`;
-      if(pending)fail('request_pending');
+      await pendingRequest(tx,google);
       const enabled=sources.filter(s=>s.enabled && s.feed_content_approved && s.rights_reference);
-      if(!google&&!enabled.length)fail('no_approved_sources');
+      if(!multisource&&!enabled.length)fail('no_approved_sources');
       const [candidate]=await tx`select c.* from blog_worker.candidate c
         where (c.status='ready' or (${kind}='comparison' and c.status in ('discovered','held') and c.post_id is null)) and c.reason is distinct from 'source_changed_after_reservation' and c.reason is distinct from 'operator_hold'
         and (${candidateId}::text is null or c.id=${candidateId})
-        and (not ${google} or ${candidateId}::text is not null or exists(select 1 from blog_worker.dossier_version v where v.candidate_id=c.id and v.revision=(select max(z.revision) from blog_worker.dossier_version z where z.candidate_id=c.id) and v.source_hash=c.evidence_hash and v.assessment->>'eligible'='true' and v.assessment->>'comparison_verified'='true'))
-        and (${google} or c.source_id=any(${enabled.map(s=>s.id)}::text[])) and c.published_at>now()-interval '7 days'
+        and (not ${multisource} or ${candidateId}::text is not null or exists(select 1 from blog_worker.dossier_version v where v.candidate_id=c.id and v.revision=(select max(z.revision) from blog_worker.dossier_version z where z.candidate_id=c.id) and v.source_hash=c.evidence_hash and v.assessment->>'eligible'='true' and v.assessment->>'comparison_verified'='true'))
+        and (${multisource} or c.source_id=any(${enabled.map(s=>s.id)}::text[])) and c.published_at>now()-interval '7 days'
         order by (select count(*) from blog_worker.candidate d where d.editoria=c.editoria and d.status='draft' and d.created_at>now()-interval '28 days') asc,
         c.score desc,c.published_at desc,c.id asc limit 1 for update`;
       if(!candidate)return {status:'idle'};
       const source=enabled.find(s=>s.id===candidate.source_id);
-      if(!google&&candidate.evidence.some(e=>e.rights_reference!==source.rights_reference))fail('source_approval_changed');
+      if(!multisource&&candidate.evidence.some(e=>e.rights_reference!==source.rights_reference))fail('source_approval_changed');
       let version,effective=candidate;
-      if(google){
+      if(multisource){
         [version]=await tx`select * from blog_worker.dossier_version where candidate_id=${candidate.id} order by revision desc limit 1`;
         if(!version)fail('comparison_incomplete');
         if(version.source_hash!==candidate.evidence_hash)fail('source_changed_after_reservation');
@@ -400,18 +417,19 @@ export class Store {
       }
       const {day,week}=periodKeys(at);
       let counts;
-      if(google&&policy.schema_version===3){
-        const usage=await this.productionUsage(tx,at,policy);
+      if(multisource&&editorial.schema_version===3){
+        const usage=await this.productionUsage(tx,at,editorial);
         counts={day:usage.reduce((n,u)=>n+u.day,0),week:usage.reduce((n,u)=>n+u.week,0)};
         if(!topicAvailable(policy,usage,version.document,at))fail('topic_frequency');
         const [duplicate]=await tx`select a.id from blog_worker.attempt a join blog_worker.dossier_version v on v.candidate_id=a.candidate_id and v.revision=a.dossier_revision
           where a.candidate_id<>${candidate.id} and (v.document->>'event_key'=${version.document.event_key} or (${!isExplainer(version.document)} and coalesce(v.document->'editorial'->>'kind','news')='news' and exists(select 1 from jsonb_array_elements(v.document->'documents') old_doc join jsonb_array_elements(${tx.json(version.document.documents)}::jsonb) new_doc on old_doc->>'url'=new_doc->>'url'))) limit 1`;
         if(duplicate)fail('duplicate_research_event');
       }else [counts]=await tx`select count(*) filter(where first_attempt_day=${day}::date)::int as day,count(*) filter(where first_attempt_week=${week}::date)::int as week from blog_worker.candidate`;
-      if((google||!candidate.first_attempt_day)&&(counts.day>=dailyDraftCap(policy,at)||counts.week>=policy.new_drafts_per_week_cap))fail('draft_frequency');
+      if((multisource||!candidate.first_attempt_day)&&(counts.day>=dailyDraftCap(policy,at)||counts.week>=policy.new_drafts_per_week_cap))fail('draft_frequency');
 
-      const attempts=await tx`select * from blog_worker.attempt where candidate_id=${candidate.id} and kind in ('text','comparison')`;
-      if(attempts.length>=editorialAttemptLimit(policy,version?.document,attempts))fail('attempt_limit');
+      const allAttempts=await tx`select * from blog_worker.attempt where candidate_id=${candidate.id} and kind in ('text','comparison')`;
+      const attempts=allAttempts.filter(a=>!(hybrid(a.policy)&&a.state==='confirmed'&&n(a.charged_micro_usd)===0&&a.usage?.not_generated===true));
+      if(attempts.length>=editorialAttemptLimit(editorial,version?.document,attempts))fail('attempt_limit');
       if(kind==='comparison'&&version.assessment.comparison_verified)fail('research_evidence_unchanged');
       if(kind==='comparison'&&attempts.filter(a=>a.kind==='comparison').length>=2&&editorialAttemptLimit(policy,version.document,attempts)!==4)fail('comparison_attempt_limit');
       const comparisonRepair=kind==='comparison'&&attempts.some(a=>a.kind==='comparison'&&a.dossier_revision===version?.revision);
@@ -426,9 +444,9 @@ export class Store {
       if(!google && (n(spent.cycle)+reserve>cycleCap(policy,grant) || n(spent.cycle)+reserve>grant.remaining_micro_usd-(grant.credit_safety_buffer_micro_usd??0)))fail('cycle_budget');
       if(!google && n(spent.day)+reserve>policy.daily_budget_micro_usd_cap)fail('daily_budget');
       if(!google && n(spent.article)+reserve>policy.article_budget_micro_usd_cap_including_all_attempts)fail('article_budget');
-      const id=randomUUID(),recordedPolicy={...policy,...(kind==='comparison'?{comparison_prompt_version:COMPARISON_PROMPT_VERSION}:{}),effective_editorial_attempts_cap:editorialAttemptLimit(policy,version?.document,attempts)};
+      const id=randomUUID(),recordedPolicy={...policy,...(kind==='comparison'?{comparison_prompt_version:COMPARISON_PROMPT_VERSION}:{}),effective_editorial_attempts_cap:editorialAttemptLimit(editorial,version?.document,attempts)};
       await tx`insert into blog_worker.attempt(id,candidate_id,benefit_id,kind,ordinal,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,provider,quota_reserved,dossier_revision,dossier_hash)
-        values(${id},${candidate.id},${grant?.id??null},${kind},${attempts.filter(a=>a.kind===kind).length+1},${key},${hash(body)},${tx.json(price)},${tx.json(recordedPolicy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?googleUsageLimits(policy,at).reservedTokens:0},${version?.revision??null},${version?.document_hash??null})`;
+        values(${id},${candidate.id},${grant?.id??null},${kind},${allAttempts.filter(a=>a.kind===kind).length+1},${key},${hash(body)},${tx.json(price)},${tx.json(recordedPolicy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?googleUsageLimits(policy,at).reservedTokens:0},${version?.revision??null},${version?.document_hash??null})`;
       await tx`update blog_worker.candidate set first_attempt_day=coalesce(first_attempt_day,${day}::date),
         first_attempt_week=coalesce(first_attempt_week,${week}::date) where id=${candidate.id}`;
       return {status:'reserved',id,kind,candidate:effective,body,reserved_micro_usd:reserve,policy,identity,...(google?{}:{credit_grant:grant}),not_after:new Date(+at+180000).toISOString()};
@@ -444,29 +462,38 @@ export class Store {
       const hold=async reason=>{
         await tx`update blog_worker.attempt set state='unknown',reason=${reason} where id=${attempt.id}`;
         await tx`update blog_worker.candidate set status='held',reason=${reason} where id=${candidate.id}`;
-        await tx`update blog_worker.control set paused=true,reason=${reason},updated_at=now() where singleton=true`;
+        if(hybrid(attempt.policy))await tx`select blog_worker.block_openai(${reason})`;
+        else await tx`update blog_worker.control set paused=true,reason=${reason},updated_at=now() where singleton=true`;
         return {status:'held',reason,reserved_micro_usd:n(attempt.reserved_micro_usd)};
       };
       if(result.outcome==='unknown')return hold(attempt.provider==='google_subscription'?(result.reason??'google_execution_unknown'):'unknown_charge');
       const google=attempt.provider==='google_subscription';let cost,quota=0;
       try{
-        if(result.outcome==='not_sent')cost=0;
+        if(result.outcome==='not_sent'||result.outcome==='not_generated')cost=0;
         else if(google){cost=0;quota=subscriptionUsage(result.usage);}
         else {
           if(result.usage?.total_tokens!==result.usage?.input_tokens+result.usage?.output_tokens)fail('invalid_usage');
           cost=actualUsageCost(attempt.price,result.usage);
         }
       }catch{return hold('invalid_usage');}
-      await tx`update blog_worker.attempt set state='confirmed',charged_micro_usd=${cost},quota_used=${google?quota:null},usage=${tx.json(result.usage??{})},finished_at=now() where id=${attempt.id}`;
+      const notGenerated=hybrid(attempt.policy)&&['not_sent','not_generated'].includes(result.outcome);
+      await tx`update blog_worker.attempt set state='confirmed',charged_micro_usd=${cost},quota_used=${google?quota:null},usage=${tx.json(notGenerated?{not_generated:true}:result.usage??{})},finished_at=now() where id=${attempt.id}`;
+      if(notGenerated){
+        if(result.reason==='openai_credit_limit')await tx`select blog_worker.block_openai('openai_credit_limit')`;
+        await tx`update blog_worker.attempt set reason=${result.reason??'not_generated'} where id=${attempt.id}`;
+        await tx`update blog_worker.candidate set status='ready' where id=${candidate.id} and reason is distinct from 'operator_hold' and reason is distinct from 'source_changed_after_reservation'`;
+        return {status:'not_generated',reason:result.reason??'not_generated',charged_micro_usd:0};
+      }
       if((google && quota>n(attempt.quota_reserved)) || (!google && (cost>n(attempt.reserved_micro_usd) || (result.usage?.input_tokens??0)>attempt.policy.input_tokens_cap_including_overhead
         || (result.usage?.output_tokens??0)>attempt.policy.billed_output_tokens_cap_including_reasoning))){
-        await tx`update blog_worker.control set paused=true,reason='usage_exceeded_reservation',updated_at=now() where singleton=true`;
+        if(hybrid(attempt.policy))await tx`select blog_worker.block_openai('usage_exceeded_reservation')`;
+        else await tx`update blog_worker.control set paused=true,reason='usage_exceeded_reservation',updated_at=now() where singleton=true`;
         await tx`update blog_worker.candidate set status='held',reason='usage_exceeded_reservation' where id=${candidate.id}`;
         return {status:'held',reason:'usage_exceeded_reservation',charged_micro_usd:cost};
       }
       let article,reason=result.reason;
       let version,corroboration,effective=candidate;
-      if(google){
+      if(google||hybrid(attempt.policy)){
         [version]=await tx`select * from blog_worker.dossier_version where candidate_id=${candidate.id} order by revision desc limit 1`;
         if(!version||version.source_hash!==candidate.evidence_hash||version.revision!==attempt.dossier_revision||version.document_hash!==attempt.dossier_hash)return holdAfterCharge(tx,candidate.id,cost);
         if(attempt.kind==='comparison'){
@@ -510,7 +537,7 @@ export class Store {
       const draft=cmsDraft(effective,article);
       const [{post_id}]=await tx`select blog_worker.import_draft(${candidate.id},${tx.json(draft)}) as post_id`;
       await tx`update blog_worker.candidate set artifact=jsonb_strip_nulls(jsonb_build_object('research',artifact->'research')) || ${tx.json({article,generated_post:draft,evidence:effective.evidence,corroboration:corroboration??null,dossier_revision:version?.revision??null,cache_key:attempt.cache_key,seo:{guideline_id:SEO_GUIDELINES.id,sources:SEO_GUIDELINES.sources,prepared_in_same_call:true,human_review_required:true},human_review_required:true})} where id=${candidate.id}`;
-      if(attempt.policy.automatic_image_generation_enabled){
+      if(attempt.policy.automatic_image_generation_enabled||hybrid(attempt.policy)&&attempt.policy.editorial_policy.automatic_image_generation_enabled){
         const brief=coverBrief(article);
         await tx`select blog_worker.queue_cover(${candidate.id},${brief.prompt},${brief.alt},${brief.caption})`;
       }
@@ -529,7 +556,7 @@ export class Store {
       if(google)await subscriptionBudget(tx,policy,at);
       else {const rows=await tx`select * from blog_worker.benefit where starts_at<=${at} and expires_at>${at} and revoked_at is null`;
         if(rows.length!==1)fail('benefit_unverified');grant=validateGrant(benefit(rows[0]),at,identity);}
-      if((await tx`select id from blog_worker.attempt where state in ('reserved','unknown') limit 1`).length)fail('request_pending');
+      await pendingRequest(tx,google);
       const [job]=await tx`select j.*,c.source_id,c.reason as candidate_reason,c.evidence,c.evidence_hash,c.artifact from blog_worker.image_job j
         join blog_worker.candidate c on c.id=j.candidate_id where j.state='pending'
         and (${candidateId}::text is null or j.candidate_id=${candidateId}) order by j.created_at limit 1 for update of j`;
@@ -621,11 +648,18 @@ export class Store {
       for(const s of config.sources)await tx`insert into blog_worker.source_catalog(id,definition) values(${s.id},${tx.json(s)}) on conflict do nothing`;
       const [publicationInstalled]=await tx`select to_regclass('blog_worker.publication_policy') is not null as ready`;
       const publication=publicationInstalled.ready?(await tx`select enabled,starts_on,first_hour,last_hour from blog_worker.publication_policy where singleton`)[0]:{enabled:false};
+      const enabled=config.openai?.enabled===true,circuit=enabled?await this.apiCircuit(tx):null;
+      const eligibility=enabled?await this.openAICreditStatus(identity,tx):null;
+      const missingKey=enabled&&config.openai_runtime_ready===false;
+      const api={enabled,eligible:eligibility?.eligible===true&&!circuit?.blocked&&!missingKey,
+        reason:config.openai_error??(missingKey?'credentials_missing':null)??(circuit?.blocked?(circuit.reason??'openai_circuit_open'):eligibility?.reason)??null,
+        cycle_cap:config.openai?.cycle_budget_micro_usd_cap??5000000,daily_cap:config.openai?.daily_budget_micro_usd_cap??250000,
+        model:config.openai?.model_id??'gpt-6-luna'};
       const snapshot={automatic_publication:publication,provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:googleUsageLimits(config.policy).dailyCalls??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:googleUsageLimits(config.policy).dailyTokens??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
         automatic_access_validation:config.policy.google_automatic_access_validation_enabled===true,automatic_explainers:config.policy.automatic_explainers_enabled===true,explainer_after_local_hour:config.policy.explainer_after_local_hour??null,operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
         organization_id:identity?.organization_id??null,project_id:identity?.project_id??null,
         article_cap:config.policy.article_budget_micro_usd_cap_including_all_attempts,daily_cap:config.policy.daily_budget_micro_usd_cap,
-        cycle_cap:config.policy.cycle_budget_micro_usd_cap,cycle_fraction:config.policy.cycle_grant_fraction_cap_basis_points,
+        cycle_cap:config.policy.cycle_budget_micro_usd_cap,cycle_fraction:config.policy.cycle_grant_fraction_cap_basis_points,openai:api,
         editorial_focus:config.policy.editorial_focus??null,extra_batch:extraBatch(config.policy),
         per_day:dailyDraftCap(config.policy),per_week:config.policy.new_drafts_per_week_cap};
       await tx`update blog_worker.control set snapshot=${tx.json(snapshot)},heartbeat_at=now() where singleton=true`;
@@ -694,9 +728,9 @@ export class Store {
   async resume() {
     return this.sql.begin(async tx=>{
       await lock(tx);
-      const [pending]=await tx`select id from blog_worker.attempt where state in ('reserved','unknown') limit 1`;
-      if(pending)fail('request_pending');
-      const [exceeded]=await tx`select id from blog_worker.attempt where charged_micro_usd>reserved_micro_usd or quota_used>quota_reserved limit 1`;
+      await pendingRequest(tx,true);
+      const [exceeded]=await tx`select id from blog_worker.attempt where (charged_micro_usd>reserved_micro_usd or quota_used>quota_reserved)
+        and not(provider='openai_api' and policy->>'editorial_pipeline' is not distinct from 'google_multisource_v1') limit 1`;
       if(exceeded)fail('usage_exceeded_reservation');
       await tx`update blog_worker.control set paused=false,reason=null,updated_at=now() where singleton=true`;
       return {status:'circuit_cleared_generation_still_subject_to_policy'};

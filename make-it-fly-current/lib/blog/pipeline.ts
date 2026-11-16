@@ -5,7 +5,7 @@ import type { PipelineSource } from "./pipeline-validation";
 import explainerCatalog from "./explainer-catalog.json";
 import { baselinePostIds, type ExtraBatch, type ProductionPulse } from "./editorial-plan.mjs";
 
-export type PipelineSnapshot = { automatic_publication?: { enabled: boolean; starts_on: string; first_hour: number; last_hour: number }; provider: string; account_email: string | null; daily_calls_cap: number; weekly_calls_cap: number; daily_tokens_cap: number; weekly_tokens_cap: number; generation_enabled: boolean; images_enabled: boolean; operator_commands_only: boolean; automatic_access_validation?: boolean; automatic_explainers?: boolean; explainer_after_local_hour?: number | null; model: string; image_model: string | null; organization_id: string | null; project_id: string | null; article_cap: number; daily_cap: number; cycle_cap: number; cycle_fraction: number; per_day: number; per_week: number; editorial_focus?: string | null; extra_batch?: ExtraBatch | null };
+export type PipelineSnapshot = { openai?: { enabled: boolean; eligible: boolean; reason: string | null; cycle_cap: number; daily_cap: number; model: string }; automatic_publication?: { enabled: boolean; starts_on: string; first_hour: number; last_hour: number }; provider: string; account_email: string | null; daily_calls_cap: number; weekly_calls_cap: number; daily_tokens_cap: number; weekly_tokens_cap: number; generation_enabled: boolean; images_enabled: boolean; operator_commands_only: boolean; automatic_access_validation?: boolean; automatic_explainers?: boolean; explainer_after_local_hour?: number | null; model: string; image_model: string | null; organization_id: string | null; project_id: string | null; article_cap: number; daily_cap: number; cycle_cap: number; cycle_fraction: number; per_day: number; per_week: number; editorial_focus?: string | null; extra_batch?: ExtraBatch | null };
 export type Evidence = { id: string; title: string; text: string; url: string; rights_reference: string };
 export type SourceDiscovery = { registered: {url: string; name: string; publisher: string; kind: string}[]; unregistered: {url: string; host: string}[]; images: {url: string; source_url: string; alt: string; credit: string | null; license_url: string | null; rights_status: string}[] };
 export type PipelineCandidate = { source_discovery?: SourceDiscovery | null; id: string; title: string; url: string; editoria: string; source_id: string; content_kind: string; status: string; generation_ready: boolean; research_recovered?: boolean; reason: string | null; post_id: number | null; published_at: Date; evidence: Evidence[]; image_state: string | null; image_reason: string | null; prompt: string | null; alt: string | null; caption: string | null; media_id: string | null; topic_category: string | null; topic_subcategory: string | null; research_stage: string | null; research_at: string | null; research_next_at: string | null; post_revision: number | null; post_title: string | null; post_status: string | null; body: string | null; seo_title: string | null; seo_description: string | null; seo_noindex: boolean | null };
@@ -41,8 +41,9 @@ export async function getPipelineDashboard(page = 1) {
     coalesce(sum(reserved_micro_usd) filter(where state<>'confirmed'),0)::text as held,
     coalesce(sum(coalesce(charged_micro_usd,reserved_micro_usd)) filter(where day=(now() at time zone 'America/Sao_Paulo')::date),0)::text as day,
     coalesce(sum(coalesce(charged_micro_usd,reserved_micro_usd)) filter(where benefit_id in (select id from blog_worker.benefit where starts_at<=now() and expires_at>now() and revoked_at is null)),0)::text as cycle from blog_worker.attempt`;
-  const [benefit] = await sql<{ amount: string; remaining: string; expires_at: Date; verified_at: Date; shared: boolean }[]>`select amount_micro_usd::text as amount,remaining_micro_usd::text as remaining,expires_at,verified_at,
-    coalesce(attestation->>'billing_scope'='authorized_shared_organization',false) as shared from blog_worker.benefit where revoked_at is null order by expires_at desc limit 1`;
+  const [benefit] = await sql<{ amount: string; remaining: string; expires_at: Date; verified_at: Date; shared: boolean; hard_limit: string | null; margin: string | null }[]>`select amount_micro_usd::text as amount,remaining_micro_usd::text as remaining,expires_at,verified_at,
+    coalesce(attestation->>'billing_scope' in ('authorized_shared_organization','verified_organization_hard_limit'),false) as shared,
+    attestation->>'organization_monthly_limit_micro_usd' as hard_limit,attestation->>'credit_safety_buffer_micro_usd' as margin from blog_worker.benefit where revoked_at is null order by expires_at desc limit 1`;
   const [subscription] = await sql<{ account_email: string; plan: string; verified_at: Date; valid_until: Date; valid: boolean }[]>`select account_email,plan,verified_at,valid_until,valid_until>now() as valid from blog_worker.subscription where singleton=true`;
   const [quota] = await sql<{ day_calls: number; week_calls: number; day_tokens: string; week_tokens: string; held: string }[]>`select
     count(*) filter(where day=(now() at time zone 'America/Sao_Paulo')::date)::int as day_calls,
@@ -143,7 +144,9 @@ export async function setPipelinePaused(actor: string, paused: boolean) {
   const sql = getSql();
   return sql.begin(async tx => {
     await tx`select singleton from blog_worker.control where singleton=true for update`;
-    if (!paused && (await tx`select id from blog_worker.attempt where state in ('reserved','unknown') or charged_micro_usd>reserved_micro_usd or quota_used>quota_reserved limit 1`).length) return false;
+    if (!paused && (await tx`select id from blog_worker.attempt where state='reserved' or
+      ((state='unknown' or charged_micro_usd>reserved_micro_usd or quota_used>quota_reserved)
+      and not(provider='openai_api' and policy->>'editorial_pipeline' is not distinct from 'google_multisource_v1')) limit 1`).length) return false;
     await tx`update blog_worker.control set paused=${paused},reason=${paused ? "operator_pause" : null},updated_at=now() where singleton=true`;
     await tx`insert into blog_worker.operator_event(actor_id,action) values(${actor},${paused ? "paused" : "resumed"})`;
     return true;

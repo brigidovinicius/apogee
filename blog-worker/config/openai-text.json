@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "enabled": false,
+  "model_id": "gpt-6-luna",
+  "cycle_budget_micro_usd_cap": 5000000,
+  "daily_budget_micro_usd_cap": 250000,
+  "article_budget_micro_usd_cap": 50000,
+  "auto_recharge_enabled": false,
+  "paid_balance_fallback_enabled": false
+}

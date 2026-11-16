@@ -94,6 +94,9 @@ services:
 
   blog-worker:
     profiles: [blog]
+    env_file:
+      - path: ${APOGEE_BLOG_OPENAI_ENV_FILE:-/opt/apogee-blog/secrets/openai-disabled.env}
+        required: false
     build:
       context: ../../../blog-worker
       additional_contexts:
