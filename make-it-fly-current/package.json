@@ -36,7 +36,9 @@
     "test:community-access": "node --test --test-concurrency=1 tests/community-access.integration.mjs",
     "members:deliverables:migrate": "node scripts/member-deliverables-migrate.mjs",
     "test:member-deliverables": "node --test --test-concurrency=1 tests/member-deliverables.integration.mjs",
-    "test:member-auth-journey": "node --test --test-concurrency=1 tests/member-auth-journey.integration.mjs"
+    "test:member-auth-journey": "node --test --test-concurrency=1 tests/member-auth-journey.integration.mjs",
+    "members:toolbox:curate": "node scripts/member-toolbox-curate.mjs",
+    "test:member-toolbox-curation": "node --test --test-concurrency=1 tests/member-toolbox-curation.integration.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
