@@ -1,12 +1,21 @@
 # Apogee — PRD geral da plataforma
 
-- **Versão:** 0.7 · 15 de novembro de 2026
-- **Estado:** conclusão funcional em worktree isolado para revisão; nenhuma nova publicação, migração real ou ativação de cobrança autorizada. Os registros de deploy anteriores são históricos.
+- **Versão:** 0.8 · revisão de conclusão em 15 de novembro de 2026
+- **Estado:** candidato funcional isolado para revisão, com gates técnicos/comerciais separados. Esta autorização não publica, migra produção nem ativa cobranças. A release preparada por outro chat tem autorização e evidências próprias.
 - **Horizonte:** novembro de 2026 a março de 2027.
 - **Responsável pela decisão de produto:** Vinicius.
-- **Base técnica examinada:** `d6a422d8207cb04eefe9819c082f948dc5a4de30`, branch principal em 14/11/2026.
+- **Base técnica atual:** candidato integrado `40dbfc4`, que incorpora `73b90ff`, curadoria coordenada, correções de pausa de vendas, concorrência/datas e suporte. A base `d6a422d` de 14/11 é histórica.
 
 Este PRD consolida a oferta, as jornadas e as prioridades gerais da Apogee. O PRD do Radar permanece como especificação especializada do catálogo e da coleta. O [PRD da área interna de membros](members-area-prd.md) detalha a nova caixa de ferramentas. O documento distingue decisões confirmadas, propostas para revisão e dependências. Em 15/11/2026 o proprietário autorizou o deploy das alterações anteriores e pediu planejamento da caixa de ferramentas antes de implementá-la. Autorização e publicação concluída são estados distintos.
+
+## Estado e significado dos termos
+
+- **Planejado:** especificado, sem execução presumida.
+- **Implementado:** código presente no candidato indicado.
+- **Validado:** cenário executado, com ambiente, método, revisão e limitações identificados.
+- **Publicado:** imagem/banco/configuração efetivamente conferidos na VPS; Git ou CI não comprovam esse estado.
+
+O quadro atual está no [relatório de conclusão](community-launch-review-20261115.md). As seções 18 a 23 abaixo são registros históricos por revisão; frases como “somente planejamento” nelas não se aplicam ao código integrado atual. Nenhuma delas aprova conteúdo comercial ou ativa cobrança por inferência.
 
 ## 1. Decisões confirmadas em 14/11/2026
 
@@ -59,9 +68,9 @@ Pagamento ou assinatura não substituem verificações de conta, maioridade ou p
 4. Entregar um primeiro resultado prático em sete dias e medir o retorno na semana seguinte.
 5. Buscar 50 assinantes pagantes até 30/11/2026 e 2.000 até 31/03/2027, como metas estratégicas sujeitas à validação do produto e da aquisição.
 
-### Limites desta entrega documental
+### Estado atual e limites da autorização
 
-A revisão documental, a prévia das páginas e a validação Stripe de teste foram apresentadas. O proprietário autorizou em 15/11/2026 o deploy das alterações anteriores. A execução continua dependente da conferência da revisão, histórico de migrações, preservação de direitos, backup e configuração correta de produção. A caixa de ferramentas entra somente como planejamento nesta versão; sua implementação aguarda revisão.
+Caixa de Ferramentas, Benefícios, Trilha parcial/progresso, captura e ciclo anual estão implementados no candidato. Testes locais e Stripe test são evidências delimitadas por revisão. Conteúdo/aprovação editorial, benefícios reais, responsáveis e configuração live continuam gates antes de vender. A autorização deste chat é implementar e validar isoladamente; autorizações históricas de outro escopo não a ampliam.
 
 ### Fora do primeiro lançamento proposto
 
@@ -90,7 +99,7 @@ Uma assinatura reúne os quatro pilares e inclui acesso completo ao Radar. A ofe
 | Condição comercial | Estado nesta revisão |
 | --- | --- |
 | Comunidade: contratação exclusivamente anual. | Periodicidade confirmada pelo proprietário em D08. |
-| Preço anual proposto: R$ 1.438,80/ano, equivalente a R$ 119,90/mês. | Mantém a referência já apresentada; valor mantido na prévia aprovada. A implementação local prevê cobrança integral anual, renovação automática e cancelamento da renovação ao final do período pago; estas condições operacionais entram na validação antes de vender. Não foi implementado parcelamento. O equivalente mensal não constitui uma opção de contratação mensal. |
+| Referência anual aprovada: R$ 1.438,80/ano, equivalente a R$ 119,90/mês. | Mantém a referência já apresentada; valor mantido na prévia aprovada. A implementação local prevê cobrança integral anual, renovação automática e cancelamento da renovação ao final do período pago; estas condições operacionais entram na validação antes de vender. Não foi implementado parcelamento. O equivalente mensal não constitui uma opção de contratação mensal. |
 | Valor avulso do Radar. | Retirado da nova oferta por D03; nenhum novo preço avulso é definido. |
 | Cursos adicionais vendidos à parte. | Pendente. As trilhas incluídas na assinatura e eventuais ofertas adicionais precisam ser identificadas. |
 | Ingressos de experiências para assinantes. | Inclusão, capacidade, reserva, prioridade e eventuais custos pendentes. |
@@ -140,7 +149,7 @@ Requisitos da transição:
 
 - Verificar direitos antigos antes de aplicar a cota ou oferecer assinatura para liberar o Radar.
 - Manter separadas as origens de direito: concessão anterior, compra histórica, liberação gratuita e assinatura.
-- Preservar a ficha gratuita já liberada na regra anterior. Definir antes da migração sua participação na contagem, sem revogar esse acesso.
+- Preservar a ficha gratuita anterior. Se comprovadamente evento, conta como primeira das dez; outra categoria mantém a escolha única separada. Sem classificação disponível, não inventar taxonomia nem revogar acesso.
 - Retirar a venda avulsa dos novos percursos na implementação posterior e conservar histórico, conciliação e tratamento de compras anteriores ou em processamento.
 - Não converter compradores antigos em assinantes nem criar renovação ou cobranças futuras automaticamente.
 - Manter regras vigentes de segurança, bloqueio, reembolso e contestação aplicáveis à origem de cada direito. A mudança de posicionamento não revoga acesso.
@@ -209,17 +218,17 @@ Acesso antigo: autenticação → reconhecimento do direito → Radar liberado �
 - Projetos coletivos estruturados e novas experiências presenciais.
 - Integrações automatizadas com parceiros conforme acordos e volume comprovados.
 
-## 11. Adequação das páginas — somente após revisão
+## 11. Superfícies do candidato e preservação das páginas
 
-| Superfície | Mudança planejada |
+| Superfície | Comportamento/limite atual |
 | --- | --- |
 | Home | Preservar identidade e composição editorial; explicar pilares, orientar o CTA à comunidade e substituir a oferta avulsa do Radar. |
 | `/comunidade` | Apresentar entrada gratuita, assinatura, entregas disponíveis, planos confirmados, condições e dúvidas. Cada ação deve ter destino real. |
 | `/evento-openai` | Manter a oferta gratuita da campanha e apresentar o próximo passo para conhecer a comunidade, respeitando a finalidade do cadastro. |
 | Radar e detalhes | Explicar descoberta, cota, saldo e assinatura; preservar contexto e direitos antigos. |
 | `/membros/radar/acesso` | Apresentar direito vigente, saldo e comunidade. Retirar o percurso de nova compra avulsa. |
-| Área de membros | Organizar acesso aos pilares, próximos passos e gestão da assinatura. Planejar Caixa de ferramentas com categorias e links, exclusiva de assinantes anuais; implementação posterior à revisão específica. |
-| Learn e Perks | Criar as páginas mínimas necessárias para entregar conteúdos e benefícios disponíveis. |
+| Área de membros | Quatro destinos reais, próximos passos, fórum e gestão. Caixa implementada e restrita ao anual vigente, com prévia administrativa explícita. |
+| Learn e Perks | Estrutura, publicação e progresso implementados; conteúdo inicial e acordos concretos ainda exigem revisão. Vazio não comprova entrega paga. |
 | Administração | Incorporar gestão das entregas e leitura dos direitos; distinguir lead, conta, participação gratuita e assinatura. |
 | Navegação, metadados e documentos comerciais | Alinhar rótulos, descrições, links e condições à versão aprovada. |
 
@@ -229,7 +238,7 @@ Textos indicativos para revisão: “Conhecer a Comunidade Apogee”; “Começa
 
 Base a reaproveitar: autenticação, perfis e verificações; catálogo e filtros do Radar; fórum; captura do evento e administração de contatos; registro de pagamentos e origens de acesso; estrutura editorial e medição agregada condicionada à escolha do visitante.
 
-Lacunas observadas na revisão examinada:
+Lacunas históricas observadas em `d6a422d`, posteriormente implementadas no candidato (não descrevem a ausência atual):
 
 - O controle gratuito atual registra uma oportunidade por conta; precisa evoluir para múltiplos eventos e cota de 10.
 - O detalhe bloqueado pode iniciar checkout avulso; precisa passar a apresentar a comunidade.
@@ -247,7 +256,7 @@ Antes de migrar: inventariar direitos sem alterá-los, definir o tratamento da o
 | Frente | Responsabilidade a designar | Cadência proposta |
 | --- | --- | --- |
 | Radar | Qualidade, validade, links e relevância. | Coletores contínuos e revisão periódica dos indicadores. |
-| Learn | Produzir, revisar e manter conteúdos com entregáveis. | Três trilhas iniciais; calendário de atualização a aprovar. |
+| Learn | Produzir, revisar e manter conteúdo com entregável. | Trilha inicialmente parcial; módulos reais disponíveis identificados. Calendário a aprovar. |
 | Community | Orientação, moderação, atividades e suporte. | Valor semanal e agenda mensal a confirmar. |
 | Perks | Formalização, elegibilidade, vigência e uso. | Verificar antes de divulgar e a cada alteração relevante. |
 | Experiências | Produção, capacidade, orçamento, reservas e atendimento. | Meta estratégica de um destaque mensal e encontros menores. |
@@ -284,13 +293,13 @@ As taxas de ativação e retorno são hipóteses deste PRD, não resultados hist
 
 Os eventos com OpenAI de novembro/dezembro constam como previstos no documento estratégico; este PRD não confirma novas datas, formato ou vínculos. Make It Fly segue sem data confirmada. O calendário comercial deve refletir capacidade de entrega e marcos efetivamente confirmados.
 
-## 16. Decisões pendentes
+## 16. Decisões resolvidas e dependências restantes
 
 | ID | Questão | Responsável | Quando resolver |
 | --- | --- | --- | --- |
-| Q01 | Qual o acesso gratuito às categorias que não são eventos? Manter a amostra atual ou definir regra própria? | Produto/proprietário. | Antes do novo bloqueio de detalhes. |
-| Q02 | A oportunidade gratuita anterior, quando for evento, compõe a cota de 10 ou fica como direito adicional? | Produto e análise técnica. | Antes da migração; preservar seu acesso em qualquer escolha. |
-| Q03 | Confirmar o preço anual, a forma de pagamento, eventual parcelamento, renovação, cancelamento e tratamento de falhas. A contratação exclusivamente anual já está definida. | Proprietário e operação comercial. | Antes de configurar ou ativar assinatura. |
+| Q01 | Resolvida: bolsas, cursos, editais e carreira mantêm escolha gratuita única anterior, separada dos dez eventos. | Decisão vigente, preservada no código. | Não reabrir sem decisão nova do proprietário. |
+| Q02 | Resolvida: seleção anterior comprovadamente evento conta como primeira consulta; acesso sempre preservado, inclusive sem classificação. | Regra documentada/implementada. | Sem inventar taxonomia. |
+| Q03 | Referência aprovada: R$ 1.438,80 anuais integrais, equivalente R$ 119,90/mês; renovação anual automática e cancelamento ao fim pago. Sem mensalidade, parcelamento, trial ou desconto implementados. | Proprietário/operação aprovam textos finais e configuração concreta. | Não inventar política de reembolso ou novas cobranças. |
 | Q04 | Quais trilhas, atividades e recursos estão incluídos no primeiro pacote? Haverá cursos adicionais? | Produto e conteúdo. | Antes da oferta final e venda. |
 | Q05 | Qual canal gratuito e ação real de entrada serão utilizados? Como se relacionam à conta e aos espaços pagos? | Proprietário e comunidade. | Antes dos CTAs de entrada. |
 | Q06 | Quais perks estão formalizados e quais regras de ingresso, reserva e capacidade valem por experiência? | Parcerias e produção. | Antes de anunciar cada entrega. |
@@ -314,7 +323,7 @@ A contagem de eventos está resolvida em D05/D06. As pendências não reabrem a 
 
 **Aprovação em 14/11/2026:** o proprietário aprovou o PRD e autorizou a adequação das páginas com apresentação de prévia local antes de publicar. As decisões pendentes da seção 16 continuam registradas.
 
-**Próxima entrega:** revisão da prévia local das páginas. A ativação da assinatura e a migração da cota do Radar exigem a conclusão das dependências funcionais.
+**Entrega atual:** candidato integrado revisável, com [rotas/direitos](community-launch-routes-rights-20261115.md), [rastreabilidade D/U/R/F](community-launch-traceability-20261115.md), [indicadores e limitações](community-launch-metrics-20261115.md) e [gates](community-launch-review-20261115.md). Os registros abaixo preservam a cronologia de versões anteriores e não substituem o estado atual.
 
 ## 18. Implementação funcional local para validação — 14/11/2026
 
@@ -375,3 +384,15 @@ A instrução atual do proprietário autoriza implementar e validar a jornada co
 - Migrações novas 0019/0020 são aditivas e aguardam o ensaio integrado em PostgreSQL próprio nesta execução. Nenhuma é executada em produção nesta autorização.
 
 Rotas, critérios e evidências finais ficam em `offer-completion-review-20261115.md` e `offer-completion-runbook-20261115.md`. Os resultados serão registrados após validação, distinguindo testes locais, sandbox externo e produção. Vendas permanecem dependentes da revisão concreta, conteúdo/benefícios anunciados, responsáveis e configuração live validada.
+
+
+## 24. Revisão de conclusão de vendas
+
+Corrigidos pausa de novas vendas sem interromper contratos, concorrência na curadoria, datas dos Benefícios após autenticação, suporte sem login e retorno circular. O candidato oferece orientação de primeiro resultado e retorno ao Radar/calendário na segunda semana. O exercício original continua apenas em revisão editorial: o proprietário respondeu que ainda não sabia do que se tratava, sem aprová-lo. O relatório operacional agregado é somente leitura e identifica explicitamente as métricas não medidas; não cria rastreamento individual.
+
+Nenhum acordo real de Benefícios foi fornecido nesta revisão. A estrutura técnica não comprova conteúdo pago, suporte atendido, canal gratuito ou capacidade operacional. Esses bloqueios continuam no Gate 2. Produção e eventual trabalho de release de outro chat devem ser registrados separadamente pelo SHA realmente servido.
+
+
+## 25. Conferência atual de produção (somente leitura)
+
+A release executada pelo outro chat foi conferida diretamente: checkout/label `cd6a2e5`, imagem saudável, 21 migrações, 26 ferramentas em oito categorias, nenhum benefício ou atividade da Trilha e nenhuma assinatura anual. Vendas false; produto/preço/portal anuais não configurados. As correções do núcleo estão publicadas; os conteúdos/comercial e o lote adicional de indicadores/orientação deste clone permanecem em revisão. Registro e limites em [relatório de conclusão](community-launch-review-20261115.md).

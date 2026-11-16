@@ -1,15 +1,15 @@
 # Apogee — PRD da área interna de membros
 
-- **Versão:** 0.3 · 15 de novembro de 2026.
-- **Estado:** implementação local da Caixa de Ferramentas e demais entregáveis em revisão integrada. Sem publicação adicional ou ativação de cobrança.
+- **Versão:** 0.4 · revisão de conclusão em 15 de novembro de 2026.
+- **Estado:** candidato adicional para revisão isolada. O núcleo `cd6a2e5` e a Caixa (26 links) foram publicados pelo executor de outro chat, com 0019/0020 e vendas false; Benefícios e Trilha continuam sem conteúdo em produção. Os acréscimos deste clone não foram publicados.
 - **Decisor de produto:** Vinicius.
 - **Relação com o produto:** detalha a experiência interna do [PRD geral](apogee-prd.md), preservando a oferta anual e os direitos existentes do Radar.
 
 ## 1. Problema e objetivo
 
-O membro precisa encontrar recursos úteis sem procurar links em conversas dispersas. A área interna deve orientar o próximo passo e reunir os acessos da comunidade. A caixa de ferramentas será um catálogo curado de links externos organizado por finalidade.
+O membro precisa encontrar recursos úteis sem procurar links em conversas dispersas. A área interna deve orientar o próximo passo e reunir os acessos da comunidade. A caixa de ferramentas é um catálogo curado de links externos organizado por finalidade no candidato integrado.
 
-Esta especificação detalha a nova caixa de ferramentas e sua integração à área existente. Learn, Perks e novas atividades continuam sujeitos à confirmação de suas próprias entregas; este documento não os declara implementados.
+A Caixa e as estruturas de Benefícios/Trilha estão implementadas no candidato integrado. Isso não aprova conteúdos, acordos ou atividades comerciais. O [relatório atual](community-launch-review-20261115.md) distingue implementação, validação, publicação e bloqueios.
 
 ## 2. Decisões confirmadas e estado atual
 
@@ -23,8 +23,8 @@ Esta especificação detalha a nova caixa de ferramentas e sua integração à �
 | Conta gratuita ou acesso antigo apenas ao Radar | Mantém seus direitos atuais; não recebe automaticamente acesso à caixa de ferramentas. |
 | Acesso administrativo | Administração e pré-visualização protegidas pelas permissões existentes; assinatura não concede administração. |
 | Regra do Radar | Abrir categorias ou links não consome as 10 consultas de eventos. |
-| Revisão | Apresentar este planejamento antes de implementar. A autorização de deploy das alterações anteriores é independente desta funcionalidade nova. |
-| Base atual examinada | `/membros` possui visão dos pilares e fórum; `/membros/assinatura` administra o plano. Não há catálogo da caixa de ferramentas nesta revisão. |
+| Revisão | Planejamento foi aprovado e a implementação foi autorizada. A versão concreta, conteúdo e ativação comercial continuam sujeitos aos gates próprios. |
+| Base atual examinada | Candidato `40dbfc4`: Caixa, Benefícios, Trilha/progresso e curadoria presentes. Imagem em execução e migrações de produção são conferidas separadamente. |
 
 ## 3. Organização proposta
 
@@ -47,9 +47,9 @@ Esta especificação detalha a nova caixa de ferramentas e sua integração à �
 
 Os nomes adicionais são uma proposta inicial editável. Só categorias com ferramentas publicadas aparecem para o assinante. A caixa de ferramentas é uma seção de utilidade da comunidade e pode apoiar Learn; permanece distinta dos benefícios comerciais formalizados em Perks.
 
-Os quatro acessos de produto propostos para o início da área interna serão **Radar**, **Caixa de ferramentas**, **Benefícios** (Perks) e **Trilha** (Learn). A trilha deve indicar os módulos efetivamente disponíveis e seu estado de desenvolvimento, sem apresentar módulos futuros como acessíveis. O proprietário ainda não forneceu a lista concreta de benefícios nem os primeiros módulos; esses conteúdos permanecem pendentes de cadastro e conferência. Esta especificação não amplia a implementação autorizada para além do planejamento da caixa de ferramentas.
+Os quatro acessos de produto propostos para o início da área interna serão **Radar**, **Caixa de ferramentas**, **Benefícios** (Perks) e **Trilha** (Learn). A trilha deve indicar os módulos efetivamente disponíveis e seu estado de desenvolvimento, sem apresentar módulos futuros como acessíveis. O proprietário ainda não forneceu a lista concreta de benefícios nem os primeiros módulos; esses conteúdos permanecem pendentes de cadastro e conferência. A autorização atual permite implementação e validação isoladas desses fluxos, sem publicação, seed comercial ou ativação de vendas.
 
-**Rota proposta:** `/membros/ferramentas`. A página terá título, explicação breve, navegação por categoria e uma lista de ferramentas. O atalho também aparecerá na página inicial e na navegação interna.
+**Rota implementada no candidato:** `/membros/ferramentas`. A página tem título, explicação, filtro por categoria e fichas. Os atalhos estão no início e na navegação interna.
 
 ## 4. Conteúdo de cada ferramenta
 
@@ -91,7 +91,7 @@ Aplicam-se as verificações atuais de conta, proteção e participação. A dec
 | F09 | Estados e acessibilidade | Há estado vazio, erro com nova tentativa, categoria selecionada compreensível, foco visível e uso por teclado; sem transbordamento em celular e com contraste nos temas existentes. |
 | F10 | Publicação revisada | Implementação local, validação e prévia são apresentadas ao proprietário antes da publicação desta funcionalidade. |
 
-## 7. Etapas propostas para implementação após revisão
+## 7. Etapas e aceite (planejamento histórico já executado tecnicamente)
 
 | Etapa | Entrega revisável | Dependência |
 | --- | --- | --- |
@@ -125,7 +125,7 @@ Integrações com APIs, ferramentas embutidas, compartilhamento de contas, venda
 O conteúdo do documento estratégico fornecido é referência de produto. A inclusão da caixa de ferramentas, sua exclusividade anual e a revisão antes de implementar decorrem das instruções diretas do proprietário nesta conversa.
 
 
-## 11. Integração à oferta e ao próximo ciclo de implementação
+## 11. Histórico da oferta antes da implementação integrada
 
 Conferência de 15/11/2026: a Caixa de Ferramentas já integra a especificação, mas permanece sem catálogo e rota no código publicado examinado. A página de vendas deve citá-la como recurso da assinatura anual em preparação, sem link para uma rota inexistente ou promessa de acesso imediato. O próximo ciclo deve implementar e validar F01–F10 antes de mudar esse estado.
 
@@ -143,10 +143,19 @@ A nova autorização do proprietário inclui implementar F01–F10 e os demais f
 | Caixa de Ferramentas | `/membros/ferramentas`, `/admin/ferramentas`; `member_tool_category`, `member_tool`; migração 0019. | Anual vigente ou prévia administrativa explícita; categoria com ferramentas publicadas; revisão do link registrada. |
 | Benefícios | `/membros/beneficios`, `/admin/beneficios`; `member_benefit`; migração 0020. | Anual vigente; acordo com fonte privada, vigência, elegibilidade, disponibilidade e procedimento de resgate preenchidos antes de publicar. Sem acordos, estado vazio honesto. |
 | Trilha inicial parcial | `/membros/trilha`, `/admin/trilha`; `member_learning_track`, `member_learning_module`, `member_learning_activity`, `member_learning_progress`; 0020. | Anual vigente; hierarquia publicada; módulos em preparação sem material privado; progresso idempotente e exclusivo do titular. |
-| Suporte e operação | `/membros/suporte`, `/admin/assinaturas`. | Conta autenticada para suporte; administrador para operação. Pagamento não concede administração. |
+| Suporte e operação | `/membros/suporte`, `/admin/assinaturas`. | Suporte público, inclusive para quem não consegue autenticar; administrador para operação. Pagamento não concede administração. |
 
 Curadoria de Benefícios e Trilha registra ator, data, entidade, ação e estado em `member_deliverable_audit`, sem registrar material, contato ou credencial. Não há execução de ferramentas embutidas, coleta de credenciais de fornecedores ou integração inventada com parceiros. Catálogos e progresso não alteram a cota do Radar.
 
 O exercício original “Um primeiro resultado com IA” está preparado para revisão: escolher tarefa e critérios, preparar um pedido com dados permitidos, conferir o resultado e decidir o próximo passo. O banco da prévia contém esse material; a migração operacional não semeia conteúdo automaticamente. A publicação editorial e os conteúdos posteriores dependem da revisão do proprietário.
 
-O mapa de testes F01–F10 e da jornada fica no relatório de revisão integrado; o estado de produção continua separado.
+O mapa de testes F01–F10 e da jornada fica no relatório de revisão integrado; o estado de produção é a fotografia direta registrada no relatório de conclusão, separado do candidato local.
+
+
+## 13. Correções e operação para revisão
+
+O candidato corrige continuidade de portal/cancelamento/conciliação durante pausa de novas vendas, edição concorrente nos quatro tipos de conteúdo, serialização das datas e acesso público ao suporte. Nenhuma migração foi criada para essas correções; os hashes de 0019/0020 permanecem preservados. A curadoria da Caixa continua um catálogo de links, sem licenças ou créditos de terceiros.
+
+O início da Trilha orienta um entregável na primeira semana e retorno ao Radar/calendário entre os dias 8 e 14, sempre condicionado a material disponível. Progresso marcado é declaração do titular, não comprovação automática de resultado. O exercício original aguarda leitura/revisão do proprietário; não será publicado por migração.
+
+[Mapa de rotas/direitos](community-launch-routes-rights-20261115.md), [rastreabilidade F01–F10 e D/U/R](community-launch-traceability-20261115.md) e [gates de vendas](community-launch-review-20261115.md) são as referências atuais. As seções históricas não reabrem a exclusividade anual ou a autorização de implementação já concedida.

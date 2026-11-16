@@ -55,6 +55,9 @@ jobs:
       - name: Member signup, verification and recovery with intercepted email
         if: matrix.app == 'make-it-fly-current'
         run: PG_BIN="$(pg_config --bindir)" npm run test:member-auth-journey
+      - name: Read-only aggregate community launch report
+        if: matrix.app == 'make-it-fly-current'
+        run: PG_BIN="$(pg_config --bindir)" npm run test:community-launch-metrics
       - name: Blog worker without provider calls
         if: matrix.app == 'make-it-fly-current'
         run: |
