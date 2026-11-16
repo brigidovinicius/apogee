@@ -119,11 +119,14 @@ const INTERNAL_ORIGIN = "https://apogee.invalid";
 
 /** Aceita só destinos internos protegidos. Cada rota mantém sua autorização no servidor. */
 export function safeNextPath(value: unknown): string {
-  if (typeof value !== "string" || value.includes("\\")) return "/membros";
+  if (typeof value !== "string" || value.length > 4096 || /[\\\u0000-\u001f\u007f]/.test(value)) return "/membros";
 
   try {
     const next = new URL(value, INTERNAL_ORIGIN);
     if (next.origin !== INTERNAL_ORIGIN) return "/membros";
+    // These pages redirect an authenticated account to `next` themselves.
+    // Returning to them would form a loop after login, signup or recovery.
+    if (["/membros/entrar", "/membros/cadastro", "/membros/entrar/google/concluir", "/membros/esqueci-senha", "/membros/redefinir-senha", "/membros/integracoes/mcp/entrar"].includes(next.pathname.replace(/\/$/, ""))) return "/membros";
     const protectedPath = next.pathname === "/membros" || next.pathname.startsWith("/membros/") ||
       next.pathname === "/admin" || next.pathname.startsWith("/admin/") ||
       next.pathname === "/gerenciar-galeria";
