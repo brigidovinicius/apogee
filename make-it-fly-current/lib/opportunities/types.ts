@@ -113,6 +113,14 @@ export const EMPTY_OPPORTUNITY_FILTERS: OpportunityFilters = {
   query: null,
 };
 
+/** Shortcuts keep the search text, clearing local/event criteria that can hide jobs. */
+export function opportunityJobShortcutFilters(filters: OpportunityFilters, shortcut: "all" | "jobs" | "remote-brazil"): OpportunityFilters {
+  return { ...EMPTY_OPPORTUNITY_FILTERS, query: filters.query ?? null,
+    ...(shortcut !== "all" ? { kind: "Emprego" as const } : {}),
+    ...(shortcut === "remote-brazil" ? { workplace: "remote" as const, brazilJobs: true } : {}),
+  };
+}
+
 export type OpportunityFilterOptions = {
   kinds: OpportunityKind[];
   levels: EducationLevel[];

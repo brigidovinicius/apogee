@@ -2,12 +2,14 @@
 import { useActionState, useId, useState } from "react";
 import { saveEditorial, type EditorialState } from "@/app/admin/beneficios/actions";
 import type { DeliverableKind } from "@/lib/deliverables/validation";
+import { PROVIDER_ACCESS_LABELS } from "@/lib/benefits/types";
 import styles from "./deliverables.module.css";
 type Choice = { id: string; name: string };
 type Field = { key: string; label: string; long?: boolean; type?: string; required?: boolean };
 const fields: Record<DeliverableKind, Field[]> = {
   benefit: [
-    { key: "partner", label: "Parceiro comprovado", required: true }, { key: "description", label: "Descrição", long: true, required: true },
+    { key: "partner", label: "Ferramenta ou parceiro", required: true }, { key: "description", label: "Descrição da oferta e variante", long: true, required: true },
+    { key: "providerLabel", label: "Disponibilizado por (opcional)" }, { key: "sourceUrl", label: "Página pública de referência (não comprova acordo)", type: "url" },
     { key: "evidenceUrl", label: "Fonte HTTPS de comprovação do acordo (somente administração)", type: "url" },
     { key: "eligibility", label: "Elegibilidade", long: true }, { key: "availability", label: "Disponibilidade e limites", long: true },
     { key: "startsAt", label: "Início da vigência (UTC)", type: "date" }, { key: "endsAt", label: "Fim da vigência, exclusivo (UTC)", type: "date" },
@@ -39,6 +41,10 @@ export function DeliverableEditor({ kind, values = {}, choices = [] }: { kind: D
       <legend>{values.id ? "Editar registro" : "Criar registro"}</legend>
       <label htmlFor={`${id}-name`}>Nome<input id={`${id}-name`} name="name" value={data.name ?? ""} onChange={e => setField("name", e.target.value)} maxLength={140} required /></label>
       {parent ? <label htmlFor={`${id}-parent`}>{kind === "module" ? "Trilha" : "Módulo"}<select id={`${id}-parent`} name={parent} value={data[parent] ?? ""} onChange={e => setField(parent, e.target.value)} required><option value="" disabled>Selecione</option>{choices.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label> : null}
+      {kind === "benefit" ? <>
+        <label htmlFor={`${id}-category`}>Categoria<select id={`${id}-category`} name="categoryId" value={data.categoryId ?? ""} onChange={e => setField("categoryId", e.target.value)}><option value="">Sem categoria</option>{choices.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+        <label htmlFor={`${id}-provider-access`}>Acesso à oferta no fornecedor<select id={`${id}-provider-access`} name="providerAccess" value={data.providerAccess ?? "unconfirmed"} onChange={e => setField("providerAccess", e.target.value)}>{Object.entries(PROVIDER_ACCESS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+      </> : null}
       {fields[kind].map(f => <label key={f.key} htmlFor={`${id}-${f.key}`}>{f.label}{f.long ? <textarea id={`${id}-${f.key}`} name={f.key} value={data[f.key] ?? ""} onChange={e => setField(f.key, e.target.value)} maxLength={f.key === "instructions" ? 12000 : f.key === "redemption" ? 4000 : 2000} required={f.required} /> : <input id={`${id}-${f.key}`} name={f.key} type={f.type ?? "text"} value={data[f.key] ?? ""} onChange={e => setField(f.key, e.target.value)} maxLength={1000} required={f.required} />}</label>)}
       <label htmlFor={`${id}-order`}>Ordem<input id={`${id}-order`} name="sortOrder" type="number" min={0} max={10000} step={1} value={data.sortOrder ?? "0"} onChange={e => setField("sortOrder", e.target.value)} required /></label>
       <label htmlFor={`${id}-status`}>Estado editorial<select id={`${id}-status`} name="status" value={data.status ?? "draft"} onChange={e => setField("status", e.target.value)}><option value="draft">Rascunho</option>{kind !== "benefit" ? <option value="preparing">Em preparação</option> : null}<option value="published">Publicado</option><option value="archived">Arquivado</option></select></label>

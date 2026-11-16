@@ -23,7 +23,8 @@ export default function FunctionalReviewPage() {
     <p><Link href="/membros/assinatura">Ver assinatura e renovação</Link> · <Link href="/comunidade#planos">Rever a oferta anual</Link></p>
     <p><Link className={styles.primary} href="/membros/ferramentas">Abrir a caixa de ferramentas</Link> · <Link href="/admin/ferramentas">Abrir a curadoria administrativa</Link></p>
     <p>O exemplo publicado nesta prévia é Vídeo → Google Flow. As demais categorias estão vazias e aparecem apenas na curadoria. Alterações aqui ficam neste banco local, sem publicar em produção.</p>
-    <p><Link href="/membros/trilha">Trilha inicial com três atividades reais para revisão</Link> · <Link href="/membros/beneficios">Benefícios sem acordos anunciados</Link> · <Link href="/membros/suporte">Suporte</Link></p>
+    <p><Link href="/membros/trilha">Trilha inicial com três atividades reais para revisão</Link> · <Link href="/membros/beneficios">Testar Benefícios</Link> · <Link href="/membros/suporte">Suporte</Link></p>
+    {process.env.APOGEE_BENEFITS_REVIEW === "1" ? <p>Benefícios nesta prévia: três ofertas sintéticas publicadas para testar busca, categorias, salvos e histórico. Ofertas reais pesquisadas, quando fornecidas pelo manifesto privado, ficam em rascunho na <Link href="/admin/beneficios">curadoria de Benefícios</Link>. Nenhuma oferta desta prévia concede uma vantagem real.</p> : null}
     <p>O exercício inicial é material original preparado para revisão editorial; não representa uma formação completa. Benefícios aguardam acordos comprovados.</p>
     <p>Pagamentos e envio de e-mail são bloqueados nesta prévia. Nenhuma assinatura ou concessão aqui representa uma cobrança real.</p>
   </main>;

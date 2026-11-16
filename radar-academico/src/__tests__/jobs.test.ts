@@ -16,6 +16,19 @@ export const jobFixture = (patch: Record<string, unknown> = {}) => ({
 const source = { ...jobSource("jobs-whippy"), active: true };
 const parse = (patch: Record<string, unknown> = {}) => parseJobFeed({ apiVersion: "1", jobs: [jobFixture(patch)] }, source).candidates[0];
 describe("official job feeds", () => {
+  it("isolates each newly audited tenant, including canonical case, from foreign posting URLs", () => {
+    for (const [id,tenant,provider] of [["latamcent","latamcent","ashby"],["truelogic","truelogic","ashby"],
+      ["oscilar","oscilar","ashby"],["elevenlabs","ElevenLabs","ashby"],["telnyx","telnyx54","greenhouse"]]) {
+      const s=jobSource(`jobs-${id}`);const uuid="8013f907-e90f-4e3d-92c2-d14808891efb";
+      const page=provider==="ashby"?`https://jobs.ashbyhq.com/${tenant}/${uuid}`:`https://job-boards.greenhouse.io/${tenant}/jobs/123`;
+      expect(s.active).toBe(false);expect(s.geographicScope).toEqual([]);
+      expect(jobPostingUrl(s.id,page)).toBe(true);
+      expect(jobPostingUrl(s.id,page.replace(`/${tenant}/`,`/${tenant}-other/`))).toBe(false);
+      expect(jobPostingUrl(s.id,page+"?redirect=https://example.test")).toBe(false);
+      expect(jobPostingUrl(s.id,page.replace("https:","http:"))).toBe(false);
+    }
+  });
+
   it("confirms Brazilian residence, preserves employment evidence and keeps unknown pay unknown", () => {
     const c = parse(); expect(c.employment).toMatchObject({ workplace: "remote", brazilEligibility: "confirmed", salary: null, experienceYears: 2 });
     expect(c.deadlinePrecision).toBe("not_informed"); expect(c.deadlineAt).toBeUndefined();

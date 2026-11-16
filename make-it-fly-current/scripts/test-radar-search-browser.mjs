@@ -85,7 +85,7 @@ try {
   page.on("pageerror", error => errors.push(error.message));
   const go = path => page.goto(origin + path, { waitUntil: "networkidle" });
   const query = async value => {
-    await page.getByLabel("Buscar evento, tema ou instituição", { exact: true }).fill(value);
+    await page.getByLabel("Buscar oportunidade, emprego ou instituição", { exact: true }).fill(value);
     await page.getByRole("button", { name: "Buscar", exact: true }).click();
     await page.waitForURL(url => url.searchParams.get("busca") === value);
     await page.waitForLoadState("networkidle");

@@ -101,11 +101,20 @@ export async function saveDeliverable(kind: DeliverableKind, input: unknown) {
     }
     if (kind === "benefit") {
       const b = benefitSchema.parse(input);
+      if (b.categoryId) {
+        const [category] = await tx`select status from member_benefit_category where id=${b.categoryId} for share`;
+        if (!category || b.status === "published" && category.status !== "published") throw Error("Confira a categoria antes de publicar a oferta.");
+      }
       await tx`insert into member_benefit(id,name,partner,description,evidence_url,eligibility,availability,starts_at,ends_at,redemption,redemption_url,status,sort_order,reviewed_by)
         values(${id},${b.name},${b.partner},${b.description},${b.evidenceUrl},${b.eligibility},${b.availability},${b.startsAt ? new Date(b.startsAt).toISOString() : null},${b.endsAt ? new Date(b.endsAt).toISOString() : null},${b.redemption},${b.redemptionUrl},${b.status},${b.sortOrder},${actor.id})
         on conflict(id) do update set name=excluded.name,partner=excluded.partner,description=excluded.description,evidence_url=excluded.evidence_url,
           eligibility=excluded.eligibility,availability=excluded.availability,starts_at=excluded.starts_at,ends_at=excluded.ends_at,redemption=excluded.redemption,
           redemption_url=excluded.redemption_url,status=excluded.status,sort_order=excluded.sort_order,reviewed_by=excluded.reviewed_by,reviewed_at=now()`;
+      // Optional for old callers; the current benefits editor writes metadata
+      // atomically with the existing editorial row and revision check.
+      if (b.categoryId !== undefined) await tx`insert into member_benefit_organization(benefit_id,category_id,provider_label,provider_access,source_url)
+        values(${id},${b.categoryId || null},${b.providerLabel ?? ""},${b.providerAccess ?? "unconfirmed"},${b.sourceUrl ?? ""})
+        on conflict(benefit_id) do update set category_id=excluded.category_id,provider_label=excluded.provider_label,provider_access=excluded.provider_access,source_url=excluded.source_url`;
     } else if (kind === "track") {
       const t = trackSchema.parse(input);
       await tx`insert into member_learning_track(id,name,description,status,sort_order,reviewed_by) values(${id},${t.name},${t.description},${t.status},${t.sortOrder},${actor.id})

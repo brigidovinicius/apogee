@@ -550,6 +550,29 @@ export const memberBenefit = pgTable("member_benefit", {
 }, t => [check("member_benefit_status_check", sql`${t.status} in ('draft','published','archived')`), check("member_benefit_sort_order_check", sql`${t.sortOrder} between 0 and 10000`),
   check("member_benefit_check", sql`${t.endsAt} is null or ${t.startsAt} is null or ${t.endsAt}>${t.startsAt}`),
   check("member_benefit_check1", sql`${t.status}<>'published' or (length(${t.evidenceUrl})>0 and length(${t.eligibility})>0 and length(${t.availability})>0 and length(${t.redemption})>0 and ${t.startsAt} is not null and ${t.endsAt} is not null)`)]);
+export const memberBenefitCategory = pgTable("member_benefit_category", {
+  id: text("id").primaryKey(), slug: text("slug").notNull().unique(), name: text("name").notNull(), description: text("description").notNull().default(""),
+  status: text("status").notNull().default("draft"), sortOrder: integer("sort_order").notNull().default(0), version: integer("version").notNull().default(1),
+  updatedBy: text("updated_by").notNull().references(() => user.id), updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [check("member_benefit_category_slug_check", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and length(${t.slug})<=80`),
+  check("member_benefit_category_name_check", sql`length(${t.name}) between 1 and 80`), check("member_benefit_category_description_check", sql`length(${t.description})<=240`),
+  check("member_benefit_category_status_check", sql`${t.status} in ('draft','published','archived')`), check("member_benefit_category_sort_order_check", sql`${t.sortOrder} between 0 and 10000`), check("member_benefit_category_version_check", sql`${t.version}>=1`)]);
+export const memberBenefitOrganization = pgTable("member_benefit_organization", {
+  benefitId: text("benefit_id").primaryKey().references(() => memberBenefit.id, { onDelete: "cascade" }), categoryId: text("category_id").references(() => memberBenefitCategory.id),
+  providerLabel: text("provider_label").notNull().default(""), providerAccess: text("provider_access").notNull().default("unconfirmed"), sourceUrl: text("source_url").notNull().default(""),
+}, t => [index("member_benefit_organization_category_idx").on(t.categoryId, t.benefitId), check("member_benefit_organization_provider_label_check", sql`length(${t.providerLabel})<=140`),
+  check("member_benefit_organization_provider_access_check", sql`${t.providerAccess} in ('unconfirmed','free','premium','included')`), check("member_benefit_organization_source_url_check", sql`length(${t.sourceUrl})<=1000`)]);
+export const memberBenefitSaved = pgTable("member_benefit_saved", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }), benefitId: text("benefit_id").notNull().references(() => memberBenefit.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [primaryKey({ columns: [t.userId, t.benefitId] })]);
+export const memberBenefitRedemption = pgTable("member_benefit_redemption", {
+  id: text("id").primaryKey(), userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }), benefitId: text("benefit_id").notNull().references(() => memberBenefit.id),
+  benefitName: text("benefit_name").notNull(), partnerName: text("partner_name").notNull(), termsRevision: text("terms_revision").notNull(), status: text("status").notNull().default("started"),
+  startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(), reviewedAt: timestamp("reviewed_at", { withTimezone: true }), reviewedBy: text("reviewed_by").references(() => user.id), evidenceReference: text("evidence_reference").notNull().default(""),
+}, t => [uniqueIndex("member_benefit_redemption_user_id_benefit_id_key").on(t.userId, t.benefitId), index("member_benefit_redemption_owner_idx").on(t.userId, t.startedAt.desc(), t.id),
+  check("member_benefit_redemption_status_check", sql`${t.status} in ('started','confirmed','rejected')`), check("member_benefit_redemption_evidence_reference_check", sql`length(${t.evidenceReference})<=500`),
+  check("member_benefit_redemption_check", sql`${t.status}='started' or (${t.reviewedAt} is not null and ${t.reviewedBy} is not null and length(${t.evidenceReference})>=8)`)]);
 export const memberLearningTrack = pgTable("member_learning_track", {
   id: text("id").primaryKey(), name: text("name").notNull(), description: text("description").notNull(), ...editorialColumns(),
 }, t => [check("member_learning_track_status_check", sql`${t.status} in ('draft','published','preparing','archived')`), check("member_learning_track_sort_order_check", sql`${t.sortOrder} between 0 and 10000`)]);

@@ -148,6 +148,13 @@
       "when": 1794765600020,
       "tag": "0020_member_deliverables",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794852000021,
+      "tag": "0021_member_benefits_workspace",
+      "breakpoints": true
     }
   ]
 }
