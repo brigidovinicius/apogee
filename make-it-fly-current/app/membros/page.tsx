@@ -11,6 +11,7 @@ import { requireSignedInMember } from "@/lib/members/dal";
 import { adultAccess } from "@/lib/members/protection";
 import { LockedMemberArea } from "@/components/members/locked-member-area";
 import { listCategories } from "@/lib/members/forum";
+import { MemberForumSection } from "@/components/members/member-forum-section";
 
 export const metadata: Metadata = { title: "Sua comunidade | Apogee" };
 
@@ -34,7 +35,7 @@ export default async function MemberHomePage() {
 
       <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} contentAccess={member.role === "admin" || Boolean(annual?.active)} />
       {!verified ? <p className={styles.verificationNotice}>Verifique sua conta para participar da comunidade. <Link href="/membros/protecao?next=%2Fmembros">Verificar minha conta</Link></p> : null}
-      <section id="forum" aria-labelledby="member-forum-title"><h2 id="member-forum-title">Conversas da comunidade</h2>
+      <MemberForumSection><h2 id="member-forum-title">Conversas da comunidade</h2>
 
       {!verified ? <LockedMemberArea kind="forum" next="/membros#forum" reason="verification" /> : categories.length === 0 ? (
         <p className={styles.empty}>Nenhuma categoria criada ainda</p>
@@ -65,7 +66,7 @@ export default async function MemberHomePage() {
           ))}
         </ul>
       )}
-      </section>
+      </MemberForumSection>
     </div></MemberWorkspace>
   );
 }
