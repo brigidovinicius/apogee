@@ -14,6 +14,16 @@ export function validateExplainerCatalog(plans=catalog){
       ||!Array.isArray(p.urls)||p.urls.length<2||p.urls.length>4||new Set(p.urls).size!==p.urls.length)fail('invalid_explainer_catalog');
     const refs=p.urls.map(url=>referenceForUrl(referenceUrl(url)));
     if(refs.some(r=>!r)||!primaryReference(refs[0])||new Set(refs.map(r=>r.publisher)).size!==refs.length)fail('invalid_explainer_sources');
+    if(p.provenance!==undefined){
+      if(!Array.isArray(p.provenance)||p.provenance.length!==p.urls.length||p.provenance[0]?.kind!=='primary'
+        ||!p.provenance.some(v=>v?.kind==='independent'))fail('invalid_explainer_provenance');
+      for(const v of p.provenance){
+        if(!v||!['primary','independent','derivative','context'].includes(v.kind)||typeof v.independence_note!=='string'
+          ||v.independence_note.length<20||v.independence_note.length>1000)fail('invalid_explainer_provenance');
+        referenceUrl(v.origin_url);
+        if(v.kind==='independent'&&referenceUrl(v.origin_url)===referenceUrl(p.provenance[0].origin_url))fail('invalid_explainer_provenance');
+      }
+    }
   }
   return plans;
 }
@@ -79,10 +89,11 @@ export function automaticExplainerDossier(plan,captures,policy,at=new Date(),{pr
     const documents=chosen.map((s,i)=>{
       const excerpt=explainerExcerpt(s.text,plan.terms,Math.floor(total/chosen.length));if(!excerpt)return null;
       const ref=referenceForUrl(s.url);
+      const provenance=plan.provenance?.[i];
       return {id:'E'+(i+1),reference_id:ref.id,capture_id:s.capture_id??hash(s),title:s.title,url:referenceUrl(s.url,ref),published_at:s.published_at,
-        ...excerpt,content_hash:dossierHash(excerpt.text),rights_reference:s.rights_reference,kind:i===0?'primary':'independent',evidence_scope:s.evidence_scope??'public_article',
-        origin_url:referenceUrl(s.url),same_event:false,same_subject:true,consulted_at:new Date(s.checked_at??s.captured_at).toISOString(),
-        independence_note:i===0?'Guia primário público da instituição responsável; data original e trecho contíguo preservados.':'Guia elaborado por outra instituição/autoria sobre o conceito. A comparação deve verificar independência, contexto, limites e fatos comuns. Não é cobertura de um mesmo anúncio nem replicação experimental.'};
+        ...excerpt,content_hash:dossierHash(excerpt.text),rights_reference:s.rights_reference,kind:provenance?.kind??(i===0?'primary':'independent'),evidence_scope:s.evidence_scope??'public_article',
+        origin_url:referenceUrl(provenance?.origin_url??s.url),same_event:false,same_subject:true,consulted_at:new Date(s.checked_at??s.captured_at).toISOString(),
+        independence_note:provenance?.independence_note??(i===0?'Guia primário público da instituição responsável; data original e trecho contíguo preservados.':'Guia elaborado por outra instituição/autoria sobre o conceito. A comparação deve verificar independência, contexto, limites e fatos comuns. Não é cobertura de um mesmo anúncio nem replicação experimental.')};
     });
     if(documents.some(d=>!d))continue;
     const d=validateDossier({schema_version:1,event_key:'explainer:'+plan.key,category:plan.category,subcategory:plan.subcategory,

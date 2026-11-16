@@ -16,6 +16,23 @@ test('curated explainer questions cover all ten topics, stay distinct and use se
   assert.throws(()=>validateExplainerCatalog([{...explainerCatalog[0],urls:['https://www.nasa.gov/a','https://www.nasa.gov/b']}]),/invalid_explainer_sources/);
   assert.throws(()=>validateExplainerCatalog([{...explainerCatalog[0],urls:['https://127.0.0.1/a','https://www.esa.int/b']}]),/invalid_reference_url/);
 });
+test('the requested STE explainer preserves derivative provenance and never counts its shared origin twice',()=>{
+ const plan=explainerCatalog.find(p=>p.key==='escrita-tecnica-aeronautica-prompts-ia-1');assert.ok(plan);
+ const text='ASD-STE100 controlled writing uses a dictionary and short sentences. Context, general-purpose limits and marketing exceptions remain explicit. '.repeat(7);
+ const captures=plan.urls.map((url,i)=>({url,title:'Synthetic guide '+i,text:'Author '+i+'. '+text,published_at:i===2?'2026-10-02T20:59:00Z':null,rights_reference:'Public excerpt for attribution; no image licence',extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,checked_at:now.toISOString()}));
+ const d=automaticExplainerDossier(plan,captures,policy,now);assert.ok(d);
+ assert.deepEqual(d.documents.map(v=>v.kind),['primary','independent','derivative']);
+ assert.equal(d.documents[2].origin_url,d.documents[0].origin_url);assert.match(d.documents[2].independence_note,/Plustag.*Search Engine Journal/);
+ assert.equal(d.documents[2].published_at,captures[2].published_at);
+ const quote='ASD-STE100 controlled writing uses a dictionary and short sentences.';
+ d.claims=[{id:'C1',text:'O conceito sintético usa escrita controlada e vocabulário consistente.',critical:true,cells:d.documents.map((doc,i)=>({document_id:doc.id,status:i===1?'not_mentioned':'supports',quote:i===1?'':quote,note:''}))}];
+ const repeated=assessDossier(d,{comparisonVerified:true});assert.equal(repeated.eligible,false);assert.equal(repeated.convergent,0);
+ d.claims[0].cells[1]={document_id:'E2',status:'supports',quote,note:'Análise própria no guia sintético.'};
+ assert.equal(assessDossier(d,{comparisonVerified:true}).eligible,true);
+ const request=JSON.parse(buildComparisonRequest(d,policy).input);assert.equal(request.documents[2].origin_url,d.documents[0].origin_url);assert.equal(request.documents[2].kind,'derivative');assert.match(request.documents[2].independence_note,/não contar/);
+ for(const provenance of [[],[null,...plan.provenance.slice(1)],plan.provenance.map(v=>({...v,kind:'derivative'})),plan.provenance.map((v,i)=>i===1?{...v,origin_url:plan.urls[0]}:v)])assert.throws(()=>validateExplainerCatalog([{...plan,provenance}]),/invalid_explainer_provenance/);
+ assert.throws(()=>validateExplainerCatalog([{...plan,provenance:plan.provenance.map((v,i)=>i===2?{...v,origin_url:'https://127.0.0.1/'}:v)}]),/invalid_reference_url/);
+});
 test('hybrid window is in Brasilia and never enlarges existing consumption limits',()=>{
   assert.equal(explainerWindowOpen(policy,new Date('2026-11-12T12:59:59Z')),false);
   assert.equal(explainerWindowOpen(policy,new Date('2026-11-12T13:00:00Z')),true);

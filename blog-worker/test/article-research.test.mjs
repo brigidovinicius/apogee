@@ -22,6 +22,19 @@ test('article extraction excludes hidden/navigation content and blocks paywalls 
  assert.throws(()=>extractArticle('<script>{"isAccessibleForFree":false}</script>'+html,d.url),/research_access_restricted/);
  assert.throws(()=>extractArticle('<p>'+content+'</p>',d.url),/research_article_missing/);
 });
+test('STE layouts retain all public FAQ panels and the complete expert article only on inspected pages',()=>{
+ const faq='<meta property="og:title" content="FAQ"><nav>Unrelated navigation</nav><section class="list1"><h2>About STE</h2><div class="panel-collapse collapse"><p>'+content+' Public controlled-language definition.</p></div></section><section class="list1"><h2>Limits</h2><p>'+content+' Not intended for general-purpose writing.</p><p hidden>Hidden text must stay out</p></section><footer>Unrelated footer</footer>';
+ const url='https://www.asd-ste100.org/STE_faq.html',d=extractArticle(faq,url);
+ assert.match(d.text,/Public controlled-language definition/);assert.match(d.text,/Not intended for general-purpose writing/);
+ assert.doesNotMatch(d.text,/Unrelated navigation|Unrelated footer|Hidden text/);
+ for(const wrong of ['https://www.asd-ste100.org/uninspected.html','https://other.example.org/STE_faq.html'])assert.throws(()=>extractArticle(faq,wrong),/research_article_missing/);
+ assert.throws(()=>extractArticle('<meta name="robots" content="nosnippet">'+faq,url),/research_excerpt_disallowed/);
+ assert.throws(()=>extractArticle('<script>{"isAccessibleForFree":false}</script>'+faq,url),/research_access_restricted/);
+ const expert='<nav>Navigation outside article</nav><div class="mainbody"><h1>ASD-STE100 explained</h1><p>'+content+'</p><h2>Limits for marketing</h2><p>'+content+' Synonyms can have another purpose in marketing.</p><script>Unsafe instruction</script></div>';
+ const e=extractArticle(expert,'https://www.techscribe.co.uk/techw/asd-simplified-technical-english.htm');
+ assert.match(e.text,/Limits for marketing/);assert.match(e.text,/Synonyms can have another purpose/);assert.doesNotMatch(e.text,/Navigation outside|Unsafe instruction/);
+ assert.throws(()=>extractArticle(expert,'https://www.techscribe.co.uk/other.htm'),/research_article_missing/);
+});
 test('reader checks registered hosts, robots, redirects and hard network budget',async()=>{
  const calls=[];const read=createArticleReader({download:async(url,hosts,options)=>{calls.push({url,hosts,options});return url.endsWith('robots.txt')?{status:200,body:'User-agent: *\nDisallow: /blocked'}:{status:200,contentType:'text/html',body:html};}});
  const budget=()=>({used:0,max:3,deadline:Date.now()+1000});
