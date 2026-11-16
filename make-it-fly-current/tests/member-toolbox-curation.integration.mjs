@@ -28,9 +28,10 @@ before(async()=>{
   await sql`insert into radar_free_event(user_id,opportunity_id,slot) values('free','existing-event',1)`;
   await sql`insert into community_subscription(id,user_id,customer_id,livemode,status) values('sub_Curation','annual','cus_Curation',false,'active')`;
   await sql`insert into community_invoice(id,subscription_id,amount,currency,period_start,period_end,status) values('in_Curation','sub_Curation',143880,'brl',now()-interval '1 day',now()+interval '1 year','paid')`;
+  const member = async () => ({id:current,role:current==='curator'?'admin':'member'});
   load=opportunityLoader({
     "@/lib/members/db":{getSql:()=>sql},
-    "@/lib/members/dal":{requireMember:async()=>({id:current,role:current==='curator'?'admin':'member'})},
+    "@/lib/members/dal":{requireMember:member,requireSignedInMember:member},
   });
 });
 after(async()=>{if(mode===undefined)delete process.env.STRIPE_MODE;else process.env.STRIPE_MODE=mode;await db?.close();});
