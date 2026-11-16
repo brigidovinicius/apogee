@@ -1,7 +1,7 @@
 import "server-only";
 import type Stripe from "stripe";
 import { getSql } from "@/lib/members/db";
-import { communityBillingConfig, COMMUNITY_AMOUNT, COMMUNITY_CURRENCY, COMMUNITY_TAG } from "./community-config";
+import { communityServiceConfig, COMMUNITY_AMOUNT, COMMUNITY_CURRENCY, COMMUNITY_TAG } from "./community-config";
 import { stripeClient } from "./stripe";
 
 export const COMMUNITY_STRIPE_EVENTS = ["checkout.session.completed","checkout.session.async_payment_succeeded",
@@ -10,7 +10,7 @@ export const COMMUNITY_STRIPE_EVENTS = ["checkout.session.completed","checkout.s
   "charge.refunded","charge.dispute.created","charge.dispute.closed","radar.early_fraud_warning.created"] as const;
 const objectId=(value: string | {id:string} | null | undefined)=>typeof value === "string" ? value : value?.id;
 
-export function validAnnualPrice(price: Stripe.Price, config: ReturnType<typeof communityBillingConfig>, requireActive=true) {
+export function validAnnualPrice(price: Stripe.Price, config: ReturnType<typeof communityServiceConfig>, requireActive=true) {
   return (!requireActive || price.active) && price.livemode === config.livemode && price.type === "recurring" &&
     price.currency === COMMUNITY_CURRENCY && price.unit_amount === COMMUNITY_AMOUNT &&
     objectId(price.product) === config.product && price.id === config.price &&
@@ -20,7 +20,7 @@ export function validAnnualPrice(price: Stripe.Price, config: ReturnType<typeof 
 /** Current Stripe state is read under the subscription lock, never trusted from a stale payload. */
 export async function fulfillCommunityEvent(event: Stripe.Event): Promise<string> {
   if (!COMMUNITY_STRIPE_EVENTS.includes(event.type as typeof COMMUNITY_STRIPE_EVENTS[number])) return "ignored";
-  const config=communityBillingConfig();
+  const config=communityServiceConfig();
   if (event.account || event.livemode !== config.livemode) return "ignored";
   const stripe=stripeClient();
   const input=event.data.object as unknown as {id:string;payment_intent?:string;charge?:string};

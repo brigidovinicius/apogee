@@ -5,7 +5,7 @@ import { consumeRateLimit } from "@/lib/members/rate-limit";
 import { getSql } from "@/lib/members/db";
 import { BillingError } from "@/lib/billing/config";
 import { communityFailure } from "@/lib/billing/community-http";
-import { communityBillingConfig,COMMUNITY_ACCESS_PATH } from "@/lib/billing/community-config";
+import { communityServiceConfig,COMMUNITY_ACCESS_PATH } from "@/lib/billing/community-config";
 import { communityReturnPath } from "@/lib/billing/community-navigation";
 import { stripeClient } from "@/lib/billing/stripe";
 
@@ -15,7 +15,7 @@ export async function POST(request:Request) {
     if(request.headers.get("origin") !== applicationOrigin() || request.headers.get("sec-fetch-site") === "cross-site") throw new BillingError(403,"Origem não permitida.");
     const member=await getMemberFromHeaders(request.headers);
     if(!member) throw new BillingError(401,"Entre na sua conta para continuar.");
-    const config=communityBillingConfig(),portal=process.env.STRIPE_COMMUNITY_PORTAL_CONFIGURATION_ID ?? "";
+    const config=communityServiceConfig(),portal=process.env.STRIPE_COMMUNITY_PORTAL_CONFIGURATION_ID ?? "";
     if(!/^bpc_[A-Za-z0-9]+$/.test(portal)) throw new BillingError(503,"Gestão da assinatura temporariamente indisponível.");
     if(!await consumeRateLimit(`annual-portal:${member.id}`,10,3600)) throw new BillingError(429,"Aguarde antes de tentar novamente.");
     const [owner]=await getSql()`select customer_id from community_customer where user_id=${member.id} and livemode=${config.livemode}`;
