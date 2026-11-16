@@ -31,10 +31,14 @@ test("institutional shell is reused by the first public and member routes", asyn
   assert.match(earth, /<main id="experiencia" tabIndex=\{-1\}>/);
   assert.doesNotMatch(earth, /DEMO_OPPORTUNITIES|localStorage|Prévia local/);
 
-  for (const route of [editorial, homeContent, opportunities, membersLayout]) {
+  for (const route of [editorial, homeContent, opportunities]) {
     assert.match(route, /<SiteHeader/);
     assert.match(route, /<SiteFooter/);
   }
+  assert.match(membersLayout, /<SiteHeader current="members" compact/);
+  assert.match(membersLayout, /aria-label="Ajuda e termos"/);
+  assert.match(membersLayout, /href="\/privacidade"/);
+  assert.match(membersLayout, /href="\/termos"/);
 
   assert.match(homeContent, /<SiteHeader current="home" tone="light" \/>/);
   assert.match(homeContent, /<Robonauta \/>/);

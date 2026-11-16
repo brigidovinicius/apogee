@@ -27,19 +27,19 @@ test("a prévia pública filtra somente a DTO segura e anuncia resultados recupe
 test("a navegação responsiva do membro só expõe os destinos já implementados", async () => {
   const [bar, styles, memberPage, radarPage, profilePage, editPage] = await Promise.all([
     source("components/members/member-bar.tsx"),
-    source("components/members/members.module.css"),
+    source("components/members/member-navigation.module.css"),
     source("app/membros/page.tsx"),
     source("app/membros/oportunidades/page.tsx"),
     source("app/membros/perfil/[username]/page.tsx"),
     source("app/membros/perfil/editar/page.tsx"),
   ]);
 
-  assert.match(bar, /href="\/membros"/);
-  assert.match(bar, /href="\/membros\/oportunidades"/);
+  assert.match(bar, /href: "\/membros"/);
+  assert.match(bar, /href: "\/membros\/oportunidades"/);
   assert.match(bar, /Meu perfil/);
   assert.doesNotMatch(bar, /\/membros\/(?:salvos|alertas|onboarding)/);
-  assert.match(styles, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(styles, /@media \(max-width: 640px\)/);
+  assert.match(styles, /\.navigation\[data-open="true"\]/);
+  assert.match(styles, /@media \(max-width: 900px\)/);
 
   assert.match(radarPage, /await requireSignedInMember\(/);
   assert.match(memberPage, /await requireSignedInMember\(/);

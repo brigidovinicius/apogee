@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AvatarInitials } from "@/components/members/avatar-initials";
 import { formatDateTime, plural } from "@/components/members/format";
-import { MemberBar } from "@/components/members/member-bar";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import { verificationPagePreview } from "@/components/members/member-page-access";
 import styles from "@/components/members/members.module.css";
 import { Pagination } from "@/components/members/pagination";
@@ -35,8 +35,8 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const { topics, total, pages } = await listTopics(category.id, page);
 
   return (
-    <div className={styles.container}>
-      <MemberBar member={member} current="forum" />
+    <MemberWorkspace member={member} current="forum"><div className={styles.container}>
+
       <ol className={styles.breadcrumbs}>
         <li>
           <Link href="/membros">Fórum</Link>
@@ -85,6 +85,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         </ul>
       )}
       <Pagination basePath={basePath} page={page} pages={pages} />
-    </div>
+    </div></MemberWorkspace>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import { requireSignedInMember } from "@/lib/members/dal";
 import { RADAR_ACCESS_PATH, radarBillingEnabled } from "@/lib/billing/config";
 import { radarAccess, radarPurchaseNeedsVerification } from "@/lib/billing/store";
@@ -26,7 +27,7 @@ export default async function RadarAccessPage({ searchParams }: { searchParams: 
     annual = access.source === "community";
     if (!active) needsVerification = await radarPurchaseNeedsVerification(member.id, livemode);
   } catch { accessUnavailable = true; }
-  return <div className={styles.narrow}>
+  return <MemberWorkspace member={member} current="radar"><div className={styles.narrow}>
     <p className={styles.eyebrow}>Apogee Radar</p>
     <h1 className={styles.title}>{active ? annual ? "Seu acesso ao Radar está liberado." : "Seu acesso ao Radar está preservado." : needsVerification ? "Confirme seu e-mail para liberar o Radar." : "Seu próximo passo com a Apogee."}</h1>
     {accessUnavailable ? <p role="alert">Não foi possível consultar seu acesso agora. Tente novamente antes de continuar.</p> : active ? <><p className={styles.lead}>{annual ? "Sua assinatura anual inclui o Radar completo durante o período pago." : "Você já tem acesso. Não é necessário comprar novamente. Conheça a comunidade se quiser explorar os demais pilares."}</p><Link className={styles.primary} href={next}>Continuar no Radar</Link> {annual ? <Link href="/membros/assinatura">Gerenciar assinatura</Link> : null}</> : <>
@@ -38,5 +39,5 @@ export default async function RadarAccessPage({ searchParams }: { searchParams: 
     </>}
     <p><Link href={`${RADAR_ACCESS_PATH}${returnQuery ? `?${returnQuery}` : ""}`}>Verificar meu acesso</Link></p>
     <p><Link href="/membros/oportunidades">Voltar ao Radar</Link></p>
-  </div>;
+  </div></MemberWorkspace>;
 }

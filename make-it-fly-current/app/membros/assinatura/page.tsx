@@ -2,7 +2,7 @@ import { localFunctionalReview } from "@/lib/offer-preview";
 import Link from "next/link";
 import { requireSignedInMember } from "@/lib/members/dal";
 import { adultAccess } from "@/lib/members/protection";
-import { MemberBar } from "@/components/members/member-bar";
+import { MemberWorkspace } from "@/components/members/member-workspace";
 import { communityBillingEnabled, COMMUNITY_ACCESS_PATH } from "@/lib/billing/community-config";
 import { communityMembership } from "@/lib/billing/community-store";
 import { radarAccess } from "@/lib/billing/store";
@@ -23,8 +23,8 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
   const verified = await adultAccess(member.id);
   const continueLabel = next.startsWith("/membros/oportunidades") ? "Continuar no Radar" : next.startsWith("/membros/ferramentas") ? "Abrir Caixa de Ferramentas" : next === "/membros/trilha" ? "Continuar na Trilha" : next === "/membros/beneficios" ? "Ver benefícios" : "Abrir meus recursos";
   const pending = membership.subscription && !["canceled","incomplete_expired"].includes(membership.subscription.status);
-  return <div className={styles.container}>
-    <MemberBar member={member} current="assinatura" />
+  return <MemberWorkspace member={member} current="assinatura"><div className={styles.container}>
+
     <header className={styles.pageHead}><div><p className={styles.eyebrow}>Comunidade Apogee</p><h1 className={styles.title}>Sua assinatura anual.</h1><p className={styles.lead}>Radar completo, Caixa de Ferramentas e Trilha inicial parcial.</p></div></header>
     {reviewing ? <p role="note">Validação local com contas e pagamentos sintéticos. Nenhuma cobrança ou alteração na Stripe é realizada aqui.</p> : null}
     {params.billing_error ? <p role="alert">{params.billing_error === "409" ? "Já existe uma assinatura ou um pagamento em andamento. Confira o estado abaixo antes de tentar novamente." : params.billing_error === "403" ? "Conclua a verificação da sua conta antes de contratar." : params.billing_error === "429" ? "Muitas tentativas. Aguarde alguns minutos antes de tentar novamente." : "Não foi possível concluir a operação. Confira o estado abaixo antes de tentar novamente."}</p> : null}
@@ -50,5 +50,5 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
     </section> : null}
     <p><Link href="/membros">Abrir meus recursos</Link> · <Link href="/membros/suporte">Suporte e revisão de pagamento</Link></p>
     <p>As 10 consultas gratuitas são de eventos distintos por conta, sem renovação automática. Reabrir um evento já liberado não gasta outra consulta. <Link href="/membros/oportunidades">Voltar ao Radar</Link>.</p>
-  </div>;
+  </div></MemberWorkspace>;
 }

@@ -5,7 +5,7 @@ import {getCurrentMember} from "@/lib/members/dal";
 import {adultAccess,calendarAdultAccess,protectionOverview,supervisedRegistrationEnabled} from "@/lib/members/protection";
 import {googleCalendarStatus} from "@/lib/opportunities/google-calendar-store";
 import {disconnectGoogleCalendarAction} from "../meu-calendario/google-actions";
-import {MemberBar} from "@/components/members/member-bar";
+import {MemberWorkspace} from "@/components/members/member-workspace";
 import {requestAdultAction,requestDependentAction,revokeDependentAction,sendProtectionVerificationAction} from "./actions";
 import styles from "./protection.module.css";
 export const dynamic='force-dynamic';
@@ -17,7 +17,7 @@ export default async function ProtectionPage({searchParams}:{searchParams:Promis
   const member=await getCurrentMember();if(!member)redirect('/membros/entrar?next=%2Fmembros%2Fprotecao');
   const overview=await protectionOverview(member.id);const approved=await calendarAdultAccess(member.id);const access=await adultAccess(member.id);const query=await searchParams;const next=typeof query.next==='string'?safeNextPath(query.next):'/membros/meu-calendario';
   const google=await googleCalendarStatus(member.id);
-  return <div className={styles.page}><MemberBar member={member} current="protecao"/><h1>Cadastro protegido</h1>
+  return <MemberWorkspace member={member} current="protecao"><div className={styles.page}><h1>Cadastro protegido</h1>
     <p><Link href="/membros">Voltar à minha comunidade</Link> · <Link href="/membros/suporte">Preciso de ajuda</Link></p>
     <p>A conta de acesso pertence a um adulto. Menores de 18 anos, inclusive menores de 16, participam por vínculo privado com o responsável. O menor não recebe login próprio, perfil público ou acesso ao fórum.</p>
     <p><Link href={next}>{next.startsWith('/membros/meu-calendario')&&next.endsWith('#google-calendar-heading')?'Voltar à conexão do Google Agenda':'Voltar ao calendário ou catálogo'}</Link></p><p><Link href="/privacidade#menores">Privacidade de crianças e adolescentes</Link></p>
@@ -36,5 +36,5 @@ export default async function ProtectionPage({searchParams}:{searchParams:Promis
       </form></section><p>As oportunidades salvas e a conexão Google Agenda permanecem na sua conta. O vínculo não concede acesso pago, não compartilha sua senha e pode ser revogado aqui.</p><Link href="/membros/meu-calendario">Abrir meu calendário</Link></>}
     {google.connected && <section><h2>Conexão Google</h2><p>Você pode interromper as atualizações mesmo enquanto sua conta aguarda conferência ou está sem acesso pago.</p><form action={disconnectGoogleCalendarAction}><button>Desconectar Google Agenda</button></form></section>}
     <section><h2>Meus vínculos</h2>{!overview.dependents.length?<p>Nenhum vínculo registrado.</p>:<ul>{overview.dependents.map(row=><li key={String(row.id)}><strong>{String(row.nickname)}</strong> · {ages[String(row.age_band)]} · {statuses[String(row.status)]}{row.status!=='revoked' && <form action={revokeDependentAction}><input type="hidden" name="dependentId" value={String(row.id)}/><button>Revogar autorização de {String(row.nickname)}</button></form>}</li>)}</ul>}</section>
-  </div>;
+  </div></MemberWorkspace>;
 }

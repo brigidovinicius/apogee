@@ -20,7 +20,6 @@ export function LockedMemberArea({ kind, next, reason = "annual" }: { kind: Lock
   const preview = previews[kind];
   const title = reason === "verification" ? "Conclua a verificação da conta" : reason === "unavailable" ? "Esta área está em preparação" : `${preview.name} para assinantes anuais`;
   return <section className={styles.preview} aria-label={`${preview.name}: prévia com acesso restrito`}>
-    <p className={styles.label}>Prévia da área <span>Acesso restrito</span></p>
     <div className={styles.stage}>
       <div className={styles.skeleton} aria-hidden="true" inert data-locked-preview={kind}>
         {preview.items.map(item => <div key={item} className={styles.card}><span className={styles.icon} /><strong>{item}</strong><span className={styles.line} /><span className={styles.shortLine} /><span className={styles.control} /></div>)}
@@ -28,9 +27,9 @@ export function LockedMemberArea({ kind, next, reason = "annual" }: { kind: Lock
       <div className={styles.notice}>
         <LockKeyhole size={28} strokeWidth={1.5} aria-hidden="true" />
         <h2>{title}</h2>
-        <p>{reason === "verification" ? "Você pode conhecer as áreas da plataforma. Para acessar esta seção e participar, conclua as verificações do seu cadastro." : reason === "unavailable" ? "Você encontrará os recursos aqui quando estiverem disponíveis. Continue explorando o Radar e acompanhe as novidades da comunidade." : "Explore a plataforma com sua conta gratuita. O conteúdo e as ações desta área ficam disponíveis com o acesso do plano."}</p>
-        {kind === "beneficios" ? <p className={styles.note}>Benefícios de parceiros em preparação. Não há créditos, descontos ou ingressos garantidos.</p> : null}
-        {kind === "ferramentas" ? <p className={styles.note}>Seus acessos anteriores ao Radar continuam preservados. Ferramentas de terceiros seguem suas próprias condições.</p> : null}
+        <p>{reason === "verification" ? "Verifique sua conta para acessar esta seção." : reason === "unavailable" ? "Os recursos estarão aqui quando forem publicados." : "Disponível durante a vigência da assinatura anual."}</p>
+        {kind === "beneficios" ? <p className={styles.note}>Benefícios de parceiros em preparação.</p> : null}
+        {kind === "ferramentas" ? <p className={styles.note}>Ferramentas de terceiros seguem suas próprias condições.</p> : null}
         <div className={styles.actions}>
           {reason === "verification" ? <Link className={styles.primary} href={`/membros/protecao?next=${encodeURIComponent(next)}`} prefetch={false}>Verificar minha conta <ArrowUpRight size={16} aria-hidden="true" /></Link> : reason === "annual" ? <Link className={styles.primary} href={`/comunidade?next=${encodeURIComponent(next)}#planos`} prefetch={false}>Conhecer a assinatura anual <ArrowUpRight size={16} aria-hidden="true" /></Link> : null}
           <Link href="/membros/oportunidades">Continuar no Radar</Link>
