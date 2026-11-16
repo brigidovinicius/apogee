@@ -103,7 +103,9 @@ export async function tick({store,config,identity,provider,download}) {
     return {collection,research,generation,image:await perform('reserveImage')};
   }
   try{
-    const result=await generate();
+    const generated=await generate();
+    const publication=store.publishAutomatically?await store.publishAutomatically():null;
+    const result=publication?{...generated,publication}:generated;
     if(command)await store.completeCommand(command.id,result);
     return access?{...result,access}:result;
   }catch(error){
