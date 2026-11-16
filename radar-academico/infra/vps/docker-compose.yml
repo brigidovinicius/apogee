@@ -92,6 +92,34 @@ services:
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
 
+  ai-worker:
+    profiles: [ai]
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: ai-runner
+      args:
+        APOGEE_RELEASE_SHA: ${APOGEE_RELEASE_SHA:-local}
+    image: radar-ai-worker:${APOGEE_RELEASE_SHA:-local}
+    restart: unless-stopped
+    init: true
+    environment:
+      RADAR_AI_ENABLED: ${RADAR_AI_ENABLED:-false}
+    # No key, elevated database credential, web/scheduler dependency, ports or blog network.
+    networks: [internal]
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 96m
+    cpus: 0.25
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "node", "ai-worker/cli.mjs", "healthcheck"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+
   migrate:
     build:
       context: ../..

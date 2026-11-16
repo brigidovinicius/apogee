@@ -1,6 +1,8 @@
 import type { BrazilianStateCode } from "@/lib/location";
 import type { OpportunityCategory } from "./categories";
 
+import type { Employment } from "../../../contracts/employment";
+
 export type SourceType =
   | "federal_government" | "state_government" | "municipal_government" | "government_foundation" | "corporate_organizer"
   | "federal_university" | "state_university" | "federal_institute"
@@ -29,6 +31,7 @@ export type ApplicationRoute =
   | "invitation_only" | "unclear";
 
 export type BenefitType =
+  | "employment"
   | "academic_scholarship" | "research_scholarship" | "extension_scholarship"
   | "monitor_scholarship" | "internship" | "financial_aid" | "housing_aid"
   | "mobility_aid" | "prize" | "project_funding" | "unpaid_opportunity" | "other";
@@ -65,6 +68,7 @@ export interface FieldEvidence {
 }
 
 export interface OpportunityCandidate {
+  employment?: Employment | null;
   id?: string;
   officialSourceId: string;
   title: string;

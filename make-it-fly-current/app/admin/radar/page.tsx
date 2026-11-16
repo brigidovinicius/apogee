@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/admin/access";
 import { listRadarEditorialSources, listRadarManagedOpportunities } from "@/lib/opportunities/radar-editorial-client";
 import { toOpportunity } from "@/lib/opportunities/radar-client";
 import { CatalogueForm } from "./catalogue-form";
+import { RadarBudgetPanel } from "./budget-panel";
 import { SourceCard } from "./source-card";
 export const dynamic = "force-dynamic";
 export default async function AdminRadarPage({ searchParams }: { searchParams: Promise<{ editar?: string; criar?: string; vista?: string; resultado?: string }> }) {
@@ -19,6 +20,7 @@ export default async function AdminRadarPage({ searchParams }: { searchParams: P
   const opportunities = mapped.filter((item) => item !== null);
   return <div className={styles.content}>
     <AdminPageHeader title="Radar · catálogo ao vivo" description="As mesmas oportunidades disponíveis para o público, com controles de criação, edição e exclusão." />
+    <RadarBudgetPanel />
     <nav aria-label="Gerenciamento do Radar" className={styles.radarAction}><Link href="/admin/radar">Catálogo</Link><Link href="/admin/radar?criar=1">Criar oportunidade</Link><Link href="/admin/radar?vista=fontes">Configurar fontes</Link><Link href="/oportunidades">Ver página pública</Link></nav>
     {params.resultado ? <AdminNotice tone={params.resultado.startsWith("erro") ? "attention" : "success"} title="Gerenciamento" description={params.resultado === "salva" ? "Oportunidade salva no catálogo ao vivo." : params.resultado === "excluida" ? "Oportunidade excluída do catálogo." : params.resultado.startsWith("erro") ? "A operação não foi concluída. Confira os dados e tente novamente." : "Operação de fonte concluída. Fichas válidas entram automaticamente."} /> : null}
     {!available ? <AdminNotice tone="attention" title="Catálogo indisponível" description="Não foi possível consultar o Radar. Tente novamente em instantes." /> : null}
