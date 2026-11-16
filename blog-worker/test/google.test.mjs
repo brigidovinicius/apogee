@@ -21,16 +21,25 @@ test('Google policy enforces zero additional billing, own account and bounded wo
   assert.throws(()=>validateSubscription({account_email:p.google_account_email,plan:'google_ai_pro'}),/unverified/);
   assert.deepEqual(cleanEnvironment({PATH:'/bin',HOME:'/home/test',OPENAI_API_KEY:'secret',GEMINI_API_KEY:'secret',AGY_ADC_AUTH:'true',GOOGLE_APPLICATION_CREDENTIALS:'/key',DATABASE_URL:'secret'}),{PATH:'/bin',HOME:'/home/test'});
 });
-test('dated completion allowance expires at Brasilia midnight and cannot enlarge token or weekly ceilings',()=>{
+test('dated completion allowance expires at Brasilia midnight and cannot enlarge base or weekly ceilings',()=>{
   const completion={day:'2026-11-13',calls_cap:60,tokens_reserved_per_call:30000,authorization_reference:'Explicit user authorization to complete todays ten private drafts'};
   const policy=validatePolicy({...p,google_daily_completion:completion});
-  assert.deepEqual(googleUsageLimits(policy,new Date('2026-11-14T02:59:59Z')),{dailyCalls:60,reservedTokens:30000});
-  for(const at of ['2026-11-13T02:59:59Z','2026-11-14T03:00:00Z'])assert.deepEqual(googleUsageLimits(policy,new Date(at)),{dailyCalls:40,reservedTokens:60000});
+  assert.deepEqual(googleUsageLimits(policy,new Date('2026-11-14T02:59:59Z')),{dailyCalls:60,reservedTokens:30000,dailyTokens:180000});
+  for(const at of ['2026-11-13T02:59:59Z','2026-11-14T03:00:00Z'])assert.deepEqual(googleUsageLimits(policy,new Date(at)),{dailyCalls:40,reservedTokens:60000,dailyTokens:180000});
   const optimized=validatePolicy({...p,google_daily_completion:{...completion,calls_cap:80,tokens_reserved_per_call:15000}});
-  assert.deepEqual(googleUsageLimits(optimized,new Date('2026-11-14T02:59:59Z')),{dailyCalls:80,reservedTokens:15000});
-  assert.deepEqual(googleUsageLimits(optimized,new Date('2026-11-14T03:00:00Z')),{dailyCalls:40,reservedTokens:60000});
+  assert.deepEqual(googleUsageLimits(optimized,new Date('2026-11-14T02:59:59Z')),{dailyCalls:80,reservedTokens:15000,dailyTokens:180000});
+  assert.deepEqual(googleUsageLimits(optimized,new Date('2026-11-14T03:00:00Z')),{dailyCalls:40,reservedTokens:60000,dailyTokens:180000});
   for(const bad of [{calls_cap:81},{calls_cap:39},{day:'2026-02-30'},{tokens_reserved_per_call:14999},{tokens_reserved_per_call:30001},{tokens_reserved_per_call:15000.5},{authorization_reference:''}])assert.throws(()=>validatePolicy({...p,google_daily_completion:{...completion,...bad}}),/google_completion_policy/);
   for(const bad of [{google_daily_tokens_cap:180001},{google_weekly_calls_cap:281},{google_use_g1_credits:true}])assert.throws(()=>validatePolicy({...policy,...bad}));
+});
+test('dated token allowance requires the identified extra batch and expires without changing base or weekly limits',()=>{
+  const completion={day:'2026-11-15',calls_cap:80,tokens_reserved_per_call:15000,tokens_cap:220000,extra_drafts:10,baseline_post_ids:Array.from({length:10},(_,i)=>41+i),authorization_reference:'Explicit authorization for the identified extra batch and its dated token allowance'};
+  const policy=validatePolicy({...p,editorial_focus:'technology-ai-business-4-3-3',google_daily_completion:completion});
+  assert.equal(googleUsageLimits(policy,new Date('2026-11-16T02:59:59Z')).dailyTokens,220000);
+  assert.equal(googleUsageLimits(policy,new Date('2026-11-16T03:00:00Z')).dailyTokens,180000);
+  assert.equal(policy.google_daily_tokens_cap,180000);assert.equal(policy.google_weekly_tokens_cap,900000);
+  for(const change of [{tokens_cap:220001},{tokens_cap:179999},{tokens_cap:200000.5},{extra_drafts:undefined},{baseline_post_ids:undefined}])assert.throws(()=>validatePolicy({...policy,google_daily_completion:{...completion,...change}}));
+  assert.throws(()=>validatePolicy({...policy,editorial_focus:undefined}));
 });
 test('extra ten require the focused plan, ten distinct baseline posts and a dated authorization',()=>{
   const completion={day:'2026-11-15',calls_cap:80,tokens_reserved_per_call:15000,authorization_reference:'User explicitly requested ten additional drafts today',extra_drafts:10,baseline_post_ids:Array.from({length:10},(_,i)=>41+i)};

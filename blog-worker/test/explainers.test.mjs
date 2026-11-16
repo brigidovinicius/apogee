@@ -124,6 +124,15 @@ test('public guide landmarks and book bodies are readable without accepting arbi
   assert.ok(extractArticle(`<h1>What is a neuron?</h1><div class="field-name-field-uq-basic-body">${text}</div>`,'https://qbi.uq.edu.au/brain/example').text.includes('public guide'));
   assert.ok(extractArticle(`<h1>Git guide</h1><div id="main" class="book edition2">${text}</div>`,'https://git-scm.com/book/example').text.includes('public guide'));
 });
+test('verified Google discover guides retain their context without admitting generic bodies or restricted content',()=>{
+  const text='A public guide explains serverless infrastructure, applications, scaling, and limitations. '.repeat(8);
+  const html='<title>Serverless guide</title><body><nav>Unrelated navigation</nav><h1>What is serverless computing?</h1><section class="H8asR cws-jump-section">'+text+'</section></body>';
+  const url='https://cloud.google.com/discover/what-is-serverless-computing';
+  const doc=extractArticle(html,url);assert.ok(doc.text.includes(text.trim()));assert.ok(!doc.text.includes('Unrelated navigation'));
+  assert.throws(()=>extractArticle(html.replace('cws-jump-section','other-layout'),url),/research_article_missing/);
+  assert.throws(()=>extractArticle(html,'https://cloud.google.com/products/example'),/research_article_missing/);
+  assert.throws(()=>extractArticle('<script type="application/ld+json">{"@type":"Article","isAccessibleForFree":false}</script>'+html,url),/research_access_restricted/);
+});
 test('ESA guide context wins over unrelated recommendation articles, and Azure chapters stay together',()=>{
   const first='This public guide describes the actual phenomenon and its documented context. '.repeat(8);
   const second='This later section explains the mechanism, application and limitations. '.repeat(8);
