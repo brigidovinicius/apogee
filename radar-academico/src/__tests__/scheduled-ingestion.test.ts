@@ -142,7 +142,12 @@ it("avança pelos links sem repetir sempre os primeiros", async () => {
   ]);
 });
 
-it("extrai o hackathon global da página oficial mesmo quando o primeiro main é um modal", async () => {
+it.each([
+  ["2026-11-14T12:00:00Z", "open"],
+  ["2026-11-16T12:00:00Z", "closed"],
+])("extrai o hackathon global da página oficial com modal em %s (%s)", async (now, status) => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date(now));
   vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   const source: OfficialSource = {
     ...makeSource("nasa-space-apps-2026"),
@@ -170,7 +175,7 @@ it("extrai o hackathon global da página oficial mesmo quando o primeiro main é
   expect(report).toMatchObject({ pagesChecked: 2, discovered: 1, published: 1 });
   expect(vi.mocked(saveReviewItems).mock.calls[0][1].discovered[0]).toMatchObject({
     title: "NASA Space Apps Challenge 2026", categories: ["competicoes", "eventos"],
-    deadlineAt: "2026-11-15", eventStartsAt: "2026-11-14", opportunityStatus: "open",
+    deadlineAt: "2026-11-15", eventStartsAt: "2026-11-14", opportunityStatus: status,
     geographicScopeKind: "global", countryCode: null, stateCode: null, cityName: null,
   });
 });
