@@ -10,7 +10,7 @@ const price={id:'price_Annual',product:'prod_Community',active:true,livemode:fal
 const base={title:'Evento de teste local',organization:'Apogee',kind:'Evento',categories:['eventos'],summary:'Resumo público',deadline:'2099-12-31',verifiedAt:'2026-11-14',officialUrl:'https://example.test/private',eligibility:'PRIVATE_REQUIREMENTS',level:'Público diverso',location:'Brasil',benefit:'Teste',deadlineLabel:'Teste'};
 const event=(id,type='invoice.paid')=>({id,type,livemode:false,data:{object:{id:type.startsWith('customer.subscription')?'sub_Annual':type.startsWith('checkout')?'cs_Annual':type.startsWith('charge.dispute')?'dp_Annual':type==='charge.refunded'?'ch_Annual':type.startsWith('radar.')?'issfr_Annual':'in_Annual'}}});
 function resetModel() {
-  model={sub:{id:'sub_Annual',livemode:false,customer:'cus_Annual',metadata:{integration:'apogee_community_annual_v1'},status:'active',cancel_at_period_end:false,latest_invoice:'in_Annual',items:{has_more:false,data:[{quantity:1,price:structuredClone(price)}]}},
+  model={cancelCalls:0,sub:{id:'sub_Annual',livemode:false,customer:'cus_Annual',metadata:{integration:'apogee_community_annual_v1'},status:'active',cancel_at_period_end:false,latest_invoice:'in_Annual',items:{has_more:false,data:[{quantity:1,price:structuredClone(price)}]}},
     invoice:{id:'in_Annual',livemode:false,customer:'cus_Annual',parent:{subscription_details:{subscription:'sub_Annual'}},status:'paid',currency:'brl',total:amount,amount_paid:amount,amount_remaining:0,billing_reason:'subscription_create'},
     line:{quantity:1,amount,currency:'brl',pricing:{price_details:{price:price.id}},parent:{subscription_item_details:{proration:false}},period:{start,end}},
     charge:{id:'ch_Annual',payment_intent:'pi_Annual',livemode:false,amount,currency:'brl',paid:true,captured:true,amount_refunded:0,disputed:false},
@@ -22,7 +22,7 @@ before(async()=>{
   process.env.STRIPE_COMMUNITY_ANNUAL_PRICE_ID=price.id;process.env.STRIPE_COMMUNITY_PRODUCT_ID=price.product;process.env.RADAR_BILLING_ENABLED='true';
   process.env.STRIPE_WEBHOOK_SECRET='whsec_localannualvalidation';process.env.STRIPE_RADAR_PRICE_ID='price_Legacy';process.env.STRIPE_RADAR_PRODUCT_ID='prod_Legacy';
   resetModel();catalogue=Array.from({length:12},(_,i)=>({...base,id:`event-${i+1}`}));
-  stripe={prices:{retrieve:async()=>structuredClone(price)},subscriptions:{retrieve:async()=>structuredClone(model.sub),list:async()=>({data:model.subscriptionList,has_more:false}),update:async(id,input)=>{model.sub.cancel_at_period_end=input.cancel_at_period_end;return model.sub;}},
+  stripe={prices:{retrieve:async()=>structuredClone(price)},subscriptions:{retrieve:async()=>structuredClone(model.sub),list:async()=>({data:model.subscriptionList,has_more:false}),update:async(id,input)=>{model.cancelCalls++;model.sub.cancel_at_period_end=input.cancel_at_period_end;return model.sub;}},
     customers:{create:async()=>({id:'cus_Checkout'})},
     checkout:{sessions:{retrieve:async()=>({mode:'subscription',livemode:false,subscription:model.sub.id}),create:async(params,opts)=>{model.checkoutCalls.push({params,opts});return {url:'https://checkout.stripe.com/c/pay/local'};}}},
     invoices:{retrieve:async()=>structuredClone(model.invoice),listLineItems:async()=>({data:[structuredClone(model.line)],has_more:false})},
@@ -162,4 +162,73 @@ test('local review paths cannot enable data fixtures or billing bypasses in prod
   } finally {
     for(const [name,value] of Object.entries({NODE_ENV:old.node,APOGEE_FUNCTIONAL_REVIEW:old.flag,APOGEE_LOCAL_PREVIEW:old.preview,DATABASE_URL:old.url})) {if(value===undefined)delete process.env[name];else process.env[name]=value;}
   }
+});
+
+test('operator reconciliation is admin-only, mode/owner-bound and reads canonical invoices without creating payment',async()=>{
+  const operationsLoad=opportunityLoader({'@/lib/members/db':{getSql:()=>sql},'@/lib/billing/stripe':{stripeClient:()=>stripe},'./stripe':{stripeClient:()=>stripe},
+    '@/lib/members/dal':{requireAdmin:async()=>{if(member!=='admin')throw Error('ADMIN');return {id:'admin',role:'admin'};}}});
+  const operations=operationsLoad('lib/billing/community-operations.ts');
+  member='other';await assert.rejects(operations.listAnnualMemberships(),/ADMIN/);await assert.rejects(operations.reconcileAnnualMembership('sub_Annual'),/ADMIN/);
+  member='admin';await assert.rejects(operations.reconcileAnnualMembership('sub_Foreign'),/encontrada/);
+  stripe.invoices.list=async()=>({data:[{id:'in_Annual'}],has_more:false});
+  const calls=model.checkoutCalls.length;
+  assert.equal(await operations.reconcileAnnualMembership('sub_Annual'),1);
+  assert.equal(model.checkoutCalls.length,calls);
+  const list=await operations.listAnnualMemberships();assert.ok(list.rows.some(row=>row.id==='sub_Annual'));
+  model.sub.customer='cus_Foreign';await assert.rejects(operations.reconcileAnnualMembership('sub_Annual'),/divergente/);model.sub.customer='cus_Annual';
+  process.env.COMMUNITY_BILLING_ENABLED='false';assert.equal(await operations.reconcileAnnualMembership('sub_Annual'),1);process.env.COMMUNITY_BILLING_ENABLED='true';
+});
+
+test('pausing new sales preserves signed payment processing, refunds, portal and cancellation; failures remain retryable',async()=>{
+  const previousModel=model,previousMember=member;
+  try {
+    resetModel();member='pause-paid';await seed(member);
+    model.sub.id='sub_Paused';model.sub.customer='cus_Paused';model.sub.latest_invoice='in_Paused';
+    model.invoice.id='in_Paused';model.invoice.customer='cus_Paused';model.invoice.parent.subscription_details.subscription='sub_Paused';
+    await sql`insert into community_customer(user_id,livemode,customer_id) values(${member},false,'cus_Paused')`;
+    process.env.COMMUNITY_BILLING_ENABLED='false';
+    const checkout=load('app/api/comunidade/assinatura/checkout/route.ts').POST;
+    assert.equal((await checkout(req('/api/comunidade/assinatura/checkout'))).status,503);
+    assert.equal(model.checkoutCalls.length,0,'a pause creates no Checkout session');
+    const route=load('app/api/stripe/webhook/route.ts').POST;
+    const deliver=async(id,type='invoice.paid')=>{
+      const body=JSON.stringify({...event(id,type),data:{object:{id:type==='charge.refunded'?'ch_Annual':'in_Paused'}}});
+      const signature=Stripe.webhooks.generateTestHeaderString({payload:body,secret:process.env.STRIPE_WEBHOOK_SECRET});
+      return route(new Request('https://apogee.test/api/stripe/webhook',{method:'POST',body,headers:{'stripe-signature':signature}}));
+    };
+    assert.equal((await deliver('evt_pause_paid')).status,200);
+    assert.equal((await access(member,false)).source,'community','a payment completed before the pause is still honored');
+    assert.equal((await deliver('evt_pause_paid')).status,200);
+    const [count]=await sql`select count(*)::int as n from community_invoice where id='in_Paused'`;assert.equal(count.n,1);
+    const portal=load('app/api/comunidade/assinatura/portal/route.ts').POST;
+    assert.equal((await portal(req('/api/comunidade/assinatura/portal'))).status,303);
+    const cancel=load('app/api/comunidade/assinatura/cancelar/route.ts').POST;
+    assert.equal((await cancel(req('/api/comunidade/assinatura/cancelar'))).status,303);
+    assert.equal(model.sub.cancel_at_period_end,true);assert.equal((await access(member,false)).active,true);
+    model.charge.amount_refunded=amount;
+    assert.equal((await deliver('evt_pause_refund','charge.refunded')).status,200);
+    assert.equal((await access(member,false)).active,false,'a pause must not hide refunds');
+    const retrieve=stripe.paymentIntents.retrieve;
+    stripe.paymentIntents.retrieve=async()=>{throw Error('synthetic provider outage');};
+    try {
+      assert.equal((await deliver('evt_pause_retry')).status,503);
+      const [receipt]=await sql`select count(*)::int as n from community_stripe_event where event_id='evt_pause_retry'`;assert.equal(receipt.n,0);
+    } finally {stripe.paymentIntents.retrieve=retrieve;}
+    assert.equal((await deliver('evt_pause_retry')).status,200,'the failed delivery remains processable');
+    delete process.env.STRIPE_COMMUNITY_ANNUAL_PRICE_ID;
+    assert.equal((await deliver('evt_pause_bad_config')).status,503,'partial configuration is never acknowledged as processed');
+    process.env.STRIPE_COMMUNITY_ANNUAL_PRICE_ID=price.id;
+    assert.equal((await deliver('evt_pause_bad_config')).status,200);
+  } finally {
+    model=previousModel;member=previousMember;process.env.COMMUNITY_BILLING_ENABLED='true';process.env.STRIPE_COMMUNITY_ANNUAL_PRICE_ID=price.id;
+  }
+});
+
+
+test('repeated cancellation after resuming renewal performs a fresh idempotent state change and preserves destination',async()=>{
+  member='paid';const cancel=load('app/api/comunidade/assinatura/cancelar/route.ts').POST;
+  model.sub.cancel_at_period_end=false;const before=model.cancelCalls;
+  let response=await cancel(req('/api/comunidade/assinatura/cancelar?next=%2Fmembros%2Ftrilha'));assert.equal(response.status,303);assert.equal(new URL(response.headers.get('location')).searchParams.get('next'),'/membros/trilha');assert.equal(model.cancelCalls,before+1);
+  await cancel(req('/api/comunidade/assinatura/cancelar'));assert.equal(model.cancelCalls,before+1,'already cancelled needs no update');
+  model.sub.cancel_at_period_end=false;await cancel(req('/api/comunidade/assinatura/cancelar'));assert.equal(model.cancelCalls,before+2,'resumed renewal must be cancellable again');
 });

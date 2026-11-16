@@ -9,10 +9,11 @@ const root = new URL("../", import.meta.url);
 const source = (path) => readFile(new URL(path, root), "utf8");
 
 
-test("a área autenticada apresenta os quatro pilares e um atalho para o Radar",async()=>{
+test("a área autenticada apresenta os quatro recursos aprovados e preserva o acesso antigo ao Radar",async()=>{
   const {opportunityLoader}=await import("./helpers/load-opportunity-module.mjs");
   const {renderToStaticMarkup}=await import("react-dom/server");
   const page=opportunityLoader({
+    "@/lib/billing/community-store":{communityAccess:async()=>({active:false})},
     "@/lib/billing/store":{radarAccess:async()=>({active:true,source:"legacy"})},
     "@/lib/members/dal":{requireMember:async()=>({id:"a",name:"Ana Apogee",username:"ana"})},
     "@/lib/members/forum":{listCategories:async()=>[]},
@@ -21,7 +22,10 @@ test("a área autenticada apresenta os quatro pilares e um atalho para o Radar",
   })("app/membros/page.tsx").default;
   const html=renderToStaticMarkup(await page());
   assert.match(html,/href="\/membros\/oportunidades"/);
-  for(const pillar of ["Radar","Learn","Perks","Community"]) assert.ok(html.includes(pillar));
+  for(const resource of ["Radar","Caixa de ferramentas","Benefícios","Trilha"]) assert.ok(html.includes(resource));
+  assert.match(html,/href="\/membros\/ferramentas"/);
+  assert.match(html,/Exclusivo da assinatura anual/);
+  assert.match(html,/Conversas da comunidade/);
   assert.match(html,/acesso anterior ao Radar está preservado/);
 });
 

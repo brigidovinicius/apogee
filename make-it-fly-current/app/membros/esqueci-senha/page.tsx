@@ -16,5 +16,6 @@ export default async function ForgotPasswordPage({ searchParams }: { searchParam
     </header>
     <div className={`${styles.panel} ${styles.authPanel}`}><ForgotPasswordForm next={next} /></div>
     <p className={styles.switchAuth}><Link href={`/membros/entrar?next=${encodeURIComponent(next)}`}>Voltar para entrar</Link></p>
+    <p className={styles.switchAuth}><Link href="/membros/suporte">Não recebi o e-mail ou preciso de ajuda</Link></p>
   </div>;
 }

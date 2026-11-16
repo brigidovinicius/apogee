@@ -134,6 +134,20 @@
       "when": 1794668400018,
       "tag": "0018_radar_event_queries",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794700800019,
+      "tag": "0019_member_toolbox",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794765600020,
+      "tag": "0020_member_deliverables",
+      "breakpoints": true
     }
   ]
 }

@@ -13,8 +13,8 @@ import offer from "./community-offer.module.css";
 
 const DEMO_EVENTS = ["Lab de prototipagem com IA", "Escrita e pesquisa com IA", "Encontro de projetos e builders", "IA para organizar a rotina", "Oficina de criação visual", "Do problema ao primeiro produto", "Lab de automações", "Carreira e novas ferramentas", "Ideias para pequenos negócios", "Desafio de construção em equipe", "Dados para tomar decisões", "Comunicação para apresentar projetos"].map((title, i) => ({ id: `demo-event-${i + 1}`, title }));
 
-export function OfferPreviewToolbar() {
-  return <aside className={styles.toolbar} aria-label="Navegação da prévia local"><div><strong>Prévia local da oferta</strong><Link href="/">Home</Link><Link href="/comunidade">Comunidade</Link><Link href="/evento-openai">Evento</Link><Link href="/oportunidades">Radar</Link><Link href="/previa/membros">Área de membros</Link><Link href="/previa/validacao">Validação por conta</Link></div><p>As telas de apresentação usam dados demonstrativos. Em Validação por conta, a cota usa autenticação e banco locais. Nenhuma cobrança ou mensagem é enviada.</p></aside>;
+export function OfferPreviewToolbar({sandbox=false}: {sandbox?: boolean}) {
+  return <aside className={styles.toolbar} aria-label="Navegação da prévia local"><div><strong>Prévia local da oferta</strong><Link href="/">Home</Link><Link href="/comunidade">Comunidade</Link><Link href="/evento-openai">Evento</Link><Link href="/oportunidades">Radar</Link><Link href="/membros">Área de membros</Link><Link href={sandbox ? "/previa/stripe" : "/previa/validacao"}>Validação por conta</Link></div><p>Ambiente local com contas e catálogo de revisão. Em Validação por conta, consulte os perfis para testar autenticação, formulários e persistência reais no banco isolado. {sandbox ? "Stripe exclusivamente em modo de teste, sem cobrança real. E-mails do aplicativo bloqueados." : "Pagamentos e envio de e-mail bloqueados."}</p></aside>;
 }
 
 export function OfferRadarDemo({ compact = false }: { compact?: boolean }) {

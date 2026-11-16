@@ -2,12 +2,15 @@ import { getSql } from "@/lib/members/db";
 import { memberClientIp } from "@/lib/members/client-ip";
 import { consumeRateLimit } from "@/lib/members/rate-limit";
 import { DROP_CONSENT_TEXT, DROP_CONSENT_VERSION, handleDropSignup } from "@/lib/store/drop-signups";
+import { applicationOrigin } from "@/lib/members/mail";
+import { localFunctionalReview, localStripeSandboxReview } from "@/lib/offer-preview";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   const allowedOrigins = ["https://www.apogee.community", "https://apogee.community"];
   if (process.env.NODE_ENV !== "production") allowedOrigins.push(new URL(request.url).origin);
+  if (localFunctionalReview() || localStripeSandboxReview()) allowedOrigins.push(applicationOrigin());
   return handleDropSignup(request, {
     allowedOrigins,
     secret: process.env.BETTER_AUTH_SECRET ?? "",

@@ -28,6 +28,7 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
       <p className={styles.switchAuth}>
         Já tem conta? <Link href={`/membros/entrar?next=${encodeURIComponent(next)}`}>Entrar</Link>
       </p>
+      <p className={styles.switchAuth}><Link href="/membros/suporte">Preciso de ajuda com meu cadastro</Link></p>
     </div>
   );
 }

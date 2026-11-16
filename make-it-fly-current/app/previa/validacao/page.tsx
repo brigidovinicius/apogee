@@ -10,11 +10,20 @@ export default function FunctionalReviewPage() {
     <p>Estas contas e os 12 eventos são fictícios. A autenticação, a gravação das consultas e as regras de acesso usam o código real e um PostgreSQL exclusivo desta prévia.</p>
     <p>Senha de todas as contas locais: <code>RevisaoLocal2026!</code>. Entre com o e-mail abaixo. Para trocar de conta, use Sair na área de membros.</p>
     <ul><li><strong>revisaolivre@example.test</strong>: saldo inicial de 10 eventos. Abra um evento, atualize e reabra para conferir que o saldo permanece.</li>
+    <li><strong>revisaonove@example.test</strong>: nove eventos liberados; apenas mais um evento novo pode ser liberado.</li>
+    <li><strong>revisaocancelada@example.test</strong>: renovação cancelada, mantendo o acesso anual no período pago.</li>
     <li><strong>revisaolimite@example.test</strong>: 10 eventos já consultados. Os eventos 01 a 10 reabrem; 11 e 12 apresentam a comunidade.</li>
     <li><strong>revisaolegado@example.test</strong>: acesso antigo ao Radar completo, sem consumir consultas.</li>
-    <li><strong>revisaoanual@example.test</strong>: período anual pago sintético, com renovação cancelada e acesso preservado até o fim do período.</li></ul>
+    <li><strong>revisaoanual@example.test</strong>: período anual pago sintético ativo; Radar, caixa e Trilha disponíveis.</li>
+    <li><strong>revisaoadmin@example.test</strong>: curadoria da caixa de ferramentas e prévia administrativa. O papel administrativo é apenas desta conta fictícia local.</li>
+    <li><strong>revisaoexpirado@example.test</strong>: assinatura com período pago encerrado; caixa de ferramentas bloqueada.</li>
+    <li><strong>revisaoreembolso@example.test</strong>: fatura anual integralmente reembolsada; caixa de ferramentas bloqueada.</li></ul>
     <p><Link className={styles.primary} href="/membros/entrar?next=%2Fmembros%2Foportunidades">Entrar para validar o Radar</Link></p>
     <p><Link href="/membros/assinatura">Ver assinatura e renovação</Link> · <Link href="/comunidade#planos">Rever a oferta anual</Link></p>
-    <p>Pagamentos são bloqueados nesta prévia. Os testes automatizados validam a integração com respostas Stripe sintéticas; o checkout real em sandbox ainda precisa de validação.</p>
+    <p><Link className={styles.primary} href="/membros/ferramentas">Abrir a caixa de ferramentas</Link> · <Link href="/admin/ferramentas">Abrir a curadoria administrativa</Link></p>
+    <p>O exemplo publicado nesta prévia é Vídeo → Google Flow. As demais categorias estão vazias e aparecem apenas na curadoria. Alterações aqui ficam neste banco local, sem publicar em produção.</p>
+    <p><Link href="/membros/trilha">Trilha inicial com três atividades reais para revisão</Link> · <Link href="/membros/beneficios">Benefícios sem acordos anunciados</Link> · <Link href="/membros/suporte">Suporte</Link></p>
+    <p>O exercício inicial é material original preparado para revisão editorial; não representa uma formação completa. Benefícios aguardam acordos comprovados.</p>
+    <p>Pagamentos e envio de e-mail são bloqueados nesta prévia. Nenhuma assinatura ou concessão aqui representa uma cobrança real.</p>
   </main>;
 }
