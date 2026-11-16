@@ -74,7 +74,7 @@ try{
     assert.ok(rows.every(r=>r.definition.enabled&&r.definition.content_approved&&r.definition.rights_reference.includes('sem reprodução integral')));
     const [privileges]=await runtime`select has_table_privilege(current_user,'blog_worker.research_reference','SELECT') as read,has_table_privilege(current_user,'blog_worker.research_reference','UPDATE') as write`;
     assert.deepEqual(privileges,{read:true,write:false});
-    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,14);
+    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,15);
     assert.ok((await runtime`select definition from blog_worker.research_reference where id='ARTICLE_PRIMARY_MICROSOFT_EDUCATION'`)[0].definition.article_hosts.includes('support.microsoft.com'));
   });
   await check('STE editorial references are available without enabling feeds, modifying prior settings or expanding runtime grants',async()=>{
@@ -969,6 +969,47 @@ try{
     const post=await cms.getAdminPost(written.post_id);assert.match(post.body,/Artigo explicativo/);assert.match(post.body,/2015-03-01/);assert.match(post.body,/consulta em/);assert.equal(post.status,'draft');assert.equal(await cms.getPublicPost(post.slug),null);
     assert.equal((await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:async()=>assert.fail('topic already filled'),at:hybridAt()})),null);
     const dashboard=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();assert.equal(dashboard.production.reduce((n,t)=>n+t.explainers,0),1);assert.equal(dashboard.production.reduce((n,t)=>n+t.complete,0),1);
+  });
+  await check('the shipped STE provenance reaches comparison, text and credited cover through the restricted runtime',async()=>{
+    for(const kind of ['derivative','context']){
+      await reset();await operator.attestSubscription(subscription());
+      const original=explainerCatalog.find(p=>p.key==='escrita-tecnica-aeronautica-prompts-ia-1');
+      const plan={...original,key:original.key+'-'+kind,terms:['mecanismo','limites'],provenance:original.provenance.map((v,i)=>i===2?{...v,kind}:v)},id=explainerId(plan);
+      const result=await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});
+      assert.equal(result.prepared,1,JSON.stringify(result));
+      const [v]=await runtime`select document,assessment from blog_worker.dossier_version where candidate_id=${id}`;
+      assert.deepEqual(v.document.documents.map(d=>d.kind),['primary','independent',kind]);
+      assert.equal(v.document.documents[2].origin_url,v.document.documents[0].origin_url);
+      assert.equal(v.assessment.eligible,false);assert.equal(v.assessment.comparison_verified,false);
+      assert.equal((await compareHybrid(id)).status,'comparison_ready');
+      const written=await writeHybrid(id);assert.equal(written.status,'draft');
+      const cover=await store.reserveImage({...hybridOptions(),candidateId:id});
+      assert.equal((await store.finish(cover,{outcome:'completed',image:webpFixture(),usage:smallHybridUsage})).status,'cover_ready');
+      const post=await cms.getAdminPost(written.post_id);assert.ok(post.coverMediaId);assert.equal(post.status,'draft');assert.equal(await cms.getPublicPost(post.slug),null);
+      const [assessment]=await runtime`select assessment from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+      assert.equal(assessment.assessment.percentage,100);assert.equal(assessment.assessment.eligible,true);
+      assert.equal((await store.summary()).usage.charged_micro_usd,'0');
+      assert.equal((await runtime`select count(*)::int as n from blog_worker.attempt where candidate_id=${id}`)[0].n,3);
+      assert.equal((await runtime`select count(*)::int as n from blog_worker.post_review`)[0].n,0);
+      const [access]=await runtime`select has_table_privilege(current_user,'public.blog_post','UPDATE') as publish,has_table_privilege(current_user,'blog_worker.publication_policy','UPDATE') as policy`;
+      assert.deepEqual(access,{publish:false,policy:false});
+    }
+  });
+  await check('a derivative sharing the primary origin cannot replace independent support at the database boundary',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const original=explainerCatalog.find(p=>p.key==='escrita-tecnica-aeronautica-prompts-ia-1'),plan={...original,terms:['mecanismo','limites']},id=explainerId(plan);
+    const result=await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});assert.equal(result.prepared,1,JSON.stringify(result));
+    const [v]=await runtime`select document from blog_worker.dossier_version where candidate_id=${id}`;
+    const claims=hybridClaims(v.document);claims[0].cells[1]={document_id:'E2',status:'not_mentioned',quote:'',note:'A fonte independente não confirma este fato sintético.'};
+    const r=await store.reserveComparison({...hybridOptions(),candidateId:id});assert.equal(r.status,'reserved');
+    assert.equal((await store.finish(r,{outcome:'completed',text:JSON.stringify({claims}),usage:smallHybridUsage})).reason,'independence_unverified');
+    const [last]=await runtime`select document,assessment from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+    assert.equal(last.assessment.eligible,false);assert.equal(last.assessment.convergent,0);assert.equal(last.assessment.percentage,0);
+    assert.ok(last.assessment.blockers.includes('critical_fact_unresolved'));assert.ok(last.assessment.blockers.includes('compatibility_below_90'));
+    assert.equal(await store.nextAutomaticWork(hybridPolicy),null);
+    assert.equal((await runtime`select post_id from blog_worker.candidate where id=${id}`)[0].post_id,null);
+    assert.equal((await runtime`select count(*)::int as n from blog_worker.attempt where candidate_id=${id}`)[0].n,1);
+    assert.equal((await store.summary()).usage.charged_micro_usd,'0');
   });
   await check('fresh context recovers one factual rejection without resetting receipts, attempt caps or publication review',async()=>{
     await reset();await operator.attestSubscription(subscription());const plan={...explainerCatalog[0],terms:['mecanismo','limites']},id=explainerId(plan);
