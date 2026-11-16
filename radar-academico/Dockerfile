@@ -12,6 +12,18 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
+# Optional foundation worker: no Next build, public server, blog files or API transport.
+FROM node:22-alpine AS ai-runner
+WORKDIR /app
+ARG APOGEE_RELEASE_SHA=local
+LABEL org.opencontainers.image.title="Radar AI foundation" \
+      org.opencontainers.image.revision="${APOGEE_RELEASE_SHA}"
+ENV NODE_ENV=production
+RUN addgroup --system --gid 1001 radarai && adduser --system --uid 1001 radarai
+COPY --chown=radarai:radarai ai-worker ./ai-worker
+USER radarai
+CMD ["node", "ai-worker/cli.mjs", "run"]
+
 FROM node:22-alpine AS runner
 WORKDIR /app
 ARG APOGEE_RELEASE_SHA=local

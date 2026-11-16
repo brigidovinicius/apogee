@@ -1,4 +1,4 @@
-export const openDeadlinePredicate = `((o.deadline_precision='continuous_flow' and o.deadline_at is null)
+export const openDeadlinePredicate = `((o.benefit_type='employment' and o.deadline_precision='not_informed' and o.deadline_at is null and public.radar_job_current(o.employment,coalesce(o.last_source_check_at,o.verified_at))) or (o.deadline_precision='continuous_flow' and o.deadline_at is null)
   or (o.deadline_precision='not_informed' and o.deadline_at is null and 'eventos'=any(o.categories)
     and o.opportunity_status='open'
     and coalesce(o.evidence_json->'event_start'->>'excerpt','')<>''
@@ -11,6 +11,7 @@ export const openDeadlinePredicate = `((o.deadline_precision='continuous_flow' a
   or (o.deadline_precision='exact_datetime' and o.deadline_at >= now()))`;
 
 export const publishedOpportunityPredicate = `o.review_status='approved'
+  and (o.benefit_type<>'employment' or public.radar_job_current(o.employment,coalesce(o.last_source_check_at,o.verified_at)))
   and o.verified_at is not null and o.verification_method in ('automatic','admin')
   and o.opportunity_status in ('open','upcoming') and not o.source_conflict
   and o.deleted_at is null and o.publication_issue is null

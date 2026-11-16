@@ -59,7 +59,8 @@ export function opportunityScore(item: StudentOpportunity, filters: OpportunityF
       : config.unclassified;
   const days = item.deadline ? (Date.parse(`${item.deadline}T23:59:59-03:00`) - now) / 86_400_000 : Infinity;
   const startsIn = item.eventStartsAt ? (Date.parse(item.eventStartsAt.length === 10 ? `${item.eventStartsAt}T00:00:00-03:00` : item.eventStartsAt) - now) / 86_400_000 : Infinity;
-  return (prioritizeActivities ? nature : 0) +
+  return (item.employment?.roleFamily === "fde" && item.employment.workplace === "remote" && item.employment.brazilEligibility === "confirmed" && (filters.category === "carreira" || filters.kind === "Emprego" || filters.workplace || filters.brazilJobs) ? 200 : 0) +
+    (prioritizeActivities ? nature : 0) +
     (prioritizeHighlights && item.editorialFocus === 'event_or_competition' ? dailyRotation(item.id, now) * config.dailyRotation : 0) +
     (prioritizeHighlights && highlights.preferred ? config.preferredActivity : 0) +
     (prioritizeHighlights && highlights.prize ? config.confirmedPrize : 0) +

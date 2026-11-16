@@ -10,6 +10,7 @@ function location(source: RadarEditorialSource) {
 }
 
 export function SourceCard({ source }: { source: RadarEditorialSource }) {
+  const jobs = source.extractionMode === "api" && ["jobs-whippy", "jobs-n8n", "jobs-nortal", "jobs-gitlab"].includes(source.id);
   const pending = source.verificationStatus === "pending" && !source.active;
   const collectable = source.active && source.verificationStatus === "verified" && automaticModes.has(source.extractionMode);
   return (
@@ -18,7 +19,7 @@ export function SourceCard({ source }: { source: RadarEditorialSource }) {
         <div>
           <p className={styles.sectionEyebrow}>{source.institutionAcronym || "Fonte oficial"}</p>
           <h2>{interfaceText(source.name)}</h2>
-          <p>{source.institutionName} · {location(source)}</p>
+          <p>{source.institutionName} · {jobs ? "Elegibilidade por vaga" : location(source)}</p>
         </div>
         <div className={styles.catalogueMeta} aria-label="Estado da fonte">
           <span>{source.verificationStatus === "verified" ? "Verificada" : source.verificationStatus === "rejected" ? "Rejeitada" : "Pendente"}</span>
@@ -38,8 +39,8 @@ export function SourceCard({ source }: { source: RadarEditorialSource }) {
           <input type="hidden" name="source_id" value={source.id} />
           <p>Confirme a auditoria antes de ativar esta fonte.</p>
           <label><input name="official_source" type="checkbox" value="confirmed" required /> O domínio e a evidência pertencem à instituição indicada.</label>
-          <label><input name="location_confirmed" type="checkbox" value="confirmed" required /> A UF, cidade ou abrangência nacional foi confirmada na fonte oficial.</label>
-          <label><input name="collection_allowed" type="checkbox" value="confirmed" required /> Robots e condições de consulta permitem a coleta controlada.</label>
+          <label><input name="location_confirmed" type="checkbox" value="confirmed" required /> {jobs ? "A elegibilidade para residentes no Brasil será confirmada separadamente em cada vaga." : "A UF, cidade ou abrangência nacional foi confirmada na fonte oficial."}</label>
+          <label><input name="collection_allowed" type="checkbox" value="confirmed" required /> {jobs ? "As condições da API pública e as regras de acesso aplicáveis permitem a consulta controlada." : "Robots e condições de consulta permitem a coleta controlada."}</label>
           <button className={styles.button}>Marcar como verificada</button>
         </form>
       ) : null}

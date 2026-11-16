@@ -8,7 +8,7 @@ import {
   type BrazilianStateCode,
 } from "@/lib/opportunities/location";
 
-export const OPPORTUNITY_KINDS = ["Bolsa", "Auxílio", "Estágio", "Intercâmbio", "Curso", "Prêmio", "Fomento", "Programa"] as const;
+export const OPPORTUNITY_KINDS = ["Emprego", "Bolsa", "Auxílio", "Estágio", "Intercâmbio", "Curso", "Prêmio", "Fomento", "Programa"] as const;
 export const EDUCATION_LEVELS = ["Ensino médio", "Graduação", "Pós-graduação", "Público diverso"] as const;
 export { AREAS, OPPORTUNITY_CATEGORIES } from "./vocabulary";
 
@@ -44,6 +44,7 @@ export type OpportunityFinancials = {
 
 /** Dados públicos do catálogo; controles administrativos permanecem no servidor. */
 export type StudentOpportunity = OpportunityPreview & {
+  employment?: import("@/contracts/employment").Employment | null;
   discovery?: Discovery;
   /** Derived conservatively by the server from the verified source fields. */
   participationFormat?: "online" | "presencial" | "hibrido" | null;
@@ -95,6 +96,8 @@ export type OpportunityFilters = {
   stateCode: BrazilianStateCode | null;
   cityName: string | null;
   query?: string | null;
+  workplace?: "remote" | "hybrid" | "onsite" | null;
+  brazilJobs?: boolean;
   format?: "online" | "presencial" | "hibrido" | null;
   scope?: "nacional" | null;
   benefit?: "remunerado" | "nao-remunerado" | "premiacao" | "gratuito" | null;
@@ -131,6 +134,10 @@ export function dateInBrazil(now = new Date()) {
 }
 
 export function isOpportunityOpen(opportunity: StudentOpportunity, today = dateInBrazil(), now = Date.now()) {
+  if (opportunity.employment) {
+    const checked = Date.parse(opportunity.verificationTimestamp ?? opportunity.verifiedAt);
+    if (!Number.isFinite(checked) || checked > now || now - checked >= 48 * 3600_000) return false;
+  }
   if (opportunity.opportunityStatus && !["open", "upcoming"].includes(opportunity.opportunityStatus)) return false;
   if (opportunity.deadlineAt && Date.parse(opportunity.deadlineAt) < now) return false;
   if (opportunity.deadlineUnknown && opportunity.eventStartsAt) {
@@ -219,6 +226,8 @@ export function opportunityFiltersFromSearchParams(searchParams: URLSearchParams
     ...(query ? { query } : {}),
     ...(Object.hasOwn(AREAS, searchParams.get("area") ?? "") ? { area: searchParams.get("area") as keyof typeof AREAS } : {}),
     ...(["online", "presencial", "hibrido"].includes(searchParams.get("formato") ?? "") ? { format: searchParams.get("formato") as OpportunityFilters["format"] } : {}),
+    ...(["remote", "hybrid", "onsite"].includes(searchParams.get("trabalho") ?? "") ? { workplace: searchParams.get("trabalho") as OpportunityFilters["workplace"] } : {}),
+    ...(searchParams.get("brasilEmpregos") === "1" ? { brazilJobs: true } : {}),
     ...(searchParams.get("abrangencia") === "nacional" ? { scope: "nacional" as const } : {}),
     ...(["remunerado", "nao-remunerado", "premiacao", "gratuito"].includes(searchParams.get("beneficio") ?? "") ? { benefit: searchParams.get("beneficio") as OpportunityFilters["benefit"] } : {}),
     ...(["7dias", "30dias", "continuo", "nao-informado", "abertas"].includes(searchParams.get("prazo") ?? "") ? { deadlineWindow: searchParams.get("prazo") as OpportunityFilters["deadlineWindow"] } : {}),
@@ -238,6 +247,8 @@ export function setOpportunityFilterSearchParams(
     cidade: filters.stateCode ? filters.cityName : null,
     busca: filters.query?.trim().slice(0, 100) || null,
     formato: filters.format,
+    trabalho: filters.workplace,
+    brasilEmpregos: filters.brazilJobs ? "1" : null,
     abrangencia: filters.scope,
     beneficio: filters.benefit,
     prazo: filters.deadlineWindow,
@@ -297,6 +308,8 @@ export function filterOpportunities(
       opportunity.nationallyEligible === true ||
       opportunity.stateCode === filters.stateCode && opportunity.cityName === filters.cityName
     ))
+    .filter((opportunity) => !filters.workplace || opportunity.employment?.workplace === filters.workplace)
+    .filter((opportunity) => !filters.brazilJobs || opportunity.employment?.brazilEligibility === "confirmed")
     .filter((opportunity) => !filters.format || opportunity.participationFormat === filters.format)
     .filter((opportunity) => !filters.scope || opportunity.nationallyEligible === true)
     .filter((opportunity) => matchesOpportunityBenefit(opportunity, filters.benefit))
@@ -305,6 +318,6 @@ export function filterOpportunities(
 }
 
 export function countActiveOpportunityFilters(filters: OpportunityFilters) {
-  return Number(Boolean(filters.area)) + Number(Boolean(filters.category)) + Number(filters.kind !== null) + Number(filters.level !== null) +
+  return Number(Boolean(filters.workplace)) + Number(Boolean(filters.brazilJobs)) + Number(Boolean(filters.area)) + Number(Boolean(filters.category)) + Number(filters.kind !== null) + Number(filters.level !== null) +
     Number(filters.stateCode !== null) + Number(filters.cityName !== null) + Number(Boolean(filters.query?.trim())) + Number(Boolean(filters.format)) + Number(Boolean(filters.scope)) + Number(Boolean(filters.benefit)) + Number(Boolean(filters.deadlineWindow));
 }

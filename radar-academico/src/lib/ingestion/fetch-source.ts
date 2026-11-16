@@ -5,6 +5,7 @@ import { isOfficialSourceUrl } from "./validate-url";
 import { safeRequest } from "./safe-request";
 import { BoundedCache } from "./bounded-cache";
 import { waitForOfficialRequest } from "./request-budget";
+import { jobBoard, jobFeedUrl, jobPostingUrl } from "./job-sources";
 
 // Only the individually audited EV.G host reuses robots for at most five minutes (RFC9309 section2.4).
 const evgRobotsCache = new BoundedCache<ReturnType<typeof robotsParser>>(8, 1024 * 1024, 5 * 60_000);
@@ -25,7 +26,7 @@ export function boundedInteger(value: string | undefined, fallback: number, min:
   return Number.isInteger(parsed) && parsed >= min && parsed <= max ? parsed : fallback;
 }
 
-async function rateLimit(host: string) {
+export async function rateLimit(host: string) {
   const delay = boundedInteger(process.env.INGESTION_REQUEST_DELAY_MS, 2000, 100, 60_000);
   const wait = Math.max(0, delay - (Date.now() - (lastRequestByDomain.get(host) ?? 0)));
   if (wait) await waitForOfficialRequest(wait);
@@ -41,6 +42,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
   let url = initialUrl;
   const visited = new Set<string>();
   for (let redirects = 0; redirects <= MAX_REDIRECTS; redirects += 1) {
+    if (jobBoard(source.id) && url !== jobFeedUrl(source.id) && !jobPostingUrl(source.id, url)) throw new Error("URL fora do quadro de vagas auditado");
     if (!isOfficialSourceUrl(url, [source])) throw new Error("URL fora do registro oficial");
     if (visited.has(url)) throw new Error("Ciclo de redirecionamento");
     visited.add(url);
@@ -73,7 +75,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
 
     await rateLimit(parsed.hostname);
     const cached = responseCache.get(url);
-    const headers: Record<string, string> = { "User-Agent": agent, Accept: "text/html,application/rss+xml,application/pdf;q=0.9" };
+    const headers: Record<string, string> = { "User-Agent": agent, Accept: "application/json,text/html,application/rss+xml,application/pdf;q=0.9" };
     if (cached?.etag) headers["If-None-Match"] = cached.etag;
     if (cached?.modified) headers["If-Modified-Since"] = cached.modified;
     const response = await safeRequest(url, headers, maxBytes, "GET", seaOfficialHeaderCompatibility, allowGzip);

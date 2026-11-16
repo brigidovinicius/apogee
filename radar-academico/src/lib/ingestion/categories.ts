@@ -11,7 +11,7 @@ export function categoriesFromEvidence(benefitType: BenefitType, isCourse: boole
   if (["academic_scholarship", "research_scholarship", "extension_scholarship", "monitor_scholarship", "financial_aid", "housing_aid"].includes(benefitType)) categories.push("bolsas");
   if (benefitType === "mobility_aid") categories.push("intercambios");
   if (benefitType === "research_scholarship") categories.push("pesquisa");
-  if (benefitType === "internship") categories.push("carreira");
+  if (benefitType === "internship" || benefitType === "employment") categories.push("carreira");
   // A prize, project grant or generic benefit alone does not prove a competition, research activity or event.
   return categories;
 }

@@ -60,6 +60,7 @@ function documentFor(item: StudentOpportunity): SearchDocument {
   const structuredText = `${titleText} ${organization} ${expand(normalizeOpportunitySearch([
     ...areas, ...categories, subtype ? SUBTYPES[subtype] : "", item.kind, item.level,
     item.cityName, item.stateCode, item.participationFormat,
+    item.employment ? `emprego ${item.employment.workplace === "remote" ? "remoto remote" : item.employment.workplace} ${item.employment.brazilEligibility === "confirmed" ? "Brasil" : ""} ${item.employment.roleFamily === "fde" ? "FDE forward deployed engineer" : "implantação IA"}` : "",
     // Use confirmed city/UF, avoiding placeholders such as "Não informado".
     item.nationallyEligible ? "Brasil nacional" : "",
   ].filter(Boolean).join(" ")))}`;

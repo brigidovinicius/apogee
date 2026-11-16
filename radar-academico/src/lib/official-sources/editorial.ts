@@ -1,5 +1,6 @@
 import { withAdminTransaction } from "@/lib/db/client";
 import { runOfficialSourceIngestion } from "@/lib/ingestion";
+import { jobBoard } from "@/lib/ingestion/job-sources";
 
 const SOURCE_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,79}$/;
 
@@ -126,9 +127,10 @@ export async function verifyEditorialSource(input: {
        robots_checked_at=now(), terms_checked_at=now(), updated_at=now()
        where id=$1 and active=false and verification_status='pending'
          and audit_evidence_url is not null
-         and (state_code is not null or (city_name is null and geographic_scope @> array['Brasil']::text[]))
+         and (state_code is not null or (city_name is null and geographic_scope @> array['Brasil']::text[])
+           or ($2::boolean and extraction_mode='api'))
        returning id`,
-      [id],
+      [id, Boolean(jobBoard(id))],
     );
     if (!updated.rows[0]) {
       throw new EditorialStateError("Fonte sem evidência, localização ou elegibilidade para auditoria");

@@ -143,6 +143,9 @@ it("avança pelos links sem repetir sempre os primeiros", async () => {
 });
 
 it("extrai o hackathon global da página oficial mesmo quando o primeiro main é um modal", async () => {
+  // The fixture's application window is fixed; midnight must not change this extraction test.
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2026-11-14T12:00:00Z"));
   vi.stubEnv("DATABASE_EDITOR_URL", "fixture");
   const source: OfficialSource = {
     ...makeSource("nasa-space-apps-2026"),
