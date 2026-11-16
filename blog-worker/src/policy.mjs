@@ -124,7 +124,7 @@ export function validateGooglePolicy(p) {
       ||completion.baseline_post_ids.some(id=>!Number.isSafeInteger(id)||id<1)))fail('google_completion_policy');
   if(completion?.tokens_cap!==undefined&&(!focusedEditorial(p)||completion.extra_drafts!==10
     ||!Number.isSafeInteger(completion.tokens_cap)||completion.tokens_cap<p.google_daily_tokens_cap
-    ||completion.tokens_cap>220000))fail('google_completion_policy');
+    ||completion.tokens_cap>221000))fail('google_completion_policy');
   if(p.schema_version===3 && (p.multisource_required!==true || p.minimum_compatibility_basis_points!==9000 || p.critical_fact_confirmation_required!==true || p.per_topic_daily_cap!==1 || p.per_topic_weekly_cap!==7))fail('google_policy');
   if(p.input_counting_mode!=='local_byte_bound' || p.image_size!=='1536x1024')fail('google_policy');
   return Object.freeze(structuredClone(p));
