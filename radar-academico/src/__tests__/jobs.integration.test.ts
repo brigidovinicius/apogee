@@ -52,6 +52,21 @@ beforeEach(async () => {
   respond([fixture]);
 });
 afterAll(async () => { await state.db?.close(); vi.unstubAllEnvs(); });
+it("seeds expansion sources inactive and keeps Brazil remote publication behind audit", async () => {
+  const ids=["jobs-latamcent","jobs-truelogic","jobs-oscilar","jobs-elevenlabs","jobs-telnyx"];
+  const seeded=await state.db!.query<{id:string;active:boolean;verification_status:string}>(
+    "select id,active,verification_status from official_sources where id=any($1::text[])",[ids]);
+  expect(seeded.rows).toHaveLength(5);
+  expect(seeded.rows.every(s=>!s.active&&s.verification_status==="pending")).toBe(true);
+  await expect(setEditorialSourceActive({sourceId:"jobs-truelogic",active:true})).rejects.toThrow();
+  await verifyEditorialSource({sourceId:"jobs-truelogic",officialSource:true,locationConfirmed:true,collectionAllowed:true});
+  await setEditorialSourceActive({sourceId:"jobs-truelogic",active:true});
+  const page=fixture.jobUrl.replace("/whippy/","/truelogic/");
+  respond([{...fixture,jobUrl:page,applyUrl:page+"/application"}]);
+  await expect(runOfficialSourceIngestion({sourceId:"jobs-truelogic"})).resolves.toMatchObject({published:1});
+  expect((await listLiveCatalogue())[0].institution).toBe("Truelogic");
+  await state.db!.exec("update official_sources set active=false,verification_status='pending' where id='jobs-truelogic'");
+});
 it("persists through real ingestion, exposes through reader RLS and preserves identity on a title change", async () => {
   expect(await runOfficialSourceIngestion({ sourceId: "jobs-whippy", maxPages: 1 })).toMatchObject({ discovered: 1, published: 1 });
   const [first] = await listLiveCatalogue(); expect(first.employment).toMatchObject({ brazilEligibility: "confirmed" });
