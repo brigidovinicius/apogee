@@ -16,7 +16,7 @@ import { runOfficialSourceIngestion } from "@/lib/ingestion";
 import { fetchPublicJobApi } from "@/lib/ingestion/job-api";
 import { listLiveCatalogue } from "@/lib/db/live-catalogue";
 import { manageCatalogue } from "@/lib/official-sources/catalogue-management";
-import { completeScheduledSource } from "@/lib/ingestion/official-source-registry";
+import { claimDueOfficialSources, completeScheduledSource } from "@/lib/ingestion/official-source-registry";
 import { verifyEditorialSource, setEditorialSourceActive } from "@/lib/official-sources/editorial";
 const fixture = { id: "8013f907-e90f-4e3d-92c2-d14808891efb", title: "Forward Deployed Engineer (Brazil)",
   jobUrl: "https://jobs.ashbyhq.com/whippy/8013f907-e90f-4e3d-92c2-d14808891efb", isListed: true,
@@ -52,6 +52,47 @@ beforeEach(async () => {
   respond([fixture]);
 });
 afterAll(async () => { await state.db?.close(); vi.unstubAllEnvs(); });
+it("seeds expansion sources inactive and keeps Brazil remote publication behind audit", async () => {
+  const ids=["jobs-latamcent","jobs-truelogic","jobs-oscilar","jobs-elevenlabs","jobs-telnyx"];
+  const seeded=await state.db!.query<{id:string;active:boolean;verification_status:string}>(
+    "select id,active,verification_status from official_sources where id=any($1::text[])",[ids]);
+  expect(seeded.rows).toHaveLength(5);
+  expect(seeded.rows.every(s=>!s.active&&s.verification_status==="pending")).toBe(true);
+  await expect(setEditorialSourceActive({sourceId:"jobs-truelogic",active:true})).rejects.toThrow();
+  await verifyEditorialSource({sourceId:"jobs-truelogic",officialSource:true,locationConfirmed:true,collectionAllowed:true});
+  await setEditorialSourceActive({sourceId:"jobs-truelogic",active:true});
+  const page=fixture.jobUrl.replace("/whippy/","/truelogic/");
+  respond([{...fixture,jobUrl:page,applyUrl:page+"/application"}]);
+  await expect(runOfficialSourceIngestion({sourceId:"jobs-truelogic"})).resolves.toMatchObject({published:1});
+  expect((await listLiveCatalogue())[0].institution).toBe("Truelogic");
+  await state.db!.exec("update official_sources set active=false,verification_status='pending' where id='jobs-truelogic'");
+});
+it("leases newly audited boards for automatic collection, excluding unregistered API sources", async () => {
+  const ids=["jobs-latamcent","jobs-truelogic","jobs-oscilar","jobs-elevenlabs","jobs-telnyx"];
+  const snapshot=await state.db!.query<{id:string;active:boolean;verification_status:string;next_crawl_at:Date|null;last_crawled_at:Date|null}>(
+    "select id,active,verification_status,next_crawl_at,last_crawled_at from official_sources");
+  try {
+    await state.db!.exec("update official_sources set next_crawl_at=now()+interval '1 day'");
+    await state.db!.query("update official_sources set active=true,verification_status='verified',next_crawl_at=null where id=any($1::text[])",[ids]);
+    await state.db!.exec(`insert into official_sources(id,name,institution_name,institution_acronym,source_type,base_url,
+      allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,priority,active,verification_status)
+      select 'test-unregistered-job-api',name,institution_name,institution_acronym,source_type,base_url,
+        allowed_domains,allowed_path_prefixes,listing_urls,'api',100,true,'verified'
+      from official_sources where id='jobs-truelogic'`);
+    expect((await claimDueOfficialSources(10)).map(s=>s.id).sort()).toEqual([...ids].sort());
+    expect(await claimDueOfficialSources(10)).toEqual([]);
+    for(const id of ids) await completeScheduledSource(id,false);
+    const cadence=await state.db!.query<{ready:boolean}>(`select bool_and(last_crawled_at is not null and
+      next_crawl_at>now()+interval '5 hours 59 minutes' and next_crawl_at<=now()+interval '6 hours 1 minute') ready
+      from official_sources where id=any($1::text[])`,[ids]);
+    expect(cadence.rows[0].ready).toBe(true);
+  } finally {
+    await state.db!.exec("delete from official_sources where id='test-unregistered-job-api'");
+    for(const row of snapshot.rows) await state.db!.query(
+      "update official_sources set active=$2,verification_status=$3,next_crawl_at=$4,last_crawled_at=$5 where id=$1",
+      [row.id,row.active,row.verification_status,row.next_crawl_at,row.last_crawled_at]);
+  }
+});
 it("persists through real ingestion, exposes through reader RLS and preserves identity on a title change", async () => {
   expect(await runOfficialSourceIngestion({ sourceId: "jobs-whippy", maxPages: 1 })).toMatchObject({ discovered: 1, published: 1 });
   const [first] = await listLiveCatalogue(); expect(first.employment).toMatchObject({ brazilEligibility: "confirmed" });
