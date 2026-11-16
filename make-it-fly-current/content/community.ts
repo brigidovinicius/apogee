@@ -1,18 +1,13 @@
 /** Community content; commercial pillars and access rules live in community-offer.ts. */
-export const COMMUNITY_BENEFITS = [
-  { title: "Créditos de IA", description: "Tokens e créditos para experimentar ferramentas, conforme os acordos com parceiros." },
-  { title: "Eventos e encontros", description: "Oportunidades de participar de experiências e continuar aprendendo com outras pessoas." },
-  { title: "Cupons e condições especiais", description: "Benefícios em eventos e serviços que façam sentido para a comunidade." },
-] as const;
 export const COMMUNITY_FAQ = [
   { question: "Posso começar gratuitamente?", answer: "Sim. Você pode explorar o conteúdo público, conhecer a Apogee e criar uma conta gratuita para consultar até 10 eventos distintos no Radar, sem cartão ou assinatura automática." },
   { question: "Como funcionam as 10 consultas do Radar?", answer: "Cada conta pode liberar os detalhes de 10 eventos distintos. Reabrir um evento já liberado não consome outra consulta. A cota não se renova automaticamente. Buscar, filtrar e explorar as prévias não consome consultas." },
   { question: "O que acontece depois das 10 consultas?", answer: "Você continua podendo reabrir os eventos liberados e conhecer a assinatura da Comunidade Apogee, que inclui o Radar completo. Nenhuma cobrança é feita automaticamente." },
   { question: "Já tenho acesso ao Radar. Preciso comprar novamente?", answer: "Não. Os acessos antigos válidos são preservados conforme as condições originais. A assinatura dos demais pilares é uma escolha adicional." },
-  { question: "O que reúne a assinatura da comunidade?", answer: "A proposta reúne Radar completo, trilhas de IA aplicada, conexões e benefícios. O programa das trilhas, a agenda e as condições dos benefícios serão apresentados antes da adesão." },
-  { question: "Qual é o período da assinatura?", answer: "A assinatura da comunidade é exclusivamente anual. O valor proposto é R$ 1.438,80 por ano, equivalente a R$ 119,90 por mês. A forma de pagamento e as condições de renovação e cancelamento serão apresentadas antes da adesão. A entrada gratuita continua disponível." },
+  { question: "O que reúne a assinatura da comunidade?", answer: "Inclui Radar completo, Caixa de Ferramentas, fórum e a Trilha inicial parcial “Um primeiro resultado com IA”, com três atividades. A formação ainda não está completa. Benefícios de parceiros e os próximos módulos estão em preparação, sem data de entrega anunciada." },
+  { question: "Qual é o período da assinatura?", answer: "A assinatura é exclusivamente anual: R$ 1.438,80 cobrados integralmente por ano, com renovação automática. R$ 119,90 é apenas o equivalente mensal; não há plano mensal. Você pode cancelar a renovação na área de membros antes da próxima cobrança e manter o acesso até o fim do período pago. A entrada gratuita continua disponível." },
   { question: "Preciso ter experiência com IA?", answer: "Não. A proposta conecta aplicações reais, linguagem acessível e atividades práticas para diferentes pontos de partida." },
-  { question: "Créditos e ingressos estão garantidos?", answer: "Cada benefício depende de acordo, disponibilidade e elegibilidade. Créditos, testes, descontos e ingressos têm condições próprias, que devem ser consultadas antes de aderir a cada oferta." },
+  { question: "Créditos e ingressos estão garantidos?", answer: "Não. Não há benefícios de parceiros disponíveis neste lançamento. Créditos, descontos e ingressos só serão anunciados após a confirmação dos acordos e das condições de cada oferta. A Caixa de Ferramentas reúne links; a assinatura Apogee não inclui licenças ou créditos pagos de terceiros." },
   { question: "O evento gratuito exige assinatura?", answer: "Não. A inscrição no evento Codex Community é independente da assinatura. Você escolhe se quer continuar conhecendo a comunidade." },
 ] as const;
 export const RECORDING_FAQ = [
