@@ -1349,5 +1349,66 @@
       "Governo australiano / business.gov.au"
     ],
     "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_ASD_STE",
+    "name": "ASD-STE100 / FAQ oficial",
+    "publisher": "asd-stemg",
+    "url": "https://www.asd-ste100.org/STE_faq.html",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "institucional_norma",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "ASD-STE100",
+      "Simplified Technical English",
+      "STEMG"
+    ],
+    "collection_enabled": false,
+    "collection_approval_reference": "Pauta de escrita para IA solicitada pelo titular em 2026-11-16; somente excertos públicos para apuração, sem ativar feed contínuo."
+  },
+  {
+    "id": "EXPERT_TECHSCRIBE",
+    "name": "TechScribe / análise de escrita técnica",
+    "publisher": "techscribe",
+    "url": "https://www.techscribe.co.uk/techw/asd-simplified-technical-english.htm",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "analise_especialista",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "TechScribe",
+      "Mike Unwalla"
+    ],
+    "collection_enabled": false,
+    "collection_approval_reference": "Pauta de escrita para IA solicitada pelo titular em 2026-11-16; somente excertos públicos para apuração, sem ativar feed contínuo."
+  },
+  {
+    "id": "REF_PLUSTAG",
+    "name": "Plustag IA",
+    "publisher": "plustag",
+    "url": "https://plustag.com.br/escrita-estilo-manual-de-aviao-ia/",
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "ia"
+    ],
+    "role": "jornalismo",
+    "access": "pagina_publica_lida",
+    "aliases": [
+      "Plustag",
+      "Plustag IA"
+    ],
+    "collection_enabled": false,
+    "collection_approval_reference": "Pauta de escrita para IA solicitada pelo titular em 2026-11-16; somente excertos públicos para apuração, sem ativar feed contínuo."
   }
 ]

@@ -985,5 +985,42 @@
       "https://legacy.sba.gov/document/support--glossary-business-financial-terms",
       "https://business.gov.au/finance/financial-tools-and-templates/key-financial-terms"
     ]
+  },
+  {
+    "key": "escrita-tecnica-aeronautica-prompts-ia-1",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Que princípios e limites da escrita técnica aeronáutica orientam pedidos claros para IA, distinguindo uma adaptação em português do padrão ASD-STE100 em inglês?",
+    "terms": [
+      "ASD-STE100",
+      "controlled",
+      "writing",
+      "dictionary",
+      "general-purpose",
+      "marketing",
+      "short sentences"
+    ],
+    "urls": [
+      "https://www.asd-ste100.org/STE_faq.html",
+      "https://www.techscribe.co.uk/techw/asd-simplified-technical-english.htm",
+      "https://plustag.com.br/escrita-estilo-manual-de-aviao-ia/"
+    ],
+    "provenance": [
+      {
+        "kind": "primary",
+        "origin_url": "https://www.asd-ste100.org/STE_faq.html",
+        "independence_note": "FAQ público da entidade responsável pelo padrão. Preserva a distinção entre norma de escrita técnica em inglês e princípios adaptáveis a outros usos."
+      },
+      {
+        "kind": "independent",
+        "origin_url": "https://www.techscribe.co.uk/techw/asd-simplified-technical-english.htm",
+        "independence_note": "Análise própria da TechScribe sobre estrutura, exemplos e limites do STE, incluindo contraponto sobre sinônimos e uso em marketing. Explica a mesma norma; não constitui experimento independente de desempenho de IA."
+      },
+      {
+        "kind": "derivative",
+        "origin_url": "https://www.asd-ste100.org/STE_faq.html",
+        "independence_note": "A Plustag declara informações do Search Engine Journal e contextualiza uma publicação de Karpathy. Para fatos sobre o padrão, a origem comum é o FAQ da ASD: não contar essa repercussão como confirmação independente da norma. A data original é 02/10/2026."
+      }
+    ]
   }
 ]
