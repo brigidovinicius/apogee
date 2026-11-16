@@ -889,7 +889,19 @@ try{
   });
   const hybridPolicy={...googlePolicy,automatic_explainers_enabled:true,explainer_after_local_hour:10,operator_commands_only:false};
   const hybridOptions=()=>({...googleOptions(),policy:hybridPolicy});
-  const hybridAt=()=>{const at=new Date();if(at.getUTCHours()<13)at.setUTCHours(15,0,0,0);return at;};
+  const hybridAt=(at=new Date())=>{
+    // The worker's day is in Sao Paulo. After midnight UTC, advancing UTC
+    // hours would incorrectly move an already-open window to the next day.
+    const open=new Date(`${periodKeys(at).day}T15:00:00Z`);
+    return at<open?open:at;
+  };
+  await check('hybrid test clock preserves the Sao Paulo day across UTC midnight',async()=>{
+    for(const instant of ['2026-11-15T22:00:00Z','2026-11-16T01:00:00Z']){
+      const at=new Date(instant);assert.equal(+hybridAt(at),+at);assert.equal(periodKeys(hybridAt(at)).day,'2026-11-15');
+    }
+    const early=hybridAt(new Date('2026-11-16T10:00:00Z'));
+    assert.equal(early.toISOString(),'2026-11-16T15:00:00.000Z');
+  });
   await check('already researched topics reach their hybrid fallback before another short news pair can starve them',async()=>{
     await reset();await operator.attestSubscription(subscription());
     const sources=[{...source,id:'SRC01',url:'https://www.nasa.gov/news-release/feed/',article_hosts:['www.nasa.gov'],editoria:'ciencia-espaco'},
