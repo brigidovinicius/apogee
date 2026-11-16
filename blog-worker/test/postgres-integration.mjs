@@ -1502,6 +1502,14 @@ try{
     assert.equal(result.generation.status,'draft');assert.equal(result.generation.fallback_reason,'benefit_unverified');
     assert.equal(apiCalls,0);assert.equal(googleCalls,1);
   });
+  await check('recovering a stale API reservation retains its debt and keeps the Google circuit available after a worker restart',async()=>{
+    const {options}=await prepareApiArticle();const r=await store.reserve(options);
+    await admin`update blog_worker.attempt set created_at=now()-interval '6 minutes' where id=${r.id}`;
+    assert.equal(await store.recover(),1);assert.equal((await store.apiCircuit()).blocked,true);
+    assert.equal((await store.summary()).control.paused,false);
+    const [held]=await admin`select state,reserved_micro_usd,charged_micro_usd from blog_worker.attempt where id=${r.id}`;
+    assert.equal(held.state,'unknown');assert.equal(Number(held.reserved_micro_usd),2500);assert.equal(held.charged_micro_usd,null);
+  });
   await check('API cannot bypass an unresolved critical fact or the 90 percent source boundary',async()=>{
     const {id,options}=await prepareApiArticle();const [v]=await admin`select document from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
     v.document.claims[0].cells[0].status='unverifiable';v.document.claims[0].cells[0].quote='';

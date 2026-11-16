@@ -4,10 +4,27 @@ import {validateGrant,creditEnvelopeMonths,validateCreditEnvelope} from '../src/
 import {apiTextPolicy,DEFAULT_OPENAI_CONFIG} from '../src/openai-routing.mjs';
 import {openAIProvider} from '../src/provider.mjs';
 import {tick} from '../src/worker.mjs';
+import {loadConfig} from '../src/worker.mjs';
+import {mkdtemp,readFile,writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {defaultPolicy,cappedGrant,identity,reservation} from './fixtures.mjs';
 
 const config={...DEFAULT_OPENAI_CONFIG,enabled:true};
 const editorial={...defaultPolicy,generation_enabled:true,google_account_email:'blog-owner@example.test',operator_commands_only:false};
+
+test('an absent or malformed optional API config never interrupts the primary Google configuration',async()=>{
+  const directory=await mkdtemp(join(tmpdir(),'blog-optional-api-'));
+  for(const file of ['policy.json','sources.json','prices.json'])await writeFile(join(directory,file),await readFile(new URL('../config/'+file,import.meta.url)));
+  const url=pathToFileURL(directory+'/');
+  assert.equal((await loadConfig(url)).openai.enabled,false);
+  await writeFile(join(directory,'openai-text.json'),'{invalid');
+  const invalid=await loadConfig(url);assert.equal(invalid.policy.provider,'google_subscription');
+  assert.equal(invalid.openai.enabled,false);assert.equal(invalid.openai_error,'openai_config_invalid');
+  await writeFile(join(directory,'openai-text.json'),JSON.stringify({...config,daily_budget_micro_usd_cap:999999999}));
+  assert.equal((await loadConfig(url)).openai.enabled,false);
+});
 
 test('hard organization caps cover every UTC billing month before credit expiration with an independent reserve',()=>{
   const at=new Date('2026-11-16T18:00:00.123Z'),g=cappedGrant(at);
