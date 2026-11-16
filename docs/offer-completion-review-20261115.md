@@ -1,6 +1,6 @@
 # Oferta Apogee — candidato isolado para revisão
 
-Estado: implementação em validação. Este documento será fechado com resultados reais; itens pendentes não contam como aprovação. Sem deploy, migração real, email a contatos reais ou cobrança live.
+Estado: candidato funcional isolado para revisão, com prévia persistente em http://127.0.0.1:3472/previa/validacao. Sem deploy, migração real, email a contatos reais ou cobrança live. Os checks do PR são o gate da revisão final; resultados locais e sandbox estão discriminados abaixo.
 
 ## Alterações e limites
 
@@ -42,23 +42,35 @@ Estado: implementação em validação. Este documento será fechado com resulta
 
 ## Matriz e resultados
 
-| Perfil/cenário | Esperado | Resultado atual |
-| --- | --- | --- |
-| Visitante | Login antes de dados privados; descoberta sem consumo. | Pendente no candidato integrado. |
-| Lead do evento | Persistência e finalidade; nenhuma conta ou assinatura criada. | Pendente no candidato integrado. |
-| Gratuita 0/9/10 | Saldo próprio, décima permitida, décima primeira nova bloqueada; reabrir sem consumo. | Pendente no candidato integrado. |
-| Nove + duas abas | Apenas uma décima liberação. | Pendente no candidato integrado. |
-| Legado | Radar preservado; outros catálogos não concedidos. | Pendente no candidato integrado. |
-| Anual ativo | Radar e novos recursos, sem consumir saldo. | Pendente no candidato integrado. |
-| Renovação cancelada | Manter recursos até fim pago. | Pendente no candidato integrado. |
-| Expirado/reembolsado/risco | Retirar somente origem anual; preservar legado. | Pendente no candidato integrado. |
-| Administrador | Gestão e prévia permitidas; assinatura não cria papel. | Pendente no candidato integrado. |
-| Outra conta/bloqueado | Sem ler/gravar progresso, histórico ou contatos alheios. | Pendente no candidato integrado. |
-| Catálogo/Trilha | Rascunhos ocultos, vigência/hierarquia, erros recuperáveis e progresso idempotente. | Pendente no candidato integrado. |
-| Pagamento | Checkout sandbox, assinatura correta, pending, webhook, renovação, recusa, cancelamento e conciliação. | Histórico validado em 14/11; repetição atual pendente. |
-| Migração/restore | Preflight/apply/repeat, recusar deriva e preservar inventário. | Pendente no candidato integrado. |
-| UI/acessibilidade | Desktop/celular/teclado, overflow, foco, movimento reduzido e estados vazios. | Pendente no candidato integrado. |
-| Lint/tipos/build/CI | Aprovação da revisão final exata. | Pendente no candidato integrado. |
+| Perfil/cenário | Resultado observado e método |
+| --- | --- |
+| Visitante | Sete rotas privadas/admin encaminham para login. HTML/RSC não entregam catálogos. |
+| Lead do evento e drop | Submissões reais no navegador interno; PostgreSQL confirmou um registro de cada finalidade, zero contas e zero assinaturas criadas. Painéis administrativos mostram os registros e suas datas. Falha de origem manteve os campos; nova tentativa persistiu somente após a correção local. |
+| Gratuita 0/9/10 | UI mostrou saldo zero antes da abertura explícita, um após abrir o evento 01 e o mesmo um após recarregar. Conta com dez recebeu oferta no evento 11 com contexto preservado, sem checkout automático. Integração cobre décima permitida, repetição e histórico. |
+| Nove + duas abas/requisições | Integração PostgreSQL concorrente permite somente uma décima liberação. |
+| Legado | Integração e HTML/RSC preservam Radar, sem entregar novos catálogos. No sandbox o legado permaneceu íntegro após reembolso de outra conta. |
+| Anual ativo | Sandbox real test, UI, API e banco: só a conta paga recebeu recursos; uso da Caixa/Trilha não consumiu consultas. |
+| Renovação cancelada | UI real e Stripe test confirmaram cancelamento da renovação e continuidade até o fim do período pago. |
+| Expirado/reembolsado/risco | Perfis de integração e HTML/RSC restritos. Reembolso integral Stripe test retirou o anual e bloqueou o catálogo por URL direta. Legado independente. |
+| Administrador | UI de gestão protegida, erro de publicação sem acordo preservou o formulário e não publicou benefício. Anual não concede papel. Admin sozinho não recebe Benefícios/Trilha privados; Caixa tem prévia administrativa explicitada. |
+| Outra conta/bloqueado | Integração recusa leitura/mutação alheia e payload com userId; progresso idempotente é vinculado à sessão. Contatos/admin restritos. |
+| Catálogo/Trilha | Integrações reais cobrem criação, ordem, atualização, rascunho/arquivo, vigência/hierarquia, links e auditoria. UI mostrou conteúdo original longo, módulo em preparação, próximo passo e progresso 1/3 persistido em nova aba. |
+| Pagamento | Compra, recusa/nova tentativa na mesma sessão, portal, cancelamento, renovação paga/falha, reembolso e eventos posteriores passaram em Stripe test. Ver relatório específico; duplicação do mesmo ID e fora de ordem são testes locais com provedor simulado. |
+| Autenticação e email | Seis checks com Better Auth real, PostgreSQL próprio e toda rede de email interceptada: maioridade, cadastro sem autopromoção, verificação, origem segura, resposta indistinguível para desconhecido, expiração/uso único, hash do token, senha atualizada, revogação de sessões e logout. OAuth Google real/entrega externa permanecem gates. |
+| Migração/restore | Preflight/apply/repeat, recusa de deriva/papel incorreto, backup e restauração em outro banco sintético, com contagens de direitos/progresso/auditoria preservadas. Não é ensaio sobre cópia de produção. |
+| UI/acessibilidade | Navegador interno, 1440/1280 e 390 px; sem transbordamento nas telas exercitadas. Trilha longa, benefícios vazios, carregamento, erro recuperável, suporte, modal da Loja/Escape com foco de volta à peça, filtro Vídeo por teclado e conclusão/reabertura por Space. Movimento reduzido ativado e confirmado. Foco do progresso retornou ao botão visível (406–454 px no viewport 844) após ajuste. |
+| Checks de código | 791 testes gerais e 39 checks de integração aprovados localmente; tipos, lint e build aprovados antes dos ajustes finais de origem/data/foco. A suíte final inclui mais duas regressões gerais e uma integração de data; CI do SHA final deve repetir todos os checks, tipos, lint e build. Lint local tem só o aviso anterior de img em gallery-admin.tsx:87. |
+
+A matriz HTTP/RSC executou **123/123 verificações** sobre nove perfis mais visitante (`/private/tmp/apogee-offer-http-results.json`). O sandbox terminou com **20 recibos de webhook aceitos**. Não houve coleta/envio de dados de pessoas reais. Capturas mostram a UI real; a comprovação de persistência vem dos registros e testes de banco.
+
+## Evidências e revisão
+
+- Implementação: `78a25ad`; correções de curadoria/ordem: `949a5fe`; sandbox e autenticação: `6bf2d5e`. Caixa integrada em `db41538` e `5bc697c`, a partir dos commits do chat proprietário. Main atual `aad6704` integrada sem conflitos em `c5e48c4`; sua correção de blog foi preservada.
+- Revisão estática sequencial encontrou retenção de formulário após erro e ordenação entre trilhas; corrigidas. Testes por UI localizaram e corrigiram origem localhost/127 na revisão, normalização da data dos contatos e foco do progresso.
+- O aceite da origem adicional exige desenvolvimento, flag de revisão, modo test e banco loopback. Produção mantém somente os dois domínios Apogee. Não usa o Host recebido para ampliar a origem em produção.
+- Prévia comum persistente, pela fila global, PostgreSQL com marcador do próprio worktree e email/pagamentos bloqueados. O dev server pode reiniciar automaticamente ao atingir seu limite de memória; o banco e a sessão permanecem. Não são necessários Docker, chave live ou dados reais para revisar.
+- Durante o teste de Enter, a automação do navegador perdeu o contexto e repetiu submissões sintéticas; não se tomou isso como prova de acessibilidade. A verificação foi retomada em aba nova com Space, confirmação de persistência e foco. Limites/idempotência mantiveram um único progresso do titular. Um reinício automático de dev interrompeu uma navegação; a rota voltou e foi conferida em nova aba.
+- Artefatos locais: `/private/tmp/apogee-offer-integrated-{unit,typegen,types,lint,build}.log`, `/private/tmp/apogee-offer-auth-journey.log`, `/private/tmp/apogee-offer-lead-proof.json` e relatório Stripe abaixo. Dados sintéticos e senha da prévia constam apenas na página explicitamente local.
 
 ## Pendências concretas para produção
 
@@ -69,16 +81,5 @@ Estado: implementação em validação. Este documento será fechado com resulta
 5. Configurar e validar produto/preço/portal/webhook anuais live no ambiente proprietário, sob autorização própria. Hoje estão ausentes e a flag está false.
 6. Backup/inventário reais, restauração isolada, migrações 0019/0020 e deploy do SHA aprovado, cada qual com autorização. Este trabalho não altera produção.
 
-Métodos: [runbook da oferta](offer-completion-runbook-20261115.md), [plano por arquivos](offer-completion-plan-20261115.md), [validação Stripe histórica](stripe-annual-sandbox-validation-20261114.md). Fontes oficiais conferidas: [Google Flow](https://labs.google/fx/tools/flow), [webhooks Stripe](https://docs.stripe.com/webhooks), [testes Billing](https://docs.stripe.com/billing/testing), [portal](https://docs.stripe.com/customer-management/configure-portal).
+Métodos: [runbook da oferta](offer-completion-runbook-20261115.md), [plano por arquivos](offer-completion-plan-20261115.md), [validação Stripe desta execução](stripe-annual-offer-validation-20261115.md) e [histórico anterior](stripe-annual-sandbox-validation-20261114.md). Fontes oficiais conferidas: [Google Flow](https://labs.google/fx/tools/flow), [webhooks Stripe](https://docs.stripe.com/webhooks), [testes Billing](https://docs.stripe.com/billing/testing), [portal](https://docs.stripe.com/customer-management/configure-portal).
 
-
-## Ponto de retomada da validação
-
-- Código do candidato: `78a25ade3ca868a8450ae1bbd498eac8b420c7ed`. Caixa integrada em `db41538` a partir de `b2f63d7`. Nenhum push/PR novo foi feito ainda.
-- O teste `member-deliverables.integration.mjs` está aguardando a fila FIFO, ordem 2097; ainda não há resultado de teste integrado, lint, tipos, build ou UI desta revisão. O supervisor da própria tarefa é 11501. Não terminar processos sem resolver a autorização indicada pela revisão automática.
-- A fila está ocupada pela prévia 3461 de outro chat (supervisor 10836, ordem 2095), seguida por um trabalho do Radar. O chat proprietário foi avisado e prepara um commit posterior de correção da key dos formulários administrativos. A última informação foi que sua revisão no navegador aguardava aprovação.
-- Foi solicitada autorização explícita ao usuário para encerrar temporariamente essa prévia, preservando seu banco. Não foi recebido nesta execução um texto de resposta que autorize essa ação.
-- A tentativa de retirar somente o próprio teste aguardando foi rejeitada pela revisão automática, que interpretou a regra de encerramento de processos como exigência de autorização também nesse caso. Nenhum processo foi encerrado. Uma alternativa é deixar o teste terminar normalmente após a fila ser liberada.
-- Disco medido em aproximadamente 134 MiB livres. Não foram apagados projetos, caches, dependências, bancos, worktrees ou históricos. Preferir build final no CI e reavaliar espaço antes de criar o cluster de testes e a prévia.
-- Credencial Stripe test existente autenticou por GET somente leitura na conta esperada. CLI instalada 1.34.0, script adaptado para detectar suporte ao argumento events-from. Nenhum recurso Stripe novo foi criado nesta execução.
-- Próximos passos: integrar a correção posterior da Caixa, executar teste novo/anuais/caixa/unidade/tipos/lint em sequência, resolver falhas, ensaiar sandbox de cobrança, validar UI desktop/celular/teclado no navegador interno, completar matriz, abrir PR e conferir CI do SHA final. Somente então apresentar como versão pronta para revisão.

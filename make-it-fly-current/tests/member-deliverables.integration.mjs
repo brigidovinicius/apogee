@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { nativeCommunityDatabase } from "./helpers/community-native-db.mjs";
 import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 import { migrateCommunityAccess } from "../scripts/community-access-migrate.mjs";
@@ -139,4 +140,12 @@ test("event and drop persist separate purposes; duplicate retries preserve evide
   const [signup] = await sql`select consent_text from store_drop_signup where email='lead@example.test'`; assert.notEqual(signup.consent_text, rows[0].consent_text);
   const [after] = await sql`select count(*)::int as n from "user"`; assert.equal(after.n, before.n);
   assert.equal((await sql`select id from community_subscription where user_id='lead@example.test'`).length, 0);
+});
+test("event operations normalize the shared Drizzle driver's raw timestamp before rendering", async () => {
+  drizzle(sql);
+  const contacts = opportunityLoader({"@/lib/members/db":{getSql:()=>sql},"./access":{requireAdmin:async()=>({id:"admin"})}})("lib/admin/community-contacts.ts");
+  const result = await contacts.listCommunityContacts("1");
+  assert.equal(result.total,1);assert.equal(result.rows[0].email,"lead@example.test");
+  assert.ok(result.rows[0].consented_at instanceof Date);
+  assert.match(result.rows[0].consented_at.toISOString(),/^\d{4}-/);
 });
