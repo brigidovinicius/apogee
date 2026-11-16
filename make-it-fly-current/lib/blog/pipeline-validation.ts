@@ -33,6 +33,11 @@ export const pipelineMessages: Record<string, string> = {
 };
 export function pipelineReason(code: string | null | undefined): string {
   const reasons: Record<string, string> = {
+    research_prepared: "Pesquisa preparada; aguardando comparação automática.",
+    research_refreshed: "Novas evidências adicionadas automaticamente; histórico preservado.",
+    research_evidence_unchanged: "Não foram encontradas evidências novas; comparação repetida bloqueada.",
+    previous_fact_omitted: "Uma pendência anterior foi omitida; comparação recusada.",
+    invalid_quote_reference: "Referência de trecho inválida; comparação retida sem aceitar uma citação inventada.",
     subject_unverified: "Confirme se as fontes explicam o mesmo assunto e respondem à pergunta editorial.",
     explainer_sources_missing: "O explicativo ainda precisa de fontes públicas suficientes para responder à pergunta.",
     invalid_explainer_scope: "O formato e a pergunta do explicativo precisam ser conferidos.",

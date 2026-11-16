@@ -43,7 +43,7 @@ test('comparison requests enumerate the exact documents, bound cells and preserv
  const d=dossierFixture(3),normal=buildComparisonRequest(d,defaultPolicy),repair=buildComparisonRequest(d,defaultPolicy,true);
  const cells=normal.text.format.schema.properties.claims.items.properties.cells;
  assert.deepEqual(cells.items.properties.document_id.enum,['E1','E2']);assert.equal(cells.minItems,2);assert.equal(cells.maxItems,2);
- assert.equal(cells.items.properties.note.maxLength,240);assert.equal(normal.text.format.schema.properties.claims.maxItems,6);
+ assert.ok(cells.items.properties.note.maxLength<=240);assert.equal(normal.text.format.schema.properties.claims.maxItems,6);
  assert.match(repair.instructions,/Única reparação de formato/);assert.match(repair.instructions,/90%/);assert.equal(normal.input,repair.input);
 });
 

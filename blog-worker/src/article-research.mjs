@@ -6,7 +6,7 @@ import {canonicalResearchUrl} from './research-links.mjs';
 import {isIP} from 'node:net';
 
 export const ARTICLE_EXTRACTION_VERSION='public-article-v6-public-ste-guides';
-export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$|periodico_e_jornalismo$)/.test(r.role));
+export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$|periodico_e_jornalismo$|projeto_software_proprio$)/.test(r.role));
 export const independentReference=r=>!!r&&!primaryReference(r)&&/jornalismo|divulgacao|analise_especialista|publicacao_especializada/.test(r.role);
 export function primaryDocument(document,reference=referenceForUrl(document.url)){
   if(primaryReference(reference))return true;
@@ -27,7 +27,7 @@ export function referenceForUrl(value){
       const researchId=id??(/^\/articles\/s\d{4,5}-\d{2,4}-[a-z0-9-]+\/?$/i.test(path)?'PRIMARY_NATURE_RESEARCH':null);
       return referenceCatalog.find(r=>r.id===researchId)??null;
     }
-    return referenceCatalog.filter(r=>(r.hosts??[host(r.url)]).includes(h))
+    return referenceCatalog.filter(r=>(r.hosts??[host(r.url)]).includes(h)&&(!r.allowed_urls||r.allowed_urls.includes(u)))
     .sort((a,b)=>Number(new URL(u).pathname.startsWith(new URL(b.url).pathname))-Number(new URL(u).pathname.startsWith(new URL(a.url).pathname))||new URL(b.url).pathname.length-new URL(a.url).pathname.length)[0]??null;}catch{return null;}
 }
 const hostsFor=r=>[...new Set((r.hosts??[host(r.url)]).flatMap(h=>[h,'www.'+h]))];

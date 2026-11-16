@@ -26,7 +26,9 @@ export function referenceUrl(value, reference) {
     || !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(host) || /(?:^|\.)(?:localhost|local|internal|test|invalid|example)$/.test(host)
     || (reference && !(reference.hosts ?? [new URL(reference.url).hostname.replace(/^www\./, '')]).includes(host))) reject('invalid_reference_url');
   u.hash = ''; for (const k of [...u.searchParams.keys()]) if (/^utm_|^(fbclid|gclid)$/i.test(k)) u.searchParams.delete(k);
-  u.searchParams.sort(); return u.href;
+  u.searchParams.sort();
+  if(reference?.allowed_urls && (!Array.isArray(reference.allowed_urls)||!reference.allowed_urls.includes(u.href)))reject('unapproved_reference_path');
+  return u.href;
 }
 const unique = values => new Set(values).size === values.length;
 export function validateDossier(value) {
@@ -40,6 +42,8 @@ export function validateDossier(value) {
   if(value.previous_critical_claims!==undefined&&(!isExplainer(value)||!Array.isArray(value.previous_critical_claims)
     ||value.previous_critical_claims.length<1||value.previous_critical_claims.length>16
     ||value.previous_critical_claims.some(c=>!/^C[1-9]\d?$/.test(c.id??'')||!string(c.text,8,500))))reject('invalid_research_history');
+  if(value.previous_unresolved_claims!==undefined&&(!isExplainer(value)||!Array.isArray(value.previous_unresolved_claims)
+    ||value.previous_unresolved_claims.length>16||value.previous_unresolved_claims.some(c=>!/^C[1-9]\d?$/.test(c.id??'')||!string(c.text,8,500)||typeof c.critical!=='boolean')))reject('invalid_research_history');
   if (!unique(value.claims.map(c => String(c.text).normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim()))) reject('duplicate_claim');
   if (Buffer.byteLength(JSON.stringify(value)) > 180000 || !unique(value.documents.map(d => d.id)) || !unique(value.claims.map(c => c.id))) reject('invalid_dossier');
   const urls = [];
@@ -120,6 +124,7 @@ export function validateComparison(value, dossier) {
   if (!value || Object.keys(value).join() !== 'claims' || !Array.isArray(value.claims)) reject('invalid_comparison');
   if(value.claims.some(c=>isEvidenceGapClaim(c.text)))reject('invalid_claim');
   if((dossier.previous_critical_claims??[]).some(previous=>!value.claims.some(c=>c.critical===true&&c.text===previous.text)))reject('critical_fact_omitted');
+  if((dossier.previous_unresolved_claims??[]).some(previous=>!value.claims.some(c=>c.text===previous.text&&(!previous.critical||c.critical===true))))reject('previous_fact_omitted');
   return validateDossier({ ...dossier, claims: value.claims });
 }
 // Different questions can use the same reference guide, but cannot recycle

@@ -14,7 +14,7 @@ import {tick} from '../src/worker.mjs';
 import {openAIProvider} from '../src/provider.mjs';
 import {loadCms} from './cms-harness.mjs';
 import {dossierFixture} from './corroboration-fixture.mjs';
-import {assessDossier,dossierHash} from '../src/corroboration.mjs';
+import {assessDossier,dossierHash,quoteUnits,resolveComparisonQuotes} from '../src/corroboration.mjs';
 import {hash,periodKeys} from '../src/policy.mjs';
 import {TOPICS,topicKey} from '../src/automatic-research.mjs';
 import {FOCUSED_EDITORIAL_PLAN,focusProgress} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
@@ -74,7 +74,7 @@ try{
     assert.ok(rows.every(r=>r.definition.enabled&&r.definition.content_approved&&r.definition.rights_reference.includes('sem reprodução integral')));
     const [privileges]=await runtime`select has_table_privilege(current_user,'blog_worker.research_reference','SELECT') as read,has_table_privilege(current_user,'blog_worker.research_reference','UPDATE') as write`;
     assert.deepEqual(privileges,{read:true,write:false});
-    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,15);
+    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,16);
     assert.ok((await runtime`select definition from blog_worker.research_reference where id='ARTICLE_PRIMARY_MICROSOFT_EDUCATION'`)[0].definition.article_hosts.includes('support.microsoft.com'));
   });
   await check('STE editorial references are available without enabling feeds, modifying prior settings or expanding runtime grants',async()=>{
@@ -1011,6 +1011,85 @@ try{
     assert.equal((await runtime`select count(*)::int as n from blog_worker.attempt where candidate_id=${id}`)[0].n,1);
     assert.equal((await store.summary()).usage.charged_micro_usd,'0');
   });
+  await check('autonomous recovery preserves a format failure and factual rejection through sources, text, credited cover and hourly scheduling',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const original=explainerCatalog.find(p=>p.key==='escrita-tecnica-aeronautica-prompts-ia-1'),plan={...original,terms:['mecanismo','limites']},id=explainerId(plan);
+    assert.equal((await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()})).prepared,1);
+    const [initial]=await runtime`select document from blog_worker.dossier_version where candidate_id=${id}`;
+    const invalid=await store.reserveComparison({...hybridOptions(),candidateId:id});
+    const invalidClaims=hybridClaims(initial.document);invalidClaims[0].cells[0].quote='Invented quote must never be accepted.';
+    assert.equal((await store.finish(invalid,{outcome:'completed',text:JSON.stringify({claims:invalidClaims}),usage:smallHybridUsage})).reason,'quote_not_in_document');
+    const first=await store.reserveComparison({...hybridOptions(),candidateId:id}),claims=hybridClaims(initial.document);
+    const pendingText='O método alternativo sintético inclui um modo flexível que ainda precisa de confirmação.';
+    claims.push({id:'C2',text:pendingText,critical:false,cells:initial.document.documents.map((d,i)=>({document_id:d.id,status:i===0?'supports':'not_mentioned',quote:i===0?'O método tem limites explícitos e depende do contexto.':'',note:'Pendência sintética preservada durante a reapuração.'}))});
+    assert.equal((await store.finish(first,{outcome:'completed',text:JSON.stringify({claims}),usage:smallHybridUsage})).reason,'compatibility_below_90');
+    const [rejected]=await runtime`select * from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+    assert.equal(rejected.assessment.percentage,50);
+    await assert.rejects(()=>store.reserveComparison({...hybridOptions(),candidateId:id}),/research_evidence_unchanged/);
+    const recoveryImage=await createRequire(join(process.env.BLOG_TEST_CMS_DEPENDENCIES_FROM??process.cwd(),'package.json'))('sharp')({create:{width:1536,height:1024,channels:3,background:'#abc'}}).webp().toBuffer();
+    const worker=new Store(runtime);let sourceReads=0,modelCalls=0;
+    worker.prepareAutomaticResearch=p=>worker.prepareAutomaticExplainer(p,{plans:[plan],at:hybridAt(),read:async(url,budget)=>{
+      sourceReads++;budget.used++;assert.ok(plan.additional_sources.some(s=>s.url===url),'original sources must reuse their immutable captures');
+      const doc=guide(plan,url);doc.text+=' Modo sintético 80% default strict plain uncertainty relaxed style compliance.';doc.content_hash=hash(doc.text);return doc;
+    }});
+    const provider=async r=>{
+      modelCalls++;
+      if(r.kind==='image')return {outcome:'completed',image:recoveryImage,usage:smallHybridUsage};
+      if(r.kind==='text')return {outcome:'completed',text:JSON.stringify(hybridText),usage:smallHybridUsage};
+      const input=JSON.parse(r.body.input);
+      const revised=[...input.previous_critical_claims.map(c=>({...c,critical:true})),...input.previous_unresolved_claims];
+      const next=revised.map(c=>({...c,cells:input.documents.map((d,i)=>{
+        const supported=c.id==='C1'?i<3:i===0||i>=3;
+        const units=Object.entries(d.quote_units).map(([id,text])=>({id,text})),q=units.find(q=>c.id==='C1'?q.text.includes('O mecanismo'):q.text.includes(i>=3?'80%':'limites'))??units[0];
+        return {document_id:d.id,status:supported?'supports':'not_mentioned',quote_id:supported?q.id:'none',note:'Correspondência sintética; não é validação de fato real.'};
+      })}));
+      // The database independently refuses omission, even if the caller forges a passing assessment.
+      const [latest]=await admin`select * from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+      const omitted=resolveComparisonQuotes({claims:next},latest.document).claims.filter(c=>c.id==='C1'),forged=assessDossier({...latest.document,claims:omitted},{comparisonVerified:true});
+      await assert.rejects(()=>admin.begin(async tx=>{
+        await tx`update blog_worker.attempt set state='confirmed',charged_micro_usd=0 where id=${r.id}`;
+        await tx`select blog_worker.record_assisted_comparison(${id},${r.id},${tx.json(omitted)},${tx.json(forged)})`;
+      }),/previous_fact_omitted/);
+      await assert.rejects(()=>admin.begin(async tx=>{
+        await tx`update blog_worker.dossier_version set actor_id='automatic_research' where candidate_id=${id} and revision=${latest.revision}`;
+        await tx`update blog_worker.attempt set state='confirmed',charged_micro_usd=0 where id=${r.id}`;
+        const complete=resolveComparisonQuotes({claims:next},latest.document).claims;
+        await tx`select blog_worker.record_assisted_comparison(${id},${r.id},${tx.json(complete)},${tx.json(assessDossier({...latest.document,claims:complete},{comparisonVerified:true}))})`;
+      }),/recovery_allowance_unverified/);
+      return {outcome:'completed',text:JSON.stringify({claims:next}),usage:smallHybridUsage};
+    };
+    const config={...hybridOptions(),sources:[],catalog:[]};
+    const capped=await tick({store:worker,config:{...config,policy:{...hybridPolicy,google_daily_calls_cap:2}},provider});
+    assert.equal(capped.generation.reason,'google_call_limit');assert.equal(modelCalls,0);assert.equal(sourceReads,0);
+    const recovered=await tick({store:worker,config,provider});assert.equal(recovered.research.recovery,true,JSON.stringify({recovered,sourceReads,initial_characters:initial.document.documents.map(d=>d.text.length)}));assert.equal(recovered.generation.status,'comparison_ready');assert.equal(recovered.generation.reason,null);
+    const [ready]=await runtime`select * from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+    assert.equal(ready.assessment.percentage,100);assert.equal(ready.document.recovery.maximum_editorial_attempts,4);
+    assert.equal(ready.document.recovery.prior_format_attempt_id,invalid.id);assert.equal(ready.document.recovery.comparison_attempt_id,first.id);
+    assert.equal(ready.document.previous_unresolved_claims[0].text,pendingText);
+    assert.deepEqual(ready.document.documents.slice(0,3).map(d=>[d.url,d.text,d.capture_id]),initial.document.documents.map(d=>[d.url,d.text,d.capture_id]));
+    assert.equal(sourceReads,2);assert.equal(modelCalls,1);
+    const {day}=periodKeys(new Date());await admin`update blog_worker.publication_policy set enabled=true,starts_on=${day}::date,intake_not_before=now()-interval '1 hour',authorization_reference='Synthetic isolated automatic publication authorization'`;
+    const written=await tick({store:worker,config,provider});assert.equal(written.generation.status,'draft');
+    const covered=await tick({store:worker,config,provider});assert.equal(covered.generation.status,'cover_ready');assert.equal(covered.publication.status,'scheduled');
+    const post=await cms.getAdminPost(written.generation.post_id);assert.equal(post.status,'scheduled');assert.ok(post.coverMediaId);assert.equal(await cms.getPublicPost(post.slug),null);
+    const attempts=await runtime`select kind,ordinal,reason,charged_micro_usd,policy from blog_worker.attempt where candidate_id=${id} order by created_at`;
+    assert.equal(attempts.length,5);assert.equal(attempts.filter(a=>a.kind!=='image').length,4);assert.equal(attempts.filter(a=>a.kind==='comparison').at(-1).ordinal,3);
+    assert.equal(attempts.find(a=>a.kind==='text').policy.effective_editorial_attempts_cap,4);assert.ok(attempts.every(a=>Number(a.charged_micro_usd)===0));
+    assert.equal((await runtime`select count(*)::int as n from blog_worker.post_review`)[0].n,0);
+    assert.equal(await worker.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],at:hybridAt(),read:async()=>assert.fail('written topics cannot restart')}),null);
+    assert.equal((await runtime`select count(*)::int as n from blog_worker.attempt where candidate_id=${id}`)[0].n,5);
+  });
+  await check('an oversized automatic article is deferred without an AI call and cannot starve the next eligible topic',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const plans=explainerCatalog.slice(0,2).map(p=>({...p,terms:['mecanismo','limites']}));
+    for(const plan of plans){assert.equal((await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()})).prepared,1);await compareHybrid(explainerId(plan));}
+    const next=await store.nextAutomaticWork(hybridPolicy);let calls=0;
+    const result=await tick({store,config:{...hybridOptions(),sources:[],catalog:[],policy:{...hybridPolicy,input_tokens_cap_including_overhead:1000}},provider:async()=>{calls++;assert.fail('Oversized input must not reach Google');}});
+    assert.equal(result.generation.reason,'input_limit');assert.equal(calls,0);
+    const [held]=await admin`select status,reason from blog_worker.candidate where id=${next.candidateId}`;assert.deepEqual(held,{status:'held',reason:'input_limit'});
+    const subsequent=await store.nextAutomaticWork(hybridPolicy);assert.ok(subsequent);assert.notEqual(subsequent.candidateId,next.candidateId);
+    assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,2);assert.equal((await store.summary()).usage.charged_micro_usd,'0');
+  });
   await check('fresh context recovers one factual rejection without resetting receipts, attempt caps or publication review',async()=>{
     await reset();await operator.attestSubscription(subscription());const plan={...explainerCatalog[0],terms:['mecanismo','limites']},id=explainerId(plan);
     await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});
@@ -1269,7 +1348,7 @@ try{
     // Advance only this isolated fixture's slot to exercise the actual public CMS queries.
     const [due]=await admin`update blog_worker.publication_receipt set scheduled_at=date_trunc('hour',now())-interval '1 hour' where post_id=${c.post} returning scheduled_at`;
     await admin`update public.blog_post set scheduled_at=${due.scheduled_at} where id=${c.post}`;
-    assert.equal((await cms.getPublicPost(p.slug)).id,c.post);assert.ok(await cms.getPostMediaImage(p.cover_media_id,false));assert.equal((await cms.listPublicPostUrls())[0].slug,p.slug);
+    assert.equal((await cms.getPublicPost(p.slug)).id,c.post);assert.equal((await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard()).candidates.find(v=>v.id===c.id).post_status,'published');assert.ok(await cms.getPostMediaImage(p.cover_media_id,false));assert.equal((await cms.listPublicPostUrls())[0].slug,p.slug);
   });
   await check('publication refuses prior drafts, future authorization, a paused worker and missing native image receipts',async()=>{
     await reset();const c=await publicationDraft();await authorizePublication();

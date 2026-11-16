@@ -1021,6 +1021,34 @@
         "origin_url": "https://www.asd-ste100.org/STE_faq.html",
         "independence_note": "A Plustag declara informações do Search Engine Journal e contextualiza uma publicação de Karpathy. Para fatos sobre o padrão, a origem comum é o FAQ da ASD: não contar essa repercussão como confirmação independente da norma. A data original é 02/10/2026."
       }
+    ],
+    "additional_sources": [
+      {
+        "url": "https://github.com/Dodaios/ste80-humanizer",
+        "kind": "primary",
+        "origin_url": "https://github.com/Dodaios/ste80-humanizer",
+        "independence_note": "Documentação primária de implementação e exemplos do próprio Dodaios. Inspiração comum no relato de Karpathy; comprova somente o modo do projeto, sem adoção geral, eficácia universal ou endosso da ASD.",
+        "terms": [
+          "80%",
+          "default",
+          "strict",
+          "plain",
+          "uncertainty"
+        ]
+      },
+      {
+        "url": "https://github.com/prithivrajmu/asd-ste100",
+        "kind": "primary",
+        "origin_url": "https://github.com/prithivrajmu/asd-ste100",
+        "independence_note": "Documentação primária de outra implementação, com modo flexível próprio e ressalvas de conformidade. O relato de Karpathy é inspiração comum, não um novo experimento independente.",
+        "terms": [
+          "80%",
+          "relaxed",
+          "style",
+          "compliance",
+          "default"
+        ]
+      }
     ]
   }
 ]

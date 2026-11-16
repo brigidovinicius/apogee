@@ -73,7 +73,7 @@ test('a rejected question can refresh actual evidence once per day, without reop
   assert.equal(explainerRecoveryEligible(c),true);assert.equal(nextExplainer([p],[],[c],now)?.key,p.key);
   assert.equal(explainerRecoveryEligible({...c,reason:'independence_unverified'}),true);
   for(const change of [{post_id:1},{attempts:2},{comparisons:0},{pending:true},{text_attempts:true},{reason:'operator_hold'},{assessment:{eligible:true}}])assert.equal(explainerRecoveryEligible({...c,...change}),false);
-  assert.equal(nextExplainer([p],[],[{...c,artifact:{research:{day:'2026-11-12',tries:1}}}],now),null);
+  assert.equal(nextExplainer([p],[],[{...c,artifact:{research:{recovery_day:'2026-11-12',recovery_tries:3}}}],now),null);
   const d=explanatory(),metadata=structuredClone(d);metadata.documents[0].capture_id='new-capture';metadata.documents[0].consulted_at='2026-11-12T15:01:00Z';
   assert.equal(explainerEvidenceHash(d),explainerEvidenceHash(metadata));metadata.documents[0].text+=' Fresh source context.';
   assert.notEqual(explainerEvidenceHash(d),explainerEvidenceHash(metadata));
