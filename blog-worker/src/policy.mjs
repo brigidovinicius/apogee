@@ -122,17 +122,20 @@ export function validateGooglePolicy(p) {
     &&(!focusedEditorial(p)||completion.extra_drafts!==10||!Array.isArray(completion.baseline_post_ids)
       ||completion.baseline_post_ids.length!==10||new Set(completion.baseline_post_ids).size!==10
       ||completion.baseline_post_ids.some(id=>!Number.isSafeInteger(id)||id<1)))fail('google_completion_policy');
+  if(completion?.tokens_cap!==undefined&&(!focusedEditorial(p)||completion.extra_drafts!==10
+    ||!Number.isSafeInteger(completion.tokens_cap)||completion.tokens_cap<p.google_daily_tokens_cap
+    ||completion.tokens_cap>220000))fail('google_completion_policy');
   if(p.schema_version===3 && (p.multisource_required!==true || p.minimum_compatibility_basis_points!==9000 || p.critical_fact_confirmation_required!==true || p.per_topic_daily_cap!==1 || p.per_topic_weekly_cap!==7))fail('google_policy');
   if(p.input_counting_mode!=='local_byte_bound' || p.image_size!=='1536x1024')fail('google_policy');
   return Object.freeze(structuredClone(p));
 }
-// A dated completion allowance never changes the weekly/token limits, provider
-// quota checks, or the normal day after midnight in Brasilia.
+// Only the identified extra batch may receive a dated local token allowance.
+// Base and weekly caps and the provider's quota headroom stay unchanged.
 export function googleUsageLimits(policy,at=new Date()){
   const completion=policy.google_daily_completion;
   return completion?.day===periodKeys(at).day
-    ?{dailyCalls:completion.calls_cap,reservedTokens:completion.tokens_reserved_per_call}
-    :{dailyCalls:policy.google_daily_calls_cap,reservedTokens:policy.google_tokens_reserved_per_call};
+    ?{dailyCalls:completion.calls_cap,reservedTokens:completion.tokens_reserved_per_call,dailyTokens:completion.tokens_cap??policy.google_daily_tokens_cap}
+    :{dailyCalls:policy.google_daily_calls_cap,reservedTokens:policy.google_tokens_reserved_per_call,dailyTokens:policy.google_daily_tokens_cap};
 }
 export function validateSubscriptionBinding(a,at=new Date(),expectedEmail=null) {
   if(!a || !(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.account_email??'')) || (expectedEmail!==null&&a.account_email!==expectedEmail) || a.plan!=='google_ai_pro' || a.auth_method!=='official_google_oauth' || a.use_g1_credits!==false

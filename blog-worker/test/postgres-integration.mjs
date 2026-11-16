@@ -1085,6 +1085,27 @@ try{
     const [post]=await admin`select status,seo_noindex,scheduled_at from public.blog_post`;
     assert.deepEqual(post,{status:'draft',seo_noindex:true,scheduled_at:null});
   });
+  await check('dated extra-batch token allowance retains prior usage, reports its effective cap and stops at the new bound',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const plan={...explainerCatalog.find(p=>p.category==='tecnologia'&&p.subcategory===null),terms:['mecanismo','limites']};
+    await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});
+    const id=explainerId(plan);await compareHybrid(id);
+    await admin`insert into blog_worker.operator_event(actor_id,action,target,detail) values('test-capacity','google_diagnostic_usage','prior-usage',${admin.json({quota_used:175000})})`;
+    const completion={day:periodKeys(new Date()).day,calls_cap:80,tokens_reserved_per_call:15000,extra_drafts:10,baseline_post_ids:Array.from({length:10},(_,i)=>10001+i),authorization_reference:'Synthetic authorization for this dated extra batch and token allowance'};
+    const options={...hybridOptions(),candidateId:id,policy:{...hybridPolicy,editorial_focus:FOCUSED_EDITORIAL_PLAN,google_daily_completion:completion}};
+    await assert.rejects(()=>store.reserve(options),/google_token_limit/);
+    options.policy.google_daily_completion={...completion,tokens_cap:220000};
+    const writing=await store.reserve(options);assert.equal((await store.finish(writing,{outcome:'completed',text:JSON.stringify(hybridText),usage:smallHybridUsage})).status,'draft');
+    const image=await store.reserveImage(options);assert.equal((await store.finish(image,{outcome:'completed',image:webpFixture(),usage:smallHybridUsage})).status,'cover_ready');
+    await store.syncPipeline({policy:options.policy,sources:[source],catalog:[]},identity);
+    const [control]=await admin`select snapshot from blog_worker.control where singleton`;assert.equal(control.snapshot.daily_tokens_cap,220000);assert.equal(control.snapshot.weekly_tokens_cap,900000);
+    await admin`insert into blog_worker.operator_event(actor_id,action,target,detail) values('test-capacity','google_diagnostic_usage','additional-usage',${admin.json({quota_used:30000})})`;
+    await assert.rejects(()=>store.checkResearchBudget(options.policy),/google_token_limit/);
+    const [ledger]=await admin`select count(*)::int as calls,count(*) filter(where charged_micro_usd<>0 or provider<>'google_subscription')::int as paid from blog_worker.attempt`;
+    assert.deepEqual(ledger,{calls:3,paid:0});
+    const [diagnostics]=await admin`select sum((detail->>'quota_used')::bigint)::int as used from blog_worker.operator_event where action='google_diagnostic_usage'`;assert.equal(diagnostics.used,205000);
+    const [post]=await admin`select status,seo_noindex,scheduled_at from public.blog_post`;assert.deepEqual(post,{status:'draft',seo_noindex:true,scheduled_at:null});
+  });
   await check('focused extra batch creates exactly four Technology, three AI and three Business drafts without erasing the first ten',async()=>{
     await reset();await operator.attestSubscription(subscription());
     const small={input_tokens:100,output_tokens:100,thinking_tokens:0,cache_read_tokens:0,total_tokens:200};
