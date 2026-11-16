@@ -1,4 +1,5 @@
 import { MemberOfferOverview } from "@/components/community/member-offer-overview";
+import { communityAccess } from "@/lib/billing/community-store";
 import { radarAccess } from "@/lib/billing/store";
 import { interfaceText } from "@/lib/presentation-text.mjs";
 import type { Metadata } from "next";
@@ -16,6 +17,8 @@ export default async function MemberHomePage() {
   const categories = await listCategories();
   const access = await radarAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null);
 
+  const annual = await communityAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null);
+
   return (
     <div className={styles.container}>
       <MemberBar member={member} current="home" />
@@ -27,7 +30,7 @@ export default async function MemberHomePage() {
         </div>
       </header>
 
-      <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={access?.source === "community"} />
+      <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} />
       <section id="forum" aria-labelledby="member-forum-title"><h2 id="member-forum-title">Conversas da comunidade</h2>
 
       {categories.length === 0 ? (

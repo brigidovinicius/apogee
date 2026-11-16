@@ -96,7 +96,7 @@ export function pipelineReason(code: string | null | undefined): string {
     paused: "Pausa ativa", article_budget: "Limite da matéria insuficiente", daily_budget: "Limite diário atingido", cycle_budget: "Limite do ciclo ou saldo seguro insuficiente",
     draft_frequency: "Limite de matérias por dia ou semana atingido", unknown_charge: "Cobrança do texto incerta", unknown_image_charge: "Cobrança da imagem incerta",
     invalid_usage: "Consumo do texto sem confirmação", invalid_image_usage: "Consumo da imagem sem confirmação", usage_exceeded_reservation: "Consumo excedeu a reserva",
-    human_review_required: "Revisão editorial necessária", post_changed_requires_review: "Artigo alterado durante a geração; revise a capa",
+    automatic_publication_scheduled: "Publicação automática agendada com fontes e capa validadas", human_review_required: "Revisão editorial necessária", post_changed_requires_review: "Artigo alterado durante a geração; revise a capa",
     source_changed_after_reservation: "Fonte alterada após o início", source_approval_changed: "Aprovação da fonte mudou", input_limit: "Dossiê maior que o limite",
     image_prompt_limit: "Descrição visual maior que o limite", worker_interrupted: "Execução interrompida; verificar histórico",
     operator_pause: "Pausa solicitada pelo editor", operator_hold: "Pauta retida pelo editor", invalid_structure: "Texto fora do formato esperado",

@@ -1,52 +1,35 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, Compass, Gift, Users } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { EditorialPageShell } from "@/components/site/editorial-page-shell";
 import { RedBullSupport } from "@/components/site/red-bull-support";
 import { COMMUNITY_BENEFITS, COMMUNITY_FAQ } from "@/content/community";
-import { COMMUNITY_PILLARS, RADAR_FREE_NOTE } from "@/content/community-offer";
-import { CommunityJoinButton, FunnelFaq, FunnelFooter, FunnelHeader } from "./community-funnel";
+import { RADAR_FREE_NOTE } from "@/content/community-offer";
+import { CommunityJoinButton } from "./community-funnel";
 import { CommunityPlans } from "./community-plans";
-import offer from "./community-offer.module.css";
-import styles from "./community-sales-page.module.css";
-
-const icons = { radar: Compass, learn: BookOpen, perks: Gift, community: Users };
+import { CommunityDirectory } from "./community-directory";
+import styles from "./community-editorial.module.css";
 
 export function CommunitySalesPage({ preview = false, next }: { preview?: boolean; next?: string }) {
-  return <div className={styles.page} data-community-page>
-    <FunnelHeader page="community" />
-    <main id="experiencia" tabIndex={-1}>
-      <section id="inicio" className={styles.communityHero} aria-labelledby="community-title">
-        <div className={styles.heroGlow} aria-hidden="true" />
-        <div className={styles.heroContent}>
-          <p className={styles.eyebrow}>Comunidade Apogee</p>
-          <h1 id="community-title">Acesso para<br />construir mais.</h1>
-          <p className={styles.heroLead}>Conhecimento, ferramentas, oportunidades e gente para colocar ideias em prática. Comece gratuitamente e conheça a assinatura que conecta esses caminhos.</p>
-          <div className={offer.darkActions}><Link className={styles.primary} href="#planos">Conhecer a assinatura <ArrowUpRight size={18} aria-hidden="true" /></Link><CommunityJoinButton next={next} preview={preview} secondary /></div>
-          <p className={styles.actionHint}>Até 10 eventos distintos no Radar, sem cartão.</p>
-        </div>
-        <div className={styles.starScene} aria-hidden="true"><Image className={styles.heroStar} src="/brand/apogee-star.svg" alt="" width={703} height={870} preload /><span className={styles.orbitLine} /></div>
-        <div className={styles.heroTopics}><span>Radar</span><span>Learn</span><span>Perks</span><span>Community</span></div>
+  return <EditorialPageShell current="community" className={styles.page}>
+    <main id="experiencia" tabIndex={-1} data-community-page>
+      <section id="inicio" className={[styles.wrap, styles.section, styles.intro].join(" ")} aria-labelledby="community-title">
+        <p className={styles.eyebrow}>Comunidade Apogee</p>
+        <div className={styles.headingRow}><h1 id="community-title">IA para o dia a dia.<br />Gente para ir além.</h1><p className={styles.lead}>Conhecimento, ferramentas, oportunidades e gente para colocar ideias em prática. Comece gratuitamente e conheça a assinatura que conecta esses caminhos.</p></div>
+        <div className={styles.actions}><Link className={styles.navyButton} href="#planos">Conhecer a assinatura <ArrowUpRight size={18} aria-hidden="true" /></Link><div className={styles.joinAction}><CommunityJoinButton next={next} preview={preview} secondary /></div></div>
+        <p className={styles.accessNote}>Até 10 eventos distintos no Radar, sem cartão.</p><div className={styles.communityWord} aria-hidden="true">Building<br />the future.</div>
       </section>
       <RedBullSupport />
-      <section id="comunidade" className={styles.section} aria-labelledby="inside-title">
-        <div className={styles.sectionHeading}><h2 id="inside-title">Quatro caminhos.<br />Uma comunidade.</h2><p>Descubra o que existe, aprenda a usar e coloque em prática com outras pessoas.</p></div>
-        <div className={styles.deliverables}>{COMMUNITY_PILLARS.map(item => { const Icon = icons[item.kind]; return <article key={item.kind} className={`${styles.deliverable} ${styles[item.kind] ?? ""}`}><div className={styles.cardTop}><Icon size={24} strokeWidth={1.4} aria-hidden="true" /><span className={styles.status}>{item.status}</span></div><p className={styles.cardLabel}>{item.name}</p><h3>{item.title}</h3><p>{item.description}</p><Link className={styles.textLink} href={item.href} prefetch={false}>{item.action}<ArrowUpRight size={18} aria-hidden="true" /></Link></article>; })}</div>
-      </section>
-      <section id="radar" className={`${styles.section} ${styles.radarSection}`} aria-labelledby="radar-title">
-        <div className={styles.radarCopy}><p className={styles.eyebrow}>Apogee Radar</p><h2 id="radar-title">Uma descoberta pode<br />mudar seu caminho.</h2><p>{RADAR_FREE_NOTE}</p><Link className={styles.primary} href="/oportunidades" prefetch={false}>Explorar o Radar <ArrowUpRight size={18} aria-hidden="true" /></Link><p className={styles.actionHint}>Já tem acesso ao Radar? Seus direitos são preservados.</p></div>
-        <div className={styles.radarVisual} aria-hidden="true"><div className={styles.radarRings}><Compass size={46} strokeWidth={1} /></div><span className={styles.radarTag}>Formação</span><span className={styles.radarTag}>Bolsas</span><span className={styles.radarTag}>Carreira</span><span className={styles.radarTag}>Eventos</span><p>Radar<span>Apogee</span></p></div>
-      </section>
-      <section id="learn" className={`${styles.section} ${styles.courseSection}`} aria-labelledby="learn-title">
-        <div className={styles.courseType} aria-hidden="true">Aprender.<br />Testar.<br />Aplicar.</div>
-        <div className={styles.courseCopy}><p className={styles.eyebrow}>Apogee Learn</p><h2 id="learn-title">Conhecimento que<br />vira uma entrega.</h2><p>Trilhas curtas para pesquisar e escrever, organizar a rotina e construir um primeiro projeto com IA. A proposta é terminar com algo que você consegue usar.</p><p className={styles.courseNote}>O programa e a disponibilidade das trilhas incluídas serão apresentados antes da contratação.</p><Link className={styles.secondary} href="#planos">Conhecer o plano da comunidade</Link></div>
-      </section>
-      <section id="perks" className={styles.section} aria-labelledby="benefits-title">
-        <div className={styles.sectionHeading}><p className={styles.eyebrow}>Apogee Perks</p><h2 id="benefits-title">Ferramentas e experiências<br />para ir mais longe.</h2><p>Conheça as possibilidades de benefícios da comunidade. Cada oferta depende de disponibilidade, acordos e elegibilidade, com regras próprias.</p></div>
-        <div className={styles.benefits}>{COMMUNITY_BENEFITS.map(item => <article key={item.title}><span className={styles.pending}>Conforme disponibilidade</span><h3>{item.title}</h3><p>{item.description}</p></article>)}</div>
-      </section>
-      <section id="planos" className={styles.section} aria-labelledby="plans-title"><div className={styles.sectionHeading}><h2 id="plans-title">Comece com uma descoberta.<br />Continue com a comunidade.</h2><p>Escolha seu próximo passo. A entrada gratuita continua disponível; a assinatura reúne as entregas dos quatro pilares.</p></div><CommunityPlans preview={preview} next={next} /></section>
-      <section id="participar" className={`${styles.section} ${styles.joinSection}`} aria-labelledby="join-title"><p className={styles.eyebrow}>Apogee Community</p><h2 id="join-title">Seu próximo projeto<br />pode começar com uma conversa.</h2><p>Conheça pessoas, compartilhe descobertas e acompanhe as atividades confirmadas da Apogee. Cada experiência tem suas condições de participação.</p><CommunityJoinButton next={next} preview={preview} /><Link className={styles.subtleLink} href="/evento-openai" prefetch={false}>Conhecer o evento gratuito <ArrowUpRight size={16} aria-hidden="true" /></Link></section>
-      <FunnelFaq id="duvidas" title="Antes de começar." items={COMMUNITY_FAQ} />
-    </main><FunnelFooter />
-  </div>;
+      <section id="comunidade" className={[styles.section, styles.communityBand].join(" ")} aria-labelledby="inside-title"><div className={styles.wrap}>
+        <p className={styles.eyebrow}>Os entregáveis da assinatura</p><div className={[styles.headingRow, styles.directoryHeading].join(" ")}><h2 id="inside-title">Conhecimento<br />que vira prática.</h2><p className={styles.lead}>Radar, Caixa de Ferramentas, Benefícios e Trilha. Conheça cada recurso, sua disponibilidade e as condições de acesso.</p></div>
+        <CommunityDirectory /><p className={styles.directoryNote}>A entrada gratuita continua disponível. A contratação anual depende da liberação e confirmação das entregas apresentadas.</p>
+      </div></section>
+      <section id="radar" className={[styles.wrap, styles.section, styles.headingRow].join(" ")} aria-labelledby="radar-title"><div><p className={styles.eyebrow}>Apogee Radar</p><h2 id="radar-title">Uma descoberta pode<br />mudar seu caminho.</h2><p className={styles.sectionCopy}>{RADAR_FREE_NOTE}</p><div className={styles.actions}><Link className={styles.navyButton} href="/oportunidades" prefetch={false}>Explorar o Radar <ArrowUpRight size={18} aria-hidden="true" /></Link></div><p className={styles.accessNote}>Já tem acesso ao Radar? Seus direitos são preservados. As 10 consultas não se renovam automaticamente.</p></div><div className={styles.radarFact}><strong>10</strong><p>eventos distintos por conta, gratuitamente</p><span>Reabrir um evento já liberado não consome outra consulta.</span></div></section>
+      <section id="ferramentas" className={[styles.section, styles.toolboxSection].join(" ")} aria-labelledby="toolbox-title"><div className={[styles.wrap, styles.headingRow].join(" ")}><div><p className={styles.eyebrow}>Caixa de Ferramentas · em preparação</p><h2 id="toolbox-title">O recurso certo<br />para sua próxima ideia.</h2></div><div className={styles.courseCopy}><p className={styles.lead}>Um catálogo curado dentro da área de membros, com ferramentas organizadas por categoria, descrição breve e acesso ao site oficial.</p><p>A Caixa de Ferramentas será exclusiva de assinantes anuais com direito vigente. O catálogo ainda está em preparação; sua disponibilidade será apresentada antes da contratação.</p><p className={styles.toolboxExample}>Exemplo de organização: <strong>Vídeo → Google Flow</strong></p><p className={styles.accessNote}>As contas, os preços e os créditos dos fornecedores seguem suas próprias condições. A curadoria não inclui automaticamente acesso pago ou créditos dessas ferramentas.</p><Link className={styles.textLink} href="#planos">Conhecer a proposta da assinatura <ArrowUpRight size={18} aria-hidden="true" /></Link></div></div></section>
+      <section id="learn" className={[styles.wrap, styles.section, styles.headingRow].join(" ")} aria-labelledby="learn-title"><div><p className={styles.eyebrow}>Apogee Learn · Trilha</p><h2 id="learn-title">Aprender.<br />Testar. Aplicar.</h2></div><div className={styles.courseCopy}><p className={styles.lead}>Trilhas curtas para pesquisar e escrever, organizar a rotina e construir um primeiro projeto com IA. A proposta é terminar com algo que você consegue usar.</p><p>A trilha será disponibilizada inicialmente de forma parcial. O programa, os módulos e os entregáveis efetivamente acessíveis serão identificados antes da contratação, sem apresentar a formação como completa.</p><Link className={styles.textLink} href="#planos">Conhecer o plano da comunidade <ArrowUpRight size={18} aria-hidden="true" /></Link></div></section>
+      <section id="perks" className={[styles.section, styles.benefitsSection].join(" ")} aria-labelledby="benefits-title"><div className={styles.wrap}><div className={styles.headingRow}><div><p className={styles.eyebrow}>Apogee Perks · Benefícios</p><h2 id="benefits-title">Ferramentas e experiências<br />para ir mais longe.</h2></div><p className={styles.lead}>Conheça as possibilidades de benefícios da comunidade. Cada oferta depende de disponibilidade, acordos e elegibilidade, com regras próprias.</p></div><div className={styles.benefits}>{COMMUNITY_BENEFITS.map(item => <article key={item.title}><p className={styles.eyebrow}>Conforme disponibilidade</p><h3>{item.title}</h3><p>{item.description}</p></article>)}</div></div></section>
+      <section id="planos" className={[styles.wrap, styles.section].join(" ")} aria-labelledby="plans-title"><div className={[styles.headingRow, styles.plansHeading].join(" ")}><h2 id="plans-title">Comece com uma descoberta.<br />Continue com a comunidade.</h2><p className={styles.lead}>Escolha seu próximo passo. A entrada gratuita continua disponível; a assinatura reúne as entregas apresentadas, conforme sua disponibilidade.</p></div><div className={styles.plansFrame}><CommunityPlans preview={preview} next={next} /></div></section>
+      <section id="participar" className={[styles.section, styles.communityBand].join(" ")} aria-labelledby="join-title"><div className={[styles.wrap, styles.headingRow].join(" ")}><div><p className={styles.eyebrow}>Apogee Community</p><h2 id="join-title">Seu próximo projeto<br />pode começar com uma conversa.</h2></div><div className={styles.courseCopy}><p className={styles.lead}>Conheça pessoas, compartilhe descobertas e acompanhe as atividades confirmadas da Apogee. Cada experiência tem suas condições de participação.</p><div className={styles.joinAction}><CommunityJoinButton next={next} preview={preview} /></div><Link className={styles.textLink} href="/evento-openai" prefetch={false}>Conhecer o evento gratuito <ArrowUpRight size={18} aria-hidden="true" /></Link><p className={styles.accessNote}>A inscrição no evento Codex Community é independente da assinatura e do cadastro na comunidade.</p></div></div></section>
+      <section id="duvidas" className={[styles.section, styles.faqSection].join(" ")} aria-labelledby="faq-title"><div className={[styles.wrap, styles.faqLayout].join(" ")}><h2 id="faq-title">Antes de<br />começar.</h2><div className={styles.faq}>{COMMUNITY_FAQ.map(item => <details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}</div></div></section>
+    </main>
+  </EditorialPageShell>;
 }

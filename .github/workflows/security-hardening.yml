@@ -43,6 +43,18 @@ jobs:
       - name: Annual community access and ten-event quota on disposable PostgreSQL
         if: matrix.app == 'make-it-fly-current'
         run: PG_BIN="$(pg_config --bindir)" npm run test:community-access
+      - name: Annual-only member toolbox and curation on disposable PostgreSQL
+        if: matrix.app == 'make-it-fly-current'
+        run: PG_BIN="$(pg_config --bindir)" npm run test:member-toolbox
+      - name: Transactional toolbox curation import with synthetic fixtures
+        if: matrix.app == 'make-it-fly-current'
+        run: PG_BIN="$(pg_config --bindir)" npm run test:member-toolbox-curation
+      - name: Member benefits and learning PostgreSQL integration
+        if: matrix.app == 'make-it-fly-current'
+        run: PG_BIN="$(pg_config --bindir)" npm run test:member-deliverables
+      - name: Member signup, verification and recovery with intercepted email
+        if: matrix.app == 'make-it-fly-current'
+        run: PG_BIN="$(pg_config --bindir)" npm run test:member-auth-journey
       - name: Blog worker without provider calls
         if: matrix.app == 'make-it-fly-current'
         run: |

@@ -1,0 +1,16 @@
+// Original Apogee exercise prepared for editorial review. No external lessons,
+// accounts, credits, certification or promised mentor sessions.
+export const starterTrack = {
+  id: "primeiro-resultado", name: "Um primeiro resultado com IA",
+  description: "Trilha inicial parcial. Comece por um exercício de planejamento e revisão; novos módulos dependem de produção e aprovação editorial.",
+};
+export const starterModule = {
+  id: "tarefa-verificavel", name: "Escolha uma tarefa e defina o resultado",
+  description: "Transforme uma tarefa pequena da sua rotina em um experimento que você consiga conferir. Você pode planejar sem contratar ferramentas.",
+  deliverable: "Um roteiro curto com tarefa, dados permitidos, critério de qualidade e conclusão sobre o resultado.",
+};
+export const starterActivities = [
+  { id: "escolher-tarefa", name: "1. Escolha uma tarefa pequena", instructions: "Liste três tarefas repetitivas da sua rotina. Escolha uma de baixo impacto, como organizar ideias para uma apresentação ou revisar um texto que você mesmo escreveu. Evite decisões médicas, jurídicas, financeiras ou sobre outras pessoas neste exercício.\n\nEscreva: “Quero produzir [entrega] para [finalidade]. Vou conferir [dois critérios observáveis] antes de usar o resultado.” Exemplo: um roteiro de cinco tópicos para uma apresentação pessoal, com linguagem clara e sem afirmações que você não possa comprovar.\n\nGuarde seu roteiro no seu próprio dispositivo. A Apogee registra apenas se você marcou a atividade como concluída; não é necessário enviar seu texto." },
+  { id: "preparar-experimento", name: "2. Prepare um pedido e proteja seus dados", instructions: "Use informações inventadas para o ensaio ou material de sua autoria que possa compartilhar. Remova contatos, senhas, documentos, informações de clientes e conteúdo confidencial. Confira as condições de uso e de privacidade da ferramenta que você escolher; a assinatura Apogee não inclui a licença ou os créditos do fornecedor.\n\nMonte um pedido com quatro partes: contexto da tarefa; resultado esperado; limites (o que não inventar ou incluir); formato de saída. Peça que a ferramenta destaque dúvidas em vez de preencher lacunas com fatos inventados.\n\nVocê pode apenas preparar o pedido nesta etapa. Se decidir executá-lo, use uma conta própria e uma ferramenta para a qual tenha acesso autorizado." },
+  { id: "conferir-resultado", name: "3. Confira e decida o próximo passo", instructions: "Compare a resposta com os dois critérios definidos na primeira atividade. Confira cada informação factual na fonte original. Reescreva trechos que não representem sua intenção. Não encaminhe automaticamente o resultado a outras pessoas.\n\nAnote: o que foi útil; o que precisou corrigir; qual parte continuará sob sua revisão. Se o resultado não atender aos critérios, ajuste o pedido e tente novamente com dados permitidos ou conclua que essa ferramenta não é adequada à tarefa.\n\nSeu entregável final é o roteiro acompanhado dessa avaliação. Marque a atividade como concluída quando terminar a conferência. Para continuar, você pode escolher outra tarefa pequena ou explorar uma oportunidade no Radar. O fórum está disponível para trocar experiências sem expor seus dados." },
+];

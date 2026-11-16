@@ -51,7 +51,7 @@ export async function migrateCommunityAccess(sql,{apply=false,expectedRole="apog
     if(actor.role!==expectedRole || !actor.can_create) throw Error("Papel divergente.");
     await tx`lock table drizzle.__drizzle_migrations in exclusive mode`;
     const rows=await tx`select hash,created_at from drizzle.__drizzle_migrations order by created_at`;
-    if(![17,18,19].includes(rows.length) || !rows.every((r,i)=>r.hash===migrations[i]?.hash && Number(r.created_at)===migrations[i]?.entry.when)) throw Error("Histórico divergente.");
+    if(rows.length<17 || rows.length>migrations.length || !rows.every((r,i)=>r.hash===migrations[i]?.hash && Number(r.created_at)===migrations[i]?.entry.when)) throw Error("Histórico divergente.");
     const applied=[];
     for(let i=17;i<=18;i++) {
       const tables=groups[i-17];

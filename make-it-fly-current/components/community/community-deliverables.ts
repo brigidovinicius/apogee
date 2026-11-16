@@ -1,0 +1,7 @@
+/** Public sales copy. Availability is explicit; this does not grant product access. */
+export const COMMUNITY_SALES_DELIVERABLES = [
+  { id: "radar", label: "Radar de oportunidades", fact: "Comece gratuitamente", title: "Encontre seu próximo passo.", description: "Eventos, bolsas, editais, programas e carreira, com requisitos, prazos e fontes oficiais. A entrada gratuita permite consultar até 10 eventos distintos por conta.", href: "#radar", action: "Conhecer o Radar" },
+  { id: "ferramentas", label: "Caixa de Ferramentas", fact: "Em preparação · assinatura anual", title: "Escolha a ferramenta para sua tarefa.", description: "Catálogo curado por categoria, com descrição breve e links oficiais. Exclusivo de assinantes anuais; o catálogo ainda não está disponível.", href: "#ferramentas", action: "Conhecer a proposta" },
+  { id: "perks", label: "Benefícios", fact: "Conforme disponibilidade", title: "Mais possibilidades para experimentar.", description: "Créditos, testes, descontos e experiências dependem de acordos, disponibilidade, elegibilidade e regras próprias.", href: "#perks", action: "Entender os benefícios" },
+  { id: "learn", label: "Trilha de IA aplicada", fact: "Lançamento inicial parcial", title: "Aprenda fazendo.", description: "Pesquisa, escrita, organização e projetos com IA. Os módulos disponíveis e seus entregáveis serão apresentados antes da contratação.", href: "#learn", action: "Conhecer a trilha" },
+] as const;

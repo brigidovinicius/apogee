@@ -5,7 +5,8 @@ import { consumeRateLimit } from "@/lib/members/rate-limit";
 import { getSql } from "@/lib/members/db";
 import { BillingError } from "@/lib/billing/config";
 import { communityFailure } from "@/lib/billing/community-http";
-import { communityBillingConfig,COMMUNITY_ACCESS_PATH } from "@/lib/billing/community-config";
+import { communityServiceConfig,COMMUNITY_ACCESS_PATH } from "@/lib/billing/community-config";
+import { communityReturnPath } from "@/lib/billing/community-navigation";
 import { stripeClient } from "@/lib/billing/stripe";
 
 export async function POST(request:Request) {
@@ -14,7 +15,7 @@ export async function POST(request:Request) {
     if(request.headers.get("origin") !== applicationOrigin() || request.headers.get("sec-fetch-site") === "cross-site") throw new BillingError(403,"Origem não permitida.");
     const member=await getMemberFromHeaders(request.headers);
     if(!member) throw new BillingError(401,"Entre na sua conta para continuar.");
-    const {livemode}=communityBillingConfig();
+    const {livemode}=communityServiceConfig();
     if(!await consumeRateLimit(`annual-cancel:${member.id}`,10,3600)) throw new BillingError(429,"Aguarde antes de tentar novamente.");
     const rows=await getSql()`select s.id,s.customer_id from community_subscription s join community_customer c
       on c.user_id=s.user_id and c.customer_id=s.customer_id and c.livemode=s.livemode
@@ -23,8 +24,10 @@ export async function POST(request:Request) {
     const stripe=stripeClient(),current=await stripe.subscriptions.retrieve(String(rows[0].id));
     const customer=typeof current.customer === "string" ? current.customer : current.customer.id;
     if(current.livemode !== livemode || customer !== rows[0].customer_id) throw new BillingError(409,"Assinatura indisponível.");
-    await stripe.subscriptions.update(current.id,{cancel_at_period_end:true},{idempotencyKey:`community-cancel-${current.id}`});
+    // Setting true is idempotent. A permanent key would replay a stale response
+    // after the member resumes renewal in the portal and cancels again.
+    if (!current.cancel_at_period_end) await stripe.subscriptions.update(current.id,{cancel_at_period_end:true});
     // Webhooks remain authoritative for local state and paid-through access.
-    return Response.redirect(new URL(`${COMMUNITY_ACCESS_PATH}?cancellation=requested`,applicationOrigin()),303);
+    return Response.redirect(new URL(`${COMMUNITY_ACCESS_PATH}?cancellation=requested&next=${encodeURIComponent(communityReturnPath(new URL(request.url).searchParams.get("next")))}`,applicationOrigin()),303);
   } catch(error) { return communityFailure(request,error); }
 }

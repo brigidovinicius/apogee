@@ -1,7 +1,7 @@
 # Apogee — PRD da área interna de membros
 
-- **Versão:** 0.1 · 15 de novembro de 2026.
-- **Estado:** planejamento para revisão; a caixa de ferramentas ainda não foi implementada.
+- **Versão:** 0.3 · 15 de novembro de 2026.
+- **Estado:** implementação local da Caixa de Ferramentas e demais entregáveis em revisão integrada. Sem publicação adicional ou ativação de cobrança.
 - **Decisor de produto:** Vinicius.
 - **Relação com o produto:** detalha a experiência interna do [PRD geral](apogee-prd.md), preservando a oferta anual e os direitos existentes do Radar.
 
@@ -123,3 +123,30 @@ Integrações com APIs, ferramentas embutidas, compartilhamento de contas, venda
 - Designar quem mantém a curadoria e atende relatos de links incorretos.
 
 O conteúdo do documento estratégico fornecido é referência de produto. A inclusão da caixa de ferramentas, sua exclusividade anual e a revisão antes de implementar decorrem das instruções diretas do proprietário nesta conversa.
+
+
+## 11. Integração à oferta e ao próximo ciclo de implementação
+
+Conferência de 15/11/2026: a Caixa de Ferramentas já integra a especificação, mas permanece sem catálogo e rota no código publicado examinado. A página de vendas deve citá-la como recurso da assinatura anual em preparação, sem link para uma rota inexistente ou promessa de acesso imediato. O próximo ciclo deve implementar e validar F01–F10 antes de mudar esse estado.
+
+O início da área interna deve organizar Radar, Caixa de Ferramentas, Benefícios e Trilha, esta última inicialmente parcial. Os estados vazios, de preparação e de acesso restrito devem ser distintos. Acesso antigo ao Radar não concede automaticamente os demais recursos. A captura do evento gratuito continua um percurso separado da aquisição da assinatura.
+
+O [prompt de conclusão da jornada](handoffs/apogee-offer-complete-prompt-20261115.md) reúne o diagnóstico, os fluxos e o aceite de implementação em ambiente isolado. A autorização de deploy do design de Comunidade e Loja não autoriza publicar essas novas funcionalidades nem ativar cobranças.
+
+
+## 12. Candidato integrado da jornada — 15/11/2026
+
+A nova autorização do proprietário inclui implementar F01–F10 e os demais fluxos em ambiente isolado. As descrições anteriores de “não implementado” registram o estado histórico da versão publicada, não o candidato local atual.
+
+| Entrega | Rotas e dados | Condição de acesso/publicação |
+| --- | --- | --- |
+| Caixa de Ferramentas | `/membros/ferramentas`, `/admin/ferramentas`; `member_tool_category`, `member_tool`; migração 0019. | Anual vigente ou prévia administrativa explícita; categoria com ferramentas publicadas; revisão do link registrada. |
+| Benefícios | `/membros/beneficios`, `/admin/beneficios`; `member_benefit`; migração 0020. | Anual vigente; acordo com fonte privada, vigência, elegibilidade, disponibilidade e procedimento de resgate preenchidos antes de publicar. Sem acordos, estado vazio honesto. |
+| Trilha inicial parcial | `/membros/trilha`, `/admin/trilha`; `member_learning_track`, `member_learning_module`, `member_learning_activity`, `member_learning_progress`; 0020. | Anual vigente; hierarquia publicada; módulos em preparação sem material privado; progresso idempotente e exclusivo do titular. |
+| Suporte e operação | `/membros/suporte`, `/admin/assinaturas`. | Conta autenticada para suporte; administrador para operação. Pagamento não concede administração. |
+
+Curadoria de Benefícios e Trilha registra ator, data, entidade, ação e estado em `member_deliverable_audit`, sem registrar material, contato ou credencial. Não há execução de ferramentas embutidas, coleta de credenciais de fornecedores ou integração inventada com parceiros. Catálogos e progresso não alteram a cota do Radar.
+
+O exercício original “Um primeiro resultado com IA” está preparado para revisão: escolher tarefa e critérios, preparar um pedido com dados permitidos, conferir o resultado e decidir o próximo passo. O banco da prévia contém esse material; a migração operacional não semeia conteúdo automaticamente. A publicação editorial e os conteúdos posteriores dependem da revisão do proprietário.
+
+O mapa de testes F01–F10 e da jornada fica no relatório de revisão integrado; o estado de produção continua separado.

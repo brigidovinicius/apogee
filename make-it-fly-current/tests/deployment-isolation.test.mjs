@@ -83,6 +83,7 @@ test("the single root layout preserves the approved visual wrapper and relocated
     // The context provider adds no DOM, including on the legacy event route.
     .replace("          <McpAvailabilityProvider enabled={mcpEnabled()}>\n", "")
     .replace("          </McpAvailabilityProvider>\n", "")
+    .replace("            <ApogeeDesignSystem>{localOfferPreview() && <OfferPreviewToolbar sandbox={localStripeSandboxReview()} />}{children}</ApogeeDesignSystem>", "        {children}")
     .replace("            <ApogeeDesignSystem>{localOfferPreview() && <OfferPreviewToolbar />}{children}</ApogeeDesignSystem>", "        {children}")
     .replace("            <ApogeeDesignSystem>{children}</ApogeeDesignSystem>", "        {children}");
   assert.equal(sha256(visual), "bb2dbfad30652ec73ab9929b3732b448473f74112cbcb0cdaac56663c16f2cc0",
@@ -180,6 +181,9 @@ test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surf
     "app/previa/validacao/page.tsx",
     "app/previa/stripe/page.tsx",
     "app/membros/assinatura/page.tsx",
+    "app/membros/ferramentas/page.tsx",
+    "app/admin/ferramentas/page.tsx", "app/admin/beneficios/page.tsx", "app/admin/trilha/page.tsx", "app/admin/assinaturas/page.tsx",
+    "app/membros/beneficios/page.tsx", "app/membros/trilha/page.tsx", "app/membros/suporte/page.tsx",
     "app/api/comunidade/assinatura/cancelar/route.ts",
     "app/api/comunidade/assinatura/checkout/route.ts",
     "app/api/comunidade/assinatura/portal/route.ts",

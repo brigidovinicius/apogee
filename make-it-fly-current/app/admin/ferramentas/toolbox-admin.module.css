@@ -1,0 +1,19 @@
+.editors { display:grid; grid-template-columns:minmax(16rem,.75fr) minmax(0,1.25fr); align-items:start; gap:1.25rem; margin:1.75rem 0; }
+.editor { min-width:0; padding:clamp(1.1rem,2.5vw,1.75rem); border:1px solid rgb(185 211 238 / 24%); border-radius:8px; background:rgb(255 255 255 / 3%); scroll-margin-top:5rem; }
+.editor h2 { margin:0; font:500 1.35rem var(--font-inter),sans-serif; }
+.editor textarea { min-height:5.5rem; padding:.7rem .8rem; color:#fff; background:#142b44; border:1px solid #58748e; border-radius:4px; font:inherit; resize:vertical; }
+.twoFields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:1rem; }
+.hint { margin:0; font-size:.8rem; line-height:1.65; color:rgb(255 255 255 / 68%); }
+.actions { display:flex; flex-wrap:wrap; align-items:center; gap:1rem; }
+.actions a,.list a { color:#c5dcf4; text-underline-offset:.2em; }
+.list { display:grid; gap:.75rem; margin:1rem 0 2rem; padding:0; list-style:none; }
+.row { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:1rem; padding:1.1rem 1.25rem; border:1px solid rgb(185 211 238 / 22%); border-radius:6px; }
+.row > div:first-child { min-width:0; flex:1 1 15rem; }
+.row h3 { margin:0 0 .4rem; font:500 1rem var(--font-inter),sans-serif; overflow-wrap:anywhere; }
+.row p { margin:.25rem 0; font-size:.8rem; line-height:1.6; color:rgb(255 255 255 / 65%); overflow-wrap:anywhere; }
+.state { display:inline-flex; align-items:center; padding:.35rem .6rem; border:1px solid rgb(185 211 238 / 25%); border-radius:4px; font-size:.72rem; }
+.state[data-status="published"] { color:#d5f4e5; border-color:#549b7b; }
+.error { margin:0; padding:.8rem 1rem; border:1px solid #df7e89; background:#3a1c29; color:#fff; line-height:1.6; }
+.editor input:focus-visible,.editor textarea:focus-visible,.editor select:focus-visible,.actions a:focus-visible,.list a:focus-visible { outline:2px solid #c5dcf4; outline-offset:4px; }
+@media(max-width:1100px) { .editors { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:480px) { .twoFields { grid-template-columns:minmax(0,1fr); } }

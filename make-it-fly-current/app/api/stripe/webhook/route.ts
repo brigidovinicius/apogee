@@ -1,4 +1,4 @@
-import { communityBillingEnabled } from "@/lib/billing/community-config";
+import { communityProcessingRequired } from "@/lib/billing/community-config";
 import { fulfillCommunityEvent } from "@/lib/billing/community-fulfillment";
 import { radarBillingEnabled } from "@/lib/billing/config";
 import { BillingError, webhookSecret } from "@/lib/billing/config";
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     let event;
     try { event = stripe.webhooks.constructEvent(raw, signature, secret); }
     catch { throw new BillingError(400, "Assinatura inválida."); }
-    if(communityBillingEnabled()) await fulfillCommunityEvent(event);
+    if(communityProcessingRequired()) await fulfillCommunityEvent(event);
     if(radarBillingEnabled()) await fulfillRadarEvent(event);
     return billingResponse({ received: true });
   } catch (error) { return billingFailure(error); }

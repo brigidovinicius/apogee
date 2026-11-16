@@ -8,6 +8,10 @@ import styles from "./admin.module.css";
 const liveItems = [
   { href: "/admin", label: "Painel", exact: true },
   { href: "/admin/radar", label: "Radar", exact: false },
+  { href: "/admin/ferramentas", label: "Caixa de ferramentas", exact: false },
+  { href: "/admin/beneficios", label: "Benefícios", exact: false },
+  { href: "/admin/trilha", label: "Trilha", exact: false },
+  { href: "/admin/assinaturas", label: "Assinaturas", exact: false },
   { href: "/admin/posts", label: "Blog", exact: false },
   { href: "/admin/convites", label: "Convites", exact: false },
   { href: "/admin/comunidade", label: "Contatos do evento", exact: false },
@@ -17,7 +21,7 @@ const liveItems = [
   { href: "/admin/loja/drops", label: "Cadastros dos drops", exact: false },
 ] as const;
 
-const plannedItems = ["Moderação", "Assinaturas", "Conciliação", "Fila e jobs", "Auditoria"];
+const plannedItems = ["Moderação", "Fila e jobs", "Auditoria"];
 
 export function AdminNav({ compact = false }: { compact?: boolean }) {
   const pathname = usePathname();
