@@ -38,6 +38,7 @@ COPY --from=builder --chown=nextjs:nextjs /app/scripts/radar-free-opportunity-mi
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/community-access-migrate.mjs ./scripts/community-access-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-toolbox-migrate.mjs ./scripts/member-toolbox-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-deliverables-migrate.mjs ./scripts/member-deliverables-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/community-launch-metrics.mjs ./scripts/community-launch-metrics.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/mcp-oauth-migrate.mjs ./scripts/mcp-oauth-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/google-calendar-worker.mjs ./scripts/google-calendar-worker.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/collection-digest-worker.mjs ./scripts/collection-digest-worker.mjs
