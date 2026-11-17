@@ -23,7 +23,7 @@ test("institutional shell is reused by the first public and member routes", asyn
   }
 
   const editorial = await source("components/home/editorial-home.tsx");
-  assert.match(editorial, /<HomeRadar presentation="earth"/);
+  assert.match(editorial, /<HomeRadar presentation="carousel"/);
   assert.match(editorial, /<main id="experiencia" tabIndex=\{-1\}>/);
   assert.doesNotMatch(editorial, /^["']use client["']|DEMO_OPPORTUNITIES|localStorage|Prévia local/);
   const earth = await source("components/home/earth-radar/earth-radar-preview.tsx");
