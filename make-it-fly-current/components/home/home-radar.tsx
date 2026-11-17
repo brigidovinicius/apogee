@@ -6,10 +6,16 @@ import { listPublicOpportunities } from "@/lib/opportunities/access";
 import { homeOpportunitySnapshot } from "@/lib/home-opportunities";
 import { EarthRadarList } from "./earth-radar/earth-radar-list";
 import { HomeRadarList } from "./home-radar-list";
+import { HomeRadarCarousel } from "./home-radar-carousel";
 import { LiveCatalogueRefresh } from "@/components/opportunities/live-refresh";
 import styles from "./editorial-home.module.css";
 
-export async function HomeRadar({ presentation = "editorial", classNames }: { presentation?: "editorial" | "earth"; classNames?: Record<string, string> }) {
+export async function HomeRadar({ presentation = "editorial", classNames }: { presentation?: "editorial" | "earth" | "carousel"; classNames?: Record<string, string> }) {
+  if (presentation === "carousel" && process.env.NODE_ENV === "development" && process.env.APOGEE_HOME_PREVIEW === "1") {
+    const { homePreviewOpportunities, homePreviewCapturedAt } = await import("./home-radar-preview");
+    return <><HomeRadarCarousel opportunities={homePreviewOpportunities} capturedAt={homePreviewCapturedAt} />
+      <p className={classNames?.radarNote}>Prévia local de design. Amostra da home pública de 17/11/2026.</p></>;
+  }
   if (localOfferPreview()) return <OfferRadarDemo compact />;
   const catalogue = await listPublicOpportunities().catch(() => null);
   if (catalogue === null) {
@@ -21,7 +27,9 @@ export async function HomeRadar({ presentation = "editorial", classNames }: { pr
   const now = new Date();
   const opportunities = homeOpportunitySnapshot(catalogue, now);
   const capturedAt = now.toISOString();
-  return <><LiveCatalogueRefresh />{presentation === "earth"
+  return <><LiveCatalogueRefresh />{presentation === "carousel"
+    ? <HomeRadarCarousel opportunities={opportunities} capturedAt={capturedAt} />
+    : presentation === "earth"
     ? <EarthRadarList opportunities={opportunities} capturedAt={capturedAt} classNames={classNames} />
     : <HomeRadarList opportunities={opportunities} capturedAt={capturedAt} />}</>;
 }
