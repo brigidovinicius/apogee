@@ -21,7 +21,6 @@ export async function BenefitsWorkspace({ view = "catalogue", params = {} }: { v
     <header className={styles.header}><p className={styles.eyebrow}><Gift size={16} aria-hidden="true" /> Recursos da comunidade</p><h1>Benefícios</h1><p>Encontre ofertas úteis para o que você quer construir. Confira as condições de cada parceiro antes de começar.</p></header>
     {!access.allowed ? <AnnualAccessNotice title="Benefícios" next={BENEFIT_PATHS[view]} /> : <>
       <nav aria-label="Navegação de benefícios" className={styles.tabs}>{(Object.keys(BENEFIT_PATHS) as BenefitView[]).map(key => { const Icon = icons[key]; return <Link href={BENEFIT_PATHS[key]} key={key} aria-current={view === key ? "page" : undefined}><Icon size={17} aria-hidden="true" />{titles[key]} {key !== "catalogue" && <span>{totals[key]}</span>}</Link>; })}</nav>
-      {view === "catalogue" && <PerkBookCatalogue />}
       {view !== "history" ? showNativeOffers && <>
         {view === "catalogue" && <h2>Ofertas cadastradas pela Apogee</h2>}
         <form action={BENEFIT_PATHS[view]} method="get" className={styles.filters} role="search" aria-label="Buscar benefícios">
@@ -34,12 +33,13 @@ export async function BenefitsWorkspace({ view = "catalogue", params = {} }: { v
           <div className={styles.cardTop}><span className={styles.category}>{b.category_name ?? "Geral"}</span><BenefitSaveButton benefitId={b.id} name={b.name} saved={b.saved} /></div>
           <p className={styles.partner}>{b.partner}{b.provider_label ? ` · ${b.provider_label}` : ""}</p><h2><Link href={`/membros/beneficios/${b.id}`}>{b.name}</Link></h2><p className={styles.description}>{b.description}</p>
           <p className={styles.condition}>{b.eligibility}</p>{b.provider_access !== "unconfirmed" ? <p className={styles.access}>{PROVIDER_ACCESS_LABELS[b.provider_access]}</p> : null}
-          <div className={styles.cardFooter}><span>{b.ends_at ? `Até ${benefitDate(b.ends_at)} (fim exclusivo)` : "Confira a vigência"}</span><Link href={`/membros/beneficios/${b.id}`}>Ver condições <ArrowRight size={17} aria-hidden="true" /></Link></div>
+          <div className={styles.cardFooter}><span>{b.verified_at ? `Verificada em ${benefitDate(b.verified_at)}` : b.ends_at ? `Até ${benefitDate(b.ends_at)} (fim exclusivo)` : "Confira a vigência"}</span><Link href={`/membros/beneficios/${b.id}`}>Ver condições <ArrowRight size={17} aria-hidden="true" /></Link></div>
         </article>)}</div>}
       </> : <>
         <p className={styles.explanation}>Iniciar um resgate registra sua intenção. O desconto ou crédito só aparece como confirmado após conferência do resultado no parceiro.</p>
         {!history.length ? <section className={styles.empty}><Clock3 size={26} aria-hidden="true" /><h2>Você ainda não iniciou resgates</h2><p>Abra uma oferta do catálogo, confira os requisitos e inicie o resgate. O acompanhamento ficará aqui.</p><Link href="/membros/beneficios">Explorar ofertas</Link></section> : <ol className={styles.history}>{history.map(r => <li key={r.id} className={styles.card}><div className={styles.cardTop}><span className={styles.category}>{REDEMPTION_LABELS[r.status]}</span><span className={styles.historyDate}>{benefitDate(r.started_at)}</span></div><p className={styles.partner}>{r.partner_name}</p><h2>{r.benefit_name}</h2><p>{r.status === "started" ? "Aguardando confirmação do resultado no parceiro." : r.status === "confirmed" ? "Resultado confirmado pela conferência administrativa." : "O parceiro não aprovou este resgate. Fale com o suporte se precisar de ajuda."}</p>{r.reviewed_at ? <p className={styles.condition}>Conferência em {benefitDate(r.reviewed_at)}.</p> : null}{r.available ? <Link className={styles.textLink} href={`/membros/beneficios/${r.benefit_id}`}>Reabrir oferta e instruções <ArrowRight size={17} aria-hidden="true" /></Link> : <p className={styles.condition}>Esta oferta não está disponível para novos resgates. Seu histórico foi preservado.</p>}</li>)}</ol>}
       </>}
+      {view === "catalogue" && <PerkBookCatalogue />}
       <p className={styles.footer}>As ofertas seguem requisitos próprios. A assinatura Apogee inclui os benefícios expressamente formalizados, conforme suas condições; não inclui automaticamente planos pagos ou créditos de todas as ferramentas.</p>
     </>}<p className={styles.support}><Link href="/membros/suporte">Preciso de ajuda</Link></p>
   </div></MemberWorkspace>;

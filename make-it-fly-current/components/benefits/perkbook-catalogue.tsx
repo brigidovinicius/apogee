@@ -43,7 +43,7 @@ export function PerkBookCatalogue() {
         title="Pesquisar descontos de software no PerkBook"
         src={portalOrigin + "/embed"}
         loading="lazy"
-        referrerPolicy="no-referrer"
+        referrerPolicy="origin"
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
         style={{ display: "block", width: "100%", height: "clamp(30rem, 75vh, 56rem)", border: 0 }}
       />
