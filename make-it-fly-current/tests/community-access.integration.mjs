@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {before,after,test} from "node:test";
+import {readFile} from "node:fs/promises";
 import Stripe from "stripe";
 import {opportunityLoader} from "./helpers/load-opportunity-module.mjs";
 import {nativeCommunityDatabase} from "./helpers/community-native-db.mjs";
@@ -175,6 +176,20 @@ test('operator reconciliation is admin-only, mode/owner-bound and reads canonica
   assert.equal(await operations.reconcileAnnualMembership('sub_Annual'),1);
   assert.equal(model.checkoutCalls.length,calls);
   const list=await operations.listAnnualMemberships();assert.ok(list.rows.some(row=>row.id==='sub_Annual'));
+  assert.equal(list.cohort, null, 'the reconciliation list remains available before the learning tables exist');
+  await sql.unsafe(await readFile(new URL('../drizzle/0020_member_deliverables.sql',import.meta.url),'utf8'));
+  await seed('cohort-buyer');
+  const before = (await operations.listAnnualMemberships()).cohort;
+  await sql`insert into community_subscription(id,user_id,customer_id,livemode,status)
+    values('sub_Cohort','cohort-buyer','cus_Cohort',false,'active')`;
+  await sql`insert into community_invoice(id,subscription_id,amount,currency,period_start,period_end,status)
+    values('in_Cohort','sub_Cohort',143880,'brl',now()-interval '1 day',now()+interval '364 days','paid')`;
+  await sql`insert into radar_saved_opportunity(user_id,opportunity_id,snapshot)
+    values('cohort-buyer','radar-activation','{}')`;
+  const {cohort} = await operations.listAnnualMemberships();
+  assert.equal(cohort.buyers,before.buyers+1);assert.equal(cohort.activated,before.activated+1);
+  await sql`update community_invoice set status='refunded' where id='in_Cohort'`;
+  assert.deepEqual((await operations.listAnnualMemberships()).cohort,before);
   model.sub.customer='cus_Foreign';await assert.rejects(operations.reconcileAnnualMembership('sub_Annual'),/divergente/);model.sub.customer='cus_Annual';
   process.env.COMMUNITY_BILLING_ENABLED='false';assert.equal(await operations.reconcileAnnualMembership('sub_Annual'),1);process.env.COMMUNITY_BILLING_ENABLED='true';
 });
@@ -231,4 +246,23 @@ test('repeated cancellation after resuming renewal performs a fresh idempotent s
   let response=await cancel(req('/api/comunidade/assinatura/cancelar?next=%2Fmembros%2Ftrilha'));assert.equal(response.status,303);assert.equal(new URL(response.headers.get('location')).searchParams.get('next'),'/membros/trilha');assert.equal(model.cancelCalls,before+1);
   await cancel(req('/api/comunidade/assinatura/cancelar'));assert.equal(model.cancelCalls,before+1,'already cancelled needs no update');
   model.sub.cancel_at_period_end=false;await cancel(req('/api/comunidade/assinatura/cancelar'));assert.equal(model.cancelCalls,before+2,'resumed renewal must be cancellable again');
+});
+
+test('annual funnel migration retains old totals and accepts only assigned journey stages', async () => {
+  const runSql = async name => {
+    const client = await sql.reserve();
+    try { await client.unsafe(await readFile(new URL('../sql/' + name, import.meta.url), 'utf8')); }
+    finally { await client.release(); }
+  };
+  await runSql('behavior-daily.sql');
+  await sql`insert into apogee_behavior_daily values(current_date, 'home','page_view','view','mobile',7)`;
+  await runSql('behavior-annual-funnel.sql');
+  for (const [page, event, target] of [
+    ['annual_offer','section_view','annual_price'], ['annual_offer','action','annual_choose'],
+    ['annual_summary','section_view','account_ready'], ['annual_summary','action','checkout_start'],
+    ['annual_summary','section_view','confirmed_return']
+  ]) await sql`insert into apogee_behavior_daily values(current_date, ${page},${event},${target},'mobile',1)`;
+  await assert.rejects(sql`insert into apogee_behavior_daily values(current_date,'annual_offer','section_view','confirmed_return','mobile',1)`, {code:'23514'});
+  const [row] = await sql`select count from apogee_behavior_daily where page='home'`;
+  assert.equal(Number(row.count),7);
 });

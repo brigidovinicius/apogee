@@ -9,8 +9,8 @@
 .lead { font-size:clamp(18px,1.55vw,22px); line-height:1.55; letter-spacing:-.025em; max-width:44ch; }
 .actions { display:flex; align-items:center; flex-wrap:wrap; gap:24px; margin-top:32px; }
 .textLink { color:inherit; display:inline-flex; align-items:center; justify-content:space-between; gap:16px; min-height:44px; text-decoration:none; border-bottom:1px solid transparent; font-size:15px; font-weight:500; }.textLink:hover { border-color:currentColor; }
-.page .joinAction > :is(a,button),.skyButton { display:inline-flex; align-items:center; justify-content:center; gap:24px; min-height:48px; padding:14px 24px; background:#07182d; color:#fff; border:1px solid #07182d; border-radius:6px; text-decoration:none; font-size:15px; font-weight:500; line-height:1.25; transition:background-color 180ms,transform 180ms; }
-.page .joinAction > :is(a,button):hover { background:#153656; transform:translateY(-2px); }.page .joinAction > :is(a,button):active,.skyButton:active { transform:translateY(1px); }
+.page .joinAction > :is(a,button),.skyButton { display:inline-flex; align-items:center; justify-content:center; gap:24px; min-height:48px; padding:14px 24px; background:#07182d; color:#fff; border:1px solid #07182d; border-radius:6px; text-decoration:none; font-size:15px; font-weight:500; line-height:1.25; transition:background-color 180ms; }
+.page .joinAction > :is(a,button):hover { background:#153656; }
 .communityWord { margin-top:64px; text-align:right; font:400 clamp(64px,9vw,130px)/.95 var(--editorial-display); letter-spacing:-.05em; color:#b9d3ee; }
 .communityBand { background:#b9d3ee; }.directoryHeading { margin-bottom:64px; }
 .directory { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(4,minmax(100px,auto)); gap:0 64px; min-height:380px; }
@@ -24,8 +24,8 @@
 .courseCopy > p + p { margin-top:24px; }.courseCopy .joinAction { margin-top:24px; }
 .faqSection { background:#f3f6f8; }.faqLayout { display:grid; grid-template-columns:1fr 1.25fr; gap:64px; }.faq details { border-top:1px solid #ced5dc; padding:24px 0; }.faq details:last-child { border-bottom:1px solid #ced5dc; }.faq summary { cursor:pointer; font-size:18px; font-weight:500; padding-right:24px; }.faq details p { margin-top:16px; max-width:65ch; }
 .joinAction dialog { color:#fff; font-family:var(--font-inter),Arial,sans-serif; }.joinAction dialog h2 { font-size:40px; }.joinAction dialog :where(a,button):focus-visible { outline-color:#b9d3ee; }
-.navyButton { display:inline-flex; align-items:center; justify-content:center; gap:24px; min-height:48px; padding:14px 24px; background:#07182d; color:#fff; border:1px solid #07182d; border-radius:6px; text-decoration:none; font-size:15px; font-weight:500; line-height:1.25; transition:background-color 180ms,transform 180ms; }
-.navyButton:hover { background:#153656; transform:translateY(-2px); }.navyButton:active { transform:translateY(1px); }
+.navyButton { display:inline-flex; align-items:center; justify-content:center; gap:24px; min-height:48px; padding:14px 24px; background:#07182d; color:#fff; border:1px solid #07182d; border-radius:6px; text-decoration:none; font-size:15px; font-weight:500; line-height:1.25; transition:background-color 180ms; }
+.navyButton:hover { background:#153656; }
 .accessNote { color:#526174; font-size:14px; line-height:1.7; margin-top:16px!important; max-width:65ch; }
 .sectionCopy { font-size:18px; line-height:1.7; margin-top:24px!important; max-width:60ch; }
 .radarFact { display:flex; flex-direction:column; justify-content:center; min-height:360px; padding:48px; background:#07182d; color:#fff; }
@@ -40,9 +40,9 @@
 .page .plansFrame article { padding:36px; border-radius:6px; background:#f3f6f8; color:#07182d; border-color:#ced5dc; }
 .page .plansFrame article :is(p,ul,span) { color:#526174; font-size:15px; }
 .page .plansFrame article h3 { font:400 36px/1.2 var(--editorial-display); letter-spacing:-.035em; }
-.page .plansFrame article:last-child { background:#07182d; color:#fff; }.page .plansFrame article:last-child :is(p,ul,span) { color:#c6d8e8; }
+.page .plansFrame article[id="plano-anual"] { background:#07182d; color:#fff; }.page .plansFrame article[id="plano-anual"] :is(p,ul,span) { color:#c6d8e8; }
 .page .plansFrame article strong { color:inherit; font-weight:500; }
-.page .plansFrame article a { border-radius:6px; }.page .plansFrame article:first-child a { background:#07182d; color:#fff; border-color:#07182d; }
+.page .plansFrame article a { border-radius:6px; }.page .plansFrame article:not([id]) a { background:#07182d; color:#fff; border-color:#07182d; }
 .page .plansFrame>div>p { color:#526174; font-size:14px; }
 @media(max-width:760px) { .benefits { grid-template-columns:1fr; }.radarFact { min-height:300px; padding:32px; }.page .plansFrame article { padding:26px; }.page .plansFrame article strong { font-size:clamp(28px,8vw,44px); }.navyButton { font-size:14px; padding-inline:16px; } }
 @media(max-width:1100px) { .headingRow,.intro .headingRow { gap:32px; grid-template-columns:1.3fr 1fr; }.directory { column-gap:32px; }.directoryPanel { padding:32px; }.directoryTrigger { font-size:30px; }.directoryPanel h4 { font-size:40px; }.directoryNote { margin-left:calc(50% + 16px)!important; } }
@@ -51,4 +51,6 @@
   .page h1 { font-size:clamp(47px,8vw,66px); }.page h2 { font-size:clamp(40px,8vw,58px); }.eyebrow { margin-bottom:16px!important; }.lead { font-size:18px; }.actions { gap:16px; }.communityWord { margin-top:48px; font-size:76px; }
   .directoryHeading { margin-bottom:32px; }.directory { display:block; min-height:0; }.directoryItem { display:block; }.directoryTrigger { min-height:80px; font-size:28px; }.directoryPanel { min-height:0; padding:32px 24px; margin-block:16px 8px; }.directoryPanel h4 { font-size:40px; }.page .joinAction > :is(a,button) { font-size:14px; padding-inline:16px; }.directoryNote { margin:24px 0 0!important; }.faq summary { font-size:16px; }
 }
-@media(prefers-reduced-motion:reduce) { .page .joinAction > :is(a,button):hover { transform:none; } }
+
+.page .intro .joinAction > a { background:transparent; color:#07182d; border:1px solid #9da9b5; }
+.page .intro .joinAction > a:hover { background:#edf3fa; }

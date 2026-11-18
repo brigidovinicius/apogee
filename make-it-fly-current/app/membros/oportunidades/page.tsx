@@ -49,7 +49,7 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
           </p>
         </div>
       </header>
-      {quota ? <RadarQuota used={quota.used} limit={quota.limit} /> : access.active ? <p>Seu acesso ao Radar completo está ativo.</p> : null}
+      {quota ? <RadarQuota used={quota.used} limit={quota.limit} next={returnTo} /> : access.active ? <p>Seu acesso ao Radar completo está ativo.</p> : null}
       {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
     </div></MemberWorkspace>
   );

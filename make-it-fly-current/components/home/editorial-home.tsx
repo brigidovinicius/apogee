@@ -33,17 +33,13 @@ export function EditorialHome() {
       <section className={styles.intro} aria-labelledby="home-title">
         <div className={styles.introHeading}>
           <h1 id="home-title">Um lugar para o seu próximo salto.</h1>
+          <p className={styles.introLead}>Encontre oportunidades e aprenda a aplicar IA com a comunidade Apogee.</p>
           <div className={styles.introActions}>
             <Link className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={16} /></Link>
             <Link className={styles.heroSecondary} href="/oportunidades" prefetch={false}>Explorar o Radar</Link>
           </div>
         </div>
         <HomeStar />
-        <div className={styles.introNote}>
-          <p>Ideias que abrem caminhos.</p>
-          <p>Conhecimento, oportunidades e gente para construir mais.</p>
-          <Link href="/comunidade" prefetch={false}>Seu próximo passo começa aqui<ArrowUpRight size={16} aria-hidden="true" /></Link>
-        </div>
         <div className={styles.communityWord} lang="en" aria-hidden="true">Building<br />the future.</div>
       </section>
 
@@ -88,7 +84,7 @@ export function EditorialHome() {
           <Image className={styles.eventArt} src="/brand/apogee-star.svg" alt="" width={703} height={870} sizes="100px" />
           <div><p>Evento gratuito · organização Apogee</p><h3 id="home-experience-title">Codex Community</h3>
             <p>Um encontro para colocar a inteligência artificial em prática.</p>
-            <Link href="/evento-openai" prefetch={false}>Quero assistir gratuitamente<ArrowUpRight aria-hidden="true" size={18} /></Link>
+            <Link href="/evento-openai" prefetch={false}>Conhecer o evento gratuito<ArrowUpRight aria-hidden="true" size={18} /></Link>
           </div>
         </article>
       </section>

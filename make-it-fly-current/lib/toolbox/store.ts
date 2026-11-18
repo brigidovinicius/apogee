@@ -1,3 +1,4 @@
+import { toolboxReturnPath } from "@/lib/billing/community-navigation";
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { requireMember, requireSignedInMember } from "@/lib/members/dal";
@@ -9,7 +10,7 @@ import type { ToolboxCategory, ManagedTool, MemberTool, MemberToolCategory, Tool
 
 export class ToolboxConflictError extends Error {}
 export async function memberToolbox(category: string | null = null) {
-  const member = await requireSignedInMember("/membros/ferramentas");
+  const member = await requireSignedInMember(toolboxReturnPath(category));
   const access = await toolboxAccess(member);
   // Never load or serialize catalogue fields for an ineligible account.
   if (!access.allowed) return { member, access, categories: [] as MemberToolCategory[], tools: [] as MemberTool[] };

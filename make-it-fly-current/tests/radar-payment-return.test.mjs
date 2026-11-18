@@ -17,10 +17,10 @@ test("a return awaiting the webhook cannot offer another purchase or grant acces
   const render = params => Page({ searchParams: Promise.resolve({ next: "/membros/oportunidades/second", ...params }) }).then(renderToStaticMarkup);
   let html = await render({ payment: "received" });
   assert.match(html, /Aguardando a confirmação/);
-  assert.doesNotMatch(html, /Comprar acesso vitalício|Seu acesso ao Radar está liberado/);
+  assert.doesNotMatch(html, /Ver plano com Radar completo|Comprar acesso vitalício|Seu acesso ao Radar está liberado/);
   html = await render({ payment: "cancelled" });
   assert.match(html, /O checkout foi encerrado/);
-  assert.match(html, /Conhecer a Comunidade Apogee/);
+  assert.match(html, /Ver plano com Radar completo/);
   assert.doesNotMatch(html,/Comprar acesso vitalício|\/api\/radar\/checkout/);
   active = true;
   html = await render({ payment: "received" });

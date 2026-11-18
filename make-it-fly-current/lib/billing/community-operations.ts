@@ -16,7 +16,32 @@ export async function listAnnualMemberships(page = 1) {
     (select max(i.period_end) from community_invoice i where i.subscription_id=s.id and i.status='paid' and not i.fraud_review_required and i.period_start<=now() and i.period_end>now()) as paid_until,
     (select i.status from community_invoice i where i.subscription_id=s.id order by (i.period_start<=now()) desc,i.period_start desc limit 1) as payment_status
     from community_subscription s join "user" u on u.id=s.user_id where s.livemode=${livemode} order by s.updated_at desc,s.id limit 50 offset ${(selected - 1) * 50}`;
-  return { rows, page: selected, pages, livemode };
+  const cohort = await annualActivation(sql, livemode);
+  return { rows, page: selected, pages, livemode, cohort };
+}
+
+async function annualActivation(sql: ReturnType<typeof getSql>, livemode: boolean) {
+  const [row] = await sql<{ buyers: number; activated: number }[]>`
+    with paid as (
+      select s.user_id, i.period_start, i.period_end
+      from community_invoice i join community_subscription s on s.id = i.subscription_id
+      where s.livemode = ${livemode} and i.status = 'paid' and not i.fraud_review_required
+        and i.period_start <= now()
+    ), buyers as (
+      select user_id from paid group by user_id
+      having min(period_start) >= ((now() at time zone 'America/Sao_Paulo')::date - 29)::timestamp at time zone 'America/Sao_Paulo'
+    )
+    select count(*)::int as buyers,
+      count(*) filter (where exists (
+        select 1 from paid p where p.user_id = b.user_id and (
+          exists (select 1 from radar_saved_opportunity o where o.user_id = b.user_id and o.saved_at >= p.period_start and o.saved_at < p.period_end)
+          or exists (select 1 from member_learning_progress l where l.user_id = b.user_id and l.completed_at >= p.period_start and l.completed_at < p.period_end)
+        )
+      ))::int as activated from buyers b`.catch((error: { code?: string }) => {
+    if (error.code === "42P01") return [];
+    throw error;
+  });
+  return row ?? null;
 }
 
 /** Operator reconciliation reads canonical Stripe objects; it never fabricates payment. */

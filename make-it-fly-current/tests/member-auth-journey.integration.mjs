@@ -34,10 +34,13 @@ test('isolated signup, email verification, recovery, session revocation and logo
       assert.equal(row.role,'member');assert.equal(row.email_verified,false);assert.equal(row.adult_declared,true);assert.equal(emails.length,0);
     });
     await t.test('verification uses the trusted origin, correct recipient and no privilege change',async()=>{
-      assert.equal((await call('send-verification-email',{email:signup.email,callbackURL:origin+'/membros/trilha'},cookie)).status,200);
+      const summary = '/membros/assinatura?next=' + encodeURIComponent('/membros/ferramentas?categoria=video');
+      const callback = origin + '/membros/protecao?next=' + encodeURIComponent(summary);
+      assert.equal((await call('send-verification-email',{email:signup.email,callbackURL:callback},cookie)).status,200);
       assert.match(emails.at(-1).subject,/Confirme/);
       const link=new URL(emails.at(-1).text.match(/http:\/\/\S+/)[0]);assert.equal(link.origin,origin);
       const r=await auth.handler(new Request(link,{headers:{cookie}}));assert.equal(r.status,302);
+      assert.equal(new URL(r.headers.get('location'),origin).href,callback);
       const [row]=await db.sql`select role,email_verified from "user" where id=${userId}`;assert.equal(row.role,'member');assert.equal(row.email_verified,true);
     });
     await t.test('recovery rejects foreign destinations and gives unknown accounts the same acknowledgement',async()=>{

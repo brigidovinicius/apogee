@@ -5,7 +5,7 @@ import { syncGoogleCalendar } from "@/lib/opportunities/google-calendar-sync";
 import { revalidatePath } from "next/cache";
 import { requireCalendarMember, calendarSaveAccess, saveOpportunity } from "@/lib/opportunities/personal-calendar";
 import type { CalendarSaveResult } from '@/lib/opportunities/calendar-save-types';
-import { calendarReturnPath } from '@/lib/opportunities/calendar-navigation';
+import { calendarReturnPath, calendarSavePath } from '@/lib/opportunities/calendar-navigation';
 export async function toggleSaved(id:string,remove:boolean) {
   const member=await requireCalendarMember();await saveOpportunity(member.id,id,remove);
   await scheduleSync(member.id);
@@ -18,7 +18,7 @@ async function scheduleSync(userId:string) {
 export async function saveOpportunityFromCard(id:string,saved:boolean,returnTo:string):Promise<CalendarSaveResult> {
   if(typeof saved!=='boolean'||typeof id!=='string'||!/^radar-[a-zA-Z0-9_-]{1,194}$/.test(id))return {ok:false,error:'Oportunidade inválida.'};
   let access;
-  try {access=await calendarSaveAccess(returnTo);}catch{return {ok:false,error:'Não foi possível verificar o acesso. Tente novamente.'};}
+  try {access=await calendarSaveAccess(calendarSavePath(id,calendarReturnPath(returnTo)));}catch{return {ok:false,error:'Não foi possível verificar o acesso. Tente novamente.'};}
   if(access.kind==='disabled')return {ok:false,error:'Agenda temporariamente indisponível.'};
   if(access.kind==='redirect')return {ok:false,redirect:access.href};
   try {await saveOpportunity(access.member.id,id,!saved);}catch{return {ok:false,error:'Não foi possível salvar a alteração. Tente novamente.'};}

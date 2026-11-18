@@ -19,8 +19,12 @@ test("routes collapse dynamic identifiers and exclude private/token routes", () 
 });
 test("every vocabulary entry has a valid closed event and arbitrary values never pass", () => {
   for (const [event, targets] of Object.entries(contract.BEHAVIOR_TARGETS)) for (const target of targets) {
-    const page = (event === "form_progress" || target === "application_open") ? "makeitfly_application" : event === "section_view" || target === "application_start" ? "makeitfly" : target === "store_interest" ? "store" : "radar_list";
+    const annualPages = { annual_price: "annual_offer", annual_choose: "annual_offer", account_ready: "annual_summary", confirmed_return: "annual_summary" };
+    const page = annualPages[target] ?? ((event === "form_progress" || target === "application_open") ? "makeitfly_application" : event === "section_view" || target === "application_start" ? "makeitfly" : target === "store_interest" ? "store" : "radar_list");
     assert.equal(contract.validBehaviorEvent(item({ page, event, target })), true, `${event}/${target}`);
+  }
+  for (const target of ["annual_choose", "confirmed_return", "account_ready", "annual_price"]) {
+    assert.equal(contract.validBehaviorEvent(item({ page: "home", event: target === "annual_choose" ? "action" : "section_view", target })), false);
   }
   for (const extra of [{ email: "person@example.test" }, { name: "Maria" }, { userId: "123" }, { sessionId: "456" }, { url: "https://app.test?token=abc" }, { answer: "yes" }]) assert.equal(contract.validBehaviorEvent({ ...item(), ...extra }), false);
   for (const target of ["person@example.test", "maria_silva", "12345678901", "senha_secreta", "http_500_with_personal_detail", "/private?token=abc", "50.2"]) assert.equal(contract.validBehaviorEvent(item({ target })), false);

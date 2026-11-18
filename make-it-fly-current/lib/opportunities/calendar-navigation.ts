@@ -1,12 +1,27 @@
 import { calendarNavigationQuery } from './calendar-filters';
 import { memberRadarPath } from './navigation';
 
+const saveRoute = /^\/membros\/meu-calendario\/salvar\/(radar-[A-Za-z0-9_-]{1,194})$/;
+
+export function calendarSavePath(id: string, from: string) {
+  const path = "/membros/meu-calendario/salvar/" + encodeURIComponent(id);
+  let back = from;
+  if (from.startsWith(path + "?")) back = new URLSearchParams(from.slice(path.length + 1)).get("voltar") ?? "";
+  return path + "?voltar=" + encodeURIComponent(canonicalCalendarPath(back, false));
+}
+
 /** Return destinations are allowlisted and canonicalized before any redirect. */
 export function calendarReturnPath(value:unknown):string {
+  return canonicalCalendarPath(value, true);
+}
+
+function canonicalCalendarPath(value: unknown, allowSave: boolean): string {
   if(typeof value!=='string'||value.length>4096||value.includes('\\'))return '/membros/meu-calendario';
   try {
     const url=new URL(value,'https://apogee.invalid');
     if(url.origin!=='https://apogee.invalid')return '/membros/meu-calendario';
+    const save = saveRoute.exec(url.pathname);
+    if (allowSave && save) return calendarSavePath(save[1], url.searchParams.get("voltar") ?? "");
     if(url.pathname==='/membros/colecoes/acompanhadas'||/^\/membros\/colecoes\/seguir\/[a-f0-9]{48}$/.test(url.pathname))return url.pathname;
     if(/^\/membros\/colecoes(?:\/[0-9a-f-]{36})?$/.test(url.pathname))return url.pathname;
     if(url.pathname==='/oportunidades'||url.pathname==='/membros/oportunidades')return memberRadarPath(url.searchParams);

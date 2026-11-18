@@ -1,3 +1,4 @@
+import { toolboxReturnPath } from "@/lib/billing/community-navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -19,7 +20,7 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
     <header className={styles.header}><div className={styles.eyebrow}><Wrench size={17} aria-hidden="true" /> Recursos da comunidade</div>
       <h1>Caixa de ferramentas</h1><p>Recursos de IA organizados por tarefa.</p>
     </header>
-    {!access.allowed ? <LockedMemberArea kind="ferramentas" next="/membros/ferramentas" /> : <>
+    {!access.allowed ? <LockedMemberArea kind="ferramentas" next={toolboxReturnPath(selected)} /> : <>
       {!categories.length ? <section className={styles.empty}><FolderOpen size={30} strokeWidth={1.5} aria-hidden="true" /><h2>Estamos organizando a caixa.</h2><p>As ferramentas aparecerão aqui quando forem publicadas.</p><Link href="/membros">Voltar para a comunidade</Link></section> : <>
         <nav className={styles.categories} aria-label="Categorias de ferramentas"><Link href="/membros/ferramentas" prefetch={false} aria-current={!selected ? "page" : undefined}>Todas <span>{categories.reduce((sum,c) => sum+c.count,0)}</span></Link>{categories.map(c => <Link key={c.slug} href={`/membros/ferramentas?categoria=${encodeURIComponent(c.slug)}`} prefetch={false} aria-current={selected === c.slug ? "page" : undefined}>{c.name} <span>{c.count}</span></Link>)}</nav>
         <div className={styles.groups}>{categories.filter(c => !selected || c.slug === selected).map(c => <section key={c.slug} aria-labelledby={`category-${c.slug}`} className={styles.group}>

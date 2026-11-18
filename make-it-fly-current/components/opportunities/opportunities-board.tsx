@@ -47,6 +47,7 @@ type OpportunityBoardProps = {
   opportunities: readonly StudentOpportunity[];
   management?: boolean;
   editorialFeed?: boolean;
+  showCalendarLink?: boolean;
 };
 
 const formatDate = (date: string) =>
@@ -58,7 +59,7 @@ const formatDate = (date: string) =>
     timeZone: "America/Sao_Paulo",
   }).format(new Date(date.length > 10 ? date : `${date}T12:00:00Z`));
 
-export function OpportunitiesBoard({ opportunities, management = false, editorialFeed = false, catalogue }: OpportunityBoardProps) {
+export function OpportunitiesBoard({ opportunities, management = false, showCalendarLink = false, editorialFeed = false, catalogue }: OpportunityBoardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -203,6 +204,7 @@ export function OpportunitiesBoard({ opportunities, management = false, editoria
             </span>
           ) : null}
         </button>
+        {showCalendarLink && <Link href="/calendarios">Ver calendários</Link>}
         <p className={styles.filterSummary}>
           {activeFilterCount === 0
             ? editorialFeed ? "Experiências extracurriculares primeiro" : "Mostrando oportunidades disponíveis"

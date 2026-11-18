@@ -106,7 +106,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </noscript>
       </head>
       <body className="flex min-h-full flex-col bg-flight-ink font-sans text-flight-white">
-        {!localOfferPreview() && <JourneyTracker />}
         <MakeItFlyScrollRestoration />
         <SkipLink />
         <SiteLegalLinksProvider value={getSiteLegalLinks()}>
@@ -114,6 +113,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <AccountProvider account={account}><ApogeeDesignSystem>{localOfferPreview() && <OfferPreviewToolbar sandbox={localStripeSandboxReview()} />}{children}</ApogeeDesignSystem></AccountProvider>
           </McpAvailabilityProvider>
         </SiteLegalLinksProvider>
+        {!localOfferPreview() && <JourneyTracker />}
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ import { getSql } from "@/lib/members/db";
 import { applicationOrigin } from "@/lib/members/mail";
 import { consumeRateLimit } from "@/lib/members/rate-limit";
 import { BillingError, billingConfig, RADAR_ACCESS_PATH } from "@/lib/billing/config";
+import { radarDetailReturnPath } from "@/lib/opportunities/detail-path";
 import { billingFailure } from "@/lib/billing/http";
 
 export const runtime = "nodejs";
@@ -17,11 +18,15 @@ export async function POST(request: Request) {
     billingConfig();
     const [user] = await getSql()`select email, email_verified from "user" where id = ${member.id} and blocked = false`;
     if (!user) throw new BillingError(401, "Conta indisponível.");
+    const next = radarDetailReturnPath(new URL(request.url).searchParams.get("next"));
+    const back = new URL(RADAR_ACCESS_PATH, applicationOrigin());
+    if (next !== "/membros/oportunidades") back.searchParams.set("next", next);
     if (!user.email_verified) {
       if (!(await consumeRateLimit(`radar-verification:${member.id}`, 5, 3600))) throw new BillingError(429, "Aguarde antes de solicitar outro e-mail.");
       await getAuth().api.sendVerificationEmail({ headers: request.headers,
-        body: { email: user.email, callbackURL: `${applicationOrigin()}${RADAR_ACCESS_PATH}` } });
+        body: { email: user.email, callbackURL: back.href } });
     }
-    return Response.redirect(new URL(`${RADAR_ACCESS_PATH}?verification=sent`, applicationOrigin()), 303);
+    back.searchParams.set("verification", "sent");
+    return Response.redirect(back, 303);
   } catch (error) { return billingFailure(error); }
 }

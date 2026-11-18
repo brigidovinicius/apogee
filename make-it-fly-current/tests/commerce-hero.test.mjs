@@ -135,7 +135,7 @@ test("motion follows the system by default and explicit pause leaves server cont
   assert.doesNotMatch(`${system}${paused}${animated}`, /motionEnabled=|onMenuRequest=/);
 });
 
-test("the store shows three real products and reveals signup only after buying intent", async () => {
+test("the store shows three real products and reveals signup only after requesting a launch notification", async () => {
   const { opportunityLoader } = await import("./helpers/load-opportunity-module.mjs");
   const load = opportunityLoader({
     "next/image": { __esModule: true, default: ({ preload, ...props }) => { void preload; return React.createElement("img", props); } },
@@ -157,7 +157,7 @@ test("the store shows three real products and reveals signup only after buying i
       await access(new URL(`../public${photo.src}`, import.meta.url));
     }
   }
-  assert.equal((html.match(/aria-label="Comprar /g) ?? []).length, 3);
+  assert.equal((html.match(/aria-label="Receber aviso de lançamento · /g) ?? []).length, 3);
   assert.doesNotMatch(html, /<form|Quero receber novidades|href="#novos-drops"/);
   assert.match(html, /<dialog[^>]*id="drop-purchase-dialog"/);
   for (const [, anchor] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(html.includes(`id="${anchor}"`));

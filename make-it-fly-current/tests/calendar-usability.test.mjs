@@ -14,6 +14,22 @@ test('relative periods survive saved searches and discard stale month/day/view',
   assert.deepEqual(f.calendarPeriodRange(filters,'2026-12-29'),{start:'2026-12-29',end:'2027-01-04'});
   assert.deepEqual(f.calendarPeriodRange(filters,'2027-01-01'),{start:'2027-01-01',end:'2027-01-07'});
 });
+test('saving resumes on the same item and preserves only supported return filters', () => {
+  const billing = load('lib/billing/community-navigation.ts');
+  const from = '/membros/oportunidades?categoria=competicoes&pagina=2';
+  const save = nav.calendarSavePath('radar-one', from);
+  assert.equal(nav.calendarReturnPath(save), save);
+  assert.equal(nav.calendarSavePath('radar-one', save), save);
+  assert.equal(billing.communityReturnPath(save), save);
+  assert.equal(new URL(billing.annualSummaryPath(save), 'https://example.test').searchParams.get('next'), save);
+  assert.equal(new URL(save, 'https://example.test').searchParams.get('voltar'), from);
+  for (const unsafe of ['https://other.test', '/membros/colecoes/admin', '/membros/meu-calendario/salvar/radar-other']) {
+    const url = new URL(nav.calendarSavePath('radar-one', unsafe), 'https://example.test');
+    assert.equal(url.searchParams.get('voltar'), '/membros/meu-calendario');
+  }
+  assert.equal(billing.toolboxReturnPath('imagem-e-design'), '/membros/ferramentas?categoria=imagem-e-design');
+  assert.equal(billing.toolboxReturnPath('not/a/category'), '/membros/ferramentas');
+});
 test('ongoing events overlap the selected day while registration uses its closing date',()=>{
   const entries=[entry('event','2026-11-03','2026-11-07'),entry('registration','2026-11-01','2026-11-09'),entry('exam','2026-11-05T02:00:00Z')];
   const selected=f.filterCalendarEntries(entries,{view:'list',period:'hoje'},'2026-11-05');

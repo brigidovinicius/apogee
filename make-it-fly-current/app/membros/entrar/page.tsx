@@ -5,6 +5,7 @@ import { SignInForm } from "@/components/members/auth-forms";
 import styles from "@/components/members/members.module.css";
 import { getCurrentMember } from "@/lib/members/dal";
 import { googleOAuthErrorMessage } from "@/lib/members/social-auth";
+import { isAnnualPurchasePath } from "@/lib/billing/community-navigation";
 import { safeNextPath } from "@/lib/members/validation";
 
 export const metadata: Metadata = { title: "Entrar" };
@@ -12,14 +13,15 @@ export const metadata: Metadata = { title: "Entrar" };
 export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string; senha?: string }> }) {
   const params = await searchParams;
   const next = safeNextPath(params.next);
+  const annual = isAnnualPurchasePath(next);
   if (await getCurrentMember()) redirect(next);
 
   return (
     <div className={styles.narrow}>
       <header className={styles.authIntro}>
-        <p className={styles.eyebrow}>Área de membros</p>
-        <h1 className={styles.title}>Entrar</h1>
-        <p className={styles.lead}>Acesse o fórum, seu perfil e o Radar de oportunidades da comunidade Apogee</p>
+        <p className={styles.eyebrow}>{annual ? "Comunidade Apogee · Plano anual" : "Área de membros"}</p>
+        <h1 className={styles.title}>{annual ? "Entre para continuar a assinatura" : "Entrar"}</h1>
+        <p className={styles.lead}>{annual ? "R$ 1.438,80 por ano, com renovação automática. Você revisa o total antes de pagar." : "Acesse o fórum, seu perfil e o Radar de oportunidades da comunidade Apogee"}</p>
       </header>
       <div className={`${styles.panel} ${styles.authPanel}`}>
         {params.senha === "redefinida" && <p role="status">Senha redefinida. Entre com sua nova senha.</p>}

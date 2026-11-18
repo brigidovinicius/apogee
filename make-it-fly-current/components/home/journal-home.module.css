@@ -34,12 +34,6 @@
 .page main a.heroPrimary { color: #fff; background: var(--journal-ink); border-color: var(--journal-ink); }
 .heroPrimary:hover { background: #1e3653 !important; }
 .heroSecondary:hover { background: var(--journal-soft); }
-.introNote { padding-left: 1rem; }
-.introNote p { margin: 0; font-size: 1rem; line-height: 1.65; }
-.introNote p:first-child { margin-bottom: .75rem; font-weight: 550; }
-.introNote p:nth-child(2) { max-width: 24ch; color: var(--journal-muted); }
-.introNote a { display: inline-flex; align-items: center; gap: .65rem; min-height: 44px; margin-top: 1.5rem; font-size: .8125rem; text-decoration: none; }
-.introNote a:hover { text-decoration: underline; }
 .communityWord { grid-column: 1 / -1; margin-top: 1rem; text-align: right; font: 400 clamp(64px, 9vw, 130px)/.95 "Apogee Home Signature", Georgia, serif; letter-spacing: -.05em; color: #b9d3ee; }
 .starStage { --light-x: 50%; --light-y: 42%; position: relative; display: grid; place-items: center; height: 390px; isolation: isolate; }
 .starFigure { position: relative; width: min(84%, 290px); aspect-ratio: 703 / 870; filter: drop-shadow(0 16px 20px rgb(7 24 45 / 7%)); transition: filter 500ms ease, transform 650ms ease; }
@@ -121,10 +115,6 @@
 @media (max-width: 1100px) {
   .page { --journal-width: calc(100% - 3rem); }
   .intro { grid-template-columns: 1.15fr 1fr; gap: 1.5rem; padding-block: 3.5rem; min-height: 540px; }
-  .introNote { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0; }
-  .introNote p:first-child { margin: 0; }
-  .introNote p:nth-child(2) { max-width: 32ch; }
-  .introNote a { display: none; }
   .starStage { height: 340px; }
   .starHalo, .starBeam { width: 100%; }
   .radarTrack { grid-auto-columns: calc((100% - 2rem) / 2.45); }
@@ -144,10 +134,6 @@
   .starHalo { width: 100%; opacity: .35; }
   .starShine { opacity: .35; }
   .starBeam { width: 100%; }
-  .introNote { display: block; text-align: center; }
-  .introNote p { font-size: .875rem; }
-  .introNote p:first-child { margin-bottom: .4rem; }
-  .introNote p:nth-child(2) { max-width: 32ch; margin-inline: auto; }
   .communityWord { margin-top: 1.75rem; font-size: 76px; }
   .supportStrip > aside { min-height: 85px; }
   .radarSection { padding-block: 3rem; }
@@ -172,3 +158,6 @@
   .starStage *, .starStage *::before, .starStage *::after { transition: none; transform: none; }
   .radarTrack { scroll-behavior: auto; }
 }
+
+.introLead { max-width:43ch; color:var(--journal-muted); margin:1rem 0 0; line-height:1.55; }
+@media(min-width:761px) { .intro { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); } }

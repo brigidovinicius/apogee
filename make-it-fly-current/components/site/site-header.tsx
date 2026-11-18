@@ -6,7 +6,7 @@ import { McpConnectLink } from "./mcp-connect-link";
 import { AccountMenu } from "@/components/members/account-menu";
 import styles from "./site-shell.module.css";
 
-type SiteSection = "home" | "opportunities" | "members" | "blog" | "gallery" | "store";
+type SiteSection = "home" | "opportunities" | "members" | "blog" | "gallery" | "store" | "community";
 
 type SiteHeaderProps = {
   compact?: boolean;
@@ -15,50 +15,46 @@ type SiteHeaderProps = {
   memberLabel?: string;
   tone?: "dark" | "light";
   prefetch?: boolean;
-  eventLink?: boolean;
   adaptive?: boolean;
 };
 
 const navigation: ReadonlyArray<{ href: string; label: string; section?: SiteSection }> = [
-  { href: "/", label: "Início", section: "home" },
   { href: "/oportunidades", label: "Radar", section: "opportunities" },
+  { href: "/comunidade", label: "Comunidade", section: "community" },
   { href: "/blog", label: "Blog", section: "blog" },
-  { href: "/galeria", label: "Galeria", section: "gallery" },
+];
+const moreLinks: typeof navigation = [
   { href: "/loja", label: "Loja", section: "store" },
-  { href: "/comunidade", label: "Comunidade" },
+  { href: "/galeria", label: "Galeria", section: "gallery" },
+  { href: "/evento-openai", label: "Evento gratuito" },
 ];
 
 export function SiteHeader({
   compact = false,
   current,
   memberHref = "/membros",
-  memberLabel = "Membros",
+  memberLabel = "Entrar",
   tone = "dark",
   prefetch,
-  eventLink = false,
   adaptive = false,
 }: SiteHeaderProps) {
-  const links = eventLink ? [...navigation, { href: "/evento-openai", label: "Evento gratuito" }] : navigation;
+  const renderLink = (item: (typeof navigation)[number]) => (
+    <Link key={item.href} href={item.href} prefetch={prefetch}
+      aria-current={item.section === current && item.section ? "page" : undefined}>
+      {item.label}
+    </Link>
+  );
+  const more = <>{moreLinks.map(renderLink)}<McpConnectLink /><McpConnectLink provider="claude" /></>;
   const desktopNavigation = (
     <nav className={styles.desktopNavigation} aria-label="Navegação principal">
-      {links.map((item, index) => (
-        <Link
-          href={item.href}
-          prefetch={prefetch}
-          key={item.href}
-          data-compact={index < 3 || undefined}
-          aria-current={item.section !== undefined && item.section === current ? "page" : undefined}
-        >
-          {item.label}
-        </Link>
-      ))}
-      <McpConnectLink className={styles.mcpLink} />
+      {navigation.map(renderLink)}
+      <SiteMobileNavigation more>{more}</SiteMobileNavigation>
     </nav>
   );
   return (
     <header className={styles.header} data-tone={adaptive ? tone : "light"} data-adaptive={adaptive || undefined} data-editorial={!adaptive || undefined} data-compact={compact || undefined}>
       <div className={styles.headerInner}>
-        <Link className={styles.brand} href="/" aria-label="Apogee - início" prefetch={prefetch}>
+        <Link className={styles.brand} href="/" aria-current={current === "home" ? "page" : undefined} aria-label="Apogee - início" prefetch={prefetch}>
           <Image
             className={adaptive ? styles.adaptiveWhite : undefined}
             src={!adaptive || tone === "light" ? "/brand/apogee-logo-navy.svg" : "/brand/apogee-logo-white.svg"}
@@ -85,21 +81,8 @@ export function SiteHeader({
         </Link>} />
 
         {!compact && <SiteMobileNavigation>
-            {links.map((item) => (
-              <Link
-                href={item.href}
-                prefetch={prefetch}
-                key={item.href}
-                aria-current={item.section !== undefined && item.section === current ? "page" : undefined}
-              >
-                {item.label}
-              </Link>
-            ))}
-            <Link href={memberHref} prefetch={prefetch} aria-current={current === "members" ? "page" : undefined}>
-              {memberLabel}
-            </Link>
-            <McpConnectLink />
-            <McpConnectLink provider="claude" />
+            {navigation.map(renderLink)}
+            {more}
         </SiteMobileNavigation>}
         </div>
       </div>

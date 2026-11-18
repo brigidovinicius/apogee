@@ -121,8 +121,8 @@ test("a blocked detail presents the community and never starts a checkout", asyn
   state.events = new Set([first.id,...Array.from({length:9},(_,i)=>`already-${i}`)]);
   const page = load("app/membros/oportunidades/[id]/page.tsx").default;
   const html = renderToStaticMarkup(await page({ params: Promise.resolve({ id: second.id }) }));
-  assert.match(html, /Conhecer a Comunidade Apogee/);
-  assert.match(html, /href="\/comunidade\?next=%2Fmembros%2Foportunidades%2Fradar-second#planos"/);
+  assert.match(html, /Ver plano com Radar completo/);
+  assert.match(html, /href="\/comunidade\?next=%2Fmembros%2Foportunidades%2Fradar-second#plano-anual"/);
   assert.doesNotMatch(html, /\/api\/radar\/checkout|Abrindo checkout|method="post"|REQUISITO_PRIVADO/);
   assert.equal(state.claims, 0);
   const preserved = renderToStaticMarkup(await page({ params: Promise.resolve({ id: first.id }) }));

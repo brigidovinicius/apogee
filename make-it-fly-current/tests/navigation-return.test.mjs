@@ -86,7 +86,7 @@ test("shared navigation marks only a defined current section and preserves the c
   const accountFallback = nodes(tree, node => node.props?.fallback)[0].props.fallback;
   const unknown = [...nodes(tree, node => node.type === "Link"), ...nodes(accountFallback, node => node.type === "Link")];
   assert.equal(unknown.filter(node => node.props["aria-current"] === "page").length, 0);
-  assert.equal(unknown.filter(node => node.props.href === memberHref).length, 2);
+  assert.equal(unknown.filter(node => node.props.href === memberHref).length, 1);
   for (const adaptive of [false, true]) {
     const selected = nodes(SiteHeader({ current: "blog", memberHref, adaptive }), node => node.type === "Link" && node.props["aria-current"] === "page");
     assert.equal(selected.length, 2);

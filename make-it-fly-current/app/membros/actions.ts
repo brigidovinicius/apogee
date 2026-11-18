@@ -8,6 +8,7 @@ import { clientIp, getCurrentMember, requireMember } from "@/lib/members/dal";
 import * as forum from "@/lib/members/forum";
 import { consumeRateLimit } from "@/lib/members/rate-limit";
 import { billingConfig, RADAR_ACCESS_PATH, radarBillingEnabled } from "@/lib/billing/config";
+import { isAnnualPurchasePath } from "@/lib/billing/community-navigation";
 import { radarPurchaseNeedsVerification } from "@/lib/billing/store";
 import { supervisedRegistrationEnabled } from "@/lib/members/protection";
 import {
@@ -80,7 +81,7 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
     return { message: authErrorMessage(error, "Não foi possível criar sua conta agora."), values };
   }
   const next = safeNextPath(text(form, "next"));
-  redirect(needsVerification ? `${RADAR_ACCESS_PATH}?next=${encodeURIComponent(next)}` : next, RedirectType.replace);
+  redirect(needsVerification && !isAnnualPurchasePath(next) ? `${RADAR_ACCESS_PATH}?next=${encodeURIComponent(next)}` : next, RedirectType.replace);
 }
 
 export async function completeUsername(_: FormState, form: FormData): Promise<FormState> {

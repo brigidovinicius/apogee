@@ -31,7 +31,7 @@ export function LockedMemberArea({ kind, next, reason = "annual" }: { kind: Lock
         {kind === "beneficios" ? <p className={styles.note}>Benefícios de parceiros em preparação.</p> : null}
         {kind === "ferramentas" ? <p className={styles.note}>Ferramentas de terceiros seguem suas próprias condições.</p> : null}
         <div className={styles.actions}>
-          {reason === "verification" ? <Link className={styles.primary} href={`/membros/protecao?next=${encodeURIComponent(next)}`} prefetch={false}>Verificar minha conta <ArrowUpRight size={16} aria-hidden="true" /></Link> : reason === "annual" ? <Link className={styles.primary} href={`/comunidade?next=${encodeURIComponent(next)}#planos`} prefetch={false}>Conhecer a assinatura anual <ArrowUpRight size={16} aria-hidden="true" /></Link> : null}
+          {reason === "verification" ? <Link className={styles.primary} href={`/membros/protecao?next=${encodeURIComponent(next)}`} prefetch={false}>Verificar minha conta <ArrowUpRight size={16} aria-hidden="true" /></Link> : reason === "annual" ? <Link className={styles.primary} href={`/comunidade?next=${encodeURIComponent(next)}#plano-anual`} prefetch={false}>Conhecer a assinatura anual <ArrowUpRight size={16} aria-hidden="true" /></Link> : null}
           <Link href="/membros/oportunidades">Continuar no Radar</Link>
         </div>
       </div>

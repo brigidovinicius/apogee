@@ -6,6 +6,7 @@ import { saveOpportunityFromCard } from '@/app/membros/meu-calendario/actions';
 import type { CalendarSaveState } from '@/lib/opportunities/calendar-save-types';
 import styles from './save-opportunity.module.css';
 import {AddToCollection} from './add-to-collection';
+import { calendarSavePath } from '@/lib/opportunities/calendar-navigation';
 import {googleCalendarReturnPath} from '@/lib/opportunities/google-calendar-navigation';
 
 type SaveContext = {state:CalendarSaveState;returnTo:string;saved:Set<string>;update:(id:string,value:boolean)=>void};
@@ -18,7 +19,12 @@ export function SaveOpportunityButton({id,title}:{id:string;title:string}) {
   const context=useContext(Context);
   if(!context||context.state.kind==='disabled')return null;
   if(context.state.kind==='unavailable')return <span className={styles.message}>Agenda temporariamente indisponível.</span>;
-  if(context.state.kind==='redirect')return <Link data-behavior-action="save" className={styles.button} href={context.state.href} prefetch={false} aria-label={'Salvar '+title+' na minha agenda'}>Salvar na minha agenda</Link>;
+  if (context.state.kind === 'redirect') {
+    const gate = context.state.href.split('?')[0];
+    const next = calendarSavePath(id, context.returnTo);
+    const label = gate === '/membros/entrar' ? 'Entrar para salvar' : gate === '/membros/radar/acesso' ? 'Ver acesso à agenda' : 'Continuar para salvar';
+    return <Link data-behavior-action="save" className={styles.button} href={gate + '?next=' + encodeURIComponent(next)} prefetch={false} aria-label={label + ' · ' + title}>{label}</Link>;
+  }
   return <ReadySaveButton context={context} id={id} title={title}/>;
 }
 function ReadySaveButton({context,id,title}:{context:SaveContext;id:string;title:string}) {

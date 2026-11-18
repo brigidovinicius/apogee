@@ -12,7 +12,11 @@ import {requestAdultReview,requestDependent,revokeDependent,supervisedRegistrati
 
 async function perform(operation:(id:string)=>Promise<unknown>,next?:unknown) {
   if(!supervisedRegistrationEnabled())notFound();
-  const member=await getCurrentMember();if(!member)redirect('/membros/entrar');
+  const member = await getCurrentMember();
+  if (!member) {
+    const resume = typeof next === "string" ? "/membros/protecao?next=" + encodeURIComponent(safeNextPath(next)) : "/membros/protecao";
+    redirect("/membros/entrar?next=" + encodeURIComponent(resume));
+  }
   let result='ok';
   try {
     if(!(await consumeRateLimit('protection:'+member.id,6,60)))throw Error('Rate limited');

@@ -8,7 +8,7 @@
 .secondary { background:white; color:var(--offer-ink); }
 .button:hover { background:#23486d; }
 .secondary:hover { background:#edf4fa; }
-.plans { display:grid; grid-template-columns:1fr 1.15fr; gap:24px; align-items:stretch; }
+.plans { display:grid; grid-template-columns:1.15fr 1fr; gap:24px; align-items:stretch; }
 .plan { display:flex; flex-direction:column; border:1px solid #38526c; padding:36px; border-radius:8px; color:#e7eef5; background:#0d233b; }
 .plan h3 { font-size:1.7rem; font-weight:500; letter-spacing:-.04em; margin:0; }
 .plan p { color:#b8ccde; font-size:.9rem; line-height:1.8; margin:18px 0 0; }
@@ -40,3 +40,6 @@
 @media(max-width:1000px) { .pillarGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:650px) { .plans,.pillarGrid { grid-template-columns:1fr; }.plan { padding:26px; }.overview { padding:22px; }.intro { padding:22px; }.price strong { font-size:2.8rem; }.actions { align-items:stretch; }.actions>a { flex:1; }.darkActions>a { width:100%; } }
 @media(prefers-reduced-motion:reduce) { .scope * { scroll-behavior:auto; } }
+
+.featured { scroll-margin-block-start:1rem; }
+.featured .actions { margin-top:0; }

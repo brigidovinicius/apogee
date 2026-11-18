@@ -65,16 +65,27 @@ export function BehaviorTracker() {
     };
     const hide = () => void flushBehavior();
     const visibility = () => { lastTick = performance.now(); if (document.visibilityState === "hidden") hide(); };
-    const observer = page === "makeitfly" && typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(entries => {
-      for (const entry of entries) if (entry.isIntersecting && !sections.has(entry.target.id)) { sections.add(entry.target.id); trackBehavior("section_view", entry.target.id, page); }
-    }, { threshold: 0.35 }) : null;
-    document.querySelectorAll("[data-flight-section][id]").forEach(section => observer?.observe(section));
+    const observer = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        const section = entry.target as HTMLElement;
+        const target = section.dataset.annualStage || section.id;
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.35 && !sections.has(target)) {
+          sections.add(target);
+          trackBehavior("section_view", target, page);
+        }
+      }
+    }, { threshold: 0.35 });
+    const observeSections = () => document.querySelectorAll("[data-flight-section][id], [data-annual-stage]").forEach(section => observer?.observe(section));
+    observeSections();
+    // The pending checkout refreshes in place when the server confirms the invoice.
+    const updates = observer && page === "annual_summary" ? new MutationObserver(observeSections) : null;
+    if (updates) updates.observe(document.body, { childList: true, subtree: true });
     window.addEventListener("scroll", scroll, { passive: true });
     document.addEventListener("click", click); document.addEventListener("submit", submit, true);
     window.addEventListener("pagehide", hide); document.addEventListener("visibilitychange", visibility);
     scroll();
     return () => {
-      window.clearInterval(tick); observer?.disconnect();
+      window.clearInterval(tick); observer?.disconnect(); updates?.disconnect();
       window.removeEventListener("scroll", scroll); document.removeEventListener("click", click); document.removeEventListener("submit", submit, true);
       window.removeEventListener("pagehide", hide); document.removeEventListener("visibilitychange", visibility);
       void flushBehavior();

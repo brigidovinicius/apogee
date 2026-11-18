@@ -13,7 +13,7 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
       <section className={styles.recordingHero} aria-labelledby="recording-title">
         <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.recordingCopy}><p className={styles.eyebrow}>Codex Community · organização Apogee</p><h1 id="recording-title">Descubra o que a IA pode<br /><span>mudar na sua vida.</span></h1><p className={styles.recordingLead}>Assista gratuitamente ao evento exclusivo Codex Community, da comunidade OpenAI, organizado pela Apogee. Explore como a IA pode ajudar você a pesquisar, escrever, organizar a rotina e colocar ideias em prática.</p><p className={styles.recordingAvailability}><Bell size={16} aria-hidden="true" /> Inscrição gratuita · orientações de acesso por e-mail.</p>
-          <Link className={[styles.primary, styles.mobileCaptureLink].join(" ")} href="#inscricao">Quero assistir gratuitamente <ArrowUpRight size={18} aria-hidden="true" /></Link>
+          <Link className={[styles.primary, styles.mobileCaptureLink].join(" ")} href="#inscricao">Inscrever-se no evento gratuito <ArrowUpRight size={18} aria-hidden="true" /></Link>
           <div className={styles.recordingArtwork} aria-hidden="true"><Image src="/brand/apogee-star.svg" alt="" width={703} height={870} priority /><div className={styles.recordingArtLabel}><CirclePlay size={28} strokeWidth={1.2} /><span>Codex Community<small>IA para o dia a dia</small></span></div></div>
         </div>
         <div id="inscricao" className={styles.captureCard}><RecordingCaptureForm preview={preview} /></div>

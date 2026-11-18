@@ -14,3 +14,27 @@ export function communityReturnPath(value: unknown): string {
   } catch { return "/membros/oportunidades"; }
   return radarDetailReturnPath(value);
 }
+
+export function toolboxReturnPath(category: string | null) {
+  return communityReturnPath("/membros/ferramentas" + (category ? "?categoria=" + encodeURIComponent(category) : ""));
+}
+
+export function isAnnualPurchasePath(path: string) {
+  return path.split(/[?#]/, 1)[0] === "/membros/assinatura";
+}
+
+export function annualSummaryPath(resource: string) {
+  return `/membros/assinatura?next=${encodeURIComponent(communityReturnPath(resource))}`;
+}
+
+export function annualResourceLabel(path: string) {
+  if (path.startsWith("/membros/meu-calendario/salvar/")) return "Salvar a oportunidade na agenda";
+  if (path.startsWith("/membros/oportunidades/")) return "Abrir a oportunidade";
+  if (path.startsWith("/membros/oportunidades")) return "Continuar no Radar";
+  if (path.startsWith("/membros/ferramentas")) return "Abrir Caixa de Ferramentas";
+  if (path === "/membros/trilha") return "Continuar na Trilha";
+  if (path === "/membros/beneficios") return "Ver benefícios";
+  if (path.startsWith("/membros/meu-calendario")) return "Abrir minha agenda";
+  if (path.startsWith("/membros/colecoes")) return "Abrir minhas coleções";
+  return "Abrir meus recursos";
+}

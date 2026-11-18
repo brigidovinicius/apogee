@@ -19,7 +19,7 @@ test("site-wide entry follows the server-provided feature flag", () => {
     const shell = renderToStaticMarkup(React.createElement(McpAvailabilityProvider, { enabled },
       React.createElement(React.Fragment, null, React.createElement(SiteHeader), React.createElement(SiteFooter))));
     assert.equal((shell.match(/Incluir no meu ChatGPT/g) ?? []).length, enabled ? 3 : 0, "desktop, mobile and footer follow the same flag");
-    assert.equal((shell.match(/Incluir no meu Claude/g) ?? []).length, enabled ? 2 : 0, "mobile and footer also offer Claude");
+    assert.equal((shell.match(/Incluir no meu Claude/g) ?? []).length, enabled ? 3 : 0, "desktop, mobile and footer also offer Claude");
   }
 });
 

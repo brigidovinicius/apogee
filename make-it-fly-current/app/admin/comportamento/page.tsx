@@ -1,11 +1,12 @@
+import Link from "next/link";
 import { AdminPageHeader, MetricCard, adminStyles as styles } from "@/components/admin/admin-ui";
 import { getBehaviorOverview } from "@/lib/admin/behavior";
 import { BehaviorInsightsPanel } from "@/components/admin/behavior-insights";
 export const dynamic = "force-dynamic";
 const number = new Intl.NumberFormat("pt-BR");
-const pages: Record<string, string> = { home: "Página inicial", radar_list: "Radar · catálogo", radar_detail: "Radar · detalhes", radar_saved: "Radar · salvos", radar_calendar: "Radar · calendário", radar_access: "Radar · acesso", calendars: "Calendários", calendar_detail: "Calendário público", collections: "Coleções", collection_detail: "Coleção", competitions: "Competições", blog_list: "Blog", blog_article: "Artigos", store: "Loja", gallery: "Galeria", makeitfly: "Make It Fly", makeitfly_application: "Inscrição Make It Fly", login: "Entrada", signup: "Cadastro", password_recovery: "Recuperação de acesso", community: "Comunidade", privacy: "Privacidade", terms: "Termos" };
+const pages: Record<string, string> = { annual_offer: "Oferta anual", annual_summary: "Resumo da assinatura", home: "Página inicial", radar_list: "Radar · catálogo", radar_detail: "Radar · detalhes", radar_saved: "Radar · salvos", radar_calendar: "Radar · calendário", radar_access: "Radar · acesso", calendars: "Calendários", calendar_detail: "Calendário público", collections: "Coleções", collection_detail: "Coleção", competitions: "Competições", blog_list: "Blog", blog_article: "Artigos", store: "Loja", gallery: "Galeria", makeitfly: "Make It Fly", makeitfly_application: "Inscrição Make It Fly", login: "Entrada", signup: "Cadastro", password_recovery: "Recuperação de acesso", community: "Comunidade", privacy: "Privacidade", terms: "Termos" };
 const events: Record<string, string> = { page_view: "Visualização", navigation: "Navegação para", scroll_depth: "Rolagem (%)", engaged_time: "Tempo visível", section_view: "Seção", action: "Ação iniciada", filter_apply: "Uso dos filtros", form_progress: "Etapa do formulário" };
-const targets: Record<string, string> = { view: "Página", save: "Salvar", remove_saved: "Remover dos salvos", alert_request: "Solicitar aviso", series_alert_request: "Acompanhar edições", checkout_start: "Iniciar checkout", google_calendar: "Conectar Google Agenda", official_link: "Abrir fonte oficial", store_interest: "Interesse em produto", application_start: "Abrir inscrição", application_open: "Abrir formulário externo", applied: "Aplicar", cleared: "Limpar", started: "Primeira interação", step_1: "Etapa 1 concluída", step_2: "Etapa 2 concluída", step_3: "Etapa 3 concluída", validation_error: "Erro de validação", submit_started: "Envio iniciado", submit_succeeded: "Envio confirmado", submit_failed: "Envio sem confirmação" };
+const targets: Record<string, string> = { annual_price: "Preço anual visto", annual_choose: "Plano anual escolhido", account_ready: "Conta apta para pagar", confirmed_return: "Confirmação exibida", view: "Página", save: "Salvar", remove_saved: "Remover dos salvos", alert_request: "Solicitar aviso", series_alert_request: "Acompanhar edições", checkout_start: "Iniciar checkout", google_calendar: "Conectar Google Agenda", official_link: "Abrir fonte oficial", store_interest: "Interesse em produto", application_start: "Abrir inscrição", application_open: "Abrir formulário externo", applied: "Aplicar", cleared: "Limpar", started: "Primeira interação", step_1: "Etapa 1 concluída", step_2: "Etapa 2 concluída", step_3: "Etapa 3 concluída", validation_error: "Erro de validação", submit_started: "Envio iniciado", submit_succeeded: "Envio confirmado", submit_failed: "Envio sem confirmação" };
 export default async function BehaviorPage() {
   const overview = await getBehaviorOverview();
   return <div className={styles.content}>
@@ -16,6 +17,16 @@ export default async function BehaviorPage() {
         <MetricCard label="Navegações" value={number.format(overview.insights.totals.navigation)} detail="Cliques para outras páginas" />
         <MetricCard label="Ações iniciadas" value={number.format(overview.insights.totals.actions)} detail="Intenção; não comprova conclusão ou pagamento" />
         <MetricCard label="Uso dos filtros" value={number.format(overview.insights.totals.filters)} detail="Sem termos buscados ou valores dos filtros" />
+      </section>
+      <section className={styles.surface} aria-label="Jornada de compra anual">
+        <h2>Jornada de compra anual</h2>
+        <p>Ocorrências consentidas por dispositivo nos últimos 30 dias. Uma pessoa pode passar pela mesma etapa mais de uma vez.</p>
+        <table><caption>Etapas da assinatura</caption><thead><tr><th>Etapa</th><th>Celular</th><th>Desktop</th></tr></thead>
+          <tbody>{[["annual_offer","annual_price"],["annual_offer","annual_choose"],["annual_summary","account_ready"],["annual_summary","checkout_start"],["annual_summary","confirmed_return"]].map(([page, target]) =>
+            <tr key={target}><th scope="row">{targets[target]}</th>{["mobile","desktop"].map(device =>
+              <td key={device}>{number.format(Number(overview.rows.find(row => row.page === page && row.target === target && row.device === device)?.total ?? 0))}</td>)}</tr>)}</tbody>
+        </table>
+        <Link href="/admin/assinaturas">Consultar compradores e primeiro uso registrado</Link>
       </section>
       <BehaviorInsightsPanel data={overview.insights} />
       <section className={styles.surface} aria-label="Contagens por categoria">

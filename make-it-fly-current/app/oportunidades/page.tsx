@@ -5,7 +5,6 @@ import { CalendarSaveProvider } from "@/components/opportunities/save-opportunit
 import { calendarSaveState } from "@/lib/opportunities/personal-calendar";
 import { calendarReturnPath } from "@/lib/opportunities/calendar-navigation";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -61,9 +60,8 @@ export default async function OpportunitiesPage({ searchParams }: {
           </p>
         </section>
 
-        <p><Link href="/calendarios">Explorar calendários de oportunidades →</Link></p>
+        {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} showCalendarLink editorialFeed /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
         <RadarOfferIntro next={memberRadarPath(params)} />
-        {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
       </main>
 
       <SiteFooter />

@@ -76,7 +76,7 @@ export function ContactCaptureForm({ preview = false }: { preview?: boolean }) {
       <div className={styles.honeypot} aria-hidden="true"><label htmlFor={`${id}-website`}>Website</label><input id={`${id}-website`} name="website" type="text" autoComplete="off" tabIndex={-1} /></div>
       <label className={styles.consent} htmlFor={`${id}-consent`}><input id={`${id}-consent`} name="consent" type="checkbox" required aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? `${id}-consent-error` : undefined} /><span>{COMMUNITY_CONTACT_CONSENT[campaign]}</span></label>
       {errors.consent && <p className={styles.fieldError} id={`${id}-consent-error`}>{errors.consent}</p>}
-      <button className={styles.primary} type="submit">{pending ? "Salvando pedido…" : "Quero assistir gratuitamente"}<ArrowUpRight size={18} aria-hidden="true" /></button>
+      <button className={styles.primary} type="submit">{pending ? "Salvando pedido…" : "Receber orientações por e-mail"}<ArrowUpRight size={18} aria-hidden="true" /></button>
     </fieldset>
     {failure && <p className={styles.fieldError} role="alert">{failure}</p>}
     <p className={styles.formPurpose}>Usaremos seu contato apenas para o aviso solicitado. Você pode pedir a exclusão pelo canal da <Link href="/privacidade">Política de Privacidade</Link>.</p>

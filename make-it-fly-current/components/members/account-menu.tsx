@@ -50,7 +50,10 @@ export function AccountMenu({ fallback }: { fallback: ReactNode }) {
       document.removeEventListener("focusin", dismiss);
     };
   }, []);
-  if (!account) return fallback;
+  if (!account) {
+    if (pathname === "/membros/entrar" || pathname === "/membros/cadastro") return null;
+    return fallback;
+  }
   return <details className={styles.menu} data-account-menu ref={details} onKeyDown={event => {
     if (event.key === "Escape" && details.current?.open) {
       event.preventDefault();
