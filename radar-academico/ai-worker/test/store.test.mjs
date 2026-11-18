@@ -9,7 +9,7 @@ import { dispatch } from '../dispatch.mjs';
 import { prepareRequest } from '../policy.mjs';
 import { processOne } from '../queue.mjs';
 import { createOpenAIProvider } from '../openai.mjs';
-let db,store,worker;
+let db,store,worker,finance;
 const hash='a'.repeat(64);
 async function migrate(target){
   const dir=new URL('../../db/migrations/',import.meta.url);
@@ -25,12 +25,14 @@ before(async()=>{
     await migrate(db);
     url.username='radar_ai_worker';worker=new pg.Pool({connectionString:url.toString(),max:2});
     store=new AiStore((sql,args)=>worker.query(sql,args));
+    await db.exec('alter role radar_ai_reconciler login');
+    url.username='radar_ai_reconciler';finance=new pg.Pool({connectionString:url.toString(),max:2});
   }else{
     db=new PGlite({extensions:{pgcrypto}});await migrate(db);
     store=new AiStore((sql,args=[])=>db.transaction(async tx=>{await tx.exec('set local role radar_ai_worker');return tx.query(sql,args);}));
   }
 });
-after(async()=>{await worker?.end();await db?.close();});
+after(async()=>{await finance?.end();await worker?.end();await db?.close();});
 beforeEach(async()=>{
   await db.exec(`reset session authorization; reset role;
     truncate radar_ai.operation,radar_ai.attestation,radar_ai.cycle,radar_ai.month_opening cascade;
@@ -297,4 +299,173 @@ test('operator reconciliation preserves audit/pauses and never requeues unknown 
   assert.equal((await db.query("select radar_ai.reconcile($1,'confirmed',0,'synthetic-receipt-0002') as r",[id])).rows[0].r.accepted,false);
   assert.equal((await db.query('select state from radar_ai.task')).rows[0].state,'held');
   assert.equal((await store.status()).manual_paused,true);
+});
+
+// The same rollover cases run on PGlite and a disposable real PostgreSQL login.
+async function financeQuery(sql,args=[]){
+ if(finance)return finance.query(sql,args);
+ return db.transaction(async tx=>{await tx.exec('set local role radar_ai_reconciler');return tx.query(sql,args)});
+}
+async function monthFixture(){
+ await db.exec(`delete from radar_ai.month_opening;
+  update radar_ai.cycle set starts_at=starts_at-interval '1 month',ends_at=ends_at-interval '1 month';
+  update radar_ai.attestation set verified_at=now()-interval '2 hours',proof_until=now()-interval '1 hour';
+  insert into radar_ai.month_opening select period,'fixture-previous-month',now() from radar_ai.month_bounds(now()-interval '1 month');
+  insert into radar_ai.prior_usage(period,stream,amount_micro,reference) select period,'radar',100,'fixture-previous-usage' from radar_ai.month_bounds(now()-interval '1 month');
+  insert into radar_ai.price values('gpt-6-luna','fixture-luna',true,now()-interval '1 hour',125000,500000,0);
+  insert into radar_ai.response_tariff values('gpt-6-luna','fixture-luna',true,now()-interval '1 hour',100000,10000,125000,500000);
+  insert into radar_ai.reconciliation_anchor(cycle_id,period,free_grant_micro,grant_until,provider_baseline_micro,
+   radar_baseline_micro,last_provider_micro,reference,auto_reload_off,tariff,automatic_months)
+  select 'cycle',period,100000000,now()+interval '10 days',100,100,100,'fixture-original-grant',true,
+   '{"input":100000,"cached":10000,"write":125000,"output":500000}',true from radar_ai.month_bounds(now()-interval '1 month');`);
+}
+async function monthRefresh({cycle='cycle',total=100,monthly=0,observed=new Date().toISOString(),period}={}){
+ period??=(await db.query('select period::text from radar_ai.month_bounds(now())')).rows[0].period;
+ return (await financeQuery('select radar_ai.reconcile_calendar_month($1,$2,$3,$4,$5,$6) r',
+  [cycle,period,total,monthly,observed,'fixture-costs-and-price-evidence'])).rows[0].r;
+}
+test('month boundary follows Brasilia midnight, including December to January',async()=>{
+ const rows=(await db.query(`select t.at_time::text,b.period::text,b.starts_at,b.ends_at from (values
+  ('2026-12-01T02:59:59Z'::timestamptz),('2026-12-01T03:00:00Z'),('2027-01-01T03:00:00Z'))t(at_time)
+  cross join lateral radar_ai.month_bounds(t.at_time)b order by t.at_time`)).rows;
+ assert.deepEqual(rows.map(r=>r.period),['2026-11-01','2026-12-01','2027-01-01']);
+ assert.deepEqual(rows.map(r=>new Date(r.starts_at).toISOString()),['2026-11-01T03:00:00.000Z','2026-12-01T03:00:00.000Z','2027-01-01T03:00:00.000Z']);
+});
+test('opens one reconciled calendar month with unchanged account, grant expiry and 30/15/5',async()=>{
+ await monthFixture();
+ const config=(await financeQuery('select radar_ai.reconciliation_config() r')).rows[0].r;
+ assert.equal(config.cycleId,'cycle');assert.ok(config.startTime<config.monthStartTime);
+ const r=await monthRefresh({total:150,monthly:50});assert.equal(r.updated,true);assert.equal(r.rolledOver,true);
+ const status=await store.status();assert.equal(status.budget_block,null);assert.equal(status.monthly.spent_micro,50);
+ assert.deepEqual(Object.fromEntries(Object.entries(status.monthly.streams).map(([k,v])=>[k,v.cap_micro])),{radar:30000000,jobs:15000000,reserve:5000000});
+ const a=(await db.query('select * from radar_ai.reconciliation_anchor where cycle_id=$1',[status.cycle_id])).rows[0];
+ assert.equal(a.origin_cycle_id,'cycle');assert.equal(Number(a.free_grant_micro),100000000);
+ assert.equal((await db.query('select count(distinct grant_until)::int n from radar_ai.reconciliation_anchor')).rows[0].n,1);
+ assert.equal((await monthRefresh({total:150,monthly:50})).reason,'configuration_changed');
+ assert.equal((await monthRefresh({cycle:status.cycle_id,total:150,monthly:50})).rolledOver,false);
+ assert.equal((await db.query('select count(*)::int n from radar_ai.cycle')).rows[0].n,2);
+ assert.equal(Number((await store.status()).monthly.spent_micro),50);
+});
+test('concurrent monthly openings are serialized and never create a second allocation',async()=>{
+ await monthFixture();const results=await Promise.all([monthRefresh(),monthRefresh()]);
+ assert.equal(results.filter(r=>r.updated).length,1);assert.equal(results.find(r=>!r.updated).reason,'configuration_changed');
+ assert.equal((await db.query('select count(*)::int n from radar_ai.cycle')).rows[0].n,2);
+});
+test('carries old uncertain commitments and cannot spend imported usage as free credit',async()=>{
+ await monthFixture();
+ await db.exec(`update radar_ai.reconciliation_anchor set free_grant_micro=1000;
+  insert into radar_ai.operation(operation_key,cycle_id,envelope,request_hash,model,price_snapshot,maximum_micro,state,created_at)
+  select 'old-unknown','cycle','evaluation','fixture-hash','gpt-6-luna','{}',600,'unknown',starts_at from radar_ai.cycle;
+ `);
+ const r=await monthRefresh({total:300,monthly:100});assert.equal(r.freeRemainingMicro,300);
+ assert.equal(Number((await store.status()).monthly.reserved_micro),600);
+ const active=(await store.status()).cycle_id;
+ assert.equal((await monthRefresh({cycle:active,total:900,monthly:700})).freeRemainingMicro,0);
+ assert.equal((await store.status()).budget_block,'credit_exhausted');
+ assert.equal((await db.query("select state from radar_ai.operation where operation_key='old-unknown'")).rows[0].state,'unknown');
+});
+test('send ceiling excludes imported amounts so a small remaining grant cannot be overspent',async()=>{
+ await monthFixture();await db.exec('update radar_ai.reconciliation_anchor set free_grant_micro=1000');
+ assert.equal((await monthRefresh({total:900,monthly:800})).freeRemainingMicro,200);
+ const request={key:'luna:credit:0001',stream:'jobs',purpose:'normal',envelope:'evaluation',inputBound:1000,outputLimit:1,requestHash:hash,model:'gpt-6-luna'};
+ assert.equal((await store.reserve(request)).status,'reserved');
+ assert.equal((await store.reserve({...request,key:'luna:credit:0002'})).reason,'cycle_limit');
+});
+test('external usage in the new month counts toward the shared monthly and stream limits',async()=>{
+ await monthFixture();assert.equal((await monthRefresh({total:50000100,monthly:50000000})).updated,true);
+ assert.equal((await laneReserve('jobs:after-opening','jobs')).reason,'monthly_limit');
+ assert.equal((await store.status()).monthly.available_micro,0);
+});
+test('a later refresh imports only the additional provider gap without erasing prior reconciliation',async()=>{
+ await monthFixture();await monthRefresh({total:150,monthly:50});const cycle=(await store.status()).cycle_id;
+ await monthRefresh({cycle,total:250,monthly:150});await monthRefresh({cycle,total:250,monthly:150});
+ assert.equal((await store.status()).monthly.spent_micro,150);
+ await assert.rejects(monthRefresh({cycle,total:249,monthly:150}),/Invalid provider evidence/);
+ await assert.rejects(monthRefresh({cycle,total:251,monthly:149}),/Invalid provider evidence/);
+ assert.equal((await store.status()).monthly.spent_micro,150);
+});
+test('failed evidence does not partially open a month and a valid retry can open it once',async()=>{
+ await monthFixture();await assert.rejects(monthRefresh({total:99}),/Invalid provider evidence/);
+ await assert.rejects(monthRefresh({observed:'2020-01-01T00:00:00Z'}),/Invalid provider evidence/);
+ assert.equal((await db.query('select count(*)::int n from radar_ai.month_opening')).rows[0].n,1);
+ assert.equal((await db.query('select cycle_id from radar_ai.control')).rows[0].cycle_id,'cycle');
+ assert.equal((await monthRefresh()).updated,true);
+});
+test('rollover never overrides operator pause, account changes, expired or exhausted grants',async()=>{
+ await monthFixture();await db.exec('update radar_ai.control set manual_paused=true');
+ assert.equal((await monthRefresh()).reason,'operator_control');
+ await db.exec("update radar_ai.control set manual_paused=false,organization_id='other-org'");
+ assert.equal((await monthRefresh()).reason,'anchor_unavailable');
+ await db.exec("update radar_ai.control set organization_id='org-test';update radar_ai.reconciliation_anchor set grant_until=now()-interval '1 second'");
+ assert.equal((await monthRefresh()).reason,'anchor_unavailable');
+ await db.exec("update radar_ai.reconciliation_anchor set grant_until=now()+interval '1 day',free_grant_micro=1");
+ assert.equal((await monthRefresh({total:101})).reason,'credit_exhausted');
+ assert.equal((await db.query('select count(*)::int n from radar_ai.cycle')).rows[0].n,1);
+});
+test('opt-in, approved pricing, no conflicting opening and fresh expected period are required',async()=>{
+ await monthFixture();await db.exec('update radar_ai.reconciliation_anchor set automatic_months=false');
+ assert.equal((await financeQuery('select radar_ai.reconciliation_config() r')).rows[0].r,null);
+ assert.equal((await monthRefresh()).reason,'rollover_disabled');
+ await db.exec("update radar_ai.reconciliation_anchor set automatic_months=true;update radar_ai.response_tariff set approved=false where model='gpt-6-luna'");
+ assert.equal((await monthRefresh()).reason,'price_changed');
+ await db.exec("update radar_ai.response_tariff set approved=true;insert into radar_ai.month_opening(period,reference) select period,'operator-future-opening' from radar_ai.month_bounds(now())");
+ assert.equal((await monthRefresh()).reason,'monthly_opening_conflict');
+ assert.equal((await monthRefresh({period:'2020-01-01'})).reason,'configuration_changed');
+});
+test('finance login cannot write tables, change controls or grant generation roles the rollover RPC',async()=>{
+ await monthFixture();
+ for(const q of ['select * from radar_ai.reconciliation_anchor','update radar_ai.control set enabled=true',
+  'update radar_ai.reconciliation_anchor set automatic_months=true'])
+  await assert.rejects(financeQuery(q));
+ // PGlite retains its superuser session beneath SET LOCAL ROLE. A real login
+ // proves that SET ROLE cannot escalate to the owner.
+ if(finance)await assert.rejects(financeQuery('set role radar_ai_owner'));
+ await assert.rejects(store.query("select radar_ai.reconcile_calendar_month('cycle',current_date,100,0,now(),'forbidden-proof')"));
+});
+test('settled local receipts are not imported again as external monthly consumption',async()=>{
+ await monthFixture();await db.exec(`insert into radar_ai.operation(operation_key,cycle_id,envelope,request_hash,model,
+  price_snapshot,maximum_micro,actual_micro,state,created_at,sent_at,finished_at)
+ values('settled-in-month','cycle','evaluation','fixture-hash','gpt-6-luna','{}',100,50,'confirmed',
+  now()-interval '5 seconds',now()-interval '4 seconds',now()-interval '3 seconds')`);
+ assert.equal((await monthRefresh({total:170,monthly:70})).updated,true);
+ assert.equal((await store.status()).monthly.spent_micro,70);
+ assert.equal(Number((await db.query(`select sum(amount_micro) n from radar_ai.prior_usage where period=(${monthSql})`)).rows[0].n),20);
+});
+test('a subsequent month still deducts the original grant consumption instead of renewing credit',async()=>{
+ await monthFixture();await db.exec(`
+  update radar_ai.cycle set starts_at=starts_at-interval '1 month',ends_at=ends_at-interval '1 month';
+  update radar_ai.reconciliation_anchor set period=(select period from radar_ai.month_bounds(now()-interval '2 months')),
+   free_grant_micro=1000,last_provider_micro=600;
+  insert into radar_ai.cycle select 'middle','radar','org-test','project-test',starts_at,ends_at,50000000
+   from radar_ai.month_bounds(now()-interval '1 month');
+  insert into radar_ai.attestation select 'middle',free_micro,verified_at,proof_until,free_only_verified,'fixture-middle-proof'
+   from radar_ai.attestation where cycle_id='cycle';
+  insert into radar_ai.reconciliation_anchor(cycle_id,period,free_grant_micro,grant_until,provider_baseline_micro,
+   radar_baseline_micro,last_provider_micro,reference,auto_reload_off,tariff,origin_cycle_id,automatic_months)
+  select 'middle',b.period,a.free_grant_micro,a.grant_until,a.provider_baseline_micro,a.radar_baseline_micro,
+   600,'fixture-middle-anchor',true,a.tariff,'cycle',true from radar_ai.reconciliation_anchor a
+   cross join radar_ai.month_bounds(now()-interval '1 month')b;
+  insert into radar_ai.operation(operation_key,cycle_id,envelope,request_hash,model,price_snapshot,maximum_micro,
+   actual_micro,state,created_at,sent_at,finished_at)
+  select 'settled-earlier-month','middle','evaluation','fixture-hash','gpt-6-luna','{}',500,500,'confirmed',
+   starts_at,starts_at,starts_at+interval '1 second' from radar_ai.cycle where id='middle';
+  update radar_ai.control set cycle_id='middle';`);
+ assert.equal((await monthRefresh({cycle:'middle',total:700,monthly:100})).freeRemainingMicro,400);
+ const active=(await store.status()).cycle_id;
+ assert.equal((await db.query('select origin_cycle_id from radar_ai.reconciliation_anchor where cycle_id=$1',[active])).rows[0].origin_cycle_id,'cycle');
+ assert.equal((await monthRefresh({cycle:active,total:700,monthly:100})).freeRemainingMicro,400);
+});
+test('upgrades an already reconciled current month without resetting its manual opening or imported spend',async()=>{
+ await monthFixture();await db.exec(`
+  update radar_ai.cycle set starts_at=b.starts_at,ends_at=b.ends_at from radar_ai.month_bounds(now())b;
+  update radar_ai.reconciliation_anchor set period=b.period from radar_ai.month_bounds(now())b;
+  insert into radar_ai.month_opening select period,'existing-manual-current-opening',now() from radar_ai.month_bounds(now());
+  insert into radar_ai.prior_usage(period,stream,amount_micro,reference)
+   select period,'radar',100,'existing-manual-current-usage' from radar_ai.month_bounds(now());`);
+ assert.equal((await monthRefresh({total:100,monthly:100})).rolledOver,false);
+ assert.equal((await store.status()).monthly.spent_micro,100);
+ assert.equal((await monthRefresh({total:200,monthly:200})).updated,true);
+ assert.equal((await store.status()).monthly.spent_micro,200);
+ assert.equal((await db.query('select count(*)::int n from radar_ai.cycle')).rows[0].n,1);
+ assert.equal(Number((await db.query("select amount_micro from radar_ai.prior_usage where reference='existing-manual-current-usage'")).rows[0].amount_micro),100);
 });

@@ -72,9 +72,22 @@ export async function readCosts({apiKey,organizationId,startTime,endTime,fetchIm
 export async function reconcileOnce({store,apiKey,fetchImpl=fetch,now=Date.now}) {
   const config=await store.config();if(!config)return {updated:false,reason:'anchor_unavailable'};
   const endTime=Math.min(config.endTime,Math.floor(now()/1000));
+  if(!Number.isSafeInteger(config.monthStartTime)||config.monthStartTime<config.startTime||
+    config.monthStartTime>=endTime||typeof config.cycleId!=='string'||
+    !/^\d{4}-\d{2}-01$/.test(config.period))throw Error('invalid_month');
+  // Read the shorter period first. Then verify the whole grant window, retaining
+  // every earlier month's consumption instead of treating a new month as credit.
+  let monthCosts;
+  if(config.monthStartTime!==config.startTime)monthCosts=await readCosts({apiKey,organizationId:config.organizationId,
+    startTime:config.monthStartTime,endTime,fetchImpl,now});
   const costs=await readCosts({apiKey,organizationId:config.organizationId,startTime:config.startTime,endTime,fetchImpl,now});
+  monthCosts??=costs;
+  if(monthCosts.providerMicro>costs.providerMicro)throw Error('inconsistent_costs');
   const price=await fetchImpl(PRICING,{redirect:'error',cache:'no-store',signal:AbortSignal.timeout(25000)});
   const pricingHash=verifyPricing(await boundedText(price),config.model,config.tariff);
-  const result=await store.refresh(costs.providerMicro,costs.observedAt,'costs:'+costs.hash+';pricing:'+pricingHash);
-  return {updated:result.updated,reason:result.updated?'verified':result.reason};
+  const observedAt=new Date(Math.min(Date.parse(costs.observedAt),Date.parse(monthCosts.observedAt))).toISOString();
+  const result=await store.refresh(config.cycleId,config.period,costs.providerMicro,monthCosts.providerMicro,observedAt,
+    'costs:'+costs.hash+';month:'+monthCosts.hash+';pricing:'+pricingHash);
+  return {updated:result.updated,reason:result.updated?'verified':result.reason,rolledOver:result.rolledOver===true,
+    nextCheckInMs:Math.max(1000,Math.min(3600000,config.endTime*1000-now()+1000))};
 }
