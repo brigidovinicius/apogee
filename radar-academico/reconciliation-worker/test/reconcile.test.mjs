@@ -21,6 +21,8 @@ test('reads complete costs using the fixed host and sends no credential to prici
  }});
  assert.equal(result.updated,true);assert.equal(refreshed,true);assert.equal(calls.length,2);
  assert.equal(new URL(calls[0][0]).origin,'https://api.openai.com');assert.equal(calls[0][1].redirect,'error');
+ assert.equal(Number(new URL(calls[0][0]).searchParams.get('end_time')),epoch+86400);
+ assert.equal(Number(new URL(calls[0][0]).searchParams.get('start_time')),epoch);
  assert.equal(calls[1][1].headers,undefined);
 });
 test('rejects gaps, incomplete pagination, currency changes, stale costs and repeated cursors',async()=>{

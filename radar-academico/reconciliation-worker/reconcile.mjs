@@ -38,8 +38,12 @@ export async function readCosts({apiKey,organizationId,startTime,endTime,fetchIm
   if(!/^sk-[A-Za-z0-9_-]{20,}$/.test(apiKey)||!/^org-[A-Za-z0-9]{8,80}$/.test(organizationId)||
     !Number.isSafeInteger(startTime)||!Number.isSafeInteger(endTime)||endTime<=startTime)throw Error('invalid_account');
   let total=0,page=null,observedAt=null,previousEnd=null;const hashes=[];const cursors=new Set();
+  // Costs returns whole UTC-day buckets. A partial end_time omits today's
+  // bucket. Include the current day, while validating the complete response.
+  const queryStart=Math.floor(startTime/86400)*86400;
+  const queryEnd=Math.ceil(endTime/86400)*86400;
   for(let i=0;i<4;i++) {
-    const u=new URL(COSTS);u.searchParams.set('start_time',String(startTime));u.searchParams.set('end_time',String(endTime));
+    const u=new URL(COSTS);u.searchParams.set('start_time',String(queryStart));u.searchParams.set('end_time',String(queryEnd));
     u.searchParams.set('bucket_width','1d');u.searchParams.set('limit','31');if(page)u.searchParams.set('page',page);
     const r=await fetchImpl(u.href,{redirect:'error',cache:'no-store',signal:AbortSignal.timeout(25000),
       headers:{Authorization:'Bearer '+apiKey,'OpenAI-Organization':organizationId}});
