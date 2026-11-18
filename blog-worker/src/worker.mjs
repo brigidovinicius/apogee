@@ -72,7 +72,12 @@ export async function tick({store,config,identity,provider,apiProvider,download}
   const command=store.claimCommand?await store.claimCommand():null;
   const storage=await store.maintenance();
   const collection=storage.capture_allowed?await collect({store,sources,download}):{sources:0,created:0,duplicate:0,failed:0,reason:'storage_cap'};
-  let research={prepared:0};
+  let research={prepared:0},discovery=null;
+  if(!command&&storage.capture_allowed&&config.policy.generation_enabled&&config.policy.provider==='google_subscription'&&config.policy.automatic_explainers_enabled&&store.prepareRenewableResearch){
+    try{discovery=await store.prepareRenewableResearch(config.policy,{discoveryOnly:true});}
+    catch(error){discovery={prepared:0,kind:'reference_discovery',reason:error instanceof Blocked?error.code:'research_source_unavailable'};}
+    if(discovery)research=discovery;
+  }
   async function generate(){
     if(command?.kind==='collect')return {collection,generation:{status:'idle'}};
     if(!config.policy.generation_enabled)return {collection,generation:{status:'blocked',reason:'generation_disabled'}};
@@ -108,7 +113,7 @@ export async function tick({store,config,identity,provider,apiProvider,download}
     if(!automatic&&!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.prepareAutomaticResearch){
       try{if(store.checkResearchBudget)await store.checkResearchBudget(config.policy);}
       catch(error){if(error instanceof Blocked)return {collection,research,generation:{status:'blocked',reason:error.code}};throw error;}
-      if(storage.capture_allowed)research=await store.prepareAutomaticResearch(config.policy);
+      if(storage.capture_allowed&&!discovery)research=await store.prepareAutomaticResearch(config.policy);
       automatic=store.nextAutomaticWork?await store.nextAutomaticWork(config.policy):null;
     }
     if(!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.nextAutomaticWork&&!automatic)return {collection,research,generation:{status:'idle',reason:'waiting_for_evidence'}};
@@ -124,6 +129,7 @@ export async function tick({store,config,identity,provider,apiProvider,download}
     const generated=await generate();
     const publication=store.publishAutomatically?await store.publishAutomatically():null;
     const result=publication?{...generated,publication}:generated;
+    if(store.recordAutomaticOutcome)await store.recordAutomaticOutcome(result);
     if(command)await store.completeCommand(command.id,result);
     return access?{...result,access}:result;
   }catch(error){

@@ -22,6 +22,8 @@ test('admin consumption explains free-credit caps, scope and Google fallback wit
   const now=new Date(),snapshot={provider:'google_subscription',generation_enabled:true,images_enabled:true,operator_commands_only:false,
     daily_calls_cap:40,weekly_calls_cap:280,daily_tokens_cap:180000,weekly_tokens_cap:900000,per_day:10,per_week:70,
     model:'gemini-3.8-flash-low',image_model:'antigravity_generate_image',account_email:'synthetic@example.test',
+    renewable_explainers:true,automatic_publication:{enabled:true,starts_on:'2026-11-17',first_hour:10,last_hour:19,catch_up_enabled:true},
+    operation:{at:now.toISOString(),generation:{status:'idle',reason:'waiting_for_evidence'},research:{reason:'reference_captured'},publication:{status:'idle'}},
     openai:{enabled:true,eligible:false,reason:'openai_circuit_open',cycle_cap:5000000,daily_cap:250000,model:'gpt-6-luna'}};
   const data={control:{paused:false,reason:null,snapshot,heartbeat_at:now,alive:true},total:0,totalPosts:0,production:[],sources:[],candidates:[],commands:[],attempts:[],counts:[],explainers:[],
     research_ready:true,multisource_ready:true,topicUsage:[],quotaObservations:[],googleAccess:{valid:true,state:'valid',succeeded_at:now,valid_until:now,next_check_at:now},
@@ -32,6 +34,8 @@ test('admin consumption explains free-credit caps, scope and Google fallback wit
     '@/lib/blog/pipeline':{getPipelineDashboard:async()=>data},
     'next/link':{__esModule:true,default:({href,children,...props})=>createElement('a',{href,...props},children)}});
   const markup=renderToStaticMarkup(await load('app/admin/posts/pipeline/page.tsx').default({searchParams:Promise.resolve({})}));
+  assert.match(markup,/Recuperação de atraso autorizada/);assert.match(markup,/intervalo mínimo passa a 15 minutos/);
+  assert.match(markup,/Última execução/);assert.match(markup,/Nova referência pública capturada/);assert.match(markup,/reposição automática descobre novos assuntos/);
   assert.match(markup,/OpenAI e retorno automático ao Google/);assert.match(markup,/inclusive o Radar/);
   assert.match(markup,/não a uma consulta ao vivo/);assert.match(markup,/Consumido ou reservado no ciclo/);
   assert.match(markup,/a redação volta ao Google/);assert.match(markup,/API retida; o Google continua/);

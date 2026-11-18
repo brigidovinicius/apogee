@@ -57,7 +57,7 @@ async function main(env=process.env,args=process.argv.slice(2)) {
         const provider=current.policy.generation_enabled?googleSubscriptionProvider({binary:env.BLOG_GOOGLE_CLI_PATH,sha256:env.BLOG_GOOGLE_CLI_SHA256,env}):null;
         let apiProvider=null;
         if(current.openai.enabled){try{apiProvider=openAIProvider({apiKey:env.BLOG_OPENAI_API_KEY??env.OPENAI_API_KEY,identity});}catch{/* Google stays available if the optional credential is missing. */}}
-        state={component:'blog-worker',at:new Date().toISOString(),alive:true,...await tick({store,config:current,identity,provider,apiProvider})};
+        state={component:'blog-worker',alive:true,...await tick({store,config:current,identity,provider,apiProvider}),at:new Date().toISOString()};
       }catch(error){state={component:'blog-worker',at:new Date().toISOString(),alive:false,reason:error instanceof Blocked?error.code:'internal_error'};}
       await heartbeat(file,state);console.log(JSON.stringify(state));
       if(command==='once'||stopped)break;

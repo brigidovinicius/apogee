@@ -16,13 +16,15 @@ export function researchTopic(c){
   const title=c.title.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
   const t=(title+' '+(c.evidence??[]).filter(e=>e.extraction_method!=='public_article'||e.extraction_version===ARTICLE_EXTRACTION_VERSION).map(e=>e.text).join(' ').slice(0,1600)).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
   if(/em promocao|veja uma selecao|onde assistir|escalacao|horoscopo|cupons|filmes para|^ofertas\b|melhor.*para comprar|lotofacil|\bquina\b|mega.sena|\blottery\b|\bbest\b.*\bdeals\b/.test(title))return null;
+  if(/\bfutebol\b|brasileirao|champions league|ronaldinho|james bond|jogos vorazes|\bvingadores\b|\bhoroscopo\b/.test(title)
+    &&!/marketing|campanha|patrocin|negocio|mercado|receita|lucro|investimento|licenciamento/.test(title))return null;
   // The headline establishes the editorial focus. A mention of a detector chip
   // in a telescope story must not consume the daily robotics/hardware slot.
-  if(/marketing|advertis|campanha|publicidade|\bads\b|anunciantes/.test(title))return headline({category:'negocios',subcategory:'marketing'});
+  if(/marketing|advertis|campanha|publicidade|\bads\b|anuncios|anunciantes|classificados/.test(title))return headline({category:'negocios',subcategory:'marketing'});
   if(/startup|empreendedor|\bventure\b|acquisit|acquire|aquisicao|spinout|rodada de/.test(title))return headline({category:'negocios',subcategory:'empreendedorismo-startups'});
   if(/robot|robo\b|hardware|semiconductor|chip\b|processor|processador|\bgpu\b/.test(title))return headline({category:'tecnologia',subcategory:'hardware-robotica'});
   if(/nasa|mars\b|marte\b|spacecraft|lunar|orbit|rocket|foguete|astronom|espacia|space telescope/.test(title))return headline({category:'ciencia',subcategory:'aeroespacial'});
-  if(/\bai\b|\bia\b|artificial intelligence|inteligencia artificial|chatgpt|gemini|openai|llm/.test(title))return headline({category:'tecnologia',subcategory:'ia'});
+  if(/\bai\b|\bia\b|artificial intelligence|inteligencia artificial|machine learning|aprendizado de maquina|deep learning|neural network|rede neural|embeddings|chatgpt|gemini|openai|llm/.test(title))return headline({category:'tecnologia',subcategory:'ia'});
   if(/neuro|brain|cerebr|alzheimer/.test(title))return headline({category:'ciencia',subcategory:'neurociencia'});
   if(/software|application|aplicativo|ferramenta|browser|navegador|sistema operacional|windows|android|collaborativ|colaborativ/.test(title))return headline({category:'tecnologia',subcategory:'software-ferramentas'});
   const ref=sourceReference(c.source_id);
@@ -32,7 +34,7 @@ export function researchTopic(c){
   if(ref?.id==='REF15')return {category:'ciencia',subcategory:'neurociencia'};
   if(/neuro|brain|cerebr|alzheimer/.test(t))return {category:'ciencia',subcategory:'neurociencia'};
   if(/robot|robo\b|hardware|semiconductor|chip\b|processor/.test(t))return {category:'tecnologia',subcategory:'hardware-robotica'};
-  if(/marketing|advertis|campanha|publicidade/.test(t))return {category:'negocios',subcategory:'marketing'};
+  if(/marketing|advertis|campanha|publicidade|\bads\b|anuncios|anunciantes|classificados/.test(t))return {category:'negocios',subcategory:'marketing'};
   if(/startup|empreendedor|venture|acquisit|acquire|aquisicao/.test(t))return {category:'negocios',subcategory:'empreendedorismo-startups'};
   if(/nasa|mars\b|marte\b|spacecraft|lunar|orbit|rocket|foguete|astronom|espaciais/.test(t)||ref?.id==='REF27')return {category:'ciencia',subcategory:'aeroespacial'};
   if(/\bai\b|\bia\b|artificial intelligence|inteligencia artificial|chatgpt|gemini|openai|llm/.test(t)||c.editoria==='ia')return {category:'tecnologia',subcategory:'ia'};
@@ -130,7 +132,7 @@ function prefix(text,bytes){
   }
   return text.slice(0,end).trimEnd();
 }
-export function automaticDossier(candidate,captures,policy,topic=researchTopic(candidate)){
+export function automaticDossier(candidate,captures,policy,topic=researchTopic(candidate),{previousCriticalClaims=[],previousUnresolvedClaims=[]}={}){
   const ref=sourceReference(candidate.source_id);
   captures=captures.filter(s=>s.extraction_method!=='public_article'||s.extraction_version===ARTICLE_EXTRACTION_VERSION);
   const own=captures.find(s=>referenceUrl(s.url)===referenceUrl(candidate.url)&&sourceReference(s.source_id)?.publisher===ref?.publisher);
@@ -146,7 +148,7 @@ export function automaticDossier(candidate,captures,policy,topic=researchTopic(c
     pubs.add(r.publisher);chosen.push({...s,ref:r});if(chosen.length===Math.min(10,policy.max_primary_evidence_documents))break;
   }
   if(chosen.length<2||chosen.length>10)return null;
-  for(let total=6000;total>=1000;total-=500){
+  for(let total=previousCriticalClaims.length?8500:6000;total>=1000;total-=500){
   const budget=Math.floor(total/chosen.length);
   const documents=chosen.map((s,i)=>{
     const text=prefix(s.text,budget);if(text.length<80)return null;
@@ -155,7 +157,8 @@ export function automaticDossier(candidate,captures,policy,topic=researchTopic(c
       independence_note:i===0?'Fonte primária institucional ou apuração de primeira mão explicitamente identificada; snapshot integral preservado.':'Seleção por DOI, documento primário comum, referência explícita ou identificador exato de lançamento corporativo na janela de 48 horas. Confirmar mesmo evento, data e estágio. Publicação distinta; o comparador deve rejeitar mera reprodução de release. Não representa replicação científica nem conferência humana.'};
   });
   if(documents.some(d=>!d))continue;
-  const dossier=validateDossier({schema_version:1,event_key:own.url.length<=180?own.url:'url-sha256:'+dossierHash(own.url),...topic,documents,claims:[]});
+  const dossier=validateDossier({schema_version:1,event_key:own.url.length<=180?own.url:'url-sha256:'+dossierHash(own.url),...topic,documents,claims:[],
+    ...(previousCriticalClaims.length?{previous_critical_claims:previousCriticalClaims}:{}),...(previousUnresolvedClaims.length?{previous_unresolved_claims:previousUnresolvedClaims}:{})});
   try{buildComparisonRequest(dossier,policy);}catch{continue;}
   return dossier;
   }

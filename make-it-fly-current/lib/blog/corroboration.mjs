@@ -39,10 +39,10 @@ export function validateDossier(value) {
     || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.editorial.key) || !string(value.editorial.question, 20, 220)
     || value.event_key !== 'explainer:' + value.editorial.key || typeof value.editorial.as_of !== 'string'
     || !/^\d{4}-\d{2}-\d{2}T/.test(value.editorial.as_of) || !Number.isFinite(Date.parse(value.editorial.as_of)))) reject('invalid_explainer_scope');
-  if(value.previous_critical_claims!==undefined&&(!isExplainer(value)||!Array.isArray(value.previous_critical_claims)
+  if(value.previous_critical_claims!==undefined&&(!Array.isArray(value.previous_critical_claims)
     ||value.previous_critical_claims.length<1||value.previous_critical_claims.length>16
     ||value.previous_critical_claims.some(c=>!/^C[1-9]\d?$/.test(c.id??'')||!string(c.text,8,500))))reject('invalid_research_history');
-  if(value.previous_unresolved_claims!==undefined&&(!isExplainer(value)||!Array.isArray(value.previous_unresolved_claims)
+  if(value.previous_unresolved_claims!==undefined&&(!Array.isArray(value.previous_unresolved_claims)
     ||value.previous_unresolved_claims.length>16||value.previous_unresolved_claims.some(c=>!/^C[1-9]\d?$/.test(c.id??'')||!string(c.text,8,500)||typeof c.critical!=='boolean')))reject('invalid_research_history');
   if (!unique(value.claims.map(c => String(c.text).normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim()))) reject('duplicate_claim');
   if (Buffer.byteLength(JSON.stringify(value)) > 180000 || !unique(value.documents.map(d => d.id)) || !unique(value.claims.map(c => c.id))) reject('invalid_dossier');

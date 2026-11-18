@@ -2,16 +2,17 @@ import {automaticDossier,balancedResearchCandidates,nextResearchCandidate} from 
 import {enrichResearch,enrichSelectedEvidence,researchPriority,defaultArticleReader} from './research-service.mjs';
 import {articleSource,referenceForUrl,ARTICLE_EXTRACTION_VERSION} from './article-research.mjs';
 import {explainerCatalog,explainerId,explainerWindowOpen,nextExplainer,automaticExplainerDossier,explainerRecoveryEligible,explainerEvidenceHash,expandExplainerSources,editorialAttemptLimit} from './explainers.mjs';
+import {renewableExplainerPlans,storedExplainerPlans,nextReferenceDiscovery} from './replenishment.mjs';
 import {randomUUID} from 'node:crypto';
 import {baselinePostIds,dailyDraftCap,topicAvailable,extraBatch} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits,freeCreditStatus} from './policy.mjs';
-import {buildRequest,cacheKey,cmsDraft,validateArticle,SEO_GUIDELINES} from './editorial.mjs';
+import {buildRequest,cacheKey,cmsDraft,validateArticle,ARTICLE_REPAIR_REASONS,SEO_GUIDELINES} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
 import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap,isEvidenceGapClaim,resolveComparisonQuotes} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql','012-research-recovery.sql','013-hourly-publication.sql','014-ste-editorial-references.sql','015-research-provenance-kinds.sql','016-autonomous-evidence-recovery.sql','017-capped-openai-text.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql','012-research-recovery.sql','013-hourly-publication.sql','014-ste-editorial-references.sql','015-research-provenance-kinds.sql','016-autonomous-evidence-recovery.sql','017-capped-openai-text.sql','018-renewable-editorial-queue.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -192,7 +193,7 @@ export class Store {
     const {day}=periodKeys(new Date());
     // Only bounded operational metadata is mutable; captured texts and dossier history are immutable.
     await this.sql`update blog_worker.candidate c set artifact=jsonb_set(coalesce(artifact,'{}'::jsonb),'{research}',
-      jsonb_strip_nulls(jsonb_build_object('source_discovery',c.artifact->'research'->'source_discovery')) || ${this.sql.json({...progress,day,at:new Date().toISOString()})}::jsonb)
+      jsonb_strip_nulls(jsonb_build_object('source_discovery',c.artifact->'research'->'source_discovery','plan',c.artifact->'research'->'plan')) || ${this.sql.json({...progress,day,at:new Date().toISOString()})}::jsonb)
       where c.id=${id} and c.post_id is null and c.reason is distinct from 'operator_hold' and c.reason is distinct from 'retention'
       and c.reason is distinct from 'source_changed_after_reservation'
       and not exists(select 1 from blog_worker.attempt where candidate_id=c.id and (kind='text' or state in ('reserved','unknown')))`;
@@ -233,6 +234,7 @@ export class Store {
     await this.sql`insert into blog_worker.candidate(id,source_id,guid,url,event_key,title,editoria,score,published_at,evidence,evidence_hash,status,content_kind,explainer_key)
       values(${id},${source.id},${id},${plan.urls[0]},${hash('explainer:'+plan.key)},${plan.question},${scopeEditoria(plan)},45,${at},'[]'::jsonb,${hash([])},'discovered','explainer',${plan.key}) on conflict do nothing`;
     const [candidate]=await this.sql`select * from blog_worker.candidate where id=${id}`;
+    if(plan.key.startsWith('auto-'))await this.researchProgress(id,{plan,topic:{category:plan.category,subcategory:plan.subcategory},kind:'explainer',stage:'renewable_plan_selected'});
     const cacheUrls=[...new Set([...plan.urls,...(plan.additional_sources??[]).map(s=>s.url)])];
     const rows=await this.sql`select id as capture_id,source_id,document,captured_at from blog_worker.captured_document
       where (url=any(${cacheUrls}::text[]) or document->>'requested_url'=any(${cacheUrls}::text[])) and captured_at>now()-interval '24 hours' order by captured_at desc`;
@@ -270,6 +272,89 @@ export class Store {
     await this.researchProgress(id,{stage:reason,topic:{category:plan.category,subcategory:plan.subcategory},kind:'explainer',tries,
       ...(recovering?{recovery_day:day,recovery_tries:candidate.artifact?.research?.recovery_day===day?Number(candidate.artifact.research.recovery_tries??0)+1:1}:{}),next_at:new Date(+at+3600000).toISOString()});
     return {prepared:0,kind:'explainer',reason,requests:budget.used};
+  }
+  async prepareRenewableResearch(policy,{read=defaultArticleReader,at=new Date(),discoveryOnly=false}={}){
+    if(!policy.automatic_explainers_enabled)return null;
+    const [control]=await this.sql`select paused from blog_worker.control where singleton=true`;if(control?.paused)return null;
+    const usage=await this.productionUsage(this.sql,at,policy);
+    const stored=await this.sql`select explainer_key,artifact from blog_worker.candidate where content_kind='explainer' and post_id is null and explainer_key like 'auto-%' order by created_at desc limit 200`;
+    const approved=await this.sql`select id,definition from blog_worker.research_reference where definition->>'enabled'='true' and definition->>'content_approved'='true'`;
+    const permitted=url=>{const ref=referenceForUrl(url),definition=approved.find(r=>r.id==='ARTICLE_'+ref?.id)?.definition;return !!definition&&(!definition.allowed_urls||definition.allowed_urls.includes(url));};
+    const blocked=await this.sql`select distinct doc->>'url' as url from blog_worker.dossier_version v join blog_worker.candidate c on c.id=v.candidate_id cross join lateral jsonb_array_elements(v.document->'documents') doc
+      where c.post_id is not null or c.reason in ('operator_hold','source_changed_after_reservation','retention') or exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id)
+      union select c.url from blog_worker.candidate c where c.post_id is not null or c.reason in ('operator_hold','source_changed_after_reservation','retention') or exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id)`;
+    const rows=await this.sql`select * from (select latest.*,row_number() over(partition by source_id order by captured_at desc) as source_rank from (
+      select distinct on(d.url) d.id as capture_id,d.candidate_id,d.source_id,d.document,d.captured_at from blog_worker.captured_document d
+      join blog_worker.research_reference r on r.id=d.source_id where r.definition->>'enabled'='true' and r.definition->>'content_approved'='true'
+      and d.document->>'extraction_method'='public_article' order by d.url,d.captured_at desc) latest) ranked
+      order by source_rank,captured_at desc limit 1200`;
+    const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,candidate_id:r.candidate_id,source_id:r.source_id,captured_at:r.captured_at}));
+    const existing=await this.sql`select explainer_key from blog_worker.candidate where content_kind='explainer'`;
+    const options={blockedUrls:blocked.map(r=>r.url),existing,usage,policy,at,approvedReferenceIds:approved.map(r=>r.id)};
+    const plans=[...storedExplainerPlans(stored),...renewableExplainerPlans(captures,options)].filter(p=>p.urls.every(permitted))
+      .map(p=>({...p,...(p.additional_sources?{additional_sources:p.additional_sources.filter(s=>permitted(s.url))}:{})}));
+    if(!discoveryOnly&&explainerWindowOpen(policy,at)&&plans.length){const result=await this.prepareAutomaticExplainer(policy,{read,plans,at});if(result)return {...result,renewable:true};}
+    // A durable two-minute interval shares the tick's one bounded HTTP cycle.
+    // Restarting cannot reset failures, cooldowns, already-used URLs or holds.
+    const [recent]=await this.sql`select exists(select 1 from blog_worker.reference_discovery where attempted_at>${new Date(+at-120000)}) as busy`;
+    if(recent.busy)return null;
+    const attempted=await this.sql`select url from blog_worker.reference_discovery where next_at>${at}`;
+    const selected=nextReferenceDiscovery(captures,{...options,isApproved:permitted,attemptedUrls:attempted.map(r=>r.url)});if(!selected)return null;
+    const parent=captures.find(d=>d.url===selected.parent_url);if(!parent?.candidate_id)return null;
+    const claimed=await this.sql.begin(async tx=>{
+      const {control}=await lock(tx);if(control.paused)return [];
+      const [recent]=await tx`select exists(select 1 from blog_worker.reference_discovery where attempted_at>${new Date(+at-120000)}) as busy`;
+      if(recent.busy)return [];
+      return tx`insert into blog_worker.reference_discovery(url,parent_url,attempted_at,next_at,state) values(${selected.url},${selected.parent_url},${at},${new Date(+at+3600000)},'reading')
+        on conflict(url) do update set attempted_at=excluded.attempted_at,next_at=excluded.next_at,state='reading',reason=null where blog_worker.reference_discovery.next_at<=${at} returning url`;
+    });
+    if(!claimed.length)return null;
+    const budget={used:0,max:8,deadline:Date.now()+30000};let reason=null;
+    try{
+      const doc={...await read(selected.url,budget),requested_url:selected.url,checked_at:new Date().toISOString()};
+      if(!await this.captureResearchDocument({id:parent.candidate_id},doc))fail('research_parent_missing');
+      await this.sql`update blog_worker.reference_discovery set state='captured',next_at=${new Date(+at+7*86400000)} where url=${selected.url}`;
+    }catch(error){reason=error.code??'research_source_unavailable';await this.sql`update blog_worker.reference_discovery set state='held',reason=${reason} where url=${selected.url}`;}
+    return {prepared:0,kind:'reference_discovery',renewable:true,reason:reason??'reference_captured',requests:budget.used};
+  }
+  async prepareAutomaticNewsRecovery(policy,{read=defaultArticleReader,at=new Date()}={}){
+    const usage=await this.productionUsage(this.sql,at,policy);
+    const rows=await this.sql`select c.*,v.document,v.assessment,v.revision is not null as has_dossier,
+      (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts,
+      (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison') as comparisons,
+      (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' and a.state='confirmed' and a.reason=any(${COMPARISON_FORMAT_ERRORS}::text[])) as format_failures,
+      exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='text') as text_attempts,
+      exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.state in ('reserved','unknown')) as pending
+      from blog_worker.candidate c join lateral(select * from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1)v on true
+      where c.content_kind='news' and c.post_id is null and c.reason in ('compatibility_below_90','critical_fact_unresolved','independence_unverified')
+      and c.published_at>${new Date(+at-7*86400000)} order by c.published_at desc limit 50`;
+    const candidate=rows.find(c=>explainerRecoveryEligible(c)&&topicAvailable(policy,usage,c.document,at)
+      &&(!c.artifact?.research?.next_at||Date.parse(c.artifact.research.next_at)<=+at)
+      &&!(c.artifact?.research?.recovery_day===periodKeys(at).day&&c.artifact.research.recovery_tries>=3));
+    if(!candidate)return null;
+    const topic={category:candidate.document.category,subcategory:candidate.document.subcategory};
+    const saved=await this.sql`select id as capture_id,source_id,document,captured_at from blog_worker.captured_document
+      where captured_at>${new Date(+at-7*86400000)} order by captured_at desc limit 2000`;
+    const captures=saved.map(r=>({...r.document,capture_id:r.capture_id,source_id:r.source_id,captured_at:r.captured_at}));
+    const progress=candidate.artifact?.research??{},day=periodKeys(at).day;let result,reason='research_evidence_unchanged';
+    try{
+      const build=()=>automaticDossier(candidate,captures,policy,topic,{
+        previousCriticalClaims:candidate.document.claims.filter(c=>c.critical&&!isEvidenceGapClaim(c.text)).map(({id,text})=>({id,text})),
+        previousUnresolvedClaims:(candidate.assessment.claims??[]).filter(c=>c.status!=='convergent'&&!isEvidenceGapClaim(c.text)).map(({id,text,critical})=>({id,text,critical}))});
+      const prepare=async document=>document&&(await this.sql`select blog_worker.prepare_automatic_research(${candidate.id},${this.sql.json(document)},${candidate.evidence_hash}) as prepared`)[0].prepared;
+      if(await prepare(build()))return {prepared:1,kind:'news',recovery:true,requests:0};
+      // Prior source locations remain discovery leads, not fresh evidence.
+      // Force a bounded public refresh when expanding cached context was not
+      // enough. Only newly captured, approved snapshots can enter the dossier.
+      const priorUrls=new Set(candidate.document.documents.map(d=>d.url));
+      for(const d of captures)if(priorUrls.has(d.url)&&d.extraction_method==='public_article')d.extraction_version='previous_recovery_snapshot';
+      result=await enrichResearch({store:this,candidate,topic,captures,read});
+      const document=build();
+      if(await prepare(document))return {prepared:1,kind:'news',recovery:true,requests:result.requests??0};
+      if(!document)reason=result.reason??'research_independent_missing';
+    }catch(error){reason=error.code??'research_source_unavailable';}
+    await this.researchProgress(candidate.id,{stage:reason,topic,recovery_day:day,recovery_tries:progress.recovery_day===day?Number(progress.recovery_tries??0)+1:1,next_at:new Date(+at+3600000).toISOString()});
+    return {prepared:0,kind:'news',recovery:true,reason,requests:result?.requests??0};
   }
   async prepareAutomaticResearch(policy,{read,at=new Date()}={}){
     const [control]=await this.sql`select paused from blog_worker.control where singleton=true`;
@@ -317,10 +402,12 @@ export class Store {
     const history=await this.sql`select artifact->'research'->'topic' as topic,count(*)::int as researched from blog_worker.candidate
       where content_kind='news' and artifact->'research'->>'day'=${day} and artifact->'research'->>'stage' is distinct from 'primary_found'
       and jsonb_typeof(artifact->'research'->'topic')='object' group by 1`;
+    const recovered=await this.prepareAutomaticNewsRecovery(policy,{read,at});if(recovered)return recovered;
     if(explainerWindowOpen(policy,at)){
       const eligible=explainerCatalog.filter(p=>!plan.some(v=>v.topic.category===p.category&&v.topic.subcategory===p.subcategory)
         ||history.some(h=>h.topic.category===p.category&&h.topic.subcategory===p.subcategory&&h.researched>=1));
       const explainer=await this.prepareAutomaticExplainer(policy,{read,plans:eligible,at});if(explainer)return explainer;
+      const renewed=await this.prepareRenewableResearch(policy,{read,at});if(renewed)return renewed;
     }
     // After the hybrid window, a topic already researched today gets its
     // explanatory fallback before another news-page enrichment can starve it.
@@ -350,16 +437,17 @@ export class Store {
       v.actor_id='automatic_research_recovery' and exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' and a.dossier_revision<v.revision) as refreshed_research,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('text','comparison')) as attempts,
       (select count(*)::int from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison') as comparisons,
-      (select coalesce(jsonb_agg(jsonb_build_object('id',a.id,'kind',a.kind,'state',a.state,'reason',a.reason)),'[]'::jsonb) from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('comparison','text')) as attempt_history,
+      (select coalesce(jsonb_agg(jsonb_build_object('id',a.id,'kind',a.kind,'state',a.state,'reason',a.reason,'not_generated',coalesce(a.provider='openai_api' and a.policy->>'editorial_pipeline'='google_multisource_v1' and a.state='confirmed' and a.charged_micro_usd=0 and a.usage->>'not_generated'='true',false))),'[]'::jsonb) from blog_worker.attempt a where a.candidate_id=c.id and a.kind in ('comparison','text')) as attempt_history,
       exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.state in ('reserved','unknown')) as pending
       from blog_worker.candidate c join lateral(select * from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1) v on true
       where c.post_id is null and c.reason is distinct from 'source_changed_after_reservation' and c.reason is distinct from 'operator_hold' and c.published_at>now()-interval '7 days'
       and c.status in ('ready','held','discovered') order by case when c.status='ready' and v.assessment->>'eligible'='true' then 0 when c.reason='comparison_incomplete' and v.assessment->>'comparison_verified'='false' then 1 when c.reason=any(${COMPARISON_FORMAT_ERRORS}::text[]) then 2 else 3 end,c.score desc,c.published_at desc limit 100`;
     for(const c of rows){
       if(!topicAvailable(policy,usage,c.document,at))continue;
-      if(c.attempts>=editorialAttemptLimit(policy,c.document,c.attempt_history))continue;
+      const counted=c.attempt_history.filter(a=>!a.not_generated);
+      if(counted.length>=editorialAttemptLimit(policy,c.document,counted))continue;
       if(c.status==='ready'&&c.assessment.eligible&&c.assessment.comparison_verified)return {method:'reserve',candidateId:c.id};
-      if(!c.attempts&&!c.assessment.comparison_verified&&c.document.documents.length>=2&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
+      if(!counted.length&&!c.assessment.comparison_verified&&c.document.documents.length>=2&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
       if(c.refreshed_research&&c.attempts<=2&&!c.pending&&c.reason==='comparison_incomplete'&&!c.assessment.comparison_verified&&scopeVerified(c.document))return {method:'reserveComparison',candidateId:c.id};
       // One format-only repair. Never repeat a factual rejection or an unknown
       // request. It shares the existing article/day budgets; old receipts stay.
@@ -527,8 +615,9 @@ export class Store {
         try{article=validateArticle(JSON.parse(result.text),effective.evidence,corroboration,effective.editorial);}catch(error){reason=error.code??'invalid_structure';}
       }
       if(!article){
-        const [used]=await tx`select count(*)::int as total,count(*) filter(where kind='text')::int as texts from blog_worker.attempt where candidate_id=${candidate.id} and kind in ('text','comparison')`;
-        const retry=reason==='invalid_structure'&&used.total<attempt.policy.max_provider_attempts_per_article_including_repairs&&used.texts<2;
+        const history=await tx`select * from blog_worker.attempt where candidate_id=${candidate.id} and kind in ('text','comparison')`;
+        const counted=history.filter(a=>!(hybrid(a.policy)&&a.state==='confirmed'&&n(a.charged_micro_usd)===0&&a.usage?.not_generated===true));
+        const retry=ARTICLE_REPAIR_REASONS.includes(reason)&&counted.length<editorialAttemptLimit(hybrid(attempt.policy)?attempt.policy.editorial_policy:attempt.policy,version?.document,counted)&&counted.filter(a=>a.kind==='text').length<2;
         await tx`update blog_worker.candidate set status=${retry?'ready':'held'},reason=${reason??'invalid_response'} where id=${candidate.id}`;
         await tx`update blog_worker.attempt set reason=${reason??'invalid_response'} where id=${attempt.id}`;
         return {status:retry?'repair_pending':'held',reason:reason??'invalid_response',charged_micro_usd:cost};
@@ -642,12 +731,19 @@ export class Store {
     const [{result}]=await this.sql`select blog_worker.schedule_automatic_publication() as result`;
     return result;
   }
+  async recordAutomaticOutcome(result){
+    // Operational state only. It cannot pause/resume, change policy or expose a
+    // provider credential. The actual receipts remain the source of truth.
+    const part=value=>value?Object.fromEntries(['status','reason','prepared','kind','renewable','requests','post_id','scheduled_at','cadence'].filter(k=>Object.hasOwn(value,k)).map(k=>[k,value[k]])):null;
+    const state={at:new Date().toISOString(),generation:part(result.generation),research:part(result.research),publication:part(result.publication)};
+    await this.sql`update blog_worker.control set snapshot=jsonb_set(coalesce(snapshot,'{}'::jsonb),'{operation}',${this.sql.json(state)}),heartbeat_at=now() where singleton=true`;
+  }
   async syncPipeline(config,identity) {
     return this.sql.begin(async tx=>{
-      await lock(tx);
+      const {control}=await lock(tx);
       for(const s of config.sources)await tx`insert into blog_worker.source_catalog(id,definition) values(${s.id},${tx.json(s)}) on conflict do nothing`;
       const [publicationInstalled]=await tx`select to_regclass('blog_worker.publication_policy') is not null as ready`;
-      const publication=publicationInstalled.ready?(await tx`select enabled,starts_on,first_hour,last_hour from blog_worker.publication_policy where singleton`)[0]:{enabled:false};
+      const publication=publicationInstalled.ready?(await tx`select enabled,starts_on,first_hour,last_hour,catch_up_enabled,catch_up_starts_on from blog_worker.publication_policy where singleton`)[0]:{enabled:false};
       const enabled=config.openai?.enabled===true,circuit=enabled?await this.apiCircuit(tx):null;
       const eligibility=enabled?await this.openAICreditStatus(identity,tx):null;
       const missingKey=enabled&&config.openai_runtime_ready===false;
@@ -655,7 +751,7 @@ export class Store {
         reason:config.openai_error??(missingKey?'credentials_missing':null)??(circuit?.blocked?(circuit.reason??'openai_circuit_open'):eligibility?.reason)??null,
         cycle_cap:config.openai?.cycle_budget_micro_usd_cap??5000000,daily_cap:config.openai?.daily_budget_micro_usd_cap??250000,
         model:config.openai?.model_id??'gpt-6-luna'};
-      const snapshot={automatic_publication:publication,provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:googleUsageLimits(config.policy).dailyCalls??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:googleUsageLimits(config.policy).dailyTokens??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
+      const snapshot={operation:control.snapshot?.operation??null,automatic_publication:publication,renewable_explainers:config.policy.automatic_explainers_enabled===true,provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:googleUsageLimits(config.policy).dailyCalls??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:googleUsageLimits(config.policy).dailyTokens??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
         automatic_access_validation:config.policy.google_automatic_access_validation_enabled===true,automatic_explainers:config.policy.automatic_explainers_enabled===true,explainer_after_local_hour:config.policy.explainer_after_local_hour??null,operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
         organization_id:identity?.organization_id??null,project_id:identity?.project_id??null,
         article_cap:config.policy.article_budget_micro_usd_cap_including_all_attempts,daily_cap:config.policy.daily_budget_micro_usd_cap,

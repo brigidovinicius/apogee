@@ -35,6 +35,9 @@ export function pipelineReason(code: string | null | undefined): string {
   const reasons: Record<string, string> = {
     research_prepared: "Pesquisa preparada; aguardando comparação automática.",
     research_refreshed: "Novas evidências adicionadas automaticamente; histórico preservado.",
+    renewable_plan_selected: "Nova pauta explicativa descoberta; aguarda leitura e comparação das fontes.",
+    reference_captured: "Nova referência pública capturada para renovar a pesquisa; ainda não validada.",
+    research_parent_missing: "A pauta de origem não está mais disponível para esta pesquisa.",
     research_evidence_unchanged: "Não foram encontradas evidências novas; comparação repetida bloqueada.",
     previous_fact_omitted: "Uma pendência anterior foi omitida; comparação recusada.",
     invalid_quote_reference: "Referência de trecho inválida; comparação retida sem aceitar uma citação inventada.",
