@@ -20,6 +20,7 @@
   "new_drafts_per_week_cap": 70,
   "concurrency": 1,
   "input_tokens_cap_including_overhead": 12000,
+  "google_comparison_input_bytes_cap": 18000,
   "billed_output_tokens_cap_including_reasoning": 2000,
   "max_primary_evidence_documents": 10,
   "max_provider_attempts_per_article_including_repairs": 3,

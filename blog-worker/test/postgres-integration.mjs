@@ -1671,6 +1671,33 @@ try{
     assert.equal((await admin`select count(*)::int n from blog_worker.attempt`)[0].n,30);
     const [operation]=await admin`select snapshot->'operation' as detail from blog_worker.control`;assert.ok(operation.detail.at);assert.equal(operation.detail.generation.reason,'waiting_for_evidence');
   });
+  await check('same-author complementary pages preserve critical facts and cannot forge independent corroboration',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const base=explainerCatalog.find(p=>p.key==='iaas-infraestrutura-responsabilidades-1');
+    const extra='https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility';
+    const plan={...base,key:'same-author-context-native-1',question:'Como funciona o mecanismo sintético e sua responsabilidade complementar?',terms:['same-author-context-native-1'],additional_sources:[{url:extra,kind:'primary',origin_url:extra,terms:['same-author-context-native-1'],independence_note:'Mesmo autor Microsoft: contexto complementar que não constitui uma terceira confirmação independente.'}]};
+    const quote='A responsabilidade adicional sintética permanece explicitamente documentada.';
+    const read=async(url,budget)=>{budget.used++;const d=guide(plan,url);if(url===plan.urls[0]||url===extra){d.text+=' '+quote;d.content_hash=hash(d.text);}return d;};
+    assert.equal((await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read,at:hybridAt()})).prepared,1);
+    const id=explainerId(plan),[first]=await admin`select document from blog_worker.dossier_version where candidate_id=${id}`;
+    const core=hybridClaims(first.document)[0];
+    const missing={id:'C2',text:quote,critical:true,cells:first.document.documents.map(d=>({document_id:d.id,status:d.id==='E1'?'supports':'not_mentioned',quote:d.id==='E1'?quote:'',note:'Synthetic missing independent support'}))};
+    const a=await store.reserveComparison({...hybridOptions(),candidateId:id});
+    assert.equal((await store.finish(a,{outcome:'completed',text:JSON.stringify({claims:[core,missing]}),usage:smallHybridUsage})).reason,'critical_fact_unresolved');
+    const recovered=await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read,at:hybridAt()});assert.equal(recovered.prepared,1,JSON.stringify(recovered));
+    const [v]=await admin`select document from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+    assert.equal(v.document.documents.length,3);assert.equal(new Set(v.document.documents.map(d=>d.publisher_key)).size,2);
+    assert.deepEqual(v.document.documents.slice(0,2).map(d=>[d.text,d.capture_id]),first.document.documents.map(d=>[d.text,d.capture_id]));
+    const extended={...core,cells:[...core.cells,{document_id:'E3',status:'not_mentioned',quote:'',note:'Separate supplemental context'}]};
+    const good={...missing,cells:v.document.documents.map(d=>({document_id:d.id,status:d.id!=='E2'?'supports':'not_mentioned',quote:d.id!=='E2'?quote:'',note:'Synthetic complementary source'}))};
+    const wrong={...good,cells:good.cells.map(cell=>cell.document_id==='E1'?{...cell,status:'not_mentioned',quote:''}:cell.document_id==='E2'?{...cell,status:'supports',quote:core.cells[1].quote}:cell)};
+    const b=await store.reserveComparison({...hybridOptions(),candidateId:id});
+    const forged={...assessDossier({...v.document,claims:[extended,wrong]},{comparisonVerified:true}),eligible:true,convergent:2,percentage:100,blockers:[]};
+    await assert.rejects(()=>admin.begin(async tx=>{await tx`update blog_worker.attempt set state='confirmed',charged_micro_usd=0,quota_used=100 where id=${b.id}`;await tx`select blog_worker.record_assisted_comparison(${id},${b.id},${tx.json([extended,wrong])},${tx.json(forged)})`;}),/invalid_assessment/);
+    const result=await store.finish(b,{outcome:'completed',text:JSON.stringify({claims:[extended,good]}),usage:smallHybridUsage});assert.equal(result.status,'comparison_ready');assert.equal(result.reason,null);
+    const [ready]=await admin`select assessment from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+    assert.equal(ready.assessment.percentage,100);assert.equal(ready.assessment.publishers,2);assert.equal((await admin`select count(*)::int n from blog_worker.attempt where candidate_id=${id}`)[0].n,2);
+  });
   await check('CLI once, status and healthcheck use only the isolated DB with shipped generation off',async()=>{
     await reset();const health=join(directory,'health.json');
     const env={PATH:process.env.PATH,TMPDIR:directory,BLOG_LOCAL_TEST:'1',BLOG_DATABASE_URL:`postgres://blog_runtime@127.0.0.1:${port}/postgres`,BLOG_HEALTH_FILE:health};

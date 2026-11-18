@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {explainerCatalog,validateExplainerCatalog,explainerWindowOpen,nextExplainer,automaticExplainerDossier,explainerExcerpt,explainerRecoveryEligible,explainerEvidenceHash} from '../src/explainers.mjs';
+import {explainerCatalog,validateExplainerCatalog,explainerWindowOpen,nextExplainer,automaticExplainerDossier,explainerExcerpt,explainerRecoveryEligible,explainerEvidenceHash,expandExplainerSources} from '../src/explainers.mjs';
 import {validateDossier,assessDossier,scopeVerified,buildComparisonRequest,explainerOverlap,validateComparison,isEvidenceGapClaim} from '../src/corroboration.mjs';
 import {buildRequest,cmsDraft,validateArticle} from '../src/editorial.mjs';
 import {validatePolicy,hash} from '../src/policy.mjs';
@@ -39,6 +39,20 @@ test('hybrid window is in Brasilia and never enlarges existing consumption limit
   assert.equal(explainerWindowOpen({...policy,automatic_explainers_enabled:false},now),false);
   validatePolicy(policy);
   for(const change of [{explainer_after_local_hour:0},{explainer_after_local_hour:21},{google_daily_calls_cap:41},{google_use_g1_credits:true}])assert.throws(()=>validatePolicy({...policy,...change}));
+});
+test('complementary pages of one author are usable evidence but never independent corroboration',()=>{
+ const base=explainerCatalog.find(p=>p.key==='iaas-infraestrutura-responsabilidades-1');
+ const extra={url:'https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility',kind:'primary',origin_url:'https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility',terms:['IaaS','responsibility'],independence_note:'Complemento da mesma autoria Microsoft; não contar como uma terceira autoria independente.'};
+ const plan=expandExplainerSources({...base,additional_sources:[extra]},[]);assert.equal(plan.urls.length,3);
+ const quote='IaaS infrastructure responsibility is documented in this synthetic context.';
+ const captures=plan.urls.map((url,i)=>({url,title:'Synthetic IaaS responsibility '+i,text:('Context '+i+'. '+quote+' This is synthetic test evidence, never a real cloud announcement. ').repeat(8),published_at:null,checked_at:now.toISOString(),extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,rights_reference:'Synthetic public source for tests only'}));
+ const d=automaticExplainerDossier(plan,captures,policy,now);assert.ok(d);assert.equal(new Set(d.documents.map(x=>x.publisher_key)).size,2);
+ const claim=(id,support)=>({id,text:'Fato sintético '+id+' documentado para teste de autoria.',critical:true,cells:d.documents.map(x=>({document_id:x.id,status:support.includes(x.id)?'supports':'not_mentioned',quote:support.includes(x.id)?quote:'',note:'Synthetic evidence only'}))});
+ d.claims=[claim('C1',['E1','E2']),claim('C2',['E2','E3'])];
+ const held=assessDossier(d,{comparisonVerified:true});assert.equal(held.percentage,50);assert.equal(held.eligible,false);assert.ok(held.blockers.includes('critical_fact_unresolved'));
+ d.claims[1]=claim('C2',['E1','E3']);const ready=assessDossier(d,{comparisonVerified:true});assert.equal(ready.percentage,100);assert.equal(ready.eligible,true);assert.equal(ready.publishers,2);
+ const singleAuthor={...plan,urls:[base.urls[1],extra.url]};assert.equal(automaticExplainerDossier(singleAuthor,captures,policy,now),null);
+ const automatic=expandExplainerSources({...base,additional_sources:[]},[{url:base.urls[0],related_urls:[extra.url]}]);assert.equal(automatic.urls.length,2,'a same-author link needs explicit curated provenance');
 });
 test('daily and weekly topic slots, used questions, holds and backoff cannot be bypassed',()=>{
   const plans=explainerCatalog.slice(0,2),p=plans[0];

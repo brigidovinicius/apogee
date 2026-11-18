@@ -90,9 +90,9 @@ export function expandExplainerSources(plan,captures){
  const publishers=new Set(urls.map(url=>referenceForUrl(url)?.publisher)),source_terms={};
  for(const extra of candidates){
   if(urls.length>=Math.min(6,plan.urls.length+2))break;
-  const ref=referenceForUrl(extra.url);if(!ref||urls.includes(referenceUrl(extra.url))||publishers.has(ref.publisher)||!extra.kind&&!primaryReference(ref))continue;
+  const ref=referenceForUrl(extra.url);if(!ref||urls.includes(referenceUrl(extra.url))||publishers.has(ref.publisher)&&!extra.kind||!extra.kind&&!primaryReference(ref))continue;
   const url=referenceUrl(extra.url,ref);urls.push(url);publishers.add(ref.publisher);
-  provenance.push({kind:extra.kind??'primary',origin_url:extra.origin_url??url,independence_note:extra.independence_note??'Fonte primária explicitamente ligada ao assunto; autoria, contexto e limitações serão novamente comparados.'});
+  provenance.push({kind:extra.kind??'primary',origin_url:extra.origin_url??url,independence_note:extra.independence_note??'Fonte primária explicitamente ligada ao assunto; autoria, contexto e limitações serão novamente comparados. Documentos do mesmo autor não constituem confirmações independentes.'});
   source_terms[url]=extra.terms??plan.terms;
  }
  return {...plan,urls,provenance,source_terms};
@@ -110,7 +110,10 @@ export function automaticExplainerDossier(plan,captures,policy,at=new Date(),{pr
     &&Number.isFinite(Date.parse(s.checked_at??s.captured_at))&&Date.parse(s.checked_at??s.captured_at)<=+at
     &&+at-Date.parse(s.checked_at??s.captured_at)<86400000));
   if(chosen.some(s=>!s))return null;
-  if(new Set(chosen.map(s=>referenceForUrl(s.url)?.publisher)).size!==chosen.length)return null;
+  // Several pages by one institution can document different parts of a claim.
+  // They remain one publisher: assessDossier requires support across authors
+  // for every convergent fact, regardless of document/URL count.
+  if(new Set(chosen.map(s=>referenceForUrl(s.url)?.publisher)).size<2)return null;
   if(new Set(chosen.map(s=>s.text.normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim())).size!==chosen.length)return null;
   // Use the largest contiguous context that fits the existing request ceiling.
   // A fixed short excerpt can omit definitions and qualifications in long guides.
