@@ -24,8 +24,8 @@ beforeAll(async()=>{
     insert into radar_ai.month_opening values(date_trunc('month',now() at time zone 'America/Sao_Paulo')::date,'fixture-advice-month',now());
     insert into radar_ai.price values('gpt-6-luna','fixture-advice-price',true,now()+interval '6 hours',125000,500000,0);
     insert into radar_ai.response_tariff values('gpt-6-luna','fixture-advice-price',true,now()+interval '6 hours',100000,10000,125000,500000);
-    insert into discovery_targets(id,name,organizer,kind,official_url,evidence_url,enabled,official_verified_at,official_verified_url)
-      values('${target}','Fixture','Fixture','site','${lead.target_url}','${lead.target_url}',true,now(),'${lead.target_url}');`);
+    insert into discovery_targets(id,name,organizer,kind,official_url,evidence_url,enabled,official_verified_at,official_verified_url,official_verified_by,official_review_note)
+      values('${target}','Fixture','Fixture','site','${lead.target_url}','${lead.target_url}',true,now(),'${lead.target_url}','test:fixture','Authority and collection confirmed with synthetic fixtures.');`);
 },60000);
 afterAll(async()=>{await state.db?.close()});
 beforeEach(async()=>{
