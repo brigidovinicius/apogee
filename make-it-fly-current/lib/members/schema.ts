@@ -546,10 +546,12 @@ export const memberBenefit = pgTable("member_benefit", {
   id: text("id").primaryKey(), name: text("name").notNull(), partner: text("partner").notNull(), description: text("description").notNull(),
   evidenceUrl: text("evidence_url").notNull().default(""), eligibility: text("eligibility").notNull().default(""), availability: text("availability").notNull().default(""),
   startsAt: timestamp("starts_at", { withTimezone: true }), endsAt: timestamp("ends_at", { withTimezone: true }),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
   redemption: text("redemption").notNull().default(""), redemptionUrl: text("redemption_url").notNull().default(""), ...editorialColumns(),
 }, t => [check("member_benefit_status_check", sql`${t.status} in ('draft','published','archived')`), check("member_benefit_sort_order_check", sql`${t.sortOrder} between 0 and 10000`),
   check("member_benefit_check", sql`${t.endsAt} is null or ${t.startsAt} is null or ${t.endsAt}>${t.startsAt}`),
-  check("member_benefit_check1", sql`${t.status}<>'published' or (length(${t.evidenceUrl})>0 and length(${t.eligibility})>0 and length(${t.availability})>0 and length(${t.redemption})>0 and ${t.startsAt} is not null and ${t.endsAt} is not null)`)]);
+  check("member_benefit_check1", sql`${t.status}<>'published' or (length(${t.evidenceUrl})>0 and length(${t.eligibility})>0 and length(${t.availability})>0 and length(${t.redemption})>0 and ((${t.startsAt} is not null and ${t.endsAt} is not null) or (${t.verifiedAt} is not null and length(${t.redemptionUrl})>0)))`),
+  check("member_benefit_verification_mode", sql`${t.verifiedAt} is null or (${t.startsAt} is null and ${t.endsAt} is null)`)]);
 export const memberBenefitCategory = pgTable("member_benefit_category", {
   id: text("id").primaryKey(), slug: text("slug").notNull().unique(), name: text("name").notNull(), description: text("description").notNull().default(""),
   status: text("status").notNull().default("draft"), sortOrder: integer("sort_order").notNull().default(0), version: integer("version").notNull().default(1),
