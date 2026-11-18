@@ -3,6 +3,7 @@ import {readFile,writeFile,rename} from 'node:fs/promises';
 import {Blocked,CATEGORIES,fail,validatePolicy} from './policy.mjs';
 import {allowedUrl,getFeed} from './http.mjs';
 import {normalizeItem} from './editorial.mjs';
+import {DEFAULT_OPENAI_CONFIG,validateOpenAIConfig,apiTextPolicy,API_FALLBACK_REASONS} from './openai-routing.mjs';
 
 export function validateSources(sources) {
   if(!Array.isArray(sources)||sources.length>40||new Set(sources.map(s=>s.id)).size!==sources.length)fail('invalid_sources');
@@ -22,7 +23,10 @@ export async function loadConfig(directory) {
   const sources=validateSources(JSON.parse(await readFile(new URL('sources.json',directory),'utf8')));
   const catalog=JSON.parse(await readFile(new URL('prices.json',directory),'utf8'));
   if(!Array.isArray(catalog)||catalog.length>10)fail('invalid_catalog');
-  return {policy,sources,catalog};
+  let openai=DEFAULT_OPENAI_CONFIG,openai_error=null;
+  try{openai=validateOpenAIConfig(JSON.parse(await readFile(new URL('openai-text.json',directory),'utf8')));}
+  catch(error){if(error.code!=='ENOENT')openai_error='openai_config_invalid';}
+  return {policy,sources,catalog,openai,openai_error};
 }
 export function assertSafeFeedXml(body){
   if(typeof body!=='string'||Buffer.byteLength(body)>2*1024*1024)fail('unsafe_xml');
@@ -56,10 +60,10 @@ export async function collect({store,sources,download=getFeed,at=new Date()}) {
   }
   return stats;
 }
-export async function tick({store,config,identity,provider,download}) {
+export async function tick({store,config,identity,provider,apiProvider,download}) {
   validatePolicy(config.policy);validateSources(config.sources);
   await store.recover();
-  const sources=store.syncPipeline?validateSources(await store.syncPipeline(config,identity)):config.sources;
+  const sources=store.syncPipeline?validateSources(await store.syncPipeline({...config,openai_runtime_ready:!!apiProvider},identity)):config.sources;
   let access;
   if(config.policy.provider==='google_subscription'&&config.policy.generation_enabled&&config.policy.google_automatic_access_validation_enabled){
     try{access=await store.revalidateGoogleAccess(config.policy,provider);}
@@ -68,7 +72,12 @@ export async function tick({store,config,identity,provider,download}) {
   const command=store.claimCommand?await store.claimCommand():null;
   const storage=await store.maintenance();
   const collection=storage.capture_allowed?await collect({store,sources,download}):{sources:0,created:0,duplicate:0,failed:0,reason:'storage_cap'};
-  let research={prepared:0};
+  let research={prepared:0},discovery=null;
+  if(!command&&storage.capture_allowed&&config.policy.generation_enabled&&config.policy.provider==='google_subscription'&&config.policy.automatic_explainers_enabled&&store.prepareRenewableResearch){
+    try{discovery=await store.prepareRenewableResearch(config.policy,{discoveryOnly:true});}
+    catch(error){discovery={prepared:0,kind:'reference_discovery',reason:error instanceof Blocked?error.code:'research_source_unavailable'};}
+    if(discovery)research=discovery;
+  }
   async function generate(){
     if(command?.kind==='collect')return {collection,generation:{status:'idle'}};
     if(!config.policy.generation_enabled)return {collection,generation:{status:'blocked',reason:'generation_disabled'}};
@@ -76,9 +85,17 @@ export async function tick({store,config,identity,provider,download}) {
     if(!provider)return {collection,generation:{status:'blocked',reason:'credentials_missing'}};
     if(access&&access.status!=='valid')return {collection,generation:{status:'blocked',reason:access.reason??'google_access_unverified'}};
     const options={...config,sources,identity,candidateId:command?.candidate_id??null};
-    async function perform(method){
-      let reservation;
-      try{if(provider.preflight){const quota=await provider.preflight();if(store.observeQuota)await store.observeQuota(quota,'before');}reservation=await store[method](options);}
+    async function perform(method,forceGoogle=null){
+      let reservation,selectedProvider=provider,fallbackReason=forceGoogle;
+      if(!forceGoogle&&method==='reserve'&&options.candidateId&&config.openai?.enabled&&config.policy.provider==='google_subscription'){
+        try{
+          if(!apiProvider)fail('credentials_missing');
+          const circuit=await store.apiCircuit();if(circuit.blocked)fail(circuit.reason==='openai_disabled'?'openai_disabled':'openai_circuit_open');
+          reservation=await store.reserve({...options,policy:apiTextPolicy(config.policy,config.openai)});
+          selectedProvider=apiProvider;
+        }catch(error){if(!(error instanceof Blocked))throw error;if(!API_FALLBACK_REASONS.has(error.code))return {status:'blocked',reason:error.code};fallbackReason=error.code;}
+      }
+      try{if(!reservation){if(provider.preflight){const quota=await provider.preflight();if(store.observeQuota)await store.observeQuota(quota,'before');}reservation=await store[method](options);}}
       catch(error){
         if(error instanceof Blocked){
           if(!command&&!config.policy.operator_commands_only&&config.policy.provider==='google_subscription'&&options.candidateId&&error.code==='input_limit'&&store.deferAutomaticWork)await store.deferAutomaticWork(options.candidateId,error.code);
@@ -86,16 +103,17 @@ export async function tick({store,config,identity,provider,download}) {
         }throw error;
       }
       if(reservation.status!=='reserved')return reservation;
-      let result;try{result=await provider(reservation);}catch{result={outcome:'unknown'};}
+      let result;try{result=await selectedProvider(reservation);}catch{result={outcome:'unknown'};}
       const completed=await store.finish(reservation,result);
-      if(provider.preflight&&store.observeQuota){try{await store.observeQuota(await provider.preflight(),'after');}catch{/* Settlement is already durable; a quota refresh must never cause a retry. */}}
-      return completed;
+      if(selectedProvider===apiProvider&&completed.status==='not_generated'&&API_FALLBACK_REASONS.has(completed.reason))return perform(method,completed.reason);
+      if(selectedProvider===provider&&provider.preflight&&store.observeQuota){try{await store.observeQuota(await provider.preflight(),'after');}catch{/* Settlement is already durable; a quota refresh must never cause a retry. */}}
+      return {...completed,...(fallbackReason?{fallback_from:'openai_api',fallback_reason:fallbackReason}:{}),...(selectedProvider===apiProvider?{provider:'openai_api'}:{})};
     }
     let automatic=!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.nextAutomaticWork?await store.nextAutomaticWork(config.policy):null;
     if(!automatic&&!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.prepareAutomaticResearch){
       try{if(store.checkResearchBudget)await store.checkResearchBudget(config.policy);}
       catch(error){if(error instanceof Blocked)return {collection,research,generation:{status:'blocked',reason:error.code}};throw error;}
-      if(storage.capture_allowed)research=await store.prepareAutomaticResearch(config.policy);
+      if(storage.capture_allowed&&!discovery)research=await store.prepareAutomaticResearch(config.policy);
       automatic=store.nextAutomaticWork?await store.nextAutomaticWork(config.policy):null;
     }
     if(!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.nextAutomaticWork&&!automatic)return {collection,research,generation:{status:'idle',reason:'waiting_for_evidence'}};
@@ -111,6 +129,7 @@ export async function tick({store,config,identity,provider,download}) {
     const generated=await generate();
     const publication=store.publishAutomatically?await store.publishAutomatically():null;
     const result=publication?{...generated,publication}:generated;
+    if(store.recordAutomaticOutcome)await store.recordAutomaticOutcome(result);
     if(command)await store.completeCommand(command.id,result);
     return access?{...result,access}:result;
   }catch(error){

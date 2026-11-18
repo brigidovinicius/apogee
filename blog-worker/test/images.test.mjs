@@ -43,10 +43,10 @@ test('image adapter pins org/project, generates once, validates binary and never
   const broken=openAIProvider({apiKey:'sk-synthetic-not-a-real-key',identity,fetcher:async()=>{calls++;throw Error('timeout');}});
   assert.equal((await broken(r)).outcome,'unknown');assert.equal(calls,2);
 });
-test('shared Vinicius organization requires explicit authorization, recent credit observation and buffer',()=>{
+test('legacy shared authorization and a safety buffer cannot authorize paid balance access',()=>{
   const identity={organization_id:'org-approved-shared',project_id:'proj-approved-shared'};
   const at=new Date(),g={...grant(at),...identity,billing_scope:'authorized_shared_organization',no_paid_balance:false,no_paid_billing:false,dedicated_project:false,
     authorization_reference:'User explicitly authorized Vinicius organization credits for this blog',credit_safety_buffer_micro_usd:1000000};
-  validateGrant(g,at,identity);
-  for(const change of [{authorization_reference:''},{verified_at:new Date(+at-900001).toISOString()},{remaining_micro_usd:1000000},{no_auto_recharge:false},{project_id:'other'}])assert.throws(()=>validateGrant({...g,...change},at,identity));
+  assert.throws(()=>validateGrant(g,at,identity),/free_credit_isolation_required/);
+  for(const change of [{no_paid_balance:true},{no_paid_billing:true},{dedicated_project:true},{remaining_micro_usd:100000000}])assert.throws(()=>validateGrant({...g,...change},at,identity),/free_credit_isolation_required/);
 });

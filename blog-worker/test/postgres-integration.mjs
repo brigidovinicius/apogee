@@ -2,6 +2,7 @@
 // Run via the global npm queue; BLOG_TEST_PG_BIN must point to existing native PostgreSQL tools.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
+import {randomUUID} from 'node:crypto';
 import {mkdtemp,readFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -20,7 +21,8 @@ import {TOPICS,topicKey} from '../src/automatic-research.mjs';
 import {FOCUSED_EDITORIAL_PLAN,focusProgress} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 import {articleSource,referenceForUrl,ARTICLE_EXTRACTION_VERSION} from '../src/article-research.mjs';
 import {explainerCatalog,explainerId} from '../src/explainers.mjs';
-import {identity,policy,source,grant,price,candidate,completed,imagePolicy,imagePrice,imageUsage,webpFixture} from './fixtures.mjs';
+import {identity,policy,source,grant,cappedGrant,price,candidate,completed,imagePolicy,imagePrice,imageUsage,webpFixture} from './fixtures.mjs';
+import {apiTextPolicy,DEFAULT_OPENAI_CONFIG} from '../src/openai-routing.mjs';
 
 const bin=process.env.BLOG_TEST_PG_BIN;if(!bin)throw Error('Set BLOG_TEST_PG_BIN to native PostgreSQL binaries; no existing DB is accepted.');
 const directory=await mkdtemp(join(tmpdir(),'apogee-blog-test-'));
@@ -44,10 +46,10 @@ try{
   await admin.unsafe(`CREATE ROLE blog_runtime LOGIN;
     GRANT USAGE ON SCHEMA blog_worker TO blog_runtime;
     GRANT SELECT ON ALL TABLES IN SCHEMA blog_worker TO blog_runtime;
-    GRANT INSERT,UPDATE ON blog_worker.candidate,blog_worker.attempt,blog_worker.source_state,blog_worker.control,blog_worker.image_job,blog_worker.source_catalog,blog_worker.command,blog_worker.captured_document,blog_worker.quota_observation TO blog_runtime;
+    GRANT INSERT,UPDATE ON blog_worker.candidate,blog_worker.attempt,blog_worker.source_state,blog_worker.control,blog_worker.image_job,blog_worker.source_catalog,blog_worker.command,blog_worker.captured_document,blog_worker.quota_observation,blog_worker.reference_discovery TO blog_runtime;
     GRANT DELETE ON blog_worker.candidate,blog_worker.captured_document,blog_worker.quota_observation TO blog_runtime;
     GRANT USAGE ON SEQUENCE blog_worker.quota_observation_id_seq TO blog_runtime;
-    GRANT EXECUTE ON FUNCTION blog_worker.claim_google_access(text,text),blog_worker.settle_google_access(uuid,jsonb),blog_worker.prepare_automatic_research(text,jsonb,text),blog_worker.record_assisted_comparison(text,uuid,jsonb,jsonb),blog_worker.import_draft(text,jsonb),blog_worker.queue_cover(text,text,text,text),blog_worker.import_cover(text,text),blog_worker.schedule_automatic_publication() TO blog_runtime;`);
+    GRANT EXECUTE ON FUNCTION blog_worker.block_openai(text),blog_worker.claim_google_access(text,text),blog_worker.settle_google_access(uuid,jsonb),blog_worker.prepare_automatic_research(text,jsonb,text),blog_worker.record_assisted_comparison(text,uuid,jsonb,jsonb),blog_worker.import_draft(text,jsonb),blog_worker.queue_cover(text,text,text,text),blog_worker.import_cover(text,text),blog_worker.schedule_automatic_publication() TO blog_runtime;`);
   await admin.unsafe(`CREATE ROLE blog_editor LOGIN;
     GRANT USAGE ON SCHEMA public,blog_worker TO blog_editor;
     GRANT SELECT ON ALL TABLES IN SCHEMA blog_worker TO blog_editor;
@@ -60,13 +62,37 @@ try{
   runtime=postgres({...connection,username:'blog_runtime'});other=postgres({...connection,username:'blog_runtime'});
   const store=new Store(runtime),second=new Store(other),operator=new Store(admin);
   async function reset(){
-    await admin.unsafe('TRUNCATE blog_worker.google_access,blog_worker.subscription,blog_worker.source_catalog,blog_worker.command,blog_worker.operator_event,blog_worker.attempt,blog_worker.candidate,blog_worker.benefit,blog_worker.source_state,public.blog_post_event,public.blog_post RESTART IDENTITY CASCADE');
+    await admin.unsafe('TRUNCATE blog_worker.reference_discovery,blog_worker.google_access,blog_worker.subscription,blog_worker.source_catalog,blog_worker.command,blog_worker.operator_event,blog_worker.attempt,blog_worker.candidate,blog_worker.benefit,blog_worker.source_state,public.blog_post_event,public.blog_post RESTART IDENTITY CASCADE');
     await admin`update blog_worker.control set paused=false,reason=null`;
-    await admin`update blog_worker.publication_policy set enabled=false`;
+    await admin`update blog_worker.publication_policy set enabled=false,catch_up_enabled=false`;
+    await admin`update blog_worker.openai_circuit set blocked=false,reason=null`;
   }
   async function setup({benefit=grant(),items=[candidate()]}={}){await reset();await operator.attestGrant(benefit,identity);for(const c of items)await store.ingest(c);}
   const options=(overrides={})=>({policy,catalog:[price()],identity,sources:[source],...overrides});
   async function check(name,run){await run();passed++;console.log('PASS '+name);}
+
+  await check('free-credit authorization diagnostics are read-only and never reserve API calls',async()=>{
+    await reset();assert.deepEqual(await store.openAICreditStatus(identity),{eligible:false,reason:'benefit_unverified'});
+    await operator.attestGrant(grant(),identity);
+    const status=await runtime.begin(async tx=>{
+      await tx`set transaction read only`;
+      return new Store(tx).openAICreditStatus(identity);
+    });
+    assert.equal(status.eligible,true);
+    assert.equal((await admin`select count(*)::int as count from blog_worker.attempt`)[0].count,0);
+  });
+
+  await check('legacy mixed-balance grants cannot authorize text or images, even after an old attestation',async()=>{
+    await setup();const g={...grant(),billing_scope:'authorized_shared_organization',no_paid_balance:false,no_paid_billing:false,
+      dedicated_project:false,credit_safety_buffer_micro_usd:1000000,authorization_reference:'Historical authorization is insufficient for free-credit-only use'};
+    await assert.rejects(()=>operator.attestGrant(g,identity),/free_credit_isolation_required/);
+    await admin`update blog_worker.benefit set attestation=${admin.json(g)}`;
+    assert.deepEqual(await store.openAICreditStatus(identity),{eligible:false,reason:'free_credit_isolation_required'});
+    await assert.rejects(()=>store.reserve(options()),/free_credit_isolation_required/);
+    await assert.rejects(()=>store.reserveImage(options({policy:imagePolicy,catalog:[price(),imagePrice()]})),/free_credit_isolation_required/);
+    assert.equal((await admin`select count(*)::int as count from blog_worker.attempt`)[0].count,0);
+    assert.equal((await admin`select paused from blog_worker.control`)[0].paused,false);
+  });
 
   await check('new marketing and startup references are available to research without runtime registry-write privileges',async()=>{
     const rows=await runtime`select id,definition from blog_worker.research_reference where id in ('ARTICLE_REF45','ARTICLE_REF46','ARTICLE_REF47') order by id`;
@@ -74,7 +100,7 @@ try{
     assert.ok(rows.every(r=>r.definition.enabled&&r.definition.content_approved&&r.definition.rights_reference.includes('sem reprodução integral')));
     const [privileges]=await runtime`select has_table_privilege(current_user,'blog_worker.research_reference','SELECT') as read,has_table_privilege(current_user,'blog_worker.research_reference','UPDATE') as write`;
     assert.deepEqual(privileges,{read:true,write:false});
-    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,16);
+    assert.equal((await admin`select max(version)::int as version from blog_worker.migration`)[0].version,18);
     assert.ok((await runtime`select definition from blog_worker.research_reference where id='ARTICLE_PRIMARY_MICROSOFT_EDUCATION'`)[0].definition.article_hosts.includes('support.microsoft.com'));
   });
   await check('STE editorial references are available without enabling feeds, modifying prior settings or expanding runtime grants',async()=>{
@@ -1405,6 +1431,246 @@ try{
     assert.equal((await admin`select count(*)::int n from blog_worker.post_review`)[0].n,0);
     assert.equal((await admin`select count(*)::int n from public.blog_post where status='scheduled' and not seo_noindex`)[0].n,10);
   });
+  const apiConfig={...DEFAULT_OPENAI_CONFIG,enabled:true};
+  const apiPrice=()=>({...price(),model:'gpt-6-luna',input_micro_usd_per_million:100000,cached_input_micro_usd_per_million:10000,
+    cache_write_micro_usd_per_million:125000,output_micro_usd_per_million:500000});
+  async function prepareApiArticle(){
+    await reset();await operator.attestSubscription(subscription());await operator.attestGrant(cappedGrant(),identity);
+    const plan={...explainerCatalog.find(p=>p.category==='tecnologia'&&p.subcategory===null),terms:['mecanismo','limites']};
+    await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});
+    const id=explainerId(plan);await compareHybrid(id);
+    return {id,options:{...hybridOptions(),candidateId:id,policy:apiTextPolicy(hybridPolicy,apiConfig),catalog:[apiPrice()]}};
+  }
+  function syntheticApi(onCall=()=>{}){
+    return openAIProvider({apiKey:'sk-synthetic-not-a-real-key',identity,fetcher:async(_url,request)=>{
+      onCall();assert.equal(JSON.parse(request.body).model,'gpt-6-luna');
+      return new Response(JSON.stringify({model:'gpt-6-luna',service_tier:'default',status:'completed',usage:completed.usage,
+        output:[{type:'message',content:[{type:'output_text',text:JSON.stringify(hybridText)}]}]}));
+    }});
+  }
+  await check('capped API text retains verified facts, credited Google cover and the native hourly publication receipt',async()=>{
+    const {id,options}=await prepareApiArticle();let calls=0;
+    const reserved=await store.reserve(options);assert.equal(reserved.reserved_micro_usd,2500);
+    assert.equal((await store.finish(reserved,await syntheticApi(()=>calls++)(reserved))).status,'draft');
+    assert.equal(calls,1);
+    const [job]=await admin`select state from blog_worker.image_job where candidate_id=${id}`;assert.equal(job.state,'pending');
+    const image=await store.reserveImage({...hybridOptions(),candidateId:id});
+    await store.finish(image,{outcome:'completed',image:publicationImage,usage:smallHybridUsage});
+    await authorizePublication();assert.equal((await store.publishAutomatically()).status,'scheduled');
+    const [r]=await admin`select a.provider,a.charged_micro_usd,m.caption from blog_worker.publication_receipt r join blog_worker.attempt a on a.id=r.text_attempt_id join public.blog_post p on p.id=r.post_id join public.blog_media m on m.id=p.cover_media_id`;
+    assert.equal(r.provider,'openai_api');assert.equal(Number(r.charged_micro_usd),350);assert.match(r.caption,/inteligência artificial/);
+    assert.equal((await store.productionUsage()).reduce((n,r)=>n+r.day,0),1);
+    const config={policy:hybridPolicy,sources:[],catalog:[apiPrice()],openai:apiConfig};await store.syncPipeline(config,identity);
+    const dash=await loadCms(cmsClient,'lib/blog/pipeline.ts').getPipelineDashboard();
+    assert.equal(dash.control.snapshot.openai.enabled,true);assert.equal(dash.benefit.hard_limit,'10000000');assert.equal(dash.benefit.margin,'20000000');
+  });
+  await check('API billing rejection returns the same article to Google without erasing its zero-generation receipt',async()=>{
+    const {id}=await prepareApiArticle();let apiCalls=0,googleCalls=0;
+    const apiProvider=openAIProvider({apiKey:'sk-synthetic-not-a-real-key',identity,fetcher:async()=>{
+      apiCalls++;return new Response(JSON.stringify({error:{code:'organization_spend_limit_exceeded'}}),{status:429});
+    }});
+    const result=await tick({store,identity,config:{policy:hybridPolicy,sources:[],catalog:[apiPrice()],openai:apiConfig},
+      apiProvider,provider:async()=>{googleCalls++;return {outcome:'completed',text:JSON.stringify(hybridText),usage:smallHybridUsage};}});
+    assert.equal(result.generation.status,'draft');assert.equal(result.generation.fallback_reason,'openai_credit_limit');
+    assert.equal(apiCalls,1);assert.equal(googleCalls,1);
+    const rows=await admin`select provider,ordinal,usage,charged_micro_usd,reason from blog_worker.attempt where candidate_id=${id} and kind='text' order by ordinal`;
+    assert.equal(rows.length,2);assert.deepEqual(rows[0].usage,{not_generated:true});assert.equal(Number(rows[0].charged_micro_usd),0);
+    assert.equal(rows[1].provider,'google_subscription');assert.equal(rows[1].ordinal,2);
+    assert.equal((await store.apiCircuit()).blocked,true);assert.equal((await store.summary()).control.paused,false);
+  });
+  await check('uncertain API charges hold their reservation and disable only API dispatch, preserving Google work and runtime permissions',async()=>{
+    const {options}=await prepareApiArticle();const r=await store.reserve(options);await store.finish(r,{outcome:'unknown'});
+    assert.equal((await store.apiCircuit()).blocked,true);assert.equal((await store.summary()).control.paused,false);
+    assert.equal((await store.productionUsage()).reduce((n,r)=>n+r.day,0),0);
+    const [debt]=await admin`select state,charged_micro_usd,reserved_micro_usd from blog_worker.attempt where id=${r.id}`;
+    assert.equal(debt.state,'unknown');assert.equal(debt.charged_micro_usd,null);assert.equal(Number(debt.reserved_micro_usd),2500);
+    await assert.rejects(()=>runtime`update blog_worker.openai_circuit set blocked=false`,/permission denied/);
+    const pipeline=loadCms(cmsClient,'lib/blog/pipeline.ts');
+    assert.equal(await pipeline.setPipelinePaused('test-editor',true),true);
+    assert.equal(await pipeline.setPipelinePaused('test-editor',false),true);
+    await operator.resume();assert.equal((await store.summary()).control.paused,false);
+    const plan={...explainerCatalog.find(p=>p.category==='tecnologia'&&p.subcategory==='ia'),terms:['mecanismo','limites']};
+    await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});
+    const comparison=await store.reserveComparison({...hybridOptions(),candidateId:explainerId(plan)});assert.equal(comparison.status,'reserved');
+    await store.finish(comparison,{outcome:'completed',text:JSON.stringify({claims:hybridClaims((await admin`select document from blog_worker.dossier_version where candidate_id=${explainerId(plan)} order by revision desc limit 1`)[0].document)}),usage:smallHybridUsage});
+  });
+  await check('expired credit authorization falls back before API dispatch and keeps the same corroborated article',async()=>{
+    await prepareApiArticle();await admin`update blog_worker.benefit set expires_at=now()-interval '1 minute'`;
+    let apiCalls=0,googleCalls=0;
+    const result=await tick({store,identity,config:{policy:hybridPolicy,sources:[],catalog:[apiPrice()],openai:apiConfig},
+      apiProvider:syntheticApi(()=>apiCalls++),provider:async()=>{googleCalls++;return {outcome:'completed',text:JSON.stringify(hybridText),usage:smallHybridUsage};}});
+    assert.equal(result.generation.status,'draft');assert.equal(result.generation.fallback_reason,'benefit_unverified');
+    assert.equal(apiCalls,0);assert.equal(googleCalls,1);
+  });
+  await check('recovering a stale API reservation retains its debt and keeps the Google circuit available after a worker restart',async()=>{
+    const {options}=await prepareApiArticle();const r=await store.reserve(options);
+    await admin`update blog_worker.attempt set created_at=now()-interval '6 minutes' where id=${r.id}`;
+    assert.equal(await store.recover(),1);assert.equal((await store.apiCircuit()).blocked,true);
+    assert.equal((await store.summary()).control.paused,false);
+    const [held]=await admin`select state,reserved_micro_usd,charged_micro_usd from blog_worker.attempt where id=${r.id}`;
+    assert.equal(held.state,'unknown');assert.equal(Number(held.reserved_micro_usd),2500);assert.equal(held.charged_micro_usd,null);
+  });
+  await check('API cannot bypass an unresolved critical fact or the 90 percent source boundary',async()=>{
+    const {id,options}=await prepareApiArticle();const [v]=await admin`select document from blog_worker.dossier_version where candidate_id=${id} order by revision desc limit 1`;
+    v.document.claims[0].cells[0].status='unverifiable';v.document.claims[0].cells[0].quote='';
+    const assessment=assessDossier(v.document,{comparisonVerified:true});assert.equal(assessment.eligible,false);
+    await admin`update blog_worker.dossier_version set document=${admin.json(v.document)},document_hash=${dossierHash(v.document)},assessment=${admin.json(assessment)} where candidate_id=${id}`;
+    await assert.rejects(()=>store.reserve(options));
+    assert.equal((await admin`select count(*)::int n from blog_worker.attempt where kind='text'`)[0].n,0);
+  });
+  await check('ten native articles switch from capped API text to Google without duplicate counts, missing covers or weaker source validation',async()=>{
+    await reset();await operator.attestSubscription(subscription());await operator.attestGrant(cappedGrant(),identity);await authorizePublication();
+    const focus={...hybridPolicy,editorial_focus:FOCUSED_EDITORIAL_PLAN};
+    const apiPolicy=apiTextPolicy(focus,apiConfig),prior=candidate(99990);await store.ingest(prior);
+    const old=periodKeys(new Date(Date.now()-86400000));
+    await admin`insert into blog_worker.attempt(id,candidate_id,benefit_id,ordinal,kind,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,charged_micro_usd,provider,quota_reserved,finished_at)
+      values(${randomUUID()},${prior.id},'grant-test',1,'image','synthetic-prior-budget','synthetic-prior-budget',${admin.json(apiPrice())},${admin.json(apiPolicy)},${old.day}::date,${old.week}::date,'confirmed',4997000,4997000,'openai_api',0,now())`;
+    const allocation=[['tecnologia',null],['tecnologia','software-ferramentas'],['tecnologia','hardware-robotica'],['tecnologia',null],['tecnologia','ia'],['tecnologia','ia'],['tecnologia','ia'],['negocios',null],['negocios','marketing'],['negocios','empreendedorismo-startups']];
+    let serial=8000,apiCalls=0;
+    for(const [category,subcategory] of allocation){
+      const c=candidate(serial++),document={...dossierFixture(1),event_key:'capped-native-'+serial,category,subcategory};await store.ingest(c);
+      document.documents=document.documents.map(d=>({...d,url:d.url+'capped'+serial,origin_url:d.origin_url+'capped'+serial}));
+      await admin`insert into blog_worker.dossier_version(candidate_id,revision,document,document_hash,assessment,actor_id,source_hash,change_reason) values(${c.id},1,${admin.json(document)},${dossierHash(document)},${admin.json(assessDossier(document))},'test-editor',${c.evidence_hash},'Synthetic capped native pipeline test')`;
+    }
+    const provider=async r=>{
+      if(r.kind==='image')return {outcome:'completed',image:publicationImage,usage:smallHybridUsage};
+      if(r.kind==='comparison'){
+        const [v]=await admin`select document from blog_worker.dossier_version where candidate_id=${r.candidate.id} order by revision desc limit 1`;
+        return {outcome:'completed',text:JSON.stringify({claims:v.document.claims}),usage:smallHybridUsage};
+      }
+      return {...googleCompleted,usage:smallHybridUsage};
+    };
+    const nativeApi=openAIProvider({apiKey:'sk-synthetic-not-a-real-key',identity,fetcher:async()=>{
+      apiCalls++;return response({...completion(googleCompleted.text),model:'gpt-6-luna'});
+    }});
+    for(let i=0;i<30;i++)await tick({store,identity,provider,apiProvider:nativeApi,config:{policy:focus,sources:[],catalog:[apiPrice()],openai:apiConfig}});
+    assert.equal(apiCalls,2);
+    assert.equal((await store.productionUsage()).reduce((n,r)=>n+r.day,0),10);
+    assert.equal((await admin`select count(*)::int n from blog_worker.publication_receipt`)[0].n,10);
+    assert.equal((await admin`select count(*)::int n from public.blog_post where cover_media_id is not null`)[0].n,10);
+    const topics=await admin`select topic,count(*)::int n from blog_worker.publication_receipt group by topic order by topic`;
+    assert.deepEqual(Array.from(topics),[{topic:'ai',n:3},{topic:'business',n:3},{topic:'technology',n:4}]);
+    const [ledger]=await admin`select sum(charged_micro_usd)::int charged,count(*) filter(where state<>'confirmed')::int pending from blog_worker.attempt where provider='openai_api'`;
+    assert.equal(ledger.charged,4997700);assert.equal(ledger.pending,0);assert.equal((await store.summary()).control.paused,false);
+  });
+  await check('catch-up slots are never retroactive, retain fifteen-minute spacing and stop at the Brasilia day boundary',async()=>{
+    const cases=[
+      ['2026-11-17T19:33:00Z','2026-11-17',[],'2026-11-17T19:45:00.000Z'],
+      ['2026-11-17T19:33:00Z','2026-11-17',['2026-11-17T19:50:00Z'],'2026-11-17T20:15:00.000Z'],
+      ['2026-11-18T02:46:00Z','2026-11-17',[],null],
+      ['2026-11-18T03:01:00Z','2026-11-17',[],null],
+      ['2026-11-17T19:33:00Z','2026-11-18',[],null],
+    ];
+    for(const [at,day,occupied,expected] of cases){
+      const [r]=await admin`select blog_worker.catch_up_publication_slot(${at}::timestamptz,${day}::date,10,${admin.array(occupied,1184)}) as slot`;
+      assert.equal(r.slot?.toISOString()??null,expected);
+    }
+    await reset();assert.equal((await admin`select catch_up_enabled from blog_worker.publication_policy`)[0].catch_up_enabled,false);
+    await assert.rejects(()=>runtime`update blog_worker.publication_policy set catch_up_enabled=true`,/permission denied/);
+    await assert.rejects(()=>admin`update blog_worker.publication_policy set catch_up_enabled=true,catch_up_starts_on=current_date,catch_up_authorization_reference=null`,/catch_up_authorization/);
+  });
+  await check('failed registered-link discovery retains its cooldown through a restart and spends no provider call',async()=>{
+    await reset();await operator.attestSubscription(subscription());const seed=candidate(88801);await store.ingest(seed);
+    const src=articleSource(referenceForUrl('https://cloud.google.com/learn/software-routing'));
+    const parent={...guide({key:'reference-routing'},'https://cloud.google.com/learn/software-routing'),related_urls:['https://cloud.google.com/learn/novel-software-routing']};
+    await store.captureResearchDocument(seed,parent);let reads=0;
+    const options={at:hybridAt(),read:async(_url,budget)=>{reads++;budget.used++;throw Object.assign(Error('Synthetic unavailable public page'),{code:'research_source_unavailable'});}};
+    const focus={...hybridPolicy,editorial_focus:FOCUSED_EDITORIAL_PLAN};
+    const first=await store.prepareRenewableResearch(focus,options);assert.equal(first.kind,'reference_discovery');assert.equal(first.reason,'research_source_unavailable');assert.equal(reads,1);
+    assert.equal(await new Store(runtime).prepareRenewableResearch(focus,options),null);assert.equal(reads,1);
+    const [saved]=await admin`select state,reason from blog_worker.reference_discovery where url=${parent.related_urls[0]}`;
+    assert.deepEqual(saved,{state:'held',reason:'research_source_unavailable'});assert.equal((await admin`select count(*)::int n from blog_worker.attempt`)[0].n,0);
+  });
+  await check('news evidence recovery retains the original primary URL, critical facts and prior comparison receipt',async()=>{
+    await reset();await operator.attestSubscription(subscription());
+    const sources=[{...source,id:'SRC01',url:'https://www.nasa.gov/news-release/feed/',article_hosts:['www.nasa.gov'],editoria:'ciencia-espaco'},
+      {...source,id:'REF27',url:'https://www.space.com/feeds/all',article_hosts:['www.space.com'],editoria:'ciencia-espaco'}];
+    const when=new Date().toISOString(),quote='O experimento sintético tem uma limitação metodológica documentada.';
+    const common='A equipe sintética anunciou um experimento. O identificador do teste é DOI 10.1234/news-recovery. Este material é apenas uma simulação, sem representar qualquer descoberta ou notícia real. ';
+    const a=normalizeItem({title:'Synthetic NASA recovery',link:'https://www.nasa.gov/news-recovery-test/',isoDate:when,contentSnippet:common+quote},sources[0],new Date());
+    const b=normalizeItem({title:'Synthetic independent recovery',link:'https://www.space.com/news-recovery-test/',isoDate:when,contentSnippet:'Independent synthetic author. '+common},sources[1],new Date());
+    await store.syncPipeline({policy:hybridPolicy,sources,catalog:[]},identity);await store.ingest(a);await store.ingest(b);
+    const auto={...googlePolicy,operator_commands_only:false};
+    assert.equal((await store.prepareAutomaticResearch(auto,{read:async()=>{throw Error('Synthetic public HTML initially unavailable');}})).prepared,1);
+    const [v]=await admin`select document from blog_worker.dossier_version where candidate_id=${a.id} order by revision desc limit 1`;
+    const claims=[{id:'C1',text:'O experimento sintético tem uma limitação metodológica documentada.',critical:true,cells:[{document_id:'E1',status:'supports',quote,note:'Synthetic primary limitation'},{document_id:'E2',status:'not_mentioned',quote:'',note:'Missing in the earlier independent excerpt'}]}];
+    const comparison=await store.reserveComparison({...googleOptions(),policy:auto,candidateId:a.id});
+    assert.equal((await store.finish(comparison,{outcome:'completed',text:JSON.stringify({claims}),usage:smallHybridUsage})).reason,'independence_unverified');
+    const [heldAssessment]=await admin`select assessment from blog_worker.dossier_version where candidate_id=${a.id} order by revision desc limit 1`;
+    assert.ok(heldAssessment.assessment.blockers.includes('critical_fact_unresolved'));
+    let reads=0;
+    const recovered=await store.prepareAutomaticNewsRecovery(auto,{read:async(url,budget)=>{reads++;budget.used++;const src=articleSource(referenceForUrl(url));return {source_id:src.id,url,title:url===a.url?a.title:b.title,text:(url===a.url?'Primary author. ':'Independent analysis. ')+common+quote+' Newly available complete public context.',published_at:when,rights_reference:src.rights_reference,extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,checked_at:new Date().toISOString(),related_urls:[]};}});
+    assert.equal(recovered.prepared,1,JSON.stringify(recovered));assert.ok(reads>=2);
+    const [fresh]=await admin`select document,actor_id from blog_worker.dossier_version where candidate_id=${a.id} order by revision desc limit 1`;
+    assert.equal(fresh.actor_id,'automatic_research_recovery');assert.equal(fresh.document.documents[0].url,a.url);
+    assert.equal(fresh.document.previous_critical_claims[0].text,claims[0].text);assert.equal(fresh.document.previous_unresolved_claims[0].text,claims[0].text);
+    const second=await store.reserveComparison({...googleOptions(),policy:auto,candidateId:a.id});
+    const omitted=await store.finish(second,{outcome:'completed',text:JSON.stringify({claims:[]}),usage:smallHybridUsage});
+    assert.equal(omitted.reason,'critical_fact_omitted');assert.equal((await admin`select count(*)::int n from blog_worker.attempt where candidate_id=${a.id}`)[0].n,2);
+    assert.equal((await admin`select post_id from blog_worker.candidate where id=${a.id}`)[0].post_id,null);
+  });
+  await check('confirmed editorial errors receive one bounded correction after an API limit rejection without consuming duplicate production slots',async()=>{
+    const {id,options}=await prepareApiArticle();
+    const rejected=await store.reserve(options);await store.finish(rejected,{outcome:'not_generated',reason:'openai_credit_limit'});
+    const bad=structuredClone(hybridText);bad.title+=' 999999';
+    const first=await store.reserve({...hybridOptions(),candidateId:id});
+    assert.equal((await store.finish(first,{outcome:'completed',text:JSON.stringify(bad),usage:smallHybridUsage})).status,'repair_pending');
+    const next=await store.nextAutomaticWork(hybridPolicy);assert.equal(next.method,'reserve');assert.equal(next.candidateId,id);
+    const repair=await store.reserve({...hybridOptions(),candidateId:id});assert.match(repair.body.instructions,/Todas as verificações serão aplicadas novamente/);
+    assert.equal((await store.finish(repair,{outcome:'completed',text:JSON.stringify(hybridText),usage:smallHybridUsage})).status,'draft');
+    assert.equal((await store.productionUsage()).reduce((n,r)=>n+r.day,0),1);
+    const [count]=await admin`select count(*)::int total,count(*) filter(where kind='text')::int texts from blog_worker.attempt where candidate_id=${id}`;
+    assert.deepEqual(count,{total:4,texts:3});assert.equal((await store.summary()).control.paused,false);
+  });
+  await check('an exhausted fixed catalog is replenished automatically into ten distinct articles with native comparisons, credited covers and 4/3/3 slots',async()=>{
+    await reset();await operator.attestSubscription(subscription());await authorizePublication();
+    await admin`update blog_worker.publication_policy set catch_up_enabled=true,catch_up_starts_on=(now() at time zone 'America/Sao_Paulo')::date,catch_up_authorization_reference='Synthetic owner authorization for catch-up at a minimum of fifteen minutes'`;
+    const focus={...hybridPolicy,editorial_focus:FOCUSED_EDITORIAL_PLAN};
+    for(const plan of explainerCatalog){
+      const id=explainerId(plan),src=articleSource(referenceForUrl(plan.urls[0]));
+      await admin`insert into blog_worker.candidate(id,source_id,guid,url,event_key,title,editoria,score,published_at,evidence,evidence_hash,status,reason,content_kind,explainer_key)
+        values(${id},${src.id},${id},${plan.urls[0]},${hash(plan.key)},${plan.question},${src.editoria},45,now(),'[]'::jsonb,${hash([])},'held','operator_hold','explainer',${plan.key})`;
+    }
+    const seed=candidate(88802);await store.ingest(seed);
+    const subjects=[
+      ['Packet routing software','https://cloud.google.com/learn/','https://azure.microsoft.com/en-us/resources/'],
+      ['Document indexing software','https://cloud.google.com/learn/','https://azure.microsoft.com/en-us/resources/'],
+      ['Virtual storage software','https://cloud.google.com/learn/','https://azure.microsoft.com/en-us/resources/'],
+      ['Encrypted transport software','https://cloud.google.com/learn/','https://azure.microsoft.com/en-us/resources/'],
+      ['Semantic embeddings AI','https://cloud.google.com/learn/','https://azure.microsoft.com/en-us/resources/'],
+      ['Neural attention AI','https://cloud.google.com/learn/','https://azure.microsoft.com/en-us/resources/'],
+      ['Machine training AI','https://cloud.google.com/learn/','https://azure.microsoft.com/en-us/resources/'],
+      ['Business cash flow','https://legacy.sba.gov/business-guide/','https://business.gov.au/planning/'],
+      ['Business market research','https://legacy.sba.gov/business-guide/','https://business.gov.au/planning/'],
+      ['Business budget expenses','https://legacy.sba.gov/business-guide/','https://business.gov.au/planning/'],
+    ];
+    for(const [index,[title,...roots]] of subjects.entries())for(const [author,root] of roots.entries()){
+      const url=root+'renewable-subject-'+index,src=articleSource(referenceForUrl(url));
+      const text='Autoria sintética '+(author?'independente':'primária')+'. '+title+'. O mecanismo sintético '+title+' organiza dados em uma estrutura documentada. O método tem limites explícitos e depende do contexto. '+('Contexto de teste sem notícia real: '+title+'. ').repeat(12);
+      await store.captureResearchDocument(seed,{url,source_id:src.id,title,text,content_hash:hash(text),published_at:null,checked_at:new Date().toISOString(),extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,rights_reference:src.rights_reference,related_urls:[]});
+    }
+    const labels=['alfa','beta','gama','delta','épsilon','zeta','eta','teta','iota','capa'];let drafts=0;
+    const provider=async r=>{
+      if(r.kind==='image')return {outcome:'completed',image:publicationImage,usage:smallHybridUsage};
+      if(r.kind==='comparison'){
+        const [v]=await admin`select document from blog_worker.dossier_version where candidate_id=${r.candidate.id} order by revision desc limit 1`;
+        return {outcome:'completed',text:JSON.stringify({claims:hybridClaims(v.document)}),usage:smallHybridUsage};
+      }
+      const article=structuredClone(hybridText);article.title+=' · '+labels[drafts];article.paragraphs[0].text+=' Cenário sintético '+labels[drafts++]+'.';
+      return {outcome:'completed',text:JSON.stringify(article),usage:smallHybridUsage};
+    };
+    for(let i=0;i<35;i++)await tick({store:new Store(runtime),identity,provider,config:{policy:focus,sources:[],catalog:[]}});
+    const created=await admin`select c.id,c.artifact,p.title from blog_worker.candidate c join public.blog_post p on p.id=c.post_id where c.explainer_key like 'auto-%'`;
+    assert.equal(created.length,10);assert.equal(new Set(created.map(c=>c.title)).size,10);assert.ok(created.every(c=>c.artifact.research.plan.key.startsWith('auto-')));
+    assert.equal((await store.productionUsage()).reduce((n,r)=>n+r.day,0),10);
+    const topics=await admin`select topic,count(*)::int n from blog_worker.publication_receipt group by topic order by topic`;
+    assert.deepEqual(Array.from(topics),[{topic:'ai',n:3},{topic:'business',n:3},{topic:'technology',n:4}]);
+    const [check]=await admin`select count(*)::int n,count(distinct scheduled_at)::int slots from blog_worker.publication_receipt`;
+    assert.deepEqual(check,{n:10,slots:10});
+    assert.equal((await admin`select count(*)::int n from public.blog_post where cover_media_id is not null`)[0].n,10);
+    assert.equal((await admin`select count(*)::int n from blog_worker.attempt`)[0].n,30);
+    const [operation]=await admin`select snapshot->'operation' as detail from blog_worker.control`;assert.ok(operation.detail.at);assert.equal(operation.detail.generation.reason,'waiting_for_evidence');
+  });
   await check('CLI once, status and healthcheck use only the isolated DB with shipped generation off',async()=>{
     await reset();const health=join(directory,'health.json');
     const env={PATH:process.env.PATH,TMPDIR:directory,BLOG_LOCAL_TEST:'1',BLOG_DATABASE_URL:`postgres://blog_runtime@127.0.0.1:${port}/postgres`,BLOG_HEALTH_FILE:health};
@@ -1413,6 +1679,11 @@ try{
     assert.equal(state.alive,true);assert.equal(state.generation.reason,'generation_disabled');assert.equal(state.collection.sources,0);
     assert.equal(JSON.parse(await readFile(health,'utf8')).generation.reason,'generation_disabled');assert.equal(cli('healthcheck').status,0);
     assert.equal(JSON.parse(cli('status').stdout).usage.attempts,0);
+    const credits=cli('check-openai-credits');assert.equal(credits.status,0);
+    assert.deepEqual(JSON.parse(credits.stdout),{status:'credit_authorization_checked',eligible:false,reason:'benefit_unverified',
+      api_generation_active:false,active_provider:'google_subscription',provider_calls:0,key_configured:false,
+      auto_recharge_enabled:false,paid_balance_fallback_enabled:false});
+    assert.equal((await admin`select count(*)::int as count from blog_worker.attempt`)[0].count,0);
     const migration=cli('migrate');assert.equal(migration.status,1);assert.equal(JSON.parse(migration.stderr).reason,'explicit_execution_required');
   });
   console.log(JSON.stringify({status:'passed',integration_checks:passed,database:'isolated_native_postgresql',provider_calls:0}));

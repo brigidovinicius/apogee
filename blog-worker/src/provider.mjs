@@ -1,8 +1,17 @@
 import {boundedJson} from './http.mjs';
-import {fail,hash} from './policy.mjs';
+import {fail,hash,authorizeFreeCreditDispatch} from './policy.mjs';
 import {openAIImageProvider} from './images.mjs';
 
 const ORIGIN='https://api.openai.com/v1/responses';
+async function rejection(response){
+  if(response.status!==429)return {outcome:'unknown'};
+  try{
+    const data=await boundedJson(response,16384);
+    if(['organization_spend_limit_exceeded','project_spend_limit_exceeded','organization_usage_limit_exceeded','credit_balance_exhausted','insufficient_quota'].includes(data?.error?.code))
+      return {outcome:'not_generated',reason:'openai_credit_limit'};
+  }catch{/* An uncertain response never releases its reservation. */}
+  return {outcome:'unknown'};
+}
 // Fixed official endpoint, API key only. No CLI, browser sessions, alternate providers, SDK retries or tools.
 export function openAIProvider({apiKey,identity,fetcher=fetch,now=Date.now}) {
   if(typeof apiKey!=='string'||!apiKey.startsWith('sk-')||apiKey.length<20||!identity.organization_id||!identity.project_id)fail('credentials_missing');
@@ -11,6 +20,8 @@ export function openAIProvider({apiKey,identity,fetcher=fetch,now=Date.now}) {
   const images=openAIImageProvider({apiKey,identity,fetcher,now});
   return async reservation=>{
     if(reservation.kind==='image')return images(reservation);
+    const blocked=authorizeFreeCreditDispatch(reservation,identity,new Date(now()));
+    if(blocked)return blocked;
     const body=reservation.body,p=reservation.policy;
     if(body.model!==p.model_id || body.tools.length || body.max_output_tokens!==p.billed_output_tokens_cap_including_reasoning
       || body.store!==false || body.background!==false || body.service_tier!=='default'
@@ -35,10 +46,13 @@ export function openAIProvider({apiKey,identity,fetcher=fetch,now=Date.now}) {
       }
       if(inputTokens>p.input_tokens_cap_including_overhead)return {outcome:'not_sent',reason:'input_limit'};
       if(!(Date.parse(reservation.not_after)>now()+90000))return {outcome:'not_sent',reason:'reservation_expired'};
+      // Counting may have taken time. Recheck expiry and scope before generation.
+      const blocked=authorizeFreeCreditDispatch(reservation,identity,new Date(now()));
+      if(blocked)return blocked;
       const response=await fetcher(ORIGIN,{method:'POST',redirect:'error',headers:{...headers,'X-Client-Request-Id':reservation.id},
         body:JSON.stringify(body),signal:AbortSignal.timeout(90000)});
       // Even an HTTP error can have an uncertain charge. Never release or retry based only on status.
-      if(!response.ok)return {outcome:'unknown'};
+      if(!response.ok)return rejection(response);
       const data=await boundedJson(response);
       if(data.model!==body.model || data.service_tier!=='default')return {outcome:'unknown'};
       const usage=data.usage;

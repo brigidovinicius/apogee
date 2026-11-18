@@ -35,6 +35,9 @@ export function pipelineReason(code: string | null | undefined): string {
   const reasons: Record<string, string> = {
     research_prepared: "Pesquisa preparada; aguardando comparação automática.",
     research_refreshed: "Novas evidências adicionadas automaticamente; histórico preservado.",
+    renewable_plan_selected: "Nova pauta explicativa descoberta; aguarda leitura e comparação das fontes.",
+    reference_captured: "Nova referência pública capturada para renovar a pesquisa; ainda não validada.",
+    research_parent_missing: "A pauta de origem não está mais disponível para esta pesquisa.",
     research_evidence_unchanged: "Não foram encontradas evidências novas; comparação repetida bloqueada.",
     previous_fact_omitted: "Uma pendência anterior foi omitida; comparação recusada.",
     invalid_quote_reference: "Referência de trecho inválida; comparação retida sem aceitar uma citação inventada.",
@@ -98,6 +101,8 @@ export function pipelineReason(code: string | null | undefined): string {
   generation_disabled: "Geração desativada na configuração", credentials_missing: "Credencial do worker não configurada",
     benefit_unverified: "Créditos sem verificação recente", price_missing: "Preço do modelo não aprovado", image_price_missing: "Preço da imagem não aprovado",
     price_unapproved_or_expired: "Preço sem aprovação vigente", image_price_unapproved_or_expired: "Preço da imagem sem aprovação vigente",
+    openai_disabled: "Complemento OpenAI desligado; o Google continua.", openai_circuit_open: "API retida; o Google continua.", openai_credit_limit: "Limite da API atingido; redação devolvida ao Google.",
+    credit_envelope_unverified: "Proteção global dos créditos não comprovada; o Google continua.", free_credit_isolation_required: "Atestado de crédito gratuito insuficiente; o Google continua.",
     paused: "Pausa ativa", article_budget: "Limite da matéria insuficiente", daily_budget: "Limite diário atingido", cycle_budget: "Limite do ciclo ou saldo seguro insuficiente",
     draft_frequency: "Limite de matérias por dia ou semana atingido", unknown_charge: "Cobrança do texto incerta", unknown_image_charge: "Cobrança da imagem incerta",
     invalid_usage: "Consumo do texto sem confirmação", invalid_image_usage: "Consumo da imagem sem confirmação", usage_exceeded_reservation: "Consumo excedeu a reserva",
