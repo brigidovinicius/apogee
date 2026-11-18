@@ -75,7 +75,8 @@ export async function claimDueOfficialSources(limit: number): Promise<OfficialSo
              )
            ))
            and (next_crawl_at is null or next_crawl_at <= now())
-         order by next_crawl_at nulls first, priority desc, id
+         order by (extraction_mode='api' and id=any($2::text[])) desc,
+           next_crawl_at nulls first, priority desc, id
          limit $1 for update skip locked
        )
        update official_sources as source

@@ -1,6 +1,7 @@
 import { isIP } from "node:net";
 import type { OfficialSource } from "./types";
 import { safeRequest } from "./safe-request";
+import { FAPESP_SOURCE_ID, isFapespResourceUrl } from "./fapesp-source";
 
 const blockedHosts = new Set([
   "bit.ly", "tinyurl.com", "t.co", "linktr.ee", "instagram.com", "www.instagram.com",
@@ -40,6 +41,7 @@ export function isOfficialSourceUrl(
 
     return registry.some((source) =>
       source.active &&
+      (source.id !== FAPESP_SOURCE_ID || isFapespResourceUrl(url.href)) &&
       (!source.id?.startsWith("auto-page-") || url.href === source.baseUrl) &&
       source.allowedDomains.some((domain) => normalizedHost(domain) === host) &&
       source.allowedPathPrefixes.some((prefix) => url.pathname.startsWith(prefix)),

@@ -5,7 +5,7 @@ import type { FieldEvidence, OfficialSource, OpportunityCandidate } from "./type
 
 export const PDSE_SOURCE_ID = "capes-pdse-22-2026";
 export const PDSE_URL = "https://www.gov.br/capes/pt-br/acesso-a-informacao/acoes-e-programas/bolsas/bolsas-e-auxilios-internacionais/encontre-aqui/paises/multinacional/programa-de-doutorado-sanduiche-no-exterior-pdse";
-export const PDSE_NEWS_URL = "https://www.gov.br/capes/pt-br/assuntos/noticias-defeso-eleitoral/doutorado-sanduiche-no-exterior-tem-prazos-e-criterios-de-selecao-alterados";
+export const PDSE_NEWS_URL = "https://www.gov.br/capes/pt-br/assuntos/noticias/doutorado-sanduiche-no-exterior-tem-prazos-e-criterios-de-selecao-alterados";
 
 function pages(programmeHtml: string, newsHtml: string) {
   return {

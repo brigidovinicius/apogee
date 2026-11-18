@@ -1,11 +1,12 @@
 import crypto from "node:crypto";
+import { FAPESP_SOURCE_ID, fapespPostingId } from "./fapesp-source";
 
 export function canonicalOpportunityKey(sourceId: string, title: string, sourcePageUrl?: string) {
   // FAPESP reuses short fellowship titles for distinct projects. Its stable
   // numeric posting ID identifies each application independently.
-  if (sourceId === "fapesp-open-fellowships" && sourcePageUrl) {
-    const match = /^https:\/\/(?:www\.)?fapesp\.br\/oportunidades\/[^/]+\/(\d+)\/$/.exec(sourcePageUrl);
-    if (match) return crypto.createHash("sha256").update(`${sourceId}|posting:${match[1]}`).digest("hex");
+  if (sourceId === FAPESP_SOURCE_ID && sourcePageUrl) {
+    const postingId = fapespPostingId(sourcePageUrl);
+    if (postingId) return crypto.createHash("sha256").update(`${sourceId}|posting:${postingId}`).digest("hex");
   }
   const normalized = title.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")

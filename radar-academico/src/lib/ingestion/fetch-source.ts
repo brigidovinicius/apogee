@@ -33,6 +33,18 @@ export async function rateLimit(host: string) {
   lastRequestByDomain.set(host, Date.now(), 1);
 }
 
+// One retry for transient gateway failures only. Never retry a denial, rate
+// limit, TLS/DNS error, or a response asking us to wait via Retry-After.
+async function requestOfficialUrl(url: string, headers: Record<string, string>, maxBytes: number,
+  allowMalformedHeaders: boolean, allowGzip: boolean): Promise<Response> {
+  for (let attempt = 0; ; attempt += 1) {
+    await rateLimit(new URL(url).hostname);
+    const response = await safeRequest(url, headers, maxBytes, "GET", allowMalformedHeaders, allowGzip);
+    if (attempt === 1 || ![502, 503, 504].includes(response.status) || response.headers.has("retry-after")) return response;
+    await waitForOfficialRequest(2000);
+  }
+}
+
 
 export type OfficialResource = { body: Buffer; contentType: string; hash: string; cached: boolean; discoverySitemaps?: string[] };
 export async function fetchOfficialResource(initialUrl: string, source: OfficialSource, maxBytesCap?: number): Promise<OfficialResource> {
@@ -59,8 +71,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     const robotsKey = source.id === "evg-enap-open-courses" && parsed.hostname === "www.escolavirtual.gov.br" ? `${robotsUrl}|${agent}` : null;
     let robots = robotsKey ? evgRobotsCache.get(robotsKey) : undefined;
     if (!robots) {
-      await rateLimit(parsed.hostname);
-      const robotsResponse = await safeRequest(robotsUrl, { "User-Agent": agent }, 128 * 1024, "GET", seaOfficialHeaderCompatibility, allowGzip);
+      const robotsResponse = await requestOfficialUrl(robotsUrl, { "User-Agent": agent }, 128 * 1024, seaOfficialHeaderCompatibility, allowGzip);
       // Only a real 404 permits absence; errors are never cached or reused after expiry.
       if (!robotsResponse.ok && robotsResponse.status !== 404) throw new Error("robots.txt indisponível para revisão");
       const body = robotsResponse.ok ? await robotsResponse.text() : "";
@@ -73,12 +84,11 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     }
     if (robots.isAllowed(url, agent) === false) throw new Error("Acesso bloqueado por robots.txt");
 
-    await rateLimit(parsed.hostname);
     const cached = responseCache.get(url);
     const headers: Record<string, string> = { "User-Agent": agent, Accept: "application/json,text/html,application/rss+xml,application/pdf;q=0.9" };
     if (cached?.etag) headers["If-None-Match"] = cached.etag;
     if (cached?.modified) headers["If-Modified-Since"] = cached.modified;
-    const response = await safeRequest(url, headers, maxBytes, "GET", seaOfficialHeaderCompatibility, allowGzip);
+    const response = await requestOfficialUrl(url, headers, maxBytes, seaOfficialHeaderCompatibility, allowGzip);
     // 304 is a cache response, not a redirect.
     if (response.status === 304 && cached) {
       return { body: cached.body, contentType: cached.contentType, hash: crypto.createHash("sha256").update(cached.body).digest("hex"), cached: true, discoverySitemaps: robots.getSitemaps() };

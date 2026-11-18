@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { OfficialSource, OpportunityCandidate } from "./types";
+import { FAPESP_SOURCE_ID, fapespPostingId } from "./fapesp-source";
 
 function validDate(day: string, month: string, year: string) {
   const iso = `${year}-${month}-${day}`;
@@ -8,9 +9,7 @@ function validDate(day: string, month: string, year: string) {
 }
 
 export function normalizeFapesp(input: { title: string; text: string; url: string; source: OfficialSource }, now = new Date()): OpportunityCandidate | null {
-  if (input.source.id !== "fapesp-open-fellowships") return null;
-  const url = new URL(input.url);
-  if (!["fapesp.br", "www.fapesp.br"].includes(url.hostname) || !/^\/oportunidades\/[^/]+\/\d+\/$/.test(url.pathname)) return null;
+  if (input.source.id !== FAPESP_SOURCE_ID || !fapespPostingId(input.url)) return null;
   const title = input.title.split(/\s+Instituição:/i)[0].trim();
   const text = input.text.replace(/\s+/g, " ").trim();
   const deadline = /Data limite para inscrições:\s*(\d{2})\/(\d{2})\/(\d{4})/i.exec(text);

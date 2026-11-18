@@ -13,14 +13,11 @@ import { PDAI_SOURCE_ID, capesPdaiTerminalEvidence } from "./normalize-capes-pda
 import { PDSE_SOURCE_ID, capesPdseTerminalEvidence } from "./normalize-capes-pdse";
 import { ingestionFailureReason } from "./failure-reason";
 import { sourceCheckHours } from "./source-check-policy";
+import { fapespPostingId } from "./fapesp-source";
 import { isDiscoveredPageSource } from "./discovered-page";
 import { prepareDiscoveredPage } from "./international-discovered-page";
 
 import { EVG_SOURCE_ID, normalizeEvgCourse, type EvgPolicy } from "./normalize-evg-courses";
-
-function fapespPostingId(url: string) {
-  return /^https:\/\/(?:www\.)?fapesp\.br\/oportunidades\/[^/]+\/(\d+)\/$/.exec(url)?.[1] ?? null;
-}
 
 export async function recheckKnownOpportunities(source: OfficialSource, limit: number,
   readText: (body: Buffer, contentType: string) => Promise<string>, evgPolicy?: EvgPolicy): Promise<{

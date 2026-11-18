@@ -124,7 +124,8 @@ it("EV.G reuses bounded robots briefly, still blocks each disallowed URL and fai
   expect(robotsCalls).toBe(1);expect(resourceCalls).toBe(2);
   await expect(fetchOfficialResource("https://www.escolavirtual.gov.br/admin",evg)).rejects.toThrow("robots");expect(resourceCalls).toBe(2);
   await vi.advanceTimersByTimeAsync(300_001);vi.mocked(safeRequest).mockResolvedValue(new Response(null,{status:503}));
-  await expect(fetchOfficialResource("https://www.escolavirtual.gov.br/curso/3",evg)).rejects.toThrow("robots");
+  const failed=expect(fetchOfficialResource("https://www.escolavirtual.gov.br/curso/3",evg)).rejects.toThrow("robots");
+  await vi.runAllTimersAsync();await failed;
  } finally { vi.useRealTimers(); }
 });
 

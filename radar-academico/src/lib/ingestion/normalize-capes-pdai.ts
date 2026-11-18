@@ -5,7 +5,7 @@ import type { FieldEvidence, OfficialSource, OpportunityCandidate } from "./type
 
 export const PDAI_SOURCE_ID = "capes-pdai-23-2026";
 export const PDAI_URL = "https://www.gov.br/capes/pt-br/acesso-a-informacao/acoes-e-programas/bolsas/programas-estrategicos/desenvolvimento-regional/programa-de-desenvolvimento-academico-indigena-pdai";
-export const PDAI_NEWS_URL = "https://www.gov.br/capes/pt-br/assuntos/noticias-defeso-eleitoral/prazo-de-inscricao-no-pdai-e-prorrogado-ate-26-de-outubro";
+export const PDAI_NEWS_URL = "https://www.gov.br/capes/pt-br/assuntos/noticias/prazo-de-inscricao-no-pdai-e-prorrogado-ate-26-de-outubro";
 
 export function capesPdaiTerminalEvidence(programmeHtml: string, newsHtml: string): { status: OpportunityCandidate["opportunityStatus"]; evidence: FieldEvidence } | null {
   const programme = readCapesPage(programmeHtml, /^Programa de Desenvolvimento Acadêmico Indígena \(PDAI\)$/);

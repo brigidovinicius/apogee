@@ -30,3 +30,12 @@ it("exige prazo, projeto e candidatura na própria página oficial, sem inferir 
   expect(normalizeFapesp({ ...input, url: "https://terceiros.example/oportunidades/projeto-de-logica/9715/" })).toBeNull();
   expect(normalizeFapesp(input, new Date("2100-01-01T12:00:00Z"))).toMatchObject({ opportunityStatus: "closed" });
 });
+
+it("normalizes the new official portal while preserving the same mandatory evidence", () => {
+  const current = { ...input, url: "https://oportunidades.fapesp.br/projeto-de-logica/9715/" };
+  expect(normalizeFapesp(current, new Date("2026-11-18T15:00:00Z"))).toMatchObject({
+    title: "Bolsa de PD em Lógica", sourcePageUrl: current.url, deadlineAt: "2099-10-15", opportunityStatus: "open",
+  });
+  expect(normalizeFapesp({ ...current, text: current.text.replace("E-mail para inscrições:", "Contato:") })).toBeNull();
+  expect(normalizeFapesp({ ...current, url: "https://oportunidades.fapesp.br/outro-catalogo/" })).toBeNull();
+});

@@ -1,5 +1,6 @@
 import { ingestJobSource } from "./ingest-jobs";
 import { jobBoard } from "./job-sources";
+import { FAPESP_SOURCE_ID, fapespPostingId } from "./fapesp-source";
 import { recheckKnownOpportunities } from "./recheck";
 import { claimDueOfficialSources, completeScheduledSource, loadOfficialSource } from "./official-source-registry";
 import { deduplicateCandidates } from "./detect-duplicates";
@@ -134,7 +135,7 @@ async function ingestSource(
       visited.add(item.url);
       if (source.id === EVG_SOURCE_ID) return isEvgCourseUrl(item.url);
       if (source.id === "acate-audited-events") return isAuditedAcateEventUrl(item.url);
-      if (source.id === "fapesp-open-fellowships" && !/^https:\/\/(?:www\.)?fapesp\.br\/oportunidades\/[^/]+\/\d+\/$/.test(item.url)) {
+      if (source.id === FAPESP_SOURCE_ID && !fapespPostingId(item.url)) {
         result.ignored += 1;
         return false;
       }
