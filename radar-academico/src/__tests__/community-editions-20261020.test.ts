@@ -77,6 +77,15 @@ it("keeps OBVC paid, caps conditional, and registration distinct from submission
   expect(normalize(fixture, new Date("2026-11-01T00:00:00-03:00")).opportunityStatus).toBe("closed");
 });
 
+it("accepts the OBVC organizer's closed layout as closure, without reopening or masking a changed date", () => {
+  const fixture = fixtures.find(item => item.id === "obvc-2026")!;
+  const closed = { ...fixture, html: fixture.html.replace("Inscrições até", "Inscrições encerradas em") };
+  const candidate = normalize(closed, new Date("2026-11-18T15:00:00Z"));
+  expect(candidate.opportunityStatus).toBe("closed");
+  expect(publicationIssue(candidate, source(fixture.id), new Date("2026-11-18T15:00:00Z"))).toBe("status_unconfirmed");
+  expect(() => normalize({ ...closed, html: closed.html.replace("31 de outubro", "30 de novembro") })).toThrow();
+});
+
 it("requires the MLH global eligibility supplement and avoids classifying points as cash competition", () => {
   for (const fixture of fixtures.filter(item => item.id.startsWith("mlh-"))) {
     expect(programmeSupplementUrl(fixture.id)).toBe(MLH_GLOBAL_URL);

@@ -12,8 +12,12 @@ vi.mock("@/lib/db/client", () => ({
   }),
 }));
 vi.mock("@/lib/ingestion/job-api", () => ({ fetchPublicJobApi: vi.fn() }));
+vi.mock("@/lib/ingestion/fetch-source", async importOriginal => ({
+  ...await importOriginal<typeof import("@/lib/ingestion/fetch-source")>(), fetchOfficialResource: vi.fn(),
+}));
 import { runOfficialSourceIngestion } from "@/lib/ingestion";
 import { fetchPublicJobApi } from "@/lib/ingestion/job-api";
+import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { listLiveCatalogue } from "@/lib/db/live-catalogue";
 import { manageCatalogue } from "@/lib/official-sources/catalogue-management";
 import { claimDueOfficialSources, completeScheduledSource } from "@/lib/ingestion/official-source-registry";
@@ -52,6 +56,78 @@ beforeEach(async () => {
   respond([fixture]);
 });
 afterAll(async () => { await state.db?.close(); vi.unstubAllEnvs(); });
+
+it("prioritizes due audited job feeds over older overdue HTML sources without changing their cadence", async () => {
+  const snapshot = await state.db!.query<{ id: string; next_crawl_at: Date | null }>("select id,next_crawl_at from official_sources");
+  try {
+    await state.db!.exec("update official_sources set next_crawl_at=now()+interval '1 day'");
+    await state.db!.exec("update official_sources set next_crawl_at=now()-interval '1 minute' where id='jobs-whippy'");
+    await state.db!.exec(`insert into official_sources(id,name,institution_name,institution_acronym,source_type,base_url,
+      allowed_domains,allowed_path_prefixes,listing_urls,extraction_mode,priority,active,verification_status,next_crawl_at)
+      select 'test-overdue-html',name,institution_name,institution_acronym,source_type,'https://example.edu.br/',
+        array['example.edu.br'],array['/'],array['https://example.edu.br/'],'html',100,true,'verified',now()-interval '2 days'
+      from official_sources where id='jobs-whippy'`);
+    expect((await claimDueOfficialSources(1)).map(s => s.id)).toEqual(["jobs-whippy"]);
+    expect((await claimDueOfficialSources(1)).map(s => s.id)).toEqual(["test-overdue-html"]);
+    await completeScheduledSource("jobs-whippy", false);
+    expect((await state.db!.query<{ paced: boolean }>("select next_crawl_at>now()+interval '5 hours 59 minutes' paced from official_sources where id='jobs-whippy'")).rows[0].paced).toBe(true);
+  } finally {
+    await state.db!.exec("delete from official_sources where id='test-overdue-html'");
+    for (const row of snapshot.rows) await state.db!.query("update official_sources set next_crawl_at=$2 where id=$1", [row.id, row.next_crawl_at]);
+  }
+});
+
+it("captures and publishes FAPESP automatically across its host migration, preserving identity, aliases and deletion", async () => {
+  const sourceId = "fapesp-open-fellowships", oldRoot = "https://fapesp.br/oportunidades/", currentRoot = "https://oportunidades.fapesp.br/";
+  const legacy = oldRoot + "projeto-de-logica/9715/", current = currentRoot + "projeto-de-logica/9715/";
+  const snapshot = (await state.db!.query<{ data: Record<string, unknown> }>("select to_jsonb(s) data from official_sources s where id=$1", [sourceId])).rows[0].data;
+  const body = `<main><h1>FAPESP | Fundo de Amparo à Pesquisa do Estado de São Paulo</h1>
+    <p>Bolsa de PD em Lógica. Título do projeto: Projeto de teste Project title: Test project</p>
+    <p>Unidade/Instituição: Instituto de Pesquisa Unit/Instituition: Research Institute</p>
+    <p>Data limite para inscrições: 15/10/2099 Deadline for submissions: 2099-10-15</p>
+    <p>E-mail para inscrições: bolsas@example.edu.br E-mail for proposal submission: bolsas@example.edu.br</p></main>`;
+  const respondFapesp = (posting: string) => vi.mocked(fetchOfficialResource).mockImplementation(async url => ({
+    body: Buffer.from(url === oldRoot || url === currentRoot
+      ? `<h1>Oportunidades de Bolsas</h1><a href="${posting}">Bolsa de PD em Lógica</a>` : body),
+    contentType: "text/html", hash: "test-public-snapshot", cached: false,
+  }));
+  try {
+    await state.db!.query(`update official_sources set active=true,verification_status='verified',base_url=$2,listing_urls=array[$2],
+      allowed_domains=array['fapesp.br','www.fapesp.br'],allowed_path_prefixes=array['/oportunidades/'],crawl_listing_index=0,crawl_link_offset=0 where id=$1`, [sourceId, oldRoot]);
+    respondFapesp(legacy);
+    expect(await runOfficialSourceIngestion({ sourceId, maxPages: 2 })).toMatchObject({ published: 1, discovered: 1 });
+    const [first] = await listLiveCatalogue(); expect(first.officialUrl).toBe(legacy);
+    const budget = (await state.db!.query<{ data: unknown }>("select radar_ai.status() data")).rows[0].data;
+    await state.db!.exec(await readFile(new URL("../../db/migrations/0062_source_canonical_paths.sql", import.meta.url), "utf8"));
+    expect((await state.db!.query<{ data: unknown }>("select radar_ai.status() data")).rows[0].data).toEqual(budget);
+    const migrated = (await state.db!.query("select base_url,active,verification_status from official_sources where id=$1", [sourceId])).rows[0];
+    expect(migrated).toEqual({ base_url: currentRoot, active: true, verification_status: "verified" });
+    respondFapesp(current);
+    await runOfficialSourceIngestion({ sourceId, maxPages: 2 });
+    const catalogue = await listLiveCatalogue(); expect(catalogue).toHaveLength(1);
+    expect(catalogue[0]).toMatchObject({ id: first.id, officialUrl: current });
+    const aliases = (await state.db!.query<{ source_page_url: string; active: boolean; is_primary: boolean }>(
+      "select source_page_url,active,is_primary from opportunity_sources where opportunity_id=$1 order by created_at", [first.id])).rows;
+    expect(aliases).toContainEqual({ source_page_url: legacy, active: false, is_primary: false });
+    expect(aliases).toContainEqual({ source_page_url: current, active: true, is_primary: true });
+    await state.db!.exec("update opportunities set next_source_check_at=now()-interval '1 minute'");
+    vi.mocked(fetchOfficialResource).mockRejectedValue(Error("Fonte oficial indisponível (HTTP 502)"));
+    await runOfficialSourceIngestion({ sourceId, maxPages: 5 });
+    expect((await listLiveCatalogue()).map(c => c.id)).toEqual([first.id]);
+    respondFapesp(current);
+    await state.db!.exec("update opportunities set deleted_at=now()");
+    await runOfficialSourceIngestion({ sourceId, maxPages: 2 });
+    expect(await listLiveCatalogue()).toEqual([]);
+    expect((await state.db!.query<{ n: number }>("select count(*)::int n from opportunities where official_source_id=$1", [sourceId])).rows[0].n).toBe(1);
+  } finally {
+    await state.db!.query(`update official_sources s set
+      (base_url,listing_urls,allowed_domains,allowed_path_prefixes,active,verification_status,crawl_listing_index,crawl_link_offset,next_crawl_at)=
+      (select r.base_url,r.listing_urls,r.allowed_domains,r.allowed_path_prefixes,r.active,r.verification_status,r.crawl_listing_index,r.crawl_link_offset,r.next_crawl_at
+       from jsonb_populate_record(null::official_sources,$2::jsonb) r) where s.id=$1`, [sourceId, JSON.stringify(snapshot)]);
+    vi.mocked(fetchOfficialResource).mockReset();
+  }
+});
+
 it("seeds expansion sources inactive and keeps Brazil remote publication behind audit", async () => {
   const ids=["jobs-latamcent","jobs-truelogic","jobs-oscilar","jobs-elevenlabs","jobs-telnyx"];
   const seeded=await state.db!.query<{id:string;active:boolean;verification_status:string}>(
