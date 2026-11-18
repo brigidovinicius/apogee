@@ -4,6 +4,7 @@ import { runScheduledDiscovery } from "@/lib/discovery/daily-discovery";
 import { runScheduledLeadProcessing } from "@/lib/discovery/process-leads";
 import { secretMatches } from "@/lib/security";
 import { runOpportunityAlerts } from "@/lib/alerts/monitoring";
+import { runAutomaticDiscoveryAdvice } from "@/lib/discovery/automatic-ai";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -38,13 +39,16 @@ export async function POST(request: Request) {
       let discovery;
       try { discovery=await runScheduledDiscovery(); }
       catch { discovery={targetsChecked:0,newLeads:0,failed:true}; }
+      let aiDiscovery;
+      try { aiDiscovery=await runAutomaticDiscoveryAdvice(); }
+      catch { aiDiscovery={mode:'BASE',reason:'control_unavailable',queued:0,applied:0,rejected:0}; }
       let leadProcessing;
       try { leadProcessing=await runScheduledLeadProcessing(processingDeadline); }
       catch { leadProcessing={leadsChecked:0,created:0,updated:0,published:0,blocked:0,retried:0,ignored:0,leaseLost:0,failed:1,reasons:{}}; }
       let alerts;
       try { alerts=await runOpportunityAlerts(); }
       catch { alerts={enabled:true,queued:0,sent:0,failed:1}; }
-      return Response.json({ ...ingestion, discovery, leadProcessing, alerts });
+      return Response.json({ ...ingestion, discovery, aiDiscovery, leadProcessing, alerts });
     }
     catch { return Response.json({ error: "Falha na ingestão" }, { status: 500 }); }
   }

@@ -14,6 +14,8 @@ import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
 import { loadActiveOfficialSources } from "@/lib/ingestion/official-source-registry";
 import { prepareSourceExpansion } from "@/lib/discovery/source-expansion";
 import { recheckKnownOpportunities } from "@/lib/ingestion/recheck";
+import { discoveryDocument } from "@/lib/discovery/documents";
+import { saveDiscoveryLeads } from "@/lib/discovery/watchlist";
 
 const parent = "https://official.example.org/";
 const target = "exp-source-expansion-test";
@@ -113,6 +115,37 @@ it('preserves organizer authority when a global structured event carries the Bra
   const source = (await loadActiveOfficialSources()).find(s => s.id.startsWith('auto-page-'))!;
   expect(source.notes).toContain('radar:eligibility-br-required:v1');
   expect(source.notes).toMatch(/; authority=https:\/\/luma\.com\/official-calendar$/);
+});
+
+it('discovers and automatically publishes the WeMakeDevs FAQ template, then withdraws a closed registration', async () => {
+  const index = 'https://www.wemakedevs.org/hackathons';
+  const detail = index + '/flagsmith';
+  await state.db!.query("update discovery_targets set organizer='WeMakeDevs',official_url=$2,official_verified_url=$2,topics=array['competicoes','eventos','eligibility-br-required'] where id=$1", [target,index]);
+  const listing = resource('<h1>Hackathons</h1><a href="/hackathons/flagsmith">Remote Nov 26–29 Toggle Wars</a>');
+  const links = discoveryDocument(listing,index,index).links.map(link => ({...link,discoveryPath:[index]}));
+  expect(await saveDiscoveryLeads(target,links)).toBe(1);
+  // Previously held real-world layout: retry once under the corrected adapter,
+  // without resetting attempts or relaxing the geographic evidence requirement.
+  await state.db!.query("update discovery_leads set processing_status='blocked',processing_reason='eligibility_br_unconfirmed',processing_attempts=1,processed_at=now() where target_id=$1",[target]);
+  await state.db!.query(`insert into ingestion_runs(started_at,finished_at,status,execution_metadata)
+    select now(),now(),'completed',jsonb_build_object('component','discovery-lead','lead_id',id,'source_expansion_version',7)
+    from discovery_leads where target_id=$1`,[target]);
+  let closed = false;
+  const html = await readFile(new URL('./fixtures/wemakedevs-flagsmith.html',import.meta.url),'utf8');
+  vi.mocked(fetchOfficialResource).mockImplementation(async requested => {
+    if(requested===index)return listing;
+    if(requested===detail)return resource(closed ? html.replace('</body>','<p>Registration closed.</p></body>') : html);
+    throw Error('Unexpected URL');
+  });
+  expect(await runScheduledLeadProcessing()).toMatchObject({created:1,published:1,sourcesRegistered:1});
+  expect((await state.db!.query('select verification_method,deadline_at,deadline_precision,event_starts_at from opportunities')).rows)
+    .toEqual([{verification_method:'automatic',deadline_at:null,deadline_precision:'not_informed',event_starts_at:'2099-11-26'}]);
+  expect(await runScheduledLeadProcessing()).toMatchObject({leadsChecked:0,created:0,published:0});
+  const source=(await loadActiveOfficialSources()).find(s=>s.id.startsWith('auto-page-'))!;
+  await state.db!.query('update opportunities set next_source_check_at=now() where official_source_id=$1',[source.id]);
+  closed=true;
+  expect(await recheckKnownOpportunities(source,1,async body=>body.toString('utf8'))).toMatchObject({failed:0,published:0,pagesChecked:1});
+  expect((await state.db!.query('select published_at from opportunities')).rows).toEqual([{published_at:null}]);
 });
 
 it('withdraws an automatically published international event when its linked rules exclude Brazil on recheck',async()=>{
@@ -224,7 +257,7 @@ it.each([{ path: [parent.slice(0, -1)] }, { path: [parent] }, { path: [] }])("re
     from discovery_leads where target_id=$1`, [target]);
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 1, sourcesRegistered: 1, created: 1, published: 1 });
   const audit = (await state.db!.query<{ execution_metadata: Record<string, unknown> }>(
-    "select execution_metadata from ingestion_runs where execution_metadata->>'source_expansion_version'='8'" )).rows[0].execution_metadata;
+    "select execution_metadata from ingestion_runs where execution_metadata->>'source_expansion_version'='9'" )).rows[0].execution_metadata;
   expect(audit).toMatchObject({ source_registration: { targetUrl: rawParent, discoveryPath: [parent] } });
   expect((await state.db!.query('select official_url,official_verified_url from discovery_targets where id=$1', [target])).rows)
     .toEqual([{ official_url: rawParent, official_verified_url: rawParent }]);
@@ -255,7 +288,7 @@ it("recovers a legacy blocked link, registers one exact source and publishes ato
     .toEqual([{ review_status: "approved", publication_issue: null, verification_method: "automatic" }]);
   const audit = (await state.db!.query<{ execution_metadata: Record<string, unknown> }>(
     "select execution_metadata from ingestion_runs where execution_metadata->>'component'='discovery-lead'" )).rows[0].execution_metadata;
-  expect(audit).toMatchObject({ sources_registered: 1, source_expansion_version: 8,
+  expect(audit).toMatchObject({ sources_registered: 1, source_expansion_version: 9,
     source_registration: { targetUrl: parent, organizer: "Instituto oficial", pageHash: expect.stringMatching(/^[a-f0-9]{64}$/) } });
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, sourcesRegistered: 0, published: 0 });
 });

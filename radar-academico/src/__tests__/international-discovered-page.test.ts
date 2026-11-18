@@ -53,6 +53,12 @@ it.each(['View the official rules and eligibility', 'Rules & Regulations', 'Term
   expect(fetchOfficialResource).toHaveBeenCalledTimes(1);
 });
 
+it.each(['header','nav','footer'])('does not ignore linked rules placed in %s', async tag => {
+  vi.mocked(fetchOfficialResource).mockResolvedValue(resource('<main>Not open to residents of Brazil.</main>'));
+  expect(await prepareDiscoveredPage(`<${tag}>${rulesLink}</${tag}>`+page('Open to developers worldwide.'),source))
+    .toEqual({reason:'eligibility_br_excluded'});
+});
+
 it.each([
   'Built for a global community.',
   'Only accepted applicants may take part.',

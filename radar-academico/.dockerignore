@@ -13,6 +13,7 @@ coverage
 src/__tests__
 tests
 ai-worker/test
+reconciliation-worker/test
 README.md
 # Keep research/audit material out; these two catalogues are runtime imports.
 references/*

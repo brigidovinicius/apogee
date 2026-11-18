@@ -5,6 +5,7 @@ import { isOfficialSourceUrl } from './validate-url';
 import { structuredEvents } from './structured-events';
 import { singleOpportunityArticle, normalizeDiscoveredPage, discoveredPageFailureReason } from './discovered-page';
 import type { OfficialSource, OpportunityCandidate } from './types';
+import { weMakeDevsEligibilityText, isWeMakeDevsHackathonSource } from './normalize-wemakedevs';
 
 export const BRAZIL_ELIGIBILITY_TOPIC = 'eligibility-br-required';
 const policyNote = 'radar:eligibility-br-required:v1';
@@ -21,6 +22,7 @@ function eligibility(text: string): 'excluded' | 'eligible' | 'unknown' {
     !/\b(?:only|exclusively).{0,25}\b(?:residents?|citizens?|based in).{0,100}\b(?:brazil|brasil)\b/u.test(value)) return 'unknown';
   // Require a participation statement. A registration button near a mention
   // of Brazil or a worldwide sponsor does not establish geographic eligibility.
+  if (/\bwho can (?:take part|participate)\? (?:developers|participants|entrants) from anywhere in the world\b/u.test(value)) return 'eligible';
   if (/\b(?:open|welcome) to (?:(?:all|eligible) )?(?:participants?|entrants?|developers?|startups?|teams?|students?|anyone|people|residents?) (?:from )?(?:worldwide|anywhere(?: in the world)?|any country|all countries|around the world|brazil|brasil)\b/u.test(value) ||
     /\b(?:participation|entry|applications?) (?:is|are) open (?:worldwide|to (?:all countries|brazil|brasil))\b/u.test(value) ||
     /\b(?:open worldwide|brazilians? (?:are eligible|may apply|can participate)|residents? (?:of|in) (?:brazil|brasil) (?:are eligible|may apply|can participate)|(?:aberto|aberta) (?:a|para) (?:participantes|pessoas|equipes|estudantes|residentes) (?:de|do|em) (?:todo o mundo|qualquer pais|brasil)|(?:residentes no brasil|brasileiros) podem participar)\b/u.test(value)) return 'eligible';
@@ -29,32 +31,34 @@ function eligibility(text: string): 'excluded' | 'eligible' | 'unknown' {
 
 function documentText(html: string) {
   const $ = cheerio.load(html);
+  // Rules links can live in navigation or a footer; their placement must not
+  // make the linked restrictions disappear. Promotional text stays excluded.
+  const links = $('a[href]').toArray().map(node => ({ label: $(node).text().trim(), href: $(node).attr('href')! }));
   $('script,style,noscript,nav,header,footer,aside').remove();
   $('p,div,li,h1,h2,h3,h4,h5,h6,br').append(' ');
   // Transport already bounds the document to 2 MiB. Do not truncate an
   // exclusion list that appears after a long introduction to the rules.
-  return { $, text: $('body').text().replace(/\s+/gu, ' ').trim() };
+  return { links, text: $('body').text().replace(/\s+/gu, ' ').trim() };
 }
 
 /** One additional rules page, within the same audited host/path and request budget. */
 export async function prepareDiscoveredPage(html: string, source: OfficialSource, reserveRulePage: () => boolean = () => true): Promise<{ candidate: OpportunityCandidate } | { reason: string }> {
   let proof: { source_url: string; excerpt: string; supporting_url?: string; supporting_sha256?: string } | undefined;
   if (requiresBrazilEligibility(source)) {
-    const { $, text } = documentText(html);
+    const { links: pageLinks, text } = documentText(html);
     if (eligibility(text) === 'excluded') return { reason: 'eligibility_br_excluded' } as const;
     const links = new Set<string>();
     let invalidLink = false;
-    $('a[href]').each((_, element) => {
-      const label = $(element).text().trim();
-      if (!/\brules?\b|\bregulamentos?\b|\beligibility\b|\beligibilidade\b|\bterms\s*(?:and|&)\s*conditions\b|\btermos\s+e\s+condi[çc][õo]es\b/iu.test(label)) return;
+    for (const { label, href } of pageLinks) {
+      if (!/\brules?\b|\bregulamentos?\b|\beligibility\b|\beligibilidade\b|\bterms\s*(?:and|&)\s*conditions\b|\btermos\s+e\s+condi[çc][õo]es\b/iu.test(label)) continue;
       try {
-        const url = new URL($(element).attr('href')!, source.baseUrl); url.hash = '';
+        const url = new URL(href, source.baseUrl); url.hash = '';
         const base = new URL(source.baseUrl), childPrefix = base.pathname.replace(/\/$/, '') + '/';
         const linkScope = { ...source, id: 'eligibility-link-proof' };
         if (url.origin !== base.origin || !(url.pathname === base.pathname || url.pathname.startsWith(childPrefix)) || !isOfficialSourceUrl(url.href, [linkScope])) invalidLink = true;
         else links.add(url.href);
       } catch { invalidLink = true; }
-    });
+    }
     if (invalidLink || links.size > 1) return { reason: 'eligibility_br_unconfirmed' } as const;
     let evidenceText: string;
     let evidenceUrl = source.baseUrl;
@@ -73,7 +77,7 @@ export async function prepareDiscoveredPage(html: string, source: OfficialSource
     } else {
       // A footer's worldwide community slogan is not participation evidence.
       const events = structuredEvents(html);
-      evidenceText = singleOpportunityArticle(html)?.text ?? (events.length === 1 && typeof events[0].description === 'string' ? events[0].description : '');
+      evidenceText = singleOpportunityArticle(html)?.text || weMakeDevsEligibilityText(html, source) || (events.length === 1 && typeof events[0].description === 'string' ? events[0].description : '');
     }
     const result = eligibility(evidenceText);
     if (result !== 'eligible') return { reason: result === 'excluded' ? 'eligibility_br_excluded' : 'eligibility_br_unconfirmed' } as const;
@@ -83,7 +87,7 @@ export async function prepareDiscoveredPage(html: string, source: OfficialSource
       ...(rulesHash ? { supporting_url: evidenceUrl, supporting_sha256: rulesHash } : {}) };
   }
   const candidate = normalizeDiscoveredPage(html, source);
-  if (!candidate) return { reason: discoveredPageFailureReason(html) };
+  if (!candidate) return { reason: isWeMakeDevsHackathonSource(source) ? 'candidate_unconfirmed' : discoveredPageFailureReason(html) };
   if (proof) candidate.evidenceJson.eligibility_br = proof;
   return { candidate };
 }
