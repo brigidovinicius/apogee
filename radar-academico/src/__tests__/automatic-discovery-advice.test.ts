@@ -103,3 +103,13 @@ it('does not expose task context or priority hints to the public reader or AI wo
     await expect(state.db!.transaction(async tx=>{await tx.exec(`set local role ${role}`);return tx.query('select radar_ai.automatic_discovery_context()')})).rejects.toThrow();
   }
 });
+it('keeps the indexed history identity synchronized and preserves malformed metadata as unknown',async()=>{
+  const id='abcdefab-1111-4111-8111-111111111111';
+  for(const raw of [id,id.toUpperCase(),'not-a-uuid',null,123]) {
+    const row=(await state.db!.query<{id:string;discovery_lead_id:string|null}>(`insert into ingestion_runs(started_at,status,execution_metadata)
+      values(now(),'completed',$1) returning id,discovery_lead_id`,[{lead_id:raw}])).rows[0];
+    expect(row.discovery_lead_id).toBe(raw===id?id:null);
+    await state.db!.query("update ingestion_runs set execution_metadata=execution_metadata-'lead_id' where id=$1",[row.id]);
+    expect((await state.db!.query<{discovery_lead_id:string|null}>('select discovery_lead_id from ingestion_runs where id=$1',[row.id])).rows[0].discovery_lead_id).toBeNull();
+  }
+});

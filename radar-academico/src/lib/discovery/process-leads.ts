@@ -80,7 +80,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
              or (lead.processing_status='blocked' and (lead.processing_reason in
                  ('scope_unverified','candidate_unconfirmed','detail_layout_unrecognized','invalid_deadline','source_authority_unverified','listing_or_ambiguous','unsupported_content')
                  or (lead.processing_reason='eligibility_br_unconfirmed' and target.official_url='https://www.wemakedevs.org/hackathons'))
-               and not exists(select 1 from ingestion_runs run where run.execution_metadata->>'lead_id'=lead.id::text
+               and not exists(select 1 from ingestion_runs run where run.discovery_lead_id=lead.id
                  and (run.execution_metadata->>'source_expansion_version'='9' or
                    (run.execution_metadata->>'source_expansion_version'='7' and
                      lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline','eligibility_br_unconfirmed')) or
