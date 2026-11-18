@@ -25,12 +25,22 @@ const date = z.string().refine(v => !v || /^\d{4}-\d{2}-\d{2}$/.test(v) && Numbe
 export const benefitSchema = z.strictObject({
   ...common, status: z.enum(["draft", "published", "archived"]), partner: text(140), description: text(2000),
   evidenceUrl: officialUrl, eligibility: z.string().trim().max(2000), availability: z.string().trim().max(1000),
-  startsAt: date, endsAt: date, redemption: z.string().trim().max(4000), redemptionUrl: officialUrl,
+  startsAt: date, endsAt: date, verifiedOn: date.optional(), redemption: z.string().trim().max(4000), redemptionUrl: officialUrl,
   categoryId: z.union([identifier, z.literal("")]).optional(), providerLabel: z.string().trim().max(140).optional(),
   providerAccess: z.enum(["unconfirmed", "free", "premium", "included"]).optional(), sourceUrl: officialUrl.optional(),
 }).superRefine((v, ctx) => {
   if (v.startsAt && v.endsAt && v.endsAt <= v.startsAt) ctx.addIssue({ code: "custom", message: "A vigência final deve ser posterior à inicial." });
-  if (v.status === "published" && (!v.evidenceUrl || !v.eligibility || !v.availability || !v.startsAt || !v.endsAt || !v.redemption)) {
+  if (v.verifiedOn && (v.startsAt || v.endsAt)) {
+    ctx.addIssue({ code: "custom", message: "Escolha a vigência anunciada ou a verificação periódica." });
+  }
+  if (v.verifiedOn && v.status === "published") {
+    const elapsed = Date.now() - Date.parse(v.verifiedOn);
+    if (elapsed < 0 || elapsed >= 7 * 86400000 || !v.redemptionUrl) {
+      ctx.addIssue({ code: "custom", message: "Confira o resgate e informe uma verificação dos últimos sete dias em UTC." });
+    }
+  }
+  const hasValidity = v.verifiedOn || (v.startsAt && v.endsAt);
+  if (v.status === "published" && (!v.evidenceUrl || !v.eligibility || !v.availability || !hasValidity || !v.redemption)) {
     ctx.addIssue({ code: "custom", message: "Antes de publicar, comprove o acordo e informe elegibilidade, disponibilidade, vigência e procedimento de resgate." });
   }
 });

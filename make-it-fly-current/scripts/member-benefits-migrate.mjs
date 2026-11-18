@@ -35,7 +35,8 @@ export async function migrateMemberBenefits(sql, { apply = false, expectedRole =
   const entries = JSON.parse(readFileSync(new URL("meta/_journal.json", root), "utf8")).entries;
   const migrations = entries.map(e => { const source = readFileSync(new URL(`${e.tag}.sql`, root), "utf8"); return { ...e, source, hash: createHash("sha256").update(source).digest("hex") }; });
   const index = migrations.findIndex(m => m.tag === "0021_member_benefits_workspace");
-  if (index !== 21 || migrations[20]?.tag !== "0020_member_deliverables") throw Error("Histórico de Benefícios divergente.");
+  const verification = migrations[index + 1];
+  if (verification?.tag !== "0022_member_benefit_verification" || index !== 21 || migrations[20]?.tag !== "0020_member_deliverables") throw Error("Histórico de Benefícios divergente.");
   return sql.begin(async tx => {
     await tx`select set_config('lock_timeout','5s',true)`;
     await tx`select set_config('statement_timeout','60s',true)`;
@@ -44,13 +45,29 @@ export async function migrateMemberBenefits(sql, { apply = false, expectedRole =
     await tx`lock table drizzle.__drizzle_migrations in exclusive mode`;
     const rows = await tx`select hash,created_at from drizzle.__drizzle_migrations order by created_at`;
     if (rows.length < index || rows.length > migrations.length || !rows.every((r, i) => r.hash === migrations[i].hash && Number(r.created_at) === migrations[i].when)) throw Error("Histórico divergente. Aplique primeiro as entregas existentes.");
-    if (rows.length > index) { await verify(tx, expectedRole); return { changed: false, pending: false }; }
-    const present = await tx`select tablename from pg_tables where schemaname='public' and tablename=any(${Object.keys(columns)}::text[])`;
-    if (present.length) throw Error("Esquema parcial/preexistente.");
-    if (!apply) return { changed: false, pending: true };
-    await tx.unsafe(migrations[index].source);
+    const baseInstalled = rows.length > index;
+    const reviewInstalled = rows.length > index + 1;
+    if (baseInstalled) await verify(tx, expectedRole);
+    else {
+      const present = await tx`select tablename from pg_tables where schemaname='public' and tablename=any(${Object.keys(columns)}::text[])`;
+      if (present.length) throw Error("Esquema parcial/preexistente.");
+    }
+    const checkVerification = async () => {
+      const [state] = await tx`select
+        exists(select 1 from information_schema.columns where table_schema='public' and table_name='member_benefit' and column_name='verified_at' and data_type='timestamp with time zone' and is_nullable='YES') as has_column,
+        to_regprocedure('public.member_benefit_is_current(timestamptz,timestamptz,timestamptz)') is not null as has_function,
+        exists(select 1 from pg_constraint where conrelid='public.member_benefit'::regclass and conname='member_benefit_verification_mode') as has_constraint`;
+      return Object.values(state);
+    };
+    const parts = await checkVerification();
+    if (reviewInstalled ? parts.some(p => !p) : parts.some(Boolean)) throw Error("Esquema de verificação divergente.");
+    if (reviewInstalled || !apply) return { changed: false, pending: !reviewInstalled };
+    for (const migration of baseInstalled ? [verification] : [migrations[index], verification]) {
+      await tx.unsafe(migration.source);
+      await tx`insert into drizzle.__drizzle_migrations(hash,created_at) values(${migration.hash},${migration.when})`;
+    }
     await verify(tx, expectedRole);
-    await tx`insert into drizzle.__drizzle_migrations(hash,created_at) values(${migrations[index].hash},${migrations[index].when})`;
+    if (!(await checkVerification()).every(Boolean)) throw Error("Verificação incompleta.");
     return { changed: true, pending: false };
   });
 }
