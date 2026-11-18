@@ -91,12 +91,12 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
                    (run.execution_metadata->>'source_expansion_version'='4' and lead.processing_reason in
                      ('scope_unverified','source_authority_unverified','unsupported_content'))))))
          order by case when (lead.processing_status='blocked' or coalesce(lead.processing_reason='processing_budget_exhausted',false))=$6 then 0 else 1 end,
+           case when $7 then lead.first_seen_at end desc,
            coalesce(advice.priority,0) desc,
            case when lead.processing_reason='processing_budget_exhausted' then 0 else 1 end,
            case when lead.processing_status='blocked' and lead.processing_reason in ('detail_layout_unrecognized','invalid_deadline') then 0 else 1 end,
            case when $6 and lead.processing_status='blocked' then lead.first_seen_at end desc,
            case when lead.title ~* $5 then 0 else 1 end,
-           case when $7 then lead.first_seen_at end desc,
            case when lead.first_seen_at<=now()-interval '48 hours' then 0 else 1 end,
            lead.processing_next_at,lead.first_seen_at,lead.id
          limit $3 for update of lead skip locked

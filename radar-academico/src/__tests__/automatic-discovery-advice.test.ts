@@ -75,13 +75,21 @@ it('applies a confirmed ranking once, selects its lead first, and never publishe
   await complete([lead.id]);
   expect(await runAutomaticDiscoveryAdvice()).toMatchObject({applied:1,queued:0});
   expect(await runAutomaticDiscoveryAdvice()).toMatchObject({applied:0,queued:0});
-  expect((await claimDueDiscoveryLeads(1,[],false,true))[0].id).toBe(lead.id);
+  expect((await claimDueDiscoveryLeads(1,[],false,false))[0].id).toBe(lead.id);
   expect((await state.db!.query('select * from opportunities where official_source_id like \'automatic-advice%\'')).rows).toHaveLength(0);
 });
 it('does not apply a proposal after a lead URL or target authority changes',async()=>{
   await complete([lead.id]);await state.db!.query('update discovery_leads set url=$2 where id=$1',[lead.id,lead.target_url+'changed']);
   expect(await runAutomaticDiscoveryAdvice()).toMatchObject({applied:0});
   expect((await state.db!.query('select * from discovery_priority_hints')).rows).toHaveLength(0);
+});
+it.each([null,'processing_budget_exhausted'])('reserves the fresh round ahead of older AI advice (previous reason: %s)',async(reason)=>{
+  await state.db!.query("update discovery_leads set first_seen_at=now()-interval '2 days',processing_reason=$2 where id=$1",[lead.id,reason]);
+  await complete([lead.id]);
+  expect(await runAutomaticDiscoveryAdvice()).toMatchObject({applied:1});
+  const fresh=(await state.db!.query<{id:string}>('insert into discovery_leads(target_id,url,title) values($1,$2,$3) returning id',[target,lead.target_url+'call/fresh','Hackathon novo'])).rows[0];
+  expect((await claimDueDiscoveryLeads(1,[],false,true))[0].id).toBe(fresh.id);
+  expect((await claimDueDiscoveryLeads(1,[],false,false))[0].id).toBe(lead.id);
 });
 it('rejects a malicious result without adding a priority or repaying for a replacement',async()=>{
   await complete(['33333333-3333-4333-8333-333333333333']);
