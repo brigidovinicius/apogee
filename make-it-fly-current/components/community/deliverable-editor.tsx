@@ -13,6 +13,7 @@ const fields: Record<DeliverableKind, Field[]> = {
     { key: "evidenceUrl", label: "Fonte HTTPS de comprovação do acordo (somente administração)", type: "url" },
     { key: "eligibility", label: "Elegibilidade", long: true }, { key: "availability", label: "Disponibilidade e limites", long: true },
     { key: "startsAt", label: "Início da vigência (UTC)", type: "date" }, { key: "endsAt", label: "Fim da vigência, exclusivo (UTC)", type: "date" },
+    { key: "verifiedOn", label: "Última verificação do resgate (UTC)", type: "date" },
     { key: "redemption", label: "Procedimento real de resgate e validação de titularidade", long: true },
     { key: "redemptionUrl", label: "Link oficial de resgate, sem credenciais ou códigos pessoais", type: "url" },
   ],
@@ -26,6 +27,8 @@ export function DeliverableEditor({ kind, values = {}, choices = [] }: { kind: D
   // Keep the revision paired with these fields. A refresh of another row must
   // never attach a newer revision to this still-unsaved local draft.
   const [revision, setRevision] = useState(values.revision ?? "");
+  const byReview = (data.validityMode ?? (data.verifiedOn ? "review" : "fixed")) === "review";
+  const visibleFields = fields[kind].filter(f => byReview ? !["startsAt", "endsAt"].includes(f.key) : f.key !== "verifiedOn");
   const setField = (key: string, value: string) => setData(current => ({ ...current, [key]: value }));
   const [state, action, pending] = useActionState(async (previous: EditorialState, form: FormData) => {
     const result = await saveEditorial(previous, form);
@@ -44,8 +47,18 @@ export function DeliverableEditor({ kind, values = {}, choices = [] }: { kind: D
       {kind === "benefit" ? <>
         <label htmlFor={`${id}-category`}>Categoria<select id={`${id}-category`} name="categoryId" value={data.categoryId ?? ""} onChange={e => setField("categoryId", e.target.value)}><option value="">Sem categoria</option>{choices.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
         <label htmlFor={`${id}-provider-access`}>Acesso à oferta no fornecedor<select id={`${id}-provider-access`} name="providerAccess" value={data.providerAccess ?? "unconfirmed"} onChange={e => setField("providerAccess", e.target.value)}>{Object.entries(PROVIDER_ACCESS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+        <label htmlFor={`${id}-validity`}>Como a vigência é determinada
+          <select id={`${id}-validity`} value={byReview ? "review" : "fixed"} onChange={e => {
+            const validityMode = e.target.value;
+            setData(current => ({ ...current, validityMode, startsAt: "", endsAt: "", verifiedOn: "" }));
+          }}>
+            <option value="fixed">Período anunciado pelo fornecedor</option>
+            <option value="review">Oferta contínua com verificação periódica</option>
+          </select>
+        </label>
+        {byReview && <p>Confira a fonte e o resgate antes de registrar a data. A oferta sai do catálogo sete dias após a verificação, às 00h UTC, salvo nova conferência.</p>}
       </> : null}
-      {fields[kind].map(f => <label key={f.key} htmlFor={`${id}-${f.key}`}>{f.label}{f.long ? <textarea id={`${id}-${f.key}`} name={f.key} value={data[f.key] ?? ""} onChange={e => setField(f.key, e.target.value)} maxLength={f.key === "instructions" ? 12000 : f.key === "redemption" ? 4000 : 2000} required={f.required} /> : <input id={`${id}-${f.key}`} name={f.key} type={f.type ?? "text"} value={data[f.key] ?? ""} onChange={e => setField(f.key, e.target.value)} maxLength={1000} required={f.required} />}</label>)}
+      {visibleFields.map(f => <label key={f.key} htmlFor={`${id}-${f.key}`}>{f.label}{f.long ? <textarea id={`${id}-${f.key}`} name={f.key} value={data[f.key] ?? ""} onChange={e => setField(f.key, e.target.value)} maxLength={f.key === "instructions" ? 12000 : f.key === "redemption" ? 4000 : 2000} required={f.required} /> : <input id={`${id}-${f.key}`} name={f.key} type={f.type ?? "text"} value={data[f.key] ?? ""} onChange={e => setField(f.key, e.target.value)} maxLength={1000} required={f.required} />}</label>)}
       <label htmlFor={`${id}-order`}>Ordem<input id={`${id}-order`} name="sortOrder" type="number" min={0} max={10000} step={1} value={data.sortOrder ?? "0"} onChange={e => setField("sortOrder", e.target.value)} required /></label>
       <label htmlFor={`${id}-status`}>Estado editorial<select id={`${id}-status`} name="status" value={data.status ?? "draft"} onChange={e => setField("status", e.target.value)}><option value="draft">Rascunho</option>{kind !== "benefit" ? <option value="preparing">Em preparação</option> : null}<option value="published">Publicado</option><option value="archived">Arquivado</option></select></label>
       <p>{kind === "benefit" ? "Publicar exige comprovação, vigência, condições e resgate. Nenhum acordo é criado por este formulário." : "Publique somente material autorizado e revisado. Arquivar um módulo ou trilha restringe também seus conteúdos."}</p>
