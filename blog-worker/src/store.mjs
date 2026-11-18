@@ -283,6 +283,9 @@ export class Store {
     const blocked=await this.sql`select distinct doc->>'url' as url from blog_worker.dossier_version v join blog_worker.candidate c on c.id=v.candidate_id cross join lateral jsonb_array_elements(v.document->'documents') doc
       where c.post_id is not null or c.reason in ('operator_hold','source_changed_after_reservation','retention') or exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id)
       union select c.url from blog_worker.candidate c where c.post_id is not null or c.reason in ('operator_hold','source_changed_after_reservation','retention') or exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id)`;
+    const held=await this.sql`select distinct doc->>'url' as url from blog_worker.dossier_version v join blog_worker.candidate c on c.id=v.candidate_id cross join lateral jsonb_array_elements(v.document->'documents') doc
+      where c.reason in ('operator_hold','source_changed_after_reservation','retention') or (c.content_kind='news' and exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id))
+      union select c.url from blog_worker.candidate c where c.reason in ('operator_hold','source_changed_after_reservation','retention') or (c.content_kind='news' and exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id))`;
     const rows=await this.sql`select * from (select latest.*,row_number() over(partition by source_id order by captured_at desc) as source_rank from (
       select distinct on(d.url) d.id as capture_id,d.candidate_id,d.source_id,d.document,d.captured_at from blog_worker.captured_document d
       join blog_worker.research_reference r on r.id=d.source_id where r.definition->>'enabled'='true' and r.definition->>'content_approved'='true'
@@ -290,7 +293,10 @@ export class Store {
       order by source_rank,captured_at desc limit 1200`;
     const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,candidate_id:r.candidate_id,source_id:r.source_id,captured_at:r.captured_at}));
     const existing=await this.sql`select explainer_key from blog_worker.candidate where content_kind='explainer'`;
-    const options={blockedUrls:blocked.map(r=>r.url),existing,usage,policy,at,approvedReferenceIds:approved.map(r=>r.id)};
+    // Used guides may be supporting context for a different, never-used primary
+    // URL. Holds and rejected news stay excluded; native claim overlap still
+    // rejects recycling prior material, and prior dossiers remain immutable.
+    const options={blockedUrls:held.map(r=>r.url),seedBlockedUrls:blocked.map(r=>r.url),existing,usage,policy,at,approvedReferenceIds:approved.map(r=>r.id)};
     const plans=[...storedExplainerPlans(stored),...renewableExplainerPlans(captures,options)].filter(p=>p.urls.every(permitted))
       .map(p=>({...p,...(p.additional_sources?{additional_sources:p.additional_sources.filter(s=>permitted(s.url))}:{})}));
     if(!discoveryOnly&&explainerWindowOpen(policy,at)&&plans.length){const result=await this.prepareAutomaticExplainer(policy,{read,plans,at});if(result)return {...result,renewable:true};}

@@ -38,6 +38,31 @@ test('a persisted plan is revalidated after restart and never substitutes anothe
  for(const altered of [{...plan,key:'auto-other-key'},{...plan,urls:['https://127.0.0.1/a',plan.urls[1]]},{...plan,provenance:[]}, {...plan,terms:['']}])
   assert.equal(storedExplainerPlans([{explainer_key:plan.key,artifact:{research:{plan:altered}}}]).length,0);
 });
+test('used educational context cannot become a new seed but can support a distinct new guide',()=>{
+ const [a,b]=pair('IaaS infrastructure software'),fresh={...a,url:a.url+'-new-context'};
+ const [old]=renewableExplainerPlans([a,b],{policy,at});
+ const result=renewableExplainerPlans([fresh,b],{policy,at,existing:[{explainer_key:old.key}],seedBlockedUrls:[a.url,b.url]});
+ assert.equal(result.length,1);assert.equal(result[0].urls[0],fresh.url);
+ assert.equal(renewableExplainerPlans([fresh,b],{policy,at,blockedUrls:[b.url],seedBlockedUrls:[a.url,b.url]}).length,0,'a held reference remains unavailable even as context');
+ assert.equal(renewableExplainerPlans([a,b],{policy,at,seedBlockedUrls:[a.url,b.url]}).length,0,'a used source cannot get a replacement identity');
+});
+test('renewable explainers do not relabel a corporate news announcement',()=>{
+ const captures=[doc('https://blog.google/products/new-iaas','IaaS infrastructure software','ARTICLE_PRIMARY_GOOGLE_BLOG','Corporate announcement'),pair('IaaS infrastructure software')[1]];
+ const plans=renewableExplainerPlans(captures,{policy,at});
+ assert.ok(plans.every(p=>!p.urls[0].startsWith('https://blog.google/')));
+ const [plan]=renewableExplainerPlans(pair(),{policy,at});
+ assert.deepEqual(storedExplainerPlans([{explainer_key:plan.key,artifact:{research:{plan:{...plan,urls:[captures[0].url,plan.urls[1]]}}}}]),[]);
+});
+test('new observed educational links outrank an exhausted parent refresh',()=>{
+ const [parent]=pair();const url='https://cloud.google.com/learn/what-is-iaas';
+ const old={...parent,extraction_version:'old-extractor',related_urls:[url]};
+ const selected=nextReferenceDiscovery([old],{policy,at,seedBlockedUrls:[parent.url]});
+ assert.equal(selected.url,url);assert.equal(selected.refresh_parent,undefined);
+ const news={...old,url:'https://blogs.nvidia.com/blog/synthetic-hardware',source_id:'ARTICLE_PRIMARY_NVIDIA',title:'Synthetic hardware processor',related_urls:[]};
+ assert.equal(nextReferenceDiscovery([news,old],{policy,at,attemptedUrls:['https://cloud.google.com/learn/already-read']}).url,url,'a lower-priority publisher cannot put exhausted refreshes ahead of new guides');
+ assert.equal(nextReferenceDiscovery([old],{policy,at,attemptedUrls:[url]}).url,parent.url,'failed links stay in cooldown; parent refresh is still a bounded fallback');
+ assert.equal(renewableExplainerPlans([old,...pair().slice(1)],{policy,at}).length,0,'historical link metadata is never comparison evidence');
+});
 test('reference discovery follows an observed registered link and preserves failed-link cooldowns without a search API',()=>{
  const [parent]=pair();parent.related_urls=['https://unknown.invalid/learn/ai','https://cloud.google.com/learn/new-software-routing','https://cloud.google.com/privacy'];
  const selected=nextReferenceDiscovery([parent],{policy,at});assert.equal(selected.url,parent.related_urls[1]);
@@ -48,7 +73,7 @@ test('reference discovery follows an observed registered link and preserves fail
  const other='https://azure.microsoft.com/en-us/resources/novel-software-routing';
  assert.equal(nextReferenceDiscovery([{...parent,related_urls:[selected.url,other]}],{policy,at,isApproved:url=>url===other}).url,other,'a disabled path must not starve another approved source');
  assert.equal(nextReferenceDiscovery([{...parent,related_urls:['https://cloud.google.com/learn/%E0%A4%A']}],{policy,at}),null);
- const old={...parent,extraction_version:'public-article-v5-complete-guides'};
+ const old={...parent,extraction_version:'public-article-v5-complete-guides',related_urls:[]};
  const refresh=nextReferenceDiscovery([old],{policy,at,blockedUrls:[old.url]});
  assert.equal(refresh.url,old.url);assert.equal(refresh.refresh_parent,true);
  assert.equal(nextReferenceDiscovery([old],{policy,at,attemptedUrls:[old.url]}),null);
