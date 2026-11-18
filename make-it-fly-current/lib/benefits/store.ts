@@ -10,7 +10,7 @@ import { benefitFilters, savedBenefitInput, startBenefitInput, categoryInput, be
 import { BENEFIT_PATHS, type BenefitView, type BenefitCategory, type BenefitOrganization, type CatalogueBenefit, type BenefitRedemption, type AdminRedemption } from "./types";
 
 export class BenefitActionError extends Error {}
-const dates = (b: CatalogueBenefit): CatalogueBenefit => ({ ...b, starts_at: b.starts_at ? new Date(b.starts_at) : null, ends_at: b.ends_at ? new Date(b.ends_at) : null });
+const dates = (b: CatalogueBenefit): CatalogueBenefit => ({ ...b, verified_at: b.verified_at ? new Date(b.verified_at) : null, starts_at: b.starts_at ? new Date(b.starts_at) : null, ends_at: b.ends_at ? new Date(b.ends_at) : null });
 const claimDates = <T extends BenefitRedemption>(r: T): T => ({ ...r, started_at: new Date(r.started_at), reviewed_at: r.reviewed_at ? new Date(r.reviewed_at) : null });
 
 export async function memberBenefitWorkspace(view: BenefitView = "catalogue", input: unknown = {}) {
@@ -21,28 +21,28 @@ export async function memberBenefitWorkspace(view: BenefitView = "catalogue", in
   const filters = benefitFilters.parse(input), sql = getSql();
   const categories = await sql<BenefitCategory[]>`select c.id,c.slug,c.name,c.description,c.status,c.sort_order,c.version,count(b.id)::int as count
     from member_benefit_category c join member_benefit_organization o on o.category_id=c.id
-    join member_benefit b on b.id=o.benefit_id and b.status='published' and b.starts_at<=now() and b.ends_at>now()
+    join member_benefit b on b.id=o.benefit_id and b.status='published' and public.member_benefit_is_current(b.starts_at,b.ends_at,b.verified_at)
     where c.status='published' group by c.id order by c.sort_order,c.name,c.id`;
   const [counts] = await sql`select count(*)::int as catalogue,count(s.benefit_id)::int as saved from member_benefit b
     left join member_benefit_organization o on o.benefit_id=b.id left join member_benefit_category c on c.id=o.category_id
     left join member_benefit_saved s on s.benefit_id=b.id and s.user_id=${member.id}
-    where b.status='published' and b.starts_at<=now() and b.ends_at>now() and (c.id is null or c.status='published')`;
+    where b.status='published' and public.member_benefit_is_current(b.starts_at,b.ends_at,b.verified_at) and (c.id is null or c.status='published')`;
   const [historyCount] = await sql`select count(*)::int as count from member_benefit_redemption where user_id=${member.id}`;
   const totals = { catalogue: Number(counts.catalogue), saved: Number(counts.saved), history: Number(historyCount.count) };
   if (view === "history") {
     const history = await sql<BenefitRedemption[]>`select r.id,r.benefit_id,r.benefit_name,r.partner_name,r.status,r.started_at,r.reviewed_at,
-      (b.status='published' and b.starts_at<=now() and b.ends_at>now() and (c.id is null or c.status='published')) as available
+      (b.status='published' and public.member_benefit_is_current(b.starts_at,b.ends_at,b.verified_at) and (c.id is null or c.status='published')) as available
       from member_benefit_redemption r join member_benefit b on b.id=r.benefit_id
       left join member_benefit_organization o on o.benefit_id=b.id left join member_benefit_category c on c.id=o.category_id
       where r.user_id=${member.id} order by r.started_at desc,r.id`;
     return { ...empty, categories, totals, history: history.map(claimDates) };
   }
   const pattern = `%${filters.query.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[\\%_]/g, "\\$&")}%`;
-  const benefits = await sql<CatalogueBenefit[]>`select b.id,b.name,b.partner,b.description,b.eligibility,b.availability,b.starts_at,b.ends_at,b.redemption,b.redemption_url,b.status,b.sort_order,
+  const benefits = await sql<CatalogueBenefit[]>`select b.id,b.name,b.partner,b.description,b.eligibility,b.availability,b.starts_at,b.ends_at,b.verified_at,b.redemption,b.redemption_url,b.status,b.sort_order,
       c.name as category_name,c.slug as category_slug,coalesce(o.provider_label,'') as provider_label,coalesce(o.provider_access,'unconfirmed') as provider_access,(s.benefit_id is not null) as saved
     from member_benefit b left join member_benefit_organization o on o.benefit_id=b.id left join member_benefit_category c on c.id=o.category_id
     left join member_benefit_saved s on s.benefit_id=b.id and s.user_id=${member.id}
-    where b.status='published' and b.starts_at<=now() and b.ends_at>now() and (c.id is null or c.status='published')
+    where b.status='published' and public.member_benefit_is_current(b.starts_at,b.ends_at,b.verified_at) and (c.id is null or c.status='published')
       and (${filters.category}='' or c.slug=${filters.category}) and (${view !== "saved"} or s.benefit_id is not null)
       and translate(lower(concat_ws(' ',b.name,b.partner,b.description,o.provider_label)), 'áàâãäéèêëíìîïóòôõöúùûüç','aaaaaeeeeiiiiooooouuuuc') like ${pattern}
     order by b.sort_order,b.name,b.id`;
@@ -53,11 +53,11 @@ export async function memberBenefitDetail(id: string) {
   const { member, access } = await deliverableMember(`/membros/beneficios/${encodeURIComponent(id)}`);
   if (!access.allowed) return { member, access, benefit: null, redemptionStatus: undefined };
   if (!identifier.safeParse(id).success) return { member, access, benefit: null, redemptionStatus: undefined };
-  const [benefit] = await getSql()<CatalogueBenefit[]>`select b.id,b.name,b.partner,b.description,b.eligibility,b.availability,b.starts_at,b.ends_at,b.redemption,b.redemption_url,b.status,b.sort_order,
+  const [benefit] = await getSql()<CatalogueBenefit[]>`select b.id,b.name,b.partner,b.description,b.eligibility,b.availability,b.starts_at,b.ends_at,b.verified_at,b.redemption,b.redemption_url,b.status,b.sort_order,
       c.name as category_name,c.slug as category_slug,coalesce(o.provider_label,'') as provider_label,coalesce(o.provider_access,'unconfirmed') as provider_access,
       exists(select 1 from member_benefit_saved s where s.benefit_id=b.id and s.user_id=${member.id}) as saved
     from member_benefit b left join member_benefit_organization o on o.benefit_id=b.id left join member_benefit_category c on c.id=o.category_id
-    where b.id=${id} and b.status='published' and b.starts_at<=now() and b.ends_at>now() and (c.id is null or c.status='published')`;
+    where b.id=${id} and b.status='published' and public.member_benefit_is_current(b.starts_at,b.ends_at,b.verified_at) and (c.id is null or c.status='published')`;
   const [existing] = benefit ? await getSql()<{ status: BenefitRedemption["status"] }[]>`select status from member_benefit_redemption where user_id=${member.id} and benefit_id=${benefit.id}` : [];
   return { member, access, benefit: benefit ? dates(benefit) : null, redemptionStatus: existing?.status };
 }
@@ -83,7 +83,7 @@ async function lockedAccess(tx: TransactionSql, userId: string) {
 async function availableBenefit(tx: TransactionSql, id: string) {
   const [benefit] = await tx`select b.id,b.name,b.partner,b.redemption_url,md5(to_jsonb(b)::text) as terms_revision
     from member_benefit b left join member_benefit_organization o on o.benefit_id=b.id left join member_benefit_category c on c.id=o.category_id
-    where b.id=${id} and b.status='published' and b.starts_at<=now() and b.ends_at>now() and (c.id is null or c.status='published') for share of b`;
+    where b.id=${id} and b.status='published' and public.member_benefit_is_current(b.starts_at,b.ends_at,b.verified_at) and (c.id is null or c.status='published') for share of b`;
   if (!benefit) throw new BenefitActionError("Esta oferta não está disponível. Volte ao catálogo para conferir as opções.");
   return benefit;
 }
@@ -121,7 +121,7 @@ export async function adminBenefitWorkspace() {
   return { categories: await sql<BenefitCategory[]>`select id,slug,name,description,status,sort_order,version from member_benefit_category order by sort_order,name,id`,
     organization: await sql<BenefitOrganization[]>`select benefit_id,category_id,provider_label,provider_access,source_url from member_benefit_organization`,
     redemptions: (await sql<AdminRedemption[]>`select r.id,r.user_id,r.benefit_id,r.benefit_name,r.partner_name,r.status,r.started_at,r.reviewed_at,r.evidence_reference,md5(to_jsonb(r)::text) as revision,
-      (b.status='published' and b.starts_at<=now() and b.ends_at>now()) as available from member_benefit_redemption r join member_benefit b on b.id=r.benefit_id order by r.started_at desc,r.id limit 100`).map(claimDates) };
+      (b.status='published' and public.member_benefit_is_current(b.starts_at,b.ends_at,b.verified_at)) as available from member_benefit_redemption r join member_benefit b on b.id=r.benefit_id order by r.started_at desc,r.id limit 100`).map(claimDates) };
 }
 export async function saveBenefitCategory(input: unknown) {
   const actor = await requireAdmin("/admin/beneficios"), v = categoryInput.parse(input), slug = benefitCategorySlug(v.name);
