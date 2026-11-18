@@ -55,10 +55,10 @@ barreira de cobrança na OpenAI. Até essa comprovação e a integração revisa
 somente BASE é permitido. Evidências da conta devem ficar privadas e atualizadas.
 
 `free_micro` é o teto da parcela atestada do ciclo; o ledger subtrai compromissos.
-Não representa automaticamente o saldo restante da organização. Seu atualizador
-futuro precisará reconciliar concessão, consumo externo e atribuições sem duplicar
-descontos. A prova vence em até seis horas. Não há renovação ou preenchimento
-automático dessa prova neste candidato.
+Não representa automaticamente o saldo restante da organização. O perfil opcional `finance` reconcilia os custos da organização com uma concessão
+verificada pelo operador, descontando o maior consumo confirmado pelo provedor ou
+comprometido localmente. Renova a prova por duas horas, a cada hora, sem alterar
+preços, limites, abertura mensal ou pausa. Veja `../reconciliation-worker/README.md`.
 
 As funções serializam admissão no registro de controle, revalidam antes de enviar
 e admitem um envio de provedor por vez. Sem preço aprovado/vigente, prova ou limite,
@@ -69,11 +69,14 @@ não enviada pode ser liberada pelo worker. Reconciliação de incertos é reser
 ao operador e ainda não tem interface implementada.
 
 Falhas de controle, crédito e provedor acionam a função base injetada nos testes.
-O Radar atual não importa este módulo: coleta, editor, catálogo, calendário e busca
-textual não aguardam worker ou saldo. Não existe fallback para outra API paga.
-O worker só consome tarefas explicitamente enfileiradas por contexto administrativo;
-não cria tarefas nem aplica propostas automaticamente ao catálogo. Respostas
-incompletas contabilizam o custo, mas ficam retidas sem proposta publicável.
+O processo web importa somente a política pura para preparar descritores. Coleta,
+editor, catálogo, calendário e busca continuam sem aguardar worker ou saldo. Não
+existe fallback para outra API paga. O cron administrativo prepara no máximo uma
+tarefa de avaliação por dia de Brasília e finalidade (`radar` e `jobs`). O worker
+consome essas tarefas; a próxima rodada aproveita apenas a ordem de IDs já existentes.
+A prioridade expira e exige URL, título e autoridade ainda iguais. Nenhum fato ou
+registro de oportunidade é escrito a partir da resposta do modelo. Respostas
+incompletas contabilizam o custo e não são aproveitadas.
 
 ## Configuração isolada
 
@@ -117,14 +120,11 @@ PostgreSQL vazio, em porta local efêmera, usa logins separados e duas conexões
 worker, encerra apenas seu próprio cluster e preserva dados/logs para inspeção.
 Não herda URLs, chaves ou `.env` de aplicação. Não inicia Docker ou acessa produção.
 
-## Etapas ainda pendentes
+## Ativação e validação
 
-Antes de ativar esta nova versão: confirmar conta/projeto no fluxo seguro, salvar
-a chave exclusiva no destino confirmado, preparar a credencial restrita do banco,
-validar o candidato e a migração, conferir evidência financeira recente e testar
-o isolamento dos containers. A conciliação mensal já existente não renova a prova
-de seis horas. Não há renovação automática nem supressão desse bloqueio.
-
-A coleta gratuita de vagas permanece independente. Geração e aproveitamento de
-propostas por consumidores do catálogo, além das fases R4–R6 do plano, seguem como
-escopo posterior. Não declarar essas integrações prontas por iniciar este processo.
+Antes de ativar uma versão, valide testes e migrações em banco descartável, backup
+restaurável, conta/projeto, prova financeira recente e isolamento dos containers.
+Perfis e credenciais precisam de autorização do operador. O consumidor automático
+usa apenas leads de autoridades verificadas; publicação continua passando pelas
+mesmas regras de datas, elegibilidade e evidência oficial. A coleta gratuita opera
+mesmo quando a IA está bloqueada. Não há promessa de uma vaga válida nova por dia.
