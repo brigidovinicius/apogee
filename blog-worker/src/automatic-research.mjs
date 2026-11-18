@@ -45,7 +45,7 @@ export function researchTopic(c){
   if(c.editoria==='ciencia-espaco')return {category:'ciencia',subcategory:/nasa|mars|marte|spacecraft|lunar|orbit|rocket|foguete/.test(t)?'aeroespacial':null};
   // A general-purpose feed is a discovery channel, not evidence that every
   // headline concerns technology. Avoid spending comparisons on unrelated news.
-  if(/tecnolog|technology|inovacao|innovation|computacao|computacion|computing|computational|computador|computer|\bcloud\b|\bnuvem\b|\bdados\b|\bdata\b|\bdigital\b|internet|ciber|cyber|programacao|programming|\bcodigo\b|\bcode\b|\bapi\b/.test(t))return {category:'tecnologia',subcategory:null};
+  if(/tecnolog|technology|inovacao|innovation|computacao|computacion|computing|computational|computador|computer|\bcloud\b|\bnuvem\b|\bdados\b|\bdata\b|\bdigital\b|internet|ciber|cyber|programacao|programming|\bcodigo\b|\bcode\b|\b(?:iaas|paas|saas|kubernetes|microservices?|serverless|hypervisor|virtualization|database|containers?|dns|api|observability)\b/.test(t))return {category:'tecnologia',subcategory:null};
   return null;
 }
 export function balancedResearchCandidates(rows,usage=[],limit=30,policy=null,at=new Date()){

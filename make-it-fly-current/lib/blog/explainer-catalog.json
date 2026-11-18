@@ -1050,5 +1050,104 @@
         ]
       }
     ]
+  },
+  {
+    "key": "iaas-infraestrutura-responsabilidades-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como IaaS oferece infraestrutura virtual sob demanda e divide responsabilidades entre provedor e cliente?",
+    "terms": ["IaaS", "infrastructure", "virtual", "resources"],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-iaas",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-iaas"
+    ]
+  },
+  {
+    "key": "paas-plataforma-desenvolvimento-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como PaaS reúne infraestrutura e ferramentas para desenvolver aplicações, e o que continua a cargo do cliente?",
+    "terms": ["PaaS", "platform", "applications", "development"],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-paas",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-paas"
+    ]
+  },
+  {
+    "key": "saas-acesso-aplicacoes-gerenciadas-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como SaaS permite usar aplicações pela internet enquanto o provedor administra o software e sua infraestrutura?",
+    "terms": ["SaaS", "software", "applications", "internet"],
+    "urls": [
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-saas",
+      "https://cloud.google.com/learn/what-is-cloud-computing"
+    ]
+  },
+  {
+    "key": "microsservicos-componentes-comunicacao-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como microsserviços dividem uma aplicação em serviços independentes que precisam se comunicar, sem confundir o conceito com um produto específico?",
+    "terms": ["microservices", "services", "communication", "independent"],
+    "urls": [
+      "https://cloud.google.com/learn/what-is-microservices-architecture",
+      "https://learn.microsoft.com/en-us/azure/architecture/example-scenario/serverless/microservices-with-container-apps-dapr"
+    ]
+  },
+  {
+    "key": "transformers-atencao-contexto-1",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Que papel a atenção exerce nos Transformers para relacionar partes de uma sequência e considerar o contexto?",
+    "terms": ["transformer", "attention", "context", "sequence"],
+    "urls": [
+      "https://developers.google.com/machine-learning/crash-course/llm/transformers",
+      "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-are-large-language-models-llms"
+    ]
+  },
+  {
+    "key": "tokenizacao-unidades-texto-1",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Por que tokens podem ser palavras ou partes de palavras, e como essas unidades entram no processamento de texto de um LLM?",
+    "terms": ["token", "word", "subword"],
+    "urls": [
+      "https://learn.microsoft.com/en-us/agent-framework/journey/llm-fundamentals",
+      "https://developers.google.com/machine-learning/crash-course/llm/transformers"
+    ]
+  },
+  {
+    "key": "orcamento-receitas-despesas-planejadas-1",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "Como um orçamento empresarial reúne receitas e despesas estimadas para orientar decisões, sem prometer resultados financeiros?",
+    "terms": ["budget", "cost", "forecast", "cash"],
+    "urls": [
+      "https://business.gov.au/finance/financial-tools-and-templates/create-a-budget",
+      "https://legacy.sba.gov/event/90445"
+    ]
+  },
+  {
+    "key": "demonstracao-resultados-periodo-1",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "Como uma demonstração de resultados reúne receitas e despesas de um período para mostrar lucro ou prejuízo, sem confundir esse resultado com saldo de caixa?",
+    "terms": ["income", "expenses", "profit", "period"],
+    "urls": [
+      "https://business.gov.au/finance/financial-tools-and-templates/set-up-a-profit-and-loss-statement",
+      "https://legacy.sba.gov/event/90373"
+    ]
+  },
+  {
+    "key": "escrituracao-registros-transacoes-1",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "Como registrar transações, receitas e despesas ajuda a acompanhar as finanças de um negócio, distinguindo a prática geral das obrigações legais de cada país?",
+    "terms": ["record", "expenses", "income", "transaction"],
+    "urls": [
+      "https://business.gov.au/finance/payments-and-invoicing/record-keeping",
+      "https://legacy.sba.gov/business-guide/manage-your-business/manage-your-finances"
+    ]
   }
 ]
