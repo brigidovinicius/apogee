@@ -177,3 +177,36 @@ test('server-rendered blocked views expose neither forms nor private offer/histo
     const html=renderToStaticMarkup(await Workspace({view}));assert.match(html,/Assinatura anual|assinatura anual/);assert.doesNotMatch(html,/<form|PRIVATE_|Ferramenta sintética|Oferta de vídeo/);
   }
 });
+
+test('continuous offers require recent verification and expire across member entry points', async () => {
+  actor = 'admin';
+  const dateAgo = days => new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+  const offer = { ...fixture, name: 'Oferta contínua', categoryId, startsAt: '', endsAt: '', verifiedOn: dateAgo(0) };
+  for (const invalid of [{ verifiedOn: dateAgo(-1) }, { verifiedOn: dateAgo(7) }, { endsAt: '2099-01-01' }, { redemptionUrl: '' }, { evidenceUrl: '' }]) {
+    await assert.rejects(editor.saveDeliverable('benefit', { ...offer, ...invalid }));
+  }
+  const { id } = await editor.saveDeliverable('benefit', offer);
+  actor = 'paid';
+  const result = await store.memberBenefitWorkspace('catalogue', { query: 'continua' });
+  assert.equal(result.benefits.length, 1);
+  assert.equal(result.benefits[0].id, id);
+  assert.ok(result.benefits[0].verified_at instanceof Date);
+  assert.equal(result.benefits[0].ends_at, null);
+  assert.equal((await store.memberBenefitDetail(id)).benefit.id, id);
+  await store.setSavedBenefit({ benefitId: id, saved: true });
+  await store.startBenefitRedemption({ benefitId: id });
+  await sql`update member_benefit set verified_at=now()-interval '168 hours' where id=${id}`;
+  assert.ok(!(await store.memberBenefitWorkspace('catalogue')).benefits.some(b => b.id === id));
+  assert.ok(!(await store.memberBenefitWorkspace('saved')).benefits.some(b => b.id === id));
+  assert.equal((await store.memberBenefitDetail(id)).benefit, null);
+  assert.equal((await store.memberBenefitWorkspace('history')).history.find(r => r.benefit_id === id).available, false);
+  await assert.rejects(store.startBenefitRedemption({ benefitId: id }), /não está disponível/);
+  const [edge] = await sql`select public.member_benefit_is_current(null,null,now()-interval '168 hours') as expired,
+    public.member_benefit_is_current(null,null,now()-interval '168 hours'+interval '1 second') as inside,
+    public.member_benefit_is_current(null,null,now()+interval '1 second') as future`;
+  assert.deepEqual({ ...edge }, { expired: false, inside: true, future: false });
+  actor = 'admin';
+  const row = (await editor.adminDeliverables()).benefits.find(b => b.id === id);
+  await editor.saveDeliverable('benefit', { ...offer, id, revision: row.revision });
+  assert.equal((await store.memberBenefitDetail(id)).benefit.id, id);
+});

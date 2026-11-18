@@ -8,6 +8,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { nativeCommunityDatabase } from "./helpers/community-native-db.mjs";
 import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 import { migrateCommunityAccess } from "../scripts/community-access-migrate.mjs";
+import { migrateMemberBenefits } from "../scripts/member-benefits-migrate.mjs";
 import { migrateMemberDeliverables } from "../scripts/member-deliverables-migrate.mjs";
 let db, sql, store, actor = "admin", validations, load;
 const users = ["admin", "revoked-admin", "blocked-admin", "free0", "free9", "free10", "legacy", "paid", "cancelled", "expired", "refunded", "other", "blocked"];
@@ -39,6 +40,7 @@ test("additive migration preflight, apply, repeat, wrong-role and drift refusal"
   await sql`alter table member_benefit add column unexpected text`;
   await assert.rejects(migrateMemberDeliverables(sql, { expectedRole: "apogee_local" }), /Colunas/);
   await sql`alter table member_benefit drop column unexpected`;
+  await migrateMemberBenefits(sql, { apply: true, expectedRole: "apogee_local" });
 });
 test("editorial validation refuses unsafe destinations and benefits lacking confirmed conditions", () => {
   for (const url of ["http://google.com", "javascript:alert(1)", "https://user:pass@google.com", "https://127.0.0.1", "https://[::1]", "https://internal.local", "https://google.com?token=x", "https://google.com#secret", "https://google.com:8443", "https://google.com\\@evil.com"]) assert.equal(validations.officialUrl.safeParse(url).success, false, url);
