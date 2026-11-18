@@ -4,7 +4,7 @@ import {readFile,writeFile,mkdir,mkdtemp,lstat,realpath,readdir} from 'node:fs/p
 import {tmpdir,homedir} from 'node:os';
 import {join,resolve,relative,isAbsolute,extname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {fail,subscriptionUsage} from './policy.mjs';
+import {fail,subscriptionUsage,comparisonInputLimit} from './policy.mjs';
 import {articleSchema} from './editorial.mjs';
 import {comparisonPrompt} from './corroboration.mjs';
 import {validateWebp,validateRasterQuality} from './images.mjs';
@@ -116,7 +116,8 @@ export function googleSubscriptionProvider({binary,sha256,runner=runCli,env=proc
     await writeFile(join(folder,'policy.json'),JSON.stringify({model:p.model_id,kind:reservation.kind==='comparison'?'comparison':kind,prompt:reservation.body.prompt,maxInvocations:1}),{mode:0o600});
     await writeFile(join(folder,'.agents/hooks.json'),JSON.stringify({'apogee-editorial':{PreInvocation:[{type:'command',command:command('invocation'),timeout:5}],PreToolUse:[{matcher:'*',hooks:[{type:'command',command:command('tool'),timeout:5}]}]}}),{mode:0o600});
     const prompt=googlePrompt(reservation);
-    if(Buffer.byteLength(prompt)>12000)return {outcome:'not_sent',reason:'input_limit'};
+    const inputCap=reservation.kind==='comparison'?Math.min(comparisonInputLimit(p),Number.isSafeInteger(reservation.quota_reserved)?Math.max(0,reservation.quota_reserved-p.billed_output_tokens_cap_including_reasoning):Infinity):12000;
+    if(Buffer.byteLength(prompt)>inputCap)return {outcome:'not_sent',reason:'input_limit'};
     const timeout=kind==='image'?p.google_timeout_seconds:Math.min(90,p.google_timeout_seconds);
     const args=['--settings',JSON.stringify({...sessionSettings,trustedWorkspaces:[folder]}),'--agent',agent,'--model',p.model_id,'--effort','low','--disable-slash-commands','--output-format','json','--print-timeout',timeout+'s','-p',prompt];
     const result=await runner(binary,args,{cwd:folder,env:cleanEnvironment(env),timeoutMs:timeout*1000});

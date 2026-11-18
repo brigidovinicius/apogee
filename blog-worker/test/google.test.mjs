@@ -5,14 +5,36 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {defaultPolicy,candidate,article} from './fixtures.mjs';
-import {validatePolicy,validateSubscription,subscriptionUsage,googleUsageLimits} from '../src/policy.mjs';
+import {validatePolicy,validateSubscription,subscriptionUsage,googleUsageLimits,comparisonInputLimit} from '../src/policy.mjs';
 import {buildRequest} from '../src/editorial.mjs';
 import {SEO_GUIDELINES} from '../src/editorial.mjs';
 import {cleanEnvironment,googleSubscriptionProvider,readGeneratedImage,googlePrompt,parseArticleOutput} from '../src/google-provider.mjs';
 import {decide} from '../src/google-hook.mjs';
+import {buildComparisonRequest,dossierHash} from '../src/corroboration.mjs';
+import {dossierFixture} from './corroboration-fixture.mjs';
 const p={...defaultPolicy,google_account_email:"blog-owner@example.test",generation_enabled:true,automatic_image_generation_enabled:true};
 const usage={input_tokens:1000,output_tokens:500,thinking_tokens:200,cache_read_tokens:100,total_tokens:1500};
 const quota={code:0,stdout:JSON.stringify({status:'SUCCESS',num_turns:0,command:{name:'usage',data:{groups:[{name:'Gemini Models',buckets:[{remaining_fraction:1}]}]}}})};
+test('larger comparison context stays inside the existing reservation without changing token or API caps',()=>{
+ const enhanced=validatePolicy({...p,google_comparison_input_bytes_cap:18000});
+ assert.equal(comparisonInputLimit(enhanced),18000);assert.equal(enhanced.input_tokens_cap_including_overhead,12000);
+ assert.equal(enhanced.google_tokens_reserved_per_call,60000);assert.equal(enhanced.google_daily_calls_cap,40);assert.equal(enhanced.google_daily_tokens_cap,180000);assert.equal(enhanced.google_weekly_tokens_cap,900000);
+ const old={...enhanced};delete old.google_comparison_input_bytes_cap;assert.equal(comparisonInputLimit(old),12000);
+ assert.equal(comparisonInputLimit({...enhanced,provider:'openai_api'}),12000);
+ for(const cap of [11999,18001,18000.5])assert.throws(()=>validatePolicy({...enhanced,google_comparison_input_bytes_cap:cap}),/google_comparison_limit/);
+ assert.throws(()=>validatePolicy({...enhanced,google_tokens_reserved_per_call:19000}),/google_comparison_limit/);
+});
+test('the official client admits the explicit comparison byte cap and fences smaller reservations',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'google-comparison-cap-')),binary=join(dir,'agy');await writeFile(binary,'fake');
+ const policy={...p,google_comparison_input_bytes_cap:18000};const d=dossierFixture();d.claims=[];
+ for(const [i,doc] of d.documents.entries()){doc.text=('Synthetic source '+i+' documents methods, context and limitations without any real-world claim. ').repeat(65).trim();doc.content_hash=dossierHash(doc.text);}
+ const body=buildComparisonRequest(d,policy);const prompt=googlePrompt({kind:'comparison',policy,body});assert.ok(Buffer.byteLength(prompt)>12000);assert.ok(Buffer.byteLength(prompt)<=18000);
+ let calls=0;const provider=googleSubscriptionProvider({binary,sha256:createHash('sha256').update('fake').digest('hex'),runner:async()=>{calls++;return {code:null,reason:'synthetic_stop',stdout:''};}});
+ const r={kind:'comparison',policy,quota_reserved:60000,body,not_after:new Date(Date.now()+180000).toISOString()};
+ assert.equal((await provider(r)).outcome,'unknown');assert.equal(calls,1);
+ assert.equal((await provider({...r,policy:{...policy,google_comparison_input_bytes_cap:12000}})).reason,'input_limit');assert.equal(calls,1);
+ assert.equal((await provider({...r,quota_reserved:10000})).reason,'input_limit');assert.equal(calls,1);
+});
 test('Google policy enforces zero additional billing, own account and bounded workload',()=>{
   validatePolicy(p);
   for(const change of [{google_use_g1_credits:true},{gemini_api_enabled:true},{paid_balance_fallback_enabled:true},{google_daily_calls_cap:41},{per_topic_daily_cap:2},{google_account_email:'invalid'},{model_id:'claude-opus'},{daily_budget_micro_usd_cap:1}])assert.throws(()=>validatePolicy({...p,...change}));

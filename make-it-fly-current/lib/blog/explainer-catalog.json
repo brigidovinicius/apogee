@@ -1060,6 +1060,9 @@
     "urls": [
       "https://cloud.google.com/learn/what-is-iaas",
       "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-iaas"
+    ],
+    "additional_sources": [
+      {"url":"https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility","kind":"primary","origin_url":"https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility","terms":["IaaS","Operating system","Customer data"],"independence_note":"Documentação complementar da Microsoft sobre divisão de responsabilidades. Mesma autoria do segundo guia, nunca uma terceira confirmação independente; comparar os fatos com a autoria Google."}
     ]
   },
   {
@@ -1093,6 +1096,10 @@
     "urls": [
       "https://cloud.google.com/learn/what-is-microservices-architecture",
       "https://learn.microsoft.com/en-us/azure/architecture/example-scenario/serverless/microservices-with-container-apps-dapr"
+    ],
+    "additional_sources": [
+      {"url":"https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices","kind":"primary","origin_url":"https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices","terms":["observability","distributed tracing","microservices"],"independence_note":"Documentação arquitetural complementar da mesma autoria Microsoft; não conta como nova autoria independente. Verificar mecanismos, observabilidade, complexidade e limites contra a autoria Google."},
+      {"url":"https://learn.microsoft.com/en-us/cloud-computing/finops/framework/optimize/architecting","kind":"primary","origin_url":"https://learn.microsoft.com/en-us/cloud-computing/finops/framework/optimize/architecting","terms":["cost","FinOps","microservices"],"independence_note":"Guia Microsoft sobre arquitetura no framework FinOps. Mesma autoria das referências Microsoft; serve de contexto complementar, sem transformar recomendações em necessidade universal ou nova confirmação independente."}
     ]
   },
   {
@@ -1115,6 +1122,9 @@
     "urls": [
       "https://learn.microsoft.com/en-us/agent-framework/journey/llm-fundamentals",
       "https://developers.google.com/machine-learning/crash-course/llm/transformers"
+    ],
+    "additional_sources": [
+      {"url":"https://blogs.nvidia.com/blog/ai-tokens-explained/","kind":"primary","origin_url":"https://blogs.nvidia.com/blog/ai-tokens-explained/","terms":["token","numerical","vocabulary"],"independence_note":"Explicação institucional da NVIDIA sobre tokenização e representações numéricas. Autoria distinta de Google e Microsoft; sem tratar exemplos numéricos de um tokenizador como IDs universais ou medir eficiência não comprovada."}
     ]
   },
   {
@@ -1149,5 +1159,33 @@
       "https://business.gov.au/finance/payments-and-invoicing/record-keeping",
       "https://legacy.sba.gov/business-guide/manage-your-business/manage-your-finances"
     ]
+  },
+  {
+    "key":"franquias-marca-modelo-autonomia-1",
+    "category":"negocios","subcategory":"empreendedorismo-startups",
+    "question":"Como uma franquia permite usar uma marca e um modelo de negócio, combinando suporte do franqueador com limites de autonomia?",
+    "terms":["franchise","franchisor","franchisee","control"],
+    "urls":["https://www.sba.gov/counseling/plan-your-business/","https://business.gov.au/planning/business-structures-and-types/franchising/buy-a-franchise"]
+  },
+  {
+    "key":"projecao-caixa-estimativas-futuras-1",
+    "category":"negocios","subcategory":null,
+    "question":"Como uma projeção de caixa estima entradas e saídas futuras para identificar possíveis faltas de dinheiro, distinguindo estimativas de resultados já realizados?",
+    "terms":["cash","flow","forecast","projection"],
+    "urls":["https://www.sba.gov/event/87672","https://business.gov.au/finance/cash-flow/set-up-a-cash-flow-statement"]
+  },
+  {
+    "key":"git-conflitos-integracao-alteracoes-1",
+    "category":"tecnologia","subcategory":"software-ferramentas",
+    "question":"Por que conflitos de merge exigem escolher o conteúdo final antes de integrar alterações no Git?",
+    "terms":["merge","conflict","resolve","changes"],
+    "urls":["https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging","https://docs.github.com/en/pull-requests/reference/merge-conflicts"]
+  },
+  {
+    "key":"git-clone-fetch-pull-remotos-1",
+    "category":"tecnologia","subcategory":"software-ferramentas",
+    "question":"Como clone, fetch e pull diferenciam copiar um repositório, obter novidades e integrar alterações no Git?",
+    "terms":["clone","fetch","pull","remote"],
+    "urls":["https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes","https://docs.github.com/en/get-started/using-git/getting-changes-from-a-remote-repository"]
   }
 ]

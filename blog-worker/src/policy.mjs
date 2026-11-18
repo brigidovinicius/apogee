@@ -156,6 +156,9 @@ export function validateGooglePolicy(p) {
   if(p.automatic_explainers_enabled===true&&(!Number.isInteger(p.explainer_after_local_hour)||p.explainer_after_local_hour<6||p.explainer_after_local_hour>20||p.schema_version!==3))fail('google_policy');
   const caps={new_drafts_per_day_cap:p.schema_version===3?10:1,new_drafts_per_week_cap:p.schema_version===3?70:5,concurrency:1,input_tokens_cap_including_overhead:p.schema_version===3?12000:8000,billed_output_tokens_cap_including_reasoning:2000,max_primary_evidence_documents:p.schema_version===3?10:2,max_provider_attempts_per_article_including_repairs:p.schema_version===3?3:2,google_daily_calls_cap:p.schema_version===3?40:3,google_weekly_calls_cap:p.schema_version===3?280:15,google_daily_tokens_cap:180000,google_weekly_tokens_cap:900000,google_tokens_reserved_per_call:60000,google_max_invocations_per_call:1,google_timeout_seconds:150};
   for(const [k,max] of Object.entries(caps))if(!Number.isSafeInteger(p[k])||p[k]<1||p[k]>max)fail('google_policy_limit');
+  if(p.google_comparison_input_bytes_cap!==undefined&&(p.schema_version!==3||!Number.isSafeInteger(p.google_comparison_input_bytes_cap)
+    ||p.google_comparison_input_bytes_cap<p.input_tokens_cap_including_overhead||p.google_comparison_input_bytes_cap>18000
+    ||p.google_comparison_input_bytes_cap+p.billed_output_tokens_cap_including_reasoning>p.google_tokens_reserved_per_call))fail('google_comparison_limit');
   const completion=p.google_daily_completion;
   if(p.editorial_focus!==undefined&&(p.editorial_focus!==FOCUSED_EDITORIAL_PLAN||p.schema_version!==3||p.new_drafts_per_day_cap!==10))fail('google_editorial_focus');
   if(completion!==undefined&&(p.schema_version!==3||!completion||typeof completion!=='object'
@@ -177,6 +180,12 @@ export function validateGooglePolicy(p) {
 }
 // Only the identified extra batch may receive a dated local token allowance.
 // Base and weekly caps and the provider's quota headroom stay unchanged.
+export function comparisonInputLimit(policy,at=new Date()){
+  if(policy.provider!=='google_subscription')return policy.input_tokens_cap_including_overhead;
+  const configured=policy.google_comparison_input_bytes_cap??policy.input_tokens_cap_including_overhead;
+  const reserved=googleUsageLimits(policy,at).reservedTokens;
+  return Number.isSafeInteger(reserved)?Math.min(configured,Math.max(0,reserved-policy.billed_output_tokens_cap_including_reasoning)):configured;
+}
 export function googleUsageLimits(policy,at=new Date()){
   const completion=policy.google_daily_completion;
   return completion?.day===periodKeys(at).day

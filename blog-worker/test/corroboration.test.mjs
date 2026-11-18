@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {assessDossier,approvedEvidence,dossierHash,validateDossier,validateComparison,referenceCatalog,referenceUrl,buildComparisonRequest} from '../src/corroboration.mjs';
+import {assessDossier,approvedEvidence,dossierHash,validateDossier,validateComparison,referenceCatalog,referenceUrl,buildComparisonRequest,comparisonPrompt} from '../src/corroboration.mjs';
 import {defaultPolicy} from './fixtures.mjs';
 
 import {dossierFixture} from './corroboration-fixture.mjs';
@@ -38,7 +38,7 @@ test('same-event confirmation, document caps and official-domain allowlist are e
 test('one bounded Google comparison request contains originals, no silent truncation',()=>{
   const d=dossierFixture();const req=buildComparisonRequest(d,defaultPolicy);assert.equal(JSON.parse(req.input).documents.length,2);
   d.documents[0].text='Texto de evidência. '.repeat(500);d.documents[0].content_hash=dossierHash(d.documents[0].text.trim());d.documents[0].text=d.documents[0].text.trim();d.claims=[];
-  assert.throws(()=>buildComparisonRequest(d,defaultPolicy),/input_limit/);
+  assert.throws(()=>buildComparisonRequest(d,{...defaultPolicy,google_comparison_input_bytes_cap:12000}),/input_limit/);
 });
 test('policy allows the authorized ten daily topics without raising token budgets or permitting overages',()=>{
   assert.equal(defaultPolicy.new_drafts_per_day_cap,10);assert.equal(defaultPolicy.new_drafts_per_week_cap,70);
@@ -63,4 +63,18 @@ test('an unverifiable comparison cell cannot become agreement because another so
   const result=assessDossier(d,{comparisonVerified:true});assert.equal(result.claims[0].status,'pending');assert.equal(result.percentage,90);assert.equal(result.eligible,false);
   d.claims[0].cells[1].status='not_mentioned';assert.equal(assessDossier(d,{comparisonVerified:true}).claims[0].status,'pending');
   d.claims[0].cells[1].status='supports';d.claims[0].cells[1].quote='A equipe anunciou um experimento inicial.';assert.equal(assessDossier(d,{comparisonVerified:true}).claims[0].status,'convergent');
+});
+test('compact recovery transport preserves every source value and protected fact without counting duplicate text twice',()=>{
+ const d=dossierFixture();const [critical,other]=d.claims;
+ d.previous_critical_claims=[{id:critical.id,text:critical.text}];
+ d.previous_unresolved_claims=[{id:critical.id,text:critical.text,critical:true},{id:other.id,text:other.text,critical:false}];
+ const body=buildComparisonRequest(d,{...defaultPolicy,provider:'google_subscription',input_tokens_cap_including_overhead:40000});
+ const original=JSON.parse(body.input),prompt=comparisonPrompt(body),sent=JSON.parse(prompt.split('\n').at(-1));
+ const documents=sent.documents.map(row=>Object.fromEntries(sent.document_columns.map((key,i)=>[key,row[i]])));
+ assert.deepEqual(documents,original.documents);assert.deepEqual(original.previous_critical_claims,d.previous_critical_claims);assert.deepEqual(original.previous_unresolved_claims,d.previous_unresolved_claims);
+ const protectedFacts=sent.protected_claims.map(row=>Object.fromEntries(sent.protected_claim_columns.map((key,i)=>[key,row[i]])));
+ assert.equal(protectedFacts.length,2);assert.deepEqual(protectedFacts.find(c=>c.text===critical.text),{id:critical.id,text:critical.text,critical:true});assert.deepEqual(protectedFacts.find(c=>c.text===other.text),{id:other.id,text:other.text,critical:false});
+ assert.match(prompt,/não omita nem rebaixe fatos/);assert.ok(prompt.includes('Schema: '+JSON.stringify(body.text.format.schema)));assert.equal(body.text.format.schema.properties.claims.items.properties.cells.items.properties.note.maxLength,120);
+ assert.ok(Buffer.byteLength(prompt)<Buffer.byteLength(body.instructions+'\nSchema: '+JSON.stringify(body.text.format.schema)+'\n'+body.input));
+ assert.throws(()=>validateComparison({claims:d.claims.filter(c=>c.text!==critical.text)},d),/critical_fact_omitted/);
 });
