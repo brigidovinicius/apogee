@@ -5,6 +5,7 @@ import { BENEFIT_PATHS, PROVIDER_ACCESS_LABELS, REDEMPTION_LABELS, type BenefitV
 import { MemberWorkspace } from "@/components/members/member-workspace";
 import { AnnualAccessNotice } from "@/components/community/annual-access-notice";
 import { BenefitSaveButton } from "./member-forms";
+import { PerkBookCatalogue } from "./perkbook-catalogue";
 import shared from "@/components/members/members.module.css";
 import styles from "./benefits.module.css";
 export type BenefitSearchParams = Record<string, string | string[] | undefined>;
@@ -15,11 +16,14 @@ export async function BenefitsWorkspace({ view = "catalogue", params = {} }: { v
   const query = typeof params.q === "string" ? params.q.replace(/[\u0000-\u001f]/g, "").trim().slice(0, 100) : "";
   const category = typeof params.categoria === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(params.categoria) ? params.categoria.slice(0, 80) : "";
   const { member, access, categories, benefits, history, totals } = await memberBenefitWorkspace(view, { query, category });
+  const showNativeOffers = view === "saved" || totals.catalogue > 0 || Boolean(query || category);
   return <MemberWorkspace member={member} current="beneficios"><div className={`${shared.container} ${styles.root}`}>
     <header className={styles.header}><p className={styles.eyebrow}><Gift size={16} aria-hidden="true" /> Recursos da comunidade</p><h1>Benefícios</h1><p>Encontre ofertas úteis para o que você quer construir. Confira as condições de cada parceiro antes de começar.</p></header>
     {!access.allowed ? <AnnualAccessNotice title="Benefícios" next={BENEFIT_PATHS[view]} /> : <>
-      <nav aria-label="Navegação de benefícios" className={styles.tabs}>{(Object.keys(BENEFIT_PATHS) as BenefitView[]).map(key => { const Icon = icons[key]; return <Link href={BENEFIT_PATHS[key]} key={key} aria-current={view === key ? "page" : undefined}><Icon size={17} aria-hidden="true" />{titles[key]} <span>{totals[key]}</span></Link>; })}</nav>
-      {view !== "history" ? <>
+      <nav aria-label="Navegação de benefícios" className={styles.tabs}>{(Object.keys(BENEFIT_PATHS) as BenefitView[]).map(key => { const Icon = icons[key]; return <Link href={BENEFIT_PATHS[key]} key={key} aria-current={view === key ? "page" : undefined}><Icon size={17} aria-hidden="true" />{titles[key]} {key !== "catalogue" && <span>{totals[key]}</span>}</Link>; })}</nav>
+      {view === "catalogue" && <PerkBookCatalogue />}
+      {view !== "history" ? showNativeOffers && <>
+        {view === "catalogue" && <h2>Ofertas cadastradas pela Apogee</h2>}
         <form action={BENEFIT_PATHS[view]} method="get" className={styles.filters} role="search" aria-label="Buscar benefícios">
           <label>Buscar oferta<div className={styles.searchInput}><Search size={18} aria-hidden="true" /><input type="search" name="q" defaultValue={query} placeholder="Ferramenta, parceiro ou finalidade" maxLength={100} /></div></label>
           <label>Categoria<select name="categoria" defaultValue={category}><option value="">Todas as categorias</option>{categories.map(c => <option key={c.id} value={c.slug}>{c.name} ({c.count})</option>)}</select></label>
