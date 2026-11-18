@@ -65,8 +65,8 @@ it('continues without a paid task when financial control is disabled',async()=>{
 async function complete(ids:string[]) {
   await runAutomaticDiscoveryAdvice();
   const task=(await state.db!.query<{id:string;revision:string}>("select id,revision from radar_ai.task where stream='radar'")).rows[0];
-  await state.db!.query(`with op as (insert into radar_ai.operation(cycle_id,operation_key,request_hash,envelope,model,input_bound,output_limit,maximum_micro,actual_micro,state,stream)
-    select 'advice-fixture',task_key,request_hash,envelope,'gpt-6-luna',100,600,1000,100,'confirmed',stream from radar_ai.task where id=$1 returning id)
+  await state.db!.query(`with op as (insert into radar_ai.operation(cycle_id,operation_key,request_hash,envelope,model,price_snapshot,maximum_micro,actual_micro,state,stream)
+    select 'advice-fixture',task_key,request_hash,envelope,'gpt-6-luna','{}'::jsonb,1000,100,'confirmed',stream from radar_ai.task where id=$1 returning id)
     update radar_ai.task set operation_id=op.id,state='proposed' from op where radar_ai.task.id=$1`,[task.id]);
   await state.db!.query('insert into radar_ai.proposal select id,operation_id,revision,$2,now() from radar_ai.task where id=$1',[task.id,{text:JSON.stringify({leadIds:ids}),complete:true}]);
 }

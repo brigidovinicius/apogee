@@ -125,6 +125,36 @@ services:
       retries: 3
       start_period: 90s
 
+  finance-worker:
+    profiles: [finance]
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: finance-runner
+      args:
+        APOGEE_RELEASE_SHA: ${APOGEE_RELEASE_SHA:-local}
+    image: radar-cost-reconciler:${APOGEE_RELEASE_SHA:-local}
+    restart: unless-stopped
+    init: true
+    environment:
+      RADAR_FINANCE_ENABLED: ${RADAR_FINANCE_ENABLED:-false}
+      RADAR_FINANCE_KEY_FILE: /run/secrets/radar_finance_usage_env
+      RADAR_FINANCE_DATABASE_URL_FILE: /run/secrets/radar_finance_database_url
+    secrets: [radar_finance_usage_env, radar_finance_database_url]
+    networks: [internal, ai_egress]
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 96m
+    cpus: 0.25
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "node", "reconciliation-worker/cli.mjs", "healthcheck"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+
   migrate:
     build:
       context: ../..
@@ -146,6 +176,10 @@ volumes:
     name: radar_academico_pgdata
 
 secrets:
+  radar_finance_usage_env:
+    file: ${RADAR_FINANCE_KEY_PATH:-/etc/apogee/radar-ai/reconciliation.env}
+  radar_finance_database_url:
+    file: ${RADAR_FINANCE_DATABASE_URL_PATH:-/etc/apogee/radar-ai/reconciliation-database-url}
   radar_ai_openai_env:
     file: ${RADAR_AI_KEY_PATH:-/etc/apogee/radar-ai/openai.env}
   radar_ai_database_url:
