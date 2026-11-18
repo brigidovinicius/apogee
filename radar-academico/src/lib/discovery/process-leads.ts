@@ -69,6 +69,8 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
            target.enabled as target_enabled,target.official_verified_url as target_verified_url,
            target.name as target_name,target.organizer as target_organizer,target.priority as target_priority,target.topics as target_topics
          from discovery_leads lead join discovery_targets target on target.id=lead.target_id
+         left join discovery_priority_hints advice on advice.lead_id=lead.id and advice.expires_at>now()
+           and advice.lead_url=lead.url and advice.lead_title=lead.title and advice.target_url=target.official_url
          where lead.status in ('new','reviewing')
            and not (lead.target_id=any($4::text[]))
            and target.enabled and target.official_verified_at is not null and target.official_verified_url=target.official_url
@@ -78,7 +80,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
              or (lead.processing_status='blocked' and lead.processing_reason in
                  ('scope_unverified','candidate_unconfirmed','detail_layout_unrecognized','invalid_deadline','source_authority_unverified','listing_or_ambiguous','unsupported_content')
                and not exists(select 1 from ingestion_runs run where run.execution_metadata->>'lead_id'=lead.id::text
-                 and (run.execution_metadata->>'source_expansion_version'='8' or
+                 and (run.execution_metadata->>'source_expansion_version'='9' or
                    (run.execution_metadata->>'source_expansion_version'='7' and
                      lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline')) or
                    (run.execution_metadata->>'source_expansion_version'='6' and
@@ -88,6 +90,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
                    (run.execution_metadata->>'source_expansion_version'='4' and lead.processing_reason in
                      ('scope_unverified','source_authority_unverified','unsupported_content'))))))
          order by case when (lead.processing_status='blocked' or coalesce(lead.processing_reason='processing_budget_exhausted',false))=$6 then 0 else 1 end,
+           coalesce(advice.priority,0) desc,
            case when lead.processing_reason='processing_budget_exhausted' then 0 else 1 end,
            case when lead.processing_status='blocked' and lead.processing_reason in ('detail_layout_unrecognized','invalid_deadline') then 0 else 1 end,
            case when $6 and lead.processing_status='blocked' then lead.first_seen_at end desc,
@@ -111,7 +114,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
          where id=$1 and status='running'`, [lead.previous_run_id]);
       const run = await client.query<{ id: string }>(
         `insert into ingestion_runs(started_at,status,execution_metadata) values(now(),'running',$1) returning id`,
-        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 8, processing_policy_version: 2 }],
+        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 9, processing_policy_version: 2 }],
       );
       lead.processing_run_id = run.rows[0].id;
       await client.query("update discovery_leads set processing_run_id=$2 where id=$1", [lead.id, lead.processing_run_id]);
