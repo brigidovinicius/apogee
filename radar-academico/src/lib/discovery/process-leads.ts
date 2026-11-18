@@ -77,16 +77,17 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
            and lead.processing_attempts < $1
            and ((lead.processing_status in ('pending','retry') and lead.processing_next_at<=now())
              or (lead.processing_status='processing' and lead.processing_lease_until<=now())
-             or (lead.processing_status='blocked' and lead.processing_reason in
+             or (lead.processing_status='blocked' and (lead.processing_reason in
                  ('scope_unverified','candidate_unconfirmed','detail_layout_unrecognized','invalid_deadline','source_authority_unverified','listing_or_ambiguous','unsupported_content')
+                 or (lead.processing_reason='eligibility_br_unconfirmed' and target.official_url='https://www.wemakedevs.org/hackathons'))
                and not exists(select 1 from ingestion_runs run where run.execution_metadata->>'lead_id'=lead.id::text
                  and (run.execution_metadata->>'source_expansion_version'='9' or
                    (run.execution_metadata->>'source_expansion_version'='7' and
-                     lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline')) or
+                     lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline','eligibility_br_unconfirmed')) or
                    (run.execution_metadata->>'source_expansion_version'='6' and
-                     lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline')) or
+                     lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline','eligibility_br_unconfirmed')) or
                    (run.execution_metadata->>'source_expansion_version'='5' and
-                     lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline')) or
+                     lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline','eligibility_br_unconfirmed')) or
                    (run.execution_metadata->>'source_expansion_version'='4' and lead.processing_reason in
                      ('scope_unverified','source_authority_unverified','unsupported_content'))))))
          order by case when (lead.processing_status='blocked' or coalesce(lead.processing_reason='processing_budget_exhausted',false))=$6 then 0 else 1 end,

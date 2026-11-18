@@ -124,6 +124,12 @@ it('discovers and automatically publishes the WeMakeDevs FAQ template, then with
   const listing = resource('<h1>Hackathons</h1><a href="/hackathons/flagsmith">Remote Nov 26–29 Toggle Wars</a>');
   const links = discoveryDocument(listing,index,index).links.map(link => ({...link,discoveryPath:[index]}));
   expect(await saveDiscoveryLeads(target,links)).toBe(1);
+  // Previously held real-world layout: retry once under the corrected adapter,
+  // without resetting attempts or relaxing the geographic evidence requirement.
+  await state.db!.query("update discovery_leads set processing_status='blocked',processing_reason='eligibility_br_unconfirmed',processing_attempts=1,processed_at=now() where target_id=$1",[target]);
+  await state.db!.query(`insert into ingestion_runs(started_at,finished_at,status,execution_metadata)
+    select now(),now(),'completed',jsonb_build_object('component','discovery-lead','lead_id',id,'source_expansion_version',7)
+    from discovery_leads where target_id=$1`,[target]);
   let closed = false;
   const html = await readFile(new URL('./fixtures/wemakedevs-flagsmith.html',import.meta.url),'utf8');
   vi.mocked(fetchOfficialResource).mockImplementation(async requested => {
