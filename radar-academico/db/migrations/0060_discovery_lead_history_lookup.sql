@@ -7,3 +7,4 @@ alter table ingestion_runs add column discovery_lead_id uuid generated always as
  then (execution_metadata->>'lead_id')::uuid else null end
 ) stored;
 create index ingestion_runs_discovery_lead_id_idx on ingestion_runs(discovery_lead_id);
+analyze ingestion_runs;
