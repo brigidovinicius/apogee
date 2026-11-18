@@ -50,8 +50,9 @@
 .validity { display: flex; align-items: center; gap: .4rem; color: #354f69; font-size: .76rem; }
 .validity svg { flex-shrink: 0; }
 .provider { display: block; margin-top: .28rem; color: #52677c; font-size: .72rem; }
-.offerLink { display: inline-flex; align-items: center; justify-content: space-between; gap: .65rem; min-height: 44px; padding: .58rem .82rem; border-radius: 7px; background: #193f63; color: #fff; font-size: .8rem; font-weight: 600; text-decoration: none; }
-.offerLink:hover { background: #275781; }
+/* The member page's link rule otherwise inherits the card's dark text. */
+.offerFooter a.offerLink { display: inline-flex; align-items: center; gap: .65rem; min-height: 44px; padding: .58rem .82rem; border-radius: 7px; background: #193f63; color: #fff; font-size: .8rem; font-weight: 600; text-decoration: none; }
+.offerFooter a.offerLink:hover { background: #275781; }
 .saveForm { display: flex; flex-direction: column; align-items: end; gap: .3rem; max-width: 12rem; }
 .save { display: inline-flex; align-items: center; gap: .4rem; min-height: 44px; padding: .4rem .5rem; border: 1px solid transparent; border-radius: 3px; background: transparent; color: #244b73; font: inherit; font-size: .78rem; cursor: pointer; }
 .save[aria-pressed="true"] { background: #e0eaf5; }
