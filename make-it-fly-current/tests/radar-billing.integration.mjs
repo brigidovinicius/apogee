@@ -166,6 +166,7 @@ test("Radar: autenticação real, webhook assinado, PostgreSQL, concessão e pro
       assert.equal((await radarAccess(owner.id, false)).active, false);
       assert.equal((await sql`select user_id from radar_purchase where session_id = ${session.id}`)[0].user_id, null);
       const pageLoad = opportunityLoader({
+        "@/components/members/member-bar": { MemberBar: () => null },
         "@/lib/members/db": { getSql: () => sql },
         "@/lib/members/dal": { requireSignedInMember: async () => {
           const [member] = await sql`select id,name,username,image,role from "user" where id=${owner.id}`;
