@@ -23,9 +23,10 @@ test("a área autenticada apresenta os quatro recursos aprovados e preserva o ac
   })("app/membros/page.tsx").default;
   const html=renderToStaticMarkup(await page());
   assert.match(html,/href="\/membros\/oportunidades"/);
-  for(const resource of ["Radar","Caixa de ferramentas","Benefícios","Trilha"]) assert.ok(html.includes(resource));
+  for(const resource of ["Radar","Caixa de Ferramentas","Benefícios","Trilha"]) assert.ok(html.includes(resource));
   assert.match(html,/href="\/membros\/ferramentas"/);
-  assert.match(html,/Exclusivo da assinatura/);
+  assert.match(html,/Assinatura anual/);
+  assert.match(html,/Ver prévia das ferramentas/);
   assert.match(html,/Conversas da comunidade/);
   assert.match(html,/Radar completo ativo/);
 });

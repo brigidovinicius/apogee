@@ -8,9 +8,15 @@ import { OpportunityCountdown } from "./opportunity-countdown";
 import styles from "./opportunities.module.css";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 import { publicOpportunityPath } from "@/lib/opportunities/discovery";
+import type { StudentOpportunity } from "@/lib/opportunities/types";
 import { ShareButton } from "@/components/site/share-button";
 
-export function AdmissionProcessCard({ group, management = false }: { group: AdmissionGroup; management?: boolean }) {
+export function AdmissionProcessCard({ group, management = false, detailHref, publicCatalogue = false }: {
+  group: AdmissionGroup;
+  management?: boolean;
+  detailHref?: (course: StudentOpportunity) => string;
+  publicCatalogue?: boolean;
+}) {
   const first = group.courses[0];
   const sharedWindow = group.courses.every((course) => course.deadline === first.deadline && course.deadlineAt === first.deadlineAt && course.opportunityStatus === first.opportunityStatus);
   const sharedUrl = group.courses.every((course) => course.officialUrl === first.officialUrl);
@@ -34,7 +40,7 @@ export function AdmissionProcessCard({ group, management = false }: { group: Adm
         <OpportunityBenefits opportunity={course} />
         {management ? <dl className={styles.details}><OpportunityCosts opportunity={course} /></dl> : null}
         {!sharedWindow ? <p>{interfaceText(course.deadlineLabel)}{course.opportunityStatus === "upcoming" ? " · Inscrições futuras" : ""}</p> : null}
-        {!management ? <Link prefetch={false} className={`${styles.externalLink} ${styles.detailButton}`} href={opportunityDetailPath(course.id)}>Ver detalhes deste curso</Link> : !sharedUrl ? <Link className={`${styles.externalLink} ${styles.detailButton}`} href={course.officialUrl} target="_blank" rel="noopener noreferrer">Ver fonte oficial deste curso</Link> : null}
+        {!management ? <Link prefetch={false} className={`${styles.externalLink} ${styles.detailButton}`} href={detailHref?.(course) ?? opportunityDetailPath(course.id)}>{publicCatalogue ? "Ver resumo deste curso" : "Ver detalhes deste curso"}</Link> : !sharedUrl ? <Link className={`${styles.externalLink} ${styles.detailButton}`} href={course.officialUrl} target="_blank" rel="noopener noreferrer">Ver fonte oficial deste curso</Link> : null}
         {!management&&<SaveOpportunityButton id={course.id} title={course.title}/>}
         <ShareButton title={interfaceText(course.title)} path={publicOpportunityPath(course)} compact />
         <p>{course.verificationMethod === "admin" ? "Atualizado pela equipe" : "Fonte consultada"} em <time dateTime={course.verificationTimestamp ?? course.verifiedAt}>{course.verifiedAt.split("-").reverse().join("/")}</time></p>

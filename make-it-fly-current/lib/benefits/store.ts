@@ -13,6 +13,17 @@ export class BenefitActionError extends Error {}
 const dates = (b: CatalogueBenefit): CatalogueBenefit => ({ ...b, last_success_at: new Date(b.last_success_at), verified_at: b.verified_at ? new Date(b.verified_at) : null, starts_at: b.starts_at ? new Date(b.starts_at) : null, ends_at: b.ends_at ? new Date(b.ends_at) : null });
 const claimDates = <T extends BenefitRedemption>(r: T): T => ({ ...r, started_at: new Date(r.started_at), reviewed_at: r.reviewed_at ? new Date(r.reviewed_at) : null });
 
+export async function hasPublicBenefits(): Promise<boolean | null> {
+  try {
+    const [result] = await getSql()<{ available: boolean }[]>`select exists (
+      select 1 from member_benefit b where public.member_benefit_is_available(b)
+    ) as available`;
+    return result?.available ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function memberBenefitWorkspace(view: BenefitView = "catalogue", input: unknown = {}) {
   const { member, access } = await deliverableMember(BENEFIT_PATHS[view]);
   const empty = { member, access, categories: [] as BenefitCategory[], benefits: [] as CatalogueBenefit[], history: [] as BenefitRedemption[], totals: { catalogue: 0, saved: 0, history: 0 } };

@@ -20,9 +20,9 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
   return (
     <div className={styles.narrow}>
       <header className={styles.authIntro}>
-        <p className={styles.eyebrow}>{annual ? "Comunidade Apogee · Plano anual" : "Área de membros"}</p>
-        <h1 className={styles.title}>{annual ? "Crie sua conta para continuar a assinatura" : "Criar conta"}</h1>
-        <p className={styles.lead}>{annual ? "R$ 1.438,80 por ano, com renovação automática. Você revisa o total antes de pagar." : "Entre para a comunidade, participe do fórum e acompanhe o Radar de oportunidades"}</p>
+        <p className={styles.eyebrow}>{annual ? "Comunidade Apogee · Plano anual" : "Comunidade Apogee"}</p>
+        <h1 className={styles.title}>{annual ? "Crie sua conta para continuar a assinatura" : "Crie sua conta gratuita"}</h1>
+        <p className={styles.lead}>{annual ? "R$ 1.438,80 por ano, com renovação automática. Você revisa o total antes de pagar." : "O cadastro dispensa cartão. Conheça a área de membros, consulte até 10 eventos distintos no Radar e verifique sua conta para participar do fórum."}</p>
       </header>
       <div className={`${styles.panel} ${styles.authPanel}`}>
         <SignUpForm next={next} googleError={googleOAuthErrorMessage(params.error)} supervised={supervisedRegistrationEnabled()}/>

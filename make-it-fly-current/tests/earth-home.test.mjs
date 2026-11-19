@@ -60,7 +60,7 @@ test("Earth homepage has an honest empty state instead of demonstration opportun
 
 test("public catalogue outages keep the catalogue link without inventing entries", async () => {
   const { HomeRadar } = opportunityLoader({
-    "@/lib/offer-preview": { localOfferPreview:()=>false },
+    "@/lib/offer-preview": { localStaticOfferPreview:()=>false },
     "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return createElement("a", props, children); } },
     "@/lib/opportunities/access": { listPublicOpportunities: async () => { throw new Error("offline"); } },
     "@/lib/home-opportunities": helpers,

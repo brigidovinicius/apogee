@@ -18,6 +18,9 @@ type RadarResponse = {
 
 const radarApiUrl = process.env.RADAR_ACADEMICO_API_URL;
 const radarApiToken = process.env.RADAR_ACADEMICO_API_TOKEN;
+const catalogueTimeoutMs = 4_000;
+const retryableCatalogueStatuses = new Set([408, 502, 503, 504]);
+const catalogueRequests = new Map<boolean, Promise<StudentOpportunity[]>>();
 
 const scholarshipBenefits = new Set([
   "academic_scholarship",
@@ -177,17 +180,20 @@ export async function listRadarOpportunities(calendar = false): Promise<StudentO
   if (localFunctionalReview() || localStripeSandboxReview()) return REVIEW_EVENTS;
   if (!radarApiUrl || !radarApiToken) throw new Error("Catálogo indisponível");
 
-  try {
-    const url = new URL(radarApiUrl);
-    if (calendar) url.searchParams.set("view", "calendar");
-    const response = await fetch(url.toString(), {
-      cache: "no-store",
-      headers: { Accept: "application/json", Authorization: `Bearer ${radarApiToken}` },
-      signal: AbortSignal.timeout(2_000),
-    });
-    if (!response.ok) throw new Error("Catálogo indisponível");
+  // Share only in-flight reads of the same view. Later calls still read fresh data.
+  const current = catalogueRequests.get(calendar);
+  if (current) return current;
+  const pending = loadRadarCatalogue(radarApiUrl, radarApiToken, calendar)
+    .finally(() => catalogueRequests.delete(calendar));
+  catalogueRequests.set(calendar, pending);
+  return pending;
+}
 
-    const payload = await response.json() as RadarResponse;
+async function loadRadarCatalogue(apiUrl: string, token: string, calendar: boolean): Promise<StudentOpportunity[]> {
+  try {
+    const url = new URL(apiUrl);
+    if (calendar) url.searchParams.set("view", "calendar");
+    const payload = await requestRadarCatalogue(url, token);
     if (payload.version !== 3 || !Array.isArray(payload.opportunities)) throw new Error("Catálogo incompatível");
 
     const items = payload.opportunities.map(toOpportunity);
@@ -195,6 +201,27 @@ export async function listRadarOpportunities(calendar = false): Promise<StudentO
     return items as StudentOpportunity[];
   } catch {
     throw new Error("Catálogo indisponível");
+  }
+}
+
+async function requestRadarCatalogue(url: URL, token: string, retry = true): Promise<RadarResponse> {
+  try {
+    const response = await fetch(url.toString(), {
+      cache: "no-store",
+      headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(catalogueTimeoutMs),
+    });
+    if (retry && retryableCatalogueStatuses.has(response.status)) {
+      await response.body?.cancel();
+      return requestRadarCatalogue(url, token, false);
+    }
+    if (!response.ok) throw new Error("Catálogo indisponível");
+    return await response.json() as RadarResponse;
+  } catch (error) {
+    const transportFailure = error instanceof TypeError ||
+      (error instanceof DOMException && (error.name === "TimeoutError" || error.name === "AbortError"));
+    if (retry && transportFailure) return requestRadarCatalogue(url, token, false);
+    throw error;
   }
 }
 

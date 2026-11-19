@@ -11,6 +11,7 @@ import { requireSignedInMember } from "@/lib/members/dal";
 import { adultAccess } from "@/lib/members/protection";
 import { LockedMemberArea } from "@/components/members/locked-member-area";
 import { listCategories } from "@/lib/members/forum";
+import { memberLearning } from "@/lib/deliverables/store";
 import { MemberForumSection } from "@/components/members/member-forum-section";
 
 export const metadata: Metadata = { title: "Sua comunidade | Apogee" };
@@ -22,6 +23,12 @@ export default async function MemberHomePage() {
   const access = await radarAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null);
 
   const annual = await communityAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null);
+  const contentAccess = member.role === "admin" || Boolean(annual?.active);
+  const learning = verified && contentAccess ? await memberLearning().catch(() => null) : null;
+  const activities = learning?.tracks.flatMap(track => learning.modules
+    .filter(module => module.track_id === track.id)
+    .flatMap(module => learning.activities.filter(activity => activity.module_id === module.id))) ?? [];
+  const nextActivity = activities.find(activity => !activity.completed_at);
 
   return (
     <MemberWorkspace member={member} current="home"><div className={styles.container}>
@@ -33,8 +40,13 @@ export default async function MemberHomePage() {
         </div>
       </header>
 
-      <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} contentAccess={member.role === "admin" || Boolean(annual?.active)} />
-      {!verified ? <p className={styles.verificationNotice}>Verifique sua conta para participar da comunidade. <Link href="/membros/protecao?next=%2Fmembros">Verificar minha conta</Link></p> : null}
+      <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} contentAccess={contentAccess} nextStep={!verified ? {
+        label: "Verificar minha conta", description: "Conclua a verificação para participar do fórum e acessar os recursos da sua conta.",
+        href: "/membros/protecao?next=%2Fmembros",
+      } : nextActivity ? {
+        label: activities.some(activity => activity.completed_at) ? "Retomar a trilha" : "Começar a trilha",
+        description: nextActivity.name, href: `/membros/trilha#atividade-${nextActivity.id}`,
+      } : undefined} />
       <MemberForumSection><h2 id="member-forum-title">Conversas da comunidade</h2>
 
       {!verified ? <LockedMemberArea kind="forum" next="/membros#forum" reason="verification" /> : categories.length === 0 ? (
@@ -44,9 +56,9 @@ export default async function MemberHomePage() {
           {categories.map((category) => (
             <li className={styles.listItem} key={category.id}>
               <div>
-                <h2>
+                <h3>
                   <Link href={`/membros/forum/${category.slug}`}>{interfaceText(category.name)}</Link>
-                </h2>
+                </h3>
                 {category.description ? <p>{interfaceText(category.description)}</p> : null}
                 {category.lastPostAt ? (
                   <p className={styles.meta}>Última atividade em {formatDateTime(category.lastPostAt)}</p>

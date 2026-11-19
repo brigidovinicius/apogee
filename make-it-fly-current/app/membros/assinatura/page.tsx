@@ -1,5 +1,6 @@
 import { localFunctionalReview } from "@/lib/offer-preview";
 import Link from "next/link";
+import { COMMUNITY_BENEFITS_TERMS } from "@/content/community-offer";
 import { ArrowRight, BookOpen, Compass, LockKeyhole, MessageCircle, ShieldCheck, Wrench } from "lucide-react";
 import { requireSignedInMember } from "@/lib/members/dal";
 import { adultAccess } from "@/lib/members/protection";
@@ -17,7 +18,7 @@ export const metadata = { title: "Sua assinatura anual | Apogee", robots: { inde
 const date = (iso:string) => new Intl.DateTimeFormat("pt-BR", {dateStyle:"long",timeZone:"America/Sao_Paulo"}).format(new Date(iso));
 export default async function MembershipPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
   const reviewing = localFunctionalReview();
-  const params = await searchParams, next = communityReturnPath(params.next);
+  const params = await searchParams, next = communityReturnPath(params.next ?? "/membros");
   const member = await requireSignedInMember(`${COMMUNITY_ACCESS_PATH}?next=${encodeURIComponent(next)}`);
   const livemode = process.env.STRIPE_MODE !== "test";
   const membership = await communityMembership(member.id,livemode);
@@ -61,7 +62,7 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
         <li><BookOpen size={22} aria-hidden="true" /><div><h3>Seu primeiro resultado com IA</h3><p>Comece a Trilha com o exercício “Um primeiro resultado com IA”: três atividades para sair da intenção e experimentar.</p></div></li>
         <li><MessageCircle size={22} aria-hidden="true" /><div><h3>Fórum da comunidade</h3><p>Troque experiências, compartilhe dúvidas e participe das conversas.</p></div></li>
       </ul>
-      <p className={annual.annualScope}>A Trilha está em sua etapa inicial. Os próximos módulos e os benefícios de parceiros estão em preparação; não há benefícios de parceiros disponíveis neste lançamento. <Link href="/comunidade">Conheça todas as entregas</Link>.</p>
+      <p className={annual.annualScope}>{COMMUNITY_BENEFITS_TERMS} A Trilha está em sua etapa inicial. <Link href="/comunidade">Conheça todas as entregas</Link>.</p>
       {legacy ? <p className={annual.annualLegacy}><strong>Seu Radar continua com você.</strong><br />Seu acesso antigo ao Radar está preservado e independe desta assinatura.</p> : null}
     </section>
     </div>

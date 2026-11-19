@@ -32,7 +32,6 @@ function fixture() {
     "next/navigation": { notFound: () => { throw Error("NOT_FOUND"); }, redirect: path => { throw Error(`REDIRECT:${path}`); } },
     "@/components/members/member-bar": { MemberBar: () => null },
     "@/components/opportunities/opportunities-board": { OpportunityCard: ({ opportunity }) => React.createElement("p", null, opportunity.eligibility) },
-    "@/components/opportunities/automatic-detail-opening": { AutomaticDetailOpening: ({ action, checkout }) => React.createElement("form", { action: typeof action === "string" ? action : undefined, method: "post", "data-radar-detail-opening": true }, checkout ? "Abrindo checkout…" : "Abrindo detalhes…") },
     "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return React.createElement("a", props, children); } },
     "@/lib/admin/access": { requireAdmin: async () => {} },
   });
@@ -100,19 +99,23 @@ test("public/member/home card payloads exclude private fields and preserve serve
   assert.equal(first.eligibility, "REQUISITO_PRIVADO", "source object must stay intact");
 });
 
-test("first navigation opens automatically without a free-access notice, while GET remains read-only", async () => {
+test("first navigation explains the free consultation and preserves the filtered return without consuming quota", async () => {
   const { state, load } = fixture();
   const Page = load("app/membros/oportunidades/[id]/page.tsx").default;
-  const html = renderToStaticMarkup(await Page({ params: Promise.resolve({ id: first.id }) }));
-  assert.match(html, /Abrindo detalhes…/);
-  assert.match(html, /data-radar-detail-opening/);
-  assert.doesNotMatch(html, /Sua primeira oportunidade|Use seu acesso gratuito|R\$ 49|Abrir esta oportunidade|REQUISITO_PRIVADO/);
+  const filters = { busca: "Evento", pagina: "2", token: "do-not-forward" };
+  const props = { params: Promise.resolve({ id: first.id }), searchParams: Promise.resolve(filters) };
+  const html = renderToStaticMarkup(await Page(props));
+  assert.match(html, /Usar consulta gratuita/);
+  assert.match(html, /primeira vez, você usa uma consulta/);
+  assert.match(html, /href="\/membros\/oportunidades\?busca=Evento&amp;pagina=2"/);
+  assert.doesNotMatch(html, /data-radar-detail-opening|REQUISITO_PRIVADO|do-not-forward/);
+  assert.match(state.authenticatedPaths.at(-1), /radar-first\?busca=Evento&pagina=2$/);
   assert.equal(state.claims, 0);
-  await assert.rejects(load("app/membros/oportunidades/[id]/actions.ts").openFreeOpportunity(first.id), /REDIRECT:\/membros\/oportunidades\/radar-first$/);
+  await assert.rejects(load("app/membros/oportunidades/[id]/actions.ts").openFreeOpportunity(first.id, "busca=Evento&pagina=2"), /REDIRECT:\/membros\/oportunidades\/radar-first\?busca=Evento&pagina=2$/);
   assert.equal(state.claims, 1);
-  const opened = renderToStaticMarkup(await Page({ params: Promise.resolve({ id: first.id }) }));
+  const opened = renderToStaticMarkup(await Page(props));
   assert.match(opened, /REQUISITO_PRIVADO/);
-  assert.doesNotMatch(opened, /Sua primeira oportunidade|Esta é sua oportunidade gratuita|Abrindo detalhes/);
+  assert.doesNotMatch(opened, /Usar consulta gratuita|Abrindo detalhes/);
 });
 
 test("a blocked detail presents the community and never starts a checkout", async () => {
@@ -120,12 +123,12 @@ test("a blocked detail presents the community and never starts a checkout", asyn
   state.selected = first.id;
   state.events = new Set([first.id,...Array.from({length:9},(_,i)=>`already-${i}`)]);
   const page = load("app/membros/oportunidades/[id]/page.tsx").default;
-  const html = renderToStaticMarkup(await page({ params: Promise.resolve({ id: second.id }) }));
+  const html = renderToStaticMarkup(await page({ params: Promise.resolve({ id: second.id }), searchParams: Promise.resolve({}) }));
   assert.match(html, /Ver plano com Radar completo/);
   assert.match(html, /href="\/comunidade\?next=%2Fmembros%2Foportunidades%2Fradar-second#plano-anual"/);
   assert.doesNotMatch(html, /\/api\/radar\/checkout|Abrindo checkout|method="post"|REQUISITO_PRIVADO/);
   assert.equal(state.claims, 0);
-  const preserved = renderToStaticMarkup(await page({ params: Promise.resolve({ id: first.id }) }));
+  const preserved = renderToStaticMarkup(await page({ params: Promise.resolve({ id: first.id }), searchParams: Promise.resolve({}) }));
   assert.ok(preserved.includes(first.eligibility));
 });
 
@@ -137,17 +140,18 @@ test("a lost free-choice race shows the community without an automatic payment a
     if ("action" in node.props) return node;
     return [node.props.children].flat().map(opening).find(Boolean) ?? null;
   };
-  const available = opening(await Page({ params: Promise.resolve({ id: first.id }) }));
+  const props = { params: Promise.resolve({ id: first.id }), searchParams: Promise.resolve({}) };
+  const available = opening(await Page(props));
   assert.equal(typeof available.props.action, "function");
   state.selected = second.id;
   state.events = new Set([second.id,...Array.from({length:9},(_,i)=>`already-${i}`)]);
-  const blocked = await Page({ params: Promise.resolve({ id: first.id }) });
+  const blocked = await Page(props);
   assert.equal(opening(blocked), null);
   assert.doesNotMatch(renderToStaticMarkup(blocked), /Abrindo checkout|\/api\/radar\/checkout/);
   state.selected = null;
   state.events.clear();
-  const another = opening(await Page({ params: Promise.resolve({ id: second.id }) }));
-  assert.notEqual(available.key, another.key);
+  const another = opening(await Page({ params: Promise.resolve({ id: second.id }), searchParams: Promise.resolve({}) }));
+  assert.equal(typeof another.props.action, "function");
   assert.equal(state.claims, 0);
 });
 
@@ -156,6 +160,7 @@ test("checkout return destination rejects external, unrelated, malformed and nes
   const expected = "/membros/oportunidades";
   for (const input of [null, ["x"], "https://evil.test", "//evil.test", "/membros/perfil", "/membros/oportunidades/../perfil", "/membros/oportunidades/a?next=evil", "/membros/oportunidades/a/b", "/membros/oportunidades/%2f%2fevil.test"]) assert.equal(radarDetailReturnPath(input), expected);
   assert.equal(radarDetailReturnPath("/membros/oportunidades/radar-first"), "/membros/oportunidades/radar-first");
+  assert.equal(radarDetailReturnPath("/membros/oportunidades/radar-first?busca=IA&token=secret&pagina=2"), "/membros/oportunidades/radar-first?busca=IA&pagina=2");
 });
 
 test("paid details open before community approval while calendar controls retain their review requirement", async () => {
@@ -163,12 +168,13 @@ test("paid details open before community approval while calendar controls retain
   state.active = true;
   state.calendarEnabled = true;
   const Page = load("app/membros/oportunidades/[id]/page.tsx").default;
-  let html = renderToStaticMarkup(await Page({ params: Promise.resolve({ id: first.id }) }));
+  const props = { params: Promise.resolve({ id: first.id }), searchParams: Promise.resolve({}) };
+  let html = renderToStaticMarkup(await Page(props));
   assert.match(html, /REQUISITO_PRIVADO/);
   assert.doesNotMatch(html, /Salvar no meu calendário/);
   assert.match(html, /conclua a verificação da conta/);
   state.approved = true;
-  html = renderToStaticMarkup(await Page({ params: Promise.resolve({ id: first.id }) }));
+  html = renderToStaticMarkup(await Page(props));
   assert.match(html, /Salvar no meu calendário/);
 });
 

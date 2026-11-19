@@ -10,6 +10,7 @@ import { ShareButton } from "@/components/site/share-button";
 import { getPublicPost, listPostMedia } from "@/lib/blog/data";
 import { blogMediaUrl } from "@/lib/blog/media";
 import { articleMediaCaption } from "@/lib/blog/media-caption.mjs";
+import { articleReferenceParts, trustedArticleReference } from "@/lib/blog/article-links.mjs";
 import { categoryLabel, postDate } from "@/lib/blog/shared";
 import { parseVideoUrl } from "@/lib/blog/video";
 import styles from "@/app/blog/blog.module.css";
@@ -17,6 +18,11 @@ import styles from "@/app/blog/blog.module.css";
 
 
 const dateFormat = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric", timeZone: "America/Sao_Paulo" });
+function ReferenceText({text,references}:{text:string;references:{url:string}[]}){
+  return articleReferenceParts(interfaceText(text),references).map((part,index)=>part.href
+    ? <a key={index} href={part.href} target="_blank" rel="noopener noreferrer">{part.text}</a>
+    : part.text);
+}
 
 export async function generateArticleMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -55,7 +61,7 @@ export async function BlogArticle({ params, member = false }: { params: Promise<
     description: post.excerpt, datePublished: date?.toISOString(), dateModified: post.updatedAt.toISOString(),
     author: { "@type": post.authorName.startsWith("Redação Apogee") ? "Organization" : "Person", name: post.authorName },
     inLanguage: "pt-BR",
-    citation: references.map(source => ({ "@type": "CreativeWork", name: source.title, url: source.url })),
+    citation: references.flatMap(source => {const url=trustedArticleReference(source.url);return url?[{ "@type": "CreativeWork", name: source.title, url }]:[];}),
     publisher: { "@type": "Organization", name: "Apogee", url: "https://www.apogee.community" },
     mainEntityOfPage: `https://www.apogee.community/blog/${post.slug}`,
     image: cover ? `https://www.apogee.community${blogMediaUrl(cover.id)}` : undefined,
@@ -70,7 +76,7 @@ export async function BlogArticle({ params, member = false }: { params: Promise<
       {cover ? <figure className={styles.coverFigure}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={interfaceText(cover.alt)} width={cover.width} height={cover.height} />
-        {coverCaption ? <figcaption>{interfaceText(coverCaption)}</figcaption> : null}
+        {coverCaption ? <figcaption><ReferenceText text={coverCaption} references={references} /></figcaption> : null}
       </figure> : null}
       <article className={styles.articleBody}>{paragraphs.map((paragraph, index) => {
         const marker = /^\[\[media:([a-f0-9-]{36})\]\]$/.exec(paragraph.trim());
@@ -79,10 +85,10 @@ export async function BlogArticle({ params, member = false }: { params: Promise<
         return image ? <figure className={styles.inlineFigure} key={index}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={blogMediaUrl(image.id)} alt={interfaceText(image.alt)} width={image.width} height={image.height} loading="lazy" />
-          {imageCaption ? <figcaption>{interfaceText(imageCaption)}</figcaption> : null}
-        </figure> : <p key={index}>{interfaceText(paragraph)}</p>;
+          {imageCaption ? <figcaption><ReferenceText text={imageCaption} references={references} /></figcaption> : null}
+        </figure> : <p key={index}><ReferenceText text={paragraph} references={references} /></p>;
       })}{video ? <div className={styles.videoFrame}><iframe src={video.src} title={`Vídeo do artigo no ${video.provider}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div> : null}</article>
-      {references.length ? <section className={styles.sources} aria-labelledby="article-sources"><h2 id="article-sources">Fontes</h2><ol>{references.map((source, index) => <li key={`${source.url}-${index}`}><a href={source.url} target="_blank" rel="noopener noreferrer">{interfaceText(source.title)}</a></li>)}</ol></section> : null}
+      {references.length ? <section className={styles.sources} aria-labelledby="article-sources"><h2 id="article-sources">Fontes</h2><ol>{references.map((source, index) => {const url=trustedArticleReference(source.url);return <li key={`${source.url}-${index}`}>{url?<a href={url} target="_blank" rel="noopener noreferrer">{interfaceText(source.title)}</a>:interfaceText(source.title)}</li>;})}</ol></section> : null}
       <div className={styles.articleEnd}><span><BrandMark /></span><p>Mais ideias para seguir em frente</p><Link href={basePath}>← Voltar ao blog</Link></div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     </Content>

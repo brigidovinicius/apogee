@@ -86,7 +86,7 @@ try {
   assert.doesNotMatch(initial, /Equipes de estudantes|https:\/\/example.edu\/notice/);
   const detailPath = "/membros/oportunidades/radar-event-0";
   const firstDetail = await (await get(detailPath, cookie)).text();
-  assert.match(firstDetail, /Abrindo detalhes/);
+  assert.match(firstDetail, /Usar consulta gratuita/);
   assert.doesNotMatch(firstDetail, /Sua primeira oportunidade|Use seu acesso gratuito|Abrir esta oportunidade grátis/);
   assert.doesNotMatch(firstDetail, /Equipes de estudantes|https:\/\/example.edu\/notice/);
   assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "0", "GET never consumes the free choice");
@@ -98,8 +98,8 @@ try {
   assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "0", "prefetch never consumes the free choice");
   assert.equal((await database`select count(*) from radar_free_event`)[0].count, "0", "GET and prefetch never consume an event");
   const openDetail = async (path, html) => {
-    const formMarkup = [...html.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match => match[0]).find(form => form.includes("data-radar-detail-opening"));
-    assert.ok(formMarkup, "compiled Server Action form exists");
+    const formMarkup = [...html.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match => match[0]).find(form => form.includes(">Usar consulta gratuita</button>"));
+    assert.ok(formMarkup, "the explicit free-consultation button submits a compiled Server Action");
     const decode = value => value.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
     const actionBody = new FormData();
     for (const input of formMarkup.matchAll(/<input\b[^>]*>/g)) {
@@ -113,10 +113,11 @@ try {
   const freeDetail = await (await get(detailPath, cookie)).text();
   assert.match(freeDetail, /Equipes de estudantes/); assert.match(freeDetail, /https:\/\/example.edu\/notice/);
   assert.match(await (await get(detailPath, cookie)).text(), /Equipes de estudantes/, "reopening stays free");
+  assert.equal((await database`select count(*) from radar_free_event`)[0].count, "1", "opening once and reopening consumes exactly one slot");
   for (let index = 1; index < 10; index++) {
     const path = `/membros/oportunidades/radar-event-${index}`;
     const available = await (await get(path, cookie)).text();
-    assert.match(available, /Abrindo detalhes/);
+    assert.match(available, /Usar consulta gratuita/);
     assert.doesNotMatch(available, /Equipes de estudantes|https:\/\/example.edu\/notice/);
     assert.equal((await database`select count(*) from radar_free_event`)[0].count, String(index));
     assert.equal((await openDetail(path, available)).status, 303);

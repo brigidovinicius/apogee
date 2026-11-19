@@ -72,6 +72,8 @@
 .coverFigure figcaption, .inlineFigure figcaption { margin-top: .7rem; color: var(--editorial-muted); font-size: .8125rem; line-height: 1.6; }
 .articleBody { max-width: var(--editorial-reading-width); margin: clamp(2rem, 5vw, 3rem) auto; color: var(--editorial-ink); font-family: var(--editorial-body); font-size: 1.1875rem; line-height: 1.78; }
 .articleBody p { margin: 0 0 1.5em; white-space: pre-wrap; overflow-wrap: anywhere; }
+.articleBody a, .coverFigure figcaption a, .inlineFigure figcaption a { color: inherit; text-decoration: underline; text-underline-offset: .2em; overflow-wrap: anywhere; }
+.articleBody a:focus-visible, .coverFigure figcaption a:focus-visible, .inlineFigure figcaption a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 .inlineFigure { margin: 2rem 0; }
 .inlineFigure img { display: block; width: 100%; height: auto; border-radius: 2px; }
 .videoFrame { width: 100%; aspect-ratio: 16 / 9; margin: 2rem 0; }

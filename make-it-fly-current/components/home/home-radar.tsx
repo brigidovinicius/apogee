@@ -1,4 +1,4 @@
-import { localOfferPreview } from "@/lib/offer-preview";
+import { localStaticOfferPreview } from "@/lib/offer-preview";
 import { OfferRadarDemo } from "@/components/community/offer-preview";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
@@ -16,7 +16,7 @@ export async function HomeRadar({ presentation = "editorial", classNames }: { pr
     return <><HomeRadarCarousel opportunities={homePreviewOpportunities} capturedAt={homePreviewCapturedAt} />
       <p className={classNames?.radarNote}>Prévia local de design. Amostra da home pública de 17/11/2026.</p></>;
   }
-  if (localOfferPreview()) return <OfferRadarDemo compact />;
+  if (localStaticOfferPreview()) return <OfferRadarDemo compact />;
   const catalogue = await listPublicOpportunities().catch(() => null);
   if (catalogue === null) {
     return <><LiveCatalogueRefresh /><div className={classNames?.catalogueMessage ?? styles.catalogueMessage}>

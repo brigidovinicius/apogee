@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { COMMUNITY_SIGNUP_PATH, RADAR_FREE_NOTE } from "@/content/community-offer";
+import { RADAR_FREE_NOTE } from "@/content/community-offer";
 import styles from "./community-offer.module.css";
 
 export function RadarOfferIntro({ preview = false, next }: { preview?: boolean; next?: string }) {
   return <aside className={`${styles.scope} ${styles.intro}`} aria-label="Como acessar o Radar">
     <div><h2>Um próximo passo começa com uma descoberta.</h2><p>{RADAR_FREE_NOTE}</p></div>
-    <div className={styles.actions}><Link className={styles.button} href={preview ? "/previa/entrada" : next ? `/membros/cadastro?next=${encodeURIComponent(next)}` : COMMUNITY_SIGNUP_PATH} prefetch={false}>Começar gratuitamente</Link><Link className={styles.secondary} href={`/comunidade${next ? "?next=" + encodeURIComponent(next) : ""}#plano-anual`} prefetch={false}>Ver plano com Radar completo</Link></div>
+    <div className={styles.actions}><Link className={styles.button} href={preview ? "/previa/entrada" : `/membros/cadastro?next=${encodeURIComponent(next || "/membros/oportunidades")}`} prefetch={false}>Começar gratuitamente</Link><Link className={styles.secondary} href={`/comunidade${next ? "?next=" + encodeURIComponent(next) : ""}#plano-anual`} prefetch={false}>Ver plano com Radar completo</Link></div>
   </aside>;
 }
 
