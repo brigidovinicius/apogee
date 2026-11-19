@@ -5,7 +5,7 @@ import {hash,fail} from './policy.mjs';
 import {canonicalResearchUrl} from './research-links.mjs';
 import {isIP} from 'node:net';
 
-export const ARTICLE_EXTRACTION_VERSION='public-article-v6-public-ste-guides';
+export const ARTICLE_EXTRACTION_VERSION='public-article-v7-accordion-headings';
 export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$|periodico_e_jornalismo$|projeto_software_proprio$)/.test(r.role));
 export const independentReference=r=>!!r&&!primaryReference(r)&&/jornalismo|divulgacao|analise_especialista|publicacao_especializada/.test(r.role);
 export function primaryDocument(document,reference=referenceForUrl(document.url)){
@@ -62,7 +62,8 @@ export function robotsAllowed(text,url){
 const attrs=n=>Object.fromEntries((n.attrs??[]).map(a=>[a.name,a.value]));
 const ignored=new Set(['script','style','nav','header','footer','aside','form','button','noscript','svg','template']);
 function textOf(node){
-  const a=attrs(node);if(ignored.has(node.tagName)||a.hidden!==undefined||a['aria-hidden']==='true'||/display\s*:\s*none|visibility\s*:\s*hidden/i.test(a.style??'')
+  const a=attrs(node),headingButton=node.tagName==='button'&&/^h[1-6]$/.test(node.parentNode?.tagName??'')&&!!a['aria-controls']&&/^(true|false)$/.test(a['aria-expanded']??'');
+  if(ignored.has(node.tagName)&&!headingButton||a.hidden!==undefined||a['aria-hidden']==='true'||/display\s*:\s*none|visibility\s*:\s*hidden/i.test(a.style??'')
     ||a['data-card-link']!==undefined||/(?:^|\s)(?:interactive-media-modal|articles-modules__share)(?:\s|$)/.test(a.class??''))return '';
   if(node.nodeName==='#text')return node.value;
   return (node.childNodes??[]).map(textOf).join(' ');

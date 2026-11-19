@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {apiOperationPolicy,DEFAULT_OPENAI_CONFIG,validateOpenAIConfig} from '../src/openai-routing.mjs';
 import {validatePolicy,fail} from '../src/policy.mjs';
-import {buildComparisonRequest} from '../src/corroboration.mjs';
+import {buildComparisonRequest,dossierHash} from '../src/corroboration.mjs';
 import {renewableExplainerPlans,nextReferenceDiscovery} from '../src/replenishment.mjs';
 import {ARTICLE_EXTRACTION_VERSION} from '../src/article-research.mjs';
 import {tick} from '../src/worker.mjs';
@@ -45,6 +45,27 @@ test('API comparisons retain literal source quotes and protected facts with the 
  assert.equal(r.text.format.type,'json_schema');assert.equal(r.text.format.strict,true);assert.equal(r.store,false);assert.deepEqual(r.tools,[]);
  assert.equal(r.background,false);assert.equal(r.service_tier,'default');assert.equal(r.max_output_tokens,2000);
  assert.ok(r.input.includes('quote_units'));assert.ok(Buffer.byteLength(JSON.stringify(r))+1024<=18000);
+});
+test('API recovery fits a Google-sized dossier by compacting repeated labels and protected facts, without changing source values or the byte cap',()=>{
+ const p=apiOperationPolicy(editorial,openai,'comparison');let proved=false;
+ for(let length=30;length<=180&&!proved;length++){
+  const d=dossierFixture(2);d.claims=[];
+  for(const [i,doc] of d.documents.entries()){
+   doc.text=('Synthetic source '+i+' preserves "quoted" values and explicit factual limits. ').repeat(length).trim();
+   doc.content_hash=dossierHash(doc.text);
+  }
+  const critical={id:'C1',text:'Fato crítico sintético preservado integralmente, incluindo aspas "originais". '.repeat(3).trim()};
+  d.previous_critical_claims=[critical];d.previous_unresolved_claims=[{...critical,critical:true},{id:'C2',text:'Limitação sintética pendente que não pode ser omitida para aumentar a nota.',critical:false}];
+  let request;try{request=buildComparisonRequest(d,p);}catch(e){if(e.code==='input_limit')continue;throw e;}
+  const sent=JSON.parse(request.input),restored=sent.documents.map(row=>Object.fromEntries(sent.document_columns.map((key,i)=>[key,row[i]])));
+  const original=buildComparisonRequest(d,{...editorial,google_comparison_input_bytes_cap:50000}),raw=JSON.parse(original.input);
+  assert.deepEqual(restored,raw.documents);assert.deepEqual(sent.protected_claims,[[critical.id,critical.text,true],['C2',d.previous_unresolved_claims[1].text,false]]);
+  const expanded={...request,instructions:original.instructions,input:original.input};
+  if(Buffer.byteLength(JSON.stringify(expanded))+1024<=p.input_tokens_cap_including_overhead)continue;
+  assert.ok(Buffer.byteLength(JSON.stringify(request))+1024<=p.input_tokens_cap_including_overhead);
+  assert.equal(p.input_tokens_cap_including_overhead,18000);assert.equal(request.max_output_tokens,2000);assert.match(request.instructions,/90%/);proved=true;
+ }
+ assert.ok(proved,'a dossier previously rejected only by duplicate serialization fits without dropping evidence');
 });
 function harness(method,{googleBlock='google_token_limit',apiBlock=null,apiOutcome=null,config=openai}={}){
  const calls=[],reserves=[];

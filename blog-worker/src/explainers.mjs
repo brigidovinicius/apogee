@@ -117,11 +117,17 @@ export function automaticExplainerDossier(plan,captures,policy,at=new Date(),{pr
   if(new Set(chosen.map(s=>s.text.normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim())).size!==chosen.length)return null;
   // Use the largest contiguous context that fits the existing request ceiling.
   // A fixed short excerpt can omit definitions and qualifications in long guides.
-  for(let total=plan.additional_sources?.length&&!previousDocuments.length?4500:8500;total>=1500;total-=500){
+  for(let total=plan.additional_sources?.length&&!previousDocuments.length?4500:12000;total>=1500;total-=500){
+    // Give unused space from a short document to its longer counterpart.
+    // Each excerpt stays contiguous; the final serialized request must still
+    // fit the unchanged provider envelope below.
+    let remaining=total;const budgets=new Map();
+    const lengths=chosen.map((s,i)=>({i,bytes:Buffer.byteLength(s.text)})).sort((a,b)=>a.bytes-b.bytes);
+    for(let pos=0;pos<lengths.length;pos++){const item=lengths[pos],bytes=Math.min(item.bytes,Math.floor(remaining/(lengths.length-pos)));budgets.set(item.i,bytes);remaining-=bytes;}
     const documents=chosen.map((s,i)=>{
       const prior=previousDocuments.find(d=>d.capture_id===s.capture_id&&d.url===s.url);
       if(prior)return {...prior,id:'E'+(i+1)};
-      const excerpt=explainerExcerpt(s.text,plan.source_terms?.[s.url]??plan.terms,Math.floor(total/chosen.length));if(!excerpt)return null;
+      const excerpt=explainerExcerpt(s.text,plan.source_terms?.[s.url]??plan.terms,budgets.get(i));if(!excerpt)return null;
       const ref=referenceForUrl(s.url);
       const provenance=plan.provenance?.[i];
       return {id:'E'+(i+1),reference_id:ref.id,capture_id:s.capture_id??hash(s),title:s.title,url:referenceUrl(s.url,ref),published_at:s.published_at,

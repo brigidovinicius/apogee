@@ -7,7 +7,7 @@ import {apiOperationPolicy} from './openai-routing.mjs';
 import {randomUUID} from 'node:crypto';
 import {baselinePostIds,dailyDraftCap,topicAvailable,extraBatch,focusPool} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 import {readFile} from 'node:fs/promises';
-import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits,freeCreditStatus} from './policy.mjs';
+import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits,freeCreditStatus,comparisonReservationPolicy} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle,ARTICLE_REPAIR_REASONS,SEO_GUIDELINES} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
 import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap,isEvidenceGapClaim,resolveComparisonQuotes} from './corroboration.mjs';
@@ -423,12 +423,14 @@ export class Store {
     const history=await this.sql`select artifact->'research'->'topic' as topic,count(*)::int as researched from blog_worker.candidate
       where content_kind='news' and artifact->'research'->>'day'=${day} and artifact->'research'->>'stage' is distinct from 'primary_found'
       and jsonb_typeof(artifact->'research'->'topic')='object' group by 1`;
-    const recovered=await this.prepareAutomaticNewsRecovery(policy,{read,at});if(recovered)return recovered;
+    const recovered=await this.prepareAutomaticNewsRecovery(policy,{read,at});if(recovered?.prepared||recovered?.requests)return recovered;
     if(explainerWindowOpen(policy,at)){
       const eligible=explainerCatalog.filter(p=>!plan.some(v=>v.topic.category===p.category&&v.topic.subcategory===p.subcategory)
         ||history.some(h=>h.topic.category===p.category&&h.topic.subcategory===p.subcategory&&h.researched>=1));
-      const explainer=await this.prepareAutomaticExplainer(policy,{read,plans:eligible,at});if(explainer)return explainer;
-      const renewed=await this.prepareRenewableResearch(policy,{read,at});if(renewed)return renewed;
+      // A cached failure is not a consumed HTTP cycle. Continue to fresh news
+      // when a fallback did neither preparation nor a network request.
+      const explainer=await this.prepareAutomaticExplainer(policy,{read,plans:eligible,at});if(explainer?.prepared||explainer?.requests)return explainer;
+      const renewed=await this.prepareRenewableResearch(policy,{read,at});if(renewed?.prepared||renewed?.requests)return renewed;
     }
     // After the hybrid window, a topic already researched today gets its
     // explanatory fallback before another news-page enrichment can starve it.
@@ -476,7 +478,7 @@ export class Store {
     }
     return null;
   }
-  async reserveComparison(options) { return this.reserve({...options,kind:'comparison'}); }
+  async reserveComparison(options) { return this.reserve({...options,policy:comparisonReservationPolicy(options.policy),kind:'comparison'}); }
   async reserve({policy,catalog,identity,sources,candidateId=null,kind='text'}) {
     validatePolicy(policy);
     if(!policy.generation_enabled)fail('generation_disabled');

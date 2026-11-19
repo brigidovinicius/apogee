@@ -1,6 +1,6 @@
 import Parser from 'rss-parser';
 import {readFile,writeFile,rename} from 'node:fs/promises';
-import {Blocked,CATEGORIES,fail,validatePolicy} from './policy.mjs';
+import {Blocked,CATEGORIES,fail,validatePolicy,comparisonReservationPolicy} from './policy.mjs';
 import {allowedUrl,getFeed} from './http.mjs';
 import {normalizeItem} from './editorial.mjs';
 import {DEFAULT_OPENAI_CONFIG,validateOpenAIConfig,apiOperationPolicy,API_FALLBACK_REASONS,GOOGLE_FALLBACK_REASONS} from './openai-routing.mjs';
@@ -123,7 +123,7 @@ export async function tick({store,config,identity,provider,apiProvider,download}
     }
     let automatic=!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.nextAutomaticWork?await store.nextAutomaticWork(config.policy):null;
     if(!automatic&&!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.prepareAutomaticResearch){
-      try{if(store.checkResearchBudget)await store.checkResearchBudget(config.policy);}
+      try{if(store.checkResearchBudget)await store.checkResearchBudget(comparisonReservationPolicy(config.policy));}
       catch(error){
         if(!(error instanceof Blocked))throw error;
         if(!GOOGLE_FALLBACK_REASONS.has(error.code)||!config.openai?.enabled||!apiProvider||!store.checkAPIResearchBudget)return {collection,research,generation:{status:'blocked',reason:error.code}};
