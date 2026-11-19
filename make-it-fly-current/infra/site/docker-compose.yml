@@ -57,6 +57,23 @@ services:
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
 
+  benefit-discovery:
+    image: apogee-site:${APOGEE_RELEASE_SHA:-local}
+    profiles: [benefits]
+    restart: unless-stopped
+    init: true
+    command: ["node", "scripts/member-benefit-discovery.mjs", "--watch", "/app/worker-state/benefit-discovery.json"]
+    volumes:
+      - benefit_discovery_state:/app/worker-state
+    networks: [public]
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 128m
+    cpus: 0.25
+    cap_drop: [ALL]
+    security_opt:
+      - "no-new-privileges:true"
+
   google-calendar-sync:
     image: apogee-site:${APOGEE_RELEASE_SHA:-local}
     profiles: [google-calendar]
@@ -181,6 +198,8 @@ services:
       - no-new-privileges:true
 
 volumes:
+  benefit_discovery_state:
+    name: apogee_benefit_discovery_state
   google_calendar_worker_state:
     name: apogee_google_calendar_worker_state
   next_cache:

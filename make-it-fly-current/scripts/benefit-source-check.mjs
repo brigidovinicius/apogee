@@ -23,7 +23,7 @@ function checkedUrl(input, hosts) {
   return url;
 }
 
-class SourceError extends Error {
+export class SourceError extends Error {
   constructor(outcome, message) {
     super(message);
     this.outcome = outcome;
@@ -81,19 +81,31 @@ function normalize(value) {
   }).normalize("NFKC").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
-function visibleText(html) {
-  return normalize(html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, " ")
-    .replace(/<!--[\s\S]*?-->/g, " ").replace(/<[^>]+>/g, " "));
+export function pageContent(html) {
+  return html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ");
 }
 
-function packCampaigns(html) {
+export function visibleText(html) {
+  return normalize(pageContent(html).replace(/<[^>]+>/g, " "));
+}
+
+function packOffers(html) {
+  html = pageContent(html);
   const headings = [...html.matchAll(packCard)];
   return new Map(headings.map((match, index) => {
     const next = headings[index + 1]?.index ?? html.indexOf("</main>", match.index);
     const card = html.slice(match.index, next < 0 ? undefined : next);
-    const terms = [...card.matchAll(packOffer)].map(offer => createHash("sha256").update(visibleText(offer[1])).digest("hex"));
+    const terms = [...card.matchAll(packOffer)].map(offer => {
+      const text = visibleText(offer[1]);
+      return { text, hash: createHash("sha256").update(text).digest("hex") };
+    });
     return [match[1], terms];
   }));
+}
+
+export function packCampaigns(html) {
+  return new Map([...packOffers(html)].map(([anchor, terms]) => [anchor, terms.map(term => term.hash)]));
 }
 
 export function sourceSession(transport = publicResponse) {
@@ -125,24 +137,30 @@ export function sourceSession(transport = publicResponse) {
     throw new SourceError("review", "O caminho de resgate mudou");
   }
 
-  return async function check(offer) {
+  async function readPack(test) {
+    const { url, html } = await read(test);
+    if (!packs.has(url.href)) {
+      if (!pageContent(html).includes('href="https://github.com/settings/education/benefits"')) {
+        throw new SourceError("review", "A entrada oficial do programa mudou");
+      }
+      const cards = packOffers(html);
+      if (!cards.size) throw new SourceError("review", "A apresentação do catálogo oficial mudou");
+      packs.set(url.href, cards);
+    }
+    return packs.get(url.href);
+  }
+
+  async function check(offer) {
     try {
       for (const test of offer.tests) {
-        const { url, html } = await read(test);
         if (test.pack) {
-          if (!packs.has(url.href)) {
-            if (!html.includes('href="https://github.com/settings/education/benefits"')) {
-              throw new SourceError("review", "A entrada oficial do programa mudou");
-            }
-            packs.set(url.href, packCampaigns(html));
-          }
-          const cards = packs.get(url.href);
-          if (!cards.size) throw new SourceError("review", "A apresentação do catálogo oficial mudou");
+          const cards = await readPack(test);
           const campaign = cards.get(test.pack);
           if (!campaign) throw new SourceError("unavailable", "Campanha retirada do programa oficial");
-          if (!test.hashes.every(hash => campaign.includes(hash))) throw new SourceError("review", "Os termos da campanha mudaram");
+          if (!test.hashes.every(hash => campaign.some(term => term.hash === hash))) throw new SourceError("review", "Os termos da campanha mudaram");
           continue;
         }
+        const { html } = await read(test);
         const text = visibleText(html);
         if (test.ended?.some(marker => text.includes(normalize(marker)))) throw new SourceError("unavailable", "O fornecedor informou o encerramento");
         if (!test.markers.every(marker => text.includes(normalize(marker)))) throw new SourceError("review", "A condição ou o resgate precisa de revisão");
@@ -152,7 +170,7 @@ export function sourceSession(transport = publicResponse) {
       return error instanceof SourceError ? { outcome: error.outcome, reason: error.message }
         : { outcome: "temporary", reason: "Sem resposta conclusiva do fornecedor" };
     }
-  };
-}
+  }
 
-export { packCampaigns };
+  return Object.assign(check, { readPage: read, readPack });
+}
