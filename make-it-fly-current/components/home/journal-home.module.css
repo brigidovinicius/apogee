@@ -28,14 +28,14 @@
   margin-inline: auto;
   padding-block: 5rem;
 }
-.page .intro h1 { max-width: 11ch; margin: 0; font-size: clamp(3rem, 4.7vw, 4.5rem); font-weight: 550; line-height: 1.04; letter-spacing: -.065em; text-wrap: balance; }
+.page .intro h1 { max-width: 15ch; margin: 0; font-size: clamp(3rem, 4.7vw, 4.5rem); font-weight: 550; line-height: 1.04; letter-spacing: -.065em; text-wrap: balance; }
 .introActions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 2rem; }
 .heroPrimary, .heroSecondary { display: inline-flex; align-items: center; justify-content: center; gap: .75rem; min-height: 44px; padding: .75rem 1rem; border: 1px solid var(--journal-rule); border-radius: 999px; font-size: .8125rem; font-weight: 500; text-decoration: none; white-space: nowrap; }
 .page main a.heroPrimary { color: #fff; background: var(--journal-ink); border-color: var(--journal-ink); }
 .heroPrimary:hover { background: #1e3653 !important; }
 .heroSecondary:hover { background: var(--journal-soft); }
 .communityWord { grid-column: 1 / -1; margin-top: 1rem; text-align: right; font: 400 clamp(64px, 9vw, 130px)/.95 "Apogee Home Signature", Georgia, serif; letter-spacing: -.05em; color: #b9d3ee; }
-.starStage { --light-x: 50%; --light-y: 42%; position: relative; display: grid; place-items: center; height: 390px; isolation: isolate; }
+.starStage { overflow: clip; --light-x: 50%; --light-y: 42%; position: relative; display: grid; place-items: center; height: 390px; isolation: isolate; }
 .starFigure { position: relative; width: min(84%, 290px); aspect-ratio: 703 / 870; filter: drop-shadow(0 16px 20px rgb(7 24 45 / 7%)); transition: filter 500ms ease, transform 650ms ease; }
 .starFigure > svg { display: block; width: 100%; height: 100%; color: var(--journal-ink); }
 .starShine { position: absolute; inset: 0; background: radial-gradient(ellipse at var(--light-x) var(--light-y), #fff 0%, #e2f2ff 15%, #87a8cb 32%, #24435f 47%, #07182d 65%); mask: url('/brand/apogee-star.svg') center / contain no-repeat; opacity: .18; transition: opacity 500ms ease; }
@@ -76,8 +76,6 @@
 .opportunityTop { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; color: var(--journal-muted); font-size: .75rem; }
 .opportunityTop > span { padding: .25rem .625rem; border-radius: 999px; background: var(--journal-soft); }
 .page .opportunity h3 { margin: 0; font-size: 1.25rem; line-height: 1.3; letter-spacing: -.035em; font-weight: 550; }
-.opportunity h3 a { display: inline-block; min-height: 44px; text-decoration: none; }
-.opportunity h3 a:hover { text-decoration: underline; }
 .opportunityOrg { margin: .75rem 0 1.25rem; color: var(--journal-muted); font-size: .8125rem; }
 .opportunity .opportunityDates { display: grid; grid-template-columns: 1fr; gap: .65rem; margin: auto 0 0; padding: 1.25rem 0; border-top: 1px solid var(--journal-rule); }
 .opportunityDates dt { color: var(--journal-muted); font-size: .6875rem; }
@@ -88,6 +86,13 @@
 .catalogueMessage { padding: 1.5rem; border: 1px solid var(--journal-rule); border-radius: .5rem; background: var(--journal-soft); font-size: .9375rem; }
 .catalogueMessage p { margin: 0 0 .5rem; }
 .catalogueMessage a { display: inline-flex; align-items: center; min-height: 44px; }
+.resourceBand { padding-block: clamp(2.5rem, 5vw, 4.5rem); background: var(--journal-soft); scroll-margin-top: 5rem; }
+.resourceGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 1.5rem; list-style: none; margin: 0; padding: 0; }
+.resourceLink { display: flex; flex-direction: column; align-items: start; height: 100%; padding-block: 1.25rem .5rem; border-top: 1px solid #a4b7cc; text-decoration: none; }
+.resourceLink h3 { margin: 1rem 0 .25rem; font-size: 1.25rem; letter-spacing: -.03em; line-height: 1.2; }
+.resourceLink p { margin: 0 0 1rem; max-width: 28ch; color: var(--journal-muted); }
+.resourceLink span { display: flex; justify-content: space-between; align-items: center; gap: .5rem; width: 100%; margin-top: auto; font-size: .8125rem; }
+.resourceLink:hover h3, .resourceLink:focus-visible h3 { text-decoration: underline; }
 .featureBand { border-block: 1px solid var(--journal-rule); background: var(--journal-soft); padding-block: 4rem; }
 .featureLayout { width: var(--journal-width); margin-inline: auto; }
 .entryGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; margin: 0; padding: 0; list-style: none; }
@@ -126,7 +131,7 @@
 @media (max-width: 760px) {
   .page { --journal-width: calc(100% - 2.5rem); }
   .intro { grid-template-columns: 1fr; gap: 1.25rem; padding-block: 3rem 2rem; min-height: 0; }
-  .page .intro h1 { max-width: 12ch; font-size: clamp(2.875rem, 10.5vw, 4rem); }
+  .page .intro h1 { max-width: 16ch; font-size: clamp(2.875rem, 10.5vw, 4rem); }
   .introActions { margin-top: 1.5rem; gap: .5rem; }
   .heroPrimary, .heroSecondary { padding-inline: .875rem; font-size: .75rem; }
   .starStage { height: 280px; margin-top: .5rem; }

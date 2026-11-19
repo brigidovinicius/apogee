@@ -30,6 +30,14 @@
 .overview { margin-block:0 2rem; padding:30px; background:#f2f6fa; border:1px solid #cdd8e4; border-radius:6px; }
 .overview h2 { font-size:1.65rem; line-height:1.2; letter-spacing:-.035em; margin:0 0 1.5rem; }
 .overview>p { color:#435870; line-height:1.8; margin:14px 0 24px; max-width:75ch; }
+.nextStep {
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.8rem 1.5rem;
+  margin-block-end:1.25rem; padding:1rem 1.25rem; border:1px solid #b3c9dd; border-radius:.625rem;
+  background:#e5eef7;
+}
+.nextStep h3 { margin:0 0 .25rem; font-size:1rem; font-weight:650; }
+.nextStep p { margin:0; color:#29415c; }
+.nextStep a { white-space:normal; }
 .pillarGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
 .pillar { display:flex; flex-direction:column; padding:22px; background:white; border:1px solid #cdd8e4; border-top:3px solid #07182d; border-radius:4px; }
 .pillar h3 { font-size:1.05rem; margin:12px 0; }

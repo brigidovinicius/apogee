@@ -1180,6 +1180,30 @@
   :global([data-apogee-design]) .boardHeading { gap: 1rem; }
 }
 
+/* The catalogue starts with its task, below a compact brand introduction. */
+:global([data-apogee-design]) .catalogueHero { padding-block: clamp(1.75rem, 4vw, 3.75rem); }
+:global([data-apogee-design]) .catalogueHero h1 {
+  max-width: none;
+  font-size: clamp(2.25rem, 5vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -.045em;
+}
+.catalogueHero .lead { margin-block-start: .65rem; }
+.board[data-public-catalogue] { padding-block-start: clamp(1.5rem, 3vw, 2.5rem); }
+.board[data-public-catalogue] .boardHeading {
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: .35rem 1rem;
+}
+.board[data-public-catalogue] .boardHeading h2 {
+  font-family: var(--apogee-font-heading);
+  font-size: clamp(1.35rem, 2.6vw, 2.125rem);
+  letter-spacing: -.035em;
+}
+.board[data-public-catalogue] .count { color: var(--apogee-sky); margin: 0; }
+.board[data-public-catalogue] .searchBar { margin-block: .8rem 1.25rem; }
+.board[data-public-catalogue] .categoryNavigation { margin-block-start: 1rem; }
+
 /* Detail content stays fully readable; catalogue truncation never hides requirements. */
 .detailedCard { margin-top: 1.5rem; }
 .detailedCard .cardMain h3, .detailedCard .summary { display: block; overflow: visible; -webkit-line-clamp: unset; }

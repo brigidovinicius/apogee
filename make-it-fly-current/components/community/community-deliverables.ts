@@ -1,7 +1,28 @@
-/** Public sales copy. Availability is explicit; this does not grant product access. */
+import { COMMUNITY_BENEFITS_TERMS } from "@/content/community-offer";
+
 export const COMMUNITY_SALES_DELIVERABLES = [
-  { id: "radar", label: "Radar de oportunidades", fact: "Comece gratuitamente", title: "Encontre seu próximo passo.", description: "Eventos, bolsas, editais, programas e carreira, com requisitos, prazos e fontes oficiais. A entrada gratuita permite consultar até 10 eventos distintos por conta.", href: "#radar", action: "Conhecer o Radar" },
-  { id: "ferramentas", label: "Caixa de Ferramentas", fact: "Disponível · assinatura anual", title: "Escolha a ferramenta para sua tarefa.", description: "Catálogo curado por categoria, com descrição breve e links oficiais, disponível na área de membros para assinantes anuais com acesso vigente.", href: "#ferramentas", action: "Conhecer a caixa" },
-  { id: "perks", label: "Benefícios", fact: "Em preparação", title: "Mais possibilidades para experimentar.", description: "Não há benefícios de parceiros disponíveis neste lançamento. Novas ofertas serão apresentadas após a confirmação dos acordos, com condições e elegibilidade próprias.", href: "#perks", action: "Entender os benefícios" },
-  { id: "learn", label: "Trilha de IA aplicada", fact: "Lançamento inicial parcial", title: "Aprenda fazendo.", description: "Comece por “Um primeiro resultado com IA”: três atividades para escolher uma tarefa, preparar um pedido e conferir o resultado. Os próximos módulos estão em preparação.", href: "#learn", action: "Conhecer a trilha" },
+  {
+    id: "ferramentas", label: "Caixa de Ferramentas", fact: "Assinatura anual",
+    title: "Escolha uma ferramenta para criar um vídeo, pesquisar ou escrever.",
+    description: "Compare as opções por categoria e abra o site oficial de cada ferramenta. Contas, licenças e créditos seguem as condições do fornecedor.",
+    href: "#ferramentas", action: "Conhecer a Caixa de Ferramentas",
+  },
+  {
+    id: "learn", label: "Trilha de IA", fact: "Assinatura anual",
+    title: "Use IA em uma tarefa sua, do primeiro pedido à revisão.",
+    description: "O exercício inicial tem três atividades. Você escolhe uma tarefa, escreve um pedido e confere se o resultado atende aos seus critérios. Os próximos módulos estão em preparação.",
+    href: "#learn", action: "Conhecer a trilha",
+  },
+  {
+    id: "radar", label: "Radar de oportunidades", fact: "Acesso gratuito e anual",
+    title: "Encontre um evento e veja como participar.",
+    description: "Consulte gratuitamente os detalhes de até 10 eventos distintos por conta. A assinatura anual inclui o Radar completo, com eventos, bolsas, editais e outras oportunidades.",
+    href: "#radar", action: "Conhecer o Radar",
+  },
+  {
+    id: "perks", label: "Benefícios", fact: "Assinatura anual",
+    title: "Confira quais ofertas de parceiros você pode usar.",
+    description: COMMUNITY_BENEFITS_TERMS,
+    href: "#perks", action: "Entender os benefícios",
+  },
 ] as const;

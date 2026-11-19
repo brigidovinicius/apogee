@@ -76,3 +76,11 @@
 @media(max-width:600px) {.filterPanel{padding:16px}.filterPrimary,.filterAdvanced{grid-template-columns:1fr}.filterForm .searchField{grid-column:auto}.monthNavigation{margin-left:0;width:100%;justify-content:space-between;gap:8px}.dayCount{font-size:.62rem}.main{width:calc(100% - 24px)}.rowActions{width:100%}.row{padding:16px}.filters{gap:10px}}
 .monthGrid .dayLink {display:flex}
 .monthTitle {text-transform:none}.monthTitle::first-letter{text-transform:uppercase}
+
+.previewHero { padding-block: clamp(1.75rem, 4vw, 3.5rem); }
+.previewHero > a { display: inline-flex; align-items: center; min-height: 44px; }
+:global([data-apogee-design]) .previewHero h1 {
+  max-width: 26ch;
+  font-size: clamp(2rem, 5vw, 4.25rem);
+  line-height: 1.08;
+}

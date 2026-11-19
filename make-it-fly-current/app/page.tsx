@@ -3,7 +3,7 @@ import { EditorialHome } from "@/components/home/editorial-home";
 
 export const dynamic = "force-dynamic";
 
-const description = "Conhecimento, oportunidades e conexões para construir mais. Conheça a Comunidade Apogee e comece gratuitamente com até 10 eventos distintos no Radar.";
+const description = "Conheça a Comunidade Apogee. Troque ideias, descubra ferramentas para criar com IA e encontre oportunidades no Radar. Comece com uma conta gratuita.";
 
 export const metadata: Metadata = {
   title: "Apogee | Comunidade, ideias e experiências",

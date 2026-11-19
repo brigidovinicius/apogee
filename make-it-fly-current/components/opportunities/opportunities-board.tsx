@@ -4,6 +4,7 @@ import { trackBehavior } from "@/components/analytics/behavior-client";
 
 import { SaveOpportunityButton } from "./save-opportunity";
 import { AREAS, displayOpportunityTitle, publicOpportunityPath } from "@/lib/opportunities/discovery";
+import { radarCatalogueQuery } from "@/lib/opportunities/navigation";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 import { employmentExperienceSummary } from "@/lib/opportunities/employment-experience";
 import { interfaceText } from "@/lib/presentation-text.mjs";
@@ -49,6 +50,7 @@ type OpportunityBoardProps = {
   management?: boolean;
   editorialFeed?: boolean;
   showCalendarLink?: boolean;
+  publicCatalogue?: boolean;
 };
 
 const formatDate = (date: string) =>
@@ -60,10 +62,15 @@ const formatDate = (date: string) =>
     timeZone: "America/Sao_Paulo",
   }).format(new Date(date.length > 10 ? date : `${date}T12:00:00Z`));
 
-export function OpportunitiesBoard({ opportunities, management = false, showCalendarLink = false, editorialFeed = false, catalogue }: OpportunityBoardProps) {
+export function OpportunitiesBoard({ opportunities, management = false, showCalendarLink = false, editorialFeed = false, catalogue, publicCatalogue = false }: OpportunityBoardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const catalogueParams = new URLSearchParams(searchParams.toString());
+  const catalogueQuery = publicCatalogue ? radarCatalogueQuery(catalogueParams) : "";
+  const detailHref = (item: StudentOpportunity) => publicCatalogue
+    ? publicOpportunityPath(item) + catalogueQuery
+    : opportunityDetailPath(item.id, management ? undefined : catalogueParams);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [visibleLimit, setVisibleLimit] = useState(24);
   const [initialToday] = useState(() => dateInBrazil());
@@ -128,12 +135,12 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
   };
 
   return (
-    <section className={styles.board} aria-labelledby="mural-title">
+    <section className={styles.board} data-public-catalogue={publicCatalogue || undefined} aria-labelledby="mural-title">
       <LiveCatalogueRefresh />
       <div className={styles.boardHeading}>
         <div>
-          <p className={styles.kicker}>Mural em atualização</p>
-          <h2 id="mural-title">Explore o Radar</h2>
+          {!publicCatalogue && <p className={styles.kicker}>Catálogo de oportunidades</p>}
+          <h2 id="mural-title">{publicCatalogue ? "Buscar no Radar" : "Explore o Radar"}</h2>
         </div>
         <p className={styles.count} aria-live="polite">
           {total} {total === 1 ? "oportunidade visível" : "oportunidades visíveis"}
@@ -144,7 +151,7 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
       </p> : null}
 
       <div className={styles.searchBar}>
-          <form className={styles.locationField} onSubmit={(event) => {
+          <form className={styles.locationField} role="search" aria-labelledby="mural-title" onSubmit={(event) => {
             event.preventDefault();
             const query = new FormData(event.currentTarget).get("busca");
             updateFilters({ ...filters, query: String(query ?? "").trim().slice(0, 100) || null });
@@ -359,8 +366,8 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
       {entries.length > 0 ? (
         <div className={styles.grid}>
           {entries.slice(0, visibleLimit).map((entry) => entry.type === "admission"
-            ? <AdmissionProcessCard key={entry.id} group={entry.group} management={management} />
-            : <OpportunityCard key={entry.id} opportunity={entry.opportunity} management={management} />)}
+            ? <AdmissionProcessCard key={entry.id} group={entry.group} management={management} detailHref={detailHref} publicCatalogue={publicCatalogue} />
+            : <OpportunityCard key={entry.id} opportunity={entry.opportunity} management={management} detailHref={detailHref(entry.opportunity)} detailLabel={publicCatalogue ? "Ver resumo" : undefined} />)}
         </div>
       ) : total === 0 ? (
         <div className={styles.empty} role="status">
@@ -403,7 +410,15 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
   );
 }
 
-export function OpportunityCard({ opportunity, management = false, detailed = management, detailHref }: { opportunity: StudentOpportunity; management?: boolean; detailed?: boolean; detailHref?: string }) {
+export function OpportunityCard({ opportunity, management = false, detailed = management, detailHref, detailLabel = "Ver detalhes", showTitle = true }: {
+  opportunity: StudentOpportunity;
+  management?: boolean;
+  detailed?: boolean;
+  detailHref?: string;
+  detailLabel?: string;
+  showTitle?: boolean;
+}) {
+  const actionLabel = detailed ? "Ver página oficial e inscrição" : detailLabel;
   return (
     <article className={`${styles.card} ${detailed ? styles.detailedCard : ""}`}>
       <div className={styles.cardTopline}>
@@ -412,7 +427,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
       </div>
       <div className={styles.cardMain}>
         <p className={styles.organization} title={interfaceText(opportunity.organization)}>{interfaceText(opportunity.organization)}</p>
-        <h3>{interfaceText(displayOpportunityTitle(opportunity.title))}</h3>
+        {showTitle && <h3>{interfaceText(displayOpportunityTitle(opportunity.title))}</h3>}
         <OpportunityBenefits opportunity={opportunity} />
         {detailed && <p className={styles.summary}>{interfaceText(opportunity.summary)}</p>}
       </div>
@@ -453,9 +468,9 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
           className={`${styles.externalLink} ${styles.detailButton}`}
           target={detailed ? "_blank" : undefined}
           rel={detailed ? "noopener noreferrer" : undefined}
-          aria-label={`Ver ${detailed ? "página oficial" : "detalhes"} de ${interfaceText(displayOpportunityTitle(opportunity.title))}`}
+          aria-label={`${actionLabel}: ${interfaceText(displayOpportunityTitle(opportunity.title))}`}
         >
-          {detailed ? "Ver página oficial e inscrição" : "Ver detalhes"} <ArrowUpRight size={16} aria-hidden />
+          {actionLabel} <ArrowUpRight size={16} aria-hidden />
         </Link>
         {!management&&!detailed&&<SaveOpportunityButton id={opportunity.id} title={opportunity.title}/>}
         <ShareButton title={interfaceText(displayOpportunityTitle(opportunity.title))} path={publicOpportunityPath(opportunity)} compact />

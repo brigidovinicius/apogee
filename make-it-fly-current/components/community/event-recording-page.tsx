@@ -17,18 +17,21 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
       <section className={styles.recordingHero} aria-labelledby="recording-title">
         <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.recordingCopy}><p className={styles.eyebrow}>Codex Community · organização Apogee</p><h1 id="recording-title">Descubra o que a IA pode<br /><span>mudar na sua vida.</span></h1><p className={styles.recordingLead}>Assista gratuitamente ao evento exclusivo Codex Community, da comunidade OpenAI, organizado pela Apogee. Explore como a IA pode ajudar você a pesquisar, escrever, organizar a rotina e colocar ideias em prática.</p><p className={styles.recordingAvailability}><Bell size={16} aria-hidden="true" /> Inscrição gratuita · orientações de acesso por e-mail.</p>
-          <Link className={[styles.primary, styles.mobileCaptureLink].join(" ")} href="#inscricao">Inscrever-se no evento gratuito <ArrowUpRight size={18} aria-hidden="true" /></Link>
-          <a className={styles.workshopLink} href="#workshop-florianopolis">Workshop presencial em Florianópolis</a>
+          <div className={styles.eventOptions} role="group" aria-label="Modalidades de participação">
+            <Link className={styles.primary} href="#inscricao" data-behavior-action="event_online_selected">Participar online <ArrowUpRight size={18} aria-hidden="true" /></Link>
+            <Link className={styles.secondary} href="#workshop-florianopolis" data-behavior-action="event_workshop_selected">Lista de espera presencial <ArrowUpRight size={18} aria-hidden="true" /></Link>
+          </div>
           <div className={styles.recordingArtwork} aria-hidden="true"><Image src="/brand/apogee-star.svg" alt="" width={703} height={870} priority /><div className={styles.recordingArtLabel}><CirclePlay size={28} strokeWidth={1.2} /><span>Codex Community<small>IA para o dia a dia</small></span></div></div>
         </div>
         <div id="inscricao" className={styles.captureCard} tabIndex={-1}><RecordingCaptureForm preview={preview} /></div>
       </section>
-      <section id="workshop-florianopolis" className={`${styles.section} ${styles.workshopSection}`} aria-labelledby="workshop-title">
+      <section id="workshop-florianopolis" tabIndex={-1} className={`${styles.section} ${styles.workshopSection}`} aria-labelledby="workshop-title">
         <div>
           <div className={styles.sectionHeading}>
             <p className={styles.eyebrow}>Workshop presencial</p>
             <h2 id="workshop-title">{workshopTitle}</h2>
             <p><time dateTime="2026-11-21T18:00:00-03:00">21 de novembro de 2026, às 18h</time> · Florianópolis, SC · Participação gratuita</p>
+            <p>A lista de espera é gerenciada pelo Luma. A inscrição na lista não garante uma vaga.</p>
           </div>
           <a className={`${styles.primary} ${styles.workshopOnline}`} href="#inscricao">
             Inscrever-se para assistir online <ArrowUpRight size={18} aria-hidden="true" />
@@ -38,13 +41,13 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
           <iframe
             className={styles.workshopEmbed}
             src={workshopEmbedUrl}
-            title={`Inscrição no Luma para ${workshopTitle}`}
+            title={`Lista de espera no Luma para ${workshopTitle}`}
             width={600}
             height={450}
             loading="lazy"
           />
-          <a className={styles.subtleLink} href={workshopUrl}>
-            Abrir evento no Luma <ArrowUpRight size={16} aria-hidden="true" />
+          <a className={styles.subtleLink} href={workshopUrl} data-behavior-action="event_luma_opened">
+            Abrir lista de espera no Luma <ArrowUpRight size={16} aria-hidden="true" />
           </a>
         </div>
       </section>

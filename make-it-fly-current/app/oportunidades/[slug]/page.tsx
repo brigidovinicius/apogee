@@ -4,6 +4,7 @@ import { cache } from "react";
 import { listRadarOpportunities } from "@/lib/opportunities/radar-client";
 import { opportunityCardData } from "@/lib/opportunities/card-data";
 import { publicOpportunityPath, displayOpportunityTitle } from "@/lib/opportunities/discovery";
+import { radarCatalogueQuery } from "@/lib/opportunities/navigation";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 import { OpportunityCard } from "@/components/opportunities/opportunities-board";
 import { SiteHeader } from "@/components/site/site-header";
@@ -16,16 +17,32 @@ const find = cache(async(slug:string)=>{
   const item=(await listRadarOpportunities(true)).find(i=>i.id===id);
   if(!item)notFound();return opportunityCardData(item);
 });
-type Props={params:Promise<{slug:string}>};
+type Props={params:Promise<{slug:string}>; searchParams: Promise<Record<string, string | string[] | undefined>>};
 export async function generateMetadata({params}:Props) {
   const item=await find((await params).slug);
   return {title:`${displayOpportunityTitle(item.title)} | Apogee`,description:`Confira a oportunidade de ${item.organization} no Radar Apogee.`,alternates:{canonical:publicOpportunityPath(item)}};
 }
-export default async function PreviewPage({params}:Props) {
-  const {slug}=await params,item=await find(slug),canonical=publicOpportunityPath(item);
-  if(canonical!==`/oportunidades/${slug}`)permanentRedirect(canonical);
-  return <div className={styles.page}><SiteHeader current="opportunities"/><main className={styles.main}>
-    <div className={styles.hero}><Link href="/oportunidades">← Radar</Link><h1>{displayOpportunityTitle(item.title)}</h1><p>Entre na sua conta para consultar os detalhes e usar seus acessos do Radar. Conheça também a entrada gratuita e a assinatura da comunidade.</p><Link className={styles.action} href={opportunityDetailPath(item.id)}>Abrir detalhes</Link></div>
-    <OpportunityCard opportunity={item} detailHref={opportunityDetailPath(item.id)}/>
-  </main><SiteFooter/></div>;
+export default async function PreviewPage({ params, searchParams }: Props) {
+  const { slug } = await params;
+  const item = await find(slug);
+  const canonical = publicOpportunityPath(item);
+  const filters = new URLSearchParams();
+  for (const [key, value] of Object.entries(await searchParams)) {
+    if (typeof value === "string") filters.set(key, value);
+  }
+  const query = radarCatalogueQuery(filters);
+  if (canonical !== `/oportunidades/${slug}`) permanentRedirect(canonical + query);
+
+  return <div className={styles.page}>
+    <SiteHeader current="opportunities" adaptive tone="light" />
+    <main id="experiencia" className={styles.main} tabIndex={-1}>
+      <div className={`${styles.hero} ${styles.previewHero}`}>
+        <Link href={`/oportunidades${query}#mural-title`}>← Voltar ao Radar</Link>
+        <h1>{displayOpportunityTitle(item.title)}</h1>
+        <p>Este é o resumo público. Consulte os requisitos e o link oficial na sua conta Apogee.</p>
+      </div>
+      <OpportunityCard opportunity={item} detailHref={opportunityDetailPath(item.id, filters)} detailLabel="Consultar na minha conta" showTitle={false} />
+    </main>
+    <SiteFooter />
+  </div>;
 }

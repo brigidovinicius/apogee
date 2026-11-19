@@ -7,7 +7,7 @@ import { COMMUNITY_SALES_DELIVERABLES } from "./community-deliverables";
 import styles from "./community-editorial.module.css";
 
 export function CommunityDirectory() {
-  const [selected, setSelected] = useState<string | null>("radar");
+  const [selected, setSelected] = useState<string | null>(COMMUNITY_SALES_DELIVERABLES[0].id);
   const prefix = useId();
   return <div className={styles.directory}>{COMMUNITY_SALES_DELIVERABLES.map(entry => {
     const open = selected === entry.id;
