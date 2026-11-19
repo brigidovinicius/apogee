@@ -116,6 +116,13 @@
 .recordingArtLabel { position:absolute; left:145px; bottom:42px; display:flex; gap:14px; align-items:center; border:1px solid #486a874d; padding:16px 22px; border-radius:14px; background:#0a1c2fa8; backdrop-filter:blur(14px); font-size:.8rem; }
 .recordingArtLabel small { display:block; font-size:.6rem; color:var(--muted); margin-top:5px; }
 .captureCard { border:1px solid #3e5f7d; border-radius:24px; background:linear-gradient(155deg,#203f5b99,#10263d); padding:36px; scroll-margin-top:28px; box-shadow:0 25px 80px #020a161f; }
+.page .workshopLink { display:block; width:fit-content; margin-top:18px; color:var(--ice); font-size:.85rem; line-height:1.5; text-decoration:underline; text-underline-offset:4px; }
+.workshopSection { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); align-items:center; gap:32px; border-block:1px solid var(--line); }
+.workshopSection .sectionHeading { margin-bottom:0; }
+.workshopOnline { margin-top:24px; }
+.workshopRegistration { display:grid; justify-items:start; justify-self:end; gap:8px; width:min(100%,600px); }
+.workshopEmbed { display:block; width:100%; border:1px solid var(--line); border-radius:16px; }
+@media(max-width:900px) { .workshopSection { grid-template-columns:minmax(0,1fr); }.workshopRegistration { justify-self:start; } }
 .captureForm h2,.captureConfirmation h2 { margin-top:16px; font-size:2rem; line-height:1.15; letter-spacing:-.045em; }
 .formLead { color:#abc1d4; font-size:.8rem; line-height:1.8; margin-block:19px 27px!important; }
 .field { margin-block:19px; }
