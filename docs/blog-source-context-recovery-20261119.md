@@ -22,7 +22,7 @@ O uso real continua registrado; exceder a reserva bloqueia novas gerações.
 Não há aumento dos limites diários/semanais, das chamadas, nem redução da
 reserva de 20% da assinatura. Texto e capa mantêm suas reservas atuais.
 
-Validação em ambiente isolado: 174 testes unitários e 106 cenários PostgreSQL
+Validação em ambiente isolado: 175 testes unitários e 106 cenários PostgreSQL
 aprovados, sem chamadas a provedores. A validação inclui o aproveitamento do
 contexto de uma fonte longa, a seleção dos títulos públicos, preservação do
 histórico, limites de consumo, geração de dez artigos sintéticos com capas e
@@ -46,3 +46,10 @@ O piloto real confirmou a reserva menor em duas comparações Google e preservou
 ambas as pautas em retenção: as referências ainda não corroboraram todos os
 fatos críticos. Não se declara concluído o lote real com base em testes
 sintéticos ou em pares de fontes selecionados sem comparação aprovada.
+
+Na recuperação real por API, um dossiê cabia no transporte Google, mas excedia
+o mesmo limite de 18 mil bytes com campos repetidos e fatos protegidos enviados
+duas vezes no JSON. A API agora usa o mesmo transporte por colunas do Google,
+preservando todos os valores, citações e fatos protegidos. No caso observado,
+o pedido cai de 18.381 para 17.849 bytes, com zero chamadas durante a medição.
+O limite de entrada, a reserva financeira e o máximo de saída não mudam.

@@ -52,11 +52,15 @@ export function buildComparisonRequest(dossier,policy,repair=false){
   Object.assign(body,{tools:[],store:false,background:false,service_tier:'default',reasoning:{effort:policy.reasoning_effort},prompt_cache_options:{mode:'explicit',ttl:'30m'}});
  }
  body.input=JSON.stringify(input);
+ if(policy.provider==='openai_api'){
+  const compact=comparisonTransport(body);
+  body.instructions=compact.instructions;body.input=JSON.stringify(compact.input);
+ }
  if(Buffer.byteLength(policy.provider==='google_subscription'?comparisonPrompt(body):JSON.stringify(body))+1024>comparisonInputLimit(policy))fail('input_limit');
  return body;
 }
 // Measure the actual native Google prompt rather than double-escaped JSON storage.
-export function comparisonPrompt(body){
+function comparisonTransport(body){
  // Column names are sent once. Values, order and complete literal source spans
  // are unchanged; the persisted request retains the object form for auditing.
  const input=JSON.parse(body.input);
@@ -69,10 +73,14 @@ export function comparisonPrompt(body){
   delete input.previous_critical_claims;delete input.previous_unresolved_claims;
   instructions=instructions.replace(CRITICAL_RECOVERY,'').replace(UNRESOLVED_RECOVERY,'')+' REAPURAÇÃO: repita exatamente cada text de protected_claims com o critical indicado; não omita nem rebaixe fatos.';
  }
- if(input.documents?.length>=2){
+ if(input.documents?.length>=2&&!input.document_columns){
   const columns=Object.keys(input.documents[0]);
   input.document_columns=columns;input.documents=input.documents.map(d=>columns.map(key=>d[key]));
  }
+ return {instructions,input};
+}
+export function comparisonPrompt(body){
+ const {instructions,input}=comparisonTransport(body);
  return instructions+'\nSchema: '+JSON.stringify(body.text.format.schema)+'\n'+JSON.stringify(input);
 }
 export const comparisonCacheKey=(dossier,policy,repair=false)=>dossierHash({kind:'comparison',repair,prompt_version:COMPARISON_PROMPT_VERSION,dossier:dossierHash(dossier),policy});
