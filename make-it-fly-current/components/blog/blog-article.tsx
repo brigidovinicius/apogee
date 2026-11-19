@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { ShareButton } from "@/components/site/share-button";
 import { getPublicPost, listPostMedia } from "@/lib/blog/data";
 import { blogMediaUrl } from "@/lib/blog/media";
+import { articleMediaCaption } from "@/lib/blog/media-caption.mjs";
 import { categoryLabel, postDate } from "@/lib/blog/shared";
 import { parseVideoUrl } from "@/lib/blog/video";
 import styles from "@/app/blog/blog.module.css";
@@ -45,6 +46,7 @@ export async function BlogArticle({ params, member = false }: { params: Promise<
   const media = await listPostMedia(post.id);
   const mediaById = new Map(media.map((item) => [item.id, item]));
   const cover = post.coverMediaId ? mediaById.get(post.coverMediaId) : null;
+  const coverCaption = articleMediaCaption(cover?.caption);
   const video = post.videoUrl ? parseVideoUrl(post.videoUrl) : null;
   const paragraphs = post.body.trim().split(/\n\s*\n/).filter(Boolean);
   const references = sourceReferences(post.body);
@@ -68,15 +70,16 @@ export async function BlogArticle({ params, member = false }: { params: Promise<
       {cover ? <figure className={styles.coverFigure}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={interfaceText(cover.alt)} width={cover.width} height={cover.height} />
-        {cover.caption ? <figcaption>{interfaceText(cover.caption)}</figcaption> : null}
+        {coverCaption ? <figcaption>{interfaceText(coverCaption)}</figcaption> : null}
       </figure> : null}
       <article className={styles.articleBody}>{paragraphs.map((paragraph, index) => {
         const marker = /^\[\[media:([a-f0-9-]{36})\]\]$/.exec(paragraph.trim());
         const image = marker ? mediaById.get(marker[1]) : null;
+        const imageCaption = articleMediaCaption(image?.caption);
         return image ? <figure className={styles.inlineFigure} key={index}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={blogMediaUrl(image.id)} alt={interfaceText(image.alt)} width={image.width} height={image.height} loading="lazy" />
-          {image.caption ? <figcaption>{interfaceText(image.caption)}</figcaption> : null}
+          {imageCaption ? <figcaption>{interfaceText(imageCaption)}</figcaption> : null}
         </figure> : <p key={index}>{interfaceText(paragraph)}</p>;
       })}{video ? <div className={styles.videoFrame}><iframe src={video.src} title={`Vídeo do artigo no ${video.provider}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div> : null}</article>
       {references.length ? <section className={styles.sources} aria-labelledby="article-sources"><h2 id="article-sources">Fontes</h2><ol>{references.map((source, index) => <li key={`${source.url}-${index}`}><a href={source.url} target="_blank" rel="noopener noreferrer">{interfaceText(source.title)}</a></li>)}</ol></section> : null}
