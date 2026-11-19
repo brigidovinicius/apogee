@@ -10,10 +10,12 @@ const pages: Record<string, string> = { event_page: "Evento Codex Community", me
 const events: Record<string, string> = { page_view: "Visualização", navigation: "Navegação para", scroll_depth: "Rolagem (%)", engaged_time: "Tempo visível", section_view: "Seção", action: "Ação iniciada", filter_apply: "Uso dos filtros", form_progress: "Etapa do formulário", blog_radar_view: "Leitura medida", blog_radar_click: "Leitura com clique no Radar" };
 const blogLabels = Object.fromEntries(BLOG_RADAR_ARTICLES.map(article => [article.key, article.label]));
 const targets: Record<string, string> = { event_online_selected: "Escolher online", event_workshop_selected: "Escolher lista presencial", event_luma_opened: "Abrir lista no Luma", annual_price: "Preço anual visto", annual_choose: "Plano anual escolhido", account_ready: "Conta apta para pagar", confirmed_return: "Confirmação exibida", view: "Página", save: "Salvar", remove_saved: "Remover dos salvos", alert_request: "Solicitar aviso", series_alert_request: "Acompanhar edições", checkout_start: "Iniciar checkout", google_calendar: "Conectar Google Agenda", official_link: "Abrir fonte oficial", store_interest: "Interesse em produto", application_start: "Abrir inscrição", application_open: "Abrir formulário externo", applied: "Aplicar", cleared: "Limpar", started: "Primeira interação", step_1: "Etapa 1 concluída", step_2: "Etapa 2 concluída", step_3: "Etapa 3 concluída", validation_error: "Erro de validação", submit_started: "Envio iniciado", submit_succeeded: "Envio confirmado", submit_failed: "Envio sem confirmação" };
-export default async function BehaviorPage({ searchParams }: { searchParams?: Promise<{ inicio?: string | string[]; fim?: string | string[] }> } = {}) {
+export default async function BehaviorPage({ searchParams }: {
+  searchParams: Promise<{ inicio?: string | string[]; fim?: string | string[] }>;
+}) {
   const dates = await searchParams;
   const overview = await getBehaviorOverview();
-  const blog = await getBlogRadarReport(typeof dates?.inicio === "string" ? dates.inicio : undefined, typeof dates?.fim === "string" ? dates.fim : undefined);
+  const blog = await getBlogRadarReport(typeof dates.inicio === "string" ? dates.inicio : undefined, typeof dates.fim === "string" ? dates.fim : undefined);
   return <div className={styles.content}>
     <AdminPageHeader title="Comportamento" description="Contagens dos últimos 30 dias, no horário de Brasília. Incluem apenas a medição permitida pelo visitante; não representam pessoas únicas nem todo o tráfego." />
     <section className={styles.surface} aria-labelledby="blog-radar-title">
