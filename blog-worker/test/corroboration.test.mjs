@@ -4,6 +4,17 @@ import {assessDossier,approvedEvidence,dossierHash,validateDossier,validateCompa
 import {defaultPolicy} from './fixtures.mjs';
 
 import {dossierFixture} from './corroboration-fixture.mjs';
+test('explanatory scope excludes unrelated vendor demonstrations while protected facts and source text stay intact',()=>{
+ const d=dossierFixture();d.event_key='explainer:scope-regression';d.editorial={kind:'explainer',key:'scope-regression',question:'Como um conceito geral deve ser explicado sem confundir implementação com definição?',as_of:'2026-11-19T12:00:00.000Z'};
+ d.documents=d.documents.map(v=>({...v,same_event:false,same_subject:true,excerpt_offset:0,consulted_at:d.editorial.as_of}));
+ d.previous_critical_claims=[{id:d.claims[0].id,text:d.claims[0].text}];
+ const p={...defaultPolicy,input_tokens_cap_including_overhead:30000};const body=buildComparisonRequest(d,p),input=JSON.parse(body.input);
+ assert.match(body.instructions,/pergunta editorial delimita o escopo/);assert.match(body.instructions,/sem omitir fatos pertinentes/);
+ assert.deepEqual(input.editorial,d.editorial);assert.deepEqual(input.previous_critical_claims,d.previous_critical_claims);
+ for(const doc of d.documents){const sent=input.documents.find(v=>v.id===doc.id);assert.equal(Object.values(sent.quote_units).join(' ').includes('A equipe anunciou um experimento inicial.'),true);}
+ assert.throws(()=>validateComparison({claims:d.claims.filter(c=>c.id!==d.previous_critical_claims[0].id)},d),/critical_fact_omitted/);
+ const news=buildComparisonRequest(dossierFixture(),p);assert.doesNotMatch(news.instructions,/pergunta editorial delimita o escopo/);
+});
 test('44 references preserve exact duplicates as aliases and share publishers across sections',()=>{
   const supplied=referenceCatalog.filter(r=>/^REF(?:0[1-9]|[1-3][0-9]|4[0-4])$/.test(r.id));assert.equal(supplied.length,44);assert.equal(supplied.reduce((n,r)=>n+r.aliases.length,0),46);
   assert.equal(referenceCatalog.filter(r=>r.publisher==='quanta-magazine').length,3);
