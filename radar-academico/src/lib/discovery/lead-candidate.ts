@@ -68,7 +68,7 @@ export async function prepareLeadCandidate(lead: Lead, sources: OfficialSource[]
     const article = singleOpportunityArticle(resource.body.toString("utf8"));
     if (!article) return { reason: "detail_layout_unrecognized" };
     candidate = normalizeOpportunity({ ...article, url: lead.url, source });
-    if (!candidate) return { reason: discoveredPageFailureReason(resource.body.toString('utf8')) };
+    if (!candidate) return { reason: discoveredPageFailureReason(resource.body.toString('utf8'), source) };
   }
   if (!candidate || candidate.requiresManualReview) return { reason: "candidate_unconfirmed" };
   if (candidate.categories?.includes("eventos") && candidate.eventStartsAt && !eventHasNotStarted(candidate.eventStartsAt)) {

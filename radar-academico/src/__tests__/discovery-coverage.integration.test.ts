@@ -69,7 +69,7 @@ it('rechecks version-seven formats and explicit deadlines once without reopening
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 4, published: 2, sourcesRegistered: 2,
     reasons: { published: 2, invalid_deadline: 1, status_unconfirmed: 1 } });
   expect(await listPublicOpportunities()).toHaveLength(2);
-  expect((await state.db!.query("select distinct execution_metadata->>'source_expansion_version' as version from ingestion_runs where execution_metadata->>'reason'='published'")).rows).toEqual([{ version: '9' }]);
+  expect((await state.db!.query("select distinct execution_metadata->>'source_expansion_version' as version from ingestion_runs where execution_metadata->>'reason'='published'")).rows).toEqual([{ version: '10' }]);
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, published: 0 });
   expect((await state.db!.query("select url,processing_attempts from discovery_leads where url=any($1::text[]) order by url", [inputs.slice(4).map(input => parent + input.path)])).rows)
     .toEqual(inputs.slice(4).sort((a,b) => a.path.localeCompare(b.path)).map(input => ({ url: parent + input.path, processing_attempts: input.attempts })));
@@ -108,7 +108,7 @@ it('rechecks a version-six layout once and publishes its evidenced ticketed even
   expect((await state.db!.query("select verification_method,publication_issue,deadline_at,deadline_precision,event_starts_at::text from opportunities")).rows)
     .toEqual([{ verification_method: 'automatic', publication_issue: null, deadline_at: null, deadline_precision: 'not_informed', event_starts_at: '2099-11-12' }]);
   expect((await state.db!.query("select execution_metadata->>'source_expansion_version' as version from ingestion_runs where execution_metadata->>'reason'='published'")).rows)
-    .toEqual([{ version: '9' }]);
+    .toEqual([{ version: '10' }]);
   expect(await runScheduledLeadProcessing()).toMatchObject({ leadsChecked: 0, published: 0 });
   expect((await state.db!.query("select url,processing_attempts from discovery_leads where processing_status='blocked' and url<>$1 order by url", [oldUrl])).rows)
     .toEqual(inputs.slice(1).sort((a,b) => a.url.localeCompare(b.url)).map(input => ({ url: input.url, processing_attempts: input.attempts + (input.reason === 'invalid_deadline' ? 1 : 0) })));
