@@ -29,7 +29,7 @@ export async function BenefitPreviewCatalogue({ params, userId }: { params: Bene
         <button type="submit">Buscar</button>{(query || category || audience) && <Link href={base}>Limpar filtros</Link>}
       </form>
       <p className={styles.result} role="status">Ofertas encontradas ({catalogue.offers.length}).</p>
-      {catalogue.offers.length > 0 ? <div className={styles.cards}>{catalogue.offers.map(offer => <article key={offer.id} id={`oferta-${offer.id}`} tabIndex={-1} className={styles.card}>
+      {catalogue.offers.length > 0 ? <div className={styles.cards}>{catalogue.offers.map(offer => <article key={offer.id} id={`oferta-${offer.id}`} tabIndex={-1} data-ap-card="" className={styles.card}>
         <div className={styles.cardTop}><span className={styles.category}>{offer.category ?? "Geral"}</span></div>
         <p className={styles.partner}>{offer.partner}</p><h3 className={styles.previewTitle}>{offer.name}</h3><p>{BENEFIT_AUDIENCES[offer.audience]}</p>
         <Link href={`${BENEFIT_PATHS.catalogue}/${encodeURIComponent(offer.id)}${detailSearch}`} prefetch={false} className={styles.textLink}

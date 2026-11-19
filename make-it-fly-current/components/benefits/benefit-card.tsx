@@ -11,7 +11,7 @@ export function BenefitCard({ benefit, validity, detailSearch = "" }: { benefit:
   const href = `/membros/beneficios/${encodeURIComponent(benefit.id)}${detailSearch}`;
 
   return (
-    <article id={`oferta-${benefit.id}`} tabIndex={-1} className={`${styles.card} ${styles.offerCard}`}>
+    <article id={`oferta-${benefit.id}`} tabIndex={-1} data-ap-card="" className={`${styles.card} ${styles.offerCard}`}>
       <div className={styles.offerTop}>
         <div className={styles.brand}>
           <div className={styles.brandMark} data-logo-background={logo?.background} aria-hidden="true">

@@ -16,7 +16,7 @@ export function CommunityEntryLink({ className, offerHref = COMMUNITY_PLANS_PATH
   className?: string; offerHref?: string; label?: string;
 }) {
   const account = useContext(AccountContext);
-  return <Link className={className} href={account?.communityActive ? "/membros" : offerHref} prefetch={false}>
+  return <Link data-ap-button="primary" className={className} href={account?.communityActive ? "/membros" : offerHref} prefetch={false}>
     {account?.communityActive ? "Acessar comunidade" : label}
   </Link>;
 }

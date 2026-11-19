@@ -40,7 +40,7 @@ export function SiteMobileNavigation({ children, more = false }: { children: Rea
 
   return <details ref={details} suppressHydrationWarning className={more ? styles.moreNavigation : styles.mobileNavigation} onToggle={(event) => setOpen(event.currentTarget.open)}>
     <summary aria-label={more ? "Mais seções" : open ? "Fechar navegação" : "Abrir navegação"} aria-controls={navigationId}>{more ? "Mais" : "Menu"}</summary>
-    <nav id={navigationId} aria-label={more ? "Outras seções" : "Navegação móvel"} onClick={(event) => {
+    <nav data-ap-panel="" id={navigationId} aria-label={more ? "Outras seções" : "Navegação móvel"} onClick={(event) => {
       if (event.target instanceof Element && event.target.closest("a[href]") && details.current) details.current.open = false;
     }}>{children}</nav>
   </details>;

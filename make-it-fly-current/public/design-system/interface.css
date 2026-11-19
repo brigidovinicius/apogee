@@ -1,0 +1,179 @@
+/* Existing editorial surfaces share the component tokens in apogee.css. */
+html[data-ap-interface] :is([class*="journal-home_page__"],[class*="editorial-page-shell_page__"],[class*="offer-preview_page__"],[class*="opportunities_page__"]) {
+  color-scheme: inherit;
+  --journal-paper: var(--ap-canvas);
+  --journal-ink: var(--ap-text);
+  --journal-soft: var(--ap-section);
+  --journal-muted: var(--ap-muted);
+  --journal-rule: var(--ap-line);
+  --editorial-muted: var(--ap-muted);
+  background: var(--ap-canvas);
+  color: var(--ap-text);
+}
+html[data-ap-interface] :is([class*="resourceBand__"],[class*="featureBand__"],[class*="toolboxSection__"],[class*="benefitsSection__"],[class*="faqSection__"],[class*="community-offer_overview__"]) {
+  color: var(--ap-text); background: var(--ap-section); border-color: var(--ap-line);
+}
+html[data-ap-interface] :is([class*="communityBand__"],[class*="integrationStrip__"],[class*="nextStep__"],[class*="offer-preview_toolbar__"]) {
+  background: linear-gradient(105deg,color-mix(in srgb,var(--ap-brand-sky) 24%,var(--ap-section)),var(--ap-section));
+  color: var(--ap-text); border-color:var(--ap-line);
+}
+html[data-ap-interface] :is([class*="integrationStrip__"],[class*="pillar__"],[class*="benefits_card__"]) a { color: var(--ap-accent); }
+html[data-ap-interface] :is([class*="accessNote__"],[class*="sectionCopy__"],[class*="offer-preview_lead__"],[class*="offer-preview_toolbar__"] p,[class*="community-offer_overview__"] p,[class*="community-offer_pillar__"] p) { color: var(--ap-muted); }
+html[data-ap-interface] header:is([data-adaptive],[data-editorial])[data-tone] {
+  color:var(--ap-text);
+  background: color-mix(in srgb,var(--ap-surface) 91%,transparent);
+  border-bottom:1px solid var(--ap-line);
+  backdrop-filter:blur(14px) saturate(110%);
+}
+html[data-ap-interface] header[data-tone] :is(nav a,summary) { color:var(--ap-text); }
+html[data-ap-interface] header[data-tone] summary { border-color:var(--ap-line); }
+html[data-ap-interface] header[data-tone] details nav {
+  background: color-mix(in srgb,var(--ap-surface) 94%,transparent); color:var(--ap-text);
+  border: 1px solid var(--ap-line); border-radius:var(--ap-control-radius);
+  box-shadow:var(--ap-shadow); backdrop-filter:blur(20px);
+}
+html[data-ap-interface] header[data-tone] details nav a:is(:hover,:focus-visible) { background:var(--ap-frost); color:var(--ap-text); }
+html[data-ap-interface] header[data-tone] [class*="desktopNavigation__"] a::after { background:var(--ap-accent); }
+html[data-ap-interface] [data-ap-button] { border-radius:var(--ap-control-radius); }
+html[data-ap-interface] body :is(a,button,summary)[data-ap-button=primary],
+html[data-ap-interface] body button[data-ap-chip]:is([aria-pressed=true],[class*="selected__"]) {
+  background:var(--ap-primary-fill); color:var(--ap-on-navy); border:1px solid var(--ap-primary-edge);
+  box-shadow:var(--ap-primary-shadow);
+}
+html[data-ap-interface] body :is(a,button,summary)[data-ap-button=secondary],
+html[data-ap-interface] body button[data-ap-chip] {
+  color:var(--ap-text); background:var(--ap-secondary-fill); border:1px solid var(--ap-line); box-shadow:var(--ap-edge);
+}
+html[data-ap-interface] [data-ap-signature] { font-family:var(--ap-display); background-clip:text; }
+html[data-ap-interface] [data-ap-title] { color:var(--ap-text); font-family:var(--ap-font); letter-spacing:-.04em; font-weight:570; }
+html[data-ap-interface] body [data-ap-card] {
+  border:1px solid var(--ap-line); border-radius:var(--ap-card-radius); box-shadow:var(--ap-shadow);
+  color:var(--ap-text); background:var(--ap-card-fill);
+}
+html[data-ap-interface] a[class*="resourceLink__"] {
+  position:relative; isolation:isolate; padding:clamp(.95rem,1.4vw,1.45rem); text-decoration:none;
+}
+html[data-ap-interface] [data-ap-icon]:has(>svg:first-child) > svg:first-child { display:none; }
+html[data-ap-interface] [data-ap-icon]::before {
+  position:static; inset:auto; width:7rem; height:5.5rem; margin:0 0 .25rem -.4rem;
+  border:0; transform:none; opacity:1; background:var(--ap-art) left center / contain no-repeat;
+}
+html[data-ap-interface] [class*="resourceLink__"] h3 { margin:.6rem 0 .55rem; line-height:1.18; text-wrap:balance; }
+html[data-ap-interface] [class*="resourceLink__"] p { font-size:.92rem; line-height:1.5; color:var(--ap-muted); }
+html[data-ap-interface] [class*="resourceLink__"] span { margin-top:auto; padding-top:.85rem; border-top:1px solid var(--ap-line); font-weight:580; color:var(--ap-accent); }
+html[data-ap-interface] [class*="resourceLink__"] span svg { flex:none; transition:transform var(--ap-quick) var(--ap-ease); }
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {
+  html[data-ap-interface] [class*="resourceLink__"]:hover span svg { transform:translate(2px,-2px); }
+}
+html[data-ap-interface] :is([class*="opportunity__"],[class*="entry__"] > article,[class*="experience__"]) { background:var(--ap-surface); color:var(--ap-text); border-color:var(--ap-line); border-radius:var(--ap-card-radius); }
+html[data-ap-interface] :is([class*="opportunities_card__"],[class*="opportunities_grid__"]) {
+  --radar-card-surface:var(--ap-surface); --radar-card-text:var(--ap-text); --radar-card-muted:var(--ap-muted); --radar-card-accent:var(--ap-accent); --radar-card-line:var(--ap-line); --radar-card-subtle:var(--ap-section);
+  --radar-urgent:light-dark(#94431c,#ffb793); --radar-safe:light-dark(#236347,#a4e3c4);
+}
+html[data-ap-interface] :is([class*="opportunities_board__"],[class*="opportunities_catalogueHero__"]) {color:var(--ap-text); background:var(--ap-canvas);}
+html[data-ap-interface] [class*="opportunities_page__"] { --apogee-text:var(--ap-text); --apogee-text-muted:var(--ap-muted); }
+html[data-ap-interface] :is([class*="filterSummary__"],[class*="filterPanelDescription__"],[class*="filterPanelFooter__"] p,[class*="opportunities_lead__"],[class*="opportunities_eyebrow__"],[class*="opportunities_count__"]) { color:var(--ap-muted); }
+html[data-ap-interface] :is(#opportunity-filter-panel,[class*="community-offer_nextStep__"]) { background:linear-gradient(140deg,var(--ap-surface),var(--ap-frost)); border:1px solid var(--ap-line); border-radius:var(--ap-panel-radius); color:var(--ap-text); box-shadow:var(--ap-shadow); }
+html[data-ap-interface] #opportunity-filter-panel :is(h3,legend,label) {color:var(--ap-text);}
+html[data-ap-interface] #opportunity-filter-panel :is([class*="filterPanelEyebrow__"],p) {color:var(--ap-muted);}
+html[data-ap-interface] [class*="directoryTrigger__"] { color:var(--ap-text); border-color:var(--ap-line); }
+html[data-ap-interface] [class*="directoryPanel__"] { background:linear-gradient(145deg,#233b59,var(--ap-navy) 75%); color:var(--ap-on-navy); border-radius:var(--ap-panel-radius); }
+html[data-ap-interface] [class*="directoryPanel__"][data-ap-icon]::before { width:5.5rem; height:4.5rem; }
+html[data-ap-interface] [class*="directoryPanel__"][hidden] { display:none; }
+html[data-ap-interface] [class*="plansFrame__"] article:not([id="plano-anual"]) { background:var(--ap-surface); color:var(--ap-text); border:1px solid var(--ap-line); border-radius:var(--ap-card-radius); }
+html[data-ap-interface] [class*="plansFrame__"] article:not([id="plano-anual"]) :is(p,ul,span) {color:var(--ap-muted);}
+html[data-ap-interface] [class*="plansFrame__"] > div > p {color:var(--ap-muted);}
+html[data-ap-interface] [class*="plansFrame__"] article[id="plano-anual"] { border-radius:var(--ap-card-radius); }
+html[data-ap-interface] [class*="offer-preview_page__"] [class*="community-offer_scope__"] { --offer-ink:var(--ap-text); }
+html[data-ap-interface] [class*="offer-preview_page__"] [class*="access__"] { color:var(--ap-muted); border-color:var(--ap-line); }
+html[data-ap-interface] :is([class*="members_authPanel__"],[class*="member-navigation_toggle__"]) {border-radius:var(--ap-card-radius);}
+html[data-ap-interface] [class*="member-navigation_links__"] a {border-radius:var(--ap-control-radius);}
+html[data-ap-interface] [class*="member-navigation_links__"] svg {stroke-width:1.65;}
+html[data-ap-interface] [class*="supportStrip__"] {color:var(--ap-text);}
+html[data-ap-interface] [class*="supportStrip__"] aside {background:var(--ap-canvas);border-color:var(--ap-line);}
+html[data-ap-interface] [class*="supportStrip__"] p {color:var(--ap-muted);}
+html[data-ap-interface][data-ap-theme=escuro] [class*="supportStrip__"] img {filter:none;}
+html[data-ap-interface][data-ap-theme=escuro] header[data-tone] [class*="brand__"] img[src*="navy"] {filter:brightness(0) invert(1);}
+html[data-ap-interface][data-ap-theme=escuro] header[data-tone] [class*="brand__"] img[src*="white"] {filter:none;}
+html[data-ap-interface] :is(a,button,select,input,summary):focus-visible {outline:3px solid var(--ap-focus);outline-offset:3px;}
+
+
+html[data-ap-interface] #opportunity-filter-panel {position:relative;isolation:isolate;}
+html[data-ap-interface] #opportunity-filter-panel::before {content:"";position:absolute;inset:1px 1px auto auto;width:min(30%,230px);height:94px;z-index:-1;pointer-events:none;background:url("/design-system/laminas.webp") right -1rem top -2.3rem / 12rem no-repeat;opacity:.48;border-top-right-radius:inherit;}
+html[data-ap-interface] #opportunity-filter-panel :is(select,input:not([type=checkbox])) {background:var(--ap-surface);color:var(--ap-text);border-color:var(--ap-line);}
+html[data-ap-interface] #opportunity-filter-panel :is([class*="fieldHint__"],small) {color:var(--ap-muted);}
+html[data-ap-interface] [class*="categoryNavigation__"] button,html[data-ap-interface] [class*="jobShortcuts__"] button {border-radius:var(--ap-control-radius);color:var(--ap-text);border-color:var(--ap-line);background:var(--ap-surface);}
+html[data-ap-interface] [class*="categoryNavigation__"] button[aria-current=page],html[data-ap-interface] [class*="jobShortcuts__"] button[aria-pressed=true] {background:var(--ap-brand-sky);color:var(--ap-navy);}
+html[data-ap-interface] [class*="opportunities_catalogueHero__"] :is(h1,p),html[data-ap-interface] [class*="opportunities_boardHeading__"] h2 {color:var(--ap-text);}
+html[data-ap-interface] [class*="opportunities_filterToolbar__"] > a {color:var(--ap-accent);}
+html[data-ap-interface] [class*="benefits_root__"][data-public-catalogue] {background:var(--ap-canvas);color:var(--ap-text);}
+html[data-ap-interface] [data-public-catalogue] :is([class*="benefits_header__"] > p,[class*="benefits_result__"],[class*="benefits_explanation__"],[class*="benefits_condition__"],[class*="benefits_access__"],[class*="benefits_partner__"]) {color:var(--ap-muted);}
+html[data-ap-interface] [class*="benefits_root__"][data-public-catalogue] > p > a {color:var(--ap-accent);}
+html[data-ap-interface] [class*="community-offer_pillar__"] [data-ap-button],html[data-ap-interface] [class*="community-offer_pillar__"] a {color:var(--ap-accent);}
+@media (max-width:600px) {html[data-ap-interface] #opportunity-filter-panel::before {width:26%;opacity:.26;}}
+
+@media(min-width:48rem) {
+  html[data-ap-interface] [class*="resourceLink__"] span {min-block-size:3.65rem;}
+}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  html[data-ap-interface] [class*="resourceLink__"]:hover::before {transform:translateY(-3px) scale(1.02);}
+}
+@media(prefers-reduced-transparency:reduce) {
+  html[data-ap-interface] header[data-tone],html[data-ap-interface] header[data-tone] details nav {background:var(--ap-surface);backdrop-filter:none;}
+}
+@media(prefers-reduced-motion:no-preference) {
+  html[data-ap-interface][data-ap-theme=escuro] #opportunity-filter-panel:not([hidden])::before {
+    background: url("/design-system/luz-optica.webp") right center / cover no-repeat;
+    mask-image: linear-gradient(90deg,transparent,#000 55%);
+    mix-blend-mode: screen;
+    opacity: .53;
+  }
+}
+
+@media (prefers-color-scheme:dark) {
+  html[data-ap-interface][data-ap-theme=sistema] [class*="supportStrip__"] img {filter:none;}
+  html[data-ap-interface][data-ap-theme=sistema] header[data-tone] [class*="brand__"] img[src*="navy"] {filter:brightness(0) invert(1);}
+  html[data-ap-interface][data-ap-theme=sistema] header[data-tone] [class*="brand__"] img[src*="white"] {filter:none;}
+}
+
+@media (prefers-color-scheme:dark) and (prefers-reduced-motion:no-preference) {
+  html[data-ap-interface][data-ap-theme=sistema] #opportunity-filter-panel:not([hidden])::before {
+    background: url("/design-system/luz-optica.webp") right center / cover no-repeat;
+    mask-image: linear-gradient(90deg,transparent,#000 55%);
+    mix-blend-mode: screen;
+    opacity: .53;
+  }
+}
+
+/* The member guide sits on the permanent navy member canvas. */
+html[data-ap-interface] [data-ap-integration-guide] {
+  color-scheme: dark;
+  background: linear-gradient(145deg, #192e47, #102237 67%);
+  border: 1px solid var(--ap-line);
+  border-radius: var(--ap-panel-radius);
+  box-shadow: var(--ap-shadow);
+  color: var(--ap-text);
+}
+html[data-ap-interface] [data-ap-integration-guide] h2 { letter-spacing: -.038em; }
+html[data-ap-interface] [data-ap-integration-guide] [data-ap-provider] {
+  background: linear-gradient(145deg, #eaf2fb, #c3d8ee);
+  color: var(--ap-navy);
+  border-color: #dce9f7;
+  box-shadow: var(--ap-edge);
+  padding: .38rem .9rem .38rem .45rem;
+}
+html[data-ap-interface] [data-ap-integration-guide] input {
+  border-radius: var(--ap-control-radius);
+  color: var(--ap-on-navy);
+  background: var(--ap-navy);
+}
+html[data-ap-interface] [class*="member-navigation_links__"] a[aria-current=page] {
+  background: linear-gradient(125deg, #d9e9f9, var(--ap-brand-sky));
+  box-shadow: var(--ap-primary-shadow);
+}
+html[data-ap-interface] [class*="community-offer_overview__"] {
+  --offer-ink: var(--ap-text);
+  border-color: var(--ap-line);
+  border-radius: var(--ap-panel-radius);
+}
+html[data-ap-interface] [class*="community-offer_overview__"] [class*="access__"] { color:var(--ap-muted); }

@@ -51,14 +51,14 @@ export function HomeRadarCarousel({ opportunities, capturedAt }: { opportunities
   return <div className={styles.radarCarousel}>
     <div className={styles.radarToolbar}>
       <nav className={styles.radarFilters} aria-label="Categorias de oportunidades">
-        {categories.map(([id, label]) => <button key={id} type="button" aria-pressed={category === id} onClick={() => {
+        {categories.map(([id, label]) => <button data-ap-chip="" key={id} type="button" aria-pressed={category === id} onClick={() => {
           setCategory(id);
           track.current?.scrollTo({ left: 0, behavior: "instant" });
         }}>{label}</button>)}
       </nav>
       <div className={styles.carouselControls} aria-label="Navegar pelas oportunidades">
-        <button type="button" aria-label="Oportunidades anteriores" aria-controls="home-radar-cards" disabled={edges.start || !visible.length} onClick={() => scrollCards(-1)}><ArrowLeft size={18} aria-hidden="true" /></button>
-        <button type="button" aria-label="Próximas oportunidades" aria-controls="home-radar-cards" disabled={edges.end || !visible.length} onClick={() => scrollCards(1)}><ArrowRight size={18} aria-hidden="true" /></button>
+        <button data-ap-button="secondary" type="button" aria-label="Oportunidades anteriores" aria-controls="home-radar-cards" disabled={edges.start || !visible.length} onClick={() => scrollCards(-1)}><ArrowLeft size={18} aria-hidden="true" /></button>
+        <button data-ap-button="secondary" type="button" aria-label="Próximas oportunidades" aria-controls="home-radar-cards" disabled={edges.end || !visible.length} onClick={() => scrollCards(1)}><ArrowRight size={18} aria-hidden="true" /></button>
       </div>
     </div>
     <p className={styles.srOnly} role="status">{visible.length} oportunidades em destaque.</p>

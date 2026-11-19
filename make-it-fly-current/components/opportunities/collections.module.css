@@ -21,3 +21,19 @@
 .consent {display:flex; align-items:flex-start; gap:.6rem; max-width:46rem; line-height:1.5;}
 .consent input {flex:0 0 auto; margin-top:.3rem;}
 .page nav[aria-label="Navegação da área de membros"]>span{color:#50687d}
+
+:global(html[data-ap-interface]) .page { background: var(--ap-canvas); color: var(--ap-text); }
+:global(html[data-ap-interface]) .page a { color: var(--ap-accent); }
+:global(html[data-ap-interface]) .page :is(.panel,.form,.item,.card) {
+  background: var(--ap-card-fill);
+  color: var(--ap-text);
+  border-color: var(--ap-line);
+  border-radius: var(--ap-card-radius);
+  box-shadow: var(--ap-shadow);
+}
+:global(html[data-ap-interface]) .page :is(.hint,nav[aria-label="Navegação da área de membros"]>span) { color: var(--ap-muted); }
+:global(html[data-ap-interface]) .page :is(.form,.linkField) :is(input:not([type=radio], [type=checkbox]),textarea),
+:global(html[data-ap-interface]) .page :is(select,input[type=search]) {
+  color: var(--ap-text); background: var(--ap-surface); border-color: var(--ap-line); border-radius: var(--ap-control-radius);
+}
+:global(html[data-ap-interface]) .page button { background: var(--ap-primary-fill); color: var(--ap-on-navy); border-color: var(--ap-primary-edge); border-radius: var(--ap-control-radius); }

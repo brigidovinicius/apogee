@@ -20,19 +20,19 @@ export function MemberOfferOverview({ name, radarFullAccess, preview = false, an
     href: preview ? "/oportunidades" : "/membros/oportunidades",
   });
   const pillars = [
-    { name: "Radar", icon: Compass, text: "Pesquise oportunidades e confira requisitos e prazos.", href: preview ? "/oportunidades" : "/membros/oportunidades", action: "Abrir o Radar" },
-    { name: "Benefícios", icon: Gift, text: "Consulte as condições das ofertas vigentes de parceiros.", href: preview ? "/beneficios" : "/membros/beneficios", action: "Ver benefícios" },
-    ...(resources?.trilha ? [{ name: "Trilha inicial", icon: BookOpen, text: "Pratique com três atividades de IA e acompanhe seu progresso.", href: "/membros/trilha", action: "Abrir a trilha" }] : []),
-    ...(resources?.ferramentas ? [{ name: "Caixa de Ferramentas", icon: Wrench, text: "Escolha uma ferramenta por categoria e abra o site oficial.", href: "/membros/ferramentas", action: "Abrir ferramentas" }] : []),
+    { name: "Radar", icon: Compass, artwork: "radar", text: "Pesquise oportunidades e confira requisitos e prazos.", href: preview ? "/oportunidades" : "/membros/oportunidades", action: "Abrir o Radar" },
+    { name: "Benefícios", icon: Gift, artwork: "perks", text: "Consulte as condições das ofertas vigentes de parceiros.", href: preview ? "/beneficios" : "/membros/beneficios", action: "Ver benefícios" },
+    ...(resources?.trilha ? [{ name: "Trilha inicial", icon: BookOpen, artwork: "learn", text: "Pratique com três atividades de IA e acompanhe seu progresso.", href: "/membros/trilha", action: "Abrir a trilha" }] : []),
+    ...(resources?.ferramentas ? [{ name: "Caixa de Ferramentas", icon: Wrench, artwork: "ferramentas", text: "Escolha uma ferramenta por categoria e abra o site oficial.", href: "/membros/ferramentas", action: "Abrir ferramentas" }] : []),
   ];
   return <section className={`${styles.scope} ${styles.overview}`} aria-labelledby="member-offer-title">
-    <h2 id="member-offer-title">Olá, {name}</h2>
-    <div className={styles.nextStep}>
+    <h2 data-ap-title="" id="member-offer-title">Olá, {name}</h2>
+    <div data-ap-panel="" className={styles.nextStep}>
       <div><h3>Seu próximo passo</h3><p>{step.description}</p></div>
-      <Link className={styles.button} prefetch={false} href={step.href}>{step.label}</Link>
+      <Link data-ap-button="primary" className={styles.button} prefetch={false} href={step.href}>{step.label}</Link>
     </div>
     <div className={styles.pillarGrid}>
-      {pillars.map(item => <article className={styles.pillar} key={item.name}>
+      {pillars.map(item => <article data-ap-card="" data-ap-icon={item.artwork} className={styles.pillar} key={item.name}>
           <item.icon size={24} strokeWidth={1.5} aria-hidden="true" />
           <h3>{item.name}</h3>
           <p>{item.text}</p>

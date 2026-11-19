@@ -19,3 +19,6 @@
 .empty p { color: #c5d6e6; line-height: 1.6; }
 .empty a { display: inline-flex; align-items: center; min-height: 44px; color: #d0e5fb; text-underline-offset: .25em; }
 .empty a:focus-visible { outline: 2px solid #bdd8f4; outline-offset: 3px; }
+
+:global(html[data-ap-interface]) .tool :is(.domain,.conditions) { color: var(--ap-muted); }
+:global(html[data-ap-interface]) .tool h3 { letter-spacing: -.025em; }

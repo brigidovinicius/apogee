@@ -42,25 +42,25 @@ export async function EditorialHome() {
           <h1 id="home-title">Uma comunidade para criar com IA.</h1>
           <p className={styles.introLead}>Na Apogee, você troca ideias com outros membros, encontra ferramentas e aprende a usar IA em um projeto seu.</p>
           <div className={styles.introActions}>
-            <Link className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={16} /></Link>
-            <Link className={styles.heroSecondary} href="#recursos">Ver recursos e eventos</Link>
+            <Link data-ap-button="primary" className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={16} /></Link>
+            <Link data-ap-button="secondary" className={styles.heroSecondary} href="#recursos">Ver recursos e eventos</Link>
           </div>
         </div>
         <HomeStar />
-        <div className={styles.communityWord} lang="en" aria-hidden="true">Building<br />the future.</div>
+        <div data-ap-signature="" className={styles.communityWord} lang="en" aria-hidden="true">Building<br />the future.</div>
       </section>
       <McpConnectionStrip className={styles.integrationStrip} />
 
       <section className={styles.resourceBand} id="recursos" aria-labelledby="home-resources-title">
         <div className={styles.featureLayout}>
-          <div className={styles.sectionHeading}><h2 id="home-resources-title">A comunidade</h2></div>
+          <div data-ap-reveal="" className={styles.sectionHeading}><h2 data-ap-title="" id="home-resources-title">A comunidade</h2></div>
           <ul className={styles.resourceGrid}>
             {availableDeliverables(resources).map(resource => {
               const Icon = resourceIcons[resource.id];
               return <li key={resource.id}>
-                <Link className={styles.resourceLink} href={`/comunidade${resource.href}`} prefetch={false}>
+                <Link data-ap-card="" data-ap-icon={resource.id === "encontros" ? "participar" : resource.id} className={styles.resourceLink} href={`/comunidade${resource.href}`} prefetch={false}>
                   <Icon aria-hidden="true" size={23} strokeWidth={1.5} />
-                  <h3>{resource.label}</h3>
+                  <h3 data-ap-title="">{resource.label}</h3>
                   <p>{resource.title}</p>
                   <span>{resource.fact}<ArrowUpRight aria-hidden="true" size={16} /></span>
                 </Link>
@@ -73,8 +73,8 @@ export async function EditorialHome() {
       <div className={styles.supportStrip}><RedBullSupport /></div>
 
       <section className={styles.radarSection} id="radar" aria-labelledby="home-opportunities-title">
-        <div className={styles.sectionHeading}>
-          <div><h2 id="home-opportunities-title">Oportunidades em destaque</h2><p>Confira os prazos de inscrição e as datas dos eventos.</p></div>
+        <div data-ap-reveal="" className={styles.sectionHeading}>
+          <div><h2 data-ap-title="" id="home-opportunities-title">Oportunidades em destaque</h2><p>Confira os prazos de inscrição e as datas dos eventos.</p></div>
           <Link className={styles.inlineAction} href="/oportunidades" prefetch={false}>Explorar o Radar<ArrowUpRight aria-hidden="true" size={18} /></Link>
         </div>
         <Suspense fallback={<p className={styles.catalogueMessage} role="status">Consultando as oportunidades do Radar…</p>}>
@@ -84,7 +84,7 @@ export async function EditorialHome() {
 
       <section className={styles.featureBand} aria-labelledby="home-explore-title">
         <div className={styles.featureLayout}>
-          <div className={styles.sectionHeading}><h2 id="home-explore-title">Blog e coleção Apogee</h2></div>
+          <div data-ap-reveal="" className={styles.sectionHeading}><h2 data-ap-title="" id="home-explore-title">Blog e coleção Apogee</h2></div>
           <ul className={styles.entryGrid} aria-label="Destaques da Apogee">
             <EntryCard id="home-knowledge-title" theme="Conhecimento"
               title="Uma ideia pode levar você mais longe." href="/blog" action="Descobrir leituras"
@@ -102,7 +102,7 @@ export async function EditorialHome() {
 
       <section className={styles.community} aria-labelledby="home-community-title">
         <div className={styles.communityCopy}>
-          <h2 id="home-community-title">Comece com uma conta gratuita.</h2>
+          <h2 data-ap-title="" id="home-community-title">Comece com uma conta gratuita.</h2>
           <p>Consulte até 10 oportunidades no Radar e 10 ofertas em Benefícios por mês. O cadastro é gratuito e dispensa cartão.</p>
           <Link className={styles.inlineAction} href={COMMUNITY_SIGNUP_PATH} prefetch={false}>Criar minha conta gratuita<ArrowUpRight aria-hidden="true" size={18} /></Link>
         </div>

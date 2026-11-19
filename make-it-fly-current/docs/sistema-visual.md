@@ -12,6 +12,7 @@ A interface do site e da plataforma compartilha a folha `public/design-system/ap
 | Título | `data-ap-title` para títulos de interface. Inter local, peso intermediário e espaçamento óptico. Preserve a hierarquia de cabeçalhos. |
 | Assinatura | `data-ap-signature` no elemento existente de “Building the future.”. GFS Didot local, azul-claro e um único deslocamento de luz na entrada. A quebra de linha pertence à composição editorial. |
 | Ícone de recurso | `data-ap-icon="ferramentas|learn|radar|perks|participar"`. Um objeto por recurso, com o mesmo ângulo, luz e escala. Use em um elemento que já tem rótulo textual. Ações pequenas e navegação usam ícones lineares, traço de 1,5 a 1,75 px. |
+| Marca de integração | `data-ap-provider="chatgpt"` ou `data-ap-provider="claude"` no link identificado por texto. O mesmo render 3D acompanha a faixa pública e o guia de membros. |
 | Movimento | `data-ap-reveal` no título de uma seção para deslocamento de até 10 px durante a entrada no viewport. O conteúdo já começa legível. |
 
 ## Temas, luz e estados
@@ -34,6 +35,6 @@ O [arquivo de design no Figma](https://www.figma.com/design/SKTQ8K0Lr0OMGn0YeXcN
 </section>
 ```
 
-Na revisão, os módulos antigos recebem o acabamento por seletores CSS definidos em `review.js` e `legacy-preview.css`. Páginas novas usam os atributos diretamente. A barra de comparação funciona apenas na prévia de oferta em loopback. O site continua responsável pelas permissões, filtros, destinos e estados.
+O layout raiz carrega `apogee.css` e `interface.css` antes da primeira pintura. Os componentes públicos e de membros declaram seus papéis no próprio HTML. A folha `interface.css` integra esses papéis às superfícies editoriais existentes. Páginas novas usam os atributos diretamente. A barra de comparação funciona apenas na prévia de oferta em loopback. O site continua responsável pelas permissões, filtros, destinos e estados.
 
 Ao alterar o padrão, revise um controle em claro, escuro, teclado e movimento reduzido, além da tela em largura de celular. Compare textos, links e ordem de leitura com a versão de usabilidade em andamento.

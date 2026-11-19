@@ -16,7 +16,7 @@ export function OpportunitiesPreview({ opportunities }: OpportunitiesPreviewProp
       <div className={styles.boardHeading}>
         <div>
           <p className={styles.kicker}>Prévia pública</p>
-          <h2 id="mural-title">Veja o que está no radar.</h2>
+          <h2 data-ap-title="" id="mural-title">Veja o que está no radar.</h2>
         </div>
         <p className={styles.count}>Detalhes disponíveis na área de membros</p>
       </div>
@@ -27,7 +27,7 @@ export function OpportunitiesPreview({ opportunities }: OpportunitiesPreviewProp
           <p>Cadastre-se para ver critérios, apoio, prazos e links oficiais de cada oportunidade.</p>
         </div>
         <div className={styles.previewActions}>
-          <Link className={styles.previewPrimary} href={`/membros/cadastro?next=${memberNext}`}>
+          <Link data-ap-button="primary" className={styles.previewPrimary} href={`/membros/cadastro?next=${memberNext}`}>
             Criar conta
           </Link>
           <Link className={styles.previewLogin} href={`/membros/entrar?next=${memberNext}`}>

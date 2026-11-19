@@ -20,7 +20,7 @@ export function FunnelHeader({ page }: { page: "community" | "recording" }) {
 
 export function CommunityJoinButton({ label = "Criar conta gratuita", secondary = false, preview = false, signedIn = false, next }: { label?: string; secondary?: boolean; preview?: boolean; signedIn?: boolean; next?: string }) {
   const href = signedIn ? next ?? "/membros" : preview ? "/previa/entrada" : next ? `/membros/cadastro?next=${encodeURIComponent(next)}` : COMMUNITY_SIGNUP_PATH;
-  return <Link className={secondary ? styles.secondary : styles.primary} href={href} prefetch={false}>{signedIn ? "Continuar com minha conta" : label}<ArrowUpRight size={18} aria-hidden="true" /></Link>;
+  return <Link data-ap-button={secondary ? "secondary" : "primary"} className={secondary ? styles.secondary : styles.primary} href={href} prefetch={false}>{signedIn ? "Continuar com minha conta" : label}<ArrowUpRight size={18} aria-hidden="true" /></Link>;
 }
 
 export function FunnelFaq({ id, title, items }: { id: string; title: string; items: readonly { question: string; answer: string }[] }) {

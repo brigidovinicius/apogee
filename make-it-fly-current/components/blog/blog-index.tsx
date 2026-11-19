@@ -58,7 +58,7 @@ export async function BlogIndex({ searchParams, member = false }: { searchParams
         <Link href={basePath} aria-current={!category ? "page" : undefined}>Todos</Link>
         {BLOG_CATEGORIES.map((item) => <Link key={item.value} href={`${basePath}?tema=${item.value}`} aria-current={category === item.value ? "page" : undefined}>{item.label}</Link>)}
       </nav>
-      <div className={styles.sectionHeading}><h2>{category ? categoryLabel(category) : page === 1 ? "Em destaque" : "Últimas publicações"}</h2><span>{total} artigo{total === 1 ? "" : "s"}</span></div>
+      <div data-ap-reveal="" className={styles.sectionHeading}><h2 data-ap-title="">{category ? categoryLabel(category) : page === 1 ? "Em destaque" : "Últimas publicações"}</h2><span>{total} artigo{total === 1 ? "" : "s"}</span></div>
       {posts.length ? <>
         <div className={styles.frontGrid} data-count={Math.min(posts.length, 3)}>
           <div>{renderPost(posts[0], 0)}</div>

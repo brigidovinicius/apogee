@@ -140,7 +140,7 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
       <div className={styles.boardHeading}>
         <div>
           {!publicCatalogue && <p className={styles.kicker}>Catálogo de oportunidades</p>}
-          <h2 id="mural-title">{publicCatalogue ? "Buscar no Radar" : "Explore o Radar"}</h2>
+          <h2 data-ap-title="" id="mural-title">{publicCatalogue ? "Buscar no Radar" : "Explore o Radar"}</h2>
         </div>
         <p className={styles.count} aria-live="polite">
           {total} {total === 1 ? "oportunidade visível" : "oportunidades visíveis"}
@@ -194,7 +194,7 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
         <button
           ref={filterButtonRef}
           type="button"
-          className={styles.filterTrigger}
+          data-ap-button="secondary" className={styles.filterTrigger}
           aria-expanded={filtersOpen}
           aria-controls="opportunity-filter-panel"
           aria-label={`${filtersOpen ? "Fechar" : "Abrir"} filtros de oportunidades${
@@ -221,7 +221,7 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
       </div>
 
       <div
-        id="opportunity-filter-panel"
+        data-ap-panel="" id="opportunity-filter-panel"
         className={styles.filterPanel}
         role="region"
         aria-labelledby="opportunity-filter-title"
@@ -240,7 +240,7 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
           </div>
           <button
             type="button"
-            className={styles.filterClose}
+            data-ap-button="secondary" className={styles.filterClose}
             aria-label="Fechar painel de filtros"
             onClick={closeFilters}
           >
@@ -351,7 +351,7 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
         <div className={styles.filterPanelFooter}>
           <button
             type="button"
-            className={styles.clearFilters}
+            data-ap-button="secondary" className={styles.clearFilters}
             disabled={activeFilterCount === 0}
             onClick={clearFilters}
           >
@@ -420,7 +420,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
 }) {
   const actionLabel = detailed ? "Ver página oficial e inscrição" : detailLabel;
   return (
-    <article className={`${styles.card} ${detailed ? styles.detailedCard : ""}`}>
+    <article data-ap-card="" className={`${styles.card} ${detailed ? styles.detailedCard : ""}`}>
       <div className={styles.cardTopline}>
         <span className={styles.kind}>{OPPORTUNITY_CATEGORIES.find(category => category.id === primaryOpportunityCategory(opportunity))?.label ?? opportunity.kind}{opportunity.opportunityStatus === "upcoming" ? " · Em breve" : ""}</span>
         <span>{opportunity.kind === "Emprego" ? "Emprego" : opportunity.level}</span>
@@ -465,7 +465,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
           href={detailed ? opportunity.officialUrl : detailHref ?? opportunityDetailPath(opportunity.id)}
           data-behavior-action={detailed ? "official_link" : undefined}
           prefetch={false}
-          className={`${styles.externalLink} ${styles.detailButton}`}
+          data-ap-button="primary" className={`${styles.externalLink} ${styles.detailButton}`}
           target={detailed ? "_blank" : undefined}
           rel={detailed ? "noopener noreferrer" : undefined}
           aria-label={`${actionLabel}: ${interfaceText(displayOpportunityTitle(opportunity.title))}`}
@@ -492,7 +492,7 @@ function FilterGroup<T extends string>({ label, options, value, onChange }: Filt
     <fieldset className={styles.filterFieldset}>
       <legend>{label}</legend>
       <div className={styles.filterGroup}>
-        <button
+        <button data-ap-chip=""
           type="button"
           className={value === null ? styles.selected : undefined}
           aria-label={`${label}: Todas`}
@@ -503,7 +503,7 @@ function FilterGroup<T extends string>({ label, options, value, onChange }: Filt
           Todas
         </button>
         {options.map((option) => (
-          <button
+          <button data-ap-chip=""
             key={option}
             type="button"
             className={value === option ? styles.selected : undefined}

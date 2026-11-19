@@ -23,8 +23,8 @@ export function CommunityPlans({ preview = false, signedIn = false, subscribed =
           <p className={styles.note}>A renovação é automática. Você pode cancelá-la antes da próxima cobrança e usar o período já pago.</p>
         </div>
         {!available && !subscribed && <p className={styles.note}>{reviewing ? "Prévia local, sem cobrança." : "A contratação anual está temporariamente indisponível."}</p>}
-        {subscribed && <div className={styles.actions}><Link className={styles.button} href="/membros" prefetch={false}>Acessar a área de membros</Link></div>}
-        {!subscribed && (available || reviewing) && <div className={styles.actions}><Link className={styles.button} data-behavior-action={available ? "annual_choose" : undefined} href={annual} prefetch={false}>Assinar a comunidade por um ano</Link></div>}
+        {subscribed && <div className={styles.actions}><Link data-ap-button="primary" className={styles.button} href="/membros" prefetch={false}>Acessar a área de membros</Link></div>}
+        {!subscribed && (available || reviewing) && <div className={styles.actions}><Link data-ap-button="primary" className={styles.button} data-behavior-action={available ? "annual_choose" : undefined} href={annual} prefetch={false}>Assinar a comunidade por um ano</Link></div>}
         <ul>
           <li>Caixa de Ferramentas com links oficiais por categoria.</li>
           <li>Trilha inicial com três atividades. Outros módulos estão em preparação.</li>
@@ -38,7 +38,7 @@ export function CommunityPlans({ preview = false, signedIn = false, subscribed =
         <p>Entre na área de membros e participe das conversas do fórum após a verificação da conta.</p>
         <div className={styles.price}><strong>Grátis</strong><span>sem cartão</span></div>
         <ul><li>Pesquise e navegue pelo Radar e por Benefícios.</li><li>10 consultas mensais no Radar e 10 em Benefícios.</li><li>Reabra itens já liberados no mesmo mês sem usar outra consulta.</li></ul>
-        {!subscribed && <div className={styles.actions}><Link className={styles.button} href={free} prefetch={false}>{signedIn ? "Continuar com minha conta gratuita" : "Criar minha conta gratuita"}</Link></div>}
+        {!subscribed && <div className={styles.actions}><Link data-ap-button="primary" className={styles.button} href={free} prefetch={false}>{signedIn ? "Continuar com minha conta gratuita" : "Criar minha conta gratuita"}</Link></div>}
         {!signedIn && !preview && <p className={styles.note}>Já tem conta? <Link href={`/membros/entrar?next=${encodeURIComponent(next ?? "/membros")}`} prefetch={false}>Entrar</Link></p>}
       </article>
     </div>

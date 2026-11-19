@@ -97,10 +97,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html
       lang="pt-BR"
+      data-ap-interface=""
+      data-ap-theme="sistema"
       className={`${inter.variable} ${instrumentSerif.variable} ${dmMono.variable} ${notoMono.variable} dark h-full antialiased`}
     >
       <head>
-        <link rel="stylesheet" href="/design-system/apogee.css" />
+        <link id="ap-foundations" rel="stylesheet" href="/design-system/apogee.css" />
+        <link id="ap-interface" rel="stylesheet" href="/design-system/interface.css" />
         <noscript>
           <style>
             {

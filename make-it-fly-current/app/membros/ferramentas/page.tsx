@@ -57,9 +57,9 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
           if (!items.length) return null;
           return <section key={c.slug} aria-labelledby={`category-${c.slug}`} className={styles.group}>
             <div className={styles.groupHead}><h2 id={`category-${c.slug}`}>{c.name}</h2>{c.description && <p>{c.description}</p>}</div>
-            <ul className={styles.tools}>{items.map(t => <li className={styles.tool} key={t.id}>
+            <ul className={styles.tools}>{items.map(t => <li data-ap-card="" className={styles.tool} key={t.id}>
               <div><p className={styles.domain}>{new URL(t.url).hostname.replace(/^www\./, "")}</p><h3>{t.name}</h3><p className={styles.description}>{t.description}</p>{t.conditions && <p className={styles.conditions}>{t.conditions}</p>}</div>
-              <a className={styles.open} href={t.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">
+              <a data-ap-button="primary" className={styles.open} href={t.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">
                 {skills ? "Abrir skill" : "Abrir ferramenta"}<ArrowUpRight size={17} aria-hidden="true" /><span className="sr-only"> {t.name} (abre em nova aba)</span>
               </a>
             </li>)}</ul>

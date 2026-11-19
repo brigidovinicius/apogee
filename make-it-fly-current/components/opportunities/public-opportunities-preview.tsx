@@ -52,7 +52,7 @@ export function PublicOpportunitiesPreview({
       {visible.length > 0 ? (
         <div id="public-opportunity-results" className={styles.grid}>
           {visible.map((opportunity) => (
-            <article className={`${styles.card} ${styles.previewCard}`} key={opportunity.id}>
+            <article data-ap-card="" className={`${styles.card} ${styles.previewCard}`} key={opportunity.id}>
               <div className={styles.cardTopline}>
                 <span className={styles.kind}>{opportunity.kind}</span>
                 <span>{opportunity.level}</span>
@@ -116,7 +116,7 @@ function FilterGroup({ label, options, value, onChange }: FilterGroupProps) {
   return (
     <div className={styles.filterGroup} aria-label={`Filtrar prévia por ${label}`}>
       {["Todas", ...options].map((option) => (
-        <button
+        <button data-ap-chip=""
           key={option}
           type="button"
           className={value === option ? styles.selected : undefined}

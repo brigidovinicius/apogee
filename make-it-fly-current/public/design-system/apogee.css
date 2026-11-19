@@ -1,4 +1,4 @@
-/* Global foundation. Existing screens opt in through their visual adapter. */
+/* Shared by public pages and the member platform. */
 @font-face {
   font-family: "Apogee Didot";
   src: url("/brand/fonts/GFSDidot-Regular.ttf") format("truetype");
@@ -138,3 +138,27 @@ html[data-ap-theme=sistema] { color-scheme: light dark; }
 }
 @media (prefers-reduced-transparency: reduce) { [data-ap-panel] { backdrop-filter:none; background:var(--ap-surface); } }
 @media (forced-colors:active) { [data-ap-signature] { -webkit-text-fill-color: CanvasText; filter:none; } }
+
+[data-ap-provider] {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+[data-ap-provider="chatgpt"] { --ap-provider-art: url("/design-system/icons/chatgpt.webp"); }
+[data-ap-provider="claude"] { --ap-provider-art: url("/design-system/icons/claude.webp"); }
+[data-ap-provider]::before {
+  content: "";
+  display: block;
+  flex: none;
+  width: 2.3rem;
+  height: 2.3rem;
+  background: var(--ap-provider-art) center / contain no-repeat;
+}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  [data-ap-provider]::before { transition: transform var(--ap-quick) var(--ap-ease); }
+  [data-ap-provider]:is(:hover,:focus-visible)::before { transform: translateY(-1px) rotate(-3deg); }
+}
+@media (max-width:30rem) {
+  #integracoes-ia a[data-ap-provider] { padding-inline: .15rem; gap: .25rem; }
+  #integracoes-ia [data-ap-provider]::before { width: 1.8rem; height: 1.8rem; }
+}
