@@ -16,7 +16,7 @@ function render(props = {}, enabled = false) {
 test("sales page retains the complete offer and honest delivery states with working section links", () => {
   const html = render();
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-  for (const text of ["Caixa de Ferramentas", "Benefícios", "Trilha de IA aplicada", "Google Flow", "R$ 1.438,80", "R$ 119,90", "10 eventos distintos", "direitos são preservados", "disponível de forma parcial", "Não há benefícios de parceiros disponíveis neste lançamento", "independente da assinatura"]) assert.ok(html.includes(text), text);
+  for (const text of ["Caixa de Ferramentas", "Benefícios", "Trilha de IA aplicada", "Google Flow", "R$ 1.438,80", "R$ 119,90", "10 eventos distintos", "direitos são preservados", "disponível de forma parcial", "Cada parceiro define condições", "independente da assinatura"]) assert.ok(html.includes(text), text);
   for (const id of ["comunidade", "radar", "ferramentas", "learn", "perks", "planos", "participar", "duvidas"]) assert.ok(html.includes(`id="${id}"`), id);
   for (const [, id] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(html.includes(`id="${id}"`), `broken section link: ${id}`);
   assert.match(html, /href="\/evento-openai"/);
@@ -43,4 +43,11 @@ test("annual sales link is enabled only by the commercial switch and never by pr
   assert.match(active, /formação ainda não está completa/);
   const preview = render({ preview: true, next }, true);
   assert.doesNotMatch(preview, /Assinar a comunidade anual|href="\/membros\/assinatura/);
+});
+
+test("benefits availability reflects the real catalogue without promising eligibility", () => {
+  assert.match(render({ hasBenefits: true }), /Há ofertas vigentes no catálogo/);
+  assert.match(render({ hasBenefits: false }), /O catálogo está sem ofertas vigentes no momento/);
+  assert.doesNotMatch(render({ hasBenefits: null }), /Há ofertas vigentes|está sem ofertas vigentes/);
+  assert.match(render({ hasBenefits: true }), /para as quais sejam elegíveis/);
 });

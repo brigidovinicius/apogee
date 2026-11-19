@@ -35,8 +35,8 @@ export function EditorialHome() {
           <h1 id="home-title">Um lugar para o seu próximo salto.</h1>
           <p className={styles.introLead}>Encontre oportunidades e aprenda a aplicar IA com a comunidade Apogee.</p>
           <div className={styles.introActions}>
-            <Link className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={16} /></Link>
-            <Link className={styles.heroSecondary} href="/oportunidades" prefetch={false}>Explorar o Radar</Link>
+            <Link className={styles.heroPrimary} href="/oportunidades" prefetch={false}>Explorar o Radar<ArrowUpRight aria-hidden="true" size={16} /></Link>
+            <Link className={styles.heroSecondary} href="/comunidade" prefetch={false}>Conhecer a comunidade</Link>
           </div>
         </div>
         <HomeStar />
@@ -47,7 +47,7 @@ export function EditorialHome() {
 
       <section className={styles.radarSection} id="radar" aria-labelledby="home-opportunities-title">
         <div className={styles.sectionHeading}>
-          <div><h2 id="home-opportunities-title">Um mundo de oportunidades.</h2><p>Encontre seu próximo desafio no Radar.</p></div>
+          <div><h2 id="home-opportunities-title">Oportunidades em destaque</h2><p>Confira os prazos de inscrição e as datas dos eventos.</p></div>
           <Link className={styles.inlineAction} href="/oportunidades" prefetch={false}>Explorar o Radar<ArrowUpRight aria-hidden="true" size={18} /></Link>
         </div>
         <Suspense fallback={<p className={styles.catalogueMessage} role="status">Consultando as oportunidades do Radar…</p>}>
@@ -57,7 +57,7 @@ export function EditorialHome() {
 
       <section className={styles.featureBand} aria-labelledby="home-explore-title">
         <div className={styles.featureLayout}>
-          <div className={styles.sectionHeading}><h2 id="home-explore-title">Continue explorando.</h2></div>
+          <div className={styles.sectionHeading}><h2 id="home-explore-title">Blog e coleção Apogee</h2></div>
           <ul className={styles.entryGrid} aria-label="Destaques da Apogee">
             <EntryCard id="home-knowledge-title" theme="Conhecimento"
               title="Uma ideia pode levar você mais longe." href="/blog" action="Descobrir leituras"

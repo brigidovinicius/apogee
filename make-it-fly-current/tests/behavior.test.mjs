@@ -20,7 +20,7 @@ test("routes collapse dynamic identifiers and exclude private/token routes", () 
 test("every vocabulary entry has a valid closed event and arbitrary values never pass", () => {
   for (const [event, targets] of Object.entries(contract.BEHAVIOR_TARGETS)) for (const target of targets) {
     const annualPages = { annual_price: "annual_offer", annual_choose: "annual_offer", account_ready: "annual_summary", confirmed_return: "annual_summary" };
-    const page = annualPages[target] ?? ((event === "form_progress" || target === "application_open") ? "makeitfly_application" : event === "section_view" || target === "application_start" ? "makeitfly" : target === "store_interest" ? "store" : "radar_list");
+    const page = annualPages[target] ?? (target.startsWith("event_") ? "event_page" : undefined) ?? ((event === "form_progress" || target === "application_open") ? "makeitfly_application" : event === "section_view" || target === "application_start" ? "makeitfly" : target === "store_interest" ? "store" : "radar_list");
     assert.equal(contract.validBehaviorEvent(item({ page, event, target })), true, `${event}/${target}`);
   }
   for (const target of ["annual_choose", "confirmed_return", "account_ready", "annual_price"]) {
@@ -121,4 +121,15 @@ test("automatic checkout measures once with prior permission and never delays su
     assert.equal(b.calls.length, stored === "allow" ? 1 : 0);
     if (stored === "allow") assert.deepEqual(JSON.parse(b.calls[0].init.body).events, [item({ page: "radar_detail", event: "action", target: "checkout_start" })]);
   }
+});
+
+test("the event journey captures enumerated choices without URLs, forms or identifying data", () => {
+  const { behaviorPage, validBehaviorEvent } = opportunityLoader()("lib/behavior-contract.ts");
+  assert.equal(behaviorPage("/evento-openai"), "event_page");
+  assert.equal(behaviorPage("/membros/beneficios"), "member_benefits");
+  assert.equal(behaviorPage("/membros/beneficios/private-id"), null);
+  const action = { page: "event_page", event: "action", target: "event_online_selected", device: "mobile" };
+  assert.equal(validBehaviorEvent(action), true);
+  assert.equal(validBehaviorEvent({ ...action, page: "home" }), false);
+  assert.equal(validBehaviorEvent({ ...action, email: "review@example.test" }), false);
 });

@@ -1,7 +1,7 @@
 import { opportunityFiltersFromSearchParams, setOpportunityFilterSearchParams } from "./types";
 
-/** Keep only Radar state when moving between the public and member catalogues. */
-export function memberRadarPath(searchParams: URLSearchParams) {
+/** Keep only Radar filters and pagination when moving between pages. */
+export function radarCatalogueQuery(searchParams: URLSearchParams) {
   const params = setOpportunityFilterSearchParams(
     new URLSearchParams(),
     opportunityFiltersFromSearchParams(searchParams),
@@ -9,7 +9,11 @@ export function memberRadarPath(searchParams: URLSearchParams) {
   const page = Number(searchParams.get("pagina"));
   if (Number.isSafeInteger(page) && page > 1) params.set("pagina", String(page));
   const query = params.toString();
-  return `/membros/oportunidades${query ? `?${query}` : ""}`;
+  return query ? `?${query}` : "";
+}
+
+export function memberRadarPath(searchParams: URLSearchParams) {
+  return `/membros/oportunidades${radarCatalogueQuery(searchParams)}`;
 }
 
 export function memberRadarLoginHref(searchParams: URLSearchParams) {

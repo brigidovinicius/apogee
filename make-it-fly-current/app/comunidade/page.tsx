@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { communityReturnPath } from "@/lib/billing/community-navigation";
+import { hasPublicBenefits } from "@/lib/benefits/store";
 import { localStaticOfferPreview } from "@/lib/offer-preview";
 import { CommunitySalesPage } from "@/components/community/community-sales-page";
 
@@ -21,5 +22,6 @@ export const metadata: Metadata = {
 
 export default async function CommunityPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
-  return <CommunitySalesPage preview={localStaticOfferPreview()} next={communityReturnPath(params.next)} />;
+  const preview = localStaticOfferPreview();
+  return <CommunitySalesPage preview={preview} next={communityReturnPath(params.next)} hasBenefits={preview ? null : await hasPublicBenefits()} />;
 }
