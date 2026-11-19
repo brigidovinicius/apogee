@@ -1,8 +1,18 @@
 // Closed vocabulary: no URLs, free text, account or session IDs.
 export const BEHAVIOR_PAGES = ["home", "radar_list", "radar_detail", "radar_saved", "radar_calendar", "radar_access", "calendars", "calendar_detail", "collections", "collection_detail", "competitions", "blog_list", "blog_article", "store", "gallery", "makeitfly", "makeitfly_application", "login", "signup", "password_recovery", "community", "privacy", "terms", "annual_offer", "annual_summary"] as const;
 export type BehaviorPage = typeof BEHAVIOR_PAGES[number];
+export const BLOG_RADAR_ARTICLES = [
+  { key: "cloud_models", label: "IaaS, PaaS e SaaS", path: "/blog/como-se-diferenciam-os-modelos-de-computacao-em-nuvem-iaas-paas-e-6a925d772d69a0d0054887b3" },
+  { key: "competitor_research", label: "Pesquisa de concorrentes", path: "/blog/apogee-be2499dd4578ae0f1f55b86e" },
+] as const;
+const blogRadarTargets = BLOG_RADAR_ARTICLES.map(article => article.key);
+export function blogRadarArticle(pathname: string) {
+  const path = pathname.replace(/\/$/, "");
+  return BLOG_RADAR_ARTICLES.find(article => article.path === path)?.key ?? null;
+}
 export const BEHAVIOR_TARGETS = {
   page_view: ["view"], navigation: BEHAVIOR_PAGES,
+  blog_radar_view: blogRadarTargets, blog_radar_click: blogRadarTargets,
   scroll_depth: ["25", "50", "75", "100"], engaged_time: ["15s", "30s", "60s"],
   section_view: ["annual_price", "account_ready", "confirmed_return", "experiencia", "jornada", "programacao", "manifesto", "quem-conduz", "participar", "galeria-preview"],
   action: ["annual_choose", "save", "remove_saved", "alert_request", "series_alert_request", "checkout_start", "google_calendar", "official_link", "store_interest", "application_start", "application_open"],
@@ -39,6 +49,7 @@ export function validBehaviorEvent(value: unknown): value is BehaviorEvent {
   if (Object.keys(item).length !== 4 || Object.keys(item).some(key => !["page", "event", "target", "device"].includes(key))) return false;
   if (!(BEHAVIOR_PAGES as readonly unknown[]).includes(item.page) || typeof item.event !== "string" || !Object.hasOwn(BEHAVIOR_TARGETS, item.event)) return false;
   if (!(BEHAVIOR_TARGETS[item.event as BehaviorEventName] as readonly unknown[]).includes(item.target) || item.device !== "mobile" && item.device !== "desktop") return false;
+  if ((item.event === "blog_radar_view" || item.event === "blog_radar_click") && item.page !== "blog_article") return false;
   if (item.event === "form_progress" && item.page !== "makeitfly_application") return false;
   if (item.event === "section_view") {
     if (item.target === "annual_price") return item.page === "annual_offer";
