@@ -19,6 +19,9 @@ test("sales page retains the complete offer and honest delivery states with work
   for (const text of ["Caixa de Ferramentas", "Benefícios", "Trilha de IA", "Google Flow", "R$ 1.438,80", "R$ 119,90", "10 eventos distintos", "direitos são preservados", "disponível de forma parcial", "Cada parceiro define condições", "independente da assinatura"]) assert.ok(html.includes(text), text);
   for (const id of ["comunidade", "radar", "ferramentas", "learn", "perks", "planos", "participar", "duvidas"]) assert.ok(html.includes(`id="${id}"`), id);
   for (const [, id] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(html.includes(`id="${id}"`), `broken section link: ${id}`);
+  assert.match(html, /href="\/evento-openai#workshop-florianopolis"/);
+  assert.match(html, /href="\/galeria"[^>]*>Ver fotos do Make It Fly/);
+  assert.doesNotMatch(html, /href="\/makeitfly"/);
   assert.match(html, /href="\/evento-openai"/);
   assert.doesNotMatch(html, /href="\/membros\/ferramentas"|href="\/membros\/assinatura"/);
   assert.match(html, /A contratação anual está temporariamente indisponível/);

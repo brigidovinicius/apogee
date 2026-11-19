@@ -28,7 +28,7 @@ export const COMMUNITY_SALES_DELIVERABLES = [
   {
     id: "encontros", label: "Eventos presenciais", fact: "Condições por evento",
     title: "Conheça os encontros da Apogee e veja como participar.",
-    description: "Veja as informações do Make It Fly e do workshop em Florianópolis. Cada encontro tem suas próprias condições de participação.",
+    description: "Veja como participar do workshop em Florianópolis ou visite a galeria do Make It Fly. Cada encontro tem suas próprias condições de participação.",
     href: "#participar", action: "Ver eventos presenciais",
   },
 ] as const;

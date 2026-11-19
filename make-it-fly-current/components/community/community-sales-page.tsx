@@ -49,7 +49,7 @@ export function CommunitySalesPage({ preview = false, next, hasBenefits }: { pre
           <div className={styles.courseCopy}>
             <p className={styles.lead}>Encontre a comunidade pessoalmente. Cada encontro tem suas próprias condições de participação.</p>
             <p><Link className={styles.textLink} href="/evento-openai#workshop-florianopolis" prefetch={false}>Ver workshop em Florianópolis <ArrowUpRight size={18} aria-hidden="true" /></Link></p>
-            <p><Link className={styles.textLink} href="/makeitfly" prefetch={false}>Conhecer o Make It Fly <ArrowUpRight size={18} aria-hidden="true" /></Link></p>
+            <p><Link className={styles.textLink} href="/galeria" prefetch={false}>Ver fotos do Make It Fly <ArrowUpRight size={18} aria-hidden="true" /></Link></p>
             <p className={styles.accessNote}>A inscrição no evento Codex Community é independente da assinatura e do cadastro na comunidade.</p>
             <div className={styles.joinAction}><CommunityJoinButton next={next} preview={preview} /></div>
           </div>
