@@ -7,7 +7,7 @@ import type { DeliverableKind } from "@/lib/deliverables/validation";
 import { z } from "zod";
 export type EditorialState = { message?: string; ok?: boolean; revision?: string };
 const fields = {
-  benefit: ["partner", "description", "evidenceUrl", "eligibility", "availability", "startsAt", "endsAt", "verifiedOn", "redemption", "redemptionUrl", "categoryId", "providerLabel", "providerAccess", "sourceUrl"],
+  benefit: ["partner", "description", "evidenceUrl", "eligibility", "availability", "startsAt", "endsAt", "verifiedOn", "redemption", "redemptionUrl", "categoryId", "providerLabel", "providerAccess", "sourceUrl", "audience"],
   track: ["description"], module: ["trackId", "description", "deliverable"], activity: ["moduleId", "instructions", "resourceUrl"],
 };
 export async function saveEditorial(_: EditorialState, form: FormData): Promise<EditorialState> {

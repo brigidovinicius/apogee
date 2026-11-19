@@ -83,7 +83,8 @@ test("convites com Better Auth real e PostgreSQL: persistência, permissões, ve
     if (existing[0].name) throw new Error("Banco não vazio; inicialize outro cluster descartável.");
     const journal = JSON.parse(await readFile(new URL("../drizzle/meta/_journal.json", import.meta.url), "utf8"));
     for (const entry of journal.entries) {
-      await sql.unsafe((await readFile(new URL(`../drizzle/${entry.tag}.sql`, import.meta.url), "utf8")).replaceAll('"public".', `"${testSchema}".`));
+      const migration = await readFile(new URL(`../drizzle/${entry.tag}.sql`, import.meta.url), "utf8");
+      await sql.unsafe(migration.replace(/(?:"public"|\bpublic)\./g, `"${testSchema}".`));
     }
     auth = load("lib/members/auth.ts").getAuth();
     const issuer = await signup("issuer@example.test", "issuer");

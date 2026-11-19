@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Gift } from "lucide-react";
-import { PROVIDER_ACCESS_LABELS, type CatalogueBenefit } from "@/lib/benefits/types";
+import { BENEFIT_AUDIENCES, PROVIDER_ACCESS_LABELS, type CatalogueBenefit } from "@/lib/benefits/types";
 import { BenefitSaveButton } from "./member-forms";
 import styles from "./benefits.module.css";
 
@@ -24,7 +24,7 @@ export function BenefitCard({ benefit, validity, detailSearch = "" }: { benefit:
           </div>
           <div className={styles.brandMeta}>
             <p>{benefit.partner}</p>
-            <span className={styles.category}>{benefit.category_name ?? "Geral"}</span>
+            <span className={styles.category}>{benefit.category_name ?? "Geral"} · {BENEFIT_AUDIENCES[benefit.audience]}</span>
           </div>
         </div>
         <BenefitSaveButton benefitId={benefit.id} name={benefit.name} saved={benefit.saved} />
@@ -32,7 +32,7 @@ export function BenefitCard({ benefit, validity, detailSearch = "" }: { benefit:
 
       <div className={styles.offerBody}>
         <h3><Link href={href}>{benefit.name}</Link></h3>
-        <p className={styles.description}>{benefit.description}</p>
+        {benefit.description !== benefit.name && <p className={styles.description}>{benefit.description}</p>}
         {benefit.eligibility && <p className={styles.condition}><strong>Quem pode resgatar</strong>{benefit.eligibility}</p>}
         {benefit.provider_access !== "unconfirmed" && <p className={styles.access}>{PROVIDER_ACCESS_LABELS[benefit.provider_access]}</p>}
       </div>

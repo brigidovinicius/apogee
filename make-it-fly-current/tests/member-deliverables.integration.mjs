@@ -12,6 +12,7 @@ import { migrateMemberBenefits } from "../scripts/member-benefits-migrate.mjs";
 import { migrateMemberDeliverables } from "../scripts/member-deliverables-migrate.mjs";
 let db, sql, store, actor = "admin", validations, load;
 const users = ["admin", "revoked-admin", "blocked-admin", "free0", "free9", "free10", "legacy", "paid", "cancelled", "expired", "refunded", "other", "blocked"];
+import { syntheticOfferCheck } from "./helpers/synthetic-benefit-check.mjs";
 const benefit = { name: "BENEFIT_PRIVATE_FIXTURE", partner: "Synthetic partner", description: "Synthetic agreement for isolation test only", evidenceUrl: "https://example.org/agreement", eligibility: "Annual account", availability: "One use per account, verified by the fixture partner", startsAt: "2026-01-01", endsAt: "2099-01-01", redemption: "Follow the confirmed partner instructions", redemptionUrl: "https://example.org/redeem", status: "published", sortOrder: 1 };
 before(async () => {
   db = await nativeCommunityDatabase(); sql = db.sql;
@@ -56,6 +57,7 @@ test("protected editorial creation, ordering, updating, publication and audit pe
   moduleId = (await store.saveDeliverable("module", { trackId, name: "Module fixture", description: "Test task", deliverable: "A verified task outline", status: "published", sortOrder: 1 })).id;
   activityId = (await store.saveDeliverable("activity", { moduleId, name: "ACTIVITY_PRIVATE_FIXTURE", instructions: "PRIVATE_INSTRUCTIONS: choose a task and check your result", resourceUrl: "", status: "published", sortOrder: 1 })).id;
   await store.saveDeliverable("benefit", { ...benefit, id: benefitId, revision: (await store.adminDeliverables()).benefits[0].revision, sortOrder: 7 });
+  await syntheticOfferCheck(sql, benefitId);
   assert.equal((await store.adminDeliverables()).benefits[0].sort_order, 7);
   const [audit] = await sql`select count(*)::int as n from member_deliverable_audit`; assert.equal(audit.n, 5);
   actor = "free0"; await assert.rejects(store.adminDeliverables(), /ADMIN/); await assert.rejects(store.saveDeliverable("benefit", benefit), /ADMIN/);
@@ -209,6 +211,7 @@ test("all editorial kinds reject stale concurrent edits without overwriting the 
 test("benefits render real validity dates with the shared Drizzle driver and never serialize agreement evidence", async () => {
   actor = "admin";
   const saved = await store.saveDeliverable("benefit", benefit);
+  await syntheticOfferCheck(sql, saved.id);
   const admin = await store.adminDeliverables();
   const item = admin.benefits.find(b => b.id === saved.id);
   assert.ok(item.starts_at instanceof Date);assert.ok(item.ends_at instanceof Date);
@@ -220,10 +223,10 @@ test("benefits render real validity dates with the shared Drizzle driver and nev
   const { renderToStaticMarkup } = await import("react-dom/server");
   const page = opportunityLoader({
     "next/link": { __esModule: true, default: "a" },
-    "@/lib/benefits/store": { memberBenefitDetail: async () => ({ ...state, benefit: { ...visible, category_name: null, provider_label: "", provider_access: "unconfirmed", saved: false } }) },
+    "@/lib/benefits/store": { memberBenefitDetail: async () => ({ ...state, benefit: { ...visible, last_success_at: new Date(), category_name: null, provider_label: "", provider_access: "unconfirmed", saved: false } }) },
     "@/components/benefits/member-forms": { BenefitSaveButton: () => null, BenefitStartForm: () => null },
     "@/components/members/member-bar": { MemberBar: () => null },
   })("app/membros/beneficios/[id]/page.tsx").default;
   const html = renderToStaticMarkup(await page({ params: Promise.resolve({ id: saved.id }) }));
-  assert.match(html, /Vigência/);assert.match(html, /2026/);assert.doesNotMatch(html, /example.org\/agreement/);
+  assert.match(html, /Fim da vigência/);assert.match(html, /2026/);assert.doesNotMatch(html, /example.org\/agreement/);
 });

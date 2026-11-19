@@ -71,7 +71,8 @@ test("recuperação com Better Auth real e PostgreSQL descartável", async t => 
   try {
     const journal = JSON.parse(await readFile(new URL("../drizzle/meta/_journal.json", import.meta.url), "utf8"));
     for (const entry of journal.entries) {
-      await sql.unsafe((await readFile(new URL(`../drizzle/${entry.tag}.sql`, import.meta.url), "utf8")).replaceAll('"public".', `"${testSchema}".`));
+      const migration = await readFile(new URL(`../drizzle/${entry.tag}.sql`, import.meta.url), "utf8");
+      await sql.unsafe(migration.replace(/(?:"public"|\bpublic)\./g, `"${testSchema}".`));
     }
     delete globalThis.__apogeeMembersAuth;
     auth = load("lib/members/auth.ts").getAuth();

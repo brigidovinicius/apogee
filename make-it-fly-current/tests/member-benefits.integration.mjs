@@ -6,6 +6,9 @@ import { migrateCommunityAccess } from '../scripts/community-access-migrate.mjs'
 import { migrateMemberToolbox } from '../scripts/member-toolbox-migrate.mjs';
 import { migrateMemberDeliverables } from '../scripts/member-deliverables-migrate.mjs';
 import { migrateMemberBenefits } from '../scripts/member-benefits-migrate.mjs';
+import { syntheticOfferCheck } from './helpers/synthetic-benefit-check.mjs';
+import { importApprovedBenefitOffers } from '../scripts/import-benefit-offers.mjs';
+import { checkPublishedBenefits } from '../scripts/member-benefits-monitor.mjs';
 let db,sql,store,editor,actor='admin',categoryId,videoId,firstId,secondId,draftId,expiredId;
 const fixture={name:'Oferta de automação',partner:'Ferramenta sintética',description:'Automatize uma tarefa com dados fictícios.',evidenceUrl:'https://example.org/PRIVATE_AGREEMENT',eligibility:'Somente fixture local.',availability:'Uma solicitação por conta.',startsAt:'2026-01-01',endsAt:'2099-01-01',redemption:'PRIVATE_MEMBER_INSTRUCTIONS: confira o resultado no parceiro.',redemptionUrl:'https://example.org/redeem',status:'published',sortOrder:0};
 const users=['admin','free','paid','cancelled','expired','refunded','legacy','blocked','blocked-admin','revoked-admin','other'];
@@ -45,9 +48,10 @@ test('editorial categories and offer variants persist without publishing researc
   categoryId=categories.find(c=>c.name==='Automação').id;videoId=categories.find(c=>c.name==='Vídeo').id;
   const organization={categoryId,providerLabel:'Distribuidor sintético',providerAccess:'included',sourceUrl:'https://example.org/offer'};
   firstId=(await editor.saveDeliverable('benefit',{...fixture,...organization})).id;
-  secondId=(await editor.saveDeliverable('benefit',{...fixture,...organization,name:'Oferta de vídeo',description:'Criação de vídeo.',categoryId:videoId})).id;
+  secondId=(await editor.saveDeliverable('benefit',{...fixture,...organization,name:'Oferta de vídeo',description:'Criação de vídeo.',categoryId:videoId,audience:'estudantes'})).id;
   draftId=(await editor.saveDeliverable('benefit',{...fixture,...organization,name:'PRIVATE_RESEARCH_DRAFT',status:'draft',categoryId:categories.find(c=>c.status==='draft').id})).id;
   expiredId=(await editor.saveDeliverable('benefit',{...fixture,...organization,name:'PRIVATE_EXPIRED_OFFER',startsAt:'2020-01-01',endsAt:'2021-01-01'})).id;
+  for (const id of [firstId, secondId, expiredId]) await syntheticOfferCheck(sql, id);
   assert.equal((await sql`select status from member_benefit where id=${draftId}`)[0].status,'draft');
   const row=(await editor.adminDeliverables()).benefits.find(b=>b.id===firstId);
   await assert.rejects(editor.saveDeliverable('benefit',{...fixture,...organization,id:firstId,revision:row.revision,categoryId:'missing-category'}));
@@ -84,6 +88,8 @@ test('active annual, cancelled renewal and admin can search accents and filter o
   assert.equal((await store.memberBenefitWorkspace('catalogue',{query:"' OR 1=1 --"})).benefits.length,0);
   assert.equal((await store.memberBenefitWorkspace('catalogue',{category:'video'})).benefits[0].id,secondId);
   assert.equal((await store.memberBenefitWorkspace('catalogue',{category:'not-found'})).benefits.length,0);
+  assert.equal((await store.memberBenefitWorkspace('catalogue',{query:'video',category:'video',audience:'estudantes'})).benefits[0].id,secondId);
+  assert.equal((await store.memberBenefitWorkspace('catalogue',{query:'video',category:'video',audience:'startups'})).benefits.length,0);
   assert.equal((await store.memberBenefitDetail(draftId)).benefit,null);assert.equal((await store.memberBenefitDetail(expiredId)).benefit,null);
   assert.ok((await store.memberBenefitDetail(firstId)).benefit.starts_at instanceof Date);
 });
@@ -165,7 +171,8 @@ test('history keeps the original public snapshot when an offer is archived or tu
 
 test('directly tampered destinations are refused without recording a new redemption',async()=>{
   actor='cancelled';await sql`update member_benefit set redemption_url='javascript:alert(1)' where id=${secondId}`;
-  await assert.rejects(store.startBenefitRedemption({benefitId:secondId}),/destino/);
+  await syntheticOfferCheck(sql, secondId);
+  await assert.rejects(store.startBenefitRedemption({benefitId:secondId}),/não está disponível/);
   assert.equal((await sql`select count(*)::int as n from member_benefit_redemption where user_id='cancelled'`)[0].n,0);
 });
 
@@ -186,6 +193,8 @@ test('continuous offers require recent verification and expire across member ent
     await assert.rejects(editor.saveDeliverable('benefit', { ...offer, ...invalid }));
   }
   const { id } = await editor.saveDeliverable('benefit', offer);
+  assert.equal((await store.memberBenefitDetail(id)).benefit, null);
+  await syntheticOfferCheck(sql, id);
   actor = 'paid';
   const result = await store.memberBenefitWorkspace('catalogue', { query: 'continua' });
   assert.equal(result.benefits.length, 1);
@@ -195,7 +204,7 @@ test('continuous offers require recent verification and expire across member ent
   assert.equal((await store.memberBenefitDetail(id)).benefit.id, id);
   await store.setSavedBenefit({ benefitId: id, saved: true });
   await store.startBenefitRedemption({ benefitId: id });
-  await sql`update member_benefit set verified_at=now()-interval '168 hours' where id=${id}`;
+  await sql`update member_benefit_monitor set last_success_at=now()-interval '24 hours' where benefit_id=${id}`;
   assert.ok(!(await store.memberBenefitWorkspace('catalogue')).benefits.some(b => b.id === id));
   assert.ok(!(await store.memberBenefitWorkspace('saved')).benefits.some(b => b.id === id));
   assert.equal((await store.memberBenefitDetail(id)).benefit, null);
@@ -208,5 +217,47 @@ test('continuous offers require recent verification and expire across member ent
   actor = 'admin';
   const row = (await editor.adminDeliverables()).benefits.find(b => b.id === id);
   await editor.saveDeliverable('benefit', { ...offer, id, revision: row.revision });
+  assert.equal((await store.memberBenefitDetail(id)).benefit, null);
+  await syntheticOfferCheck(sql, id);
   assert.equal((await store.memberBenefitDetail(id)).benefit.id, id);
+  await syntheticOfferCheck(sql, id, 'unavailable');
+  await syntheticOfferCheck(sql, id);
+  assert.equal((await store.memberBenefitDetail(id)).benefit, null);
+});
+test('a verified catalog imports 100 distinct offers exactly once and enforces the combined filters', async () => {
+  const earlierCheck = new Date(Date.now()-1000).toISOString();
+  const packDestination = "https://education.github.com/pack#namecheap";
+  const sample = Array.from({ length: 100 }, (_, index) => ({
+    id: `batch-${index}`,
+    partner: "Parceiro de teste",
+    condition: `Licença de colaboração ${index}`,
+    category: "produtividade",
+    audience: index % 2 ? "estudantes" : "startups",
+    source: `https://example.org/benefits/${index}`,
+    redeem: index === 1 ? packDestination : `https://example.org/redeem/${index}`,
+    program: "Programa sintético",
+    eligibility: "Fixture local.",
+    availability: "Condição disponível somente para o teste.",
+    instructions: "Acesso simulado.",
+    sort: index,
+    checkedAt: earlierCheck,
+    result: { outcome: "verified", reason: "Verificação sintética" },
+  }));
+  await assert.rejects(importApprovedBenefitOffers(sql, sample.slice(1), "admin"), /100 ofertas/);
+  assert.equal(await importApprovedBenefitOffers(sql, sample, "admin"), 100);
+  assert.equal(await importApprovedBenefitOffers(sql, sample, "admin"), 100);
+  actor = "paid";
+  const catalogue = await store.memberBenefitWorkspace("catalogue", { query: "COLABORACAO", category: "produtividade", audience: "estudantes" });
+  assert.equal(catalogue.benefits.length, 50);
+  assert.equal(catalogue.benefits[0].id, "batch-1");
+  assert.equal(catalogue.totals.catalogue, 100);
+  assert.equal((await store.startBenefitRedemption({ benefitId: "batch-1" })).destination, packDestination);
+  const stats = await checkPublishedBenefits(sql, sample, {
+    force: true,
+    check: async offer => offer.id === "batch-1"
+      ? { outcome: "unavailable", reason: "Fim de campanha simulado" } : offer.result,
+  });
+  assert.equal(stats.available, 99);
+  assert.equal(stats.belowTarget, true);
+  assert.equal((await store.memberBenefitDetail("batch-1")).benefit, null);
 });

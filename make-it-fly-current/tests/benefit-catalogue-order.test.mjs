@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
 const offer = (id, partner, sort_order = 0, provider_access = "included") =>
-  ({ id, name: id, partner, sort_order, provider_access });
+  ({ id, name: id, partner, sort_order, provider_access, last_success_at: new Date("2026-11-18T12:00:00Z") });
 const offers = [
   offer("alpha", "Parceiro local"),
   offer("brand-paid", "N8N", 0, "premium"),
@@ -56,7 +56,7 @@ test("default feed features its first available offer once, before the search", 
 });
 
 test("search and category show only returned matches, saved keeps its own order and history stays separate", async () => {
-  for (const params of [{ q: "alpha" }, { categoria: "video" }]) {
+  for (const params of [{ q: "alpha" }, { categoria: "video" }, { publico: "startups" }]) {
     const html = await renderView("catalogue", params, [offers[0]]);
     assert.doesNotMatch(html, /Oferta em destaque|data-offer="brand/);
     assert.match(html, /data-offer="alpha"/);

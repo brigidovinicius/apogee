@@ -40,6 +40,12 @@ COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-toolbox-migrate.mj
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-toolbox-curate.mjs ./scripts/member-toolbox-curate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-deliverables-migrate.mjs ./scripts/member-deliverables-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-benefits-migrate.mjs ./scripts/member-benefits-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-benefits-monitor.mjs ./scripts/member-benefits-monitor.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/benefit-source-check.mjs ./scripts/benefit-source-check.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-benefit-discovery.mjs ./scripts/member-benefit-discovery.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/import-benefit-offers.mjs ./scripts/import-benefit-offers.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/content/benefit-offers.json ./content/benefit-offers.json
+COPY --from=builder --chown=nextjs:nextjs /app/content/benefit-discovery-sources.json ./content/benefit-discovery-sources.json
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/mcp-oauth-migrate.mjs ./scripts/mcp-oauth-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/google-calendar-worker.mjs ./scripts/google-calendar-worker.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/collection-digest-worker.mjs ./scripts/collection-digest-worker.mjs

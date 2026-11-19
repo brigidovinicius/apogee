@@ -6,7 +6,7 @@ import { communityAccess } from "@/lib/billing/community-store";
 import { benefitSchema, trackSchema, moduleSchema, activitySchema, progressSchema, type DeliverableKind } from "./validation";
 
 export class DeliverableConflictError extends Error {}
-export type Benefit = { id: string; name: string; partner: string; description: string; eligibility: string; availability: string; starts_at: Date | null; ends_at: Date | null; verified_at: Date | null; redemption: string; redemption_url: string; evidence_url?: string; revision?: string; status: string; sort_order: number };
+export type Benefit = { id: string; name: string; partner: string; description: string; eligibility: string; availability: string; starts_at: Date | null; ends_at: Date | null; verified_at: Date | null; redemption: string; redemption_url: string; audience?: string; evidence_url?: string; revision?: string; status: string; sort_order: number };
 export type Track = { id: string; name: string; description: string; status: string; sort_order: number; revision?: string };
 export type LearningModule = Track & { track_id: string; deliverable: string };
 export type Activity = { id: string; module_id: string; name: string; instructions: string; resource_url: string; status: string; sort_order: number; completed_at?: Date | null; revision?: string };
@@ -28,7 +28,7 @@ export async function memberBenefits() {
   if (!access.allowed) return { member, access, benefits: [] as Benefit[] };
   // Evidence and editor identifiers stay in administration, never member HTML/RSC.
   const benefits = await getSql()<Benefit[]>`select id,name,partner,description,eligibility,availability,starts_at,ends_at,verified_at,redemption,redemption_url,status,sort_order
-    from member_benefit where status='published' and public.member_benefit_is_current(starts_at,ends_at,verified_at) order by sort_order,name,id`;
+    from member_benefit b where public.member_benefit_is_available(b) order by sort_order,name,id`;
   return { member, access, benefits: benefits.map(benefitDates) };
 }
 
@@ -105,11 +105,12 @@ export async function saveDeliverable(kind: DeliverableKind, input: unknown) {
         const [category] = await tx`select status from member_benefit_category where id=${b.categoryId} for share`;
         if (!category || b.status === "published" && category.status !== "published") throw Error("Confira a categoria antes de publicar a oferta.");
       }
-      await tx`insert into member_benefit(id,name,partner,description,evidence_url,eligibility,availability,starts_at,ends_at,verified_at,redemption,redemption_url,status,sort_order,reviewed_by)
-        values(${id},${b.name},${b.partner},${b.description},${b.evidenceUrl},${b.eligibility},${b.availability},${b.startsAt ? new Date(b.startsAt).toISOString() : null},${b.endsAt ? new Date(b.endsAt).toISOString() : null},${b.verifiedOn ? new Date(b.verifiedOn).toISOString() : null},${b.redemption},${b.redemptionUrl},${b.status},${b.sortOrder},${actor.id})
+      await tx`insert into member_benefit(id,name,partner,description,evidence_url,eligibility,availability,starts_at,ends_at,verified_at,redemption,redemption_url,status,sort_order,reviewed_by,audience)
+        values(${id},${b.name},${b.partner},${b.description},${b.evidenceUrl},${b.eligibility},${b.availability},${b.startsAt ? new Date(b.startsAt).toISOString() : null},${b.endsAt ? new Date(b.endsAt).toISOString() : null},${b.verifiedOn ? new Date(b.verifiedOn).toISOString() : null},${b.redemption},${b.redemptionUrl},${b.status},${b.sortOrder},${actor.id},${b.audience ?? "geral"})
         on conflict(id) do update set name=excluded.name,partner=excluded.partner,description=excluded.description,evidence_url=excluded.evidence_url,
           eligibility=excluded.eligibility,availability=excluded.availability,starts_at=excluded.starts_at,ends_at=excluded.ends_at,verified_at=excluded.verified_at,redemption=excluded.redemption,
-          redemption_url=excluded.redemption_url,status=excluded.status,sort_order=excluded.sort_order,reviewed_by=excluded.reviewed_by,reviewed_at=now()`;
+          redemption_url=excluded.redemption_url,status=excluded.status,sort_order=excluded.sort_order,reviewed_by=excluded.reviewed_by,reviewed_at=now(),
+          audience=coalesce(${b.audience ?? null},member_benefit.audience)`;
       // Optional for old callers; the current benefits editor writes metadata
       // atomically with the existing editorial row and revision check.
       if (b.categoryId !== undefined) await tx`insert into member_benefit_organization(benefit_id,category_id,provider_label,provider_access,source_url)

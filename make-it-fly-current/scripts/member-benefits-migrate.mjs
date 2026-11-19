@@ -36,7 +36,8 @@ export async function migrateMemberBenefits(sql, { apply = false, expectedRole =
   const migrations = entries.map(e => { const source = readFileSync(new URL(`${e.tag}.sql`, root), "utf8"); return { ...e, source, hash: createHash("sha256").update(source).digest("hex") }; });
   const index = migrations.findIndex(m => m.tag === "0021_member_benefits_workspace");
   const verification = migrations[index + 1];
-  if (verification?.tag !== "0022_member_benefit_verification" || index !== 21 || migrations[20]?.tag !== "0020_member_deliverables") throw Error("Histórico de Benefícios divergente.");
+  const monitor = migrations[index + 2];
+  if (verification?.tag !== "0022_member_benefit_verification" || monitor?.tag !== "0023_member_benefit_monitor" || index !== 21 || migrations[20]?.tag !== "0020_member_deliverables") throw Error("Histórico de Benefícios divergente.");
   return sql.begin(async tx => {
     await tx`select set_config('lock_timeout','5s',true)`;
     await tx`select set_config('statement_timeout','60s',true)`;
@@ -61,13 +62,24 @@ export async function migrateMemberBenefits(sql, { apply = false, expectedRole =
     };
     const parts = await checkVerification();
     if (reviewInstalled ? parts.some(p => !p) : parts.some(Boolean)) throw Error("Esquema de verificação divergente.");
-    if (reviewInstalled || !apply) return { changed: false, pending: !reviewInstalled };
-    for (const migration of baseInstalled ? [verification] : [migrations[index], verification]) {
+    const checkMonitor = async () => {
+      const [state] = await tx`select
+        exists(select 1 from information_schema.columns where table_schema='public' and table_name='member_benefit' and column_name='audience' and data_type='text' and is_nullable='NO') as has_audience,
+        exists(select 1 from pg_tables where schemaname='public' and tablename='member_benefit_monitor' and tableowner=${expectedRole}) as has_table,
+        to_regprocedure('public.member_benefit_is_available(public.member_benefit)') is not null as has_function,
+        to_regprocedure('public.member_benefit_monitor_revision(public.member_benefit)') is not null as has_revision`;
+      return Object.values(state);
+    };
+    const monitorInstalled = rows.length > index + 2;
+    const monitorParts = await checkMonitor();
+    if (monitorInstalled ? monitorParts.some(p => !p) : monitorParts.some(Boolean)) throw Error("Esquema de monitoramento divergente.");
+    if (monitorInstalled || !apply) return { changed: false, pending: !monitorInstalled };
+    for (const migration of migrations.slice(rows.length, index + 3)) {
       await tx.unsafe(migration.source);
       await tx`insert into drizzle.__drizzle_migrations(hash,created_at) values(${migration.hash},${migration.when})`;
     }
     await verify(tx, expectedRole);
-    if (!(await checkVerification()).every(Boolean)) throw Error("Verificação incompleta.");
+    if (!(await checkVerification()).every(Boolean) || !(await checkMonitor()).every(Boolean)) throw Error("Verificação incompleta.");
     return { changed: true, pending: false };
   });
 }

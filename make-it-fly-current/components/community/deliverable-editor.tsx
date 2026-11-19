@@ -2,7 +2,7 @@
 import { useActionState, useId, useState } from "react";
 import { saveEditorial, type EditorialState } from "@/app/admin/beneficios/actions";
 import type { DeliverableKind } from "@/lib/deliverables/validation";
-import { PROVIDER_ACCESS_LABELS } from "@/lib/benefits/types";
+import { BENEFIT_AUDIENCES, PROVIDER_ACCESS_LABELS } from "@/lib/benefits/types";
 import styles from "./deliverables.module.css";
 type Choice = { id: string; name: string };
 type Field = { key: string; label: string; long?: boolean; type?: string; required?: boolean };
@@ -46,6 +46,7 @@ export function DeliverableEditor({ kind, values = {}, choices = [] }: { kind: D
       {parent ? <label htmlFor={`${id}-parent`}>{kind === "module" ? "Trilha" : "Módulo"}<select id={`${id}-parent`} name={parent} value={data[parent] ?? ""} onChange={e => setField(parent, e.target.value)} required><option value="" disabled>Selecione</option>{choices.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label> : null}
       {kind === "benefit" ? <>
         <label htmlFor={`${id}-category`}>Categoria<select id={`${id}-category`} name="categoryId" value={data.categoryId ?? ""} onChange={e => setField("categoryId", e.target.value)}><option value="">Sem categoria</option>{choices.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+        <label>Público<select name="audience" value={data.audience ?? "geral"} onChange={e => setField("audience", e.target.value)}>{Object.entries(BENEFIT_AUDIENCES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
         <label htmlFor={`${id}-provider-access`}>Acesso à oferta no fornecedor<select id={`${id}-provider-access`} name="providerAccess" value={data.providerAccess ?? "unconfirmed"} onChange={e => setField("providerAccess", e.target.value)}>{Object.entries(PROVIDER_ACCESS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
         <label htmlFor={`${id}-validity`}>Como a vigência é determinada
           <select id={`${id}-validity`} value={byReview ? "review" : "fixed"} onChange={e => {
