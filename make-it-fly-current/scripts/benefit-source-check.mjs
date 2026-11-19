@@ -168,6 +168,9 @@ export function sourceSession(transport = publicResponse) {
         if (test.brazil && !text.includes(normalize(test.brazil))) throw new SourceError("review", "Disponibilidade no Brasil inconclusiva");
         if (test.redemption) {
           const target = test.redemption;
+          if (target.inAppSteps?.some(step => !text.includes(normalize(step)))) {
+            throw new SourceError("review", "As instruções oficiais de resgate no aplicativo mudaram");
+          }
           const links = pageContent(html).matchAll(/<a\b[^>]*?\shref\s*=\s*(?:"([^"]*)"|'([^']*)')/gi);
           const expected = new URL(target.url).href;
           const listed = [...links].some(match => {
@@ -176,6 +179,9 @@ export function sourceSession(transport = publicResponse) {
           });
           if (!listed) throw new SourceError("review", "O link de resgate deixou de constar na oferta oficial");
           const destination = await read(target);
+          if (target.inAppSteps && destination.url.href !== expected) {
+            throw new SourceError("review", "A página com os termos específicos do resgate no aplicativo mudou");
+          }
           const destinationText = visibleText(destination.html);
           if (!target.markers.every(marker => destinationText.includes(normalize(marker)))) {
             throw new SourceError("review", "A inscrição da oferta deixou de estar identificada no destino oficial");

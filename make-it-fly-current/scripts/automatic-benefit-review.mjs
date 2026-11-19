@@ -34,9 +34,13 @@ function publicUrl(value) {
 
 export function eligibleRule(offer, at) {
   if (!offer || !publicUrl(offer.source) || !publicUrl(offer.redeem) || !offer.tests?.length) return false;
-  const territory = offer.tests.some(test => test.url === offer.source && test.markers?.length && /brasil/i.test(test.brazil ?? ""));
-  const redemption = offer.tests.some(test => test.url === offer.redeem && test.markers?.length
-    && test.redemption?.markers?.length && Object.keys(test.redemption.query ?? {}).length > 0);
+  const territory = offer.tests.some(test => test.url === offer.source && test.markers?.length && /\b(?:brasil|brazil)\b/i.test(test.brazil ?? ""));
+  const redemption = offer.tests.some(({ url, markers, redemption: target }) => url === offer.redeem &&
+    markers?.length && target?.markers?.length && (
+      Object.keys(target.query ?? {}).length > 0 ||
+      (target.url === offer.source && target.url !== url && target.inAppSteps?.length &&
+        target.inAppSteps.every(step => step.trim()))
+    ));
   if (!territory || !redemption) return false;
   if (offer.ongoing === true) return !offer.startsAt && !offer.endsAt;
   return Date.parse(offer.startsAt) <= +at && +at < Date.parse(offer.endsAt);

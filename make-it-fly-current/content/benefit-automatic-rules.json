@@ -91,5 +91,80 @@
         }
       ]
     }
+  },
+  {
+    "sourceId": "samsung-google-ai-pro-br",
+    "key": "samsung-google-ai-pro-br",
+    "sourceUrl": "https://www.samsung.com/br/offer/gemini-regulation/",
+    "evidenceUrl": "https://www.samsung.com/br/offer/gemini-regulation/",
+    "aliases": {
+      "ids": ["samsung-galaxy-google-ai-pro", "samsung-gemini-br"],
+      "urls": ["https://www.samsung.com/br/offer/gemini/"],
+      "names": ["Samsung Galaxy: 6 meses de Google AI Pro", "Google AI Pro por 6 meses em aparelhos Galaxy elegíveis"],
+      "partners": ["Samsung", "Samsung Brasil", "Google", "Google One"]
+    },
+    "offer": {
+      "id": "samsung-google-ai-pro-br",
+      "partner": "Samsung Brasil e Google",
+      "condition": "6 meses de Google AI Pro com Galaxy elegível",
+      "category": "produtividade",
+      "audience": "geral",
+      "source": "https://one.google.com/offer/terms-and-conditions/SamsungAIPro",
+      "redeem": "https://www.samsung.com/br/offer/gemini-regulation/",
+      "program": "Google AI Pro em aparelhos Samsung Galaxy",
+      "eligibility": "Pessoas físicas com 18 anos ou mais, residentes e domiciliadas no Brasil, com nota fiscal no próprio CPF. Inclui Galaxy Z Flip8, Z Fold8 e Z Fold8 Ultra adquiridos a partir de 01/08/2026, ou Galaxy S26 FE adquirido a partir de 16/09/2026, em revendedor autorizado participante. Confira o SKU no regulamento e as restrições à conta Google One nos termos do Google.",
+      "availability": "Resgate até 01/08/2027. São seis meses sem cobrança de assinatura a partir do resgate. É necessário meio de pagamento elegível no Google Payments. Após o teste, o Google cobra o preço mensal padrão se a assinatura continuar ativa.",
+      "instructions": "No Galaxy participante já ativado, abra o app Gemini e selecione o banner ou aviso de seis meses grátis do Google AI Pro. Se o aviso não aparecer, consulte as opções de promoção e assinatura no menu do app. Confira o modelo, a data de compra, o prazo e a renovação antes de confirmar.",
+      "sort": 49,
+      "startsAt": "2026-08-01T00:00:00-03:00",
+      "endsAt": "2027-08-02T00:00:00-03:00",
+      "tests": [
+        {
+          "url": "https://one.google.com/offer/terms-and-conditions/SamsungAIPro",
+          "hosts": ["one.google.com"],
+          "paths": ["/offer/terms-and-conditions/SamsungAIPro"],
+          "markers": [
+            "at no charge for a period of 6 months",
+            "this offer is limited to users in",
+            "offer expires and must be redeemed by august 1, 2027",
+            "qualifying form of payment at sign-up",
+            "following eligible device(s): galaxy s26 fe",
+            "sm-f776b,",
+            "sm-f971b,",
+            "sm-f976b,",
+            "automatically charged the standard monthly google one subscription price"
+          ],
+          "brazil": "Botswana, Brazil, British Virgin Islands",
+          "ended": ["this offer is no longer available", "this promotion has ended"]
+        },
+        {
+          "url": "https://www.samsung.com/br/offer/gemini-regulation/",
+          "hosts": ["www.samsung.com"],
+          "paths": ["/br/offer/gemini-regulation"],
+          "markers": [
+            "mínimo 18 (dezoito) anos de idade completos, residente e domiciliada em território nacional",
+            "no período de 01/08/2026 até 01/08/2027",
+            "produtos: samsung galaxy z flip8, galaxy z fold8 ultra ou galaxy z fold8",
+            "no período de 16/09/2026 até 01/08/2027",
+            "produtos: samsung galaxy s26 fe",
+            "o resgate poderá ser realizado até 01/08/2027",
+            "revendedores autorizados em lojas físicas ou online que estejam participando da ação",
+            "nome e o cpf do participante devem, necessariamente, coincidir"
+          ],
+          "ended": ["esta oferta foi encerrada", "esta ação foi encerrada", "o resgate não está mais disponível"],
+          "redemption": {
+            "url": "https://one.google.com/offer/terms-and-conditions/SamsungAIPro",
+            "hosts": ["one.google.com"],
+            "paths": ["/offer/terms-and-conditions/SamsungAIPro"],
+            "markers": ["at no charge for a period of 6 months", "offer expires and must be redeemed by august 1, 2027"],
+            "inAppSteps": [
+              "abrir o aplicativo gemini no seu smartphone",
+              "clicar no banner, pop-up ou notificação sobre a promoção de 6 meses grátis do google ai pro dentro do aplicativo",
+              "se você não encontrar o banner, tente tocar na seção de menu ou configurações para encontrar promoções ou opções de assinatura disponíveis"
+            ]
+          }
+        }
+      ]
+    }
   }
 ]

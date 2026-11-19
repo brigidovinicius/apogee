@@ -76,3 +76,40 @@ test("validates the designated Brazilian availability evidence and follows the a
   assert.deepEqual(redirect.checked, ["azure.microsoft.com", "go.microsoft.com"]);
   assert.equal((await run().verify({ tests: [] })).outcome, "review");
 });
+
+test("publishes a documented in-app route only while both suppliers confirm the same Brazilian campaign", async () => {
+  const samsung = rules.find(rule => rule.sourceId === "samsung-google-ai-pro-br");
+  const { offer } = samsung;
+  const [terms, regulation] = offer.tests;
+  const { inAppSteps, url: link } = regulation.redemption;
+  const termsText = [...terms.markers, terms.brazil].join(" ");
+  const stepsText = [...regulation.markers, ...inAppSteps].join(" ");
+  const verify = ({
+    text = termsText, steps = stepsText, href = link, redirect,
+  } = {}) => sourceSession(async url => {
+    if (url.hostname === "one.google.com" && !url.search && redirect) return { status: 302, location: redirect };
+    return {
+      status: 200,
+      body: url.hostname === "one.google.com" ? `<p>${text}</p>` : `<p>${steps}</p><a href="${href}">Termos</a>`,
+    };
+  });
+
+  assert.equal(eligibleRule(offer, now), true);
+  assert.equal(eligibleRule(offer, new Date(offer.endsAt)), false);
+  assert.equal(eligibleRule({
+    ...offer, tests: [terms, { ...regulation, redemption: { ...regulation.redemption, inAppSteps: [] } }],
+  }, now), false);
+  assert.equal((await verify({ text: termsText.replace(terms.brazil, "Português (Brasil)") })(offer)).outcome, "review");
+  assert.equal((await verify({ steps: stepsText.replace(inAppSteps[1], "") })(offer)).outcome, "review");
+  assert.equal((await verify({ href: "https://one.google.com/" })(offer)).outcome, "review");
+  assert.equal((await verify({ redirect: link + "?other_campaign=1" })(offer)).outcome, "review");
+
+  const publish = async (candidate, match) => {
+    assert.equal(candidate.id, offer.id);
+    assert.ok(match({ redemption_url: "https://www.samsung.com/br/offer/gemini/?utm_source=other" }));
+    return "published";
+  };
+  const decide = (findDuplicate, check = verify()) => reviewDiscoveredBenefits(reportFor([samsung]), rules, { at: now, check, findDuplicate, publish });
+  assert.equal((await decide(() => false))[0].outcome, "published");
+  assert.equal((await decide(match => match({ evidence_url: terms.url }), () => assert.fail("Already in catalogue")))[0].outcome, "duplicate");
+});

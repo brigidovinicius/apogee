@@ -187,7 +187,9 @@ async function watch(sources, approved, path) {
       }
       const age = Date.now() - Date.parse(existing?.generatedAt);
       const interval = needsRetry(existing) ? retryDelay : day;
-      if (existing?.status === "editorial_review" && age >= 0 && age < interval) {
+      const sameSources = Array.isArray(existing?.sources) && existing.sources.length === sources.length &&
+        sources.every(source => existing.sources.some(entry => entry.id === source.id && entry.sourceUrl === source.url));
+      if (existing?.status === "editorial_review" && sameSources && age >= 0 && age < interval) {
         await sleep(interval - age);
         continue;
       }
