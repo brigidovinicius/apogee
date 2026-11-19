@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     const rows = await tx`select b.id,public.member_benefit_monitor_revision(b) as revision
       from member_benefit b
       where b.status='published'
-        and lower(b.partner)='hostgator'
+        and lower(b.partner) in ('hostgator','hostgator brasil')
         and b.name=${campaign.condition}
         and b.eligibility=${campaign.eligibility}
         and b.availability=${campaign.availability}

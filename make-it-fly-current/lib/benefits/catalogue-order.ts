@@ -30,7 +30,7 @@ function accessPriority(offer: CatalogueBenefit) {
 }
 
 function rosaPriority(offer: CatalogueBenefit) {
-  return offer.redemption_url === "https://www.hostgator.com.br/53289-77-3-32.html" && offer.partner.trim().toLowerCase() === "hostgator" ? 0 : 1;
+  return offer.redemption_url === "https://www.hostgator.com.br/53289-77-3-32.html" && /^hostgator(?: brasil)?$/i.test(offer.partner.trim()) ? 0 : 1;
 }
 
 export function orderCatalogueOffers(offers: CatalogueBenefit[]) {

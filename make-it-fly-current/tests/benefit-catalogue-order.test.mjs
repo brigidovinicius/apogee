@@ -57,7 +57,7 @@ test("default feed starts with search and features its best available offers exa
 
 test("curated campaigns rise above ordinary catalogue order and the exact approved Rosa URL comes first", () => {
   const figma = offer("figma-education", "Figma", 13);
-  const rosa = { ...offer("hostgator-rosa", "HostGator", 9), redemption_url: "https://www.hostgator.com.br/53289-77-3-32.html" };
+  const rosa = { ...offer("hostgator-rosa", "HostGator Brasil", 9), redemption_url: "https://www.hostgator.com.br/53289-77-3-32.html" };
   const generic = { ...offer("generic-hostgator", "HostGator", 8), redemption_url: "https://www.hostgator.com.br/" };
   assert.deepEqual(orderCatalogueOffers([generic, figma, rosa]).map(item => item.id), [rosa.id, figma.id, generic.id]);
 });
@@ -65,7 +65,7 @@ test("curated campaigns rise above ordinary catalogue order and the exact approv
 test("all configured partners have a local brand image with HTTPS provenance", () => {
   const offers = JSON.parse(readFileSync(new URL("../content/benefit-offers.json", import.meta.url), "utf8"));
   const { benefitBrand } = opportunityLoader()("lib/benefits/brands.ts");
-  for (const partner of new Set([...offers.map(item => item.partner), "Teamwork.com"])) {
+  for (const partner of new Set([...offers.map(item => item.partner), "Teamwork.com", "HostGator Brasil"])) {
     const brand = benefitBrand(partner);
     assert.ok(brand, partner);
     assert.equal(new URL(brand.source).protocol, "https:", partner);
