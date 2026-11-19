@@ -8,7 +8,6 @@ import { AnnualAccessNotice } from "@/components/community/annual-access-notice"
 import { ResourceHeader } from "@/components/members/resource-header";
 import { benefitNavigation, type BenefitSearchParams } from "@/lib/benefits/navigation";
 import { BenefitCard } from "./benefit-card";
-import { PerkBookCatalogue } from "./perkbook-catalogue";
 import navigation from "@/components/members/resource-header.module.css";
 import shared from "@/components/members/members.module.css";
 import styles from "./benefits.module.css";
@@ -23,7 +22,6 @@ function offerCard(benefit: CatalogueBenefit, detailSearch: string) {
 export async function BenefitsWorkspace({ view = "catalogue", params = {} }: { view?: BenefitView; params?: BenefitSearchParams }) {
   const { query, category, detailSearch } = benefitNavigation(params, view);
   const { member, access, categories, benefits, history, totals } = await memberBenefitWorkspace(view, { query, category });
-  const showNativeOffers = view === "saved" || totals.catalogue > 0 || Boolean(query || category);
   const ordered = view === "catalogue" ? orderCatalogueOffers(benefits) : benefits;
   const featured = view === "catalogue" && !query && !category ? ordered[0] : undefined;
   const remaining = featured ? ordered.slice(1) : ordered;
@@ -35,20 +33,19 @@ export async function BenefitsWorkspace({ view = "catalogue", params = {} }: { v
         <div className={styles.featuredHeading}><h2 id="featured-offer-heading" className={styles.offerHeading}>Oferta em destaque</h2><a href="#benefit-search">Filtrar ofertas</a></div>
         <div className={styles.featuredCard}>{offerCard(featured, detailSearch)}</div>
       </section>}
-      {view !== "history" ? showNativeOffers && <section aria-labelledby="benefit-offers-title">
-        <div className={styles.featuredHeading}><h2 id="benefit-offers-title" className={styles.offerHeading}>{view === "catalogue" ? "Ofertas da Apogee" : "Ofertas salvas"}</h2>{view === "catalogue" && <a href="#perkbook-title">Catálogo parceiro</a>}</div>
+      {view !== "history" ? <section aria-labelledby="benefit-offers-title">
+        <h2 id="benefit-offers-title" className={styles.offerHeading}>{view === "catalogue" ? "Ofertas da Apogee" : "Ofertas salvas"}</h2>
         <form action={BENEFIT_PATHS[view]} method="get" className={navigation.filters} role="search" aria-label="Buscar benefícios">
           <label>{view === "catalogue" ? "Buscar nas ofertas Apogee" : "Buscar nas ofertas salvas"}<div className={navigation.searchInput}><Search size={18} aria-hidden="true" /><input id="benefit-search" type="search" name="q" defaultValue={query} placeholder="Ferramenta, parceiro ou finalidade" maxLength={100} /></div></label>
           <label>Categoria<select name="categoria" defaultValue={category}><option value="">Todas as categorias</option>{categories.map(c => <option key={c.id} value={c.slug}>{c.name} ({c.count})</option>)}</select></label>
           <button type="submit">Buscar</button>{(query || category) && benefits.length > 0 && <Link href={BENEFIT_PATHS[view]}>Limpar filtros</Link>}
         </form>
         {(!featured || remaining.length > 0) && <p className={styles.result} role="status">{featured ? "Outras ofertas" : "Ofertas encontradas"} ({remaining.length}){query ? ` para “${query}”` : ""}.</p>}
-        {!benefits.length ? <section className={styles.empty}><Gift size={26} aria-hidden="true" /><h3>{query || category ? "Nenhuma oferta com esses filtros" : view === "saved" ? "Suas ofertas salvas ficam aqui" : "Benefícios em preparação"}</h3><p>{query || category ? "Experimente outro termo ou consulte todas as categorias." : view === "saved" ? "Salve uma oferta do catálogo para encontrá-la com facilidade depois." : "Ainda não há ofertas disponíveis. Elas aparecerão quando os acordos, as condições e o resgate estiverem confirmados."}</p><Link href={query || category ? BENEFIT_PATHS[view] : BENEFIT_PATHS.catalogue}>{query || category ? "Limpar filtros" : "Explorar ofertas"}</Link></section> : remaining.length > 0 && <div className={styles.cards}>{remaining.map(benefit => offerCard(benefit, detailSearch))}</div>}
+        {!benefits.length ? <section className={styles.empty}><Gift size={26} aria-hidden="true" /><h3>{query || category ? "Nenhuma oferta com esses filtros" : view === "saved" ? "Suas ofertas salvas ficam aqui" : "Benefícios em preparação"}</h3><p>{query || category ? "Experimente outro termo ou consulte todas as categorias." : view === "saved" ? "Salve uma oferta do catálogo para encontrá-la com facilidade depois." : "Ainda não há ofertas disponíveis. Elas aparecerão quando os acordos, as condições e o resgate estiverem confirmados."}</p>{query || category ? <Link href={BENEFIT_PATHS[view]}>Limpar filtros</Link> : view === "saved" ? <Link href={BENEFIT_PATHS.catalogue}>Explorar ofertas</Link> : <Link href="/membros/ferramentas">Explorar a Caixa de ferramentas</Link>}</section> : remaining.length > 0 && <div className={styles.cards}>{remaining.map(benefit => offerCard(benefit, detailSearch))}</div>}
       </section> : <>
         <p className={styles.explanation}>Iniciar um resgate registra sua intenção. O desconto ou crédito só aparece como confirmado após conferência do resultado no parceiro.</p>
         {!history.length ? <section className={styles.empty}><Clock3 size={26} aria-hidden="true" /><h2>Você ainda não iniciou resgates</h2><p>Abra uma oferta do catálogo, confira os requisitos e inicie o resgate. O acompanhamento ficará aqui.</p><Link href="/membros/beneficios">Explorar ofertas</Link></section> : <ol className={styles.history}>{history.map(r => <li key={r.id} id={`oferta-${r.benefit_id}`} tabIndex={-1} className={styles.card}><div className={styles.cardTop}><span className={styles.category}>{REDEMPTION_LABELS[r.status]}</span><span className={styles.historyDate}>{benefitDate(r.started_at)}</span></div><p className={styles.partner}>{r.partner_name}</p><h2>{r.benefit_name}</h2><p>{r.status === "started" ? "Aguardando confirmação do resultado no parceiro." : r.status === "confirmed" ? "Resultado confirmado pela conferência administrativa." : "O parceiro não aprovou este resgate. Fale com o suporte se precisar de ajuda."}</p>{r.reviewed_at ? <p className={styles.condition}>Conferência em {benefitDate(r.reviewed_at)}.</p> : null}{r.available ? <Link className={styles.textLink} href={`/membros/beneficios/${encodeURIComponent(r.benefit_id)}${detailSearch}`}>Reabrir oferta e instruções <ArrowRight size={17} aria-hidden="true" /></Link> : <p className={styles.condition}>Esta oferta não está disponível para novos resgates. Seu histórico foi preservado.</p>}</li>)}</ol>}
       </>}
-      {view === "catalogue" && <PerkBookCatalogue />}
       <p className={styles.footer}>As ofertas seguem requisitos próprios. A assinatura Apogee inclui os benefícios expressamente formalizados, conforme suas condições; não inclui automaticamente planos pagos ou créditos de todas as ferramentas.</p>
     </>}<p className={styles.support}><Link href="/membros/suporte">Preciso de ajuda</Link></p>
   </div></MemberWorkspace>;

@@ -33,7 +33,6 @@ async function renderView(view, params, benefits, allowed = true) {
     }) },
     "@/components/members/member-workspace": { MemberWorkspace: ({ children }) => children },
     "@/components/community/annual-access-notice": { AnnualAccessNotice: () => "Acesso anual" },
-    "./perkbook-catalogue": { PerkBookCatalogue: () => "Catálogo parceiro" },
     "./benefit-card": { BenefitCard: ({ benefit }) => createElement("article", { "data-offer": benefit.id }) },
   });
   const { BenefitsWorkspace } = load("components/benefits/workspace.tsx");
@@ -48,7 +47,11 @@ test("default feed features its first available offer once, before the search", 
   assert.deepEqual([...html.matchAll(/data-offer="([^"]+)"/g)].map(match => match[1]),
     ["brand-included", "brand-paid", "alpha", "editorial"]);
   assert.match(await renderView("catalogue", {}, [offers[0]]), /data-offer="alpha"/);
-  assert.doesNotMatch(await renderView("catalogue", {}, []), /Oferta em destaque|data-offer/);
+  const empty = await renderView("catalogue", {}, []);
+  assert.match(empty, /Benefícios em preparação/);
+  assert.match(empty, /Explorar a Caixa de ferramentas/);
+  assert.doesNotMatch(empty + html, /perkbook|catálogo parceiro|<iframe/i);
+  assert.doesNotMatch(empty, /Oferta em destaque|data-offer/);
   assert.doesNotMatch(await renderView("catalogue", {}, offers, false), /Oferta em destaque|data-offer/);
 });
 
