@@ -54,6 +54,7 @@ test("concurrent callers share their catalogue variant and later calls read fres
   const request = t.mock.method(globalThis, "fetch", async (url, options) => {
     views.push(new URL(url).searchParams.get("view"));
     assert.equal(options.cache, "no-store");
+    assert.equal(new Headers(options.headers).get("authorization"), "Bearer fixture-token");
     await delay(15);
     return catalogue();
   });

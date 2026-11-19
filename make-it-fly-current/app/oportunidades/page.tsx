@@ -1,4 +1,4 @@
-import { localOfferPreview } from "@/lib/offer-preview";
+import { localStaticOfferPreview } from "@/lib/offer-preview";
 import { OfferPreviewPage } from "@/components/community/offer-preview";
 import { RadarOfferIntro } from "@/components/community/radar-offer-intro";
 import { CalendarSaveProvider } from "@/components/opportunities/save-opportunity";
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 export default async function OpportunitiesPage({ searchParams }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  if (localOfferPreview()) return <OfferPreviewPage screen="radar" />;
+  if (localStaticOfferPreview()) return <OfferPreviewPage screen="radar" />;
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(await searchParams)) {
     if (typeof value === "string") params.set(key, value);
@@ -48,19 +48,21 @@ export default async function OpportunitiesPage({ searchParams }: {
     <div className={styles.page}>
       <SiteHeader
         current="opportunities"
+        adaptive
+        tone="light"
         memberHref={memberHref}
         memberLabel="Entrar"
       />
 
       <main id="experiencia" className={styles.main} tabIndex={-1}>
-        <section className={styles.hero} aria-labelledby="opportunities-title">
+        <section className={`${styles.hero} ${styles.catalogueHero}`} aria-labelledby="opportunities-title">
           <h1 id="opportunities-title">Radar de oportunidades</h1>
           <p className={styles.lead}>
-            Descubra empregos, eventos, hackathons e experiências para o seu próximo passo
+            Encontre empregos, eventos, bolsas e programas com fontes oficiais.
           </p>
         </section>
 
-        {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} showCalendarLink editorialFeed /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
+        {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} showCalendarLink editorialFeed publicCatalogue /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
         <RadarOfferIntro next={memberRadarPath(params)} />
       </main>
 

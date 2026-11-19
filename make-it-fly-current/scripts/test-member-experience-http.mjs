@@ -112,14 +112,14 @@ try {
   await page("/membros/perfil/editar", /Editar perfil/);
   await page("/membros/meu-calendario", /Conhecer a assinatura anual/);
   const firstPath = "/membros/oportunidades/radar-review-event-1";
-  const detail = await page(firstPath, /Abrindo detalhes|Detalhe protegido/);
-  if (detail.includes("data-radar-detail-opening")) {
+  const detail = await page(firstPath, /Usar consulta gratuita|Detalhe protegido/);
+  if (detail.includes(">Usar consulta gratuita</button>")) {
     assert.match(clean(detail).replace(/<!--.*?-->/g, ""), /0 de 10 eventos distintos/);
-    await submit(firstPath, detail, form => form.includes("data-radar-detail-opening"));
+    await submit(firstPath, detail, form => form.includes(">Usar consulta gratuita</button>"));
   }
   const opened = await page(firstPath, /Detalhe protegido/);
   assert.match(clean(opened).replace(/<!--.*?-->/g, ""), /1 de 10 eventos distintos/);
-  assert.doesNotMatch(clean(opened), /Abrindo detalhes/);
+  assert.doesNotMatch(clean(opened), /Usar consulta gratuita/);
   assert.match(clean(await page(firstPath, /Detalhe protegido/)).replace(/<!--.*?-->/g, ""), /1 de 10 eventos distintos/);
   const denied = await request("/admin/usuarios"), deniedHtml = await denied.text();
   // Next can stream a redirect after the shell has already sent HTTP 200.

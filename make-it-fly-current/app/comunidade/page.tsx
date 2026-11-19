@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { communityReturnPath } from "@/lib/billing/community-navigation";
+import { hasPublicBenefits } from "@/lib/benefits/store";
 import { localStaticOfferPreview } from "@/lib/offer-preview";
 import { CommunitySalesPage } from "@/components/community/community-sales-page";
 
-const description = "Troque experiências sobre IA na comunidade gratuita da Apogee, descubra oportunidades e explore aplicações práticas para o trabalho e a rotina.";
+const description = "Conheça a conta gratuita e a assinatura anual da Comunidade Apogee. Compare a Caixa de Ferramentas, a Trilha de IA, o Radar e os benefícios disponíveis.";
 
 export const metadata: Metadata = {
   title: "Comunidade Apogee",
@@ -21,5 +22,6 @@ export const metadata: Metadata = {
 
 export default async function CommunityPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
-  return <CommunitySalesPage preview={localStaticOfferPreview()} next={communityReturnPath(params.next)} />;
+  const preview = localStaticOfferPreview();
+  return <CommunitySalesPage preview={preview} next={communityReturnPath(params.next ?? "/membros")} hasBenefits={preview ? null : await hasPublicBenefits()} />;
 }

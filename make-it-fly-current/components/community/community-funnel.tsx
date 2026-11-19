@@ -18,7 +18,7 @@ export function FunnelHeader({ page }: { page: "community" | "recording" }) {
   </header>;
 }
 
-export function CommunityJoinButton({ label = "Começar gratuitamente", secondary = false, preview = false, next }: { label?: string; secondary?: boolean; preview?: boolean; next?: string }) {
+export function CommunityJoinButton({ label = "Criar conta gratuita", secondary = false, preview = false, next }: { label?: string; secondary?: boolean; preview?: boolean; next?: string }) {
   return <Link className={secondary ? styles.secondary : styles.primary} href={preview ? "/previa/entrada" : next ? `/membros/cadastro?next=${encodeURIComponent(next)}` : COMMUNITY_SIGNUP_PATH} prefetch={false}>{label}<ArrowUpRight size={18} aria-hidden="true" /></Link>;
 }
 
