@@ -6,6 +6,20 @@ const familiarPartners = new Set([
   "google cloud", "google workspace", "microsoft", "microsoft azure", "n8n",
   "notion", "teamwork", "teamwork.com",
 ]);
+// Lead with a concrete, substantial advantage from providers members recognize.
+// Each entry points at a campaign the existing availability check has accepted.
+const recommended = new Map([
+  "figma-education",
+  "github-education-github-copilot",
+  "aws-activate",
+  "google-cloud-startups",
+  "github-education-notion",
+  "adobe-education-br",
+  "github-education-microsoft-365",
+  "notion-startups",
+  "github-education-1password",
+  "github-education-microsoft",
+].map((id, index) => [id, index]));
 
 function partnerPriority(offer: CatalogueBenefit) {
   return familiarPartners.has(offer.partner.trim().toLowerCase()) ? 0 : 1;
@@ -15,9 +29,15 @@ function accessPriority(offer: CatalogueBenefit) {
   return ["free", "included"].includes(offer.provider_access) ? 0 : 1;
 }
 
+function rosaPriority(offer: CatalogueBenefit) {
+  return offer.redemption_url === "https://www.hostgator.com.br/53289-77-3-32.html" && offer.partner.trim().toLowerCase() === "hostgator" ? 0 : 1;
+}
+
 export function orderCatalogueOffers(offers: CatalogueBenefit[]) {
-  // Stable sort retains the database's name and id order when priorities match.
   return [...offers].sort((a, b) =>
+    rosaPriority(a) - rosaPriority(b) ||
+    Number(b.sort_order === 0) - Number(a.sort_order === 0) ||
+    (recommended.get(a.id) ?? recommended.size) - (recommended.get(b.id) ?? recommended.size) ||
     a.sort_order - b.sort_order ||
     partnerPriority(a) - partnerPriority(b) ||
     accessPriority(a) - accessPriority(b)

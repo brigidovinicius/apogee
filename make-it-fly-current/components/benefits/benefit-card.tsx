@@ -1,26 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Gift } from "lucide-react";
+import { ArrowRight, CalendarDays } from "lucide-react";
+import { benefitBrand } from "@/lib/benefits/brands";
 import { BENEFIT_AUDIENCES, PROVIDER_ACCESS_LABELS, type CatalogueBenefit } from "@/lib/benefits/types";
 import { BenefitSaveButton } from "./member-forms";
 import styles from "./benefits.module.css";
 
-const logosByPartner = new Map([
-  ["n8n", "/brand/benefits/n8n.svg"],
-  ["teamwork", "/brand/benefits/teamwork.svg"],
-  ["teamwork.com", "/brand/benefits/teamwork.svg"],
-]);
-
 export function BenefitCard({ benefit, validity, detailSearch = "" }: { benefit: CatalogueBenefit; validity: string; detailSearch?: string }) {
-  const logo = logosByPartner.get(benefit.partner.trim().toLowerCase());
+  const logo = benefitBrand(benefit.partner);
   const href = `/membros/beneficios/${encodeURIComponent(benefit.id)}${detailSearch}`;
 
   return (
     <article id={`oferta-${benefit.id}`} tabIndex={-1} className={`${styles.card} ${styles.offerCard}`}>
       <div className={styles.offerTop}>
         <div className={styles.brand}>
-          <div className={styles.brandMark} aria-hidden="true">
-            {logo ? <Image src={logo} width={32} height={32} alt="" unoptimized /> : <Gift size={23} />}
+          <div className={styles.brandMark} data-logo-background={logo?.background} aria-hidden="true">
+            {logo ? <Image src={logo.image} width={68} height={42} alt="" unoptimized /> : <span>{benefit.partner}</span>}
           </div>
           <div className={styles.brandMeta}>
             <p>{benefit.partner}</p>
