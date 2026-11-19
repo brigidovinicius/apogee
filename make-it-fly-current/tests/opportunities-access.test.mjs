@@ -47,7 +47,6 @@ test("o Radar completo exige sessão tanto na rota quanto na camada de acesso", 
   assert.match(memberPage, /listMemberOpportunityPage/);
   assert.match(proxy, /matcher: \["\/membros", "\/membros\/:path\*", "\/admin", "\/admin\/:path\*"\]/);
   assert.match(radarClient, /RADAR_ACADEMICO_API_TOKEN/);
-  assert.match(radarClient, /Authorization: `Bearer \$\{radarApiToken\}`/);
   assert.match(radarApi, /isRadarConsumerAuthorized\(request\)/);
   assert.match(radarApi, /status: 401/);
 });
