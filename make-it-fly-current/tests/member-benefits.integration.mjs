@@ -7,7 +7,8 @@ import { migrateMemberToolbox } from '../scripts/member-toolbox-migrate.mjs';
 import { migrateMemberDeliverables } from '../scripts/member-deliverables-migrate.mjs';
 import { migrateMemberBenefits } from '../scripts/member-benefits-migrate.mjs';
 import { syntheticOfferCheck } from './helpers/synthetic-benefit-check.mjs';
-import { importApprovedBenefitOffers } from '../scripts/import-benefit-offers.mjs';
+import { importApprovedBenefitOffers, publishAutomaticOffer } from '../scripts/import-benefit-offers.mjs';
+import { duplicateMatcher } from '../scripts/automatic-benefit-review.mjs';
 import { checkPublishedBenefits } from '../scripts/member-benefits-monitor.mjs';
 let db,sql,store,editor,actor='admin',categoryId,videoId,firstId,secondId,draftId,expiredId;
 const fixture={name:'Oferta de automação',partner:'Ferramenta sintética',description:'Automatize uma tarefa com dados fictícios.',evidenceUrl:'https://example.org/PRIVATE_AGREEMENT',eligibility:'Somente fixture local.',availability:'Uma solicitação por conta.',startsAt:'2026-01-01',endsAt:'2099-01-01',redemption:'PRIVATE_MEMBER_INSTRUCTIONS: confira o resultado no parceiro.',redemptionUrl:'https://example.org/redeem',status:'published',sortOrder:0};
@@ -260,4 +261,39 @@ test('a verified catalog imports 100 distinct offers exactly once and enforces t
   assert.equal(stats.available, 99);
   assert.equal(stats.belowTarget, true);
   assert.equal((await store.memberBenefitDetail("batch-1")).benefit, null);
+});
+
+test("automatic review publishes a single fixed-date campaign once under concurrent attempts", async () => {
+  const now = Date.now();
+  const offer = {
+    id: "auto-pilot", partner: "Parceiro automático", condition: "Crédito sintético por 30 dias",
+    category: "produtividade", audience: "geral", source: "https://example.org/auto-terms",
+    redeem: "https://example.org/auto-redeem", program: "Programa sintético", eligibility: "Brasil",
+    availability: "Enquanto a campanha do teste estiver aberta", instructions: "Inscrição simulada",
+    sort: 100, startsAt: new Date(now - 60000).toISOString(),
+    endsAt: new Date(now + 60000).toISOString(), checkedAt: new Date(now - 1000).toISOString(),
+    result: { outcome: "verified", reason: "Verificação sintética" },
+  };
+  const match = duplicateMatcher({ offer });
+  const expired = { ...offer, endsAt: new Date(now - 30000).toISOString() };
+  assert.equal(await publishAutomaticOffer(sql, expired, "admin", match), "review");
+  assert.equal(await publishAutomaticOffer(sql, offer, "blocked-admin", match), "review");
+  assert.deepEqual((await Promise.all([
+    publishAutomaticOffer(sql, offer, "admin", match),
+    publishAutomaticOffer(sql, offer, "admin", match),
+  ])).sort(), ["duplicate", "published"]);
+  const [saved] = await sql`select b.verified_at,b.ends_at,public.member_benefit_is_available(b) as available,
+    (select count(*)::int from member_deliverable_audit where entity_id=b.id and action='create') as audits
+    from member_benefit b where b.id=${offer.id}`;
+  assert.equal(saved.verified_at, null);
+  assert.equal(saved.ends_at.toISOString(), offer.endsAt);
+  assert.equal(saved.available, true);
+  assert.equal(saved.audits, 1);
+  await sql`update member_benefit set availability='Condições editadas' where id=${offer.id}`;
+  await checkPublishedBenefits(sql, [{ ...offer, automatic: true }], {
+    check: () => assert.fail("A ficha editada requer revisão antes de renovar o recibo"),
+  });
+  const [changed] = await sql`select outcome from member_benefit_monitor where benefit_id=${offer.id}`;
+  assert.equal(changed.outcome, "review");
+  assert.equal((await store.memberBenefitDetail(offer.id)).benefit, null);
 });

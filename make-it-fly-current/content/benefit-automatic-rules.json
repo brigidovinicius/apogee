@@ -1,0 +1,95 @@
+[
+  {
+    "sourceId": "azure-students",
+    "key": "azure-students",
+    "sourceUrl": "https://azure.microsoft.com/pt-br/pricing/offers/ms-azr-0170p",
+    "evidenceUrl": "https://azure.microsoft.com/pt-br/pricing/offers/ms-azr-0170p",
+    "aliases": {
+      "ids": [
+        "github-education-microsoft",
+        "azure-students"
+      ],
+      "urls": [
+        "https://education.github.com/pack#microsoft",
+        "https://azure.microsoft.com/pt-br/free/students",
+        "https://azure.microsoft.com/pt-br/pricing/offers/ms-azr-0170p"
+      ]
+    }
+  },
+  {
+    "sourceId": "azure-free-br",
+    "key": "azure-free-br",
+    "sourceUrl": "https://azure.microsoft.com/pt-br/pricing/offers/ms-azr-0044p/",
+    "evidenceUrl": "https://azure.microsoft.com/pt-br/pricing/offers/ms-azr-0044p/",
+    "aliases": {
+      "ids": [
+        "azure-free"
+      ],
+      "urls": [
+        "https://azure.microsoft.com/pt-br/free/",
+        "https://azure.microsoft.com/pt-br/pricing/purchase-options/azure-account"
+      ],
+      "names": [
+        "Conta gratuita do Azure",
+        "Azure Free"
+      ],
+      "partners": [
+        "Microsoft",
+        "Azure"
+      ]
+    },
+    "offer": {
+      "id": "azure-free-br",
+      "partner": "Microsoft Azure",
+      "condition": "US$ 200 em créditos por 30 dias na conta gratuita do Azure",
+      "category": "hospedagem",
+      "audience": "geral",
+      "source": "https://azure.microsoft.com/pt-br/pricing/offers/ms-azr-0044p/",
+      "redeem": "https://azure.microsoft.com/pt-br/pricing/offers/ms-azr-0044p/",
+      "program": "Conta gratuita do Azure",
+      "eligibility": "Clientes qualificados para uma conta gratuita por pessoa. No Brasil, é necessário um cartão de crédito, além de telefone e conta Microsoft ou GitHub.",
+      "availability": "Use o crédito nos primeiros 30 dias após o cadastro. A oferta inclui cotas de serviços selecionados por até 12 meses. A continuidade após esgotar o crédito ou o prazo exige migração para cobrança conforme o uso.",
+      "instructions": "Na página brasileira da Microsoft, selecione Ativar e confira a oferta Conta Gratuita, o país e os limites antes de cadastrar sua conta. A Microsoft pode fazer uma retenção temporária no cartão para verificação.",
+      "sort": 48,
+      "ongoing": true,
+      "tests": [
+        {
+          "url": "https://azure.microsoft.com/pt-br/pricing/offers/ms-azr-0044p/",
+          "hosts": [
+            "azure.microsoft.com"
+          ],
+          "paths": [
+            "/pt-br/pricing/offers/ms-azr-0044p"
+          ],
+          "markers": [
+            "USD$200 em créditos",
+            "primeiros 30 dias",
+            "12 meses de serviços",
+            "somente cartões de crédito são aceitos em hong kong e no brasil"
+          ],
+          "brazil": "Brasil Brasil – Real – BRL (R$)",
+          "ended": [
+            "esta oferta foi encerrada",
+            "esta oferta não está mais disponível"
+          ],
+          "redemption": {
+            "url": "https://go.microsoft.com/fwlink/?linkid=2243862&clcid=0x416",
+            "hosts": [
+              "go.microsoft.com",
+              "signup.azure.com"
+            ],
+            "paths": [
+              "/signup"
+            ],
+            "query": {
+              "offer": "ms-azr-0044p"
+            },
+            "markers": [
+              "Azure - Sign up"
+            ]
+          }
+        }
+      ]
+    }
+  }
+]
