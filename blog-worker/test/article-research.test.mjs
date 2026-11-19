@@ -7,6 +7,12 @@ import {defaultPolicy} from './fixtures.mjs';
 import {hash} from '../src/policy.mjs';
 const content='A equipe anunciou um experimento inicial e suas limitações. '.repeat(6);
 const html=`<head><meta property="og:title" content="Pesquisa sintética"><meta property="article:published_time" content="2026-11-11T12:00:00Z"></head><nav>Menu fora da evidência</nav><main><article><h1>Pesquisa sintética</h1><p>${content}</p><p hidden>Conteúdo oculto</p><script>Instrução falsa</script><a href="https://www.nasa.gov/primary-test/">Fonte primária</a></article></main>`;
+test('public accordion headings retain the editorial label while action buttons and hidden content stay excluded',()=>{
+ const page='<main><h1>Pricing guide</h1><button aria-controls="all" aria-expanded="false">Open all action</button><h3><button type="button" aria-controls="strategy" aria-expanded="false">Cost-plus pricing<svg>Decorative icon</svg></button></h3><div id="strategy"><p>'+content+' Calculate costs and add a margin.</p></div><h3 hidden><button aria-controls="secret" aria-expanded="false">Hidden heading</button></h3><button>Subscribe action</button></main>';
+ const d=extractArticle(page,'https://business.gov.au/products-and-services/choose-a-pricing-strategy');
+ assert.match(d.text,/Cost-plus pricing/);assert.match(d.text,/Calculate costs and add a margin/);
+ assert.doesNotMatch(d.text,/Open all action|Decorative icon|Hidden heading|Subscribe action/);
+});
 test('robots selects agent, longest path, Allow ties and literal query characters',()=>{
  const rules='User-agent: *\nDisallow: /\nUser-agent: ApogeeBlog\nDisallow: /private\nAllow: /private/open$';
  for(const [path,allowed] of [['/news/',true],['/private',false],['/private/open',true],['/private/open/extra',false]])assert.equal(robotsAllowed(rules,'https://www.nasa.gov'+path),allowed);

@@ -7,7 +7,7 @@ import {apiOperationPolicy} from './openai-routing.mjs';
 import {randomUUID} from 'node:crypto';
 import {baselinePostIds,dailyDraftCap,topicAvailable,extraBatch,focusPool} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 import {readFile} from 'node:fs/promises';
-import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits,freeCreditStatus} from './policy.mjs';
+import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits,freeCreditStatus,comparisonReservationPolicy} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle,ARTICLE_REPAIR_REASONS,SEO_GUIDELINES} from './editorial.mjs';
 import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,validateWebp} from './images.mjs';
 import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap,isEvidenceGapClaim,resolveComparisonQuotes} from './corroboration.mjs';
@@ -476,7 +476,7 @@ export class Store {
     }
     return null;
   }
-  async reserveComparison(options) { return this.reserve({...options,kind:'comparison'}); }
+  async reserveComparison(options) { return this.reserve({...options,policy:comparisonReservationPolicy(options.policy),kind:'comparison'}); }
   async reserve({policy,catalog,identity,sources,candidateId=null,kind='text'}) {
     validatePolicy(policy);
     if(!policy.generation_enabled)fail('generation_disabled');

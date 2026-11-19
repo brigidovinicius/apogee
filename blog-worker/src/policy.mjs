@@ -187,6 +187,13 @@ export function comparisonInputLimit(policy,at=new Date()){
   const reserved=googleUsageLimits(policy,at).reservedTokens;
   return Number.isSafeInteger(reserved)?Math.min(configured,Math.max(0,reserved-policy.billed_output_tokens_cap_including_reasoning)):configured;
 }
+export function comparisonReservationPolicy(policy){
+  if(policy.provider!=='google_subscription'||policy.schema_version!==3)return policy;
+  // The official client also reports cached/thinking/system usage. Keep a
+  // separate allowance for that overhead, never raising the configured cap.
+  const required=10000+(policy.google_comparison_input_bytes_cap??policy.input_tokens_cap_including_overhead)+policy.billed_output_tokens_cap_including_reasoning;
+  return validatePolicy({...policy,google_tokens_reserved_per_call:Math.min(policy.google_tokens_reserved_per_call,required)});
+}
 export function googleUsageLimits(policy,at=new Date()){
   const completion=policy.google_daily_completion;
   return completion?.day===periodKeys(at).day

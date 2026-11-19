@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {explainerCatalog,validateExplainerCatalog,explainerWindowOpen,nextExplainer,automaticExplainerDossier,explainerExcerpt,explainerRecoveryEligible,explainerEvidenceHash,expandExplainerSources} from '../src/explainers.mjs';
-import {validateDossier,assessDossier,scopeVerified,buildComparisonRequest,explainerOverlap,validateComparison,isEvidenceGapClaim} from '../src/corroboration.mjs';
+import {validateDossier,assessDossier,scopeVerified,buildComparisonRequest,comparisonPrompt,explainerOverlap,validateComparison,isEvidenceGapClaim} from '../src/corroboration.mjs';
 import {buildRequest,cmsDraft,validateArticle} from '../src/editorial.mjs';
 import {validatePolicy,hash} from '../src/policy.mjs';
 import {ARTICLE_EXTRACTION_VERSION,referenceForUrl,articleSource,extractArticle} from '../src/article-research.mjs';
@@ -102,6 +102,15 @@ test('a subject excerpt remains contiguous and records Unicode character offsets
   const text='🛰️ Contexto inicial. '+('Contexto sem o assunto principal. '.repeat(80))+'O modelo conceitual usa alpha, beta e gamma com limites explícitos. '+('Uma sequência de contexto completo e ressalvas. '.repeat(10));
   const result=explainerExcerpt(text,['alpha','beta','gamma'],600);assert.ok(result.excerpt_offset>0);
   assert.ok(result.text.includes('alpha'));assert.equal([...text].slice(result.excerpt_offset,result.excerpt_offset+[...result.text].length).join(''),result.text);
+});
+test('a short source releases its unused allowance so a longer source keeps a late qualification within the same request cap',()=>{
+ const plan={...explainerCatalog[0],terms:['electromagnetic','spectrum']},texts=[('Electromagnetic spectrum includes visible light and radio with explicit limits. ').repeat(4),('Electromagnetic spectrum covers several ranges described in this public guide. ').repeat(110)+' A late qualification must remain in context.'];
+ const captures=plan.urls.map((url,i)=>({...articleSource(referenceForUrl(url)),url,title:'Independent synthetic guide '+i,text:texts[i],published_at:null,rights_reference:'Synthetic public text for extraction regression',extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,checked_at:now.toISOString()}));
+ const p={...policy,input_tokens_cap_including_overhead:12000,google_comparison_input_bytes_cap:18000};
+ const d=automaticExplainerDossier(plan,captures,p,now);assert.ok(d);
+ assert.ok(d.documents[1].text.includes('A late qualification must remain in context.'));
+ assert.ok(Buffer.byteLength(comparisonPrompt(buildComparisonRequest(d,p)))+1024<=18000);
+ for(let i=0;i<2;i++)assert.ok(captures[i].text.includes(d.documents[i].text));
 });
 test('an unrelated redirect or a lone incidental term cannot spend a comparison',()=>{
   assert.equal(explainerExcerpt('A public page about an unrelated subject. '.repeat(20),['orbital debris','collision','tracking'],1200),null);

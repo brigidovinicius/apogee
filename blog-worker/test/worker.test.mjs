@@ -1,12 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {actualUsageCost,validatePolicy,validateGrant,selectPrice,cycleCap,usageCost,periodKeys,hash} from '../src/policy.mjs';
+import {actualUsageCost,validatePolicy,validateGrant,selectPrice,cycleCap,usageCost,periodKeys,hash,comparisonReservationPolicy} from '../src/policy.mjs';
 import {canonicalUrl,normalizeItem,validateArticle,cacheKey,buildRequest} from '../src/editorial.mjs';
 import {publicIPv4,allowedUrl,getFeed,boundedJson,retryAfterSeconds} from '../src/http.mjs';
 import {collect,tick,loadConfig,assertSafeFeedXml} from '../src/worker.mjs';
 import {openAIProvider} from '../src/provider.mjs';
 import {defaultPolicy,policy,source,grant,price,candidate,article,reservation,identity} from './fixtures.mjs';
+test('comparison reserves its byte-bound envelope without increasing any Google daily or weekly allowance',()=>{
+ const original=structuredClone(defaultPolicy),updated=comparisonReservationPolicy(original);
+ const required=10000+(original.google_comparison_input_bytes_cap??original.input_tokens_cap_including_overhead)+original.billed_output_tokens_cap_including_reasoning;
+ assert.equal(updated.google_tokens_reserved_per_call,Math.min(original.google_tokens_reserved_per_call,required));
+ for(const key of ['google_daily_calls_cap','google_weekly_calls_cap','google_daily_tokens_cap','google_weekly_tokens_cap','google_daily_completion','minimum_compatibility_basis_points','google_use_g1_credits','paid_balance_fallback_enabled','auto_recharge_enabled'])assert.deepEqual(updated[key],original[key]);
+ assert.equal(original.google_tokens_reserved_per_call,defaultPolicy.google_tokens_reserved_per_call);
+ assert.equal(comparisonReservationPolicy(policy),policy);
+});
 
 test('shipped configuration keeps every source, price and generation disabled',async()=>{
   const config=await loadConfig(new URL('../config/',import.meta.url));

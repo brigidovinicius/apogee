@@ -989,7 +989,11 @@ try{
     await reset();await operator.attestSubscription(subscription());const plan={...explainerCatalog[0],terms:['mecanismo','limites']};
     const result=await store.prepareAutomaticExplainer(hybridPolicy,{plans:[plan],read:fakeGuideReader(plan),at:hybridAt()});assert.equal(result.prepared,1);
     const id=explainerId(plan),[v]=await admin`select document from blog_worker.dossier_version where candidate_id=${id}`;
-    assert.ok(v.document.documents.every(d=>!d.same_event&&d.same_subject&&d.published_at.startsWith('2015')&&d.excerpt_offset>0));
+    assert.ok(v.document.documents.every(d=>!d.same_event&&d.same_subject&&d.published_at.startsWith('2015')&&d.excerpt_offset>=0));
+    for(const doc of v.document.documents){
+      const [snapshot]=await admin`select document from blog_worker.captured_document where id=${doc.capture_id}`;
+      assert.equal([...snapshot.document.text].slice(doc.excerpt_offset,doc.excerpt_offset+[...doc.text].length).join(''),doc.text,'the complete guide or selected context is an exact contiguous source span');
+    }
     assert.equal((await compareHybrid(id)).status,'comparison_ready');const written=await writeHybrid(id);assert.equal(written.status,'draft');
     const image=await store.reserveImage({...hybridOptions(),candidateId:id});assert.equal((await store.finish(image,{outcome:'completed',image:webpFixture(),usage:smallHybridUsage})).status,'cover_ready');
     const post=await cms.getAdminPost(written.post_id);assert.match(post.body,/Artigo explicativo/);assert.match(post.body,/2015-03-01/);assert.match(post.body,/consulta em/);assert.equal(post.status,'draft');assert.equal(await cms.getPublicPost(post.slug),null);
@@ -1229,7 +1233,7 @@ try{
       const writing=await store.reserve(options);assert.equal((await store.finish(writing,{outcome:'completed',text:JSON.stringify(hybridText),usage:smallHybridUsage})).status,'draft');
       const image=await store.reserveImage(options);assert.equal((await store.finish(image,{outcome:'completed',image:webpFixture(),usage:smallHybridUsage})).status,'cover_ready');
     }
-    const [usage]=await admin`select count(*)::int as calls,count(*) filter(where quota_reserved=30000)::int as completion_calls from blog_worker.attempt`;
+    const [usage]=await admin`select count(*)::int as calls,count(*) filter(where policy#>>'{google_daily_completion,day}'=${periodKeys(new Date()).day})::int as completion_calls from blog_worker.attempt`;
     assert.deepEqual(usage,{calls:30,completion_calls:18});
     const [posts]=await admin`select count(*)::int as drafts,count(*) filter(where status<>'draft' or not seo_noindex or scheduled_at is not null)::int as unsafe from public.blog_post`;
     assert.deepEqual(posts,{drafts:10,unsafe:0});
