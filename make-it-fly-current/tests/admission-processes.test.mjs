@@ -41,6 +41,7 @@ test("public and management board count processes and filter course options befo
  mocks["./save-opportunity"]={SaveOpportunityButton:()=>null}; // Calendar actions have separate lifecycle/browser coverage.
  mocks["@/components/site/share-button"]=opportunityLoader()("components/site/share-button.tsx");
  mocks["./opportunity-dates"]=opportunityLoader()("components/opportunities/opportunity-dates.tsx");
+ mocks["@/lib/opportunities/employment-experience"]=opportunityLoader()("lib/opportunities/employment-experience.ts");
  mocks["./search-suggestions"]=opportunityLoader()("components/opportunities/search-suggestions.tsx");
  new Function("require","module","exports",await compile("../components/opportunities/opportunities-board.tsx"))(name=>{if(!(name in mocks))throw Error(name);return mocks[name]},loaded,loaded.exports);
  const base={organization:"IFSC",deadline:"2099-10-30",verifiedAt:"2026-10-14",deadlineLabel:"Prazo",eligibility:"Seleção por prova",benefit:"Ver taxa",summary:"Inscrições",location:"SC",stateCode:"SC",level:"Ensino médio",categories:["formacao"]};

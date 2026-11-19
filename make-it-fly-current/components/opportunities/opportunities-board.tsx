@@ -5,6 +5,7 @@ import { trackBehavior } from "@/components/analytics/behavior-client";
 import { SaveOpportunityButton } from "./save-opportunity";
 import { AREAS, displayOpportunityTitle, publicOpportunityPath } from "@/lib/opportunities/discovery";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
+import { employmentExperienceSummary } from "@/lib/opportunities/employment-experience";
 import { interfaceText } from "@/lib/presentation-text.mjs";
 import { OpportunityBenefits, OpportunityCosts } from "./opportunity-financials";
 import { AdmissionProcessCard } from "./admission-process-card";
@@ -423,7 +424,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
       </dl>
       {opportunity.employment && <p>Trabalho remoto · residentes no Brasil aceitos</p>}
       {detailed && opportunity.employment && <dl className={styles.details}>
-        <div><dt>Experiência anunciada</dt><dd>{opportunity.employment.experienceYears === null ? "Não informada" : `${opportunity.employment.experienceYears}+ anos`}</dd></div>
+        <div><dt>Experiência anunciada</dt><dd>{employmentExperienceSummary(opportunity.employment.experienceYears, opportunity.eligibility)}</dd></div>
         <div><dt>Vínculo anunciado</dt><dd>{opportunity.employment.employmentType ?? "Não informado"}</dd></div>
         <div><dt>Viagens e presença no cliente</dt><dd>{opportunity.employment.travelText ?? "Não informado na fonte oficial"}</dd></div>
       </dl>}
