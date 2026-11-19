@@ -10,6 +10,7 @@ import { validCategories } from "@/lib/ingestion/categories";
 import { structuredEvents } from "@/lib/ingestion/structured-events";
 import { eventOrganizerVerified } from "@/lib/ingestion/public-event";
 import type { OfficialSource, OpportunityCandidate } from "@/lib/ingestion/types";
+import { auditedUfscChild, auditedUfscTarget } from '@/lib/ingestion/ufsc-discovery-policy';
 
 export type ExpansionLead = {
   url: string; title: string; target_id: string; target_official_url: string;
@@ -40,7 +41,9 @@ function pageSource(lead: ExpansionLead): OfficialSource {
     name: lead.title, institutionName: lead.target_organizer!, institutionAcronym: "",
     sourceType: "official_reference", baseUrl: lead.url, allowedDomains: [url.hostname],
     allowedPathPrefixes: [url.pathname], listingUrls: [lead.url], extractionMode: "html",
-    audienceScope: [], geographicScope: [], categories: lead.target_topics ?? [], priority: Math.min(70, lead.target_priority ?? 0), active: true,
+    audienceScope: [], geographicScope: [], categories: auditedUfscTarget(lead)
+      ? ['formacao', 'bolsas', 'pesquisa', 'eventos'] : lead.target_topics ?? [],
+    priority: Math.min(70, lead.target_priority ?? 0), active: true,
     notes: `radar:discovery-page:v1; target=${lead.target_id}${internationalEligibilityNote(lead.target_topics)}; authority=${lead.target_official_url}`,
   };
 }
@@ -56,7 +59,10 @@ export async function prepareSourceExpansion(lead: ExpansionLead): Promise<Prepa
     !/^(?:CFBio|Conselho Federal de Biologia(?:\s*\(CFBio\))?)$/iu.test(lead.target_organizer.trim())) {
     return { reason: "source_authority_unverified" };
   }
-  const foreign = !sameDiscoveryScope(parent, url);
+  // Institutional hosts need a live link from this exact verified UFSC index.
+  // No external platform or unlisted university host inherits that authority.
+  const foreign = !sameDiscoveryScope(parent, url) && !auditedUfscChild(lead);
+  if (/^(?:www\.)?(?:drive\.google\.com|instagram\.com)$/.test(new URL(url).hostname)) return { reason: 'unsupported_source' };
   if (foreign && new URL(url).hostname !== "luma.com" &&
     !/evento|hackathon|workshop|confer|congresso|summit|seminário|webinar|builders|pitch|encontro|\bia\b/i.test(lead.title)) return { reason: "source_authority_unverified" };
   const path = documentPath(lead);

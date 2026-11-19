@@ -87,7 +87,7 @@ export async function prepareDiscoveredPage(html: string, source: OfficialSource
       ...(rulesHash ? { supporting_url: evidenceUrl, supporting_sha256: rulesHash } : {}) };
   }
   const candidate = normalizeDiscoveredPage(html, source);
-  if (!candidate) return { reason: isWeMakeDevsHackathonSource(source) ? 'candidate_unconfirmed' : discoveredPageFailureReason(html) };
+  if (!candidate) return { reason: isWeMakeDevsHackathonSource(source) ? 'candidate_unconfirmed' : discoveredPageFailureReason(html, source) };
   if (proof) candidate.evidenceJson.eligibility_br = proof;
   return { candidate };
 }

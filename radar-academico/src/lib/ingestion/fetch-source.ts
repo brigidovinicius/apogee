@@ -6,6 +6,7 @@ import { safeRequest } from "./safe-request";
 import { BoundedCache } from "./bounded-cache";
 import { waitForOfficialRequest } from "./request-budget";
 import { jobBoard, jobFeedUrl, jobPostingUrl } from "./job-sources";
+import { ufscDiscoveryGzip } from './ufsc-discovery-policy';
 
 // Only the individually audited EV.G host reuses robots for at most five minutes (RFC9309 section2.4).
 const evgRobotsCache = new BoundedCache<ReturnType<typeof robotsParser>>(8, 1024 * 1024, 5 * 60_000);
@@ -65,7 +66,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
       parsed.hostname === "dae.ufsc.br" && parsed.pathname === "/admissao-por-transferencias-e-retornos-edital/" ||
       parsed.hostname === "noticias.ufsc.br" && parsed.pathname === "/2026/10/ufsc-lanca-edital-de-transferencias-e-retornos-com-5-139-vagas/"
     );
-    const allowGzip = ufscGzipCompatibility ||
+    const allowGzip = ufscGzipCompatibility || ufscDiscoveryGzip(source, url) ||
       expansionGzipHosts[source.id] === parsed.hostname && parsed.pathname === "/";
     const robotsUrl = `${parsed.origin}/robots.txt`;
     const robotsKey = source.id === "evg-enap-open-courses" && parsed.hostname === "www.escolavirtual.gov.br" ? `${robotsUrl}|${agent}` : null;

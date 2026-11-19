@@ -81,7 +81,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
                  ('scope_unverified','candidate_unconfirmed','detail_layout_unrecognized','invalid_deadline','source_authority_unverified','listing_or_ambiguous','unsupported_content')
                  or (lead.processing_reason='eligibility_br_unconfirmed' and target.official_url='https://www.wemakedevs.org/hackathons'))
                and not exists(select 1 from ingestion_runs run where run.discovery_lead_id=lead.id
-                 and (run.execution_metadata->>'source_expansion_version'='9' or
+                 and (run.execution_metadata->>'source_expansion_version' in ('9','10') or
                    (run.execution_metadata->>'source_expansion_version'='7' and
                      lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline','eligibility_br_unconfirmed')) or
                    (run.execution_metadata->>'source_expansion_version'='6' and
@@ -89,7 +89,16 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
                    (run.execution_metadata->>'source_expansion_version'='5' and
                      lead.processing_reason not in ('detail_layout_unrecognized','invalid_deadline','eligibility_br_unconfirmed')) or
                    (run.execution_metadata->>'source_expansion_version'='4' and lead.processing_reason in
-                     ('scope_unverified','source_authority_unverified','unsupported_content'))))))
+                     ('scope_unverified','source_authority_unverified','unsupported_content')))))
+             or (lead.processing_status='blocked'
+               and lead.processing_reason in ('detail_layout_unrecognized','invalid_deadline','source_authority_unverified',
+                 'response_limit_exceeded','candidate_unconfirmed','listing_or_ambiguous')
+               and ((target.id='xlsx-20261014-001-ufsc' and target.organizer='UFSC'
+                     and target.official_url in ('https://noticias.ufsc.br','https://noticias.ufsc.br/'))
+                 or (target.id='exp-olimpiada-brasileira-de-quimica' and target.official_url='https://obquimica.org/'
+                     and lead.url like 'https://obquimica.org/noticias/premiacao-nacional-das-olimpiadas-de-quimica-%'))
+               and not exists(select 1 from ingestion_runs run where run.discovery_lead_id=lead.id
+                 and run.execution_metadata->>'source_expansion_version'='10')))
          order by case when (lead.processing_status='blocked' or coalesce(lead.processing_reason='processing_budget_exhausted',false))=$6 then 0 else 1 end,
            case when $7 then lead.first_seen_at end desc,
            coalesce(advice.priority,0) desc,
@@ -115,7 +124,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
          where id=$1 and status='running'`, [lead.previous_run_id]);
       const run = await client.query<{ id: string }>(
         `insert into ingestion_runs(started_at,status,execution_metadata) values(now(),'running',$1) returning id`,
-        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 9, processing_policy_version: 2 }],
+        [{ component: "discovery-lead", lead_id: lead.id, attempt: lead.processing_attempts, lease_token: lead.processing_lease_token, source_expansion_version: 10, processing_policy_version: 2 }],
       );
       lead.processing_run_id = run.rows[0].id;
       await client.query("update discovery_leads set processing_run_id=$2 where id=$1", [lead.id, lead.processing_run_id]);

@@ -10,6 +10,7 @@ import { classifyApplicationRoute } from './classify-application-route';
 import { confirmedTerminalStatus, deadlineIsCurrent } from './publication';
 import { normalizeServiceEvent } from './normalize-service-event';
 import { normalizeWeMakeDevsHackathon } from './normalize-wemakedevs';
+import { prepareAuditedAnnouncement } from './normalize-audited-announcement';
 
 export const isDiscoveredPageSource = (source: Pick<OfficialSource, "id">) => source.id.startsWith("auto-page-");
 const clean = (text: string) => text.normalize("NFC").replace(/\s+/gu, " ").trim();
@@ -17,6 +18,11 @@ const clean = (text: string) => text.normalize("NFC").replace(/\s+/gu, " ").trim
 /** Named detail templates only: a page title may be outside its bounded body. */
 function detachedDetail($: cheerio.CheerioAPI) {
   const layouts = [
+    // UFSC's audited institutional theme uses H2 for the post title. Its H1
+    // belongs to the site, and sidebar calendar entries are separate content.
+    { marker: $('#content > article.post[id^="post-"]'),
+      heading: $('#content > article.post[id^="post-"] > h2'),
+      body: $('#content > article.post[id^="post-"] > .content') },
     // Plone keeps its heading outside the rich-text body. Folder listings have
     // tile articles instead; they must never become one combined opportunity.
     { marker: $('#content h1.documentFirstHeading'), heading: $('#content h1.documentFirstHeading'),
@@ -144,15 +150,19 @@ export function normalizeDiscoveredPage(html: string, source: OfficialSource): O
   }
   const article = singleOpportunityArticle(html);
   if (!article || !relevantOpportunityContent(article.title, article.text)) return null;
+  const audited = prepareAuditedAnnouncement(article, source);
+  if (audited !== undefined) return 'candidate' in audited ? audited.candidate : null;
   const service = normalizeServiceEvent(article, source);
   return service === undefined ? normalizeOpportunity({ ...article, url: source.baseUrl, source }) : service;
 }
 
 /** Explain a failed generic extraction without turning incomplete text into a candidate. */
-export function discoveredPageFailureReason(html: string) {
+export function discoveredPageFailureReason(html: string, source?: OfficialSource) {
   if (structuredEvents(html).length) return 'candidate_unconfirmed';
   const article = singleOpportunityArticle(html);
   if (!article) return 'detail_layout_unrecognized';
+  const audited = source ? prepareAuditedAnnouncement(article, source) : undefined;
+  if (audited && 'reason' in audited) return audited.reason;
   if (!relevantOpportunityContent(article.title, article.text)) return 'irrelevant_link';
   const text = `${article.title} ${article.text}`;
   if (confirmedTerminalStatus(text, article.title)) return 'status_unconfirmed';
