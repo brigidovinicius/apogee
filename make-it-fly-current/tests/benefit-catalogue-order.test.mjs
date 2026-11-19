@@ -65,7 +65,7 @@ test("curated campaigns rise above ordinary catalogue order and the exact approv
 test("all configured partners have a local brand image with HTTPS provenance", () => {
   const offers = JSON.parse(readFileSync(new URL("../content/benefit-offers.json", import.meta.url), "utf8"));
   const { benefitBrand } = opportunityLoader()("lib/benefits/brands.ts");
-  for (const partner of new Set([...offers.map(item => item.partner), "Teamwork.com", "HostGator Brasil"])) {
+  for (const partner of new Set([...offers.map(item => item.partner), "Teamwork.com", "HostGator Brasil", "Samsung Brasil e Google"])) {
     const brand = benefitBrand(partner);
     assert.ok(brand, partner);
     assert.equal(new URL(brand.source).protocol, "https:", partner);
