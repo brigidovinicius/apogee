@@ -2,9 +2,10 @@ import {automaticDossier,balancedResearchCandidates,nextResearchCandidate} from 
 import {enrichResearch,enrichSelectedEvidence,researchPriority,defaultArticleReader} from './research-service.mjs';
 import {articleSource,referenceForUrl,ARTICLE_EXTRACTION_VERSION} from './article-research.mjs';
 import {explainerCatalog,explainerId,explainerWindowOpen,nextExplainer,automaticExplainerDossier,explainerRecoveryEligible,explainerEvidenceHash,expandExplainerSources,editorialAttemptLimit} from './explainers.mjs';
-import {renewableExplainerPlans,storedExplainerPlans,nextReferenceDiscovery} from './replenishment.mjs';
+import {renewableExplainerPlans,storedExplainerPlans,nextReferenceDiscovery,substantiveGuide} from './replenishment.mjs';
+import {apiOperationPolicy} from './openai-routing.mjs';
 import {randomUUID} from 'node:crypto';
-import {baselinePostIds,dailyDraftCap,topicAvailable,extraBatch} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
+import {baselinePostIds,dailyDraftCap,topicAvailable,extraBatch,focusPool} from '../../make-it-fly-current/lib/blog/editorial-plan.mjs';
 import {readFile} from 'node:fs/promises';
 import {actualUsageCost,assertWindow,cycleCap,fail,hash,periodKeys,selectPrice,usageCost,validateGrant,validatePolicy,validateSubscription,validateSubscriptionBinding,subscriptionUsage,googleUsageLimits,freeCreditStatus} from './policy.mjs';
 import {buildRequest,cacheKey,cmsDraft,validateArticle,ARTICLE_REPAIR_REASONS,SEO_GUIDELINES} from './editorial.mjs';
@@ -12,7 +13,7 @@ import {coverBrief,imageRequest,imageCost,imageUsageCost,selectImagePrice,valida
 import {validateDossier,assessDossier,approvedEvidence,validateComparison,buildComparisonRequest,comparisonCacheKey,COMPARISON_PROMPT_VERSION,COMPARISON_FORMAT_ERRORS,isExplainer,scopeVerified,explainerOverlap,isEvidenceGapClaim,resolveComparisonQuotes} from './corroboration.mjs';
 
 export async function migrate(sql) {
-  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql','012-research-recovery.sql','013-hourly-publication.sql','014-ste-editorial-references.sql','015-research-provenance-kinds.sql','016-autonomous-evidence-recovery.sql','017-capped-openai-text.sql','018-renewable-editorial-queue.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
+  const sources=await Promise.all(['001-initial.sql','002-editorial-images.sql','003-google-subscription.sql','004-multisource.sql','005-automatic-research.sql','006-google-access.sql','007-article-research.sql','008-primary-corporate-references.sql','009-marketing-startups-references.sql','010-hybrid-explainers.sql','011-complete-reference-guides.sql','012-research-recovery.sql','013-hourly-publication.sql','014-ste-editorial-references.sql','015-research-provenance-kinds.sql','016-autonomous-evidence-recovery.sql','017-capped-openai-text.sql','018-renewable-editorial-queue.sql','019-resilient-free-credit-pipeline.sql'].map(f=>readFile(new URL('../sql/'+f,import.meta.url),'utf8')));
   return sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(174911,601)`;
     const [{exists}]=await tx`select to_regclass('blog_worker.migration') is not null as exists`;
@@ -215,6 +216,16 @@ export class Store {
   async checkResearchBudget(policy){
     return this.sql.begin(async tx=>{const {control,at}=await lock(tx);if(control.paused)fail('paused');await subscriptionBudget(tx,policy,at);});
   }
+  async checkAPIResearchBudget({policy,catalog,openai},identity){
+    const p=apiOperationPolicy(policy,openai,'comparison');
+    return this.sql.begin(async tx=>{
+      const {at,control}=await lock(tx);if(control.paused)fail('paused');
+      const circuit=await this.apiCircuit(tx);if(circuit.blocked)fail('openai_circuit_open');
+      selectPrice(catalog,p,at);const eligible=await this.openAICreditStatus(identity,tx);if(!eligible.eligible)fail(eligible.reason);
+      const [{spent}]=await tx`select coalesce(sum(coalesce(charged_micro_usd,reserved_micro_usd)),0) as spent from blog_worker.attempt where day=${periodKeys(at).day}::date`;
+      if(n(spent)>=p.daily_budget_micro_usd_cap)fail('daily_budget');
+    });
+  }
   async prepareAutomaticExplainer(policy,{read=defaultArticleReader,plans=explainerCatalog,at=new Date()}={}){
     if(!explainerWindowOpen(policy,at))return null;
     const [control]=await this.sql`select paused from blog_worker.control where singleton=true`;
@@ -292,12 +303,16 @@ export class Store {
       and d.document->>'extraction_method'='public_article' order by d.url,d.captured_at desc) latest) ranked
       order by source_rank,captured_at desc limit 1200`;
     const captures=rows.map(r=>({...r.document,capture_id:r.capture_id,candidate_id:r.candidate_id,source_id:r.source_id,captured_at:r.captured_at}));
-    const existing=await this.sql`select explainer_key from blog_worker.candidate where content_kind='explainer'`;
+    const existing=await this.sql`select explainer_key,artifact from blog_worker.candidate where content_kind='explainer'`;
     // Used guides may be supporting context for a different, never-used primary
     // URL. Holds and rejected news stay excluded; native claim overlap still
     // rejects recycling prior material, and prior dossiers remain immutable.
-    const options={blockedUrls:held.map(r=>r.url),seedBlockedUrls:blocked.map(r=>r.url),existing,usage,policy,at,approvedReferenceIds:approved.map(r=>r.id)};
-    const plans=[...storedExplainerPlans(stored),...renewableExplainerPlans(captures,options)].filter(p=>p.urls.every(permitted))
+    const failedTopics=await this.sql`select case when v.document->>'category'='negocios' then 'negocios' when v.document->>'subcategory'='ia' then 'ia' else 'tecnologia' end as pool,count(*)::int as failed
+      from blog_worker.candidate c join lateral(select document,assessment from blog_worker.dossier_version where candidate_id=c.id order by revision desc limit 1)v on true
+      where c.explainer_key like 'auto-%' and c.post_id is null and v.assessment->>'eligible'='false'
+        and exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' and a.day=${periodKeys(at).day}::date and a.state='confirmed' and not coalesce(a.usage->>'not_generated'='true',false)) group by 1`;
+    const options={blockedUrls:held.map(r=>r.url),seedBlockedUrls:blocked.map(r=>r.url),existing,usage,failedTopics,policy,at,approvedReferenceIds:approved.map(r=>r.id)};
+    const plans=[...storedExplainerPlans(stored),...renewableExplainerPlans(captures,options)].filter(p=>!failedTopics.some(f=>f.pool===focusPool(p)&&Number(f.failed)>=2)&&p.urls.every(url=>permitted(url)&&substantiveGuide(captures.find(d=>d.url===url||d.requested_url===url)??{url,title:''})))
       .map(p=>({...p,...(p.additional_sources?{additional_sources:p.additional_sources.filter(s=>permitted(s.url))}:{})}));
     if(!discoveryOnly&&explainerWindowOpen(policy,at)&&plans.length){const result=await this.prepareAutomaticExplainer(policy,{read,plans,at});if(result)return {...result,renewable:true};}
     // A durable two-minute interval shares the tick's one bounded HTTP cycle.
@@ -436,7 +451,7 @@ export class Store {
   async nextAutomaticWork(policy){
     const [image]=await this.sql`select j.candidate_id from blog_worker.image_job j join blog_worker.candidate c on c.id=j.candidate_id
       where j.state='pending' and c.status='draft' and c.reason is distinct from 'source_changed_after_reservation'
-      and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='image') order by j.created_at limit 1`;
+      and not exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='image' and not(coalesce(a.provider='openai_api' and a.policy->>'editorial_pipeline'='google_multisource_v1' and a.state='confirmed' and a.charged_micro_usd=0 and a.usage->>'not_generated'='true',false))) order by j.created_at limit 1`;
     if(policy.automatic_image_generation_enabled&&image)return {method:'reserveImage',candidateId:image.candidate_id};
     const at=new Date(),usage=await this.productionUsage(this.sql,at,policy);
     const rows=await this.sql`select c.id,c.status,c.reason,c.first_attempt_day,v.document,v.assessment,
@@ -472,11 +487,11 @@ export class Store {
       const google=policy.provider==='google_subscription';
       const multisource=google||hybrid(policy),editorial=hybrid(policy)?policy.editorial_policy:policy;
       if(hybrid(policy)){
-        if(kind!=='text'||!candidateId)fail('invalid_policy');
+        if(!candidateId||(policy.api_operation??'text')!==kind)fail('invalid_policy');
         const [circuit]=await tx`select blocked from blog_worker.openai_circuit where singleton`;
         if(circuit?.blocked!==false)fail('openai_circuit_open');
       }
-      if(kind==='comparison'&&(!google||!candidateId))fail('comparison_requires_google');
+      if(kind==='comparison'&&(!(google||hybrid(policy))||!candidateId))fail('comparison_requires_google');
       const price=google?{model:policy.model_id,provider:policy.provider,billing_mode:'subscription_no_overages'}:selectPrice(catalog,policy,at);assertWindow(at);
       let grant;
       if(google)await subscriptionBudget(tx,policy,at);
@@ -525,7 +540,7 @@ export class Store {
       const attempts=allAttempts.filter(a=>!(hybrid(a.policy)&&a.state==='confirmed'&&n(a.charged_micro_usd)===0&&a.usage?.not_generated===true));
       if(attempts.length>=editorialAttemptLimit(editorial,version?.document,attempts))fail('attempt_limit');
       if(kind==='comparison'&&version.assessment.comparison_verified)fail('research_evidence_unchanged');
-      if(kind==='comparison'&&attempts.filter(a=>a.kind==='comparison').length>=2&&editorialAttemptLimit(policy,version.document,attempts)!==4)fail('comparison_attempt_limit');
+      if(kind==='comparison'&&attempts.filter(a=>a.kind==='comparison').length>=2&&editorialAttemptLimit(editorial,version.document,attempts)!==4)fail('comparison_attempt_limit');
       const comparisonRepair=kind==='comparison'&&attempts.some(a=>a.kind==='comparison'&&a.dossier_revision===version?.revision);
       const body=kind==='comparison'?buildComparisonRequest(version.document,policy,comparisonRepair):buildRequest(effective,policy,attempts.some(a=>a.kind==='text'));
       const key=kind==='comparison'?comparisonCacheKey(version.document,policy,comparisonRepair):cacheKey(effective,policy);
@@ -575,7 +590,7 @@ export class Store {
       if(notGenerated){
         if(result.reason==='openai_credit_limit')await tx`select blog_worker.block_openai('openai_credit_limit')`;
         await tx`update blog_worker.attempt set reason=${result.reason??'not_generated'} where id=${attempt.id}`;
-        await tx`update blog_worker.candidate set status='ready' where id=${candidate.id} and reason is distinct from 'operator_hold' and reason is distinct from 'source_changed_after_reservation'`;
+        await tx`update blog_worker.candidate set status=case when ${attempt.kind}='comparison' then 'held' else 'ready' end where id=${candidate.id} and reason is distinct from 'operator_hold' and reason is distinct from 'source_changed_after_reservation'`;
         return {status:'not_generated',reason:result.reason??'not_generated',charged_micro_usd:0};
       }
       if((google && quota>n(attempt.quota_reserved)) || (!google && (cost>n(attempt.reserved_micro_usd) || (result.usage?.input_tokens??0)>attempt.policy.input_tokens_cap_including_overhead
@@ -646,6 +661,10 @@ export class Store {
       const {at,control}=await lock(tx);if(control.paused)fail('paused');assertWindow(at);
       await assertDraftAccess(tx);
       const google=policy.provider==='google_subscription';
+      if(hybrid(policy)){
+        if(policy.api_operation!=='image'||!candidateId)fail('invalid_policy');
+        if((await this.apiCircuit(tx))?.blocked)fail('openai_circuit_open');
+      }
       const price=google?{model:policy.image_model_id,provider:policy.provider,billing_mode:'subscription_no_overages'}:selectImagePrice(catalog,policy,at);
       let grant;
       if(google)await subscriptionBudget(tx,policy,at);
@@ -656,7 +675,10 @@ export class Store {
         join blog_worker.candidate c on c.id=j.candidate_id where j.state='pending'
         and (${candidateId}::text is null or j.candidate_id=${candidateId}) order by j.created_at limit 1 for update of j`;
       if(!job)return {status:'idle'};
-      const previousImages=await tx`select id,state from blog_worker.attempt where candidate_id=${job.candidate_id} and kind='image' order by ordinal`;
+      const previousImages=await tx`select id,state from blog_worker.attempt where candidate_id=${job.candidate_id} and kind='image'
+        and not(coalesce(provider='openai_api' and policy->>'editorial_pipeline'='google_multisource_v1' and state='confirmed' and charged_micro_usd=0 and usage->>'not_generated'='true',false)) order by ordinal`;
+      const [imageOrdinals]=await tx`select coalesce(max(ordinal),0)::int as maximum from blog_worker.attempt where candidate_id=${job.candidate_id} and kind='image'`;
+      if(imageOrdinals.maximum>=2)fail('image_attempt_limit');
       // Only a trusted editor/owner can append this authorization; runtime has no event INSERT grant.
       // One explicit replacement is permitted, preserving both actual receipts and media.
       const [revisionAuthorization]=google&&previousImages.length===1&&previousImages[0].state==='confirmed'?await tx`select id from blog_worker.operator_event
@@ -665,7 +687,7 @@ export class Store {
           and length(detail->>'previous_media_id')>0 order by id desc limit 1`:[];
       if(previousImages.length && (!revisionAuthorization||previousImages.length!==1))fail('image_attempt_limit');
       const source=sources.find(s=>s.id===job.source_id&&s.enabled&&s.feed_content_approved);
-      if(google&&job.artifact?.corroboration){
+      if((google||hybrid(policy))&&job.artifact?.corroboration){
         const [v]=await tx`select * from blog_worker.dossier_version where candidate_id=${job.candidate_id} order by revision desc limit 1`;
         if(!v||job.candidate_reason==='source_changed_after_reservation'||v.source_hash!==job.evidence_hash||(!revisionAuthorization&&v.revision!==job.artifact.dossier_revision)||!assessDossier(v.document,{comparisonVerified:v.assessment.comparison_verified===true}).eligible)fail('comparison_review_required');
       }else if(!source || job.candidate_reason==='source_changed_after_reservation' || job.evidence.some(e=>e.rights_reference!==source.rights_reference))fail('source_approval_changed');
@@ -680,7 +702,7 @@ export class Store {
       if(!google && n(spent.article)+reserve>policy.article_budget_micro_usd_cap_including_all_attempts)fail('article_budget');
       const id=randomUUID();
       await tx`insert into blog_worker.attempt(id,candidate_id,benefit_id,kind,ordinal,cache_key,request_hash,price,policy,day,week,state,reserved_micro_usd,provider,quota_reserved)
-        values(${id},${job.candidate_id},${grant?.id??null},'image',${previousImages.length+1},${hash(body)},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?googleUsageLimits(policy,at).reservedTokens:0})`;
+        values(${id},${job.candidate_id},${grant?.id??null},'image',${imageOrdinals.maximum+1},${hash(body)},${hash(body)},${tx.json(price)},${tx.json(policy)},${day},${week},'reserved',${reserve},${google?'google_subscription':'openai_api'},${google?googleUsageLimits(policy,at).reservedTokens:0})`;
       await tx`update blog_worker.image_job set state='reserved',updated_at=now() where candidate_id=${job.candidate_id}`;
       return {status:'reserved',kind:'image',id,candidate_id:job.candidate_id,body,policy,identity,...(google?{}:{credit_grant:grant}),reserved_micro_usd:reserve,not_after:new Date(+at+180000).toISOString()};
     });
@@ -693,18 +715,27 @@ export class Store {
       const hold=async reason=>{
         await tx`update blog_worker.attempt set state='unknown',reason=${reason} where id=${attempt.id}`;
         await tx`update blog_worker.image_job set state='held',reason=${reason},updated_at=now() where candidate_id=${attempt.candidate_id}`;
-        await tx`update blog_worker.control set paused=true,reason=${reason},updated_at=now() where singleton=true`;
+        if(hybrid(attempt.policy))await tx`select blog_worker.block_openai(${reason})`;
+        else await tx`update blog_worker.control set paused=true,reason=${reason},updated_at=now() where singleton=true`;
         return {status:'held',reason,reserved_micro_usd:n(attempt.reserved_micro_usd)};
       };
       const google=attempt.provider==='google_subscription';
       if(result.outcome==='unknown')return hold(google?(result.reason??'google_execution_unknown'):'unknown_image_charge');
       let cost=0,quota=0;
-      try{if(result.outcome!=='not_sent'){if(google)quota=subscriptionUsage(result.usage);else cost=imageUsageCost(attempt.price,result.usage);}}catch{return hold('invalid_image_usage');}
-      await tx`update blog_worker.attempt set state='confirmed',charged_micro_usd=${cost},quota_used=${google?quota:null},usage=${tx.json(result.usage??{})},finished_at=now() where id=${attempt.id}`;
+      const notGenerated=hybrid(attempt.policy)&&['not_sent','not_generated'].includes(result.outcome);
+      try{if(!['not_sent','not_generated'].includes(result.outcome)){if(google)quota=subscriptionUsage(result.usage);else cost=imageUsageCost(attempt.price,result.usage);}}catch{return hold('invalid_image_usage');}
+      await tx`update blog_worker.attempt set state='confirmed',charged_micro_usd=${cost},quota_used=${google?quota:null},usage=${tx.json(notGenerated?{not_generated:true}:result.usage??{})},finished_at=now() where id=${attempt.id}`;
+      if(notGenerated){
+        if(result.reason==='openai_credit_limit')await tx`select blog_worker.block_openai('openai_credit_limit')`;
+        await tx`update blog_worker.attempt set reason=${result.reason??'not_generated'} where id=${attempt.id}`;
+        await tx`update blog_worker.image_job set state='pending',reason=null,updated_at=now() where candidate_id=${attempt.candidate_id}`;
+        return {status:'not_generated',reason:result.reason??'not_generated',charged_micro_usd:0};
+      }
       let reason=result.reason;
       if((google && quota>n(attempt.quota_reserved)) || (!google && (cost>n(attempt.reserved_micro_usd)||(result.usage?.input_tokens??0)>attempt.policy.image_input_tokens_cap
         ||(result.usage?.output_tokens??0)>attempt.policy.image_output_tokens_reservation))){
-        reason='usage_exceeded_reservation';await tx`update blog_worker.control set paused=true,reason=${reason},updated_at=now() where singleton=true`;
+        reason='usage_exceeded_reservation';if(hybrid(attempt.policy))await tx`select blog_worker.block_openai(${reason})`;
+        else await tx`update blog_worker.control set paused=true,reason=${reason},updated_at=now() where singleton=true`;
       }
       if(result.outcome==='completed'&&!reason)try{validateWebp(result.image);}catch{reason='invalid_image';}
       const [candidate]=await tx`select * from blog_worker.candidate where id=${attempt.candidate_id}`;
@@ -740,7 +771,7 @@ export class Store {
   async recordAutomaticOutcome(result){
     // Operational state only. It cannot pause/resume, change policy or expose a
     // provider credential. The actual receipts remain the source of truth.
-    const part=value=>value?Object.fromEntries(['status','reason','prepared','kind','renewable','requests','post_id','scheduled_at','cadence'].filter(k=>Object.hasOwn(value,k)).map(k=>[k,value[k]])):null;
+    const part=value=>value?Object.fromEntries(['status','reason','prepared','kind','renewable','requests','post_id','scheduled_at','cadence','provider','fallback_from','fallback_reason'].filter(k=>Object.hasOwn(value,k)).map(k=>[k,value[k]])):null;
     const state={at:new Date().toISOString(),generation:part(result.generation),research:part(result.research),publication:part(result.publication)};
     await this.sql`update blog_worker.control set snapshot=jsonb_set(coalesce(snapshot,'{}'::jsonb),'{operation}',${this.sql.json(state)}),heartbeat_at=now() where singleton=true`;
   }
@@ -756,7 +787,7 @@ export class Store {
       const api={enabled,eligible:eligibility?.eligible===true&&!circuit?.blocked&&!missingKey,
         reason:config.openai_error??(missingKey?'credentials_missing':null)??(circuit?.blocked?(circuit.reason??'openai_circuit_open'):eligibility?.reason)??null,
         cycle_cap:config.openai?.cycle_budget_micro_usd_cap??5000000,daily_cap:config.openai?.daily_budget_micro_usd_cap??250000,
-        model:config.openai?.model_id??'gpt-6-luna'};
+        model:config.openai?.model_id??'gpt-6-luna',operations:config.openai?.schema_version===2?['text',...(config.openai.comparison_enabled?['comparison']:[]),...(config.openai.image_enabled?['image']:[])]:['text']};
       const snapshot={operation:control.snapshot?.operation??null,automatic_publication:publication,renewable_explainers:config.policy.automatic_explainers_enabled===true,provider:config.policy.provider,account_email:config.policy.google_account_email??null,daily_calls_cap:googleUsageLimits(config.policy).dailyCalls??0,weekly_calls_cap:config.policy.google_weekly_calls_cap??0,daily_tokens_cap:googleUsageLimits(config.policy).dailyTokens??0,weekly_tokens_cap:config.policy.google_weekly_tokens_cap??0,generation_enabled:config.policy.generation_enabled,images_enabled:config.policy.automatic_image_generation_enabled,
         automatic_access_validation:config.policy.google_automatic_access_validation_enabled===true,automatic_explainers:config.policy.automatic_explainers_enabled===true,explainer_after_local_hour:config.policy.explainer_after_local_hour??null,operator_commands_only:config.policy.operator_commands_only===true,model:config.policy.model_id,image_model:config.policy.image_model_id??null,
         organization_id:identity?.organization_id??null,project_id:identity?.project_id??null,

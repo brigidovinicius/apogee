@@ -1056,13 +1056,28 @@
     "category": "tecnologia",
     "subcategory": "software-ferramentas",
     "question": "Como IaaS oferece infraestrutura virtual sob demanda e divide responsabilidades entre provedor e cliente?",
-    "terms": ["IaaS", "infrastructure", "virtual", "resources"],
+    "terms": [
+      "IaaS",
+      "infrastructure",
+      "virtual",
+      "resources"
+    ],
     "urls": [
       "https://cloud.google.com/learn/what-is-iaas",
       "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-iaas"
     ],
     "additional_sources": [
-      {"url":"https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility","kind":"primary","origin_url":"https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility","terms":["IaaS","Operating system","Customer data"],"independence_note":"Documentação complementar da Microsoft sobre divisão de responsabilidades. Mesma autoria do segundo guia, nunca uma terceira confirmação independente; comparar os fatos com a autoria Google."}
+      {
+        "url": "https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility",
+        "kind": "primary",
+        "origin_url": "https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility",
+        "terms": [
+          "IaaS",
+          "Operating system",
+          "Customer data"
+        ],
+        "independence_note": "Documentação complementar da Microsoft sobre divisão de responsabilidades. Mesma autoria do segundo guia, nunca uma terceira confirmação independente; comparar os fatos com a autoria Google."
+      }
     ]
   },
   {
@@ -1070,7 +1085,12 @@
     "category": "tecnologia",
     "subcategory": "software-ferramentas",
     "question": "Como PaaS reúne infraestrutura e ferramentas para desenvolver aplicações, e o que continua a cargo do cliente?",
-    "terms": ["PaaS", "platform", "applications", "development"],
+    "terms": [
+      "PaaS",
+      "platform",
+      "applications",
+      "development"
+    ],
     "urls": [
       "https://cloud.google.com/learn/what-is-paas",
       "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-paas"
@@ -1081,7 +1101,12 @@
     "category": "tecnologia",
     "subcategory": "software-ferramentas",
     "question": "Como SaaS permite usar aplicações pela internet enquanto o provedor administra o software e sua infraestrutura?",
-    "terms": ["SaaS", "software", "applications", "internet"],
+    "terms": [
+      "SaaS",
+      "software",
+      "applications",
+      "internet"
+    ],
     "urls": [
       "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-saas",
       "https://cloud.google.com/learn/what-is-cloud-computing"
@@ -1092,14 +1117,39 @@
     "category": "tecnologia",
     "subcategory": "software-ferramentas",
     "question": "Como microsserviços dividem uma aplicação em serviços independentes que precisam se comunicar, sem confundir o conceito com um produto específico?",
-    "terms": ["microservices", "services", "communication", "independent"],
+    "terms": [
+      "microservices",
+      "services",
+      "communication",
+      "independent"
+    ],
     "urls": [
       "https://cloud.google.com/learn/what-is-microservices-architecture",
       "https://learn.microsoft.com/en-us/azure/architecture/example-scenario/serverless/microservices-with-container-apps-dapr"
     ],
     "additional_sources": [
-      {"url":"https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices","kind":"primary","origin_url":"https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices","terms":["observability","distributed tracing","microservices"],"independence_note":"Documentação arquitetural complementar da mesma autoria Microsoft; não conta como nova autoria independente. Verificar mecanismos, observabilidade, complexidade e limites contra a autoria Google."},
-      {"url":"https://learn.microsoft.com/en-us/cloud-computing/finops/framework/optimize/architecting","kind":"primary","origin_url":"https://learn.microsoft.com/en-us/cloud-computing/finops/framework/optimize/architecting","terms":["cost","FinOps","microservices"],"independence_note":"Guia Microsoft sobre arquitetura no framework FinOps. Mesma autoria das referências Microsoft; serve de contexto complementar, sem transformar recomendações em necessidade universal ou nova confirmação independente."}
+      {
+        "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices",
+        "kind": "primary",
+        "origin_url": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices",
+        "terms": [
+          "observability",
+          "distributed tracing",
+          "microservices"
+        ],
+        "independence_note": "Documentação arquitetural complementar da mesma autoria Microsoft; não conta como nova autoria independente. Verificar mecanismos, observabilidade, complexidade e limites contra a autoria Google."
+      },
+      {
+        "url": "https://learn.microsoft.com/en-us/cloud-computing/finops/framework/optimize/architecting",
+        "kind": "primary",
+        "origin_url": "https://learn.microsoft.com/en-us/cloud-computing/finops/framework/optimize/architecting",
+        "terms": [
+          "cost",
+          "FinOps",
+          "microservices"
+        ],
+        "independence_note": "Guia Microsoft sobre arquitetura no framework FinOps. Mesma autoria das referências Microsoft; serve de contexto complementar, sem transformar recomendações em necessidade universal ou nova confirmação independente."
+      }
     ]
   },
   {
@@ -1107,7 +1157,12 @@
     "category": "tecnologia",
     "subcategory": "ia",
     "question": "Que papel a atenção exerce nos Transformers para relacionar partes de uma sequência e considerar o contexto?",
-    "terms": ["transformer", "attention", "context", "sequence"],
+    "terms": [
+      "transformer",
+      "attention",
+      "context",
+      "sequence"
+    ],
     "urls": [
       "https://developers.google.com/machine-learning/crash-course/llm/transformers",
       "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-are-large-language-models-llms"
@@ -1118,13 +1173,27 @@
     "category": "tecnologia",
     "subcategory": "ia",
     "question": "Por que tokens podem ser palavras ou partes de palavras, e como essas unidades entram no processamento de texto de um LLM?",
-    "terms": ["token", "word", "subword"],
+    "terms": [
+      "token",
+      "word",
+      "subword"
+    ],
     "urls": [
       "https://learn.microsoft.com/en-us/agent-framework/journey/llm-fundamentals",
       "https://developers.google.com/machine-learning/crash-course/llm/transformers"
     ],
     "additional_sources": [
-      {"url":"https://blogs.nvidia.com/blog/ai-tokens-explained/","kind":"primary","origin_url":"https://blogs.nvidia.com/blog/ai-tokens-explained/","terms":["token","numerical","vocabulary"],"independence_note":"Explicação institucional da NVIDIA sobre tokenização e representações numéricas. Autoria distinta de Google e Microsoft; sem tratar exemplos numéricos de um tokenizador como IDs universais ou medir eficiência não comprovada."}
+      {
+        "url": "https://blogs.nvidia.com/blog/ai-tokens-explained/",
+        "kind": "primary",
+        "origin_url": "https://blogs.nvidia.com/blog/ai-tokens-explained/",
+        "terms": [
+          "token",
+          "numerical",
+          "vocabulary"
+        ],
+        "independence_note": "Explicação institucional da NVIDIA sobre tokenização e representações numéricas. Autoria distinta de Google e Microsoft; sem tratar exemplos numéricos de um tokenizador como IDs universais ou medir eficiência não comprovada."
+      }
     ]
   },
   {
@@ -1132,7 +1201,12 @@
     "category": "negocios",
     "subcategory": null,
     "question": "Como um orçamento empresarial reúne receitas e despesas estimadas para orientar decisões, sem prometer resultados financeiros?",
-    "terms": ["budget", "cost", "forecast", "cash"],
+    "terms": [
+      "budget",
+      "cost",
+      "forecast",
+      "cash"
+    ],
     "urls": [
       "https://business.gov.au/finance/financial-tools-and-templates/create-a-budget",
       "https://legacy.sba.gov/event/90445"
@@ -1143,7 +1217,12 @@
     "category": "negocios",
     "subcategory": null,
     "question": "Como uma demonstração de resultados reúne receitas e despesas de um período para mostrar lucro ou prejuízo, sem confundir esse resultado com saldo de caixa?",
-    "terms": ["income", "expenses", "profit", "period"],
+    "terms": [
+      "income",
+      "expenses",
+      "profit",
+      "period"
+    ],
     "urls": [
       "https://business.gov.au/finance/financial-tools-and-templates/set-up-a-profit-and-loss-statement",
       "https://legacy.sba.gov/event/90373"
@@ -1154,38 +1233,242 @@
     "category": "negocios",
     "subcategory": null,
     "question": "Como registrar transações, receitas e despesas ajuda a acompanhar as finanças de um negócio, distinguindo a prática geral das obrigações legais de cada país?",
-    "terms": ["record", "expenses", "income", "transaction"],
+    "terms": [
+      "record",
+      "expenses",
+      "income",
+      "transaction"
+    ],
     "urls": [
       "https://business.gov.au/finance/payments-and-invoicing/record-keeping",
       "https://legacy.sba.gov/business-guide/manage-your-business/manage-your-finances"
     ]
   },
   {
-    "key":"franquias-marca-modelo-autonomia-1",
-    "category":"negocios","subcategory":"empreendedorismo-startups",
-    "question":"Como uma franquia permite usar uma marca e um modelo de negócio, combinando suporte do franqueador com limites de autonomia?",
-    "terms":["franchise","franchisor","franchisee","control"],
-    "urls":["https://www.sba.gov/counseling/plan-your-business/","https://business.gov.au/planning/business-structures-and-types/franchising/buy-a-franchise"]
+    "key": "franquias-marca-modelo-autonomia-1",
+    "category": "negocios",
+    "subcategory": "empreendedorismo-startups",
+    "question": "Como uma franquia permite usar uma marca e um modelo de negócio, combinando suporte do franqueador com limites de autonomia?",
+    "terms": [
+      "franchise",
+      "franchisor",
+      "franchisee",
+      "control"
+    ],
+    "urls": [
+      "https://www.sba.gov/counseling/plan-your-business/",
+      "https://business.gov.au/planning/business-structures-and-types/franchising/buy-a-franchise"
+    ]
   },
   {
-    "key":"projecao-caixa-estimativas-futuras-1",
-    "category":"negocios","subcategory":null,
-    "question":"Como uma projeção de caixa estima entradas e saídas futuras para identificar possíveis faltas de dinheiro, distinguindo estimativas de resultados já realizados?",
-    "terms":["cash","flow","forecast","projection"],
-    "urls":["https://www.sba.gov/event/87672","https://business.gov.au/finance/cash-flow/set-up-a-cash-flow-statement"]
+    "key": "projecao-caixa-estimativas-futuras-1",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "Como uma projeção de caixa estima entradas e saídas futuras para identificar possíveis faltas de dinheiro, distinguindo estimativas de resultados já realizados?",
+    "terms": [
+      "cash",
+      "flow",
+      "forecast",
+      "projection"
+    ],
+    "urls": [
+      "https://www.sba.gov/event/87672",
+      "https://business.gov.au/finance/cash-flow/set-up-a-cash-flow-statement"
+    ]
   },
   {
-    "key":"git-conflitos-integracao-alteracoes-1",
-    "category":"tecnologia","subcategory":"software-ferramentas",
-    "question":"Por que conflitos de merge exigem escolher o conteúdo final antes de integrar alterações no Git?",
-    "terms":["merge","conflict","resolve","changes"],
-    "urls":["https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging","https://docs.github.com/en/pull-requests/reference/merge-conflicts"]
+    "key": "git-conflitos-integracao-alteracoes-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Por que conflitos de merge exigem escolher o conteúdo final antes de integrar alterações no Git?",
+    "terms": [
+      "merge",
+      "conflict",
+      "resolve",
+      "changes"
+    ],
+    "urls": [
+      "https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging",
+      "https://docs.github.com/en/pull-requests/reference/merge-conflicts"
+    ]
   },
   {
-    "key":"git-clone-fetch-pull-remotos-1",
-    "category":"tecnologia","subcategory":"software-ferramentas",
-    "question":"Como clone, fetch e pull diferenciam copiar um repositório, obter novidades e integrar alterações no Git?",
-    "terms":["clone","fetch","pull","remote"],
-    "urls":["https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes","https://docs.github.com/en/get-started/using-git/getting-changes-from-a-remote-repository"]
+    "key": "git-clone-fetch-pull-remotos-1",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "Como clone, fetch e pull diferenciam copiar um repositório, obter novidades e integrar alterações no Git?",
+    "terms": [
+      "clone",
+      "fetch",
+      "pull",
+      "remote"
+    ],
+    "urls": [
+      "https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes",
+      "https://docs.github.com/en/get-started/using-git/getting-changes-from-a-remote-repository"
+    ]
+  },
+  {
+    "key": "dns-record-types",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "O que os registros DNS A, AAAA e CNAME fazem e por que não são intercambiáveis?",
+    "terms": [
+      "A record",
+      "AAAA",
+      "CNAME",
+      "IPv4",
+      "IPv6"
+    ],
+    "urls": [
+      "https://docs.cloud.google.com/dns/docs/records-overview",
+      "https://learn.microsoft.com/en-us/azure/dns/dns-zones-records"
+    ]
+  },
+  {
+    "key": "load-balancing-health",
+    "category": "tecnologia",
+    "subcategory": null,
+    "question": "Como o balanceamento de carga distribui tráfego e usa verificações de integridade?",
+    "terms": [
+      "load balancing",
+      "traffic",
+      "health",
+      "backend"
+    ],
+    "urls": [
+      "https://docs.cloud.google.com/load-balancing/docs/load-balancing-overview",
+      "https://learn.microsoft.com/en-us/azure/networking/load-balancer-content-delivery/load-balancing-content-delivery-overview"
+    ]
+  },
+  {
+    "key": "http-status-meaning",
+    "category": "tecnologia",
+    "subcategory": "software-ferramentas",
+    "question": "O que os códigos HTTP de sucesso, erro do cliente e erro do servidor realmente informam?",
+    "terms": [
+      "200",
+      "400",
+      "404",
+      "500",
+      "status"
+    ],
+    "urls": [
+      "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
+      "https://learn.microsoft.com/en-us/windows/win32/winhttp/http-status-codes"
+    ]
+  },
+  {
+    "key": "encryption-rest-transit",
+    "category": "tecnologia",
+    "subcategory": null,
+    "question": "Qual é a diferença entre criptografia de dados em repouso e em trânsito e quais limites permanecem?",
+    "terms": [
+      "encryption",
+      "rest",
+      "transit",
+      "keys"
+    ],
+    "urls": [
+      "https://docs.cloud.google.com/assured-workloads/docs/encryption-keys",
+      "https://learn.microsoft.com/en-us/azure/security/fundamentals/encryption-overview"
+    ]
+  },
+  {
+    "key": "precision-recall-classifiers",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Por que precisão e recall medem erros diferentes em modelos de classificação?",
+    "terms": [
+      "precision",
+      "recall",
+      "false positive",
+      "false negative"
+    ],
+    "urls": [
+      "https://developers.google.com/machine-learning/crash-course/classification/accuracy-precision-recall",
+      "https://learn.microsoft.com/en-us/azure/cognitive-services/language-service/custom-text-classification/concepts/evaluation-metrics"
+    ]
+  },
+  {
+    "key": "kmeans-centroids-limits",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "Como o k-means agrupa dados por centroides e quais decisões e limites afetam o resultado?",
+    "terms": [
+      "k-means",
+      "centroid",
+      "cluster",
+      "distance"
+    ],
+    "urls": [
+      "https://developers.google.com/machine-learning/clustering/kmeans/overview",
+      "https://learn.microsoft.com/en-us/analysis-services/data-mining/microsoft-clustering-algorithm-technical-reference"
+    ]
+  },
+  {
+    "key": "overfitting-generalization",
+    "category": "tecnologia",
+    "subcategory": "ia",
+    "question": "O que é overfitting, como a validação o revela e por que regularização não dispensa testes?",
+    "terms": [
+      "overfitting",
+      "training",
+      "validation",
+      "regularization"
+    ],
+    "urls": [
+      "https://developers.google.com/machine-learning/crash-course/overfitting/overfitting",
+      "https://learn.microsoft.com/en-us/azure/machine-learning/concept-manage-ml-pitfalls"
+    ]
+  },
+  {
+    "key": "smart-goals-business",
+    "category": "negocios",
+    "subcategory": "empreendedorismo-startups",
+    "question": "Como transformar objetivos de uma empresa em metas SMART que possam ser acompanhadas?",
+    "terms": [
+      "specific",
+      "measurable",
+      "achievable",
+      "relevant",
+      "time-bound"
+    ],
+    "urls": [
+      "https://business.gov.au/planning/business-plans/set-goals-for-your-business",
+      "https://www.bdc.ca/en/articles-tools/entrepreneur-toolkit/templates-business-guides/glossary/smart-objectives"
+    ]
+  },
+  {
+    "key": "pricing-strategy-value",
+    "category": "negocios",
+    "subcategory": "marketing",
+    "question": "Como escolher preços considerando custos, concorrência e valor percebido, sem prometer uma fórmula universal?",
+    "terms": [
+      "pricing",
+      "cost",
+      "value",
+      "competit"
+    ],
+    "urls": [
+      "https://business.gov.au/products-and-services/choose-a-pricing-strategy",
+      "https://www.bdc.ca/en/articles-tools/marketing-sales-export/marketing/pricing-5-common-strategies"
+    ]
+  },
+  {
+    "key": "inventory-reorder-control",
+    "category": "negocios",
+    "subcategory": null,
+    "question": "Como organizar o controle de estoque e a reposição sem imobilizar dinheiro desnecessariamente?",
+    "terms": [
+      "inventory",
+      "stock",
+      "reorder",
+      "suppl"
+    ],
+    "urls": [
+      "https://business.gov.au/products-and-services/inventory-management/manage-your-inventory",
+      "https://www.bdc.ca/en/articles-tools/operations/inventory-management/optimize-inventory-management"
+    ]
   }
 ]

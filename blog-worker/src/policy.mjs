@@ -21,13 +21,14 @@ export function validatePolicy(p) {
   if(p?.editorial_pipeline!==undefined&&!hybrid)fail('invalid_policy');
   if(hybrid){
     validateGooglePolicy(p.editorial_policy);
-    if(p.editorial_policy.schema_version!==3||p.model_id!=='gpt-6-luna'||p.automatic_image_generation_enabled!==false
+    if(p.api_operation!==undefined&&!['text','comparison','image'].includes(p.api_operation))fail('invalid_policy');
+    if(p.editorial_policy.schema_version!==3||p.model_id!=='gpt-6-luna'||p.automatic_image_generation_enabled!==(p.api_operation==='image')
       ||p.input_counting_mode!=='local_byte_bound'||p.operator_commands_only!==false)fail('invalid_policy');
   }
   if(p?.schema_version!==1 || p.provider!=='openai_api' || p.allowed_balance_type!=='included_subscription_benefit_only'
     || p.timezone!=='America/Sao_Paulo' || p.budget_currency!=='USD' || typeof p.generation_enabled!=='boolean'
     || typeof p.policy_id!=='string' || !p.policy_id || disabled.some(k=>p[k]!==false) || required.some(k=>p[k]!==true))fail('invalid_policy');
-  const caps=hybrid?{...ceilings,new_drafts_per_day_cap:10,new_drafts_per_week_cap:70,input_tokens_cap_including_overhead:12000,
+  const caps=hybrid?{...ceilings,new_drafts_per_day_cap:10,new_drafts_per_week_cap:70,input_tokens_cap_including_overhead:p.api_operation==='comparison'?18000:12000,
     max_primary_evidence_documents:10,max_provider_attempts_per_article_including_repairs:3}:ceilings;
   for(const [k,max] of Object.entries(caps))if(!Number.isSafeInteger(p[k])||p[k]<1||p[k]>max)fail('policy_limit');
   if(hybrid&&['new_drafts_per_day_cap','new_drafts_per_week_cap','max_primary_evidence_documents','max_provider_attempts_per_article_including_repairs'].some(k=>p[k]!==p.editorial_policy[k]))fail('invalid_policy');
@@ -38,7 +39,7 @@ export function validatePolicy(p) {
   if(p.input_counting_mode!==undefined&&!['local_byte_bound','provider'].includes(p.input_counting_mode))fail('counting_mode');
   if(p.operator_commands_only!==undefined&&typeof p.operator_commands_only!=='boolean')fail('invalid_policy');
   if(typeof p.automatic_image_generation_enabled!=='boolean')fail('invalid_policy');
-  if(p.automatic_image_generation_enabled && (p.image_model_id!=='gpt-image-2' || p.image_quality!=='medium'
+  if(p.automatic_image_generation_enabled && (!(hybrid&&p.api_operation==='image'?p.image_model_id==='gpt-image-2.5-flare-2026-09-08'&&p.image_quality==='low':p.image_model_id==='gpt-image-2'&&p.image_quality==='medium')
     || p.image_size!=='1536x1024' || p.image_input_tokens_cap!==1024 || p.image_output_tokens_reservation!==1400))fail('image_policy');
   return Object.freeze(structuredClone(p));
 }

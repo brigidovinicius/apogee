@@ -1179,7 +1179,8 @@
     "url": "https://cloud.google.com/",
     "hosts": [
       "cloud.google.com",
-      "developers.google.com"
+      "developers.google.com",
+      "docs.cloud.google.com"
     ],
     "categories": [
       "tecnologia"
@@ -1454,5 +1455,48 @@
     "access": "pagina_publica_lida",
     "collection_enabled": false,
     "collection_approval_reference": "Ampliação da apuração e fluxo automático solicitados pelo titular em 2026-11-16; somente documentação pública deste projeto, sem instalação ou execução."
+  },
+  {
+    "id": "PRIMARY_MDN",
+    "name": "MDN Web Docs / Mozilla",
+    "publisher": "mozilla-mdn",
+    "url": "https://developer.mozilla.org/",
+    "hosts": [
+      "developer.mozilla.org"
+    ],
+    "categories": [
+      "tecnologia"
+    ],
+    "subcategories": [
+      "software-ferramentas"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "MDN Web Docs"
+    ],
+    "collection_enabled": false
+  },
+  {
+    "id": "PRIMARY_BDC",
+    "name": "BDC / educação para empresas",
+    "publisher": "bdc",
+    "url": "https://www.bdc.ca/en/articles-tools",
+    "hosts": [
+      "bdc.ca"
+    ],
+    "categories": [
+      "negocios"
+    ],
+    "subcategories": [
+      "marketing",
+      "empreendedorismo-startups"
+    ],
+    "role": "institucional_educacao",
+    "access": "pagina_publica_sujeita_a_validacao",
+    "aliases": [
+      "Business Development Bank of Canada"
+    ],
+    "collection_enabled": false
   }
 ]

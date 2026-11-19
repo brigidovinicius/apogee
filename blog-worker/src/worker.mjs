@@ -3,7 +3,7 @@ import {readFile,writeFile,rename} from 'node:fs/promises';
 import {Blocked,CATEGORIES,fail,validatePolicy} from './policy.mjs';
 import {allowedUrl,getFeed} from './http.mjs';
 import {normalizeItem} from './editorial.mjs';
-import {DEFAULT_OPENAI_CONFIG,validateOpenAIConfig,apiTextPolicy,API_FALLBACK_REASONS} from './openai-routing.mjs';
+import {DEFAULT_OPENAI_CONFIG,validateOpenAIConfig,apiOperationPolicy,API_FALLBACK_REASONS,GOOGLE_FALLBACK_REASONS} from './openai-routing.mjs';
 
 export function validateSources(sources) {
   if(!Array.isArray(sources)||sources.length>40||new Set(sources.map(s=>s.id)).size!==sources.length)fail('invalid_sources');
@@ -82,37 +82,53 @@ export async function tick({store,config,identity,provider,apiProvider,download}
     if(command?.kind==='collect')return {collection,generation:{status:'idle'}};
     if(!config.policy.generation_enabled)return {collection,generation:{status:'blocked',reason:'generation_disabled'}};
     if(config.policy.operator_commands_only && !command)return {collection,generation:{status:'idle',reason:'waiting_for_editor'}};
-    if(!provider)return {collection,generation:{status:'blocked',reason:'credentials_missing'}};
-    if(access&&access.status!=='valid')return {collection,generation:{status:'blocked',reason:access.reason??'google_access_unverified'}};
+    if(!provider&&!apiProvider)return {collection,generation:{status:'blocked',reason:'credentials_missing'}};
     const options={...config,sources,identity,candidateId:command?.candidate_id??null};
-    async function perform(method,forceGoogle=null){
-      let reservation,selectedProvider=provider,fallbackReason=forceGoogle;
-      if(!forceGoogle&&method==='reserve'&&options.candidateId&&config.openai?.enabled&&config.policy.provider==='google_subscription'){
+    async function perform(method){
+      const kind=method==='reserveComparison'?'comparison':method==='reserveImage'?'image':'text';
+      const optional=options.candidateId&&config.openai?.enabled&&config.policy.provider==='google_subscription';
+      const order=optional?(kind==='text'?['api','google']:['google','api']):['google'];
+      let fallbackReason=null,fallbackFrom=null;
+      for(const lane of order){
+        let reservation;
+        const selected=lane==='api'?apiProvider:provider;
         try{
-          if(!apiProvider)fail('credentials_missing');
-          const circuit=await store.apiCircuit();if(circuit.blocked)fail(circuit.reason==='openai_disabled'?'openai_disabled':'openai_circuit_open');
-          reservation=await store.reserve({...options,policy:apiTextPolicy(config.policy,config.openai)});
-          selectedProvider=apiProvider;
-        }catch(error){if(!(error instanceof Blocked))throw error;if(!API_FALLBACK_REASONS.has(error.code))return {status:'blocked',reason:error.code};fallbackReason=error.code;}
+          if(!selected)fail('credentials_missing');
+          if(lane==='api'){
+            const circuit=await store.apiCircuit();if(circuit.blocked)fail(circuit.reason==='openai_disabled'?'openai_disabled':'openai_circuit_open');
+            reservation=await store[method]({...options,policy:apiOperationPolicy(config.policy,config.openai,kind)});
+          }else{
+            if(access&&access.status!=='valid')fail(access.reason??'google_access_unverified');
+            if(provider.preflight){const quota=await provider.preflight();if(store.observeQuota)await store.observeQuota(quota,'before');}
+            reservation=await store[method](options);
+          }
+        }catch(error){
+          if(!(error instanceof Blocked))throw error;
+          const recoverable=(lane==='api'?API_FALLBACK_REASONS:GOOGLE_FALLBACK_REASONS).has(error.code);
+          if(recoverable&&lane!==order.at(-1)){fallbackReason=error.code;fallbackFrom=lane==='api'?'openai_api':'google_subscription';continue;}
+          if(!command&&options.candidateId&&error.code==='input_limit'&&store.deferAutomaticWork)await store.deferAutomaticWork(options.candidateId,error.code);
+          return {status:'blocked',reason:error.code,...(fallbackReason?{fallback_from:fallbackFrom,fallback_reason:fallbackReason}:{})};
+        }
+        if(reservation.status!=='reserved')return reservation;
+        let result;try{result=await selected(reservation);}catch{result={outcome:'unknown'};}
+        const completed=await store.finish(reservation,result);
+        // Only proof of zero generation permits a second provider. Uncertain
+        // outcomes retain both the request and billing reservation for review.
+        if(lane==='api'&&completed.status==='not_generated'&&API_FALLBACK_REASONS.has(completed.reason)&&lane!==order.at(-1)){
+          fallbackReason=completed.reason;fallbackFrom='openai_api';continue;
+        }
+        if(lane==='google'&&provider.preflight&&store.observeQuota){try{await store.observeQuota(await provider.preflight(),'after');}catch{/* Durable settlement cannot trigger a retry. */}}
+        return {...completed,...(fallbackReason?{fallback_from:fallbackFrom,fallback_reason:fallbackReason}:{}),...(lane==='api'?{provider:'openai_api'}:{})};
       }
-      try{if(!reservation){if(provider.preflight){const quota=await provider.preflight();if(store.observeQuota)await store.observeQuota(quota,'before');}reservation=await store[method](options);}}
-      catch(error){
-        if(error instanceof Blocked){
-          if(!command&&!config.policy.operator_commands_only&&config.policy.provider==='google_subscription'&&options.candidateId&&error.code==='input_limit'&&store.deferAutomaticWork)await store.deferAutomaticWork(options.candidateId,error.code);
-          return {status:'blocked',reason:error.code};
-        }throw error;
-      }
-      if(reservation.status!=='reserved')return reservation;
-      let result;try{result=await selectedProvider(reservation);}catch{result={outcome:'unknown'};}
-      const completed=await store.finish(reservation,result);
-      if(selectedProvider===apiProvider&&completed.status==='not_generated'&&API_FALLBACK_REASONS.has(completed.reason))return perform(method,completed.reason);
-      if(selectedProvider===provider&&provider.preflight&&store.observeQuota){try{await store.observeQuota(await provider.preflight(),'after');}catch{/* Settlement is already durable; a quota refresh must never cause a retry. */}}
-      return {...completed,...(fallbackReason?{fallback_from:'openai_api',fallback_reason:fallbackReason}:{}),...(selectedProvider===apiProvider?{provider:'openai_api'}:{})};
     }
     let automatic=!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.nextAutomaticWork?await store.nextAutomaticWork(config.policy):null;
     if(!automatic&&!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.prepareAutomaticResearch){
       try{if(store.checkResearchBudget)await store.checkResearchBudget(config.policy);}
-      catch(error){if(error instanceof Blocked)return {collection,research,generation:{status:'blocked',reason:error.code}};throw error;}
+      catch(error){
+        if(!(error instanceof Blocked))throw error;
+        if(!GOOGLE_FALLBACK_REASONS.has(error.code)||!config.openai?.enabled||!apiProvider||!store.checkAPIResearchBudget)return {collection,research,generation:{status:'blocked',reason:error.code}};
+        try{await store.checkAPIResearchBudget(config,identity);}catch(apiError){if(apiError instanceof Blocked)return {collection,research,generation:{status:'blocked',reason:apiError.code}};throw apiError;}
+      }
       if(storage.capture_allowed&&!discovery)research=await store.prepareAutomaticResearch(config.policy);
       automatic=store.nextAutomaticWork?await store.nextAutomaticWork(config.policy):null;
     }
