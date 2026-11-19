@@ -5,6 +5,7 @@ import { BENEFIT_AUDIENCES, BENEFIT_PATHS, REDEMPTION_LABELS, type BenefitView, 
 import { orderCatalogueOffers } from "@/lib/benefits/catalogue-order";
 import { MemberWorkspace } from "@/components/members/member-workspace";
 import { AnnualAccessNotice } from "@/components/community/annual-access-notice";
+import { memberResourceAvailability } from "@/lib/members/resource-availability";
 import { ResourceHeader } from "@/components/members/resource-header";
 import { benefitNavigation, type BenefitSearchParams } from "@/lib/benefits/navigation";
 import { BenefitCard } from "./benefit-card";
@@ -23,12 +24,13 @@ function offerCard(benefit: CatalogueBenefit, detailSearch: string) {
 export async function BenefitsWorkspace({ view = "catalogue", params = {} }: { view?: BenefitView; params?: BenefitSearchParams }) {
   const { query, category, audience, detailSearch } = benefitNavigation(params, view);
   const { member, access, categories, benefits, history, totals } = await memberBenefitWorkspace(view, { query, category, audience });
+  const resources = access.allowed ? await memberResourceAvailability(member.id, member.role) : null;
   const filtered = Boolean(query || category || audience);
   const ordered = view === "catalogue" ? orderCatalogueOffers(benefits) : benefits;
   const featured = view === "catalogue" && !filtered ? ordered.slice(0, 4) : [];
   const remaining = ordered.slice(featured.length);
   return <MemberWorkspace member={member} current="beneficios"><div className={`${shared.container} ${styles.root}`}>
-    <ResourceHeader area="beneficios" />
+    <ResourceHeader area="beneficios" showRelated={resources?.ferramentas === true} />
     {!access.allowed ? <AnnualAccessNotice title="Benefícios" next={BENEFIT_PATHS[view]} /> : <>
       <nav aria-label="Navegação de benefícios" className={navigation.tabs}>{(Object.keys(BENEFIT_PATHS) as BenefitView[]).map(key => { const Icon = icons[key]; return <Link href={BENEFIT_PATHS[key]} key={key} aria-current={view === key ? "page" : undefined}><Icon size={17} aria-hidden="true" />{titles[key]} {key !== "catalogue" && <span>{totals[key]}</span>}</Link>; })}</nav>
       {view !== "history" ? <section aria-labelledby="benefit-offers-title">
@@ -50,7 +52,7 @@ export async function BenefitsWorkspace({ view = "catalogue", params = {} }: { v
           <div className={styles.featuredGrid}>{featured.map(benefit => offerCard(benefit, detailSearch))}</div>
         </section>}
         {(!featured.length || remaining.length > 0) && <p className={styles.result} role="status">{featured.length ? "Mais ofertas" : "Ofertas encontradas"} ({remaining.length}){query ? ` para “${query}”` : ""}.</p>}
-        {!benefits.length ? <section className={styles.empty}><Gift size={26} aria-hidden="true" /><h3>{filtered ? "Nenhuma oferta com esses filtros" : view === "saved" ? "Suas ofertas salvas ficam aqui" : "Benefícios em preparação"}</h3><p>{filtered ? "Experimente outro termo ou consulte todas as categorias." : view === "saved" ? "Salve uma oferta do catálogo para encontrá-la com facilidade depois." : "Ainda não há ofertas disponíveis. Elas aparecerão quando os acordos, as condições e o resgate estiverem confirmados."}</p>{filtered ? <Link href={BENEFIT_PATHS[view]}>Limpar filtros</Link> : view === "saved" ? <Link href={BENEFIT_PATHS.catalogue}>Explorar ofertas</Link> : <Link href="/membros/ferramentas">Explorar a Caixa de ferramentas</Link>}</section> : remaining.length > 0 && <div className={styles.cards}>{remaining.map(benefit => offerCard(benefit, detailSearch))}</div>}
+        {!benefits.length ? <section className={styles.empty}><Gift size={26} aria-hidden="true" /><h3>{filtered ? "Nenhuma oferta com esses filtros" : view === "saved" ? "Suas ofertas salvas ficam aqui" : "Benefícios em preparação"}</h3><p>{filtered ? "Experimente outro termo ou consulte todas as categorias." : view === "saved" ? "Salve uma oferta do catálogo para encontrá-la com facilidade depois." : "Ainda não há ofertas disponíveis. Elas aparecerão quando os acordos, as condições e o resgate estiverem confirmados."}</p>{filtered ? <Link href={BENEFIT_PATHS[view]}>Limpar filtros</Link> : view === "saved" ? <Link href={BENEFIT_PATHS.catalogue}>Explorar ofertas</Link> : <Link href="/membros/oportunidades">Explorar o Radar</Link>}</section> : remaining.length > 0 && <div className={styles.cards}>{remaining.map(benefit => offerCard(benefit, detailSearch))}</div>}
       </section> : <>
         <p className={styles.explanation}>Iniciar um resgate registra sua intenção. O desconto ou crédito só aparece como confirmado após conferência do resultado no parceiro.</p>
         {!history.length ? <section className={styles.empty}><Clock3 size={26} aria-hidden="true" /><h2>Você ainda não iniciou resgates</h2><p>Abra uma oferta do catálogo, confira os requisitos e inicie o resgate. O acompanhamento ficará aqui.</p><Link href="/membros/beneficios">Explorar ofertas</Link></section> : <ol className={styles.history}>{history.map(r => <li key={r.id} id={`oferta-${r.benefit_id}`} tabIndex={-1} className={styles.card}><div className={styles.cardTop}><span className={styles.category}>{REDEMPTION_LABELS[r.status]}</span><span className={styles.historyDate}>{benefitDate(r.started_at)}</span></div><p className={styles.partner}>{r.partner_name}</p><h2>{r.benefit_name}</h2><p>{r.status === "started" ? "Aguardando confirmação do resultado no parceiro." : r.status === "confirmed" ? "Resultado confirmado pela conferência administrativa." : "O parceiro não aprovou este resgate. Fale com o suporte se precisar de ajuda."}</p>{r.reviewed_at ? <p className={styles.condition}>Conferência em {benefitDate(r.reviewed_at)}.</p> : null}{r.available ? <Link className={styles.textLink} href={`/membros/beneficios/${encodeURIComponent(r.benefit_id)}${detailSearch}`}>Reabrir oferta e instruções <ArrowRight size={17} aria-hidden="true" /></Link> : <p className={styles.condition}>Esta oferta não está disponível para novos resgates. Seu histórico foi preservado.</p>}</li>)}</ol>}

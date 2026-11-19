@@ -5,7 +5,8 @@ import { requireSignedInMember } from "@/lib/members/dal";
 import { radarAccess } from "@/lib/billing/store";
 import { listRadarOpportunities } from "@/lib/opportunities/radar-client";
 import { isOpportunityOpen } from "./types";
-import { freeRadarState, isFreeRadarEvent, claimFreeRadarEvent, claimFreeRadarOpportunity } from "./detail-store";
+import { radarMonthlyState } from "./detail-store";
+import { claimMonthlyDetail } from "@/lib/members/monthly-detail";
 import { opportunityDetailPath } from "./detail-path";
 
 export async function radarOpportunityDetail(id: string, claim = false, params?: URLSearchParams) {
@@ -17,15 +18,13 @@ export async function radarOpportunityDetail(id: string, claim = false, params?:
   // Reading existing rights does not need a working checkout or its secret key.
   // Missing billing configuration never makes all details public.
   const access = await radarAccess(member.id, process.env.STRIPE_MODE !== "test");
-  if (access.active) return { member, title: opportunity.title, opportunity, status: "unlimited" as const, quota: null, isEvent: false };
-  let quota = await freeRadarState(member.id, catalogue);
-  const event = isFreeRadarEvent(opportunity);
-  if (claim && !quota.readableIds.includes(id)) {
-    if (event && quota.remaining > 0) await claimFreeRadarEvent(member.id,id,quota.previousEvent);
-    else if (!event && quota.selected === null) await claimFreeRadarOpportunity(member.id,id);
-    quota = await freeRadarState(member.id,catalogue);
+  if (access.active) return { member, title: opportunity.title, opportunity, status: "unlimited" as const, quota: null };
+  let quota = await radarMonthlyState(member.id);
+  if (claim && !quota.readableIds.includes(id) && quota.remaining > 0) {
+    await claimMonthlyDetail(member.id, "radar", id);
+    quota = await radarMonthlyState(member.id);
   }
   const readable = quota.readableIds.includes(id);
-  const status = readable ? "free" : (event ? quota.remaining > 0 : quota.selected === null) ? "available" : "purchase";
-  return { member, title: opportunity.title, opportunity: readable ? opportunity : null, status, quota, isEvent: event };
+  const status = readable ? "free" : quota.remaining > 0 ? "available" : "purchase";
+  return { member, title: opportunity.title, opportunity: readable ? opportunity : null, status, quota };
 }

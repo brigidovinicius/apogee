@@ -11,11 +11,11 @@ import styles from "@/components/members/members.module.css";
 export const metadata: Metadata = { title: "Conexões de IA", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
-export default async function McpConnectionsPage({ searchParams }: { searchParams: Promise<{ desconectado?: string }> }) {
+export default async function McpConnectionsPage({ searchParams }: { searchParams: Promise<{ desconectado?: string; provedor?: string }> }) {
   if (!mcpEnabled()) notFound();
-  const member = await requireSignedInMember("/membros/integracoes/mcp");
-  const connections = await listMcpConnections(member.id);
   const params = await searchParams;
+  const member = await requireSignedInMember(`/membros/integracoes/mcp${params.provedor === "claude" ? "?provedor=claude#claude" : ""}`);
+  const connections = await listMcpConnections(member.id);
   return <MemberWorkspace member={member} current="integracoes">
     <div className={styles.container}>
       <h1 className={styles.title}>Conexões de IA</h1>

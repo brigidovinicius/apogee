@@ -22,7 +22,7 @@ function fixture() {
       assert.equal(options.claimPurchases, false, "MCP must never link a purchase as a side effect");
       state.rightsReads.push(id); return { active: state.active.has(id), source: state.active.has(id) ? "stripe" : null };
     } },
-    "@/lib/opportunities/detail-store": { freeRadarState: async id => ({selected:state.selected.get(id)??null,readableIds:state.selected.has(id)?[state.selected.get(id)]:[],used:0,remaining:10,limit:10}),
+    "@/lib/opportunities/detail-store": { radarMonthlyState: async id => ({selected:state.selected.get(id)??null,readableIds:state.selected.has(id)?[state.selected.get(id)]:[],used:0,remaining:10,limit:10,renewsOn:"2026-12-01"}),
       claimFreeRadarOpportunity: () => { throw Error("MCP must never claim a free opportunity"); } },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => { state.catalogueReads++; return state.items; } },
     "@/lib/members/mail": { applicationOrigin: () => "https://www.apogee.community" },

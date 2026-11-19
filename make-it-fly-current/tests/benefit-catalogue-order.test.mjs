@@ -25,9 +25,10 @@ test("respects editorial priority, then brand and access, with stable fallback",
   assert.deepEqual(orderCatalogueOffers([]), []);
 });
 
-async function renderView(view, params, benefits, allowed = true) {
+async function renderView(view, params, benefits, allowed = true, toolbox = true) {
   const load = opportunityLoader({
     "next/link": { __esModule: true, default: "a" },
+    "@/lib/members/resource-availability": { memberResourceAvailability: async () => ({ ferramentas: toolbox, trilha: false }) },
     "@/lib/benefits/store": { memberBenefitWorkspace: async () => ({
       member: {}, access: { allowed }, categories: [], benefits, history: [],
       totals: { catalogue: benefits.length, saved: 0, history: 0 },
@@ -49,7 +50,8 @@ test("default feed starts with search and features its best available offers exa
   assert.match(await renderView("catalogue", {}, [offers[0]]), /data-offer="alpha"/);
   const empty = await renderView("catalogue", {}, []);
   assert.match(empty, /Benefícios em preparação/);
-  assert.match(empty, /Explorar a Caixa de ferramentas/);
+  assert.match(empty, /href="\/membros\/ferramentas"/);
+  assert.doesNotMatch(await renderView("catalogue", {}, [], true, false), /href="\/membros\/ferramentas"/);
   assert.doesNotMatch(empty + html, /perkbook|catálogo parceiro|<iframe/i);
   assert.doesNotMatch(empty, /Ofertas em destaque|data-offer/);
   assert.doesNotMatch(await renderView("catalogue", {}, offers, false), /Ofertas em destaque|data-offer/);

@@ -9,8 +9,15 @@ export function McpAvailabilityProvider({ enabled, children }: { enabled: boolea
   return <McpEnabledContext.Provider value={enabled}>{children}</McpEnabledContext.Provider>;
 }
 
-export function McpConnectLink({ className, provider = "chatgpt" }: { className?: string; provider?: "chatgpt" | "claude" }) {
+export function McpConnectLink({ className, provider = "chatgpt", label }: { className?: string; provider?: "chatgpt" | "claude"; label?: string }) {
   return useContext(McpEnabledContext)
-    ? <Link className={className} href={`/membros/integracoes/mcp${provider === "claude" ? "#claude" : ""}`} prefetch={false}>Incluir no meu {provider === "claude" ? "Claude" : "ChatGPT"}</Link>
+    ? <Link className={className} href={`/membros/integracoes/mcp${provider === "claude" ? "?provedor=claude#claude" : ""}`} prefetch={false}>{label ?? `Incluir no meu ${provider === "claude" ? "Claude" : "ChatGPT"}`}</Link>
     : null;
+}
+
+export function McpConnectionStrip({ className }: { className: string }) {
+  if (!useContext(McpEnabledContext)) return null;
+  return <nav className={className} aria-label="Integrações da Apogee"><span>Use o Radar na sua IA</span>
+    <McpConnectLink label="Incluir no ChatGPT" /><McpConnectLink label="Incluir no Claude" provider="claude" />
+  </nav>;
 }

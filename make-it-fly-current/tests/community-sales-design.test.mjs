@@ -10,13 +10,13 @@ function render(props = {}, enabled = false) {
     "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return React.createElement("a", props, children); } },
     "@/lib/billing/community-config": { communityBillingEnabled: () => enabled },
   });
-  return renderToStaticMarkup(React.createElement(load("components/community/community-sales-page.tsx").CommunitySalesPage, props));
+  return renderToStaticMarkup(React.createElement(load("components/community/community-sales-page.tsx").CommunitySalesPage, { resources: { trilha: true, ferramentas: true }, ...props }));
 }
 
 test("sales page retains the complete offer and honest delivery states with working section links", () => {
   const html = render();
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-  for (const text of ["Caixa de Ferramentas", "Benefícios", "Trilha de IA", "Google Flow", "R$ 1.438,80", "R$ 119,90", "10 eventos distintos", "direitos são preservados", "disponível de forma parcial", "Cada parceiro define condições", "independente da assinatura"]) assert.ok(html.includes(text), text);
+  for (const text of ["Caixa de Ferramentas", "Benefícios", "Trilha de IA", "Google Flow", "R$ 1.438,80", "R$ 119,90", "10 consultas mensais no Radar e 10 em Benefícios", "Os acessos anteriores ao Radar continuam válidos", "disponível de forma parcial", "depende das condições e da elegibilidade de cada oferta", "independente da assinatura"]) assert.ok(html.includes(text), text);
   for (const id of ["comunidade", "radar", "ferramentas", "learn", "perks", "planos", "participar", "duvidas"]) assert.ok(html.includes(`id="${id}"`), id);
   for (const [, id] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(html.includes(`id="${id}"`), `broken section link: ${id}`);
   assert.match(html, /href="\/evento-openai#workshop-florianopolis"/);
@@ -55,5 +55,14 @@ test("benefits availability reflects the real catalogue without promising eligib
   assert.match(render({ hasBenefits: true }), /Há ofertas vigentes no catálogo/);
   assert.match(render({ hasBenefits: false }), /O catálogo está sem ofertas vigentes no momento/);
   assert.doesNotMatch(render({ hasBenefits: null }), /Há ofertas vigentes|está sem ofertas vigentes/);
-  assert.match(render({ hasBenefits: true }), /para as quais sejam elegíveis/);
+  assert.match(render({ hasBenefits: true }), /elegibilidade de cada oferta/);
+});
+
+test("recursos sem conteúdo publicado saem da oferta e dos atalhos", () => {
+  const html = render({ resources: { trilha: false, ferramentas: false } });
+  for (const target of ["learn", "ferramentas"]) {
+    assert.ok(!html.includes(`href="#${target}"`));
+    assert.ok(!html.includes(`id="${target}"`));
+  }
+  assert.match(html, /10 consultas mensais no Radar e 10 em Benefícios/);
 });

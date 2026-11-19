@@ -1,6 +1,7 @@
 .page { --night:#07182d; --ice:#b9d3ee; --ink:#fff; --muted:#a8bdd0; --line:#29415b; }
 .wrap { width:calc(100% - var(--editorial-gutter)*2); max-width:1440px; margin-inline:auto; }
 .section { padding-block:96px; scroll-margin-top:24px; }
+.plansTarget { scroll-margin-top: 5rem; }
 .page h1,.page h2,.page h4 { font-family:var(--editorial-display); line-height:1.06; font-weight:400; letter-spacing:-.045em; }
 .page h1 { font-size:clamp(56px,6vw,92px); }.page h2 { font-size:clamp(44px,5vw,72px); }
 .headingRow { display:grid; grid-template-columns:1.35fr 1fr; gap:64px; align-items:center; }

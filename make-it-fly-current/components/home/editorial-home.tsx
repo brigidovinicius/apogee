@@ -4,10 +4,12 @@ import Link from "next/link";
 import { ArrowUpRight, BookOpen, CalendarDays, Compass, Gift, Wrench } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
+import { McpConnectionStrip } from "@/components/site/mcp-connect-link";
 import { RedBullSupport } from "@/components/site/red-bull-support";
 import { HomeRadar } from "./home-radar";
 import { COMMUNITY_SIGNUP_PATH } from "@/content/community-offer";
-import { COMMUNITY_SALES_DELIVERABLES } from "@/components/community/community-deliverables";
+import { publishedResourceAvailability } from "@/lib/members/resource-availability";
+import { availableDeliverables } from "@/components/community/community-deliverables";
 import { HomeStar } from "./home-star";
 import styles from "./journal-home.module.css";
 
@@ -30,7 +32,8 @@ function EntryCard({ id, theme, title, href, action, picture, children }: {
   </li>;
 }
 
-export function EditorialHome() {
+export async function EditorialHome() {
+  const resources = await publishedResourceAvailability();
   return <div className={styles.page}>
     <SiteHeader current="home" prefetch={false} adaptive tone="light" />
     <main id="experiencia" tabIndex={-1}>
@@ -46,12 +49,13 @@ export function EditorialHome() {
         <HomeStar />
         <div className={styles.communityWord} lang="en" aria-hidden="true">Building<br />the future.</div>
       </section>
+      <McpConnectionStrip className={styles.integrationStrip} />
 
       <section className={styles.resourceBand} id="recursos" aria-labelledby="home-resources-title">
         <div className={styles.featureLayout}>
           <div className={styles.sectionHeading}><h2 id="home-resources-title">A comunidade</h2></div>
           <ul className={styles.resourceGrid}>
-            {COMMUNITY_SALES_DELIVERABLES.map(resource => {
+            {availableDeliverables(resources).map(resource => {
               const Icon = resourceIcons[resource.id];
               return <li key={resource.id}>
                 <Link className={styles.resourceLink} href={`/comunidade${resource.href}`} prefetch={false}>
@@ -99,7 +103,7 @@ export function EditorialHome() {
       <section className={styles.community} aria-labelledby="home-community-title">
         <div className={styles.communityCopy}>
           <h2 id="home-community-title">Comece com uma conta gratuita.</h2>
-          <p>Conheça a área de membros e consulte os detalhes de até 10 eventos no Radar. O cadastro é gratuito e dispensa cartão.</p>
+          <p>Consulte até 10 oportunidades no Radar e 10 ofertas em Benefícios por mês. O cadastro é gratuito e dispensa cartão.</p>
           <Link className={styles.inlineAction} href={COMMUNITY_SIGNUP_PATH} prefetch={false}>Criar minha conta gratuita<ArrowUpRight aria-hidden="true" size={18} /></Link>
         </div>
         <article className={styles.experience} aria-labelledby="home-experience-title">

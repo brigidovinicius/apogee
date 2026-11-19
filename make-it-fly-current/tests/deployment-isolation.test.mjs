@@ -63,7 +63,7 @@ test("the single root layout preserves the approved visual wrapper and relocated
   const file = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const visual = file.statements.filter(statement => !(ts.isVariableStatement(statement)
     && statement.declarationList.declarations.some(declaration => declaration.name.getText(file) === "metadata"))
-    && !(ts.isImportDeclaration(statement) && ["next/headers", "better-auth/cookies", "@/lib/members/dal", "@/components/members/account-menu", "next/link", "next/server", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link", "@/components/site/site-legal-links", "@/lib/site-legal-links", "@/lib/mcp/config", "@/components/site/mcp-connect-link", "@/lib/offer-preview", "@/components/community/offer-preview"].includes(statement.moduleSpecifier.text)))
+    && !(ts.isImportDeclaration(statement) && ["next/headers", "@/lib/billing/community-store", "better-auth/cookies", "@/lib/members/dal", "@/components/members/account-menu", "next/link", "next/server", "@/components/analytics/JourneyTracker", "@/components/site/apogee-design-system", "@/components/site/make-it-fly-scroll-restoration", "@/components/site/skip-link", "@/components/site/site-legal-links", "@/lib/site-legal-links", "@/lib/mcp/config", "@/components/site/mcp-connect-link", "@/lib/offer-preview", "@/components/community/offer-preview"].includes(statement.moduleSpecifier.text)))
     .map(statement => statement.getText(file)).join("\n").replaceAll("../fonts/", "./fonts/")
     // On-demand font fetching changes network priority, not typography.
     .replaceAll("  preload: false,\n", "")
@@ -75,7 +75,7 @@ test("the single root layout preserves the approved visual wrapper and relocated
     .replace("async function RootLayout", "function RootLayout")
     .replace("  // Legal approvals are runtime configuration, absent from the build image.\n  await connection();\n", "")
     // Session lookup and context add no DOM to the preserved event wrapper.
-    .replace("  // Public visitors never initialize auth or query the members database here.\n  const member = getSessionCookie(await headers()) ? await getCurrentMember().catch(() => null) : null;\n  const account: AccountIdentity | null = member ? { name: member.name, username: member.username, role: member.role } : null;\n", "")
+    .replace("  // Public visitors never initialize auth or query the members database here.\n  const member = getSessionCookie(await headers()) ? await getCurrentMember().catch(() => null) : null;\n  const annual = member ? await communityAccess(member.id, process.env.STRIPE_MODE !== \"test\").catch(() => null) : null;\n  const account: AccountIdentity | null = member ? { name: member.name, username: member.username, role: member.role, communityActive: annual?.active } : null;\n", "")
     .replace("<AccountProvider account={account}>", "").replace("</AccountProvider>", "")
     // The skip link keeps the same rendered anchor; only history handling changes.
     .replace('<Link className="skip-link" href="#experiencia">', '<a className="skip-link" href="#experiencia">')
@@ -159,7 +159,7 @@ test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surf
     "app/.well-known/oauth-authorization-server/api/auth/route.ts", "app/.well-known/oauth-authorization-server/route.ts",
     "app/.well-known/oauth-protected-resource/mcp/route.ts", "app/.well-known/oauth-protected-resource/route.ts", "app/mcp/route.ts",
     "app/membros/integracoes/mcp/entrar/page.tsx", "app/membros/integracoes/mcp/autorizar/page.tsx", "app/membros/integracoes/mcp/page.tsx",
-    "app/comunidade/page.tsx", "app/gravacao/page.tsx", "app/evento-openai/page.tsx", "app/admin/comunidade/page.tsx", "app/api/comunidade/contatos/route.ts",
+    "app/beneficios/page.tsx", "app/comunidade/page.tsx", "app/gravacao/page.tsx", "app/evento-openai/page.tsx", "app/admin/comunidade/page.tsx", "app/api/comunidade/contatos/route.ts",
     "app/api/colecoes/resumos/route.ts", "app/colecoes/[token]/page.tsx", "app/colecoes/resumos/cancelar/[token]/page.tsx",
     "app/membros/colecoes/page.tsx", "app/membros/colecoes/[id]/page.tsx", "app/membros/colecoes/acompanhadas/page.tsx", "app/membros/colecoes/seguir/[token]/page.tsx",
     "app/membros/esqueci-senha/page.tsx", "app/membros/redefinir-senha/page.tsx",

@@ -9,7 +9,7 @@ const root = new URL("../", import.meta.url);
 const source = (path) => readFile(new URL(path, root), "utf8");
 
 
-test("a área autenticada apresenta os quatro recursos aprovados e preserva o acesso antigo ao Radar",async()=>{
+test("a conta com acesso antigo ao Radar mantém Radar completo e Benefícios na navegação",async()=>{
   const {opportunityLoader}=await import("./helpers/load-opportunity-module.mjs");
   const {renderToStaticMarkup}=await import("react-dom/server");
   const page=opportunityLoader({
@@ -23,10 +23,9 @@ test("a área autenticada apresenta os quatro recursos aprovados e preserva o ac
   })("app/membros/page.tsx").default;
   const html=renderToStaticMarkup(await page());
   assert.match(html,/href="\/membros\/oportunidades"/);
-  for(const resource of ["Radar","Caixa de Ferramentas","Benefícios","Trilha"]) assert.ok(html.includes(resource));
-  assert.match(html,/href="\/membros\/ferramentas"/);
-  assert.match(html,/Assinatura anual/);
-  assert.match(html,/Ver prévia das ferramentas/);
+  assert.match(html,/href="\/membros\/beneficios"/);
+  assert.match(html,/href="\/membros\/assinatura"/);
+  assert.doesNotMatch(html,/href="\/membros\/(?:trilha|ferramentas)"/);
   assert.match(html,/Conversas da comunidade/);
   assert.match(html,/Radar completo ativo/);
 });
@@ -39,7 +38,7 @@ test("visitantes continuam redirecionados e não recebem os dados completos do R
   ]);
 
   assert.match(proxy, /matcher: \["\/membros", "\/membros\/:path\*", "\/admin", "\/admin\/:path\*"\]/);
-  assert.match(proxy, /login\.searchParams\.set\("next", pathname \+ search\)/);
+  assert.match(proxy, /login\.searchParams\.set\("next", pathname \+ search \+ anchor\)/);
   assert.match(memberPage, /await requireSignedInMember\(memberRadarPath\(params\)\)/);
   assert.match(access, /await requireSignedInMember\("\/membros\/oportunidades"\)/);
 });

@@ -1,10 +1,22 @@
 import "server-only";
 import { getSql } from "@/lib/members/db";
 import { RADAR_FREE_EVENT_LIMIT } from "@/content/community-offer";
+import { monthlyDetailState } from "@/lib/members/monthly-detail";
 import type { StudentOpportunity } from "./types";
 
 export function isFreeRadarEvent(item: StudentOpportunity) {
   return item.categories?.includes("eventos") === true;
+}
+
+export async function radarMonthlyState(userId: string) {
+  const [monthly, legacy, selected] = await Promise.all([
+    monthlyDetailState(userId, "radar"),
+    getSql()<{ opportunity_id: string }[]>`select opportunity_id from radar_free_event where user_id=${userId}`,
+    freeRadarOpportunity(userId),
+  ]);
+  const readableIds = new Set([...monthly.ids, ...legacy.map(row => row.opportunity_id)]);
+  if (selected) readableIds.add(selected);
+  return { ...monthly, selected, readableIds: [...readableIds] };
 }
 
 export async function freeRadarState(userId: string, catalogue: StudentOpportunity[]) {

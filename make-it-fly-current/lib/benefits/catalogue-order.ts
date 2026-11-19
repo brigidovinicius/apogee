@@ -21,19 +21,23 @@ const recommended = new Map([
   "github-education-microsoft",
 ].map((id, index) => [id, index]));
 
-function partnerPriority(offer: CatalogueBenefit) {
+export const rosaCampaignUrl = "https://www.hostgator.com.br/53289-77-3-32.html";
+type RankedOffer = Pick<CatalogueBenefit, "id" | "partner" | "sort_order" | "provider_access">
+  & { redemption_url?: string | null; rosa_campaign?: boolean };
+
+function partnerPriority(offer: RankedOffer) {
   return familiarPartners.has(offer.partner.trim().toLowerCase()) ? 0 : 1;
 }
 
-function accessPriority(offer: CatalogueBenefit) {
+function accessPriority(offer: RankedOffer) {
   return ["free", "included"].includes(offer.provider_access) ? 0 : 1;
 }
 
-function rosaPriority(offer: CatalogueBenefit) {
-  return offer.redemption_url === "https://www.hostgator.com.br/53289-77-3-32.html" && /^hostgator(?: brasil)?$/i.test(offer.partner.trim()) ? 0 : 1;
+function rosaPriority(offer: RankedOffer) {
+  return (offer.rosa_campaign || offer.redemption_url === rosaCampaignUrl) && /^hostgator(?: brasil)?$/i.test(offer.partner.trim()) ? 0 : 1;
 }
 
-export function orderCatalogueOffers(offers: CatalogueBenefit[]) {
+export function orderCatalogueOffers<T extends RankedOffer>(offers: T[]) {
   return [...offers].sort((a, b) =>
     rosaPriority(a) - rosaPriority(b) ||
     Number(b.sort_order === 0) - Number(a.sort_order === 0) ||

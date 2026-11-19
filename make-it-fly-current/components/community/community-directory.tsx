@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { ArrowUpRight, Minus, Plus } from "lucide-react";
 import { useId, useState } from "react";
-import { COMMUNITY_SALES_DELIVERABLES } from "./community-deliverables";
+import { availableDeliverables, type PublishedResources } from "./community-deliverables";
 import styles from "./community-editorial.module.css";
 
-export function CommunityDirectory() {
-  const [selected, setSelected] = useState<string | null>(COMMUNITY_SALES_DELIVERABLES[0].id);
+export function CommunityDirectory({ resources }: { resources: PublishedResources }) {
+  const entries = availableDeliverables(resources);
+  const [selected, setSelected] = useState<string | null>(entries[0].id);
   const prefix = useId();
-  return <div className={styles.directory}>{COMMUNITY_SALES_DELIVERABLES.map(entry => {
+  return <div className={styles.directory}>{entries.map(entry => {
     const open = selected === entry.id;
     const triggerId = `${prefix}-${entry.id}-trigger`;
     const panelId = `${prefix}-${entry.id}-panel`;

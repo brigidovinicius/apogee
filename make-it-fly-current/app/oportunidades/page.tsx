@@ -10,7 +10,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import styles from "@/components/opportunities/opportunities.module.css";
 import { listPublicOpportunityPage } from "@/lib/opportunities/access";
-import { memberRadarLoginHref, memberRadarPath } from "@/lib/opportunities/navigation";
+import { memberRadarPath } from "@/lib/opportunities/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +39,7 @@ export default async function OpportunitiesPage({ searchParams }: {
     if (typeof value === "string") params.set(key, value);
   }
   const catalogue = await listPublicOpportunityPage(params).catch(() => null);
-  const memberHref = memberRadarLoginHref(params);
+  const memberHref = `/comunidade?next=${encodeURIComponent(memberRadarPath(params))}#planos`;
 
   const returnTo=calendarReturnPath('/membros/oportunidades?'+params);
   const saveState=await calendarSaveState(catalogue?.opportunities.map(item=>item.id)??[],returnTo);

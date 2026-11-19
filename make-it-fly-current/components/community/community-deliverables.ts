@@ -14,13 +14,13 @@ export const COMMUNITY_SALES_DELIVERABLES = [
     href: "#learn", action: "Conhecer a trilha",
   },
   {
-    id: "radar", label: "Radar de oportunidades", fact: "Acesso gratuito e anual",
+    id: "radar", label: "Radar de oportunidades", fact: "10 consultas mensais na conta gratuita",
     title: "Encontre um evento e veja como participar.",
-    description: "Consulte gratuitamente os detalhes de até 10 eventos distintos por conta. A assinatura anual inclui o Radar completo, com eventos, bolsas, editais e outras oportunidades.",
+    description: "Consulte gratuitamente os detalhes de até 10 oportunidades por mês. A assinatura anual inclui o Radar completo, com eventos, bolsas, editais e outras oportunidades.",
     href: "#radar", action: "Conhecer o Radar",
   },
   {
-    id: "perks", label: "Benefícios", fact: "Assinatura anual",
+    id: "perks", label: "Benefícios", fact: "10 consultas mensais na conta gratuita",
     title: "Confira quais ofertas de parceiros você pode usar.",
     description: COMMUNITY_BENEFITS_TERMS,
     href: "#perks", action: "Entender os benefícios",
@@ -32,3 +32,13 @@ export const COMMUNITY_SALES_DELIVERABLES = [
     href: "#participar", action: "Ver eventos presenciais",
   },
 ] as const;
+
+export type PublishedResources = { trilha: boolean; ferramentas: boolean };
+
+export function availableDeliverables(resources: PublishedResources) {
+  return COMMUNITY_SALES_DELIVERABLES.filter(item => {
+    if (item.id === "learn") return resources.trilha;
+    if (item.id === "ferramentas") return resources.ferramentas;
+    return true;
+  });
+}

@@ -15,7 +15,7 @@ export async function mcpTestDatabase({ accountTables = false } = {}) {
       livemode boolean not null, status text not null, updated_at timestamptz default now());`);
   await pg.exec(await readFile(new URL("../../drizzle/0016_mcp_oauth.sql", import.meta.url), "utf8"));
   await pg.exec(await readFile(new URL("../../drizzle/0007_radar_free_opportunity.sql", import.meta.url), "utf8"));
-  for (const file of ["0017_community_annual.sql","0018_radar_event_queries.sql"]) {
+  for (const file of ["0017_community_annual.sql","0018_radar_event_queries.sql","0024_monthly_detail_unlock.sql"]) {
     await pg.exec(await readFile(new URL(`../../drizzle/${file}`, import.meta.url), "utf8"));
   }
   if (accountTables) for (const file of ["0008_radar_calendar.sql", "0014_calendar_collections.sql"]) {

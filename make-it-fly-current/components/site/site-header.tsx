@@ -1,12 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { SiteMobileNavigation } from "./site-mobile-navigation";
-import { McpConnectLink } from "./mcp-connect-link";
-import { AccountMenu } from "@/components/members/account-menu";
+import { AccountMenu, CommunityEntryLink } from "@/components/members/account-menu";
 import styles from "./site-shell.module.css";
 
-type SiteSection = "home" | "opportunities" | "members" | "blog" | "gallery" | "store" | "community";
+type SiteSection = "home" | "opportunities" | "members" | "blog" | "gallery" | "store" | "community" | "benefits";
 
 type SiteHeaderProps = {
   compact?: boolean;
@@ -21,19 +19,14 @@ type SiteHeaderProps = {
 const navigation: ReadonlyArray<{ href: string; label: string; section?: SiteSection }> = [
   { href: "/comunidade", label: "Comunidade", section: "community" },
   { href: "/oportunidades", label: "Radar", section: "opportunities" },
-  { href: "/blog", label: "Blog", section: "blog" },
-];
-const moreLinks: typeof navigation = [
-  { href: "/loja", label: "Loja", section: "store" },
-  { href: "/galeria", label: "Galeria", section: "gallery" },
-  { href: "/evento-openai", label: "Evento gratuito" },
+  { href: "/beneficios", label: "Benefícios", section: "benefits" },
 ];
 
 export function SiteHeader({
   compact = false,
   current,
-  memberHref = "/membros",
   memberLabel = "Entrar",
+  memberHref,
   tone = "dark",
   prefetch,
   adaptive = false,
@@ -44,11 +37,9 @@ export function SiteHeader({
       {item.label}
     </Link>
   );
-  const more = <>{moreLinks.map(renderLink)}<McpConnectLink /><McpConnectLink provider="claude" /></>;
   const desktopNavigation = (
     <nav className={styles.desktopNavigation} aria-label="Navegação principal">
       {navigation.map(renderLink)}
-      <SiteMobileNavigation more>{more}</SiteMobileNavigation>
     </nav>
   );
   return (
@@ -70,19 +61,11 @@ export function SiteHeader({
         {!compact && (adaptive ? desktopNavigation : <p className={styles.signature}>Ideias que abrem caminhos.</p>)}
 
         <div className={styles.headerActions}>
-        <AccountMenu fallback={<Link
-          className={styles.memberLink}
-          href={memberHref}
-          prefetch={prefetch}
-          aria-current={current === "members" ? "page" : undefined}
-        >
-          {memberLabel}
-          {!adaptive && <ArrowUpRight aria-hidden="true" size={18} />}
-        </Link>} />
+        {compact ? <AccountMenu fallback={<CommunityEntryLink className={styles.memberLink} />} /> :
+          <CommunityEntryLink className={styles.memberLink} offerHref={memberHref} label={memberLabel} />}
 
         {!compact && <SiteMobileNavigation>
             {navigation.map(renderLink)}
-            {more}
         </SiteMobileNavigation>}
         </div>
       </div>

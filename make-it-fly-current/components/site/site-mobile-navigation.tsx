@@ -11,6 +11,8 @@ export function SiteMobileNavigation({ children, more = false }: { children: Rea
   useEffect(() => {
     const element = details.current;
     if (!element) return;
+    // The native disclosure can already be open when hydration attaches its handlers.
+    const syncInitialState = requestAnimationFrame(() => setOpen(element.open));
     const dismissOutside = (event: Event) => {
       if (event.target instanceof Node && !element.contains(event.target)) element.open = false;
     };
@@ -28,6 +30,7 @@ export function SiteMobileNavigation({ children, more = false }: { children: Rea
     document.addEventListener("keydown", dismissWithEscape);
     window.addEventListener("resize", dismissHidden);
     return () => {
+      cancelAnimationFrame(syncInitialState);
       document.removeEventListener("pointerdown", dismissOutside);
       document.removeEventListener("focusin", dismissOutside);
       document.removeEventListener("keydown", dismissWithEscape);
@@ -35,7 +38,7 @@ export function SiteMobileNavigation({ children, more = false }: { children: Rea
     };
   }, []);
 
-  return <details ref={details} className={more ? styles.moreNavigation : styles.mobileNavigation} onToggle={(event) => setOpen(event.currentTarget.open)}>
+  return <details ref={details} suppressHydrationWarning className={more ? styles.moreNavigation : styles.mobileNavigation} onToggle={(event) => setOpen(event.currentTarget.open)}>
     <summary aria-label={more ? "Mais seções" : open ? "Fechar navegação" : "Abrir navegação"} aria-controls={navigationId}>{more ? "Mais" : "Menu"}</summary>
     <nav id={navigationId} aria-label={more ? "Outras seções" : "Navegação móvel"} onClick={(event) => {
       if (event.target instanceof Element && event.target.closest("a[href]") && details.current) details.current.open = false;

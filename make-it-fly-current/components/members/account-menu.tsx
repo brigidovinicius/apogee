@@ -6,10 +6,20 @@ import { createContext, useContext, useEffect, useRef, type ReactNode } from "re
 import { usePathname, useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { signOut } from "@/app/membros/actions";
+import { COMMUNITY_PLANS_PATH } from "@/content/community-offer";
 import styles from "./account-menu.module.css";
 
-export type AccountIdentity = { name: string; username: string; role: "member" | "admin" };
+export type AccountIdentity = { name: string; username: string; role: "member" | "admin"; communityActive?: boolean };
 const AccountContext = createContext<AccountIdentity | null>(null);
+
+export function CommunityEntryLink({ className, offerHref = COMMUNITY_PLANS_PATH, label = "Entrar" }: {
+  className?: string; offerHref?: string; label?: string;
+}) {
+  const account = useContext(AccountContext);
+  return <Link className={className} href={account?.communityActive ? "/membros" : offerHref} prefetch={false}>
+    {account?.communityActive ? "Acessar comunidade" : label}
+  </Link>;
+}
 
 export function AccountProvider({ account, children }: { account: AccountIdentity | null; children: ReactNode }) {
   const router = useRouter();

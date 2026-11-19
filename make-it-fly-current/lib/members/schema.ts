@@ -38,6 +38,19 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const monthlyDetailUnlock = pgTable("member_monthly_detail_unlock", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  area: text("area", { enum: ["radar", "beneficios"] }).notNull(),
+  period: date("period").notNull(),
+  itemId: text("item_id").notNull(),
+  openedAt: timestamp("opened_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  primaryKey({ columns: [table.userId, table.area, table.period, table.itemId] }),
+  check("member_monthly_detail_unlock_area_check", sql`${table.area} in ('radar', 'beneficios')`),
+  check("member_monthly_detail_unlock_period_check", sql`extract(day from ${table.period}) = 1`),
+  check("member_monthly_detail_unlock_item_id_check", sql`${table.itemId} ~ '^[A-Za-z0-9_-]{1,200}$'`),
+]);
+
 export const radarCalendarFilter=pgTable('radar_calendar_filter',{
   id:text('id').primaryKey(),
   userId:text('user_id').notNull().references(()=>user.id,{onDelete:'cascade'}),

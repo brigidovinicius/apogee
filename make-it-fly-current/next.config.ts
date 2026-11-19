@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
   // são copiados pelo Dockerfile conforme a documentação de self-hosting.
   output: "standalone",
   // The loopback preview runs next start from this checkout, not a container bundle.
-  ...(process.env.APOGEE_LOCAL_PREVIEW === "1" ? { output: undefined } : {}),
+  ...(process.env.APOGEE_LOCAL_PREVIEW === "1" ? { output: undefined, devIndicators: false } : {}),
   // Preserve the approved landing's CSS output during promotion to the root.
   experimental: {
     cssChunking: false,
@@ -56,6 +56,7 @@ const nextConfig: NextConfig = {
   // o cache persistente do Webpack em cada build de produção.
   webpack(config, { dev }) {
     if (config.cache && !dev) config.cache = { type: "memory" };
+    if (dev && process.env.APOGEE_FUNCTIONAL_REVIEW === "1") config.cache = { type: "memory", maxGenerations: 1 };
     return config;
   },
   // Make It Fly is archived, preserving its source and assets for future use.

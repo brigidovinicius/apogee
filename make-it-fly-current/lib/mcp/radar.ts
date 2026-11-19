@@ -4,7 +4,7 @@ import { applicationOrigin } from "@/lib/members/mail";
 import { isGeneratedGoogleUsername } from "@/lib/members/validation";
 import { radarAccess } from "@/lib/billing/store";
 import { RADAR_ACCESS_PATH } from "@/lib/billing/config";
-import { freeRadarState } from "@/lib/opportunities/detail-store";
+import { radarMonthlyState } from "@/lib/opportunities/detail-store";
 import { listRadarOpportunities } from "@/lib/opportunities/radar-client";
 import { opportunityCardData } from "@/lib/opportunities/card-data";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
@@ -55,10 +55,11 @@ export async function readRadarTool(userId: string, name: string, args: unknown)
   }
   const access = await radarAccess(member.id, process.env.STRIPE_MODE !== "test", { claimPurchases: false });
   const items = await listRadarOpportunities(true);
-  const quota = access.active ? null : await freeRadarState(member.id,items);
+  const quota = access.active ? null : await radarMonthlyState(member.id);
   const rights: Rights = { fullAccess: access.active, freeOpportunityIds: quota?.readableIds ?? [] };
   if (name === "get_radar_access") return { ...rights, freeOpportunityId: quota?.selected ?? null,
-    eventQuota: quota ? { used:quota.used, remaining:quota.remaining, limit:quota.limit, renews:false } : null,
+    eventQuota: quota ? { used: quota.used, remaining: quota.remaining, limit: quota.limit,
+      renews: true, renewsOn: quota.renewsOn, scope: "opportunities" } : null,
     readOnly: true, accessUrl: `${applicationOrigin()}${RADAR_ACCESS_PATH}` };
   if (name === "get_opportunity") {
     const { id } = mcpToolSchemas.get_opportunity.parse(args);

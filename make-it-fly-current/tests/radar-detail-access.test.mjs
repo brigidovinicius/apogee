@@ -24,11 +24,18 @@ function fixture() {
     "@/lib/opportunities/personal-calendar": { personalCalendarEnabled: () => state.calendarEnabled, savedOpportunities: async () => [] },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => { state.catalogueReads++; return [first, second]; } },
     "./detail-store": {
-      isFreeRadarEvent: item => item.categories.includes("eventos"),
-      freeRadarState: async () => { const ids=[...new Set([...state.events,...(state.selected?[state.selected]:[])])];
-        return { selected:state.selected,previousEvent:state.selected,eventIds:[...state.events],readableIds:ids,used:ids.length,remaining:Math.max(0,10-ids.length),limit:10 }; },
-      claimFreeRadarEvent: async (_user,id) => { state.claims++; if(state.events.has(id))return true;if(state.events.size>=10)return false;state.events.add(id);return true; },
-      claimFreeRadarOpportunity: async (_user, id) => { state.claims++; state.selected ??= id; return state.selected === id; } },
+      radarMonthlyState: async () => {
+        const readableIds = [...new Set([...state.events, ...(state.selected ? [state.selected] : [])])];
+        return { selected: state.selected, readableIds, used: state.events.size, remaining: Math.max(0, 10 - state.events.size), limit: 10, renewsOn: "2026-12-01" };
+      },
+    },
+    "@/lib/members/monthly-detail": {
+      claimMonthlyDetail: async (_user, area, id) => {
+        assert.equal(area, "radar");
+        state.claims++;
+        if (state.events.size < 10) state.events.add(id);
+      },
+    },
     "next/navigation": { notFound: () => { throw Error("NOT_FOUND"); }, redirect: path => { throw Error(`REDIRECT:${path}`); } },
     "@/components/members/member-bar": { MemberBar: () => null },
     "@/components/opportunities/opportunities-board": { OpportunityCard: ({ opportunity }) => React.createElement("p", null, opportunity.eligibility) },
@@ -106,7 +113,7 @@ test("first navigation explains the free consultation and preserves the filtered
   const props = { params: Promise.resolve({ id: first.id }), searchParams: Promise.resolve(filters) };
   const html = renderToStaticMarkup(await Page(props));
   assert.match(html, /Usar consulta gratuita/);
-  assert.match(html, /primeira vez, você usa uma consulta/);
+  assert.match(html, /Abrir esta oportunidade usa uma consulta do Radar/);
   assert.match(html, /href="\/membros\/oportunidades\?busca=Evento&amp;pagina=2"/);
   assert.doesNotMatch(html, /data-radar-detail-opening|REQUISITO_PRIVADO|do-not-forward/);
   assert.match(state.authenticatedPaths.at(-1), /radar-first\?busca=Evento&pagina=2$/);
@@ -124,8 +131,8 @@ test("a blocked detail presents the community and never starts a checkout", asyn
   state.events = new Set([first.id,...Array.from({length:9},(_,i)=>`already-${i}`)]);
   const page = load("app/membros/oportunidades/[id]/page.tsx").default;
   const html = renderToStaticMarkup(await page({ params: Promise.resolve({ id: second.id }), searchParams: Promise.resolve({}) }));
-  assert.match(html, /Ver plano com Radar completo/);
-  assert.match(html, /href="\/comunidade\?next=%2Fmembros%2Foportunidades%2Fradar-second#plano-anual"/);
+  assert.match(html, /Conhecer o plano anual/);
+  assert.match(html, /href="\/comunidade\?next=%2Fmembros%2Foportunidades%2Fradar-second#planos"/);
   assert.doesNotMatch(html, /\/api\/radar\/checkout|Abrindo checkout|method="post"|REQUISITO_PRIVADO/);
   assert.equal(state.claims, 0);
   const preserved = renderToStaticMarkup(await page({ params: Promise.resolve({ id: first.id }), searchParams: Promise.resolve({}) }));

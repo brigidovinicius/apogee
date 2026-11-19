@@ -9,6 +9,7 @@ import { migrateCommunityAccess } from "./community-access-migrate.mjs";
 import { migrateMemberToolbox } from "./member-toolbox-migrate.mjs";
 import { migrateMemberDeliverables } from "./member-deliverables-migrate.mjs";
 import { migrateMemberBenefits } from "./member-benefits-migrate.mjs";
+import { migrateMonthlyDetails } from "./monthly-detail-migrate.mjs";
 import { seedBenefitsReview } from "./seed-benefits-review.mjs";
 import { starterTrack, starterModule, starterActivities } from "../content/member-starter.mjs";
 const instance=process.env.APOGEE_REVIEW_INSTANCE??'offer-completion';
@@ -34,16 +35,23 @@ try {
   await migrateMemberToolbox(db.sql,{apply:true,expectedRole:'apogee_local'});
   await migrateMemberDeliverables(db.sql,{apply:true,expectedRole:'apogee_local'});
   await migrateMemberBenefits(db.sql,{apply:true,expectedRole:'apogee_local'});
+  await migrateMonthlyDetails(db.sql, { apply: true, expectedRole: 'apogee_local' });
   if(!db.resumed) {
   const password=await hashPassword('RevisaoLocal2026!');
-  for(const username of ['revisaopendente','revisaolivre','revisaonove','revisaolimite','revisaolegado','revisaoanual','revisaocancelada','revisaoadmin','revisaoexpirado','revisaoreembolso']) {
+  for(const username of ['revisaopendente','revisaolivre','revisaonove','revisaolimite','revisaoherdado','revisaolegado','revisaoanual','revisaocancelada','revisaoadmin','revisaoexpirado','revisaoreembolso']) {
     await db.sql`insert into "user"(id,name,email,email_verified,username,adult_declared) values(${username},'Pessoa Revisora',${username+'@example.test'},${username!=='revisaopendente'},${username},true)`;
     await db.sql`insert into account(id,account_id,provider_id,user_id,password) values(${username},${username},'credential',${username},${password})`;
     if(username!=='revisaopendente')await db.sql`insert into member_adult_review(user_id,status,reviewed_at,evidence_reference) values(${username},'approved',now(),'synthetic_local_review')`;
   }
   await db.sql`update "user" set role='admin' where id='revisaoadmin'`;
-  for(let i=1;i<=10;i++) await db.sql`insert into radar_free_event(user_id,opportunity_id,slot) values('revisaolimite',${'radar-review-event-'+i},${i})`;
-  for(let i=1;i<=9;i++) await db.sql`insert into radar_free_event(user_id,opportunity_id,slot) values('revisaonove',${'radar-review-event-'+i},${i})`;
+  await db.sql`insert into radar_free_event(user_id,opportunity_id,slot) values('revisaoherdado','radar-review-event-1',1)`;
+  for (const [actor, count] of [['revisaonove', 9], ['revisaolimite', 10]]) {
+    for (let index = 1; index <= count; index++) {
+      await db.sql`insert into member_monthly_detail_unlock(user_id,area,period,item_id) values
+        (${actor},'radar',date_trunc('month', now() at time zone 'America/Sao_Paulo')::date,${'radar-review-event-'+index}),
+        (${actor},'beneficios',date_trunc('month', now() at time zone 'America/Sao_Paulo')::date,${'local-benefit-journey-'+index})`;
+    }
+  }
   await db.sql`insert into radar_legacy_access(user_id) values('revisaolegado')`;
   await db.sql`insert into community_subscription(id,user_id,customer_id,livemode,status,cancel_at_period_end) values('sub_LocalReview','revisaoanual','cus_LocalReview',false,'active',false)`;
   await db.sql`insert into community_invoice(id,subscription_id,amount,currency,period_start,period_end,status) values('in_LocalReview','sub_LocalReview',143880,'brl',now()-interval '1 day',now()+interval '1 year'-interval '1 day','paid')`;
@@ -87,7 +95,7 @@ try {
     DATABASE_URL:db.url,DATABASE_SSL_MODE:'disable',DATABASE_POOL_MAX:'2',BETTER_AUTH_URL:`http://127.0.0.1:${port}`,BETTER_AUTH_SECRET:randomBytes(32).toString('hex'),
     STRIPE_MODE:'test',STRIPE_SECRET_KEY:'',STRIPE_WEBHOOK_SECRET:'',COMMUNITY_BILLING_ENABLED:'false',RADAR_BILLING_ENABLED:'false',
     MEMBERS_EMAIL_ENABLED:'false',MEMBERS_RESEND_API_KEY:'',MEMBERS_SUPERVISED_REGISTRATION_ENABLED:'true',
-    GOOGLE_CLIENT_ID:'',GOOGLE_CLIENT_SECRET:'',MCP_ENABLED:'false',RADAR_GOOGLE_CALENDAR_ENABLED:'false',
+    GOOGLE_CLIENT_ID:'',GOOGLE_CLIENT_SECRET:'',APOGEE_MCP_ENABLED:'true',RADAR_GOOGLE_CALENDAR_ENABLED:'false',
     RADAR_CALENDAR_PERSONAL_ENABLED:'true',RADAR_COLLECTIONS_ENABLED:'true',RADAR_COLLECTION_SHARING_ENABLED:'true',RADAR_COLLECTION_FOLLOWING_ENABLED:'true'};
   console.log(`Prévia isolada em http://127.0.0.1:${port}/previa/validacao; dados sintéticos; email e cobrança bloqueados.`);
   server=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--webpack','-H','127.0.0.1','-p',String(port)],{env,stdio:'inherit'});

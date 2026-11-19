@@ -4,12 +4,12 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
-test("site-wide entry follows the server-provided feature flag", () => {
+test("Home integration strip follows the feature flag; the global shell stays compact", () => {
   const load = opportunityLoader({
     "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return React.createElement("a", props, children); } },
     "next/image": { __esModule: true, default: () => null },
   });
-  const { McpAvailabilityProvider, McpConnectLink } = load("components/site/mcp-connect-link.tsx");
+  const { McpAvailabilityProvider, McpConnectLink, McpConnectionStrip } = load("components/site/mcp-connect-link.tsx");
   const { SiteHeader } = load("components/site/site-header.tsx");
   const { SiteFooter } = load("components/site/site-footer.tsx");
   for (const enabled of [true, false]) {
@@ -18,8 +18,12 @@ test("site-wide entry follows the server-provided feature flag", () => {
     else assert.equal(html, "");
     const shell = renderToStaticMarkup(React.createElement(McpAvailabilityProvider, { enabled },
       React.createElement(React.Fragment, null, React.createElement(SiteHeader), React.createElement(SiteFooter))));
-    assert.equal((shell.match(/Incluir no meu ChatGPT/g) ?? []).length, enabled ? 3 : 0, "desktop, mobile and footer follow the same flag");
-    assert.equal((shell.match(/Incluir no meu Claude/g) ?? []).length, enabled ? 3 : 0, "desktop, mobile and footer also offer Claude");
+    assert.doesNotMatch(shell, /Incluir no meu (ChatGPT|Claude)/);
+    const strip = renderToStaticMarkup(React.createElement(McpAvailabilityProvider, { enabled }, React.createElement(McpConnectionStrip)));
+    if (enabled) {
+      assert.match(strip, /Incluir no ChatGPT/);
+      assert.match(strip, /Incluir no Claude/);
+    } else assert.equal(strip, "");
   }
 });
 

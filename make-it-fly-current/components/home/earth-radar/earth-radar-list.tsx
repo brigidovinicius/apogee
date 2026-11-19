@@ -62,7 +62,7 @@ export function EarthRadarList({ opportunities, capturedAt, classNames }: { oppo
         <p>Nenhuma oportunidade em destaque nesta categoria agora. Explore o catálogo completo.</p>
         <button className={styles["reset-filters"]} onClick={() => setCategory("all")}>Limpar filtros</button>
       </div>}
-      <p className={styles["demo-note"]}>Consulte até 10 eventos distintos gratuitamente. O Radar completo está incluído na assinatura da comunidade.</p>
+      <p className={styles["demo-note"]}>Consulte até 10 oportunidades por mês gratuitamente. O Radar completo está incluído na assinatura da comunidade.</p>
       <Link prefetch={false} className={styles["all-link"]} href="/oportunidades">Ver o Radar completo</Link>
     </div>
   </div>;

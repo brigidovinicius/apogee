@@ -7,6 +7,14 @@ export function communityReturnPath(value: unknown): string {
   try {
     const u = new URL(value, "https://apogee.invalid");
     if (u.origin !== "https://apogee.invalid") return "/membros/oportunidades";
+    if (/^\/membros\/beneficios(?:\/[A-Za-z0-9_-]{1,200})?$/.test(u.pathname)) {
+      const filters = new URLSearchParams();
+      for (const name of ["q", "categoria", "publico"]) {
+        const value = u.searchParams.get(name);
+        if (value && value.length <= 100 && !/[\\\u0000-\u001f]/.test(value)) filters.set(name, value);
+      }
+      return u.pathname + (filters.size ? `?${filters}` : "");
+    }
     if (u.pathname === "/membros/ferramentas") {
       const category = u.searchParams.get("categoria");
       return u.pathname + (category && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(category) && category.length <= 80 ? `?categoria=${category}` : "");

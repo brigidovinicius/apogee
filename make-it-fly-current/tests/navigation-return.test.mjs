@@ -33,7 +33,7 @@ test("Radar transfers no unrelated destinations and ignores invalid page numbers
   assert.equal(memberRadarPath(new URLSearchParams({ busca: "x".repeat(150) })).split("busca=")[1].length, 100);
 });
 
-test("the public page uses the same filtered login destination in its header and CTA", async () => {
+test("the public Radar sends the header to the offer while preserving the filtered return", async () => {
   const pageLoad = opportunityLoader({
     "next/link": { __esModule: true, default: "Link" },
     "@/components/site/site-header": { SiteHeader: "SiteHeader" },
@@ -44,7 +44,7 @@ test("the public page uses the same filtered login destination in its header and
   });
   const Page = pageLoad("app/oportunidades/page.tsx").default;
   const tree = await Page({ searchParams: Promise.resolve({ categoria: "competicoes", pagina: "2" }) });
-  const expected = "/membros/entrar?next=%2Fmembros%2Foportunidades%3Fcategoria%3Dcompeticoes%26pagina%3D2";
+  const expected = "/comunidade?next=%2Fmembros%2Foportunidades%3Fcategoria%3Dcompeticoes%26pagina%3D2#planos";
   assert.equal(nodes(tree, (node) => node.type === "SiteHeader")[0].props.memberHref, expected);
   assert.equal(nodes(tree,node=>typeof node.type === "function" && node.type.name === "RadarOfferIntro")[0].props.next,memberRadarPath(new URLSearchParams("categoria=competicoes&pagina=2")));
 });
@@ -83,14 +83,13 @@ test("shared navigation marks only a defined current section and preserves the c
   const { SiteHeader } = headerLoad("components/site/site-header.tsx");
   const memberHref = "/membros/entrar?next=%2Fmembros%2Foportunidades%3Fcategoria%3Deventos";
   const tree = SiteHeader({ memberHref });
-  const accountFallback = nodes(tree, node => node.props?.fallback)[0].props.fallback;
-  const unknown = [...nodes(tree, node => node.type === "Link"), ...nodes(accountFallback, node => node.type === "Link")];
-  assert.equal(unknown.filter(node => node.props["aria-current"] === "page").length, 0);
-  assert.equal(unknown.filter(node => node.props.href === memberHref).length, 1);
+  const entries = nodes(tree, node => node.type?.name === "CommunityEntryLink");
+  assert.deepEqual(entries.map(node => node.props.offerHref), [memberHref]);
+  assert.equal(nodes(tree, node => node.type === "Link" && node.props["aria-current"] === "page").length, 0);
   for (const adaptive of [false, true]) {
-    const selected = nodes(SiteHeader({ current: "blog", memberHref, adaptive }), node => node.type === "Link" && node.props["aria-current"] === "page");
+    const selected = nodes(SiteHeader({ current: "benefits", memberHref, adaptive }), node => node.type === "Link" && node.props["aria-current"] === "page");
     assert.equal(selected.length, 2);
-    assert.ok(selected.every(node => node.props.href === "/blog"));
+    assert.ok(selected.every(node => node.props.href === "/beneficios"));
   }
 });
 

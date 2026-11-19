@@ -31,7 +31,8 @@ test("pending free accounts can discover their home without reading the forum or
   })("app/membros/page.tsx").default;
   const html = renderToStaticMarkup(await Page());
   assert.equal(forumReads, 0);
-  for (const path of ["/membros/ferramentas", "/membros/beneficios", "/membros/trilha", "/membros/oportunidades"]) assert.ok(html.includes(`href="${path}"`), path);
+  for (const path of ["/membros/ferramentas", "/membros/trilha"]) assert.ok(!html.includes(`href="${path}"`), path);
+  for (const path of ["/membros/beneficios", "/membros/oportunidades", "/membros/assinatura"]) assert.ok(html.includes(`href="${path}"`), path);
   assert.match(html, /Verificar minha conta/);
   assert.match(html, /data-locked-preview="forum"/);
 });
@@ -60,18 +61,25 @@ test("free and legacy members never load paid catalogues; paid members still req
 });
 
 test("administrator content access still requires account verification and never invents a paid subscription in the home", async () => {
+  let verified = false;
   const admin = { ...member, role: "admin" };
   const load = opportunityLoader({ ...uiMocks,
     "@/lib/members/dal": { requireSignedInMember: async () => admin, requireMember: async () => { throw Error("VERIFICATION_REQUIRED"); } },
-    "@/lib/members/db": { getSql: () => { throw Error("PRIVATE_READ"); } },
+    "@/lib/members/db": { getSql: () => async () => {
+      assert.ok(verified, "unverified account must never query resource availability");
+      return [{ trilha: true, ferramentas: true }];
+    } },
     "@/lib/billing/community-store": { communityAccess: async () => ({ active: false }) },
     "@/lib/billing/store": { radarAccess: async () => ({ active: true }) },
-    "@/lib/members/protection": { adultAccess: async () => true },
+    "@/lib/members/protection": { adultAccess: async () => verified },
     "@/lib/members/forum": { listCategories: async () => [] },
   });
   const deliverables = load("lib/deliverables/store.ts");
   for (const read of [() => deliverables.memberBenefits(), () => deliverables.memberLearning(), () => deliverables.setLearningProgress({})]) await assert.rejects(read(), /VERIFICATION_REQUIRED/);
-  const html = renderToStaticMarkup(await load("app/membros/page.tsx").default());
+  const home = load("app/membros/page.tsx").default;
+  assert.doesNotMatch(renderToStaticMarkup(await home()), /href="\/membros\/(?:trilha|ferramentas)"/);
+  verified = true;
+  const html = renderToStaticMarkup(await home());
   assert.doesNotMatch(html, /Exclusivo da assinatura|Assinatura anual ativa|Prévia administrativa/);
   assert.match(html, /href="\/membros\/trilha"/);
 });

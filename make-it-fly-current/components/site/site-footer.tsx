@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSiteLegalLinks } from "./site-legal-links";
 import { McpConnectLink } from "./mcp-connect-link";
+import { CommunityEntryLink } from "@/components/members/account-menu";
 import styles from "./site-shell.module.css";
 
 export function SiteFooter() {
@@ -28,10 +29,10 @@ export function SiteFooter() {
           <Link href="/galeria">Galeria</Link>
           <Link href="/loja">Loja</Link>
           <Link href="/comunidade">Comunidade</Link>
+          <Link href="/beneficios">Benefícios</Link>
           <Link href="/evento-openai">Evento gratuito</Link>
-          <Link href="/membros">Membros</Link>
-          <McpConnectLink />
-          <McpConnectLink provider="claude" />
+          <CommunityEntryLink />
+          <McpConnectLink label="Integrações" />
           {legalLinks.privacy && <Link href="/privacidade">Privacidade</Link>}
           {legalLinks.terms && <Link href="/termos">Termos de Uso</Link>}
         </nav>

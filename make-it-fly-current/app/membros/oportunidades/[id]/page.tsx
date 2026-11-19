@@ -4,8 +4,7 @@ import Link from "next/link";
 import { formatCalendarDate } from "@/components/opportunities/calendar-list";
 import { MemberWorkspace } from "@/components/members/member-workspace";
 import { OpportunityCard } from "@/components/opportunities/opportunities-board";
-import { RadarQuota } from "@/components/community/radar-quota";
-import { RadarCommunityGate } from "@/components/community/radar-offer-intro";
+import { MonthlyQuota } from "@/components/community/radar-quota";
 import { memberRadarPath, radarCatalogueQuery } from "@/lib/opportunities/navigation";
 import { radarOpportunityDetail } from "@/lib/opportunities/detail-access";
 import { adultAccess } from "@/lib/members/protection";
@@ -35,16 +34,14 @@ export default async function OpportunityDetailPage({ params, searchParams }: {
     <div className={styles.opportunityDetail}>
       <p><Link href={memberRadarPath(query)}>← Voltar ao Radar</Link></p>
       <h1 className={styles.title}>{result.title}</h1>
-      {result.quota ? <RadarQuota used={result.quota.used} limit={result.quota.limit} next={detailPath} /> : null}
+      {result.quota ? <MonthlyQuota quota={result.quota} area="Radar" next={detailPath} /> : null}
       {result.opportunity ? <>
         <OpportunityCard opportunity={result.opportunity} detailed />
         {canSave ? <form data-behavior-action={saved ? "remove_saved" : "save"} action={toggleSaved.bind(null,id,saved)}><button className={styles.primary}>{saved ? "Remover dos salvos" : "Salvar no meu calendário"}</button><Link href="/membros/meu-calendario"> Meu calendário</Link></form> : hasCalendar ? <p>Para usar o calendário pessoal, <Link href={`/membros/protecao?next=${encodeURIComponent(detailPath)}`}>conclua a verificação da conta</Link>.</p> : null}
         {result.opportunity.discovery?.editions.map(edition=><section key={edition.id}><h2>{edition.name}</h2><ol>{edition.stages.map(stage=><li key={stage.id}><strong>{stage.name}</strong>: <time dateTime={stage.start}>{formatCalendarDate(stage.start)}</time>{stage.end ? <> a <time dateTime={stage.end}>{formatCalendarDate(stage.end)}</time></> : null} · <a data-behavior-action="official_link" href={stage.sourceUrl} target="_blank" rel="noopener noreferrer">Fonte oficial</a></li>)}</ol></section>)}
-      </> : result.status === "purchase" ? <RadarCommunityGate next={detailPath} /> : <section className={styles.panel} aria-labelledby="free-detail-title">
+      </> : result.status === "purchase" ? <p><Link href={`/membros/radar/acesso?next=${encodeURIComponent(detailPath)}`}>Já tenho acesso ao Radar</Link></p> : <section className={styles.panel} aria-labelledby="free-detail-title">
         <h2 id="free-detail-title">Consultar detalhes</h2>
-        <p>{result.isEvent
-          ? "Ao abrir este evento pela primeira vez, você usa uma consulta da sua cota. Reabrir depois é gratuito."
-          : "Esta oportunidade usa a consulta gratuita para itens que não são eventos. Você poderá reabri-la sem gastar outra consulta."}</p>
+        <p>Abrir esta oportunidade usa uma consulta do Radar. Você pode reabri-la no mesmo mês sem usar outra.</p>
         <form action={openFreeOpportunity.bind(null, id, radarCatalogueQuery(query))}>
           <button className={styles.primary} type="submit">Usar consulta gratuita</button>
         </form>

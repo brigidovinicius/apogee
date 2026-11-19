@@ -71,6 +71,6 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
       {!reviewing && pending && !membership.subscription.cancelAtPeriodEnd ? <form action={`/api/comunidade/assinatura/cancelar?next=${encodeURIComponent(next)}`} method="post"><p>Cancele a renovação automática. O acesso do período já pago será mantido, sem nova cobrança anual.</p><button className={styles.primary} type="submit">Cancelar renovação anual</button></form> : null}
     </section> : null}
     <nav className={annual.annualLinks} aria-label="Ajuda com sua assinatura"><Link href="/membros">Explorar meus recursos</Link><Link href="/membros/suporte">Precisa de ajuda com o pagamento?</Link></nav>
-    <p className={annual.annualFootnote}>Prefere continuar no acesso gratuito? Você tem 10 consultas a eventos distintos por conta, sem renovação automática da cota. Reabrir um evento já liberado não gasta outra consulta. <Link href="/membros/oportunidades">Voltar ao Radar</Link>.</p>
+    <p className={annual.annualFootnote}>Prefere continuar no acesso gratuito? Sua conta tem 10 consultas mensais no Radar e 10 em Benefícios. Reabrir um item dentro do mesmo mês não usa outra consulta. <Link href="/membros/oportunidades">Abrir o Radar</Link> ou <Link href="/membros/beneficios">explorar Benefícios</Link>.</p>
   </div></MemberWorkspace>;
 }

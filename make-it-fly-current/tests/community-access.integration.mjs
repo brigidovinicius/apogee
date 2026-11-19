@@ -73,9 +73,10 @@ test('old free event counts once; old non-event selection survives without consu
 });
 test('GET does not consume or leak; full legacy rights bypass quota while blocked accounts remain closed',async()=>{
   const detail=load('lib/opportunities/detail-access.ts').radarOpportunityDetail;member='other';
-  const before=(await detailStore.freeRadarState('other',catalogue)).used;
+  await sql.unsafe(await readFile(new URL('../drizzle/0024_monthly_detail_unlock.sql',import.meta.url),'utf8'));
+  const before=(await detailStore.radarMonthlyState('other')).used;
   let result=await detail(catalogue[1].id);assert.equal(result.status,'available');assert.equal(result.opportunity,null);
-  assert.equal((await detailStore.freeRadarState('other',catalogue)).used,before);
+  assert.equal((await detailStore.radarMonthlyState('other')).used,before);
   await sql`insert into radar_legacy_access(user_id) values('legacy')`;
   member='legacy';result=await detail(catalogue[11].id,true);assert.equal(result.status,'unlimited');assert.equal(result.quota,null);
   assert.equal((await detailStore.freeRadarState('legacy',catalogue)).used,0);

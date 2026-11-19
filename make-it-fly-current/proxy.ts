@@ -10,8 +10,10 @@ export function proxy(request: NextRequest) {
   if (PUBLIC_MEMBER_PATHS.has(pathname)) return NextResponse.next();
 
   if (!getSessionCookie(request)) {
+    if (pathname === "/membros/beneficios") return NextResponse.redirect(new URL(`/beneficios${search}`, request.url));
     const login = new URL("/membros/entrar", request.url);
-    login.searchParams.set("next", pathname + search);
+    const anchor = pathname === "/membros/integracoes/mcp" && request.nextUrl.searchParams.get("provedor") === "claude" ? "#claude" : "";
+    login.searchParams.set("next", pathname + search + anchor);
     return NextResponse.redirect(login);
   }
   return NextResponse.next();

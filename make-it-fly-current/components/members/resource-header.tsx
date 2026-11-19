@@ -7,11 +7,11 @@ const resources = {
   ferramentas: { title: "Caixa de ferramentas", href: "/membros/ferramentas", summary: "Encontre ferramentas e skills para a tarefa que você quer realizar." },
 };
 
-export function ResourceHeader({ area }: { area: keyof typeof resources }) {
+export function ResourceHeader({ area, showRelated = true }: { area: keyof typeof resources; showRelated?: boolean }) {
   const current = resources[area];
   const other = resources[area === "beneficios" ? "ferramentas" : "beneficios"];
   return <header className={styles.head}>
     <div><h1>{current.title}</h1><p>{current.summary}</p></div>
-    <Link href={other.href} className={styles.switchArea}>{other.title}<ArrowRight size={16} aria-hidden="true" /></Link>
+    {showRelated && <Link href={other.href} className={styles.switchArea}>{other.title}<ArrowRight size={16} aria-hidden="true" /></Link>}
   </header>;
 }

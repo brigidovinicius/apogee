@@ -51,6 +51,6 @@ export function HomeRadarList({ opportunities, capturedAt }: { opportunities: St
         </li>)}
       </ul> : <p className={styles.catalogueMessage}>Nenhuma oportunidade disponível nesta prévia agora. Explore as outras categorias no Radar</p>}
     </div>
-    <p className={styles.catalogueNote}>Consulte até 10 eventos distintos gratuitamente. Conheça a comunidade para acessar o Radar completo.</p>
+    <p className={styles.catalogueNote}>Consulte até 10 oportunidades por mês gratuitamente. Conheça a comunidade para acessar o Radar completo.</p>
   </div>;
 }

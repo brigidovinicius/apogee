@@ -1,4 +1,10 @@
 .root { min-width: 0; color: #fff; }
+.root[data-public-catalogue] { color: #11283e; padding: 1.25rem clamp(1rem,3vw,2rem) 3rem; }
+.root[data-public-catalogue] .header > p:last-child,
+.root[data-public-catalogue] .result { color: #40566d; }
+.root[data-public-catalogue] > p > a { display: inline-flex; align-items: center; min-height: 44px; color: #193f63; text-decoration: underline; text-underline-offset: .18em; }
+.root[data-public-catalogue] .empty { color: #fff; }
+.previewTitle { margin: .4rem 0; font: 600 1.16rem/1.3 var(--font-inter), sans-serif; }
 .header { max-width: 46rem; margin: 1rem 0 1.5rem; }
 .eyebrow { display: flex; align-items: center; gap: .6rem; color: #bdd5ef; font: 500 .68rem var(--font-inter),sans-serif; letter-spacing: .12em; text-transform: uppercase; }
 .header h1 { margin: 1rem 0; font: 400 clamp(2.4rem,5vw,3.5rem)/1.05 var(--font-instrument-serif),serif; }
