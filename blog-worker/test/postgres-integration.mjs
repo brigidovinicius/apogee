@@ -1659,7 +1659,12 @@ try{
       const article=structuredClone(hybridText);article.title+=' · '+labels[drafts];article.paragraphs[0].text+=' Cenário sintético '+labels[drafts++]+'.';
       return {outcome:'completed',text:JSON.stringify(article),usage:smallHybridUsage};
     };
-    for(let i=0;i<35;i++)await tick({store:new Store(runtime),identity,provider,config:{policy:focus,sources:[],catalog:[]}});
+    for(let i=0;i<35;i++){
+      const worker=new Store(runtime);
+      const prepare=worker.prepareAutomaticResearch.bind(worker);
+      worker.prepareAutomaticResearch=policy=>prepare(policy,{at:hybridAt()});
+      await tick({store:worker,identity,provider,config:{policy:focus,sources:[],catalog:[]}});
+    }
     const created=await admin`select c.id,c.artifact,p.title from blog_worker.candidate c join public.blog_post p on p.id=c.post_id where c.explainer_key like 'auto-%'`;
     assert.equal(created.length,10);assert.equal(new Set(created.map(c=>c.title)).size,10);assert.ok(created.every(c=>c.artifact.research.plan.key.startsWith('auto-')));
     assert.equal((await store.productionUsage()).reduce((n,r)=>n+r.day,0),10);
