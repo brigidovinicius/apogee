@@ -30,10 +30,10 @@ export default async function BehaviorPage({ searchParams }: {
         <caption>Leituras de {blog.range.start} a {blog.range.end}</caption>
         <thead><tr><th scope="col">Artigo</th><th scope="col">Primeiro registro disponível</th><th scope="col">Leituras medidas</th><th scope="col">Leituras com clique</th><th scope="col">Taxa de clique</th></tr></thead>
         <tbody>{blog.rows.map(row => <tr key={row.label}>
-          <th scope="row">{row.label}</th><td>{row.firstDay ?? "—"}</td>
-          <td>{row.views === null ? "—" : number.format(row.views)}</td>
-          <td>{row.clicks === null ? "—" : number.format(row.clicks)}</td>
-          <td>{row.views && row.clicks !== null && row.clicks <= row.views ? `${number.format(Math.round(row.clicks / row.views * 1_000) / 10)}%` : "—"}</td>
+          <th scope="row">{row.label}</th><td>{row.firstDay ?? "Sem dados"}</td>
+          <td>{row.views === null ? "Sem dados" : number.format(row.views)}</td>
+          <td>{row.clicks === null ? "Sem dados" : number.format(row.clicks)}</td>
+          <td>{row.views && row.clicks !== null && row.clicks <= row.views ? `${number.format(Math.round(row.clicks / row.views * 1_000) / 10)}%` : "Sem dados"}</td>
         </tr>)}</tbody>
       </table> : <p role="status">{blog.state === "invalid" ? "Selecione dias completos dentro do histórico de 90 dias." : blog.state === "disabled" ? "Medição desativada neste ambiente." : "Contagem por artigo indisponível."}</p>}
     </section>
