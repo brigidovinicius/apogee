@@ -82,7 +82,7 @@ export async function BlogArticle({ params, member = false }: { params: Promise<
           {imageCaption ? <figcaption>{interfaceText(imageCaption)}</figcaption> : null}
         </figure> : <p key={index}>{interfaceText(paragraph)}</p>;
       })}{video ? <div className={styles.videoFrame}><iframe src={video.src} title={`Vídeo do artigo no ${video.provider}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div> : null}</article>
-      {references.length ? <section className={styles.sources} aria-labelledby="article-sources"><h2 id="article-sources">Fontes</h2><ol>{references.map((source, index) => <li key={`${source.url}-${index}`}><a href={source.url} target="_blank" rel="noopener noreferrer">{interfaceText(source.title)}</a></li>)}</ol></section> : null}
+      {references.length ? <section className={styles.sources} aria-labelledby="article-sources" data-blog-article-sources><h2 id="article-sources">Fontes</h2><ol>{references.map((source, index) => <li key={`${source.url}-${index}`}><a href={source.url} target="_blank" rel="noopener noreferrer">{interfaceText(source.title)}</a></li>)}</ol></section> : null}
       <div className={styles.articleEnd}><span><BrandMark /></span><p>Mais ideias para seguir em frente</p><Link href={basePath}>← Voltar ao blog</Link></div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     </Content>
