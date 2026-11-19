@@ -37,6 +37,26 @@ services:
       retries: 5
       start_period: 20s
 
+  benefit-monitor:
+    image: apogee-site:${APOGEE_RELEASE_SHA:-local}
+    profiles: [benefits]
+    restart: unless-stopped
+    init: true
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-}
+      DATABASE_SSL_MODE: require
+      DATABASE_CA_CERT_FILE: /run/apogee/pgbouncer-ca.crt
+    command: ["node", "scripts/member-benefits-monitor.mjs", "--watch"]
+    volumes:
+      - ${PGBOUNCER_CA_PATH:-/opt/apogee-membros/certs/server.crt}:/run/apogee/pgbouncer-ca.crt:ro
+    networks: [public, members_edge]
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 128m
+    cpus: 0.25
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
   google-calendar-sync:
     image: apogee-site:${APOGEE_RELEASE_SHA:-local}
     profiles: [google-calendar]

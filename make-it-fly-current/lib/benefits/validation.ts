@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { identifier } from "@/lib/deliverables/validation";
+import { BENEFIT_AUDIENCE_VALUES } from "./types";
 const clean = (max: number) => z.string().trim().max(max).refine(v => !/[\u0000-\u001f]/.test(v), "Texto inválido.");
-export const benefitFilters = z.strictObject({ query: clean(100).default(""), category: z.string().regex(/^(?:[a-z0-9]+(?:-[a-z0-9]+)*)?$/).max(80).default("") });
+export const benefitFilters = z.strictObject({ query: clean(100).default(""), category: z.string().regex(/^(?:[a-z0-9]+(?:-[a-z0-9]+)*)?$/).max(80).default(""), audience: z.enum(["", ...BENEFIT_AUDIENCE_VALUES]).default("") });
 export const savedBenefitInput = z.strictObject({ benefitId: identifier, saved: z.boolean() });
 export const startBenefitInput = z.strictObject({ benefitId: identifier });
 export const categoryInput = z.strictObject({ id: identifier.optional(), version: z.coerce.number().int().positive().optional(), name: clean(80).min(1), description: clean(240).default(""), status: z.enum(["draft", "published", "archived"]), sortOrder: z.coerce.number().int().min(0).max(10000) });

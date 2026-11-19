@@ -13,13 +13,15 @@ const tableColumns = {
   member_learning_progress: "user_id,activity_id,completed_at",
   member_deliverable_audit: "id,actor_id,entity_type,entity_id,action,status,created_at",
 };
-async function verify(tx, role, withVerification = false) {
+async function verify(tx, role, withVerification = false, withMonitor = false) {
   for (const [table, names] of Object.entries(tableColumns)) {
     const [owner] = await tx`select tableowner from pg_tables where schemaname='public' and tablename=${table}`;
     if (owner?.tableowner !== role) throw Error("Ownership divergente.");
     const cols = await tx`select column_name,data_type,is_nullable from information_schema.columns where table_schema='public' and table_name=${table} order by ordinal_position`;
     const upgraded = withVerification && table === "member_benefit";
-    if (cols.map(c => c.column_name).join(",") !== (upgraded ? names + ",verified_at" : names)) throw Error("Colunas divergentes.");
+    const monitored = withMonitor && table === "member_benefit";
+    const expectedNames = names + (upgraded ? ",verified_at" : "") + (monitored ? ",audience" : "");
+    if (cols.map(c => c.column_name).join(",") !== expectedNames) throw Error("Colunas divergentes.");
     for (const c of cols) {
       const type = ["verified_at", "starts_at", "ends_at", "completed_at", "reviewed_at", "created_at"].includes(c.column_name) ? "timestamp with time zone" : c.column_name === "sort_order" ? "integer" : "text";
       if (c.data_type !== type || c.is_nullable !== (["starts_at", "ends_at", "verified_at"].includes(c.column_name) ? "YES" : "NO")) throw Error("Tipos divergentes.");
@@ -33,7 +35,8 @@ async function verify(tx, role, withVerification = false) {
     if (table === "member_deliverable_audit") required.push("'benefit'", "'activity'", "'create'", "'update'");
     const counts = { member_benefit: 6, member_learning_track: 4, member_learning_module: 5, member_learning_activity: 5, member_learning_progress: 3, member_deliverable_audit: 4 };
     if (upgraded) required.push("verified_at IS NULL", "verified_at IS NOT NULL", "length(redemption_url)");
-    if (definitions.length !== counts[table] + (upgraded ? 1 : 0) || required.some(s => !definitions.some(d => d.includes(s)))) throw Error("Restrições divergentes.");
+    if (monitored) required.push("audience", "'estudantes'", "'startups'");
+    if (definitions.length !== counts[table] + Number(upgraded) + Number(monitored) || required.some(s => !definitions.some(d => d.includes(s)))) throw Error("Restrições divergentes.");
     const grants = await tx`select privilege_type from information_schema.table_privileges where table_schema='public' and table_name=${table} and grantee='PUBLIC'`;
     if (grants.length) throw Error("Privilégios públicos indevidos.");
   }
@@ -51,7 +54,7 @@ export async function migrateMemberDeliverables(sql, { apply = false, expectedRo
     await tx`lock table drizzle.__drizzle_migrations in exclusive mode`;
     const rows = await tx`select hash,created_at from drizzle.__drizzle_migrations order by created_at`;
     if (rows.length < index || rows.length > migrations.length || !rows.every((r, i) => r.hash === migrations[i].hash && Number(r.created_at) === migrations[i].when)) throw Error("Histórico divergente. Aplique primeiro a migração da Caixa de Ferramentas.");
-    if (rows.length > index) { await verify(tx, expectedRole, rows.length > 22); return { changed: false, pending: false }; }
+    if (rows.length > index) { await verify(tx, expectedRole, rows.length > 22, rows.length > 23); return { changed: false, pending: false }; }
     const tables = Object.keys(tableColumns);
     const present = await tx`select tablename from pg_tables where schemaname='public' and tablename=any(${tables}::text[])`;
     if (present.length) throw Error("Esquema parcial/preexistente.");

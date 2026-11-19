@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BENEFIT_AUDIENCE_VALUES } from "@/lib/benefits/types";
 
 const text = (max: number) => z.string().trim().min(1, "Preencha os campos obrigatórios.").max(max).refine(v => !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(v), "Texto inválido.");
 export const identifier = z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/, "Identificador inválido.");
@@ -27,6 +28,7 @@ export const benefitSchema = z.strictObject({
   evidenceUrl: officialUrl, eligibility: z.string().trim().max(2000), availability: z.string().trim().max(1000),
   startsAt: date, endsAt: date, verifiedOn: date.optional(), redemption: z.string().trim().max(4000), redemptionUrl: officialUrl,
   categoryId: z.union([identifier, z.literal("")]).optional(), providerLabel: z.string().trim().max(140).optional(),
+  audience: z.enum(BENEFIT_AUDIENCE_VALUES).optional(),
   providerAccess: z.enum(["unconfirmed", "free", "premium", "included"]).optional(), sourceUrl: officialUrl.optional(),
 }).superRefine((v, ctx) => {
   if (v.startsAt && v.endsAt && v.endsAt <= v.startsAt) ctx.addIssue({ code: "custom", message: "A vigência final deve ser posterior à inicial." });
