@@ -16,15 +16,16 @@ function render(props = {}, enabled = false) {
 test("sales page retains the complete offer and honest delivery states with working section links", () => {
   const html = render();
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-  for (const text of ["Caixa de Ferramentas", "Benefícios", "Trilha de IA aplicada", "Google Flow", "R$ 1.438,80", "R$ 119,90", "10 eventos distintos", "direitos são preservados", "disponível de forma parcial", "Cada parceiro define condições", "independente da assinatura"]) assert.ok(html.includes(text), text);
+  for (const text of ["Caixa de Ferramentas", "Benefícios", "Trilha de IA", "Google Flow", "R$ 1.438,80", "R$ 119,90", "10 eventos distintos", "direitos são preservados", "disponível de forma parcial", "Cada parceiro define condições", "independente da assinatura"]) assert.ok(html.includes(text), text);
   for (const id of ["comunidade", "radar", "ferramentas", "learn", "perks", "planos", "participar", "duvidas"]) assert.ok(html.includes(`id="${id}"`), id);
   for (const [, id] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(html.includes(`id="${id}"`), `broken section link: ${id}`);
   assert.match(html, /href="\/evento-openai"/);
   assert.doesNotMatch(html, /href="\/membros\/ferramentas"|href="\/membros\/assinatura"/);
-  assert.match(html, /A contratação anual será disponibilizada após a validação/);
+  assert.match(html, /A contratação anual está temporariamente indisponível/);
 });
 
 test("sales layout preserves the preview and safe return-destination contract", () => {
+  assert.ok(render().includes('href="/membros/cadastro?next=%2Fmembros"'));
   const destination = "/membros/oportunidades/um-evento";
   assert.ok(render({ next: destination }).includes(`/membros/cadastro?next=${encodeURIComponent(destination)}`));
   const preview = render({ preview: true, next: destination });
@@ -37,12 +38,14 @@ test("annual sales link is enabled only by the commercial switch and never by pr
   const next = "/membros/ferramentas?categoria=video";
   const active = render({ next }, true);
   assert.ok(active.includes(`/membros/assinatura?next=${encodeURIComponent(next)}`));
-  assert.match(active, /Assinar a comunidade anual/);
-  assert.match(active, /Cobrança anual de R\$ 1\.438,80, com renovação automática/);
+  assert.match(active, /Assinar a comunidade por um ano/);
+  assert.match(active, /R\$ 1\.438,80/);
+  assert.match(active, /pagamento é integral, uma vez por ano/);
+  assert.match(active, /A renovação é automática/);
   assert.doesNotMatch(active, /O catálogo ainda está em preparação|valor proposto|serão apresentados antes da adesão/);
   assert.match(active, /formação ainda não está completa/);
   const preview = render({ preview: true, next }, true);
-  assert.doesNotMatch(preview, /Assinar a comunidade anual|href="\/membros\/assinatura/);
+  assert.doesNotMatch(preview, /Assinar a comunidade por um ano|href="\/membros\/assinatura/);
 });
 
 test("benefits availability reflects the real catalogue without promising eligibility", () => {

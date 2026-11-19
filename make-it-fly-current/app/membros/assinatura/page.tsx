@@ -18,7 +18,7 @@ export const metadata = { title: "Sua assinatura anual | Apogee", robots: { inde
 const date = (iso:string) => new Intl.DateTimeFormat("pt-BR", {dateStyle:"long",timeZone:"America/Sao_Paulo"}).format(new Date(iso));
 export default async function MembershipPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
   const reviewing = localFunctionalReview();
-  const params = await searchParams, next = communityReturnPath(params.next);
+  const params = await searchParams, next = communityReturnPath(params.next ?? "/membros");
   const member = await requireSignedInMember(`${COMMUNITY_ACCESS_PATH}?next=${encodeURIComponent(next)}`);
   const livemode = process.env.STRIPE_MODE !== "test";
   const membership = await communityMembership(member.id,livemode);

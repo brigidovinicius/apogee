@@ -1,5 +1,5 @@
 export const RADAR_FREE_EVENT_LIMIT = 10;
-export const COMMUNITY_SIGNUP_PATH = "/membros/cadastro?next=%2Fmembros%2Foportunidades";
+export const COMMUNITY_SIGNUP_PATH = "/membros/cadastro?next=%2Fmembros";
 export const RADAR_FREE_NOTE = "Consulte gratuitamente até 10 eventos distintos por conta. Reabrir o mesmo evento não gasta outra consulta. O Radar completo está incluído na assinatura da comunidade.";
 
 export const COMMUNITY_BENEFITS_TERMS = "Assinantes podem consultar e resgatar as ofertas vigentes para as quais sejam elegíveis. Cada parceiro define condições, disponibilidade e forma de resgate.";
