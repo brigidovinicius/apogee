@@ -53,7 +53,10 @@ try {
   let ready = false;
   for (let i = 0; i < 80; i++) {
     if (child.exitCode !== null) throw new Error(`Standalone exited: ${logs}`);
-    try { await fetch(`http://127.0.0.1:${port}/`, { signal: AbortSignal.timeout(1000) }); ready = true; break; }
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/robots.txt`, { method: "HEAD", signal: AbortSignal.timeout(1000) });
+      if (response.ok) { ready = true; break; }
+    }
     catch { await new Promise(resolve => setTimeout(resolve, 100)); }
   }
   assert.ok(ready);

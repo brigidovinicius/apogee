@@ -73,7 +73,7 @@ try {
   assert.match(communityBody, /Sua comunidade/);
   assert.match(communityBody, /data-locked-preview="forum"/, "participation remains behind account review");
   assert.match(communityBody, /Verificar minha conta/);
-  for (const section of ["ferramentas", "beneficios", "trilha"]) {
+  for (const section of ["ferramentas", "trilha"]) {
     const preview = await get(`/membros/${section}`, cookie);
     assert.equal(preview.status, 200, `the free member can navigate to ${section}`);
     const html = await preview.text();
@@ -81,6 +81,16 @@ try {
     assert.match(html, /Conhecer a assinatura anual/);
   }
   assert.equal((await database`select email_verified from public."user" where email='synthetic-radar@example.test'`)[0].email_verified, false);
+  const benefits = await get("/membros/beneficios", cookie);
+  assert.equal(benefits.status, 200);
+  const benefitCatalogue = await benefits.text();
+  assert.match(benefitCatalogue.replaceAll("<!-- -->", ""), /10 de 10 consultas restantes em Benefícios/);
+  assert.match(benefitCatalogue, /Buscar benefícios/);
+  assert.doesNotMatch(benefitCatalogue, /Como resgatar|Antes de resgatar/);
+  const monthlyRadarCount = async () => Number((await database`
+    select count(*) from member_monthly_detail_unlock where area='radar' and user_id=(
+      select id from public."user" where email='synthetic-radar@example.test'
+    ) and period=date_trunc('month',now() at time zone 'America/Sao_Paulo')::date`)[0].count);
   const response = await get("/membros/oportunidades", cookie); assert.equal(response.status, 200);
   const initial = await response.text(); assert.match(initial, /Radar de oportunidades/); assert.equal(titles(initial).length, 24); assert.doesNotMatch(initial, /CI IFSC Ingresso|CI IFC Ingresso/);
   assert.doesNotMatch(initial, /Equipes de estudantes|https:\/\/example.edu\/notice/);
@@ -90,6 +100,7 @@ try {
   assert.doesNotMatch(firstDetail, /Sua primeira oportunidade|Use seu acesso gratuito|Abrir esta oportunidade grátis/);
   assert.doesNotMatch(firstDetail, /Equipes de estudantes|https:\/\/example.edu\/notice/);
   assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "0", "GET never consumes the free choice");
+  assert.equal(await monthlyRadarCount(), 0, "GET does not open a monthly detail");
   // Next 16 redirects RSC requests to the URL with its cache-busting _rsc param.
   const prefetch = await fetch(origin + detailPath, { headers: { ...edgeHeaders, Cookie: cookie, RSC: "1", "Next-Router-Prefetch": "1" } });
   assert.equal(prefetch.status, 200);
@@ -97,6 +108,7 @@ try {
   assert.doesNotMatch(await prefetch.text(), /Equipes de estudantes|https:\/\/example.edu\/notice/);
   assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "0", "prefetch never consumes the free choice");
   assert.equal((await database`select count(*) from radar_free_event`)[0].count, "0", "GET and prefetch never consume an event");
+  assert.equal(await monthlyRadarCount(), 0, "prefetch does not open a monthly detail");
   const openDetail = async (path, html) => {
     const formMarkup = [...html.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match => match[0]).find(form => form.includes(">Usar consulta gratuita</button>"));
     assert.ok(formMarkup, "the explicit free-consultation button submits a compiled Server Action");
@@ -113,24 +125,26 @@ try {
   const freeDetail = await (await get(detailPath, cookie)).text();
   assert.match(freeDetail, /Equipes de estudantes/); assert.match(freeDetail, /https:\/\/example.edu\/notice/);
   assert.match(await (await get(detailPath, cookie)).text(), /Equipes de estudantes/, "reopening stays free");
-  assert.equal((await database`select count(*) from radar_free_event`)[0].count, "1", "opening once and reopening consumes exactly one slot");
+  assert.equal(await monthlyRadarCount(), 1, "opening once and reopening consumes exactly one slot");
   for (let index = 1; index < 10; index++) {
     const path = `/membros/oportunidades/radar-event-${index}`;
     const available = await (await get(path, cookie)).text();
     assert.match(available, /Usar consulta gratuita/);
     assert.doesNotMatch(available, /Equipes de estudantes|https:\/\/example.edu\/notice/);
-    assert.equal((await database`select count(*) from radar_free_event`)[0].count, String(index));
+    assert.equal(await monthlyRadarCount(), index);
     assert.equal((await openDetail(path, available)).status, 303);
     assert.match(await (await get(path, cookie)).text(), /Equipes de estudantes/);
   }
   const blocked = await get("/membros/oportunidades/radar-event-10", cookie);
   const blockedHtml = await blocked.text();
   assert.equal(blocked.status, 200);
-  assert.match(blockedHtml, /Ver plano com Radar completo/);
-  assert.match(blockedHtml, /href="\/comunidade\?next=%2Fmembros%2Foportunidades%2Fradar-event-10#plano-anual"/);
+  assert.match(blockedHtml, /Conhecer o plano anual/);
+  assert.match(blockedHtml, /href="\/comunidade\?next=%2Fmembros%2Foportunidades%2Fradar-event-10#planos"/);
   assert.doesNotMatch(blockedHtml, /\/api\/radar\/checkout|Abrindo checkout|Equipes de estudantes|https:\/\/example.edu\/notice/);
   assert.match(await (await get(detailPath, cookie)).text(), /Equipes de estudantes/, "the first event remains readable at the limit");
-  assert.equal((await database`select count(*) from radar_free_event`)[0].count, "10");
+  assert.equal(await monthlyRadarCount(), 10);
+  assert.equal((await database`select count(*) from radar_free_event`)[0].count, "0", "monthly unlocks preserve legacy slots");
+  assert.match((await (await get("/membros/beneficios", cookie)).text()).replaceAll("<!-- -->", ""), /10 de 10 consultas restantes em Benefícios/);
   assert.equal((await database`select count(*) from radar_free_opportunity`)[0].count, "0", "event quota does not replace the legacy selection");
   const second = await (await get("/membros/oportunidades?pagina=2", cookie)).text();
   assert.equal(titles(second).length, 6); assert.equal(titles(second).filter(title => titles(initial).includes(title)).length, 0);
