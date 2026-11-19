@@ -104,18 +104,18 @@
 .page[data-member-blog] .grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 @media (max-width: 640px) { .page[data-member-blog] .grid { grid-template-columns: 1fr; } }
 
-:global(html[data-ap-interface]) .page {
+:global(html [data-ap-interface]) .page {
   --editorial-paper: var(--ap-canvas);
   --editorial-ink: var(--ap-text);
   --editorial-muted: var(--ap-muted);
   --editorial-rule: var(--ap-line);
 }
-:global(html[data-ap-interface]) .page[data-member-blog] { border-radius: var(--ap-panel-radius); }
-:global(html[data-ap-interface]) .cardArt { overflow: hidden; border-radius: var(--ap-control-radius); }
-:global(html[data-ap-interface]) .readMore { color: var(--ap-accent); }
+:global(html [data-ap-interface]) .page[data-member-blog] { border-radius: var(--ap-panel-radius); }
+:global(html [data-ap-interface]) .cardArt { overflow: hidden; border-radius: var(--ap-control-radius); }
+:global(html [data-ap-interface]) .readMore { color: var(--ap-accent); }
 @media (hover:hover) and (prefers-reduced-motion:no-preference) {
-  :global(html[data-ap-interface]) .coverImage,
-  :global(html[data-ap-interface]) .readMore svg { transition: transform var(--ap-settle) var(--ap-ease); }
-  :global(html[data-ap-interface]) .cardLink:hover .coverImage { transform: scale(1.015); }
-  :global(html[data-ap-interface]) .cardLink:is(:hover,:focus-visible) .readMore svg { transform: translate(2px,-2px); }
+  :global(html [data-ap-interface]) .coverImage,
+  :global(html [data-ap-interface]) .readMore svg { transition: transform var(--ap-settle) var(--ap-ease); }
+  :global(html [data-ap-interface]) .cardLink:hover .coverImage { transform: scale(1.015); }
+  :global(html [data-ap-interface]) .cardLink:is(:hover,:focus-visible) .readMore svg { transform: translate(2px,-2px); }
 }

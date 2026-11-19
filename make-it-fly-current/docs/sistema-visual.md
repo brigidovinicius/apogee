@@ -17,7 +17,7 @@ A interface do site e da plataforma compartilha a folha `public/design-system/ap
 
 ## Temas, luz e estados
 
-Use os tokens `--ap-canvas`, `--ap-section`, `--ap-surface`, `--ap-text`, `--ap-muted`, `--ap-line` e `--ap-accent` para novas superfícies. As famílias de botão e card usam os preenchimentos, bordas e sombras da mesma folha. Em `html`, `data-ap-theme="sistema"` segue a preferência do dispositivo. Os valores `claro` e `escuro` permitem escolha explícita. Cores funcionais de erro, aprovação, prazos e alertas continuam ligadas a seus estados.
+Use os tokens `--ap-canvas`, `--ap-section`, `--ap-surface`, `--ap-text`, `--ap-muted`, `--ap-line` e `--ap-accent` para novas superfícies. As famílias de botão e card usam os preenchimentos, bordas e sombras da mesma folha. No contêiner `data-ap-interface`, `data-ap-theme="sistema"` segue a preferência do dispositivo. Os valores `claro` e `escuro` permitem escolha explícita. Cores funcionais de erro, aprovação, prazos e alertas continuam ligadas a seus estados.
 
 A altura mínima dos controles é 44 px. A ação pressionada, o foco de teclado e o estado de seleção têm tratamentos próprios. O acabamento de vidro pertence aos controles e painéis. Campos de leitura longa usam superfícies contínuas. Movimento reduzido desliga as animações do sistema e transparência reduzida torna os painéis opacos.
 
@@ -35,6 +35,6 @@ O [arquivo de design no Figma](https://www.figma.com/design/SKTQ8K0Lr0OMGn0YeXcN
 </section>
 ```
 
-O layout raiz carrega `apogee.css` e `interface.css` antes da primeira pintura. Os componentes públicos e de membros declaram seus papéis no próprio HTML. A folha `interface.css` integra esses papéis às superfícies editoriais existentes. Páginas novas usam os atributos diretamente. A barra de comparação funciona apenas na prévia de oferta em loopback. O site continua responsável pelas permissões, filtros, destinos e estados.
+O contêiner de interface das páginas públicas e de membros carrega `apogee.css` e `interface.css` antes da primeira pintura. Os componentes públicos e de membros declaram seus papéis no próprio HTML. A folha `interface.css` integra esses papéis às superfícies editoriais existentes. Páginas novas usam os atributos diretamente. A barra de comparação funciona apenas na prévia de oferta em loopback. O site continua responsável pelas permissões, filtros, destinos e estados.
 
 Ao alterar o padrão, revise um controle em claro, escuro, teclado e movimento reduzido, além da tela em largura de celular. Compare textos, links e ordem de leitura com a versão de usabilidade em andamento.

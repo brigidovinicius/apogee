@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { ApogeeInterface } from "@/components/site/apogee-design-system";
 import { EditorialPageShell } from "@/components/site/editorial-page-shell";
 import { RedBullSupport } from "@/components/site/red-bull-support";
 import { COMMUNITY_FAQ } from "@/content/community";
@@ -12,7 +13,7 @@ import styles from "./community-editorial.module.css";
 import type { PublishedResources } from "./community-deliverables";
 
 export function CommunitySalesPage({ preview = false, signedIn = false, subscribed = false, next, hasBenefits, resources }: { preview?: boolean; signedIn?: boolean; subscribed?: boolean; next?: string; hasBenefits?: boolean | null; resources: PublishedResources }) {
-  return <EditorialPageShell current="community" className={styles.page}>
+  return <ApogeeInterface editorial><EditorialPageShell current="community" className={styles.page}>
     <main id="experiencia" tabIndex={-1} data-community-page>
       <section id="inicio" className={[styles.wrap, styles.section, styles.intro].join(" ")} aria-labelledby="community-title">
         <p className={styles.eyebrow}>Comunidade Apogee</p>
@@ -59,5 +60,5 @@ export function CommunitySalesPage({ preview = false, signedIn = false, subscrib
       </section>
       <section id="duvidas" className={[styles.section, styles.faqSection].join(" ")} aria-labelledby="faq-title"><div className={[styles.wrap, styles.faqLayout].join(" ")}><h2 id="faq-title">Antes de<br />começar.</h2><div className={styles.faq}>{COMMUNITY_FAQ.map(item => <details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}</div></div></section>
     </main>
-  </EditorialPageShell>;
+  </EditorialPageShell></ApogeeInterface>;
 }

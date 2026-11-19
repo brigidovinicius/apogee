@@ -20,6 +20,6 @@
 .admin summary:focus-visible { outline: 2px solid var(--apogee-sky); outline-offset: 2px; }
 .admin a { color: var(--apogee-sky); }
 
-:global(html[data-ap-interface]) .card { color-scheme: dark; }
-:global(html[data-ap-interface]) .card .card { background: var(--ap-surface); box-shadow: var(--ap-edge); }
-:global(html[data-ap-interface]) .progress button { border-radius: var(--ap-control-radius); }
+:global(html [data-ap-interface]) .card { color-scheme: dark; }
+:global(html [data-ap-interface]) .card .card { background: var(--ap-surface); box-shadow: var(--ap-edge); }
+:global(html [data-ap-interface]) .progress button { border-radius: var(--ap-control-radius); }

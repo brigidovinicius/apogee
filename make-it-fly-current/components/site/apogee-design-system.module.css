@@ -1,3 +1,4 @@
+.interface { display: contents; }
 .scope {
   display: contents;
   --apogee-page-margin: max(1.25rem, calc((100vw - 1240px) / 2));

@@ -17,7 +17,7 @@ const preferred=params.get("tema") || saved;
 theme.value=["claro","escuro","sistema"].includes(preferred) ? preferred : "sistema";
 const persistent=document.createElement("link");
 persistent.rel="stylesheet";persistent.href="/design-system/review-toolbar.css";document.head.append(persistent);
-const docRoot=document.documentElement;
+const surface=()=>document.querySelector("[data-ap-interface], [data-ap-original]");
 function toggleSheets(enabled) {
   for (const id of ["ap-foundations", "ap-interface"]) {
     const link = document.getElementById(id);
@@ -26,14 +26,23 @@ function toggleSheets(enabled) {
 }
 function refresh() {
   if (compare.checked) return;
-  docRoot.dataset.apInterface="";
-  docRoot.dataset.apTheme=theme.value;
-  docRoot.toggleAttribute("data-ap-mobile-menu",new URLSearchParams(location.search).get("ap-revisao")==="menu");
+  const root=surface();
+  if (!root) return;
+  root.removeAttribute("data-ap-original");
+  root.dataset.apInterface="";
+  root.dataset.apTheme=theme.value;
+  document.documentElement.toggleAttribute("data-ap-mobile-menu",new URLSearchParams(location.search).get("ap-revisao")==="menu");
   toggleSheets(true);
 }
 function reset() {
   toggleSheets(false);
-  for (const name of ["data-ap-interface","data-ap-theme","data-ap-mobile-menu"]) docRoot.removeAttribute(name);
+  const root=surface();
+  if (root) {
+    root.dataset.apOriginal="";
+    root.removeAttribute("data-ap-interface");
+    root.removeAttribute("data-ap-theme");
+  }
+  document.documentElement.removeAttribute("data-ap-mobile-menu");
 }
 function pickRoute() {
   const key=new URLSearchParams(location.search).get("ap-revisao");

@@ -36,9 +36,9 @@
   --ap-quick: 160ms;
   --ap-settle: 340ms;
 }
-html[data-ap-theme=claro] { color-scheme: light; }
-html[data-ap-theme=escuro] { color-scheme: dark; }
-html[data-ap-theme=sistema] { color-scheme: light dark; }
+[data-ap-interface][data-ap-theme=claro] { color-scheme: light; }
+[data-ap-interface][data-ap-theme=escuro] { color-scheme: dark; }
+[data-ap-interface][data-ap-theme=sistema] { color-scheme: light dark; }
 [data-ap-button], [data-ap-chip] {
   box-sizing: border-box;
   display: inline-flex;
