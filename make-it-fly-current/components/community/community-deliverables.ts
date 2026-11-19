@@ -3,7 +3,7 @@ import { COMMUNITY_BENEFITS_TERMS } from "@/content/community-offer";
 export const COMMUNITY_SALES_DELIVERABLES = [
   {
     id: "ferramentas", label: "Caixa de Ferramentas", fact: "Assinatura anual",
-    title: "Escolha uma ferramenta para criar um vídeo, pesquisar ou escrever.",
+    title: "Encontre ferramentas para te ajudar no seu objetivo.",
     description: "Compare as opções por categoria e abra o site oficial de cada ferramenta. Contas, licenças e créditos seguem as condições do fornecedor.",
     href: "#ferramentas", action: "Conhecer a Caixa de Ferramentas",
   },
@@ -24,5 +24,11 @@ export const COMMUNITY_SALES_DELIVERABLES = [
     title: "Confira quais ofertas de parceiros você pode usar.",
     description: COMMUNITY_BENEFITS_TERMS,
     href: "#perks", action: "Entender os benefícios",
+  },
+  {
+    id: "encontros", label: "Eventos presenciais", fact: "Condições por evento",
+    title: "Conheça os encontros da Apogee e veja como participar.",
+    description: "Veja as informações do Make It Fly e do workshop em Florianópolis. Cada encontro tem suas próprias condições de participação.",
+    href: "#participar", action: "Ver eventos presenciais",
   },
 ] as const;

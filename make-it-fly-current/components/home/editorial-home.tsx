@@ -1,7 +1,7 @@
 import { Suspense, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, Compass, Gift, Wrench } from "lucide-react";
+import { ArrowUpRight, BookOpen, CalendarDays, Compass, Gift, Wrench } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { RedBullSupport } from "@/components/site/red-bull-support";
@@ -11,7 +11,7 @@ import { COMMUNITY_SALES_DELIVERABLES } from "@/components/community/community-d
 import { HomeStar } from "./home-star";
 import styles from "./journal-home.module.css";
 
-const resourceIcons = { ferramentas: Wrench, learn: BookOpen, radar: Compass, perks: Gift };
+const resourceIcons = { ferramentas: Wrench, learn: BookOpen, radar: Compass, perks: Gift, encontros: CalendarDays };
 
 function EntryCard({ id, theme, title, href, action, picture, children }: {
   id: string; theme: string; title: string; href: string;
@@ -40,7 +40,7 @@ export function EditorialHome() {
           <p className={styles.introLead}>Na Apogee, você troca ideias com outros membros, encontra ferramentas e aprende a usar IA em um projeto seu.</p>
           <div className={styles.introActions}>
             <Link className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={16} /></Link>
-            <Link className={styles.heroSecondary} href="#recursos">Ver ferramentas e recursos</Link>
+            <Link className={styles.heroSecondary} href="#recursos">Ver recursos e eventos</Link>
           </div>
         </div>
         <HomeStar />
@@ -49,7 +49,7 @@ export function EditorialHome() {
 
       <section className={styles.resourceBand} id="recursos" aria-labelledby="home-resources-title">
         <div className={styles.featureLayout}>
-          <div className={styles.sectionHeading}><h2 id="home-resources-title">Ferramentas da comunidade</h2></div>
+          <div className={styles.sectionHeading}><h2 id="home-resources-title">A comunidade</h2></div>
           <ul className={styles.resourceGrid}>
             {COMMUNITY_SALES_DELIVERABLES.map(resource => {
               const Icon = resourceIcons[resource.id];
