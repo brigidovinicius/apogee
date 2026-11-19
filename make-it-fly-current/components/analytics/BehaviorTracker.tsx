@@ -1,7 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { behaviorPage } from "@/lib/behavior-contract";
+import { behaviorPage, blogRadarArticle } from "@/lib/behavior-contract";
 import { configureBehavior, flushBehavior, getBehaviorSnapshot, setBehaviorChoice, subscribeBehavior, trackBehavior } from "./behavior-client";
 import styles from "./behavior.module.css";
 
@@ -23,6 +23,9 @@ export function BehaviorTracker() {
     if (!page || !ready || !allowed) return;
     // One page view per navigation/effective consent change; no pre-consent events.
     trackBehavior("page_view", "view", page);
+    const article = blogRadarArticle(pathname);
+    if (article) trackBehavior("blog_radar_view", article, page);
+    let clickedRadar = false;
     const depths = new Set<number>();
     const sections = new Set<string>();
     let visibleSeconds = 0;
@@ -54,7 +57,15 @@ export function BehaviorTracker() {
         const destination = new URL(link.href, window.location.origin);
         const target = destination.origin === window.location.origin ? behaviorPage(destination.pathname) : null;
         if (target) trackBehavior("navigation", target, page);
+        if (article && !clickedRadar && event.isTrusted && (target === "radar_list" || target === "radar_detail") && link.closest("[data-blog-article-sources]")) {
+          clickedRadar = true;
+          trackBehavior("blog_radar_click", article, page);
+          void flushBehavior();
+        }
       } catch { /* Unrecognized links have no measurement. */ }
+    };
+    const auxClick = (event: MouseEvent) => {
+      if (article && event.button === 1 && event.target instanceof Element && event.target.closest("[data-blog-article-sources] a[href]")) click(event);
     };
     const submit = (event: Event) => {
       if (!(event.target instanceof HTMLFormElement)) return;
@@ -82,11 +93,13 @@ export function BehaviorTracker() {
     if (updates) updates.observe(document.body, { childList: true, subtree: true });
     window.addEventListener("scroll", scroll, { passive: true });
     document.addEventListener("click", click); document.addEventListener("submit", submit, true);
+    if (article) document.addEventListener("auxclick", auxClick);
     window.addEventListener("pagehide", hide); document.addEventListener("visibilitychange", visibility);
     scroll();
     return () => {
       window.clearInterval(tick); observer?.disconnect(); updates?.disconnect();
       window.removeEventListener("scroll", scroll); document.removeEventListener("click", click); document.removeEventListener("submit", submit, true);
+      if (article) document.removeEventListener("auxclick", auxClick);
       window.removeEventListener("pagehide", hide); document.removeEventListener("visibilitychange", visibility);
       void flushBehavior();
     };

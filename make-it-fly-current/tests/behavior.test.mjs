@@ -21,7 +21,8 @@ test("every vocabulary entry has a valid closed event and arbitrary values never
   for (const [event, targets] of Object.entries(contract.BEHAVIOR_TARGETS)) for (const target of targets) {
     const annualPages = { annual_price: "annual_offer", annual_choose: "annual_offer", account_ready: "annual_summary", confirmed_return: "annual_summary" };
     const page = annualPages[target] ?? (target.startsWith("event_") ? "event_page" : undefined) ?? ((event === "form_progress" || target === "application_open") ? "makeitfly_application" : event === "section_view" || target === "application_start" ? "makeitfly" : target === "store_interest" ? "store" : "radar_list");
-    assert.equal(contract.validBehaviorEvent(item({ page, event, target })), true, `${event}/${target}`);
+    const measuredPage = event.startsWith("blog_radar_") ? "blog_article" : page;
+    assert.equal(contract.validBehaviorEvent(item({ page: measuredPage, event, target })), true, `${event}/${target}`);
   }
   for (const target of ["annual_choose", "confirmed_return", "account_ready", "annual_price"]) {
     assert.equal(contract.validBehaviorEvent(item({ page: "home", event: target === "annual_choose" ? "action" : "section_view", target })), false);
