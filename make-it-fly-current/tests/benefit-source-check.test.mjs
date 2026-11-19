@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { packCampaigns, sourceSession } from "../scripts/benefit-source-check.mjs";
 import { loadBenefitOffers, indexOffers } from "../scripts/member-benefits-monitor.mjs";
+import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
 const official = "https://vendor.example";
 const promo = { tests: [{ url: official + "/benefit", hosts: ["vendor.example"], paths: ["/apply"], markers: ["student plan", "30% discount"], ended: ["no longer accepting applications"] }] };
@@ -51,4 +52,19 @@ test("candidate catalog contains distinct campaigns on official HTTPS endpoints 
   assert.equal(rosa.sort, 0);
   assert.equal(rosa.redeem, "https://www.hostgator.com.br/53289-77-3-32.html");
   assert.equal(rosa.tests[0].query.utm_content, "53289");
+});
+
+test("all catalogue destinations pass the real member validator, with fragments restricted to listed campaigns", async () => {
+  const { officialBenefitUrl, officialUrl } = opportunityLoader()("lib/deliverables/validation.ts");
+  const offers = await loadBenefitOffers();
+  for (const offer of offers) {
+    assert.equal(officialBenefitUrl.safeParse(offer.source).success, true, offer.id);
+    assert.equal(officialBenefitUrl.safeParse(offer.redeem).success, true, offer.id);
+  }
+  const pack = offers.find(offer => offer.id === "github-education-namecheap").redeem;
+  assert.equal(officialUrl.safeParse(pack).success, false);
+  for (const url of [pack + "?token=value", pack.replace("#namecheap", "?token=value#namecheap"),
+    pack.replace("#namecheap", "#unknown"), pack.replace("education.github.com", "education.github.com.example.org")]) {
+    assert.equal(officialBenefitUrl.safeParse(url).success, false);
+  }
 });

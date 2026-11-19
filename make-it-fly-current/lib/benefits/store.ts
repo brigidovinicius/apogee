@@ -5,7 +5,7 @@ import { getSql } from "@/lib/members/db";
 import { requireAdmin } from "@/lib/members/dal";
 import { supervisedRegistrationEnabled, existingAccountCutoff } from "@/lib/members/protection";
 import { deliverableMember } from "@/lib/deliverables/store";
-import { identifier, officialUrl } from "@/lib/deliverables/validation";
+import { identifier, officialBenefitUrl } from "@/lib/deliverables/validation";
 import { benefitFilters, savedBenefitInput, startBenefitInput, categoryInput, benefitCategorySlug, reviewRedemptionInput } from "./validation";
 import { BENEFIT_PATHS, type BenefitView, type BenefitCategory, type BenefitOrganization, type CatalogueBenefit, type BenefitRedemption, type AdminRedemption, type BenefitMonitor } from "./types";
 
@@ -109,7 +109,7 @@ export async function startBenefitRedemption(input: unknown) {
   return getSql().begin(async tx => {
     await lockedAccess(tx, member.id);
     const b = await availableBenefit(tx, v.benefitId);
-    if (!officialUrl.safeParse(b.redemption_url).success) throw new BenefitActionError("O destino desta oferta precisa de revisão.");
+    if (!officialBenefitUrl.safeParse(b.redemption_url).success) throw new BenefitActionError("O destino desta oferta precisa de revisão.");
     await tx`insert into member_benefit_redemption(id,user_id,benefit_id,benefit_name,partner_name,terms_revision)
       values(${randomUUID()},${member.id},${b.id},${b.name},${b.partner},${b.terms_revision}) on conflict(user_id,benefit_id) do nothing`;
     const [redemption] = await tx<{ status: BenefitRedemption["status"] }[]>`select status from member_benefit_redemption where user_id=${member.id} and benefit_id=${b.id}`;

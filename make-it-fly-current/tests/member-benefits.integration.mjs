@@ -226,6 +226,7 @@ test('continuous offers require recent verification and expire across member ent
 });
 test('a verified catalog imports 100 distinct offers exactly once and enforces the combined filters', async () => {
   const earlierCheck = new Date(Date.now()-1000).toISOString();
+  const packDestination = "https://education.github.com/pack#namecheap";
   const sample = Array.from({ length: 100 }, (_, index) => ({
     id: `batch-${index}`,
     partner: "Parceiro de teste",
@@ -233,7 +234,7 @@ test('a verified catalog imports 100 distinct offers exactly once and enforces t
     category: "produtividade",
     audience: index % 2 ? "estudantes" : "startups",
     source: `https://example.org/benefits/${index}`,
-    redeem: `https://example.org/redeem/${index}`,
+    redeem: index === 1 ? packDestination : `https://example.org/redeem/${index}`,
     program: "Programa sintético",
     eligibility: "Fixture local.",
     availability: "Condição disponível somente para o teste.",
@@ -250,6 +251,7 @@ test('a verified catalog imports 100 distinct offers exactly once and enforces t
   assert.equal(catalogue.benefits.length, 50);
   assert.equal(catalogue.benefits[0].id, "batch-1");
   assert.equal(catalogue.totals.catalogue, 100);
+  assert.equal((await store.startBenefitRedemption({ benefitId: "batch-1" })).destination, packDestination);
   const stats = await checkPublishedBenefits(sql, sample, {
     force: true,
     check: async offer => offer.id === "batch-1"
