@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { memberBenefitDetail } from "@/lib/benefits/store";
+import { benefitNavigation, type BenefitSearchParams } from "@/lib/benefits/navigation";
 import { PROVIDER_ACCESS_LABELS } from "@/lib/benefits/types";
 import { MemberWorkspace } from "@/components/members/member-workspace";
 import { AnnualAccessNotice } from "@/components/community/annual-access-notice";
@@ -10,11 +11,15 @@ import shared from "@/components/members/members.module.css";
 import styles from "@/components/benefits/benefits.module.css";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Condições do benefício", robots: { index: false, follow: false } };
-export default async function BenefitDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function BenefitDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<BenefitSearchParams> }) {
   const { id } = await params, { member, access, benefit: b, redemptionStatus } = await memberBenefitDetail(id);
+  const filters = await searchParams ?? {};
+  const view = filters.origem === "salvos" ? "saved" : filters.origem === "resgates" ? "history" : "catalogue";
+  const { listHref } = benefitNavigation(filters, view);
+  const backLabel = { saved: "Voltar aos salvos", history: "Voltar aos meus resgates", catalogue: "Voltar às ofertas" }[view];
   if (access.allowed && !b) notFound();
   return <MemberWorkspace member={member} current="beneficios"><div className={`${shared.container} ${styles.root}`}>
-    <Link href="/membros/beneficios" className={styles.back}>← Voltar aos benefícios</Link>
+    <Link href={`${listHref}#oferta-${encodeURIComponent(id)}`} className={styles.back}>← {backLabel}</Link>
     {!access.allowed || !b ? <><header className={styles.header}><h1>Benefícios</h1></header><AnnualAccessNotice title="Benefícios" next="/membros/beneficios" /></> : <>
       <header className={styles.header}><p className={styles.eyebrow}>{b.category_name ?? "Benefícios da comunidade"}</p><h1>{b.name}</h1><p>{b.partner}{b.provider_label ? ` · Disponibilizado por ${b.provider_label}` : ""}</p></header>
       <article className={`${styles.card} ${styles.detail}`}><div className={styles.cardTop}><p className={styles.description}>{b.description}</p><BenefitSaveButton benefitId={b.id} name={b.name} saved={b.saved} /></div>

@@ -30,9 +30,9 @@ export function PerkBookCatalogue() {
 
   return (
     <section aria-labelledby="perkbook-title" className={styles.card}>
-      <h2 id="perkbook-title">Descontos em software</h2>
+      <h2 id="perkbook-title" tabIndex={-1}>Catálogo parceiro · PerkBook</h2>
       <p className={styles.description}>
-        Busque descontos, créditos e licenças no catálogo da Apogee no PerkBook.
+        Pesquise descontos, créditos e licenças diretamente no PerkBook.
         Consulte os requisitos na página de cada oferta.
       </p>
       <a className={styles.textLink} href={portalOrigin} target="_blank" rel="noopener noreferrer">
