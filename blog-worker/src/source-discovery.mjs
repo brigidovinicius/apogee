@@ -23,7 +23,7 @@ export function sourceDiscovery(document){
 
 export function sourceCuration(candidate,links,at=new Date()){
   const text=String(candidate.title??'').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
-  const excluded=/\b(?:rumou?r|leak|vazamento|sponsored|publieditorial)\b|conteudo patrocinado|em promocao|veja uma selecao|^ofertas\b/.test(text);
+  const excluded=/\b(?:rumou?r(?:s|es)?|leak|vazamento|sponsored|publieditorial)\b|conteudo patrocinado|em promocao|veja uma selecao|^ofertas\b/.test(text);
   const own=referenceForUrl(candidate.url),publishers=new Set(),primary=new Set();
   for(const url of links){const r=referenceForUrl(url);if(r){publishers.add(r.publisher);if(primaryReference(r))primary.add(r.publisher);}}
   const age=+at-Date.parse(candidate.published_at),fresh=Number.isFinite(age)&&age>=-900000&&age<=2*86400000;

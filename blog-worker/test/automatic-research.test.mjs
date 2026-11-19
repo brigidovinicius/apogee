@@ -4,6 +4,7 @@ import {automaticDossier,sameResearchEvent,sameProductLaunch} from '../src/autom
 import {normalizeItem} from '../src/editorial.mjs';
 import {assessDossier} from '../src/corroboration.mjs';
 import {tick} from '../src/worker.mjs';
+import {sourceCuration} from '../src/source-discovery.mjs';
 import {defaultPolicy,source} from './fixtures.mjs';
 
 const date=new Date().toISOString();
@@ -53,6 +54,19 @@ test('versioned product identity cannot be replaced by generic brand or a differ
  assert.equal(sameProductLaunch(a,b),true);
  assert.equal(sameProductLaunch(a,{...b,title:'Google lança Gemini 3 Carbon'}),false);
  assert.equal(sameProductLaunch({...a,title:'Google is now available',text:'Google launched new products.'},{...b,title:'Google lança produtos'}),false);
+});
+test('an introducing headline keeps the exact version and model without treating source selection as factual approval',()=>{
+ const {a:base}=fixtures();
+ const a={...base,source_id:'PRIMARY_GOOGLE_BLOG',url:'https://blog.google/innovation-and-ai/models-and-research/gemini-models/synthetic-neon/',title:'Introducing Gemini 4 Neon',published_at:date,text:'Google announces Gemini 4 Neon. '+text};
+ const b={...base,source_id:'REF02',url:'https://canaltech.com.br/inteligencia-artificial/synthetic-neon/',title:'Google lança Gemini 4 Neon para desenvolvedores',published_at:date,text:'Google anunciou Gemini 4 Neon. Análise independente sintética. '+text};
+ assert.equal(sameProductLaunch(a,b),true);assert.equal(sameProductLaunch({...a,title:'Announcing Gemini 4 Neon'},b),true);
+ for(const title of ['Google lança Gemini 4 Carbon','Google lança Gemini 3 Neon','Google lança Gemini 4 Neon Pro','Google lança Gemini 4 Neon Max','Google lança Gemini 4','Google revela rumores sobre Gemini 4 Neon'])assert.equal(sameProductLaunch(a,{...b,title}),false,title);
+ for(const title of ['Google revela rumores sobre Gemini 4 Neon','Google Gemini 4 Neon rumours'])assert.equal(sourceCuration({...b,title},[]).eligible,false,title);
+ assert.equal(sameProductLaunch(a,{...b,published_at:new Date(Date.parse(date)-3*86400000).toISOString()}),false);
+ assert.equal(sameProductLaunch({...a,title:'Introducing Gemini 4'},b),false);
+ const primary=normalizeItem({title:a.title,link:a.url,isoDate:date,contentSnippet:a.text},{...source,id:a.source_id,editoria:'ia',article_hosts:['blog.google']},new Date());
+ const dossier=automaticDossier(primary,[{...a,capture_id:'a'.repeat(64)},{...b,capture_id:'b'.repeat(64)}],defaultPolicy);
+ assert.ok(dossier);assert.equal(dossier.claims.length,0);assert.equal(assessDossier(dossier).eligible,false);
 });
 test('opening excerpts remain literal with decimals, abbreviations and adjacent punctuation',()=>{
  const {primary,a,b}=fixtures();

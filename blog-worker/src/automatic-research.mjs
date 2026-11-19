@@ -76,8 +76,9 @@ export function sameProductLaunch(a,b){
     const title=String(primary.title??'');
     const launch=/\b(?:try|introduc\w*|launch\w*|announc\w*|experimental|now available|lan[cç]\w*|anunci\w*|dispon[ií]vel)\b/i;
     if(!launch.test(title)||!launch.test(news.title+' '+news.text.slice(0,1200)))continue;
-    if(/\b(?:review|hands.on|rumou?r|leak\w*|reportedly|lawsuit|breach|vulnerab\w*|an[aá]lise|opini[aã]o|falha|processo)\b/i.test(news.title))continue;
+    if(/\b(?:review|hands.on|rumou?r(?:s|es)?|leak\w*|reportedly|lawsuit|breach|vulnerab\w*|an[aá]lise|opini[aã]o|falha|processo)\b/i.test(news.title))continue;
     const product=title.match(/^Try\s+([A-Z][a-zA-Z0-9]{6,30})\b/)?.[1]
+      ??title.match(/^(?:Introducing|Announcing)\s+(Gemini\s+\d+(?:\.\d+)?\s+[A-Z][a-zA-Z]+)\b/)?.[1]
       ??title.match(/^([A-Z][A-Za-z0-9]*(?:\s+\d+(?:\.\d+)?)(?:\s+[A-Z][a-zA-Z]+)?)\s+is now available\b/)?.[1]
       ??title.match(/\b([A-Z][a-z]+[A-Z][A-Za-z]+\s+\d+(?:\.\d+)?)\b/)?.[1];
     if(!product||/^(?:Google|Microsoft|OpenAI|Meta|Gemini|ChatGPT|Android|Windows|Product|Products)$/i.test(product))continue;

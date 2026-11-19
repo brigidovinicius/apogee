@@ -957,6 +957,26 @@ try{
     assert.deepEqual(result,{prepared:1,kind:'explainer'});assert.equal(fallback,1);assert.equal(reads,0);
     assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0);
   });
+  await check('an empty cached fallback cannot starve fresh news; a fallback that used HTTP still owns its bounded cycle',async()=>{
+    for(const requests of [0,1]){
+      await reset();await operator.attestSubscription(subscription());
+      const sources=[{...source,id:'SRC01',url:'https://www.nasa.gov/news-release/feed/',article_hosts:['www.nasa.gov'],editoria:'ciencia-espaco'},
+        {...source,id:'REF27',url:'https://www.space.com/feeds/all',article_hosts:['www.space.com'],editoria:'ciencia-espaco'}];
+      await store.syncPipeline({policy:hybridPolicy,sources,catalog:[]},{});
+      const text=('Synthetic report DOI 10.1234/fresh-after-fallback. This fixture is a public-source simulation, never a real article. Independent source context and relevant limits must be compared before generation. ').repeat(10),date=new Date().toISOString();
+      const a=normalizeItem({title:'Synthetic NASA fresh after fallback',link:'https://www.nasa.gov/fresh-after-fallback/',isoDate:date,contentSnippet:text},sources[0],new Date());
+      const b=normalizeItem({title:'Synthetic independent fresh analysis',link:'https://www.space.com/fresh-after-fallback/',isoDate:date,contentSnippet:'Independent context. '+text},sources[1],new Date());
+      await store.ingest(a);await store.ingest(b);
+      const fresh=new Store(runtime);let renewals=0;
+      fresh.prepareAutomaticNewsRecovery=async()=>({prepared:0,requests:0,reason:'research_evidence_unchanged'});
+      fresh.prepareAutomaticExplainer=async()=>({prepared:0,kind:'explainer',requests,reason:'explainer_sources_missing'});
+      fresh.prepareRenewableResearch=async()=>{renewals++;return {prepared:0,requests:0};};
+      const result=await fresh.prepareAutomaticResearch(hybridPolicy,{at:hybridAt(),read:async()=>assert.fail('complete cached evidence needs no network')});
+      assert.equal(result.prepared,requests?0:1);assert.equal(renewals,requests?0:1);
+      assert.equal((await admin`select count(*)::int as n from blog_worker.dossier_version`)[0].n,requests?0:1);
+      assert.equal((await admin`select count(*)::int as n from blog_worker.attempt`)[0].n,0);
+    }
+  });
   const smallHybridUsage={input_tokens:100,output_tokens:100,thinking_tokens:0,cache_read_tokens:0,total_tokens:200};
   function guide(plan,url){
     const r=referenceForUrl(url),src=articleSource(r),text='🛰️ Guia sintético de '+r.publisher+'. '+('Contexto inicial sem relação com a seção seguinte. '.repeat(80))

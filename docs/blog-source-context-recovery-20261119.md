@@ -22,9 +22,27 @@ O uso real continua registrado; exceder a reserva bloqueia novas gerações.
 Não há aumento dos limites diários/semanais, das chamadas, nem redução da
 reserva de 20% da assinatura. Texto e capa mantêm suas reservas atuais.
 
-Validação em ambiente isolado: 173 testes unitários e 105 cenários PostgreSQL
+Validação em ambiente isolado: 174 testes unitários e 106 cenários PostgreSQL
 aprovados, sem chamadas a provedores. A validação inclui o aproveitamento do
 contexto de uma fonte longa, a seleção dos títulos públicos, preservação do
 histórico, limites de consumo, geração de dez artigos sintéticos com capas e
 agendamento nativo. O piloto real e o CI da revisão final são gates separados.
 Não há migração ou alteração de configuração privada nesta correção.
+
+Também foi identificado um bloqueio na ordem da pesquisa: uma recuperação ou
+explicativo sem dossiê e sem sequer fazer requisições HTTP encerrava o ciclo,
+impedindo a seleção de notícias recentes. Esses resultados vazios agora cedem
+a vez. Uma preparação bem-sucedida ou uma pesquisa que usou HTTP mantém sua
+prioridade e o orçamento único do ciclo. Um cenário de banco verifica ambos
+os caminhos com fontes sintéticas e nenhuma chamada a provedor.
+
+Manchetes oficiais “Introducing/Announcing Gemini <versão> <modelo>” passam a
+identificar o lançamento exato quando uma cobertura de outra autoria o nomeia
+na mesma janela de 48 horas. Versões, variantes, rumores e datas divergentes
+continuam excluídos. Isso seleciona documentos para comparação; nunca aprova
+fatos, independência editorial, imagens ou publicação.
+
+O piloto real confirmou a reserva menor em duas comparações Google e preservou
+ambas as pautas em retenção: as referências ainda não corroboraram todos os
+fatos críticos. Não se declara concluído o lote real com base em testes
+sintéticos ou em pares de fontes selecionados sem comparação aprovada.
