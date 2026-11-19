@@ -46,9 +46,11 @@ services:
       DATABASE_URL: ${DATABASE_URL:-}
       DATABASE_SSL_MODE: require
       DATABASE_CA_CERT_FILE: /run/apogee/pgbouncer-ca.crt
+      BENEFIT_AUTO_REVIEW_EDITOR_ID: ${BENEFIT_AUTO_REVIEW_EDITOR_ID:-}
     command: ["node", "scripts/member-benefits-monitor.mjs", "--watch"]
     volumes:
       - ${PGBOUNCER_CA_PATH:-/opt/apogee-membros/certs/server.crt}:/run/apogee/pgbouncer-ca.crt:ro
+      - benefit_discovery_state:/app/worker-state:ro
     networks: [public, members_edge]
     read_only: true
     tmpfs: [/tmp]

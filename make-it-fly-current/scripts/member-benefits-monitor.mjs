@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { setTimeout as sleep } from "node:timers/promises";
 import postgres from "postgres";
+import { automaticTermsMatch, loadAutomaticRules, publishFromDiscovery } from "./automatic-benefit-review.mjs";
 import { databaseOptions } from "./members-grant-admin.mjs";
 import { sourceSession } from "./benefit-source-check.mjs";
 
@@ -30,7 +31,8 @@ export async function recordBenefitCheck(sql, row, observation) {
 
 export async function checkPublishedBenefits(sql, offers, { force = false, check = sourceSession() } = {}) {
   const rules = indexOffers(offers);
-  const rows = await sql`select b.id,b.evidence_url,b.redemption_url,public.member_benefit_monitor_revision(b) as revision
+  const rows = await sql`select b.id,b.evidence_url,b.redemption_url,b.name,b.description,b.partner,
+    b.eligibility,b.availability,b.redemption,b.audience,b.starts_at,b.ends_at,public.member_benefit_monitor_revision(b) as revision
     from member_benefit b left join member_benefit_monitor m on m.benefit_id=b.id
     where b.status='published' and (
       ${force} or m.benefit_id is null or m.receipt_revision<>public.member_benefit_monitor_revision(b)
@@ -40,7 +42,11 @@ export async function checkPublishedBenefits(sql, offers, { force = false, check
   for (const row of rows) {
     const rule = rules.get(ruleKey(row.evidence_url, row.redemption_url));
     const checkedAt = new Date().toISOString();
-    const observation = rule ? await check(rule) : { outcome: "review", reason: "Sem regra aprovada para confirmar a fonte e o resgate" };
+    let observation = { outcome: "review", reason: "Sem regra aprovada para confirmar a fonte e o resgate" };
+    if (rule) {
+      observation = rule.automatic && (row.id !== rule.id || !automaticTermsMatch(row, rule))
+        ? { outcome: "review", reason: "A ficha diverge dos termos da regra automática" } : await check(rule);
+    }
     await recordBenefitCheck(sql, { ...row, checkedAt }, observation);
   }
   const [stats] = await sql`select count(*)::int as approved, count(*) filter(where public.member_benefit_is_available(b))::int as available,
@@ -52,7 +58,11 @@ export async function checkPublishedBenefits(sql, offers, { force = false, check
 async function main() {
   const args = process.argv.slice(2);
   if (args.length > 1 || args.some(arg => !["--watch", "--force"].includes(arg))) throw Error("Use --watch ou --force.");
-  const offers = await loadBenefitOffers();
+  const rules = await loadAutomaticRules();
+  const automaticOffers = rules.flatMap(rule => rule.offer ? [{ ...rule.offer, automatic: true }] : []);
+  const offers = [...automaticOffers, ...await loadBenefitOffers()];
+  const editorId = args.includes("--watch") ? process.env.BENEFIT_AUTO_REVIEW_EDITOR_ID : "";
+  let processed = "", retryAt = 0;
   const { url, options } = databaseOptions();
   const sql = postgres(url, { ...options, max: 1, connect_timeout: 10 });
   try {
@@ -62,6 +72,19 @@ async function main() {
       } catch {
         console.error("Falha na rodada de checagem de benefícios.");
         if (!args.includes("--watch")) process.exitCode = 1;
+      }
+      if (editorId) {
+        try {
+          const report = JSON.parse(await readFile("/app/worker-state/benefit-discovery.json", "utf8"));
+          if (report.generatedAt !== processed || Date.now() >= retryAt) {
+            const decisions = await publishFromDiscovery(sql, report, rules, editorId);
+            processed = report.generatedAt;
+            retryAt = decisions.some(decision => decision.outcome === "temporary") ? Date.now() + 60 * 60 * 1000 : Infinity;
+            console.log(JSON.stringify({ job: "benefit-auto-review", discoveryAt: processed, decisions }));
+          }
+        } catch (error) {
+          if (error.code !== "ENOENT") console.error("A revisão automática do catálogo não foi concluída.");
+        }
       }
       if (args.includes("--watch")) await sleep(15 * 60 * 1000);
     } while (args.includes("--watch"));

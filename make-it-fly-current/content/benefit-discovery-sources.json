@@ -1,4 +1,5 @@
 [
+  {"id":"azure-free-br","kind":"program","provider":"Microsoft Azure","url":"https://azure.microsoft.com/pt-br/pricing/offers/ms-azr-0044p/","audience":"geral","markers":["conta gratuita do azure","USD$200 em créditos","primeiros 30 dias"],"verify":"Conferir disponibilidade no Brasil, crédito, período, cartão e inscrição oficial."},
   {"id":"github-education","kind":"github-education","provider":"GitHub Education","url":"https://education.github.com/pack","audience":"estudantes"},
   {"id":"adobe-br","kind":"adobe-br","provider":"Adobe Brasil","url":"https://www.adobe.com/br/products/special-offers.html","audience":"geral"},
   {"id":"azure-students","kind":"program","provider":"Microsoft Azure","url":"https://azure.microsoft.com/pt-br/pricing/offers/ms-azr-0170p","audience":"estudantes","markers":["US$ 100 em créditos","primeiros 12 meses","18 anos","inscreva-se agora"],"verify":"Conferir matrícula integral, cadastro acadêmico e países cobertos pelo crédito."},

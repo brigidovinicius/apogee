@@ -152,6 +152,7 @@ export function sourceSession(transport = publicResponse) {
 
   async function check(offer) {
     try {
+      if (!offer.tests?.length) throw new SourceError("review", "Campanha sem regra de verificação");
       for (const test of offer.tests) {
         if (test.pack) {
           const cards = await readPack(test);
@@ -160,10 +161,26 @@ export function sourceSession(transport = publicResponse) {
           if (!test.hashes.every(hash => campaign.some(term => term.hash === hash))) throw new SourceError("review", "Os termos da campanha mudaram");
           continue;
         }
-        const { html } = await read(test);
+        const { html, url } = await read(test);
         const text = visibleText(html);
         if (test.ended?.some(marker => text.includes(normalize(marker)))) throw new SourceError("unavailable", "O fornecedor informou o encerramento");
         if (!test.markers.every(marker => text.includes(normalize(marker)))) throw new SourceError("review", "A condição ou o resgate precisa de revisão");
+        if (test.brazil && !text.includes(normalize(test.brazil))) throw new SourceError("review", "Disponibilidade no Brasil inconclusiva");
+        if (test.redemption) {
+          const target = test.redemption;
+          const links = pageContent(html).matchAll(/<a\b[^>]*?\shref\s*=\s*(?:"([^"]*)"|'([^']*)')/gi);
+          const expected = new URL(target.url).href;
+          const listed = [...links].some(match => {
+            const href = (match[1] ?? match[2]).replace(/&amp;/gi, "&");
+            return URL.canParse(href, url) && new URL(href, url).href === expected;
+          });
+          if (!listed) throw new SourceError("review", "O link de resgate deixou de constar na oferta oficial");
+          const destination = await read(target);
+          const destinationText = visibleText(destination.html);
+          if (!target.markers.every(marker => destinationText.includes(normalize(marker)))) {
+            throw new SourceError("review", "A inscrição da oferta deixou de estar identificada no destino oficial");
+          }
+        }
       }
       return { outcome: "verified", reason: "Fonte oficial e caminho público conferidos" };
     } catch (error) {

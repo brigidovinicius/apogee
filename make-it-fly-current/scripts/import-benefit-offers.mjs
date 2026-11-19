@@ -11,6 +11,45 @@ const categoryNames = {
   aprendizagem: "Aprendizagem", marketing: "Marketing e atendimento", financeiro: "Financeiro",
 };
 
+async function insertOffer(tx, offer, editorId, categoryId) {
+  const verifiedAt = offer.endsAt ? null : offer.checkedAt;
+  await tx`insert into member_benefit(id,name,partner,description,evidence_url,eligibility,availability,starts_at,ends_at,verified_at,
+    redemption,redemption_url,status,sort_order,reviewed_by,audience)
+    values(${offer.id},${offer.condition},${offer.partner},${offer.condition},${offer.source},${offer.eligibility},${offer.availability},
+    ${offer.startsAt ?? null},${offer.endsAt ?? null},${verifiedAt},${offer.instructions},${offer.redeem},'published',${offer.sort},${editorId},${offer.audience})`;
+  await tx`insert into member_benefit_organization(benefit_id,category_id,provider_label,source_url)
+    values(${offer.id},${categoryId},${offer.program},${offer.source})`;
+  await tx`insert into member_deliverable_audit(id,actor_id,entity_type,entity_id,action,status)
+    values(${randomUUID()},${editorId},'benefit',${offer.id},'create','published')`;
+}
+
+export async function publishAutomaticOffer(sql, offer, editorId, isDuplicate) {
+  if (offer.result.outcome !== "verified") return "review";
+  return sql.begin(async tx => {
+    await tx`select set_config('lock_timeout','5s',true)`;
+    await tx`select pg_advisory_xact_lock(hashtext('member_benefit_import'))`;
+    await tx`lock table member_benefit in share row exclusive mode`;
+    const rows = await tx`select b.id,b.name,b.partner,b.evidence_url,b.redemption_url,o.source_url
+      from member_benefit b left join member_benefit_organization o on b.id=o.benefit_id`;
+    if (rows.some(isDuplicate)) return "duplicate";
+    const [editor] = await tx`select id from "user" where id=${editorId} and role='admin'
+      and email_verified and not blocked for share`;
+    const [category] = await tx`select id from member_benefit_category where slug=${offer.category}
+      and status='published' for share`;
+    const [evidence] = await tx`select
+      ${offer.checkedAt}::timestamptz between now()-interval '15 minutes' and now()
+      and (${offer.startsAt ?? null}::timestamptz is null or ${offer.startsAt ?? null}::timestamptz <= now())
+      and (${offer.endsAt ?? null}::timestamptz is null or ${offer.endsAt ?? null}::timestamptz > now()) as current`;
+    if (!editor || !category || !evidence.current) return "review";
+    await insertOffer(tx, offer, editor.id, category.id);
+    const [revision] = await tx`select public.member_benefit_monitor_revision(b) as revision from member_benefit b where b.id=${offer.id}`;
+    await recordBenefitCheck(tx, { id: offer.id, revision: revision.revision, checkedAt: offer.checkedAt }, offer.result);
+    const [state] = await tx`select public.member_benefit_is_available(b) as available from member_benefit b where b.id=${offer.id}`;
+    if (!state?.available) throw Error("A publicação automática não obteve recibo vigente.");
+    return "published";
+  });
+}
+
 async function ingest(offers, editorId) {
   const check = sourceSession();
   const verified = [];
@@ -54,14 +93,7 @@ export async function importApprovedBenefitOffers(sql, verified, editorId) {
       if (previous && previous.status !== "published") throw Error("Existe uma ficha desse lote em revisão ou arquivada.");
       const id = previous?.id ?? offer.id;
       if (!previous) {
-        await tx`insert into member_benefit(id,name,partner,description,evidence_url,eligibility,availability,verified_at,
-          redemption,redemption_url,status,sort_order,reviewed_by,audience)
-          values(${id},${offer.condition},${offer.partner},${offer.condition},${offer.source},${offer.eligibility},${offer.availability},
-          ${offer.checkedAt},${offer.instructions},${offer.redeem},'published',${offer.sort},${editorId},${offer.audience})`;
-        await tx`insert into member_benefit_organization(benefit_id,category_id,provider_label,source_url)
-          values(${id},${matchedCategory.id},${offer.program},${offer.source})`;
-        await tx`insert into member_deliverable_audit(id,actor_id,entity_type,entity_id,action,status)
-          values(${randomUUID()},${editorId},'benefit',${id},'create','published')`;
+        await insertOffer(tx, offer, editorId, matchedCategory.id);
       } else if (offer.id === "hostgator-rosa") {
         await tx`update member_benefit set sort_order=0,reviewed_by=${editorId},reviewed_at=now()
           where id=${id} and sort_order<>0`;
