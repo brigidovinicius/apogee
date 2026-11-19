@@ -11,3 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Regras globais da interface Apogee
+
+Para novas páginas e componentes do site e da plataforma, siga [o sistema visual](docs/sistema-visual.md) e reutilize os papéis de botão, card, painel, seção, ícone e assinatura de `public/design-system/apogee.css`. Cores, raios, tipografia e movimento compartilhados têm sua definição nessa folha. Verifique temas claro e escuro, foco e movimento reduzido. Em revisões visuais, preserve a copy, a ordem das seções e a navegação da versão de usabilidade vigente.

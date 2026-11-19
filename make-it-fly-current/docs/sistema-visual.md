@@ -1,0 +1,39 @@
+# Sistema visual da Apogee
+
+A interface do site e da plataforma compartilha a folha `public/design-system/apogee.css`, carregada pelo layout raiz. Use os atributos abaixo no elemento semântico que já executa a ação. O mesmo botão pode ser um link de navegação ou um botão de formulário.
+
+| Elemento | Contrato |
+| --- | --- |
+| Ação principal | `data-ap-button="primary"`. Marinho, aresta iluminada e rótulo claro. |
+| Ação secundária | `data-ap-button="secondary"`. Superfície translúcida, borda e rótulo do tema. |
+| Filtro | `data-ap-chip`. O controle define seu estado com `aria-pressed`. |
+| Card e painel | `data-ap-card` para conteúdo. `data-ap-panel` para uma superfície sobreposta, como menu ou filtros. |
+| Seção | `data-ap-section` para a superfície principal ou `data-ap-section="tonal"` para a alternada. Preserve o grid, a ordem e os pontos de quebra da página. |
+| Título | `data-ap-title` para títulos de interface. Inter local, peso intermediário e espaçamento óptico. Preserve a hierarquia de cabeçalhos. |
+| Assinatura | `data-ap-signature` no elemento existente de “Building the future.”. GFS Didot local, azul-claro e um único deslocamento de luz na entrada. A quebra de linha pertence à composição editorial. |
+| Ícone de recurso | `data-ap-icon="ferramentas|learn|radar|perks|participar"`. Um objeto por recurso, com o mesmo ângulo, luz e escala. Use em um elemento que já tem rótulo textual. Ações pequenas e navegação usam ícones lineares, traço de 1,5 a 1,75 px. |
+| Movimento | `data-ap-reveal` no título de uma seção para deslocamento de até 10 px durante a entrada no viewport. O conteúdo já começa legível. |
+
+## Temas, luz e estados
+
+Use os tokens `--ap-canvas`, `--ap-section`, `--ap-surface`, `--ap-text`, `--ap-muted`, `--ap-line` e `--ap-accent` para novas superfícies. As famílias de botão e card usam os preenchimentos, bordas e sombras da mesma folha. Em `html`, `data-ap-theme="sistema"` segue a preferência do dispositivo. Os valores `claro` e `escuro` permitem escolha explícita. Cores funcionais de erro, aprovação, prazos e alertas continuam ligadas a seus estados.
+
+A altura mínima dos controles é 44 px. A ação pressionada, o foco de teclado e o estado de seleção têm tratamentos próprios. O acabamento de vidro pertence aos controles e painéis. Campos de leitura longa usam superfícies contínuas. Movimento reduzido desliga as animações do sistema e transparência reduzida torna os painéis opacos.
+
+Em grupos de cards ilustrados no desktop, reserve duas linhas para o título e alinhe a divisória de acesso entre os cards. Na passagem do ponteiro, a miniatura sobe até 3 px e o card mantém sua posição. O filtro do Radar demonstra o movimento óptico de três segundos. A preferência por movimento reduzido seleciona a imagem estática.
+
+O [arquivo de design no Figma](https://www.figma.com/design/SKTQ8K0Lr0OMGn0YeXcNX6/?node-id=18-47) contém os componentes e as coleções Apogee · Claro e Apogee · Escuro. Os nomes das variáveis seguem os tokens da folha global. A [prancha no Canva](https://www.canva.com/design/DAHbZLP0ovA/vTuoITpHaGPcURylzn46hA/edit) reúne as duas composições para revisão visual.
+
+## Aplicação
+
+```tsx
+<section data-ap-section="tonal" aria-labelledby="recursos">
+  <h2 id="recursos" data-ap-title data-ap-reveal>{tituloExistente}</h2>
+  <a href={destinoExistente} data-ap-card data-ap-icon="radar">{nomeExistente}</a>
+  <button type="button" data-ap-button="primary" onClick={acaoExistente}>{rotuloExistente}</button>
+</section>
+```
+
+Na revisão, os módulos antigos recebem o acabamento por seletores CSS definidos em `review.js` e `legacy-preview.css`. Páginas novas usam os atributos diretamente. A barra de comparação funciona apenas na prévia de oferta em loopback. O site continua responsável pelas permissões, filtros, destinos e estados.
+
+Ao alterar o padrão, revise um controle em claro, escuro, teclado e movimento reduzido, além da tela em largura de celular. Compare textos, links e ordem de leitura com a versão de usabilidade em andamento.

@@ -1,0 +1,15 @@
+#ap-review-controls { position:sticky; top:0; z-index:999; order:-10; flex:none; display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:.4rem 1.2rem; padding:.45rem clamp(.75rem,2vw,2rem); color-scheme:dark; background:#101e30; color:#f3f7fb; border-bottom:1px solid #40536b; font:400 13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+#ap-review-controls strong {margin-right:auto;font-weight:600}
+#ap-review-controls label {display:flex;align-items:center;gap:.35rem}
+#ap-review-controls :is(select,button) {font:inherit;color:inherit;background:#203449;border:1px solid #546b83;padding:.28rem .46rem;border-radius:6px;min-height:30px;}
+#ap-review-controls input {accent-color:#b9d3ee;}
+#ap-review-controls :focus-visible {outline:2px solid #b9d3ee;outline-offset:2px;}
+html:has(#ap-review-controls) {scroll-padding-top:3rem;}
+@media(max-width:650px) {#ap-review-controls{gap:.25rem .55rem;justify-content:flex-start}#ap-review-controls strong{display:none}#ap-review-controls label{font-size:12px}#ap-review-controls select{max-width:125px}html:has(#ap-review-controls){scroll-padding-top:5rem}}
+/* Frame only the header specimen on wide screens. Narrow devices use the site's native breakpoint. */
+@media(min-width:761px) {
+ html[data-ap-mobile-menu] header[data-tone]:is([data-adaptive],[data-editorial]) {max-width:390px; width:100%; margin-inline:auto;border:1px solid var(--ap-line);border-radius:var(--ap-panel-radius);}
+ html[data-ap-mobile-menu] header[data-tone] [class*="headerInner__"] {width:calc(100% - 2.5rem);display:grid;grid-template-columns:1fr auto;}
+ html[data-ap-mobile-menu] header[data-tone] :is([class*="desktopNavigation__"],[class*="navigationBar__"],[class*="signature__"],[class*="memberLink__"]) {display:none;}
+ html[data-ap-mobile-menu] header[data-tone] [class*="mobileNavigation__"] {position:relative;display:block;}
+}

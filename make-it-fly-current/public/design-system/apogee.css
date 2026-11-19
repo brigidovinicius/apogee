@@ -1,0 +1,140 @@
+/* Global foundation. Existing screens opt in through their visual adapter. */
+@font-face {
+  font-family: "Apogee Didot";
+  src: url("/brand/fonts/GFSDidot-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+:root {
+  --ap-canvas: light-dark(#fbfcfe, #091526);
+  --ap-surface: light-dark(#ffffff, #122238);
+  --ap-section: light-dark(#edf3f8, #0d1c30);
+  --ap-text: light-dark(#101f34, #edf4fc);
+  --ap-muted: light-dark(#465a70, #b0c3d8);
+  --ap-line: light-dark(#cedbe6, #344961);
+  --ap-frost: light-dark(#f4f8fc, #1b3048);
+  --ap-accent: light-dark(#264f78, #b9d9fb);
+  --ap-brand-sky: #b9d3ee;
+  --ap-navy: #07182d;
+  --ap-on-navy: #f3f8ff;
+  --ap-focus: light-dark(#296497, #92c9ff);
+  --ap-font: var(--font-inter, -apple-system), BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ap-display: "Apogee Didot", Georgia, serif;
+  --ap-control-radius: .8125rem;
+  --ap-card-radius: 1.125rem;
+  --ap-panel-radius: 1.375rem;
+  --ap-control-height: 2.75rem;
+  --ap-edge: inset 0 1px 0 light-dark(#ffffff, #ffffff26), inset 1px 0 0 light-dark(#ffffffa8, #ffffff0c);
+  --ap-shadow: var(--ap-edge), 0 2px 4px #07182d08, 0 9px 24px light-dark(#1836530a, #00000020);
+  --ap-primary-fill: linear-gradient(162deg,#2c4563,#142b46 45%,var(--ap-navy));
+  --ap-primary-edge: #455f7f;
+  --ap-primary-shadow: inset 0 1px 0 #ffffff36, 0 3px 8px #09182d15;
+  --ap-secondary-fill: linear-gradient(150deg,var(--ap-surface),var(--ap-frost));
+  --ap-card-fill: linear-gradient(150deg,var(--ap-surface) 45%,var(--ap-frost));
+  --ap-ease: cubic-bezier(.22,.78,.22,1);
+  --ap-quick: 160ms;
+  --ap-settle: 340ms;
+}
+html[data-ap-theme=claro] { color-scheme: light; }
+html[data-ap-theme=escuro] { color-scheme: dark; }
+html[data-ap-theme=sistema] { color-scheme: light dark; }
+[data-ap-button], [data-ap-chip] {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .625rem;
+  min-height: var(--ap-control-height);
+  padding: .64rem 1.05rem;
+  border: 1px solid var(--ap-line);
+  border-radius: var(--ap-control-radius);
+  font: 550 .875rem/1.35 var(--ap-font);
+  letter-spacing: -.012em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--ap-quick) var(--ap-ease), box-shadow var(--ap-quick), border-color var(--ap-quick);
+}
+[data-ap-button=primary], [data-ap-chip][aria-pressed=true] {
+  background: var(--ap-primary-fill);
+  color: var(--ap-on-navy);
+  border-color: var(--ap-primary-edge);
+  box-shadow: var(--ap-primary-shadow);
+}
+[data-ap-button=secondary], [data-ap-chip] {
+  background: var(--ap-secondary-fill);
+  color: var(--ap-text);
+  box-shadow: var(--ap-edge);
+}
+[data-ap-chip] { border-radius: 100vmax; }
+[data-ap-section] { color: var(--ap-text); background: var(--ap-canvas); }
+[data-ap-section=tonal] { background: var(--ap-section); }
+[data-ap-card], [data-ap-panel] {
+  color: var(--ap-text);
+  background: var(--ap-card-fill);
+  border: 1px solid var(--ap-line);
+  border-radius: var(--ap-card-radius);
+  box-shadow: var(--ap-shadow);
+}
+[data-ap-panel] {
+  background: color-mix(in srgb,var(--ap-surface) 90%, transparent);
+  backdrop-filter: blur(18px) saturate(115%);
+  border-radius: var(--ap-panel-radius);
+}
+[data-ap-card] {
+  transition: transform var(--ap-settle) var(--ap-ease), border-color var(--ap-quick), box-shadow var(--ap-settle);
+}
+[data-ap-title] { font-family: var(--ap-font); letter-spacing: -.044em; font-weight: 570; }
+[data-ap-icon=ferramentas] { --ap-art: url("/design-system/icons/ferramentas.webp"); }
+[data-ap-icon=learn] { --ap-art: url("/design-system/icons/learn.webp"); }
+[data-ap-icon=radar] { --ap-art: url("/design-system/icons/radar.webp"); }
+[data-ap-icon=perks] { --ap-art: url("/design-system/icons/perks.webp"); }
+[data-ap-icon=participar] { --ap-art: url("/design-system/icons/participar.webp"); }
+[data-ap-icon]::before {
+  content: "";
+  display: block;
+  width: 7.25rem;
+  max-width: 100%;
+  height: 5.5rem;
+  flex: none;
+  background: var(--ap-art) left center / contain no-repeat;
+}
+[data-ap-signature] {
+  font-family: var(--ap-display);
+  font-weight: 400;
+  letter-spacing: -.054em;
+  color: var(--ap-brand-sky);
+  background: linear-gradient(112deg,#94b5d5 10%,#c2dbf0 39%,#add0ee 52%,#82a5c7 83%);
+  background-size: 145% 100%;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 0 light-dark(#dfeaf4,#315270));
+}
+:is([data-ap-button],[data-ap-chip],[data-ap-card], [data-ap-panel] :is(a,button,input,select)):focus-visible {
+  outline: 3px solid var(--ap-focus);
+  outline-offset: 3px;
+}
+:is([data-ap-button],[data-ap-chip]):disabled { opacity: .56; cursor: default; }
+@media (min-width: 48rem) {
+  [data-ap-card][data-ap-icon] h3 { min-block-size: 2lh; }
+}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  :is([data-ap-button],[data-ap-chip]):hover:not(:disabled) { transform: translateY(-1px); border-color: var(--ap-focus); }
+  a[data-ap-card]:hover, [data-ap-card]:focus-within { border-color: var(--ap-focus); }
+  [data-ap-card][data-ap-icon]::before { transition: transform var(--ap-settle) var(--ap-ease); transform-origin: 42% 75%; }
+  [data-ap-card][data-ap-icon]:is(:hover,:focus-within)::before { transform: translateY(-3px) scale(1.02); }
+  :is([data-ap-button],[data-ap-chip]):active:not(:disabled) { transform: translateY(1px); }
+}
+@keyframes ap-material-light { from {background-position: 100% 0} to {background-position: 0 0} }
+@keyframes ap-section-arrive { from { transform: translateY(10px) } to { transform: none } }
+@media (prefers-reduced-motion:no-preference) {
+  [data-ap-signature] { animation: ap-material-light 1600ms var(--ap-ease) 1 both; }
+  @supports (animation-timeline: view()) {
+    [data-ap-reveal] { animation: ap-section-arrive linear both; animation-timeline: view(); animation-range: entry 0% entry 80%; }
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  :is([data-ap-button],[data-ap-card],[data-ap-chip],[data-ap-reveal],[data-ap-signature]) { animation:none; transition:none; }
+}
+@media (prefers-reduced-transparency: reduce) { [data-ap-panel] { backdrop-filter:none; background:var(--ap-surface); } }
+@media (forced-colors:active) { [data-ap-signature] { -webkit-text-fill-color: CanvasText; filter:none; } }

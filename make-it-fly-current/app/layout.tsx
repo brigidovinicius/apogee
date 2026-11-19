@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import localFont from "next/font/local";
 import { connection } from "next/server";
 import { headers } from "next/headers";
@@ -99,6 +100,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       className={`${inter.variable} ${instrumentSerif.variable} ${dmMono.variable} ${notoMono.variable} dark h-full antialiased`}
     >
       <head>
+        <link rel="stylesheet" href="/design-system/apogee.css" />
         <noscript>
           <style>
             {
@@ -116,6 +118,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           </McpAvailabilityProvider>
         </SiteLegalLinksProvider>
         {!localOfferPreview() && <JourneyTracker />}
+        {localOfferPreview() && <Script src="/design-system/review.js" strategy="afterInteractive" />}
       </body>
     </html>
   );
