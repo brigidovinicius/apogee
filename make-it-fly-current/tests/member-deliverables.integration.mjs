@@ -223,6 +223,7 @@ test("benefits render real validity dates with the shared Drizzle driver and nev
   const { renderToStaticMarkup } = await import("react-dom/server");
   const page = opportunityLoader({
     "next/link": { __esModule: true, default: "a" },
+    "@/lib/deliverables/store": store,
     "@/lib/benefits/store": { memberBenefitDetail: async () => ({ ...state, benefit: { ...visible, last_success_at: new Date(), category_name: null, provider_label: "", provider_access: "unconfirmed", saved: false } }) },
     "@/components/benefits/member-forms": { BenefitSaveButton: () => null, BenefitStartForm: () => null },
     "@/components/members/member-bar": { MemberBar: () => null },
