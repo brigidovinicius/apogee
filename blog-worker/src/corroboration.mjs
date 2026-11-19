@@ -47,6 +47,10 @@ export function buildComparisonRequest(dossier,policy,repair=false){
  if(isExplainer(d)){input.editorial=d.editorial;body.instructions+=' FORMATO EXPLICATIVO: responda à pergunta comparando conceito, mecanismo, aplicação e limites. Assunto comum, sem inventar anúncio recente ou generalizar opinião.';}
  if(d.previous_critical_claims?.length){input.previous_critical_claims=d.previous_critical_claims;body.instructions+=CRITICAL_RECOVERY;}
  if(d.previous_unresolved_claims?.length){input.previous_unresolved_claims=d.previous_unresolved_claims;body.instructions+=UNRESOLVED_RECOVERY;}
+ if(policy.provider==='openai_api'){
+  body.text.format={type:'json_schema',name:'editorial_comparison',strict:true,schema};
+  Object.assign(body,{tools:[],store:false,background:false,service_tier:'default',reasoning:{effort:policy.reasoning_effort},prompt_cache_options:{mode:'explicit',ttl:'30m'}});
+ }
  body.input=JSON.stringify(input);
  if(Buffer.byteLength(policy.provider==='google_subscription'?comparisonPrompt(body):JSON.stringify(body))+1024>comparisonInputLimit(policy))fail('input_limit');
  return body;

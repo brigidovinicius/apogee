@@ -1,10 +1,14 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "enabled": false,
   "model_id": "gpt-6-luna",
   "cycle_budget_micro_usd_cap": 5000000,
   "daily_budget_micro_usd_cap": 250000,
   "article_budget_micro_usd_cap": 50000,
   "auto_recharge_enabled": false,
-  "paid_balance_fallback_enabled": false
+  "paid_balance_fallback_enabled": false,
+  "comparison_enabled": false,
+  "image_enabled": false,
+  "image_model_id": "gpt-image-2.5-flare-2026-09-08",
+  "image_quality": "low"
 }

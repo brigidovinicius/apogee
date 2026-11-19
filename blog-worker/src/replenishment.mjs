@@ -12,6 +12,8 @@ import {topicAvailable,focusPool} from '../../make-it-fly-current/lib/blog/edito
 const STOP=new Set(('what which where when how why does have has with from that this your their about through into over under using used use uses new news update updated introducing launches launch official guide guides learn understanding explained explains microsoft google openai meta nvidia intel azure technology technologies artificial intelligence business article available novembro november november2026 english portugues sobre como para pelo pela pelos pelas uma umas que dos das por mais com sao voce seu sua seus suas entenda confira saiba agora novo nova novos novas').split(' '));
 for(const word of ('the and are for our out not but you its can all any will may say than them they those these there only very most more new now first world everyone every everyday work help team app platform build building latest today year next part across get give make take launch announce announcement release partnership agreement strategic update expand introduces introducing improve better best free billion million service product feature tool').split(' '))STOP.add(word);
 for(const word of ['could','should','would','must','might','also','just','still','some','much','many','each','another','other'])STOP.add(word);
+// Course/site labels and broad disciplines cannot identify an editorial question.
+for(const word of 'machine learning model models training course courses crash introduction overview documentation docs tutorial tutorials basic basics advanced'.split(' '))STOP.add(word);
 const DISTINCT_CONCEPTS=new Set('kubernetes container serverless hypervisor virtualization cryptography cybersecurity concurrency database tokenization embedding tokenizador criptografia ciberseguranca escalabilidade observabilidade computacao virtualizacao aprendizado iaas paas saas microservice transformer observability budget budgeting bookkeeping'.split(' '));
 const normalize=value=>String(value??'').normalize('NFKD').replace(/\p{M}/gu,'').toLowerCase();
 const words=value=>[...new Set((normalize(value).match(/[a-z][a-z0-9-]{2,}/g)??[])
@@ -24,33 +26,41 @@ const fresh=(d,at)=>d.extraction_method==='public_article'&&d.extraction_version
   &&(!d.published_at||Number.isFinite(Date.parse(d.published_at))&&Date.parse(d.published_at)<=+at+900000);
 const topicFor=d=>researchTopic({title:d.title,source_id:d.source_id,editoria:referenceForUrl(d.url)?.categories.includes('negocios')?'startups':referenceForUrl(d.url)?.categories.includes('ciencia')?'ciencia-espaco':'tecnologia',evidence:[d]});
 const fingerprint=text=>String(text??'').normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim();
+const subjectTitle=d=>d.title.split(/\s+[|｜]\s+/)[0];
+export function substantiveGuide(d){
+ const ref=referenceForUrl(d.url);if(!ref||!/educacao/.test(ref.role))return false;
+ const path=new URL(d.url).pathname;
+ return !/(?:^|\/)(?:acknowledg(?:e)?ments?|citing|citations?|faq|glossary|test-your-knowledge|exercises?|quiz|quizzes|credits|advanced-courses)(?:\/|$)/i.test(path)
+   &&!/^\s*(?:acknowledg(?:e)?ments?|citing|faq|glossary|introduction|overview|courses?|test your knowledge|exercises?|quiz)\s*$/i.test(subjectTitle(d))
+   &&words(subjectTitle(d)).length>0;
+}
 
 export function storedExplainerPlans(existing){
  const plans=[];
  for(const c of existing){
   const p=c.artifact?.research?.plan;
-  try{if(!p||p.key!==c.explainer_key||!p.key.startsWith('auto-')||!/educacao/.test(referenceForUrl(p.urls?.[0])?.role??''))continue;validateExplainerCatalog([p]);plans.push(p);}catch{/* Invalid metadata never becomes permission or executable input. */}
+  try{if(!p||!p.terms?.some(t=>words(t).length)||p.key!==c.explainer_key||!p.key.startsWith('auto-')||!/educacao/.test(referenceForUrl(p.urls?.[0])?.role??''))continue;validateExplainerCatalog([p]);plans.push(p);}catch{/* Invalid metadata never becomes permission or executable input. */}
  }
  return plans.slice(0,200);
 }
 
-export function renewableExplainerPlans(captures,{blockedUrls=[],seedBlockedUrls=blockedUrls,existing=[],usage=[],policy=null,at=new Date(),limit=30}={}){
+export function renewableExplainerPlans(captures,{blockedUrls=[],seedBlockedUrls=blockedUrls,existing=[],usage=[],failedTopics=[],policy=null,at=new Date(),limit=30}={}){
  const blocked=new Set(blockedUrls.map(canonical).filter(Boolean)),seen=new Set(),rows=[],referenceCounts=new Map();
  const usedSeeds=new Set(seedBlockedUrls.map(canonical).filter(Boolean));
  // Prefer the newest full snapshot, retaining original source publication dates.
  for(const d of [...captures].sort((a,b)=>Date.parse(b.checked_at??b.captured_at)-Date.parse(a.checked_at??a.captured_at))){
   const url=canonical(d.url),ref=url&&referenceForUrl(url);
-  if(!url||seen.has(url)||blocked.has(url)||blocked.has(canonical(d.requested_url))||!ref||!fresh(d,at)||!d.rights_reference)continue;
+  if(!url||seen.has(url)||blocked.has(url)||blocked.has(canonical(d.requested_url))||!ref||!fresh(d,at)||!d.rights_reference||!substantiveGuide(d))continue;
   const topic=topicFor(d);if(!topic||!topicAvailable(policy,usage,topic,at)||(referenceCounts.get(ref.id)??0)>=80)continue;
   referenceCounts.set(ref.id,(referenceCounts.get(ref.id)??0)+1);
-  seen.add(url);rows.push({...d,url,ref,tokens:words(d.title),normalizedText:normalize(d.text),fingerprint:fingerprint(d.text),topic});if(rows.length===800)break;
+  seen.add(url);rows.push({...d,url,ref,tokens:words(subjectTitle(d)),normalizedText:normalize(d.text),fingerprint:fingerprint(d.text),topic});if(rows.length===800)break;
  }
  const frequencies=new Map();for(const d of rows)for(const t of d.tokens)frequencies.set(t,(frequencies.get(t)??0)+1);
- const byKey=new Map(existing.map(c=>[c.explainer_key,c])),plans=[],paired=new Set();
+ const byKey=new Map(existing.map(c=>[c.explainer_key,c])),plans=[],paired=new Set(),subjects=new Set(existing.map(c=>c.artifact?.research?.plan?.terms).filter(Boolean).map(t=>[...t].sort().join('|')));
  for(const seed of rows){
   if(plans.length>=Math.min(30,limit))break;
   if(!primaryDocument(seed,seed.ref)||!/educacao/.test(seed.ref.role)||usedSeeds.has(seed.url)||usedSeeds.has(canonical(seed.requested_url))||paired.has(seed.url))continue;
-  const topic=seed.topic;if(!topic||!topicAvailable(policy,usage,topic,at))continue;
+  const topic=seed.topic;if(!topic||!topicAvailable(policy,usage,topic,at)||failedTopics.some(f=>f.pool===focusPool(topic)&&Number(f.failed)>=2))continue;
   const key='auto-'+hash(seed.url).slice(0,40);
   if(byKey.has(key))continue; // No new identity after a hold, failure, restart or publication.
   const peers=rows.filter(d=>d.ref.publisher!==seed.ref.publisher&&(primaryReference(d.ref)||independentReference(d.ref))
@@ -61,6 +71,7 @@ export function renewableExplainerPlans(captures,{blockedUrls=[],seedBlockedUrls
     .sort((a,b)=>b.score-a.score);
   if(!peers.length)continue;
   const peer=peers[0],terms=peer.common.slice(0,6);
+  const subjectKey=[...terms].sort().join('|');if(subjects.has(subjectKey))continue;
   if(primaryDocument(peer.d,peer.d.ref)&&/educacao/.test(peer.d.ref.role)&&!usedSeeds.has(peer.d.url)
     &&!usedSeeds.has(canonical(peer.d.requested_url))&&peer.d.url.localeCompare(seed.url)<0)continue;
   const subject=terms.join(' · ').slice(0,120);
@@ -70,7 +81,7 @@ export function renewableExplainerPlans(captures,{blockedUrls=[],seedBlockedUrls
       {kind:'independent',origin_url:peer.d.url,independence_note:'Outra autoria sobre o assunto, selecionada apenas para pesquisa. Confirmar independência real; cópia de release não é corroboradora.'}],
     additional_sources:peers.slice(1).filter((v,i,a)=>a.findIndex(x=>x.d.ref.publisher===v.d.ref.publisher)===i&&v.d.ref.publisher!==peer.d.ref.publisher).slice(0,3)
       .map(v=>({url:v.d.url,kind:'independent',origin_url:v.d.url,terms:v.common.slice(0,6),independence_note:'Outra referência pública do mesmo assunto para reapuração. A comparação verifica dependência, fatos críticos e divergências.'}))};
-  try{validateExplainerCatalog([plan]);plans.push(plan);paired.add(seed.url);paired.add(peer.d.url);}catch{/* Discovery cannot relax the approved catalog contract. */}
+  try{validateExplainerCatalog([plan]);plans.push(plan);subjects.add(subjectKey);paired.add(seed.url);paired.add(peer.d.url);}catch{/* Discovery cannot relax the approved catalog contract. */}
  }
  return plans;
 }
@@ -101,7 +112,7 @@ export function nextReferenceDiscovery(captures,{blockedUrls=[],seedBlockedUrls=
    if(!url||seen.has(url)||!ref||approvedReferenceIds&&!approvedReferenceIds.includes('ARTICLE_'+ref.id)
      ||isApproved&&!isApproved(url)||!(primaryReference(ref)||independentReference(ref)))continue;
    const u=new URL(url);if(u.pathname==='/'||/\.(?:png|jpe?g|webp|svg|gif|mp4|pdf)$/i.test(u.pathname)
-     ||/(?:^|\/)(?:privacy|terms|login|signup|tag|category|author|feed|search)(?:\/|$)/i.test(u.pathname))continue;
+     ||/(?:^|\/)(?:privacy|terms|login|signup|tag|category|author|feed|search|acknowledg(?:e)?ments?|citing|citations?|faq|glossary|test-your-knowledge|exercises?|quiz|quizzes|credits|advanced-courses)(?:\/|$)/i.test(u.pathname))continue;
    let title;try{title=decodeURIComponent(u.pathname.split('/').filter(Boolean).slice(-2).join(' ')).replace(/[-_]/g,' ');}catch{continue;}
    const topic=topicFor({url,title,source_id:'ARTICLE_'+ref.id,text:title});
    if(!topic||!topicAvailable(policy,usage,topic,at))continue;

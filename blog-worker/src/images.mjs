@@ -86,7 +86,13 @@ export function openAIImageProvider({apiKey,identity,fetcher=fetch,now=Date.now}
       const response=await fetcher('https://api.openai.com/v1/images/generations',{method:'POST',redirect:'error',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey,'OpenAI-Organization':identity.organization_id,
           'OpenAI-Project':identity.project_id,'X-Client-Request-Id':reservation.id},body:JSON.stringify(body),signal:AbortSignal.timeout(120000)});
-      if(!response.ok)return {outcome:'unknown',reason:'image_http_'+response.status};
+      if(!response.ok){
+        if(response.status===429)try{
+          const data=await boundedJson(response,16384);
+          if(['organization_spend_limit_exceeded','project_spend_limit_exceeded','organization_usage_limit_exceeded','credit_balance_exhausted','insufficient_quota'].includes(data?.error?.code))return {outcome:'not_generated',reason:'openai_credit_limit'};
+        }catch{/* An uncertain charge remains reserved. */}
+        return {outcome:'unknown',reason:'image_http_'+response.status};
+      }
       const data=await boundedJson(response,3*1024*1024);
       if(!data.usage || (data.model && data.model!==body.model))return {outcome:'unknown'};
       if(data.data?.length!==1||typeof data.data[0].b64_json!=='string'||!/^[A-Za-z0-9+/]+={0,2}$/.test(data.data[0].b64_json))return {outcome:'rejected',reason:'invalid_image',usage:data.usage};
