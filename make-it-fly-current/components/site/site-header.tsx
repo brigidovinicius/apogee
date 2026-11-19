@@ -16,6 +16,7 @@ type SiteHeaderProps = {
   tone?: "dark" | "light";
   prefetch?: boolean;
   adaptive?: boolean;
+  showMemberResources?: boolean;
 };
 
 const navigation: ReadonlyArray<{ href: string; label: string; section?: SiteSection }> = [
@@ -28,6 +29,13 @@ const moreLinks: typeof navigation = [
   { href: "/galeria", label: "Galeria", section: "gallery" },
   { href: "/evento-openai", label: "Evento gratuito" },
 ];
+const memberResources: typeof navigation = [
+  { href: "/membros/oportunidades", label: "Meu Radar" },
+  { href: "/membros/beneficios", label: "Benefícios" },
+  { href: "/membros/ferramentas", label: "Caixa de ferramentas" },
+  { href: "/membros/ferramentas?categoria=skills", label: "Skills" },
+  { href: "/membros/trilha", label: "Trilha de aprendizagem" },
+];
 
 export function SiteHeader({
   compact = false,
@@ -37,6 +45,7 @@ export function SiteHeader({
   tone = "dark",
   prefetch,
   adaptive = false,
+  showMemberResources = false,
 }: SiteHeaderProps) {
   const renderLink = (item: (typeof navigation)[number]) => (
     <Link key={item.href} href={item.href} prefetch={prefetch}
@@ -45,10 +54,12 @@ export function SiteHeader({
     </Link>
   );
   const more = <>{moreLinks.map(renderLink)}<McpConnectLink /><McpConnectLink provider="claude" /></>;
+  const resources = showMemberResources && memberResources.map(renderLink);
   const desktopNavigation = (
     <nav className={styles.desktopNavigation} aria-label="Navegação principal">
       {navigation.map(renderLink)}
-      <SiteMobileNavigation more>{more}</SiteMobileNavigation>
+      {showMemberResources && <SiteMobileNavigation variant="resources">{resources}</SiteMobileNavigation>}
+      <SiteMobileNavigation variant="more">{more}</SiteMobileNavigation>
     </nav>
   );
   return (
@@ -82,6 +93,13 @@ export function SiteHeader({
 
         {!compact && <SiteMobileNavigation>
             {navigation.map(renderLink)}
+            {showMemberResources && <>
+              <div role="group" aria-label="Área de membros" className={styles.mobileGroup}>
+                <span aria-hidden="true">Área de membros</span>
+                {resources}
+              </div>
+              <span className={styles.mobileDivider}>Mais na Apogee</span>
+            </>}
             {more}
         </SiteMobileNavigation>}
         </div>

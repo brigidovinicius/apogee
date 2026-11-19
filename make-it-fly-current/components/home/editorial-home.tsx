@@ -32,7 +32,7 @@ function EntryCard({ id, theme, title, href, action, picture, children }: {
 
 export function EditorialHome() {
   return <div className={styles.page}>
-    <SiteHeader current="home" prefetch={false} adaptive tone="light" />
+    <SiteHeader current="home" prefetch={false} adaptive tone="light" showMemberResources />
     <main id="experiencia" tabIndex={-1}>
       <section className={styles.intro} aria-labelledby="home-title">
         <div className={styles.introHeading}>

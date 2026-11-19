@@ -185,6 +185,7 @@
 }
 
 .header a:focus-visible,
+.moreNavigation summary:focus-visible,
 .mobileNavigation summary:focus-visible,
 .footer a:focus-visible {
   outline: 2px solid var(--apogee-focus-ring);
@@ -451,3 +452,13 @@
 .header[data-tone] .moreNavigation nav a:hover,
 .header[data-tone] .moreNavigation nav a:focus-visible { background:#edf3fa; }
 .header[data-adaptive][data-tone="light"] { background:#fff; }
+
+.mobileGroup { display: grid; }
+.mobileGroup > span,
+.mobileDivider {
+  margin: .4rem .75rem 0;
+  padding: .8rem 0 .25rem;
+  border-top: 1px solid currentColor;
+  font-size: .8rem;
+  font-weight: 650;
+}

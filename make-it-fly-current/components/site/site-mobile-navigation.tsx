@@ -3,10 +3,16 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import styles from "./site-shell.module.css";
 
-export function SiteMobileNavigation({ children, more = false }: { children: ReactNode; more?: boolean }) {
+const desktopMenus = {
+  more: { label: "Mais", control: "Mais seções", region: "Outras seções" },
+  resources: { label: "Área de membros", control: "Área de membros", region: "Recursos da área de membros" },
+};
+
+export function SiteMobileNavigation({ children, variant }: { children: ReactNode; variant?: keyof typeof desktopMenus }) {
   const details = useRef<HTMLDetailsElement>(null);
   const navigationId = useId();
   const [open, setOpen] = useState(false);
+  const menu = variant && desktopMenus[variant];
 
   useEffect(() => {
     const element = details.current;
@@ -35,9 +41,9 @@ export function SiteMobileNavigation({ children, more = false }: { children: Rea
     };
   }, []);
 
-  return <details ref={details} className={more ? styles.moreNavigation : styles.mobileNavigation} onToggle={(event) => setOpen(event.currentTarget.open)}>
-    <summary aria-label={more ? "Mais seções" : open ? "Fechar navegação" : "Abrir navegação"} aria-controls={navigationId}>{more ? "Mais" : "Menu"}</summary>
-    <nav id={navigationId} aria-label={more ? "Outras seções" : "Navegação móvel"} onClick={(event) => {
+  return <details ref={details} className={menu ? styles.moreNavigation : styles.mobileNavigation} onToggle={(event) => setOpen(event.currentTarget.open)}>
+    <summary aria-label={menu?.control ?? (open ? "Fechar navegação" : "Abrir navegação")} aria-controls={navigationId}>{menu?.label ?? "Menu"}</summary>
+    <nav id={navigationId} aria-label={menu?.region ?? "Navegação móvel"} onClick={(event) => {
       if (event.target instanceof Element && event.target.closest("a[href]") && details.current) details.current.open = false;
     }}>{children}</nav>
   </details>;
