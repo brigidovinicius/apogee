@@ -69,7 +69,7 @@ try {
   await pause(1200);
   assert.ok(measured.flatMap(batch => batch.events).some(event => event.event === "action" && event.target === "application_open"));
   await page.goto(`${origin}/loja`, { waitUntil: "domcontentloaded" });
-  await page.getByRole("button", { name: /^Comprar / }).first().click();
+  await page.getByRole("button", { name: /^Receber aviso de lançamento · / }).first().click();
   const purchase = page.getByRole("dialog", { name: "Novos drops em breve" });
   await purchase.getByLabel("Nome", { exact: true }).fill("Pessoa Sintética");
   await purchase.getByLabel("E-mail", { exact: true }).fill("person@example.test");

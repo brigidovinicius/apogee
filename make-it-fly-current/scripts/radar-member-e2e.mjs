@@ -125,8 +125,8 @@ try {
   const blocked = await get("/membros/oportunidades/radar-event-10", cookie);
   const blockedHtml = await blocked.text();
   assert.equal(blocked.status, 200);
-  assert.match(blockedHtml, /Conhecer a Comunidade Apogee/);
-  assert.match(blockedHtml, /href="\/comunidade\?next=%2Fmembros%2Foportunidades%2Fradar-event-10#planos"/);
+  assert.match(blockedHtml, /Ver plano com Radar completo/);
+  assert.match(blockedHtml, /href="\/comunidade\?next=%2Fmembros%2Foportunidades%2Fradar-event-10#plano-anual"/);
   assert.doesNotMatch(blockedHtml, /\/api\/radar\/checkout|Abrindo checkout|Equipes de estudantes|https:\/\/example.edu\/notice/);
   assert.match(await (await get(detailPath, cookie)).text(), /Equipes de estudantes/, "the first event remains readable at the limit");
   assert.equal((await database`select count(*) from radar_free_event`)[0].count, "10");
