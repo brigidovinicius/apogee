@@ -91,8 +91,6 @@ html [data-ap-interface] [class*="member-navigation_links__"] a {border-radius:v
 html [data-ap-interface] [class*="member-navigation_links__"] svg {stroke-width:1.65;}
 html [data-ap-interface] [class*="supportStrip__"] {color:var(--ap-text);}
 html [data-ap-interface] [class*="supportStrip__"] aside {background:var(--ap-canvas);border-color:var(--ap-line);}
-html [data-ap-interface] [class*="supportStrip__"] p {color:var(--ap-muted);}
-html [data-ap-interface][data-ap-theme=escuro] [class*="supportStrip__"] img {filter:none;}
 html [data-ap-interface][data-ap-theme=escuro] header[data-tone] [class*="brand__"] img[src*="navy"] {filter:brightness(0) invert(1);}
 html [data-ap-interface][data-ap-theme=escuro] header[data-tone] [class*="brand__"] img[src*="white"] {filter:none;}
 html [data-ap-interface] :is(a,button,select,input,summary):focus-visible {outline:3px solid var(--ap-focus);outline-offset:3px;}
@@ -131,7 +129,6 @@ html [data-ap-interface] [class*="community-offer_pillar__"] [data-ap-button],ht
 }
 
 @media (prefers-color-scheme:dark) {
-  html [data-ap-interface][data-ap-theme=sistema] [class*="supportStrip__"] img {filter:none;}
   html [data-ap-interface][data-ap-theme=sistema] header[data-tone] [class*="brand__"] img[src*="navy"] {filter:brightness(0) invert(1);}
   html [data-ap-interface][data-ap-theme=sistema] header[data-tone] [class*="brand__"] img[src*="white"] {filter:none;}
 }
@@ -177,3 +174,81 @@ html [data-ap-interface] [class*="community-offer_overview__"] {
   border-radius: var(--ap-panel-radius);
 }
 html [data-ap-interface] [class*="community-offer_overview__"] [class*="access__"] { color:var(--ap-muted); }
+
+[data-ap-learning-studio] {
+  --ap-studio-model: url("/design-system/recursos/caderno-de-campo.webp");
+  --ap-studio-paper: light-dark(#e8eff5, #1a2d43);
+  --ap-studio-rule: light-dark(#67849d2e, #9db9d329);
+}
+html [data-ap-interface] [data-ap-learning-studio] {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--ap-line);
+  border-radius: var(--ap-panel-radius);
+  background: linear-gradient(115deg,var(--ap-section),var(--ap-canvas) 56%,var(--ap-studio-paper));
+  box-shadow: var(--ap-edge);
+  color: var(--ap-text);
+}
+html [data-ap-interface] [data-ap-learning-studio]::after {
+  content: "";
+  display: block;
+  pointer-events: none;
+  background:
+    var(--ap-studio-model) center / contain no-repeat,
+    radial-gradient(ellipse at 55% 83%, #28435c20, transparent 48%),
+    repeating-linear-gradient(90deg,transparent 0 23px,var(--ap-studio-rule) 23px 24px) center / 85% 62% no-repeat;
+  mask-image: linear-gradient(90deg,transparent,black 14% 87%,transparent);
+}
+html [data-ap-interface] [data-ap-learning-studio="editorial"] {
+  padding: clamp(1.25rem, 3vw, 2.65rem);
+}
+html [data-ap-interface] [data-ap-learning-studio="editorial"]::after {
+  height: clamp(8rem, 13vw, 12rem);
+  margin: .65rem 0 -.35rem;
+}
+html [data-ap-interface] [data-ap-learning-studio="editorial"] h2 {
+  max-width: 18ch;
+  margin: 0;
+  font: 530 clamp(2.1rem, 4vw, 3.9rem)/1.04 var(--ap-font);
+  letter-spacing: -.05em;
+}
+html [data-ap-interface] [data-ap-learning-studio="editorial"] p { color: var(--ap-muted); }
+html [data-ap-interface] [data-ap-learning-studio="catalogue"] {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(6rem,31%);
+  align-items: center;
+  column-gap: clamp(.6rem, 2vw, 2rem);
+  padding: clamp(1rem, 2.4vw, 2rem);
+}
+html [data-ap-interface] [data-ap-learning-studio="catalogue"] > div { grid-column: 1; grid-row: 1 / 3; }
+html [data-ap-interface] [data-ap-learning-studio="catalogue"]::after {
+  grid-column: 2; grid-row: 1;
+  height: clamp(5.5rem, 11vw, 9rem);
+}
+html [data-ap-interface] [data-ap-learning-studio="catalogue"] > a {
+  grid-column: 2; grid-row: 2; justify-self: center;
+  color: var(--ap-accent);
+}
+html [data-ap-interface] [data-ap-learning-studio="catalogue"] h1 {
+  margin: 0; color: var(--ap-text);
+  font: 510 clamp(2rem, 4.6vw, 4rem)/1.05 var(--ap-font);
+  letter-spacing: -.05em;
+}
+html [data-ap-interface] [data-ap-learning-studio="catalogue"] p { color: var(--ap-muted); }
+@media (max-width: 38rem) {
+  html [data-ap-interface] [data-ap-learning-studio="editorial"]::after { height: 6.75rem; }
+  html [data-ap-interface] [data-ap-learning-studio="catalogue"] { grid-template-columns: minmax(0,1fr) 4.1rem; gap: .4rem; }
+  html [data-ap-interface] [data-ap-learning-studio="catalogue"] > div { grid-row: 1; }
+  html [data-ap-interface] [data-ap-learning-studio="catalogue"]::after { align-self: start; height: 4.5rem; background: var(--ap-studio-model) center / contain no-repeat; mask-image: none; }
+  html [data-ap-interface] [data-ap-learning-studio="catalogue"] > a { grid-column: 1 / -1; justify-self: start; }
+}
+
+
+html [data-ap-interface] [data-ap-learning] {
+  padding: clamp(.6rem, 1.5vw, 1.4rem);
+  border: 1px solid var(--ap-line);
+  border-radius: var(--ap-panel-radius);
+  background: var(--ap-canvas);
+  color: var(--ap-text);
+}
+html [data-ap-interface] [data-ap-learning] > p:last-child a { color: var(--ap-accent); }

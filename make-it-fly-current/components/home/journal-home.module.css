@@ -60,9 +60,6 @@
   .starStage:hover .starCaption { opacity: 1; transform: none; }
 }
 .supportStrip { width: var(--journal-width); margin: 0 auto; }
-.supportStrip > aside { justify-content: center; min-height: 96px; padding: 1rem; gap: 1.25rem; border-color: var(--journal-rule); }
-.supportStrip > aside p { font-size: .875rem; font-weight: 450; color: var(--journal-muted); }
-.supportStrip > aside img { width: 22px; }
 .radarSection { width: var(--journal-width); margin-inline: auto; padding-block: 5rem 4rem; }
 .sectionHeading { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-bottom: 2rem; }
 .page .sectionHeading h2 { margin: 0; font-size: clamp(1.75rem, 2.6vw, 2.375rem); font-weight: 550; line-height: 1.1; letter-spacing: -.05em; }
@@ -150,7 +147,6 @@
   .starShine { opacity: .35; }
   .starBeam { width: 100%; }
   .communityWord { margin-top: 1.75rem; font-size: 76px; }
-  .supportStrip > aside { min-height: 85px; }
   .radarSection { padding-block: 3rem; }
   .sectionHeading { align-items: start; flex-direction: column; gap: .75rem; margin-bottom: 1.25rem; }
   .page .sectionHeading h2 { max-width: 16ch; font-size: 2rem; }

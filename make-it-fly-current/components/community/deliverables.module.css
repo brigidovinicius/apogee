@@ -23,3 +23,38 @@
 :global(html [data-ap-interface]) .card { color-scheme: dark; }
 :global(html [data-ap-interface]) .card .card { background: var(--ap-surface); box-shadow: var(--ap-edge); }
 :global(html [data-ap-interface]) .progress button { border-radius: var(--ap-control-radius); }
+
+:global(html [data-ap-interface] [data-ap-learning]) .card { color-scheme: inherit; }
+:global([data-ap-learning]) .nextActivity {
+  padding: .85rem 1.15rem;
+  border-inline-start: 3px solid var(--ap-accent);
+  background: var(--ap-section);
+  color: var(--ap-text);
+}
+.nextActivity a { display: inline-block; max-width: 100%; }
+:global([data-ap-learning]) .section a { color: var(--ap-accent); }
+:global(html [data-ap-interface] [data-ap-learning]) .card .card {
+  padding: clamp(.85rem, 2vw, 1.5rem);
+  background: var(--ap-surface);
+  box-shadow: var(--ap-edge);
+}
+:global(html [data-ap-interface] [data-ap-learning]) article.card {
+  border-inline-start: 3px solid var(--ap-line);
+  background: var(--ap-section);
+  box-shadow: none;
+}
+:global(html [data-ap-interface] [data-ap-learning]) article.card:is(:target,[data-complete="true"]) { border-inline-start-color: var(--ap-accent); }
+.moduleProgress { color: var(--ap-muted); font-variant-numeric: tabular-nums; }
+.moduleProgress::after {
+  content: "";
+  display: block;
+  inline-size: min(100%, 17rem);
+  block-size: .3rem;
+  margin-block-start: .5rem;
+  border-radius: 1rem;
+  background: linear-gradient(to right, var(--ap-accent) var(--ap-progress), var(--ap-line) var(--ap-progress));
+}
+@media (max-width: 40rem) {
+  :global(html [data-ap-interface] [data-ap-learning]) .section > .card { padding-inline: .75rem; }
+  :global(html [data-ap-interface] [data-ap-learning]) .card .card { padding-inline: .5rem; }
+}
