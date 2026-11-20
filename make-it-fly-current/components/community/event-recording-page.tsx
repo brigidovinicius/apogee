@@ -2,7 +2,7 @@ import { VOUCHER_PATH } from "@/lib/workshop-voucher/input";
 import { voucherConfigured } from "@/lib/workshop-voucher/secrets";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Bell, CirclePlay, Mail, Users } from "lucide-react";
+import { Bell, CirclePlay, Mail, Users } from "lucide-react";
 import { RECORDING_FAQ } from "@/content/community";
 import { SiteFooter } from "@/components/site/site-footer";
 import { CommunityJoinButton, FunnelFaq, FunnelHeader } from "./community-funnel";
@@ -21,8 +21,8 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
         <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.recordingCopy}><p className={styles.eyebrow}>Codex Community · organização Apogee</p><h1 id="recording-title">Descubra o que a IA pode<br /><span>mudar na sua vida.</span></h1><p className={styles.recordingLead}>Assista gratuitamente ao evento exclusivo Codex Community, da comunidade OpenAI, organizado pela Apogee. Explore como a IA pode ajudar você a pesquisar, escrever, organizar a rotina e colocar ideias em prática.</p><p className={styles.recordingAvailability}><Bell size={16} aria-hidden="true" /> Inscrição gratuita · orientações de acesso por e-mail.</p>
           <div className={styles.eventOptions} role="group" aria-label="Modalidades de participação">
-            <Link className={styles.primary} href="#inscricao" data-behavior-action="event_online_selected">Participar online <ArrowUpRight size={18} aria-hidden="true" /></Link>
-            <Link className={styles.secondary} href="#workshop-florianopolis" data-behavior-action="event_workshop_selected">Lista de espera presencial <ArrowUpRight size={18} aria-hidden="true" /></Link>
+            <Link className={styles.primary} href="#inscricao" data-behavior-action="event_online_selected">Participar online</Link>
+            <Link className={styles.secondary} href="#workshop-florianopolis" data-behavior-action="event_workshop_selected">Lista de espera presencial</Link>
           </div>
           <div className={styles.recordingArtwork} aria-hidden="true"><Image src="/brand/apogee-star.svg" alt="" width={703} height={870} priority /><div className={styles.recordingArtLabel}><CirclePlay size={28} strokeWidth={1.2} /><span>Codex Community<small>IA para o dia a dia</small></span></div></div>
         </div>
@@ -37,7 +37,7 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
             <p>A lista de espera é gerenciada pelo Luma. A inscrição na lista não garante uma vaga.</p>
           </div>
           <a className={`${styles.primary} ${styles.workshopOnline}`} href="#inscricao">
-            Inscrever-se para assistir online <ArrowUpRight size={18} aria-hidden="true" />
+            Inscrever-se para assistir online
           </a>
           {voucherConfigured() && <p>
             <Link href={VOUCHER_PATH} prefetch={false} className={styles.subtleLink}>
@@ -55,7 +55,7 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
             loading="lazy"
           />
           <a className={styles.subtleLink} href={workshopUrl} data-behavior-action="event_luma_opened">
-            Abrir lista de espera no Luma <ArrowUpRight size={16} aria-hidden="true" />
+            Abrir lista de espera no Luma
           </a>
         </div>
       </section>
@@ -66,7 +66,7 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
           <li><Users size={26} strokeWidth={1.3} aria-hidden="true" /><span className={styles.stepNumber}>03</span><h3>Encontre por onde começar.</h3><p>Identifique tarefas em que a IA pode ser útil e leve novas ideias para experimentar na sua realidade.</p></li>
         </ol>
       </section>
-      <section className={[styles.section, styles.recordingCommunity].join(" ")} aria-labelledby="recording-community-title"><div><p className={styles.eyebrow}>Comunidade Apogee</p><h2 id="recording-community-title">Mais ideias.<br />Mais conexões.</h2><p>Continue com o Radar, as aplicações de IA e as conexões da Apogee. Conheça a entrada gratuita e a assinatura que reúne os quatro pilares. A inscrição neste evento é independente da comunidade.</p></div><div className={styles.communityActions}><CommunityJoinButton preview={preview} /><Link className={styles.subtleLink} href="/comunidade#planos" prefetch={false}>Conhecer a assinatura <ArrowUpRight size={16} aria-hidden="true" /></Link></div></section>
+      <section className={[styles.section, styles.recordingCommunity].join(" ")} aria-labelledby="recording-community-title"><div><p className={styles.eyebrow}>Comunidade Apogee</p><h2 id="recording-community-title">Mais ideias.<br />Mais conexões.</h2><p>Continue com o Radar, as aplicações de IA e as conexões da Apogee. Conheça a entrada gratuita e a assinatura que reúne os quatro pilares. A inscrição neste evento é independente da comunidade.</p></div><div className={styles.communityActions}><CommunityJoinButton preview={preview} /><Link className={styles.subtleLink} href="/comunidade#planos" prefetch={false}>Conhecer a assinatura</Link></div></section>
       <FunnelFaq id="duvidas" title="Sobre o evento." items={RECORDING_FAQ} />
     </main><SiteFooter description="Conhecimento, oportunidades e gente para colocar ideias em movimento." />
   </div>;

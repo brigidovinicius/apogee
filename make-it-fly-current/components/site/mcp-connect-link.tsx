@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, type ReactNode } from "react";
-import { AreaIcon } from "./area-icon";
 import Link from "next/link";
 
 const McpEnabledContext = createContext(false);
@@ -12,7 +11,7 @@ export function McpAvailabilityProvider({ enabled, children }: { enabled: boolea
 
 export function McpConnectLink({ className, provider, label, listItem = false }: { className?: string; provider?: "chatgpt" | "claude"; label?: string; listItem?: boolean }) {
   if (!useContext(McpEnabledContext)) return null;
-  const link = <Link data-ap-provider={provider} className={className} href={`/membros/integracoes/mcp${provider === "claude" ? "?provedor=claude#claude" : ""}`} prefetch={false}>{!provider && <AreaIcon area="integracoes" />}{label ?? `Incluir no meu ${provider === "claude" ? "Claude" : "ChatGPT"}`}</Link>;
+  const link = <Link className={className} href={`/membros/integracoes/mcp${provider === "claude" ? "?provedor=claude#claude" : ""}`} prefetch={false}>{label ?? `Incluir no meu ${provider === "claude" ? "Claude" : "ChatGPT"}`}</Link>;
   return listItem ? <li>{link}</li> : link;
 }
 

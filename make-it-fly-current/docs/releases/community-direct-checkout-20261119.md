@@ -11,7 +11,7 @@ A oferta conserva R$ 1.438,80/ano, o equivalente mensal de R$ 119,90, cobrança 
 
 ## Implementação
 
-- CTA compartilhado no topo, oferta, Ferramentas e Trilha. Verde com relevo, um reflexo na entrada, foco visível, 56 px de altura, estados de carregamento e suporte a movimento reduzido. O papel `data-ap-button="checkout"` fica no sistema visual global.
+- CTA de compra compartilhado no topo e na oferta. Ferramentas e Trilha apontam para as condições do plano. Verde sólido, com leve contração ao pressionar, foco visível, 54 px de altura, carregamento sem mudança de largura e suporte a movimento reduzido. O acabamento foi revisado em 20/11 após feedback, seguindo as interações do Astryx. O papel `data-ap-button="checkout"` fica no sistema visual global.
 - O formulário envia POST a `/api/comunidade/assinatura/iniciar`. Membros autenticados seguem diretamente ao checkout existente. Visitantes recebem sessão Stripe de assinatura com preço/quantidade fixos, origem verificada, limite de tentativas e cookie HttpOnly de retomada.
 - A tabela aditiva `community_guest_checkout` registra a tentativa, cliente/sessão Stripe, e-mail de compra confirmado pela Stripe e eventual vínculo ao membro. A sessão aberta é reutilizada; uma sessão já concluída encaminha à ativação.
 - Webhooks registram o e-mail canônico antes do cadastro. Não há concessão de acesso enquanto a compra não pertencer a uma conta.
@@ -19,6 +19,12 @@ A oferta conserva R$ 1.438,80/ano, o equivalente mensal de R$ 119,90, cobrança 
 - A ativação exige sessão autenticada, conta não bloqueada e e-mail confirmado igual ao da compra. Valida novamente sessão, cliente, produto, preço, assinatura e faturas na Stripe. Só a conciliação original de pagamento concede direitos; URL de retorno, cadastro e cookie não concedem acesso.
 - Vínculos antigos de cliente permanecem intactos. Cancelamento, portal e conciliação passam a reconhecer também compras feitas antes da conta. Reembolsos, disputas, fraudes e pausa de novas vendas preservam as regras existentes. A verificação exigida para áreas protegidas continua após o pagamento.
 - A migração isolada não altera o journal Drizzle, para não conflitar com outras frentes em andamento. A imagem inclui o script e seu SQL.
+
+## Revisão visual de 20/11
+
+A partir do Astryx, a home e a área de membros mostram os recursos em listas com divisórias e links de texto. O rodapé usa apenas tipografia. Removemos adornos repetidos do catálogo do Radar, de Benefícios, do Blog e de outras ações secundárias. Menus, busca, filtros, carrosséis e ações principais conservam seus indicadores funcionais. As referências são [hierarquia e composição](https://astryx.atmeta.com/docs/layout-structure) e [estados e movimento](https://astryx.atmeta.com/sandbox/pages/motion-examples/).
+
+A verificação de tipos, o lint dos arquivos alterados e os 868 testes passaram. Capturas e registros da revisão em `outputs/vendas-cta-20261120/`.
 
 ## Validação local
 

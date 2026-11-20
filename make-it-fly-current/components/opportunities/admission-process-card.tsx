@@ -1,7 +1,6 @@
 import { SaveOpportunityButton } from "./save-opportunity";
 import { interfaceText } from "@/lib/presentation-text.mjs";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import type { AdmissionGroup } from "@/lib/opportunities/admission-processes";
 import { OpportunityBenefits, OpportunityCosts } from "./opportunity-financials";
 import { OpportunityCountdown } from "./opportunity-countdown";
@@ -49,7 +48,7 @@ export function AdmissionProcessCard({ group, management = false, detailHref, pu
     </details>
     {management && sharedUrl ? <div className={styles.cardFooter}>
       <Link data-ap-button="primary" className={`${styles.externalLink} ${styles.detailButton}`} href={first.officialUrl} target="_blank" rel="noopener noreferrer" aria-label={`Ver página oficial de ${interfaceText(group.title)}`}>
-        Ver processo seletivo <ArrowUpRight size={16} aria-hidden />
+        Ver processo seletivo
       </Link>
     </div> : null}
   </article>;

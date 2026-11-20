@@ -1,7 +1,7 @@
 import { localFunctionalReview } from "@/lib/offer-preview";
 import Link from "next/link";
 import { COMMUNITY_BENEFITS_TERMS } from "@/content/community-offer";
-import { ArrowRight, BookOpen, Compass, LockKeyhole, MessageCircle, ShieldCheck, Wrench } from "lucide-react";
+import { ArrowRight, LockKeyhole } from "lucide-react";
 import { requireSignedInMember } from "@/lib/members/dal";
 import { adultAccess } from "@/lib/members/protection";
 import { MemberWorkspace } from "@/components/members/member-workspace";
@@ -40,7 +40,7 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
     {params.payment === "cancelled" ? <p role="status">Você voltou do checkout. Confira abaixo a situação atual da assinatura.</p> : null}
     {params.cancellation === "requested" ? <p role="status">{membership.subscription?.cancelAtPeriodEnd ? "Renovação anual cancelada. O período pago está preservado." : "Solicitação de cancelamento da renovação enviada. Atualize esta página em instantes para conferir a confirmação."}</p> : null}
     <div className={annual.annualLayout}>
-    <section className={annual.annualCard} aria-labelledby="annual-plan-title"><h2 data-ap-heading="" id="annual-plan-title">Comunidade Apogee · Anual</h2>
+    <section className={annual.annualCard} aria-labelledby="annual-plan-title"><h2 id="annual-plan-title">Comunidade Apogee · Anual</h2>
       <p className={annual.annualPrice}><strong>R$ 1.438,80</strong><span>por ano</span></p>
       <p className={annual.annualEquivalent}>Equivalente a R$ 119,90 por mês.</p>
       <p className={annual.annualTerms}>Cobrança integral anual, com renovação automática a cada 12 meses. Não há contratação mensal. Você pode cancelar a renovação antes da próxima cobrança e manter o acesso até o fim do período pago.</p>
@@ -49,24 +49,24 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
         <p>{membership.subscription?.cancelAtPeriodEnd ? "A renovação está cancelada. Seu acesso continua até o fim do período pago." : "A renovação automática está habilitada. Você pode cancelá-la antes da próxima cobrança."}</p>
         <Link className={annual.annualCta} href={next}>{continueLabel}<ArrowRight size={18} aria-hidden="true" /></Link>
       </> : membership.paymentStatus === "refunded" ? <p role="status">A fatura anual foi reembolsada integralmente. O acesso incluído nessa fatura foi encerrado. Seus acessos antigos válidos ao Radar continuam preservados.</p> : ["disputed","fraud"].includes(membership.paymentStatus ?? "") ? <p role="status">O pagamento está em análise. O acesso anual depende da conclusão dessa análise. Seus acessos antigos válidos ao Radar continuam preservados.</p> : membership.subscription?.status === "past_due" || membership.subscription?.status === "unpaid" ? <p role="status">O pagamento anual está pendente. Confira a fatura e a forma de pagamento no portal antes de tentar novamente. Uma renovação não paga não estende o acesso.</p> : awaitingPayment ? <AnnualPaymentConfirmation /> : pending ? <p role="status">Há uma assinatura ou pagamento em andamento. Se uma renovação falhar, o acesso continua somente até o fim do último período pago. Confira o pagamento antes de iniciar outra assinatura.</p> : reviewing ? <p>A contratação anual está implementada e testada com pagamentos sintéticos. A conexão ao checkout Stripe será validada separadamente antes da publicação.</p> : !communityBillingEnabled() ? <p>A contratação anual está em validação. A entrada gratuita continua disponível.</p> : !verified ? <div><p>Verifique sua conta antes de seguir para o pagamento. Depois você retorna a este resumo.</p><Link className={annual.annualCta} href={verificationHref}>Verificar minha conta</Link></div> : <form data-behavior-action="checkout_start" data-annual-stage="account_ready" action={`/api/comunidade/assinatura/checkout?next=${encodeURIComponent(next)}`} method="post">
-        <p className={annual.annualActivation}><ShieldCheck size={20} aria-hidden="true" />Acesso liberado automaticamente após a confirmação do pagamento.</p>
+        <p className={annual.annualActivation}>Acesso liberado automaticamente após a confirmação do pagamento.</p>
         <p className={annual.annualCheckoutNote}>Na próxima etapa, você revisa o total e conclui sua assinatura no checkout seguro da Stripe.</p>
         <button className={annual.annualCta} type="submit">Continuar para pagamento<ArrowRight size={18} aria-hidden="true" /></button>
         <p className={annual.annualTrust}><LockKeyhole size={14} aria-hidden="true" />Pagamento seguro com a Stripe</p>
       </form>}
     </section>
-    <section className={annual.annualBenefits} aria-labelledby="annual-benefits-title"><h2 data-ap-heading="" id="annual-benefits-title">Recursos da assinatura</h2>
+    <section className={annual.annualBenefits} aria-labelledby="annual-benefits-title"><h2 id="annual-benefits-title">Recursos da assinatura</h2>
       <ul className={annual.annualList}>
-        <li><Compass size={22} aria-hidden="true" /><div><h3 data-ap-heading="">Radar completo</h3><p>Explore oportunidades e consulte os detalhes sem o limite das 10 consultas gratuitas.</p></div></li>
-        <li><Wrench size={22} aria-hidden="true" /><div><h3 data-ap-heading="">Caixa de Ferramentas</h3><p>Encontre ferramentas e recursos para apoiar suas ideias e colocar projetos em prática.</p></div></li>
-        <li><BookOpen size={22} aria-hidden="true" /><div><h3 data-ap-heading="">Seu primeiro resultado com IA</h3><p>Comece a Trilha com o exercício “Um primeiro resultado com IA”: três atividades para sair da intenção e experimentar.</p></div></li>
-        <li><MessageCircle size={22} aria-hidden="true" /><div><h3 data-ap-heading="">Fórum da comunidade</h3><p>Troque experiências, compartilhe dúvidas e participe das conversas.</p></div></li>
+        <li><div><h3>Radar completo</h3><p>Explore oportunidades e consulte os detalhes sem o limite das 10 consultas gratuitas.</p></div></li>
+        <li><div><h3>Caixa de Ferramentas</h3><p>Encontre ferramentas e recursos para apoiar suas ideias e colocar projetos em prática.</p></div></li>
+        <li><div><h3>Seu primeiro resultado com IA</h3><p>Comece a Trilha com o exercício “Um primeiro resultado com IA”: três atividades para sair da intenção e experimentar.</p></div></li>
+        <li><div><h3>Fórum da comunidade</h3><p>Troque experiências, compartilhe dúvidas e participe das conversas.</p></div></li>
       </ul>
       <p className={annual.annualScope}>{COMMUNITY_BENEFITS_TERMS} A Trilha está em sua etapa inicial. <Link href="/comunidade">Conheça todas as entregas</Link>.</p>
       {legacy ? <p className={annual.annualLegacy}><strong>Seu Radar continua com você.</strong><br />Seu acesso antigo ao Radar está preservado e independe desta assinatura.</p> : null}
     </section>
     </div>
-    {membership.subscription && !reviewing && (process.env.STRIPE_COMMUNITY_PORTAL_CONFIGURATION_ID || (pending && !membership.subscription.cancelAtPeriodEnd)) ? <section className={`${styles.panel} ${annual.annualManage}`}><h2 data-ap-heading="">Gerencie sua assinatura</h2>
+    {membership.subscription && !reviewing && (process.env.STRIPE_COMMUNITY_PORTAL_CONFIGURATION_ID || (pending && !membership.subscription.cancelAtPeriodEnd)) ? <section className={`${styles.panel} ${annual.annualManage}`}><h2>Gerencie sua assinatura</h2>
       {!reviewing && process.env.STRIPE_COMMUNITY_PORTAL_CONFIGURATION_ID ? <form action={`/api/comunidade/assinatura/portal?next=${encodeURIComponent(next)}`} method="post"><button className={styles.primary} type="submit">Ver faturas e forma de pagamento</button></form> : null}
       {!reviewing && pending && !membership.subscription.cancelAtPeriodEnd ? <form action={`/api/comunidade/assinatura/cancelar?next=${encodeURIComponent(next)}`} method="post"><p>Cancele a renovação automática. O acesso do período já pago será mantido, sem nova cobrança anual.</p><button className={styles.primary} type="submit">Cancelar renovação anual</button></form> : null}
     </section> : null}

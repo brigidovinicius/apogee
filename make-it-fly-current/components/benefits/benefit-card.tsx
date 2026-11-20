@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays } from "lucide-react";
 import { PartnerMark } from "./partner-mark";
 import { BENEFIT_AUDIENCES, PROVIDER_ACCESS_LABELS, type CatalogueBenefit } from "@/lib/benefits/types";
 import { BenefitSaveButton } from "./member-forms";
@@ -29,11 +28,11 @@ export function BenefitCard({ benefit, validity, detailSearch = "" }: { benefit:
 
       <div className={styles.offerFooter}>
         <div>
-          <span className={styles.validity}><CalendarDays size={15} aria-hidden="true" />{validity}</span>
+          <span className={styles.validity}>{validity}</span>
           {benefit.provider_label && <span className={styles.provider}>{benefit.provider_label}</span>}
         </div>
         <Link href={href} className={styles.offerLink} aria-label={`Ver condições da oferta: ${benefit.name}`}>
-          Ver condições <ArrowRight size={17} aria-hidden="true" />
+          Ver condições
         </Link>
       </div>
     </article>

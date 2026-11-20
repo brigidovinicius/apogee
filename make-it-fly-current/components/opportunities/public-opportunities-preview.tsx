@@ -1,7 +1,7 @@
 "use client";
 
 import { interfaceText } from "@/lib/presentation-text.mjs";
-import { Compass, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { OpportunityPreview } from "@/lib/opportunities/types";
@@ -71,14 +71,14 @@ export function PublicOpportunitiesPreview({
                 Os detalhes desta oportunidade ficam disponíveis somente para membros autenticados.
               </p>
               <Link className={styles.previewCardLink} href={`/membros/cadastro?next=${memberNext}`}>
-                Desbloquear detalhes <span aria-hidden>→</span>
+                Desbloquear detalhes
               </Link>
             </article>
           ))}
         </div>
       ) : (
         <div id="public-opportunity-results" className={styles.empty} role="status">
-          <Compass size={28} aria-hidden />
+
           <h3>Nenhuma oportunidade com estes filtros.</h3>
           <p>Remova um filtro para voltar à prévia do Radar.</p>
           <button type="button" onClick={() => { setKind("Todas"); setLevel("Todas"); }}>

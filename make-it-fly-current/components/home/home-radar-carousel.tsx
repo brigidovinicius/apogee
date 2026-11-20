@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { StudentOpportunity } from "@/lib/opportunities/types";
 import { selectHomeOpportunities, type HomeOpportunityCategory } from "@/lib/home-opportunities";
@@ -65,11 +65,11 @@ export function HomeRadarCarousel({ opportunities, capturedAt }: { opportunities
     <ul id="home-radar-cards" ref={track} className={styles.radarTrack} tabIndex={visible.length ? 0 : undefined} aria-label="Oportunidades em destaque, role para o lado">
       {visible.map((item) => <li key={item.id} className={styles.opportunity}>
         <article>
-          <div className={styles.opportunityTop}><span>{item.kind}</span><ArrowUpRight aria-hidden="true" size={19} /></div>
-          <h3 data-ap-heading="" data-ap-art="radar">{interfaceText(item.title)}</h3>
+          <div className={styles.opportunityTop}><span>{item.kind}</span></div>
+          <h3>{interfaceText(item.title)}</h3>
           <p className={styles.opportunityOrg}>{interfaceText(item.organization)}</p>
           <OpportunityDates opportunity={item} className={styles.opportunityDates} />
-          <Link prefetch={false} className={styles.opportunityAction} href={publicOpportunityPath(item)} aria-label={`Ver resumo da oportunidade: ${item.title}`}>Ver resumo<ArrowRight size={16} aria-hidden="true" /></Link>
+          <Link prefetch={false} className={styles.opportunityAction} href={publicOpportunityPath(item)} aria-label={`Ver resumo da oportunidade: ${item.title}`}>Ver resumo</Link>
         </article>
       </li>)}
     </ul>

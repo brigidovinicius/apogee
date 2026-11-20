@@ -1,6 +1,5 @@
 import { localStaticOfferPreview } from "@/lib/offer-preview";
 import { OfferRadarDemo } from "@/components/community/offer-preview";
-import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { listPublicOpportunities } from "@/lib/opportunities/access";
 import { homeOpportunitySnapshot } from "@/lib/home-opportunities";
@@ -21,7 +20,7 @@ export async function HomeRadar({ presentation = "editorial", classNames }: { pr
   if (catalogue === null) {
     return <><LiveCatalogueRefresh /><div className={classNames?.catalogueMessage ?? styles.catalogueMessage}>
       <p>A prévia do Radar está temporariamente indisponível</p>
-      <Link prefetch={false} href="/oportunidades">Abrir o catálogo de oportunidades <span aria-hidden="true"><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></Link>
+      <Link prefetch={false} href="/oportunidades">Abrir o catálogo de oportunidades</Link>
     </div></>;
   }
   const now = new Date();

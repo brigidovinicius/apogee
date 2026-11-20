@@ -5,8 +5,7 @@
 .annualBenefits { padding-top: .25rem; }
 .annualBenefits h2 { margin: 0 0 1.25rem; font-size: 1rem; font-weight: 600; }
 .annualList { list-style: none; padding: 0; margin: 0; }
-.annualList li { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: .75rem; padding: 1.1rem 0; border-top: 1px solid #31465b; }
-.annualList svg { margin-top: .15rem; color: #b9d3ee; }
+.annualList li { padding: 1.1rem 0; border-top: 1px solid #31465b; }
 .annualList h3 { margin: 0 0 .35rem; font-size: 1rem; font-weight: 600; }
 .annualList p, .annualScope, .annualLegacy, .annualFootnote { color: #c4d3e1; font-size: .875rem; line-height: 1.65; }
 .annualList p { margin: 0; }
@@ -20,8 +19,7 @@
 .annualPrice span, .annualEquivalent { font-size: .9rem; }
 .annualEquivalent { margin: 0 0 1.25rem; color: #334c63; }
 .annualTerms { padding-bottom: 1.25rem; border-bottom: 1px solid #b2c5d7; font-size: .8125rem; line-height: 1.6; }
-.annualActivation { display: flex; align-items: flex-start; gap: .6rem; margin: 1.25rem 0 .75rem; font-size: .875rem; font-weight: 600; line-height: 1.55; }
-.annualActivation svg { flex-shrink: 0; margin-top: .1rem; }
+.annualActivation { margin: 1.25rem 0 .75rem; font-size: .875rem; font-weight: 600; line-height: 1.55; }
 .annualCheckoutNote { font-size: .8125rem; line-height: 1.65; color: #334c63; }
 .annualCard .annualCta { display: flex; align-items: center; justify-content: center; gap: .6rem; width: 100%; min-height: 3.25rem; margin-top: 1.25rem; padding: .85rem 1rem; border: 1px solid #07182d; border-radius: 0; background: #07182d; color: #fff; font: inherit; font-size: .9rem; font-weight: 600; text-align: center; text-decoration: none; cursor: pointer; }
 .annualCard .annualCta:hover { background: #1a3956; }

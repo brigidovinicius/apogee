@@ -1,7 +1,6 @@
 "use client";
 
 import { interfaceText } from "@/lib/presentation-text.mjs";
-import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { StudentOpportunity } from "@/lib/opportunities/types";
@@ -45,7 +44,6 @@ export function HomeRadarList({ opportunities, capturedAt }: { opportunities: St
               <OpportunityDates opportunity={item} />
             </div>
             <p className={styles.opportunityBenefit}>{interfaceText(item.benefit)}</p>
-            <span className={styles.rowArrow} aria-hidden="true"><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span>
             <span className={styles.srOnly}>Ver detalhes da oportunidade</span>
           </Link>
         </li>)}

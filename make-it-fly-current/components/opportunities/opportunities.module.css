@@ -621,17 +621,6 @@
   transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease;
 }
 
-.locationValue {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 0.4rem;
-}
-
-.locationValue svg {
-  flex: 0 0 auto;
-  margin-top: 0.18rem;
-  color: var(--radar-card-accent);
-}
 
 .filterGroup button:hover,
 .filterGroup button.selected,
@@ -797,18 +786,10 @@
 }
 
 .launchWindow {
-  display: flex;
-  gap: 0.8rem;
-  align-items: flex-start;
   margin-top: 1.25rem;
   padding-top: 1.1rem;
   border-top: 1px solid var(--radar-card-line);
   color: var(--radar-card-accent);
-}
-
-.launchWindow > svg {
-  flex: 0 0 auto;
-  margin-top: 0.16rem;
 }
 
 .launchWindow div {
@@ -1061,9 +1042,6 @@
 }
 
 .countdown {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.8rem;
   padding: 1rem;
   margin-top: 1rem;
   border: 1px solid var(--radar-card-line);
@@ -1071,7 +1049,6 @@
   background: var(--radar-card-subtle);
   color: var(--radar-card-accent);
 }
-.countdown > svg { flex-shrink: 0; margin-top: 0.15rem; }
 .countdown > div { display: grid; gap: 0.35rem; min-width: 0; }
 .countdown span, .countdown time { font-size: .75rem; color: var(--radar-card-muted); }
 .countdown strong { font-size: 0.95rem; line-height: 1.45; font-variant-numeric: tabular-nums; }
@@ -1255,9 +1232,7 @@
   border-radius: var(--ap-control-radius);
   font-variant-numeric: tabular-nums;
 }
-:global([data-ap-interface]) .board[data-ap-radar-board] .launchWindow > svg { color: var(--ap-accent); }
-
-:global([data-ap-interface]) .board[data-ap-radar-board] .locationField label:has(> input[type="checkbox"]) {
+:global([data-ap-interface]) .board[data-ap-radar-board] :global([data-ap-interface]) .board[data-ap-radar-board] .locationField label:has(> input[type="checkbox"]) {
   display: flex;
   align-items: center;
   gap: .65rem;

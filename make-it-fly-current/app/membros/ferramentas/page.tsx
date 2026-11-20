@@ -2,11 +2,10 @@ import { toolboxReturnPath } from "@/lib/billing/community-navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { LockedMemberArea } from "@/components/members/locked-member-area";
 import { MemberWorkspace } from "@/components/members/member-workspace";
 import { ProductMark } from "@/components/site/product-mark";
-import { ToolCategoryMark } from "@/components/members/tool-category-mark";
 import { productDomain } from "@/lib/brand/domain";
 import { toolBrand } from "@/lib/toolbox/brands";
 import { ResourceHeader } from "@/components/members/resource-header";
@@ -60,13 +59,13 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
           const items = matches.filter(t => t.categorySlug === c.slug);
           if (!items.length) return null;
           return <section key={c.slug} aria-labelledby={`category-${c.slug}`} className={styles.group}>
-            <div className={styles.groupHead}><h2 data-ap-heading="" id={`category-${c.slug}`}><ToolCategoryMark slug={c.slug} />{c.name}</h2>{c.description && <p>{c.description}</p>}</div>
+            <div className={styles.groupHead}><h2 data-ap-heading="" id={`category-${c.slug}`}>{c.name}</h2>{c.description && <p>{c.description}</p>}</div>
             <ul className={styles.tools}>{items.map(t => {
               const domain = productDomain(t.url);
               return <li data-ap-card="" className={styles.tool} key={t.id}>
               <div><p className={styles.domain}>{new URL(t.url).hostname.replace(/^www\./, "")}</p><h3 data-ap-heading=""><ProductMark name={t.name} brand={skills ? undefined : toolBrand(t.name, t.url)} fallbackSrc={domain ? `/api/marcas?site=${encodeURIComponent(domain)}` : undefined} />{t.name}</h3><p className={styles.description}>{t.description}</p>{t.conditions && <p className={styles.conditions}>{t.conditions}</p>}</div>
               <a data-ap-button="primary" className={styles.open} href={t.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">
-                {skills ? "Abrir skill" : "Abrir ferramenta"}<ArrowUpRight size={17} aria-hidden="true" /><span className="sr-only"> {t.name} (abre em nova aba)</span>
+                {skills ? "Abrir skill" : "Abrir ferramenta"}<span className="sr-only"> {t.name} (abre em nova aba)</span>
               </a>
             </li>;
             })}</ul>

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Script from "next/script";
-import { ArrowUpRight } from "lucide-react";
 import { useRef, useState, type FormEvent } from "react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -38,7 +37,7 @@ export function OfferRadarDemo({ compact = false }: { compact?: boolean }) {
       <button type="button" onClick={() => { setLegacy(false); setOpened(DEMO_EVENTS.slice(0, 10).map(item => item.id)); }}>Simular limite de 10</button>
       <button type="button" aria-pressed={legacy} onClick={() => setLegacy(value => !value)}>Simular acesso antigo</button>
     </div>}
-    <ul className={styles.cards}>{DEMO_EVENTS.slice(0, compact ? 3 : 12).map(item => <li key={item.id}><small>Evento demonstrativo · Apogee Radar</small><h3>{item.title}</h3><p>Descubra o formato, o que preparar e o próximo passo para participar.</p><button type="button" onClick={() => openEvent(item)} aria-haspopup="dialog">{opened.includes(item.id) ? "Reabrir evento" : "Ver detalhes"}<ArrowUpRight size={18} aria-hidden="true" /></button></li>)}</ul>
+    <ul className={styles.cards}>{DEMO_EVENTS.slice(0, compact ? 3 : 12).map(item => <li key={item.id}><small>Evento demonstrativo · Apogee Radar</small><h3>{item.title}</h3><p>Descubra o formato, o que preparar e o próximo passo para participar.</p><button type="button" onClick={() => openEvent(item)} aria-haspopup="dialog">{opened.includes(item.id) ? "Reabrir evento" : "Ver detalhes"}</button></li>)}</ul>
     <p className={styles.notice}>Eventos ilustrativos para revisar a experiência. {compact ? "Conheça o Radar para experimentar o saldo e o limite." : "O saldo desta demonstração fica apenas nesta tela. A cota real por conta será integrada ao servidor na etapa funcional."}</p>
     <dialog className={styles.modal} ref={dialog} aria-labelledby="demo-event-title" onClick={event => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>
       <button className={styles.close} type="button" onClick={() => dialog.current?.close()} aria-label="Fechar detalhes">Fechar</button>

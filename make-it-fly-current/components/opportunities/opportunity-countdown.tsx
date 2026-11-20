@@ -1,7 +1,6 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { Clock3 } from "lucide-react";
 import type { StudentOpportunity } from "@/lib/opportunities/types";
 import { opportunityCountdown } from "@/lib/opportunities/countdown";
 import styles from "./opportunities.module.css";
@@ -35,7 +34,7 @@ export function OpportunityCountdown({ opportunity }: { opportunity: StudentOppo
   const now = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
   const countdown = opportunityCountdown(opportunity, now);
   return <div className={styles.countdown} data-tone={countdown.tone ?? undefined}>
-    <Clock3 size={17} aria-hidden />
+
     <div>
       <span>{countdown.label}</span>
       <strong role="timer" aria-live="off" aria-label={`${countdown.label}: ${countdown.value}`}>

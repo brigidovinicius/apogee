@@ -1,7 +1,7 @@
 import { PartnerMark } from "@/components/benefits/partner-mark";
 import { WorkshopVoucherCard } from "@/components/workshop-voucher/card";
 import Link from "next/link";
-import { ArrowRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { previewBenefitCatalogue } from "@/lib/benefits/preview";
 import { benefitNavigation, type BenefitSearchParams } from "@/lib/benefits/navigation";
 import { BENEFIT_AUDIENCES, BENEFIT_PATHS } from "@/lib/benefits/types";
@@ -36,7 +36,7 @@ export async function BenefitPreviewCatalogue({ params, userId }: { params: Bene
         <div className={styles.cardTop}><span className={styles.category}>{offer.category ?? "Geral"}</span></div>
         <p className={styles.partner}>{offer.partner}</p><h3 data-ap-heading="" className={styles.previewTitle}><PartnerMark partner={offer.partner} offerId={offer.id} />{offer.name}</h3><p>{BENEFIT_AUDIENCES[offer.audience]}</p>
         <Link href={`${BENEFIT_PATHS.catalogue}/${encodeURIComponent(offer.id)}${detailSearch}`} prefetch={false} className={styles.textLink}
-          aria-label={`Ver condições da oferta: ${offer.name}`}>Ver condições <ArrowRight size={17} aria-hidden="true" /></Link>
+          aria-label={`Ver condições da oferta: ${offer.name}`}>Ver condições</Link>
       </article>)}</div> : <p className={styles.empty}>{query || category || audience ? "Nenhuma oferta com esses filtros." : "Sem ofertas vigentes no momento."}</p>}
     </section> : <p role="alert">O catálogo está temporariamente indisponível. Tente novamente em instantes.</p>}
   </div>;

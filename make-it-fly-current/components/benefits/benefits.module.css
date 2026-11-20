@@ -48,8 +48,7 @@
 .offerBody .condition { margin: .85rem 0 0; padding: .65rem .75rem; border-radius: 7px; background: #e8eff8; color: #314c66; line-height: 1.5; }
 .offerBody .condition strong { display: block; margin-bottom: .2rem; color: #183e62; }
 .offerFooter { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .65rem 1rem; padding-top: .85rem; border-top: 1px solid #cfdae8; }
-.validity { display: flex; align-items: center; gap: .4rem; color: #354f69; font-size: .76rem; }
-.validity svg { flex-shrink: 0; }
+.validity { color: #354f69; font-size: .76rem; }
 .provider { display: block; margin-top: .28rem; color: #52677c; font-size: .72rem; }
 /* The member page's link rule otherwise inherits the card's dark text. */
 .offerFooter a.offerLink { display: inline-flex; align-items: center; gap: .65rem; min-height: 44px; padding: .58rem .82rem; border-radius: 7px; background: #193f63; color: #fff; font-size: .8rem; font-weight: 600; text-decoration: none; }
@@ -187,10 +186,6 @@
 }
 .root[data-ap-benefits="preview"] .previewTitle + p { margin: .25rem 0 1rem; color: var(--ap-muted); }
 .root[data-ap-benefits] :is(a,button,input,select):focus-visible { outline: 3px solid var(--ap-focus); outline-offset: 3px; }
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .root[data-ap-benefits] :is(.offerLink,.textLink) svg { transition: transform var(--ap-quick) var(--ap-ease); }
-  .root[data-ap-benefits] :is(.offerLink,.textLink):is(:hover,:focus-visible) svg { transform: translateX(3px); }
-}
 @media (max-width: 42rem) {
   .root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header { min-height: 0; padding: 1rem; }
   .root[data-ap-benefits="catalogue"] > header > a { margin: 0; }

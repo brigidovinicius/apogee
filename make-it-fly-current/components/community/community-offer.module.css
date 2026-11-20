@@ -38,15 +38,33 @@
 .nextStep h3 { margin:0 0 .25rem; font-size:1rem; font-weight:650; }
 .nextStep p { margin:0; color:#29415c; }
 .nextStep a { white-space:normal; }
-.pillarGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
-.pillar { display:flex; flex-direction:column; padding:22px; background:white; border:1px solid #cdd8e4; border-top:3px solid #07182d; border-radius:4px; }
-.pillar h3 { font-size:1.05rem; margin:12px 0; }
-.pillar p { font-size:.85rem; color:#435870; line-height:1.8; margin:0 0 20px; }
-.pillar a { min-height:44px; display:inline-flex; align-items:center; font-size:.85rem; color:#07182d; margin-top:auto; }
+.pillarList { list-style: none; margin: 0; padding: 0; }
+.pillar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .2rem 1.5rem;
+  padding: .875rem 0;
+  border-top: 1px solid var(--ap-line, #cdd8e4);
+  color: var(--ap-text, var(--offer-ink));
+}
+.pillar h3 { margin: 0 0 .2rem; font-size: 1.06rem; font-weight: 600; }
+.pillar p { margin: 0; color: var(--ap-muted, #435870); font-size: .9375rem; line-height: 1.5; }
+.pillar a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  width: fit-content;
+  color: var(--ap-accent, var(--offer-ink));
+  text-decoration: underline;
+  text-underline-offset: .22em;
+}
+@media (max-width: 40rem) {
+  .pillar { grid-template-columns: 1fr; padding-block: .875rem .25rem; }
+}
 .access { border-top:1px solid #cdd8e4; padding-top:20px; margin-top:25px; color:#435870; line-height:1.8; font-size:.9rem; }
 .darkActions { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
-@media(max-width:1000px) { .pillarGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-@media(max-width:650px) { .plans,.pillarGrid { grid-template-columns:1fr; }.plan { padding:26px; }.overview { padding:22px; }.intro { padding:22px; }.price strong { font-size:2.8rem; }.actions { align-items:stretch; }.actions>a { flex:1; }.darkActions>a { width:100%; } }
+@media(max-width:650px) { .plans { grid-template-columns:1fr; }.plan { padding:26px; }.overview { padding:22px; }.intro { padding:22px; }.price strong { font-size:2.8rem; }.actions { align-items:stretch; }.actions>a { flex:1; }.darkActions>a { width:100%; } }
 @media(prefers-reduced-motion:reduce) { .scope * { scroll-behavior:auto; } }
 
 .featured { scroll-margin-block-start:1rem; }

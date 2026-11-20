@@ -1,5 +1,4 @@
 import { interfaceText } from "@/lib/presentation-text.mjs";
-import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -41,7 +40,7 @@ export async function BlogIndex({ searchParams, member = false }: { searchParams
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className={styles.coverImage} src={blogMediaUrl(cover.id)} alt={interfaceText(cover.alt)} width={cover.width} height={cover.height} loading={lead ? "eager" : "lazy"} />
         </div> : null}
-        <span className={styles.readMore}>Ler artigo <ArrowUpRight aria-hidden="true" size={16} /></span>
+        <span className={styles.readMore}>Ler artigo</span>
       </Link>
     </article>;
   };

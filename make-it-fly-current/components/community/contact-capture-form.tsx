@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { COMMUNITY_CONTACT_CONSENT, type ContactCampaign } from "@/lib/community/consent";
 import styles from "./community-sales-page.module.css";
@@ -62,7 +62,7 @@ export function ContactCaptureForm({ preview = false }: { preview?: boolean }) {
     <p>{preview ? "Demonstração concluída. Nenhum contato foi registrado e nenhum e-mail será enviado." : "Sua solicitação foi registrada. A equipe usará o e-mail informado para orientar o acesso ao evento. Este formulário não envia o acesso automaticamente."}</p>
     <p className={styles.formPurpose}>Este cadastro não cria uma conta nem inscreve você em outros comunicados.</p>
     {!preview ? <p>Se precisar de ajuda, escreva para <a href="mailto:contato@apogee.community">contato@apogee.community</a>.</p> : null}
-    <Link className={styles.subtleLink} href="/comunidade" prefetch={false}>Conhecer a Comunidade Apogee<ArrowUpRight size={16} aria-hidden="true" /></Link>
+    <Link className={styles.subtleLink} href="/comunidade" prefetch={false}>Conhecer a Comunidade Apogee</Link>
   </div>;
 
   return <form className={styles.captureForm} noValidate onSubmit={submit} aria-labelledby={`${id}-title`} aria-busy={pending}>
@@ -76,7 +76,7 @@ export function ContactCaptureForm({ preview = false }: { preview?: boolean }) {
       <div className={styles.honeypot} aria-hidden="true"><label htmlFor={`${id}-website`}>Website</label><input id={`${id}-website`} name="website" type="text" autoComplete="off" tabIndex={-1} /></div>
       <label className={styles.consent} htmlFor={`${id}-consent`}><input id={`${id}-consent`} name="consent" type="checkbox" required aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? `${id}-consent-error` : undefined} /><span>{COMMUNITY_CONTACT_CONSENT[campaign]}</span></label>
       {errors.consent && <p className={styles.fieldError} id={`${id}-consent-error`}>{errors.consent}</p>}
-      <button className={styles.primary} type="submit">{pending ? "Salvando pedido…" : "Receber orientações por e-mail"}<ArrowUpRight size={18} aria-hidden="true" /></button>
+      <button className={styles.primary} type="submit">{pending ? "Salvando pedido…" : "Receber orientações por e-mail"}</button>
     </fieldset>
     {failure && <p className={styles.fieldError} role="alert">{failure}</p>}
     <p className={styles.formPurpose}>Usaremos seu contato apenas para o aviso solicitado. Você pode pedir a exclusão pelo canal da <Link href="/privacidade">Política de Privacidade</Link>.</p>

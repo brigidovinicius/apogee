@@ -84,14 +84,12 @@
 .radarCategories a { display: flex; align-items: center; min-height: 3rem; padding: .65rem 1rem; border-radius: var(--apogee-control-radius); color: var(--home-ground); background: var(--home-soft); text-decoration: none; transition: background 160ms ease; }
 .radarCategories a[aria-current], .radarCategories a:hover { color: var(--home-ink); background: var(--home-ground); }
 .opportunities { display: grid; gap: .65rem; margin: 0; padding: 0; list-style: none; }
-.opportunity { display: grid; grid-template-columns: minmax(0, 1fr) minmax(12rem, 32%) 2rem; align-items: center; gap: 2rem; padding: 1.6rem 1.75rem; border: 1px solid rgb(7 24 45 / 9%); border-radius: var(--apogee-group-radius); color: inherit; background: var(--home-soft); text-decoration: none; transition: background 180ms ease, transform 180ms var(--home-ease); }
+.opportunity { display: grid; grid-template-columns: minmax(0, 1fr) minmax(12rem, 32%); align-items: center; gap: 2rem; padding: 1.6rem 1.75rem; border: 1px solid rgb(7 24 45 / 9%); border-radius: var(--apogee-group-radius); color: inherit; background: var(--home-soft); text-decoration: none; transition: background 180ms ease, transform 180ms var(--home-ease); }
 .opportunity:hover { background: var(--home-accent); transform: translateX(4px); }
 .opportunity h3 { margin: .3rem 0 .5rem; font-size: clamp(1.2rem, 1.8vw, 1.75rem); font-weight: 500; line-height: 1.2; text-wrap: balance; }
 .opportunity p { margin: 0; font-size: 1rem; }
 .opportunityOrganization { color: var(--apogee-ink-muted); }
 .opportunityBenefit { overflow-wrap: anywhere; }
-.rowArrow { font-size: 2rem; transition: transform 180ms var(--home-ease); }
-.opportunity:hover .rowArrow { transform: translate(3px, -3px); }
 .catalogueMessage { padding: 2rem; margin: 0; color: var(--home-ground); background: var(--home-soft); min-height: 10rem; }
 .catalogueMessage p { margin-top: 0; }
 .catalogueMessage a { color: inherit; }
@@ -138,9 +136,8 @@
   .page h2 { font-size: clamp(3rem, 12.5vw, 5rem); }
   .radarCategories { gap: .4rem; }
   .radarCategories a { padding-inline: .8rem; font-size: .9rem; }
-  .opportunity { grid-template-columns: minmax(0, 1fr) 1.5rem; gap: 1rem; padding: 1.25rem; }
+  .opportunity { grid-template-columns: minmax(0, 1fr); gap: 1rem; padding: 1.25rem; }
   .opportunityBenefit { grid-column: 1; }
-  .rowArrow { grid-column: 2; grid-row: 1 / 3; }
   .opportunity h3 { font-size: 1.25rem; text-wrap: pretty; }
   .opportunity p { font-size: .95rem; }
   .catalogueMessage { padding: 1.5rem; }

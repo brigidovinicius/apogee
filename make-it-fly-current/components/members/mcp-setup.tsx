@@ -1,7 +1,6 @@
 "use client";
 
 import { useId, useState } from "react";
-import { ArrowUpRight, Copy } from "lucide-react";
 import styles from "./mcp-setup.module.css";
 
 export function McpSetup({ resource }: { resource: string }) {
@@ -19,16 +18,16 @@ export function McpSetup({ resource }: { resource: string }) {
     <p className={styles.eyebrow}>Apogee + ChatGPT + Claude</p>
     <h2 data-ap-heading="section" data-ap-art="integracoes" id="mcp-setup-title">Suas oportunidades, na conversa.</h2>
     <p>Explore o Radar, consulte seu perfil e organize seu calendário e suas coleções com sua conta Apogee.</p>
-    <div className={styles.providers}><a data-ap-provider="chatgpt" data-ap-button="secondary" className={styles.primary} href="https://chatgpt.com/plugins" target="_blank" rel="noopener noreferrer">
-      Incluir no meu ChatGPT <ArrowUpRight size={18} aria-hidden="true" />
+    <div className={styles.providers}><a data-ap-button="secondary" className={styles.primary} href="https://chatgpt.com/plugins" target="_blank" rel="noopener noreferrer">
+      Incluir no meu ChatGPT
     </a>
-    <a data-ap-provider="claude" data-ap-button="secondary" className={styles.primary} href="https://claude.ai/customize/connectors" target="_blank" rel="noopener noreferrer">
-      Incluir no meu Claude <ArrowUpRight size={18} aria-hidden="true" />
+    <a data-ap-button="secondary" className={styles.primary} href="https://claude.ai/customize/connectors" target="_blank" rel="noopener noreferrer">
+      Incluir no meu Claude
     </a></div>
     <p className={styles.hint}>Abre o aplicativo escolhido em outra aba. Você concluirá a conexão por lá.</p>
     <div className={styles.address}>
       <label>Endereço da Apogee<input type="url" readOnly value={resource} onFocus={event => event.currentTarget.select()} /></label>
-      <button data-ap-button="secondary" type="button" onClick={copyAddress} aria-describedby={feedbackId}><Copy size={16} aria-hidden="true" />Copiar endereço</button>
+      <button data-ap-button="secondary" type="button" onClick={copyAddress} aria-describedby={feedbackId}>Copiar endereço</button>
     </div>
     <p className={styles.feedback} id={feedbackId} role="status" aria-atomic="true">{feedback}</p>
     <h3>No ChatGPT</h3><ol className={styles.steps}>
