@@ -28,7 +28,7 @@ export function toolboxReturnPath(category: string | null) {
 }
 
 export function isAnnualPurchasePath(path: string) {
-  return path.split(/[?#]/, 1)[0] === "/membros/assinatura";
+  return ["/membros/assinatura", "/membros/ativar-assinatura"].includes(path.split(/[?#]/, 1)[0]);
 }
 
 export function annualSummaryPath(resource: string) {

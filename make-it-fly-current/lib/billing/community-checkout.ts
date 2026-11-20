@@ -13,6 +13,8 @@ export async function annualCheckout(userId:string,next:string) {
   next=communityReturnPath(next);
   const config=communityBillingConfig(),stripe=stripeClient();
   if((await communityAccess(userId,config.livemode)).active) return `${applicationOrigin()}${COMMUNITY_ACCESS_PATH}?next=${encodeURIComponent(next)}`;
+  const [pendingSubscription]=await getSql()`select id from community_subscription where user_id=${userId} and livemode=${config.livemode} and status not in ('canceled','incomplete_expired') limit 1`;
+  if(pendingSubscription) throw new BillingError(409,"Já existe uma assinatura ou pagamento em andamento. Consulte sua assinatura.");
   const price=await stripe.prices.retrieve(config.price);
   if(!validAnnualPrice(price,config)) throw new BillingError(503,"Plano anual indisponível.");
   const attempt=await getSql().begin(async tx=>{
@@ -35,9 +37,12 @@ export async function annualCheckout(userId:string,next:string) {
   }
   if(!owner) throw new BillingError(503,"Não foi possível preparar sua assinatura.");
   const customerId=String(owner.customer_id);
-  const subscriptions=await stripe.subscriptions.list({customer:customerId,status:"all",limit:100});
-  if(subscriptions.has_more || subscriptions.data.some(sub=>!["canceled","incomplete_expired"].includes(sub.status))) {
-    throw new BillingError(409,"Já existe uma assinatura ou pagamento em andamento. Consulte sua assinatura antes de tentar novamente.");
+  const guests=await getSql()`select customer_id from community_guest_checkout where user_id=${userId} and livemode=${config.livemode} and customer_id is not null`;
+  for (const ownedCustomer of new Set([customerId,...guests.map(row=>String(row.customer_id))])) {
+    const subscriptions=await stripe.subscriptions.list({customer:ownedCustomer,status:"all",limit:100});
+    if(subscriptions.has_more || subscriptions.data.some(sub=>!["canceled","incomplete_expired"].includes(sub.status))) {
+      throw new BillingError(409,"Já existe uma assinatura ou pagamento em andamento. Consulte sua assinatura antes de tentar novamente.");
+    }
   }
   const suffix=attempt.key.replaceAll("-","").slice(0,8).split("").map(c=>String.fromCharCode(97+parseInt(c,16))).join("");
   const session=await stripe.checkout.sessions.create({mode:"subscription",customer:customerId,

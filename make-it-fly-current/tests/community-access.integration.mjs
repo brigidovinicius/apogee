@@ -19,6 +19,7 @@ function resetModel() {
 }
 before(async()=>{
   db=await nativeCommunityDatabase();sql=db.sql;
+  await sql.unsafe(await readFile(new URL("../sql/community-guest-checkout.sql",import.meta.url),"utf8"));
   process.env.COMMUNITY_BILLING_ENABLED='true';process.env.STRIPE_MODE='test';process.env.STRIPE_SECRET_KEY='sk_test_LocalOnly';
   process.env.STRIPE_COMMUNITY_ANNUAL_PRICE_ID=price.id;process.env.STRIPE_COMMUNITY_PRODUCT_ID=price.product;process.env.RADAR_BILLING_ENABLED='true';
   process.env.STRIPE_WEBHOOK_SECRET='whsec_localannualvalidation';process.env.STRIPE_RADAR_PRICE_ID='price_Legacy';process.env.STRIPE_RADAR_PRODUCT_ID='prod_Legacy';

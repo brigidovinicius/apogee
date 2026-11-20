@@ -43,7 +43,7 @@
 .page .plansFrame article h3 { font:400 36px/1.2 var(--editorial-display); letter-spacing:-.035em; }
 .page .plansFrame article[id="plano-anual"] { background:#07182d; color:#fff; }.page .plansFrame article[id="plano-anual"] :is(p,ul,span) { color:#c6d8e8; }
 .page .plansFrame article strong { color:inherit; font-weight:500; }
-.page .plansFrame article a { border-radius:6px; }.page .plansFrame article:not([id]) a { background:#07182d; color:#fff; border-color:#07182d; }
+.page .plansFrame article a { border-radius:6px; }.page .plansFrame article:not([id]) a { background:var(--ap-secondary-fill); color:var(--ap-text); border-color:var(--ap-line); }
 .page .plansFrame>div>p { color:#526174; font-size:14px; }
 @media(max-width:760px) { .benefits { grid-template-columns:1fr; }.radarFact { min-height:300px; padding:32px; }.page .plansFrame article { padding:26px; }.page .plansFrame article strong { font-size:clamp(28px,8vw,44px); }.navyButton { font-size:14px; padding-inline:16px; } }
 @media(max-width:1100px) { .headingRow,.intro .headingRow { gap:32px; grid-template-columns:1.3fr 1fr; }.directory { column-gap:32px; }.directoryPanel { padding:32px; }.directoryTrigger { font-size:30px; }.directoryPanel h4 { font-size:40px; }.directoryNote { margin-left:calc(50% + 16px)!important; } }
@@ -53,8 +53,8 @@
   .directoryHeading { margin-bottom:32px; }.directory { display:block; min-height:0; }.directoryItem { display:block; }.directoryTrigger { min-height:80px; font-size:28px; }.directoryPanel { min-height:0; padding:32px 24px; margin-block:16px 8px; }.directoryPanel h4 { font-size:40px; }.page .joinAction > :is(a,button) { font-size:14px; padding-inline:16px; }.directoryNote { margin:24px 0 0!important; }.faq summary { font-size:16px; }
 }
 
-.page .intro .joinAction > a { background:transparent; color:#07182d; border:1px solid #9da9b5; }
-.page .intro .joinAction > a:hover { background:#edf3fa; }
+.page .intro .joinAction > a { background:var(--ap-secondary-fill); color:var(--ap-text); border:1px solid var(--ap-line); }
+.page .intro .joinAction > a:hover { background:var(--ap-section); }
 
 :global([data-ap-interface]) .toolboxSection .toolboxExample {
   padding: .9rem 1.1rem;

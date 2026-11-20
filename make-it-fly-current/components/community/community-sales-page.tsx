@@ -6,51 +6,57 @@ import { RedBullSupport } from "@/components/site/red-bull-support";
 import { COMMUNITY_FAQ } from "@/content/community";
 import { COMMUNITY_BENEFITS_TERMS, RADAR_FREE_NOTE } from "@/content/community-offer";
 import { CommunityJoinButton } from "./community-funnel";
+import { CommunityCheckoutButton } from "./community-checkout-button";
 import { CommunityPlans } from "./community-plans";
 import { CommunityDirectory } from "./community-directory";
 import styles from "./community-editorial.module.css";
 
 import type { PublishedResources } from "./community-deliverables";
 
-export function CommunitySalesPage({ preview = false, signedIn = false, subscribed = false, next, hasBenefits, resources }: { preview?: boolean; signedIn?: boolean; subscribed?: boolean; next?: string; hasBenefits?: boolean | null; resources: PublishedResources }) {
+export function CommunitySalesPage({ preview = false, signedIn = false, subscribed = false, next, hasBenefits, resources, checkoutError, cancelled = false }: { preview?: boolean; signedIn?: boolean; subscribed?: boolean; next?: string; hasBenefits?: boolean | null; resources: PublishedResources; checkoutError?: string; cancelled?: boolean }) {
   return <ApogeeInterface editorial area="comunidade"><EditorialPageShell current="community" className={styles.page}>
     <main id="experiencia" tabIndex={-1} data-community-page>
       <section id="inicio" className={[styles.wrap, styles.section, styles.intro].join(" ")} aria-labelledby="community-title">
         <p className={styles.eyebrow}>Comunidade Apogee</p>
         <div data-ap-reveal="" className={styles.headingRow}>
-          <h1 id="community-title">Coloque a IA em prática com a comunidade.</h1>
-          <p className={styles.lead}>{resources.trilha && resources.ferramentas ? "Traga uma tarefa do seu dia a dia. Encontre uma ferramenta para ela, experimente a atividade da trilha e converse com outros membros sobre o que funcionou." : "Explore oportunidades, consulte benefícios e converse com outros membros sobre seus projetos."}</p>
+          <h1 id="community-title">Use IA. Tire suas ideias do papel.</h1>
+          <p className={styles.lead}>{resources.trilha && resources.ferramentas ? "Ferramentas selecionadas, prática com IA e oportunidades para o seu próximo passo." : "Explore oportunidades, consulte benefícios e converse com outros membros sobre seus projetos."}</p>
         </div>
         <div className={styles.actions}>
-          <Link data-ap-button="primary" className={styles.navyButton} href="#planos">Comparar os acessos <ArrowUpRight size={18} aria-hidden="true" /></Link>
+          <CommunityCheckoutButton next={next} preview={preview} subscribed={subscribed} />
+          <Link className={styles.textLink} href="#planos">Ver o que está incluído</Link>
           <div className={styles.joinAction}><CommunityJoinButton next={next} preview={preview} signedIn={signedIn} secondary /></div>
         </div>
-        <p className={styles.accessNote}>{resources.trilha && resources.ferramentas ? "Conta gratuita sem cartão. Caixa de Ferramentas, Trilha e Radar completo na assinatura anual." : "Conta gratuita sem cartão. A assinatura anual inclui o Radar completo."}</p>
+        <p className={styles.accessNote}>R$ 1.438,80 por ano · equivalente a R$ 119,90/mês. Cobrança integral anual, com renovação automática.</p>
+        <p className={styles.accessNote}>Checkout seguro. Crie sua conta após o pagamento.</p>
         <div data-ap-signature="" className={styles.communityWord} aria-hidden="true">Building<br />the future.</div>
       </section>
       <section id="comunidade" className={[styles.section, styles.communityBand].join(" ")} aria-labelledby="inside-title">
         <div className={styles.wrap}>
           <div data-ap-reveal="" className={[styles.headingRow, styles.directoryHeading].join(" ")}>
-            <h2 data-ap-heading="section" data-ap-art="comunidade" id="inside-title">O que você pode fazer na Apogee</h2>
-            <p className={styles.lead}>Veja como cada recurso funciona e em qual acesso ele está incluído.</p>
+            <h2 id="inside-title">O que você recebe</h2>
+            <p className={styles.lead}>Conheça os recursos e as condições de acesso.</p>
           </div>
           <CommunityDirectory resources={resources} />
         </div>
       </section>
       <section id="planos" tabIndex={-1} className={[styles.wrap, styles.section, styles.plansTarget].join(" ")} aria-labelledby="plans-title">
-        <div data-ap-reveal="" className={[styles.headingRow, styles.plansHeading].join(" ")}><h2 data-ap-heading="section" data-ap-art="assinatura" id="plans-title">Escolha seu acesso</h2></div>
+        <div data-ap-reveal="" className={[styles.headingRow, styles.plansHeading].join(" ")}><h2 id="plans-title">Escolha seu acesso</h2></div>
+        {checkoutError && <p role="alert" className={styles.sectionCopy}>{checkoutError === "409" ? "Você já tem uma assinatura ou um pagamento em andamento." : checkoutError === "429" ? "Muitas tentativas. Aguarde alguns minutos e tente novamente." : "Não foi possível abrir o checkout. Tente novamente em instantes."} <Link href="/membros/assinatura">Ver minha assinatura</Link></p>}
+        {cancelled && <p role="status" className={styles.accessNote}>Você voltou do checkout. Pode retomar a compra quando quiser.</p>}
         <div className={styles.plansFrame}><CommunityPlans resources={resources} preview={preview} signedIn={signedIn} subscribed={subscribed} next={next} /></div>
+        <p className={styles.accessNote}>Já pagou? <Link href="/comunidade/ativar">Ative sua assinatura</Link>.</p>
       </section>
       <RedBullSupport />
-      <section id="radar" className={[styles.wrap, styles.section, styles.headingRow].join(" ")} aria-labelledby="radar-title"><div><p className={styles.eyebrow}>Apogee Radar</p><h2 data-ap-heading="section" data-ap-art="radar" id="radar-title">Encontre oportunidades e acompanhe os prazos.</h2><p className={styles.sectionCopy}>{RADAR_FREE_NOTE}</p><div className={styles.actions}><Link data-ap-button="primary" className={styles.navyButton} href="/oportunidades" prefetch={false}>Explorar o Radar <ArrowUpRight size={18} aria-hidden="true" /></Link></div><p className={styles.accessNote}>Os acessos anteriores ao Radar continuam válidos.</p></div><div className={styles.radarFact}><strong>10</strong><p>consultas gratuitas por mês</p><span>Explore o catálogo sem usar a sua cota.</span></div></section>
-      {resources.ferramentas && <section id="ferramentas" className={[styles.section, styles.toolboxSection].join(" ")} aria-labelledby="toolbox-title"><div data-ap-reveal="" className={[styles.wrap, styles.headingRow].join(" ")}><div data-ap-toolbox-studio="editorial"><p className={styles.eyebrow}>Caixa de Ferramentas · assinatura anual</p><h2 data-ap-title="" data-ap-heading="section" data-ap-art="ferramentas" id="toolbox-title">Encontre uma ferramenta para a sua tarefa.</h2></div><div className={styles.courseCopy}><p className={styles.lead}>Escolha o que você quer fazer, leia para que serve cada ferramenta e abra o site oficial.</p><p>Há categorias para tarefas como criar um vídeo, editar uma imagem, pesquisar um assunto ou programar.</p><p className={styles.toolboxExample}>Para criar um vídeo, por exemplo, procure <strong>Google Flow</strong> na categoria Vídeo.</p><p className={styles.accessNote}>A assinatura cobre a curadoria da Apogee. Cada fornecedor define o preço, os créditos e as condições da sua ferramenta.</p><Link data-ap-button="primary" className={styles.textLink} href="#plano-anual">Ver plano anual <ArrowUpRight size={18} aria-hidden="true" /></Link></div></div></section>}
-      {resources.trilha && <section id="learn" className={[styles.wrap, styles.section, styles.headingRow].join(" ")} aria-labelledby="learn-title"><div data-ap-learning-studio="editorial"><p className={styles.eyebrow}>Apogee Learn · Trilha</p><h2 data-ap-title="" data-ap-heading="section" data-ap-art="trilha" id="learn-title">Faça sua primeira tarefa com IA.</h2></div><div className={styles.courseCopy}><p className={styles.lead}>Comece por “Um primeiro resultado com IA”: um exercício com três atividades para escolher uma tarefa pequena, preparar um pedido com dados permitidos e conferir o resultado.</p><p>O entregável inicial é um roteiro com a tarefa escolhida, os critérios de qualidade e sua avaliação do resultado. A Trilha está disponível de forma parcial: a formação ainda não está completa e os próximos módulos estão em preparação, sem data de entrega anunciada.</p><Link data-ap-button="primary" className={styles.textLink} href="#plano-anual">Ver plano anual <ArrowUpRight size={18} aria-hidden="true" /></Link></div></section>}
-      <section id="perks" className={[styles.section, styles.benefitsSection].join(" ")} aria-labelledby="benefits-title"><div className={styles.wrap}><div data-ap-reveal="" className={styles.headingRow}><div><p className={styles.eyebrow}>Apogee Perks · Benefícios</p><h2 data-ap-heading="section" data-ap-art="beneficios" id="benefits-title">Consulte as ofertas dos parceiros.</h2></div><p className={styles.lead}>{COMMUNITY_BENEFITS_TERMS}</p></div>{hasBenefits !== null && hasBenefits !== undefined && <p className={styles.accessNote}>{hasBenefits ? "Há ofertas vigentes no catálogo." : "O catálogo está sem ofertas vigentes no momento."}</p>}<Link className={styles.textLink} href="/beneficios" prefetch={false}>Abrir catálogo de Benefícios <ArrowUpRight size={18} aria-hidden="true" /></Link></div></section>
+      <section id="radar" className={[styles.wrap, styles.section, styles.headingRow].join(" ")} aria-labelledby="radar-title"><div><p className={styles.eyebrow}>Apogee Radar</p><h2 id="radar-title">Encontre seu próximo passo.</h2><p className={styles.sectionCopy}>{RADAR_FREE_NOTE}</p><div className={styles.actions}><Link data-ap-button="primary" className={styles.navyButton} href="/oportunidades" prefetch={false}>Explorar o Radar <ArrowUpRight size={18} aria-hidden="true" /></Link></div><p className={styles.accessNote}>Os acessos anteriores ao Radar continuam válidos.</p></div><div className={styles.radarFact}><strong>10</strong><p>consultas gratuitas por mês</p><span>Explore o catálogo sem usar a sua cota.</span></div></section>
+      {resources.ferramentas && <section id="ferramentas" className={[styles.section, styles.toolboxSection].join(" ")} aria-labelledby="toolbox-title"><div data-ap-reveal="" className={[styles.wrap, styles.headingRow].join(" ")}><div data-ap-toolbox-studio="editorial"><p className={styles.eyebrow}>Caixa de Ferramentas · assinatura anual</p><h2 data-ap-title="" id="toolbox-title">A ferramenta certa para sua tarefa.</h2></div><div className={styles.courseCopy}><p className={styles.lead}>Encontre ferramentas para criar, pesquisar e programar, com links oficiais.</p><p className={styles.accessNote}>Licenças e créditos de terceiros não estão incluídos.</p><div className={styles.actions}><CommunityCheckoutButton next={next} preview={preview} subscribed={subscribed} /></div></div></div></section>}
+      {resources.trilha && <section id="learn" className={[styles.wrap, styles.section, styles.headingRow].join(" ")} aria-labelledby="learn-title"><div data-ap-learning-studio="editorial"><p className={styles.eyebrow}>Apogee Learn · Trilha</p><h2 data-ap-title="" id="learn-title">Faça sua primeira tarefa com IA.</h2></div><div className={styles.courseCopy}><p className={styles.lead}>Três atividades para escolher uma tarefa, criar seu pedido e avaliar o resultado.</p><p>Trilha inicial disponível de forma parcial. A formação ainda não está completa; próximos módulos em preparação, sem data anunciada.</p><div className={styles.actions}><CommunityCheckoutButton next={next} preview={preview} subscribed={subscribed} /></div></div></section>}
+      <section id="perks" className={[styles.section, styles.benefitsSection].join(" ")} aria-labelledby="benefits-title"><div className={styles.wrap}><div data-ap-reveal="" className={styles.headingRow}><div><p className={styles.eyebrow}>Apogee Perks · Benefícios</p><h2 id="benefits-title">Consulte as ofertas dos parceiros.</h2></div><p className={styles.lead}>{COMMUNITY_BENEFITS_TERMS}</p></div>{hasBenefits !== null && hasBenefits !== undefined && <p className={styles.accessNote}>{hasBenefits ? "Há ofertas vigentes no catálogo." : "O catálogo está sem ofertas vigentes no momento."}</p>}<Link className={styles.textLink} href="/beneficios" prefetch={false}>Abrir catálogo de Benefícios <ArrowUpRight size={18} aria-hidden="true" /></Link></div></section>
       <section id="participar" className={[styles.section, styles.communityBand].join(" ")} aria-labelledby="join-title">
         <div data-ap-reveal="" className={[styles.wrap, styles.headingRow].join(" ")}>
-          <div><p className={styles.eyebrow}>Comunidade Apogee</p><h2 data-ap-heading="section" data-ap-art="participar" id="join-title">Eventos presenciais</h2></div>
+          <div><p className={styles.eyebrow}>Comunidade Apogee</p><h2 id="join-title">Eventos presenciais</h2></div>
           <div className={styles.courseCopy}>
-            <p className={styles.lead}>Encontre a comunidade pessoalmente. Cada encontro tem suas próprias condições de participação.</p>
+            <p className={styles.lead}>Encontre a comunidade. Participação e ingressos seguem as condições de cada evento.</p>
             <p><Link className={styles.textLink} href="/evento-openai#workshop-florianopolis" prefetch={false}>Ver workshop em Florianópolis <ArrowUpRight size={18} aria-hidden="true" /></Link></p>
             <p><Link className={styles.textLink} href="/galeria" prefetch={false}>Ver fotos do Make It Fly <ArrowUpRight size={18} aria-hidden="true" /></Link></p>
             <p className={styles.accessNote}>A inscrição no evento Codex Community é independente da assinatura e do cadastro na comunidade.</p>
@@ -58,7 +64,7 @@ export function CommunitySalesPage({ preview = false, signedIn = false, subscrib
           </div>
         </div>
       </section>
-      <section id="duvidas" className={[styles.section, styles.faqSection].join(" ")} aria-labelledby="faq-title"><div className={[styles.wrap, styles.faqLayout].join(" ")}><h2 data-ap-heading="section" data-ap-art="suporte" id="faq-title">Antes de<br />começar.</h2><div className={styles.faq}>{COMMUNITY_FAQ.map(item => <details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}</div></div></section>
+      <section id="duvidas" className={[styles.section, styles.faqSection].join(" ")} aria-labelledby="faq-title"><div className={[styles.wrap, styles.faqLayout].join(" ")}><h2 id="faq-title">Antes de<br />começar.</h2><div className={styles.faq}>{COMMUNITY_FAQ.map(item => <details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}</div></div></section>
     </main>
   </EditorialPageShell></ApogeeInterface>;
 }

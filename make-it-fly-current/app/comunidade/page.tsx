@@ -31,5 +31,5 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
   const member = !preview && getSessionCookie(await headers()) ? await getCurrentMember() : null;
   const subscribed = member ? (await communityAccess(member.id, process.env.STRIPE_MODE !== "test")).active : false;
   const resources = preview ? { trilha: true, ferramentas: true } : await publishedResourceAvailability();
-  return <CommunitySalesPage resources={resources} preview={preview} signedIn={Boolean(member)} subscribed={subscribed} next={communityReturnPath(params.next ?? "/membros")} hasBenefits={preview ? null : await hasPublicBenefits()} />;
+  return <CommunitySalesPage resources={resources} checkoutError={typeof params.checkout_error === "string" ? params.checkout_error : undefined} cancelled={params.payment === "cancelled"} preview={preview} signedIn={Boolean(member)} subscribed={subscribed} next={communityReturnPath(params.next ?? "/membros")} hasBenefits={preview ? null : await hasPublicBenefits()} />;
 }

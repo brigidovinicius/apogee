@@ -2,6 +2,7 @@ import "server-only";
 import type Stripe from "stripe";
 import { getSql } from "@/lib/members/db";
 import { communityServiceConfig, COMMUNITY_AMOUNT, COMMUNITY_CURRENCY, COMMUNITY_TAG } from "./community-config";
+import { recordGuestSession } from "./community-guest-store";
 import { stripeClient } from "./stripe";
 
 export const COMMUNITY_STRIPE_EVENTS = ["checkout.session.completed","checkout.session.async_payment_succeeded",
@@ -30,6 +31,7 @@ export async function fulfillCommunityEvent(event: Stripe.Event): Promise<string
   else if (event.type.startsWith("checkout.session.")) {
     const session=await stripe.checkout.sessions.retrieve(input.id);
     if (session.mode !== "subscription" || session.livemode !== config.livemode) return "ignored";
+    await recordGuestSession(session);
     const sub=objectId(session.subscription); if(sub) targets.set(sub,null);
   } else if (event.type.startsWith("invoice.")) {
     const invoice=await stripe.invoices.retrieve(input.id);
@@ -68,8 +70,11 @@ export async function fulfillCommunityEvent(event: Stripe.Event): Promise<string
       const [known]=await tx`select user_id,customer_id,livemode from community_subscription where id=${sub.id}`;
       if(!known && (item.quantity !== 1 || !validAnnualPrice(item.price,config,false))) continue;
       const customer=objectId(sub.customer); if(!customer) continue;
-      const [owner]=await tx`select user_id from community_customer where customer_id=${customer} and livemode=${config.livemode}`;
-      // The first-class customer mapping was persisted before Checkout creation.
+      const owners=await tx`select user_id from community_customer where customer_id=${customer} and livemode=${config.livemode}
+        union select user_id from community_guest_checkout where customer_id=${customer} and livemode=${config.livemode} and user_id is not null`;
+      if (owners.length > 1) throw new Error("Vínculo de cliente divergente.");
+      const [owner]=owners;
+      // Account-first mapping or an email-verified post-purchase claim.
       if(!owner || (!known && sub.metadata.integration !== COMMUNITY_TAG)) continue;
       const [existing]=await tx`select user_id,customer_id,livemode from community_subscription where id=${sub.id}`;
       if(existing && (existing.user_id !== owner.user_id || existing.customer_id !== customer || existing.livemode !== config.livemode)) throw new Error("Vínculo divergente.");

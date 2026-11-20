@@ -5,6 +5,7 @@ A interface do site e da plataforma compartilha a folha `public/design-system/ap
 | Elemento | Contrato |
 | --- | --- |
 | Ação principal | `data-ap-button="primary"`. Marinho, aresta iluminada e rótulo claro. |
+| Compra da assinatura | `data-ap-button="checkout"`. Verde, profundidade e um único reflexo na entrada. Reservado para iniciar o checkout; foco visível e movimento reduzido. |
 | Ação secundária | `data-ap-button="secondary"`. Superfície translúcida, borda e rótulo do tema. |
 | Filtro | `data-ap-chip`. O controle define seu estado com `aria-pressed`. |
 | Card e painel | `data-ap-card` para conteúdo. `data-ap-panel` para uma superfície sobreposta, como menu ou filtros. |
