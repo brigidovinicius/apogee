@@ -6,6 +6,8 @@ import { migrateMemberBenefits } from "../scripts/member-benefits-migrate.mjs";
 import { migrateMonthlyDetails } from "../scripts/monthly-detail-migrate.mjs";
 import { migrateWorkshopVouchers } from "../scripts/workshop-voucher-migrate.mjs";
 import { test } from "node:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { nativeCommunityDatabase } from "./helpers/community-native-db.mjs";
 import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
@@ -67,6 +69,31 @@ test("voucher destinations are encrypted per slot and disclosed only by an autho
   assert.equal(response.headers.get("location"), links[0]);
   assert.equal(response.headers.get("referrer-policy"), "no-referrer");
   assert.match(response.headers.get("cache-control"), /no-store/);
+});
+
+test("the workshop links to the voucher page when it is configured", t => {
+  const oldKey = process.env.WORKSHOP_VOUCHER_KEY;
+  t.after(() => {
+    if (oldKey === undefined) delete process.env.WORKSHOP_VOUCHER_KEY;
+    else process.env.WORKSHOP_VOUCHER_KEY = oldKey;
+  });
+  const emptyComponent = () => null;
+  const load = opportunityLoader({
+    "next/link": ({ children, href }) => createElement("a", { href }, children),
+    "next/image": emptyComponent,
+    "@/components/site/site-footer": { SiteFooter: emptyComponent },
+    "./community-funnel": {
+      CommunityJoinButton: emptyComponent, FunnelFaq: emptyComponent, FunnelHeader: emptyComponent,
+    },
+    "./recording-capture-form": { RecordingCaptureForm: emptyComponent },
+  });
+  const { EventRecordingPage } = load("components/community/event-recording-page.tsx");
+  delete process.env.WORKSHOP_VOUCHER_KEY;
+  assert.ok(!renderToStaticMarkup(createElement(EventRecordingPage)).includes(VOUCHER_PATH));
+  process.env.WORKSHOP_VOUCHER_KEY = "8c".repeat(32);
+  const html = renderToStaticMarkup(createElement(EventRecordingPage));
+  assert.ok(html.includes(`href="${VOUCHER_PATH}">Acessar meu voucher na Apogee`));
+  assert.ok(html.includes("https://luma.com/embed/event/"));
 });
 
 test("one batch and one link per person, including concurrent claims and retryable notices", async t => {
