@@ -14,13 +14,13 @@ export const COMMUNITY_SALES_DELIVERABLES = [
     href: "#learn", action: "Conhecer a trilha",
   },
   {
-    id: "radar", label: "Radar de oportunidades", fact: "10 consultas mensais na conta gratuita",
+    id: "radar", label: "Radar de oportunidades",
     title: "Oportunidades com prazos e fontes.",
     description: "Eventos, bolsas, editais e vagas. A assinatura dá acesso ao Radar completo.",
     href: "#radar", action: "Conhecer o Radar",
   },
   {
-    id: "perks", label: "Benefícios", fact: "10 consultas mensais na conta gratuita",
+    id: "perks", label: "Benefícios",
     title: "Ofertas de parceiros para você.",
     description: COMMUNITY_BENEFITS_REDEMPTION,
     href: "#perks", action: "Entender os benefícios",

@@ -25,7 +25,7 @@ A interface do site e da plataforma compartilha a folha `public/design-system/ap
 
 Use texto como padrão em títulos, cartões, listas, metadados, links secundários e rodapés. As folhas compartilhadas não acrescentam ícones herdados aos títulos. Para um conjunto de destinos, prefira linhas com divisórias e indicação clara de link. Dê a cada região uma ação principal.
 
-Use ícones explícitos em menus e controles de busca, filtros, carrosséis e estados quando esclarecem a função. Todo botão composto apenas por um ícone precisa de nome acessível. Reserve ilustrações para aberturas estratégicas, para os cards expandidos de “O que você recebe” e para os atalhos principais de “Minha comunidade”. Marcas oficiais identificam a Apogee, ferramentas e parceiros. No rodapé, a única imagem é o logo oficial da Apogee com estrela.
+Use ícones explícitos em menus e controles de busca, filtros, carrosséis e estados quando esclarecem a função. Todo botão composto apenas por um ícone precisa de nome acessível. Reserve ilustrações para aberturas estratégicas, para os cards expandidos de “O que você recebe” e para a grade de recursos da Home e de “Minha comunidade”. Marcas oficiais identificam a Apogee, ferramentas e parceiros. No rodapé, a única imagem é o logo oficial da Apogee com estrela.
 
 Referência: [hierarquia e agrupamento no Astryx](https://astryx.atmeta.com/docs/layout-structure).
 
@@ -33,7 +33,7 @@ Referência: [hierarquia e agrupamento no Astryx](https://astryx.atmeta.com/docs
 
 Use os tokens `--ap-canvas`, `--ap-section`, `--ap-surface`, `--ap-text`, `--ap-muted`, `--ap-line` e `--ap-accent` para novas superfícies. As famílias de botão e card usam os preenchimentos, bordas e sombras da mesma folha. No contêiner `data-ap-interface`, `data-ap-theme="sistema"` segue a preferência do dispositivo. Os valores `claro` e `escuro` permitem escolha explícita. Cores funcionais de erro, aprovação, prazos e alertas continuam ligadas a seus estados.
 
-A altura mínima dos controles é 44 px. A ação pressionada, o foco de teclado e o estado de seleção têm tratamentos próprios. O acabamento de vidro pertence aos controles e painéis. Campos de leitura longa usam superfícies contínuas. Movimento reduzido desliga as animações do sistema e transparência reduzida torna os painéis opacos.
+A altura mínima dos controles é 44 px. A ação pressionada, o foco de teclado e o estado de seleção têm tratamentos próprios. O acabamento de vidro pertence aos controles e painéis. Campos de leitura longa usam superfícies contínuas. Movimento reduzido desliga as animações do sistema. A faixa “Energizados por” mantém o deslocamento contínuo em velocidade mais baixa. Transparência reduzida torna os painéis opacos.
 
 A [biblioteca de ícones de área no Figma](https://www.figma.com/design/SKTQ8K0Lr0OMGn0YeXcNX6/?node-id=34-2) reúne as peças de navegação, títulos e cards.
 

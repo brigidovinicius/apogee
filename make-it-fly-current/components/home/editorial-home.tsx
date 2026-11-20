@@ -9,7 +9,7 @@ import { RedBullSupport } from "@/components/site/red-bull-support";
 import { HomeRadar } from "./home-radar";
 import { COMMUNITY_SIGNUP_PATH } from "@/content/community-offer";
 import { publishedResourceAvailability } from "@/lib/members/resource-availability";
-import { availableDeliverables } from "@/components/community/community-deliverables";
+import { CommunityResourceCards } from "@/components/community/community-resource-cards";
 import { HomeStar } from "./home-star";
 import styles from "./journal-home.module.css";
 
@@ -44,25 +44,20 @@ export async function EditorialHome() {
             <Link data-ap-button="secondary" className={styles.heroSecondary} href="#recursos">Ver recursos e eventos</Link>
           </div>
         </div>
-        <HomeStar />
-        <div data-ap-signature="" className={styles.communityWord} lang="en" aria-hidden="true">Building<br />the future.</div>
+        <div className={styles.heroBrand}>
+          <HomeStar />
+          <div data-ap-signature="" className={styles.communityWord} lang="en" aria-hidden="true">Building<br />the future.</div>
+        </div>
       </section>
       <McpConnectionStrip className={styles.integrationStrip} />
 
       <section className={styles.resourceBand} id="recursos" aria-labelledby="home-resources-title">
         <div className={styles.featureLayout}>
-          <div data-ap-reveal="" className={styles.sectionHeading}><h2 data-ap-title="" id="home-resources-title">A comunidade</h2></div>
-          <ul className={styles.resourceList}>
-            {availableDeliverables(resources).map(resource => (
-              <li key={resource.id}>
-                <Link className={styles.resourceLink} href={`/comunidade${resource.href}`} prefetch={false}>
-                  <h3>{resource.label}</h3>
-                  <p>{resource.title}</p>
-                  <span>{resource.fact}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <div data-ap-reveal="" className={styles.sectionHeading}>
+            <h2 data-ap-title="" id="home-resources-title">A comunidade</h2>
+            <Link className={styles.inlineAction} href="/comunidade#participar" prefetch={false}>Eventos presenciais</Link>
+          </div>
+          <CommunityResourceCards resources={resources} destination="home" />
         </div>
       </section>
 

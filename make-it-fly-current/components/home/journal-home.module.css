@@ -7,6 +7,7 @@
   --journal-rule: #dfe5eb;
   --journal-muted: #536172;
   --journal-width: min(calc(100% - 5rem), 1320px);
+  --journal-section-padding: clamp(2.25rem, 4vw, 3.5rem);
   --apogee-paper-soft: #fff;
   color: var(--journal-ink);
   background: var(--journal-paper);
@@ -20,13 +21,12 @@
 .page main :is(section, aside, article, ul, div) { min-width: 0; }
 .intro {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(250px, 1fr) minmax(0, .8fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
   align-items: center;
   gap: 2rem;
   width: var(--journal-width);
-  min-height: 610px;
   margin-inline: auto;
-  padding-block: 5rem;
+  padding-block: clamp(2.5rem, 5vw, 4.75rem);
 }
 .page .intro h1 { max-width: 15ch; margin: 0; font-size: clamp(3rem, 4.7vw, 4.5rem); font-weight: 550; line-height: 1.04; letter-spacing: -.065em; text-wrap: balance; }
 .introActions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 2rem; }
@@ -34,19 +34,19 @@
 .page main a.heroPrimary { color: #fff; background: var(--journal-ink); border-color: var(--journal-ink); }
 .heroPrimary:hover { background: #1e3653 !important; }
 .heroSecondary:hover { background: var(--journal-soft); }
-.communityWord { grid-column: 1 / -1; margin-top: 1rem; text-align: right; font: 400 clamp(64px, 9vw, 130px)/.95 "Apogee Home Signature", Georgia, serif; letter-spacing: -.05em; color: #b9d3ee; }
+.heroBrand { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1fr); align-items: center; gap: .75rem; container-type: inline-size; }
+.communityWord { font: 400 clamp(1.875rem, 10.5cqi, 5.75rem)/.95 "Apogee Home Signature", Georgia, serif; letter-spacing: -.05em; color: #b9d3ee; white-space: nowrap; }
 .integrationStrip { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 1.15rem; padding: .35rem 1.25rem; border-block: 1px solid #d5e1ed; background: #f3f8fc; color: #213c58; font-size: .875rem; }
 .integrationStrip span { padding-block: .45rem; }
 .integrationStrip a { display: inline-flex; align-items: center; min-height: 2.75rem; color: #113d67; font-weight: 650; text-decoration: underline; text-underline-offset: .2em; }
 .integrationStrip a:focus-visible { outline: 2px solid #145587; outline-offset: 4px; }
-.intro:has(+ .integrationStrip) { padding-block-end: clamp(1rem, 2.5vw, 2.5rem); }
 @media (max-width: 480px) {
   .integrationStrip { display: grid; grid-template-columns: auto auto; gap: 0 .35rem; padding: .4rem .5rem .1rem; text-align: center; }
   .integrationStrip span { grid-column: 1 / -1; padding: 0; }
   .integrationStrip a { justify-content: center; padding-inline: .6rem; }
 }
-.starStage { overflow: clip; --light-x: 50%; --light-y: 42%; position: relative; display: grid; place-items: center; height: 390px; isolation: isolate; }
-.starFigure { position: relative; width: min(84%, 290px); aspect-ratio: 703 / 870; filter: drop-shadow(0 16px 20px rgb(7 24 45 / 7%)); transition: filter 500ms ease, transform 650ms ease; }
+.starStage { overflow: clip; --light-x: 50%; --light-y: 42%; position: relative; display: grid; place-items: center; min-height: clamp(11rem, 22vw, 20rem); isolation: isolate; }
+.starFigure { position: relative; width: min(84%, 240px); aspect-ratio: 703 / 870; filter: drop-shadow(0 16px 20px rgb(7 24 45 / 7%)); transition: filter 500ms ease, transform 650ms ease; }
 .starFigure > svg { display: block; width: 100%; height: 100%; color: var(--journal-ink); }
 .starShine { position: absolute; inset: 0; background: radial-gradient(ellipse at var(--light-x) var(--light-y), #fff 0%, #e2f2ff 15%, #87a8cb 32%, #24435f 47%, #07182d 65%); mask: url('/brand/apogee-star.svg') center / contain no-repeat; opacity: .18; transition: opacity 500ms ease; }
 .starHalo { position: absolute; z-index: -1; width: 150%; height: 110%; border-radius: 50%; background: radial-gradient(ellipse at var(--light-x) var(--light-y), rgb(161 208 249 / 55%), rgb(213 221 255 / 22%) 32%, transparent 65%); opacity: 0; filter: blur(20px); transition: opacity 700ms ease; pointer-events: none; }
@@ -60,7 +60,8 @@
   .starStage:hover .starCaption { opacity: 1; transform: none; }
 }
 .supportStrip { width: var(--journal-width); margin: 0 auto; }
-.radarSection { width: var(--journal-width); margin-inline: auto; padding-block: 5rem 4rem; }
+.supportStrip > aside { padding-inline: 0; }
+.radarSection { width: var(--journal-width); margin-inline: auto; padding-block: var(--journal-section-padding); }
 .sectionHeading { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-bottom: 2rem; }
 .page .sectionHeading h2 { margin: 0; font-size: clamp(1.75rem, 2.6vw, 2.375rem); font-weight: 550; line-height: 1.1; letter-spacing: -.05em; }
 .sectionHeading p { margin: .75rem 0 0; color: var(--journal-muted); font-size: .9375rem; }
@@ -101,37 +102,9 @@
 .catalogueMessage { padding: 1.5rem; border: 1px solid var(--journal-rule); border-radius: .5rem; background: var(--journal-soft); font-size: .9375rem; }
 .catalogueMessage p { margin: 0 0 .5rem; }
 .catalogueMessage a { display: inline-flex; align-items: center; min-height: 44px; }
-.resourceBand { padding-block: clamp(2.5rem, 5vw, 4.5rem); background: var(--journal-soft); scroll-margin-top: 5rem; }
-.resourceList { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--journal-rule); }
-.resourceLink {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(9rem, .8fr);
-  gap: .5rem 1.5rem;
-  align-items: center;
-  min-block-size: 4.5rem;
-  padding: .875rem 1rem;
-  border-top: 1px solid var(--journal-rule);
-  color: var(--journal-ink);
-  text-decoration: none;
-}
-.resourceLink h3 {
-  margin: 0;
-  color: var(--ap-accent);
-  font-size: 1.125rem;
-  font-weight: 600;
-  line-height: 1.3;
-  text-decoration: underline;
-  text-underline-offset: .2em;
-  text-decoration-thickness: 1px;
-}
-.resourceLink p { margin: 0; color: var(--journal-muted); font-size: .9375rem; }
-.resourceLink span { color: var(--journal-muted); font-size: .875rem; }
-.resourceLink:is(:hover, :focus-visible) { background: var(--ap-surface); }
-
-@media (max-width: 42rem) {
-  .resourceLink { grid-template-columns: 1fr; gap: .25rem; padding: .875rem .25rem; }
-}
-.featureBand { border-block: 1px solid var(--journal-rule); background: var(--journal-soft); padding-block: 4rem; }
+.resourceBand { padding-block: var(--journal-section-padding); background: var(--journal-soft); scroll-margin-top: 5rem; }
+.resourceBand .sectionHeading { flex-flow: row wrap; align-items: center; gap: .25rem 1rem; }
+.featureBand { border-block: 1px solid var(--journal-rule); background: var(--journal-soft); padding-block: var(--journal-section-padding); }
 .featureLayout { width: var(--journal-width); margin-inline: auto; }
 .entryGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; margin: 0; padding: 0; list-style: none; }
 .entry > article { display: grid; grid-template-columns: 42% minmax(0, 1fr); height: 100%; overflow: hidden; border: 1px solid var(--journal-rule); border-radius: .625rem; background: #fff; }
@@ -143,7 +116,7 @@
 .page .entryTitle { margin: 0; font-size: 1.5rem; font-weight: 550; line-height: 1.15; letter-spacing: -.045em; }
 .entrySummary { margin: 1rem 0; color: var(--journal-muted); font-size: .875rem; }
 .entryAction { margin-top: auto; font-size: .8125rem; }
-.community { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; gap: 5rem; width: var(--journal-width); margin-inline: auto; padding-block: 5rem; }
+.community { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; gap: clamp(2rem, 5vw, 4rem); width: var(--journal-width); margin-inline: auto; padding-block: var(--journal-section-padding); }
 .communityCopy > p:first-child { margin: 0 0 1.25rem; font-size: .8125rem; }
 .page .communityCopy h2 { margin: 0; font-size: clamp(2.5rem, 4vw, 3.5rem); font-weight: 550; line-height: 1.05; letter-spacing: -.055em; }
 .communityCopy > p { max-width: 37ch; margin: 1.25rem 0; color: var(--journal-muted); }
@@ -157,8 +130,7 @@
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 @media (max-width: 1100px) {
   .page { --journal-width: calc(100% - 3rem); }
-  .intro { grid-template-columns: 1.15fr 1fr; gap: 1.5rem; padding-block: 3.5rem; min-height: 540px; }
-  .starStage { height: 340px; }
+  .intro { gap: 1.5rem; }
   .starHalo, .starBeam { width: 100%; }
   .radarTrack { grid-auto-columns: calc((100% - 2rem) / 2.45); }
   .entryGrid { gap: 1.25rem; }
@@ -168,17 +140,16 @@
 }
 @media (max-width: 760px) {
   .page { --journal-width: calc(100% - 2.5rem); }
-  .intro { grid-template-columns: 1fr; gap: 1.25rem; padding-block: 3rem 2rem; min-height: 0; }
+  .intro { grid-template-columns: 1fr; gap: 1.5rem; padding-block: 2.5rem 1.5rem; }
   .page .intro h1 { max-width: 16ch; font-size: clamp(2.875rem, 10.5vw, 4rem); }
   .introActions { margin-top: 1.5rem; gap: .5rem; }
   .heroPrimary, .heroSecondary { padding-inline: .875rem; font-size: .75rem; }
-  .starStage { height: 280px; margin-top: .5rem; }
-  .starFigure { width: 190px; }
+  .heroBrand { width: min(100%, 26rem); }
+  .starStage { min-height: 0; }
+  .starFigure { width: min(84%, 145px); }
   .starHalo { width: 100%; opacity: .35; }
   .starShine { opacity: .35; }
   .starBeam { width: 100%; }
-  .communityWord { margin-top: 1.75rem; font-size: 76px; }
-  .radarSection { padding-block: 3rem; }
   .sectionHeading { align-items: start; flex-direction: column; gap: .75rem; margin-bottom: 1.25rem; }
   .page .sectionHeading h2 { max-width: 16ch; font-size: 2rem; }
   .sectionHeading p { max-width: 30ch; font-size: .875rem; }
@@ -188,12 +159,11 @@
   .carouselControls { margin-left: auto; }
   .radarTrack { grid-auto-columns: 85%; gap: .875rem; }
   .opportunity article { min-height: 350px; padding: 1.25rem; }
-  .featureBand { padding-block: 3rem; }
   .entryGrid { grid-template-columns: 1fr; gap: 1.5rem; }
   .entryPicture { height: 210px; }
   .entryBody { padding: 1.5rem; }
   .entryMeta { margin-bottom: 1rem; }
-  .community { grid-template-columns: 1fr; gap: 2rem; padding-block: 3rem; }
+  .community { grid-template-columns: 1fr; }
   .experience { padding: 1.5rem; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -202,4 +172,3 @@
 }
 
 .introLead { max-width:43ch; color:var(--journal-muted); margin:1rem 0 0; line-height:1.55; }
-@media(min-width:761px) { .intro { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); } }

@@ -1,35 +1,34 @@
 .support {
-  --slot: clamp(7rem, 13vw, 10.5rem);
   display: grid;
-  grid-template-columns: auto minmax(0, max-content);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  justify-content: center;
-  gap: clamp(.75rem, 2.5vw, 2rem);
-  padding: 1.1rem clamp(.75rem, 3vw, 2rem);
+  gap: clamp(.75rem, 2.2vw, 2rem);
+  max-inline-size: 1320px;
+  margin-inline: auto;
+  padding: .65rem clamp(.75rem, 3vw, 2rem);
   border-block: 1px solid var(--ap-line, #d8e1eb);
   background: var(--ap-canvas, white);
   color: var(--ap-text, #07182d);
 }
 .support .heading {
   margin: 0;
-  font: 400 clamp(1.5rem, 2.7vw, 2.55rem)/1.15 var(--ap-display, Georgia, serif);
+  font: 400 clamp(1.375rem, 2.3vw, 2.15rem)/1.15 var(--ap-display, Georgia, serif);
   letter-spacing: -.035em;
   white-space: nowrap;
 }
 .heading em { font-family: Georgia, serif; font-weight: 400; }
 .window {
-  width: 100%;
-  max-width: calc(4 * var(--slot));
+  container-type: inline-size;
   min-width: 0;
   overflow: hidden;
-  border-radius: .55rem;
-  background: white;
-  box-shadow: inset 0 0 0 1px #17253313;
+  background: #f4f7fa;
+  mask-image: linear-gradient(to right, transparent, #000 1.25rem, #000 calc(100% - 1.25rem), transparent);
 }
-.belt { display: flex; width: max-content; animation: sponsorPass 22s linear infinite; }
+.belt { display: flex; width: max-content; animation: sponsorPass 18s linear infinite; }
 .group { display: flex; }
-.slot { width: var(--slot); height: 4.75rem; display: grid; place-items: center; }
-.slot img { display: block; width: auto; max-width: 84%; height: 48px; object-fit: contain; }
+/* Each group has six slots and must cover the visible track at every width. */
+.slot { width: max(6.5rem, calc(100cqi / 6)); height: 4.5rem; display: grid; place-items: center; }
+.slot img { display: block; width: auto; max-width: 88%; height: 40px; object-fit: contain; }
 .slot .can {
   box-sizing: content-box;
   height: 3.5rem;
@@ -39,14 +38,11 @@
 }
 @keyframes sponsorPass { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 @media (max-width: 40rem) {
-  .support { --slot: clamp(7rem, 25vw, 10.5rem); grid-template-columns: minmax(0, 1fr); gap: .45rem; }
-  .window { max-width: 100%; }
-  .slot { height: 4.25rem; }
+  .support { grid-template-columns: minmax(0, 1fr); gap: .35rem; }
+  .slot { height: 4.125rem; }
   .slot .can { height: 3.25rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .belt { animation: none; width: auto; justify-content: center; }
-  .group[aria-hidden], .slot[aria-hidden] { display: none; }
-  .group { max-width: 100%; }
-  .slot { min-width: 0; flex-shrink: 1; }
+  /* Keep the requested sponsor loop visible at a gentler pace than the default. */
+  .support .belt { animation: sponsorPass 42s linear infinite !important; }
 }
