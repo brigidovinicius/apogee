@@ -31,6 +31,9 @@ jobs:
           cache: npm
           cache-dependency-path: ${{ matrix.app }}/package-lock.json
       - run: npm ci --no-fund --no-audit
+      - name: Workshop vouchers with concurrent claims and intercepted email
+        if: matrix.app == 'make-it-fly-current'
+        run: PG_BIN="$(pg_config --bindir)" node --test --test-concurrency=1 tests/workshop-voucher.integration.mjs
       - run: npm test
       - name: Shared Radar budget and isolated AI worker without provider calls
         if: matrix.app == 'radar-academico'
@@ -57,9 +60,6 @@ jobs:
       - name: Member benefits workspace PostgreSQL integration
         if: matrix.app == 'make-it-fly-current'
         run: PG_BIN="$(pg_config --bindir)" npm run test:member-benefits
-      - name: Workshop vouchers with concurrent claims and intercepted email
-        if: matrix.app == 'make-it-fly-current'
-        run: PG_BIN="$(pg_config --bindir)" node --test --test-concurrency=1 tests/workshop-voucher.integration.mjs
       - name: Member signup, verification and recovery with intercepted email
         if: matrix.app == 'make-it-fly-current'
         run: PG_BIN="$(pg_config --bindir)" npm run test:member-auth-journey
