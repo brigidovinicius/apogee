@@ -4,7 +4,7 @@
 
 ## Preparação
 
-1. Após a aprovação da publicação, valide a revisão do serviço web, confira o histórico do banco de membros e aplique a migração `0025_workshop_voucher`. A migração cria as tabelas do lote, dos links e das reservas sem gravar dados reais.
+1. Após a aprovação da publicação, valide a revisão do serviço web, confira o histórico do banco de membros e aplique a migração `0025_workshop_voucher`. A ferramenta `node scripts/workshop-voucher-migrate.mjs` confere o histórico no container. Depois de um backup verificável, a opção `--apply` aplica somente esta migração. As tabelas começam vazias e o lote fica em preparação.
 2. Configure `WORKSHOP_VOUCHER_KEY` no ambiente privado do serviço web com uma chave aleatória de 32 bytes em hexadecimal. Guarde-a com os segredos da aplicação e preserve a mesma chave enquanto houver reservas. A chave ausente mantém a página desabilitada.
 3. Confira no painel `/admin/beneficios/voucher-openai` o funcionamento do banco e a configuração do e-mail da Apogee. Use somente dados fictícios em um banco isolado para ensaiar o fluxo.
 4. Quando receber a tabela real, carregue os 50 links no painel. Cole uma coluna com um link por linha ou envie um CSV com o cabeçalho `Link`. O painel exige 50 links distintos, com HTTPS da OpenAI ou do ChatGPT, e armazena os destinos criptografados. A carga por si só deixa o lote em preparação.

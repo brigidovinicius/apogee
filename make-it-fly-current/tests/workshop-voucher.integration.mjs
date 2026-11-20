@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { migrateCommunityAccess } from "../scripts/community-access-migrate.mjs";
+import { migrateMemberToolbox } from "../scripts/member-toolbox-migrate.mjs";
+import { migrateMemberDeliverables } from "../scripts/member-deliverables-migrate.mjs";
+import { migrateMemberBenefits } from "../scripts/member-benefits-migrate.mjs";
+import { migrateMonthlyDetails } from "../scripts/monthly-detail-migrate.mjs";
+import { migrateWorkshopVouchers } from "../scripts/workshop-voucher-migrate.mjs";
 import { test } from "node:test";
 import { nativeCommunityDatabase } from "./helpers/community-native-db.mjs";
 import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
@@ -67,8 +72,16 @@ test("voucher destinations are encrypted per slot and disclosed only by an autho
 test("one batch and one link per person, including concurrent claims and retryable notices", async t => {
   const db = await nativeCommunityDatabase();
   t.after(db.close);
-  const migration = await readFile(new URL("../drizzle/0025_workshop_voucher.sql", import.meta.url), "utf8");
-  await db.sql.unsafe(migration);
+  const options = { expectedRole: "apogee_local" };
+  for (const migrate of [migrateCommunityAccess, migrateMemberToolbox, migrateMemberDeliverables, migrateMemberBenefits, migrateMonthlyDetails]) {
+    await migrate(db.sql, { ...options, apply: true });
+  }
+  assert.deepEqual(await migrateWorkshopVouchers(db.sql, options), {
+    migration: "0025_workshop_voucher", changed: false, pending: true,
+  });
+  const empty = { migration: "0025_workshop_voucher", pending: false, released: false, notice_started: false, stock: 0, assignments: 0 };
+  assert.deepEqual(await migrateWorkshopVouchers(db.sql, { ...options, apply: true }), { ...empty, changed: true });
+  assert.deepEqual(await migrateWorkshopVouchers(db.sql, { ...options, apply: true }), { ...empty, changed: false });
   const accounts = [
     ["admin", "admin@example.test", true, "admin"], ["same", emails[0], true, "member"],
     ["free", emails[1], false, "member"], ["other", "other@example.test", true, "member"],
