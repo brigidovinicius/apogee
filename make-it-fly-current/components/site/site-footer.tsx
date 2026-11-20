@@ -17,7 +17,7 @@ export function SiteFooter({ editorial = false, description = "Comunidade e expe
       <div className={styles.inner}>
         <div className={styles.main}>
           <div className={styles.brand}>
-            <Link href="/" prefetch={false} aria-label="Apogee — página inicial">
+            <Link href="/" prefetch={false} aria-label="Apogee - página inicial">
               <Image src="/brand/apogee-logo-white.svg" alt="" width={1595} height={986} sizes="112px" />
             </Link>
             <p>{description}</p>
