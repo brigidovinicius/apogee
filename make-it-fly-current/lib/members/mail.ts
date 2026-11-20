@@ -38,3 +38,22 @@ export async function sendMemberMail(message: { to: string; subject: string; tex
     throw new Error("Envio não confirmado pelo provedor.");
   }
 }
+
+export async function sendMemberMailBatch(messages: { to: string; subject: string; text: string }[], key: string): Promise<void> {
+  if (!memberMailAvailable() || messages.length < 1 || messages.length > 100) throw new Error("Envio de e-mail indisponível.");
+  const response = await fetch("https://api.resend.com/emails/batch", {
+    method: "POST", redirect: "error", cache: "no-store",
+    headers: { Authorization: `Bearer ${process.env.MEMBERS_RESEND_API_KEY}`, "Content-Type": "application/json",
+      "Idempotency-Key": `members-${key}` },
+    body: JSON.stringify(messages.map(({ to, subject, text }) => ({
+      from: `Apogee <${process.env.MEMBERS_RESEND_FROM}>`, to: [to], subject, text,
+    }))),
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) throw new Error("Envio do lote não confirmado pelo provedor.");
+  const body = await response.json();
+  if (!Array.isArray(body?.data) || body.data.length !== messages.length ||
+      !body.data.every((item: { id?: unknown }) => typeof item?.id === "string" && item.id)) {
+    throw new Error("Envio do lote não confirmado pelo provedor.");
+  }
+}

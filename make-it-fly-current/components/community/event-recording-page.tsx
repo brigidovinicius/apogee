@@ -1,3 +1,5 @@
+import { VOUCHER_PATH } from "@/lib/workshop-voucher/input";
+import { voucherConfigured } from "@/lib/workshop-voucher/secrets";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Bell, CirclePlay, Mail, Users } from "lucide-react";

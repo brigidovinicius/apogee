@@ -1,0 +1,33 @@
+.form {
+  display: grid;
+  gap: .75rem;
+  max-width: 44rem;
+}
+
+.form p {
+  margin: 0;
+}
+
+.form label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .5rem;
+}
+
+.form :is(input:not([type="checkbox"]), textarea) {
+  min-width: 0;
+  min-height: 44px;
+  width: 100%;
+  padding: .6rem .8rem;
+  border: 1px solid var(--ap-line, #527196);
+  border-radius: .5rem;
+  background: var(--ap-surface, Canvas);
+  color: var(--ap-text, CanvasText);
+  font: inherit;
+}
+
+.form :is(input, textarea, button):focus-visible {
+  outline: 2px solid var(--ap-accent, Highlight);
+  outline-offset: 2px;
+}

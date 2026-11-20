@@ -1,3 +1,4 @@
+import { WorkshopVoucherCard } from "@/components/workshop-voucher/card";
 import Link from "next/link";
 import { Gift, ArrowRight, Search, Bookmark, Clock3 } from "lucide-react";
 import { memberBenefitWorkspace } from "@/lib/benefits/store";
@@ -31,6 +32,7 @@ export async function BenefitsWorkspace({ view = "catalogue", params = {} }: { v
   const remaining = ordered.slice(featured.length);
   return <MemberWorkspace member={member} current="beneficios"><div data-ap-benefits="catalogue" className={`${shared.container} ${styles.root}`}>
     <ResourceHeader area="beneficios" showRelated={resources?.ferramentas === true} />
+    {view === "catalogue" && <WorkshopVoucherCard />}
     {!access.allowed ? <AnnualAccessNotice title="Benefícios" next={BENEFIT_PATHS[view]} /> : <>
       <nav aria-label="Navegação de benefícios" className={navigation.tabs}>{(Object.keys(BENEFIT_PATHS) as BenefitView[]).map(key => { const Icon = icons[key]; return <Link href={BENEFIT_PATHS[key]} key={key} aria-current={view === key ? "page" : undefined}><Icon size={17} aria-hidden="true" />{titles[key]} {key !== "catalogue" && <span>{totals[key]}</span>}</Link>; })}</nav>
       {view !== "history" ? <section aria-labelledby="benefit-offers-title">
