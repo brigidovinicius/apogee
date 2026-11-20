@@ -171,7 +171,7 @@ test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surf
     "app/api/admin/loja/drops/exportar/route.ts", "app/api/admin/posts/[id]/media/route.ts", "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/auth/[...all]/route.ts", "app/api/checkout/route.ts",
     "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts", "app/api/loja/novidades/route.ts",
     "app/api/integracoes/google-agenda/callback/route.ts", "app/api/internal/beneficios/hostgator/route.ts", "app/api/internal/google-agenda/sync/route.ts",
-    "app/api/members/invitations/route.ts", "app/api/members/verification/route.ts",
+    "app/api/marcas/route.ts", "app/api/members/invitations/route.ts", "app/api/members/verification/route.ts",
     "app/api/membros/avatar/[id]/route.ts", "app/api/membros/avatar/route.ts", "app/api/radar/alerts/route.ts",
     "app/api/radar/checkout/route.ts", "app/api/radar/verify-email/route.ts", "app/api/stripe/webhook/route.ts",
     "app/blog/[slug]/page.tsx", "app/blog/layout.tsx", "app/blog/media/[photo]/route.ts", "app/blog/page.tsx", "app/galeria/fotos/[photo]/route.ts", "app/galeria/page.tsx",

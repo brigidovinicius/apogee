@@ -76,12 +76,12 @@ test("public catalogue outages keep the catalogue link without inventing entries
 
 
 test("both opening Radar calls to action navigate to the opportunities catalogue", async () => {
-  const { SiteHeader } = await load("components/site/site-header.tsx", {
+  const { SiteHeader } = opportunityLoader({
     "@/components/members/account-menu": { AccountMenu: ({ fallback }) => fallback, CommunityEntryLink: () => createElement("a", { href: "/comunidade#planos" }, "Entrar") },
     "./site-mobile-navigation": { SiteMobileNavigation: () => null },
     "./mcp-connect-link": { McpConnectLink: () => null },
     "./site-shell.module.css": { __esModule: true, default: {} },
-  });
+  })("components/site/site-header.tsx");
   const { createScrollProgress } = await load("components/home/earth-radar/scroll-progress.ts");
   const { EarthRadarPreview } = await load("components/home/earth-radar/earth-radar-preview.tsx", {
     "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return createElement("a", props, children); } },
@@ -93,7 +93,7 @@ test("both opening Radar calls to action navigate to the opportunities catalogue
     "./earth-radar.module.css": { __esModule: true, default: {} },
   });
   const html = renderToStaticMarkup(createElement(EarthRadarPreview, { radar: null }));
-  assert.match(html, /href="\/oportunidades">Radar<\/a>/);
+  assert.match(html, /href="\/oportunidades"><span [^>]*data-ap-art="radar"[^>]*><\/span>Radar<\/a>/);
   assert.match(html, /href="\/oportunidades">Explorar o Radar<\/a>/);
   assert.doesNotMatch(html, /href="#radar"/);
 });
