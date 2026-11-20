@@ -2,7 +2,7 @@ import Image from "next/image";
 import styles from "./red-bull-support.module.css";
 
 const partners = [
-  { name: "Red Bull", src: "/partners/red-bull-can-white.png", width: 1726, height: 4918, size: "21px", className: styles.can },
+  { name: "Red Bull", src: "/partners/red-bull-can-white.png", width: 1726, height: 4918, size: "(max-width: 640px) 24px, 27px", className: styles.can },
   { name: "Impact Hub Floripa", src: "/partners/impact-hub-floripa.webp", width: 936, height: 434, size: "90px" },
 ];
 
