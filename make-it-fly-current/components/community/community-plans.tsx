@@ -21,8 +21,8 @@ export function CommunityPlans({ preview = false, signedIn = false, subscribed =
           <p className={styles.note}>Renovação automática. Cancele antes da próxima cobrança e mantenha o período pago.</p>
         </div>
         {!available && !preview && !subscribed && <p className={styles.note}>A contratação anual está temporariamente indisponível.</p>}
-        <div className={styles.actions}><CommunityCheckoutButton preview={preview} subscribed={subscribed} next={next} /></div>
-        {!subscribed && (available || preview) && <p className={styles.note}>Checkout seguro. Cadastro após o pagamento.</p>}
+        <div className={styles.actions}><CommunityCheckoutButton signedIn={signedIn} preview={preview} subscribed={subscribed} next={next} /></div>
+        {!subscribed && (available || preview) && <p className={styles.note}>Pagamento seguro com a Stripe.</p>}
         <ul>
           {resources?.ferramentas && <li>Caixa de Ferramentas organizada por tarefa.</li>}
           {resources?.trilha && <li>Trilha inicial de IA: três atividades práticas.</li>}

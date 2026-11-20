@@ -17,7 +17,7 @@ export async function POST(request:Request) {
     if(!member) throw new BillingError(401,"Entre na sua conta para continuar.");
     const {livemode}=communityServiceConfig();
     if(!await consumeRateLimit(`annual-cancel:${member.id}`,10,3600)) throw new BillingError(429,"Aguarde antes de tentar novamente.");
-    const rows=await getSql()`select s.id,s.customer_id from community_subscription s join (select user_id,customer_id,livemode from community_customer union select user_id,customer_id,livemode from community_guest_checkout where user_id is not null) c
+    const rows=await getSql()`select s.id,s.customer_id from community_subscription s join community_customer c
       on c.user_id=s.user_id and c.customer_id=s.customer_id and c.livemode=s.livemode
       where s.user_id=${member.id} and s.livemode=${livemode} and s.status not in ('canceled','incomplete_expired') order by s.updated_at desc`;
     if(rows.length !== 1) throw new BillingError(409,"Confira a situação da sua assinatura antes de cancelar.");

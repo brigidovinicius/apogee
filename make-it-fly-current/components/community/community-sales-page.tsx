@@ -12,7 +12,7 @@ import styles from "./community-editorial.module.css";
 
 import type { PublishedResources } from "./community-deliverables";
 
-export function CommunitySalesPage({ preview = false, signedIn = false, subscribed = false, next, hasBenefits, resources, checkoutError, cancelled = false }: { preview?: boolean; signedIn?: boolean; subscribed?: boolean; next?: string; hasBenefits?: boolean | null; resources: PublishedResources; checkoutError?: string; cancelled?: boolean }) {
+export function CommunitySalesPage({ preview = false, signedIn = false, subscribed = false, next, hasBenefits, resources }: { preview?: boolean; signedIn?: boolean; subscribed?: boolean; next?: string; hasBenefits?: boolean | null; resources: PublishedResources }) {
   return <ApogeeInterface editorial area="comunidade"><EditorialPageShell current="community" className={styles.page}>
     <main id="experiencia" tabIndex={-1} data-community-page>
       <section id="inicio" className={[styles.wrap, styles.section, styles.intro].join(" ")} aria-labelledby="community-title">
@@ -22,12 +22,12 @@ export function CommunitySalesPage({ preview = false, signedIn = false, subscrib
           <p className={styles.lead}>{resources.trilha && resources.ferramentas ? "Ferramentas selecionadas, prática com IA e oportunidades para o seu próximo passo." : "Explore oportunidades, consulte benefícios e converse com outros membros sobre seus projetos."}</p>
         </div>
         <div className={styles.actions}>
-          <CommunityCheckoutButton next={next} preview={preview} subscribed={subscribed} />
+          <CommunityCheckoutButton signedIn={signedIn} next={next} preview={preview} subscribed={subscribed} />
           <Link className={styles.textLink} href="#planos">Ver o que está incluído</Link>
           <div className={styles.joinAction}><CommunityJoinButton next={next} preview={preview} signedIn={signedIn} secondary /></div>
         </div>
         <p className={styles.accessNote}>R$ 1.438,80 por ano · equivalente a R$ 119,90/mês. Cobrança integral anual, com renovação automática.</p>
-        <p className={styles.accessNote}>Checkout seguro. Crie sua conta após o pagamento.</p>
+        <p className={styles.accessNote}>Pagamento seguro com a Stripe.</p>
         <div data-ap-signature="" className={styles.communityWord} aria-hidden="true">Building<br />the future.</div>
       </section>
       <section id="comunidade" className={[styles.section, styles.communityBand].join(" ")} aria-labelledby="inside-title">
@@ -41,10 +41,7 @@ export function CommunitySalesPage({ preview = false, signedIn = false, subscrib
       </section>
       <section id="planos" tabIndex={-1} className={[styles.wrap, styles.section, styles.plansTarget].join(" ")} aria-labelledby="plans-title">
         <div data-ap-reveal="" className={[styles.headingRow, styles.plansHeading].join(" ")}><h2 id="plans-title">Escolha seu acesso</h2></div>
-        {checkoutError && <p role="alert" className={styles.sectionCopy}>{checkoutError === "409" ? "Você já tem uma assinatura ou um pagamento em andamento." : checkoutError === "429" ? "Muitas tentativas. Aguarde alguns minutos e tente novamente." : "Não foi possível abrir o checkout. Tente novamente em instantes."} <Link href="/membros/assinatura">Ver minha assinatura</Link></p>}
-        {cancelled && <p role="status" className={styles.accessNote}>Você voltou do checkout. Pode retomar a compra quando quiser.</p>}
         <div className={styles.plansFrame}><CommunityPlans resources={resources} preview={preview} signedIn={signedIn} subscribed={subscribed} next={next} /></div>
-        <p className={styles.accessNote}>Já pagou? <Link href="/comunidade/ativar">Ative sua assinatura</Link>.</p>
       </section>
       <RedBullSupport />
       <section id="radar" className={[styles.wrap, styles.section, styles.headingRow].join(" ")} aria-labelledby="radar-title"><div><p className={styles.eyebrow}>Apogee Radar</p><h2 id="radar-title">Encontre seu próximo passo.</h2><p className={styles.sectionCopy}>{RADAR_FREE_NOTE}</p><div className={styles.actions}><Link data-ap-button="primary" className={styles.navyButton} href="/oportunidades" prefetch={false}>Explorar o Radar</Link></div><p className={styles.accessNote}>Os acessos anteriores ao Radar continuam válidos.</p></div><div className={styles.radarFact}><strong>10</strong><p>consultas gratuitas por mês</p><span>Explore o catálogo sem usar a sua cota.</span></div></section>

@@ -50,7 +50,7 @@ export async function reconcileAnnualMembership(id: string) {
   if (!/^sub_[A-Za-z0-9]+$/.test(id)) throw Error("Assinatura inválida.");
   const config = communityServiceConfig();
   const [local] = await getSql()`select s.customer_id from community_subscription s
-    join (select user_id,customer_id,livemode from community_customer union select user_id,customer_id,livemode from community_guest_checkout where user_id is not null) c on c.user_id=s.user_id and c.livemode=s.livemode and c.customer_id=s.customer_id
+    join community_customer c on c.user_id=s.user_id and c.livemode=s.livemode and c.customer_id=s.customer_id
     where s.id=${id} and s.livemode=${config.livemode}`;
   if (!local) throw Error("Assinatura vinculada não encontrada.");
   const stripe = stripeClient(), sub = await stripe.subscriptions.retrieve(id);

@@ -195,8 +195,6 @@ test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surf
     "app/api/comunidade/assinatura/cancelar/route.ts",
     "app/api/comunidade/assinatura/checkout/route.ts",
     "app/api/comunidade/assinatura/portal/route.ts",
-    "app/api/comunidade/assinatura/iniciar/route.ts", "app/api/comunidade/assinatura/ativar/route.ts", "app/api/comunidade/assinatura/retorno/route.ts",
-    "app/comunidade/ativar/page.tsx", "app/membros/ativar-assinatura/page.tsx",
   ].sort());
   for (const path of ["pages", "src/pages", "app/(publicado)/page.tsx", "app/(publicado)/layout.tsx", "app/(teste)/teste-terra/page.tsx", "app/(teste)/layout.tsx"]) {
     assert.equal(existsSync(new URL(path, root)), false, `${path} must not expose another page`);

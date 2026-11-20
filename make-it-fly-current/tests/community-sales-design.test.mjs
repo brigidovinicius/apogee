@@ -40,9 +40,10 @@ test("sales layout preserves the preview and safe return-destination contract", 
 test("annual sales link is enabled only by the commercial switch and never by preview", () => {
   const next = "/membros/ferramentas?categoria=video";
   const active = render({ next }, true);
-  assert.ok(active.includes(`/api/comunidade/assinatura/iniciar?next=${encodeURIComponent(next)}`));
-  assert.match(active, /method="post"/);
-  assert.doesNotMatch(active, /href="\/membros\/assinatura/);
+  assert.ok(active.includes(`href="/membros/assinatura?next=${encodeURIComponent(next)}"`));
+  const signedIn = render({ next, signedIn: true }, true);
+  assert.ok(signedIn.includes(`action="/api/comunidade/assinatura/checkout?next=${encodeURIComponent(next)}"`));
+  assert.match(signedIn, /method="post"/);
   assert.match(active, /Assinar agora/);
   assert.match(active, /R\$ 1\.438,80/);
   assert.match(active, /Pagamento integral anual/);

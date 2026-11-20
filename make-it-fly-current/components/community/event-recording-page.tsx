@@ -41,7 +41,7 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
           </a>
           {voucherConfigured() && <p>
             <Link href={VOUCHER_PATH} prefetch={false} className={styles.subtleLink}>
-              Acessar meu voucher na Apogee <ArrowUpRight size={16} aria-hidden="true" />
+              Acessar meu voucher na Apogee
             </Link>
           </p>}
         </div>

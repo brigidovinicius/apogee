@@ -18,10 +18,7 @@ export async function POST(request:Request) {
     const config=communityServiceConfig(),portal=process.env.STRIPE_COMMUNITY_PORTAL_CONFIGURATION_ID ?? "";
     if(!/^bpc_[A-Za-z0-9]+$/.test(portal)) throw new BillingError(503,"Gestão da assinatura temporariamente indisponível.");
     if(!await consumeRateLimit(`annual-portal:${member.id}`,10,3600)) throw new BillingError(429,"Aguarde antes de tentar novamente.");
-    const [owner]=await getSql()`select customer_id from (
-      select customer_id,updated_at from community_subscription where user_id=${member.id} and livemode=${config.livemode}
-      union all select customer_id,null::timestamptz from community_customer where user_id=${member.id} and livemode=${config.livemode}
-    ) owned order by updated_at desc nulls last limit 1`;
+    const [owner]=await getSql()`select customer_id from community_customer where user_id=${member.id} and livemode=${config.livemode}`;
     if(!owner) throw new BillingError(404,"Assinatura não encontrada.");
     const stripe=stripeClient();
     const configuration=await stripe.billingPortal.configurations.retrieve(portal);
