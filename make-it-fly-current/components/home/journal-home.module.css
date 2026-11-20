@@ -77,7 +77,15 @@
 .carouselControls button:hover:enabled { background: var(--journal-ink); color: #fff; border-color: var(--journal-ink); }
 .carouselControls button:disabled { color: #a6b0bd; cursor: default; background: #fafbfc; }
 .radarTrack { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 3rem) / 3.35); gap: 1rem; margin: 0 -5px; padding: 5px 5px 1rem; list-style: none; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: 5px; scrollbar-width: thin; scrollbar-color: #bcc9d6 transparent; }
-.opportunity { min-width: 0; scroll-snap-align: start; border: 1px solid var(--journal-rule); border-radius: .625rem; background: #fff; }
+/* Event cards retain the paper and ink of the editorial home. */
+.opportunity {
+  color-scheme: light;
+  --journal-ink: #07182d;
+  --journal-soft: #f7f9fb;
+  --journal-rule: #dfe5eb;
+  --journal-muted: #536172;
+  color: var(--journal-ink);
+  min-width: 0; scroll-snap-align: start; border: 1px solid var(--journal-rule); border-radius: .625rem; background: #fff; }
 .opportunity article { display: flex; flex-direction: column; min-height: 350px; height: 100%; padding: 1.5rem; }
 .opportunity:hover { border-color: #93a8be; }
 .opportunityTop { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; color: var(--journal-muted); font-size: .75rem; }

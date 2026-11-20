@@ -35,7 +35,7 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
   const noun = skills ? "skill" : "ferramenta";
   const sectionPath = skills ? skillsPath : toolboxPath;
   const filtered = Boolean(query || (selected && !skills));
-  return <MemberWorkspace member={member} current="ferramentas"><div className={memberStyles.container}>
+  return <MemberWorkspace member={member} current="ferramentas"><div data-ap-toolbox="" className={`${memberStyles.container} ${styles.catalogue}`}>
     <ResourceHeader area="ferramentas" />
     {!access.allowed ? <LockedMemberArea kind="ferramentas" next={toolboxReturnPath(selected)} /> : <>
       <nav className={navigation.tabs} aria-label="Seções da Caixa de ferramentas">
@@ -47,7 +47,7 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
         {skills ? <input type="hidden" name="categoria" value={skillsCategory} /> : <label>Categoria<select name="categoria" defaultValue={selected ?? ""}>
           <option value="">Todas as categorias</option>{toolCategories.map(c => <option key={c.slug} value={c.slug}>{c.name} ({c.count})</option>)}
         </select></label>}
-        <button type="submit">Buscar</button>
+        <button data-ap-button="primary" type="submit">Buscar</button>
         {filtered && matches.length > 0 && <Link href={sectionPath}>Limpar filtros</Link>}
       </form>}
       {matches.length > 0 ? <>

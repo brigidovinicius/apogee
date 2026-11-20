@@ -17,7 +17,7 @@ export async function BenefitPreviewCatalogue({ params, userId }: { params: Bene
     userId ? monthlyDetailState(userId, "beneficios") : null,
   ]);
 
-  return <div className={`${shared.container} ${styles.root}`} data-public-catalogue={!userId || undefined}>
+  return <div data-ap-benefits="preview" className={`${shared.container} ${styles.root}`} data-public-catalogue={!userId || undefined}>
     <header className={styles.header}><h1>Benefícios</h1><p>Explore as ofertas e use sua conta gratuita para consultar até 10 condições de oferta por mês.</p></header>
     {quota ? <MonthlyQuota quota={quota} area="Benefícios" next={listHref} /> : <p><Link href={`/membros/cadastro?next=${encodeURIComponent(listHref)}`} prefetch={false}>Criar conta gratuita</Link> para consultar os detalhes.</p>}
     {catalogue ? <section aria-labelledby="preview-benefit-heading">

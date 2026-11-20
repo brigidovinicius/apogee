@@ -55,7 +55,7 @@ export default async function OpportunitiesPage({ searchParams }: {
       />
 
       <main id="experiencia" className={styles.main} tabIndex={-1}>
-        <section className={`${styles.hero} ${styles.catalogueHero}`} aria-labelledby="opportunities-title">
+        <section data-ap-radar-hero="" className={`${styles.hero} ${styles.catalogueHero}`} aria-labelledby="opportunities-title">
           <h1 id="opportunities-title">Radar de oportunidades</h1>
           <p className={styles.lead}>
             Encontre empregos, eventos, bolsas e programas com fontes oficiais.

@@ -29,7 +29,7 @@ export default async function BenefitDetailPage({ params, searchParams }: { para
     const quota = offer ? await monthlyDetailState(member.id, "beneficios") : null;
     const opened = quota?.ids.includes(id) ?? false;
     const conditions = opened ? await previewBenefitConditions(id) : null;
-    return <MemberWorkspace member={member} current="beneficios"><div className={`${shared.container} ${styles.root}`}>
+    return <MemberWorkspace member={member} current="beneficios"><div data-ap-benefits="detail" className={`${shared.container} ${styles.root}`}>
       <Link href={`${back}#oferta-${encodeURIComponent(id)}`} className={styles.back}>← Voltar às ofertas</Link>
       <header className={styles.header}><h1>{offer?.name ?? "Oferta indisponível"}</h1>{offer && <p>{offer.partner}</p>}</header>
       {quota && <MonthlyQuota quota={quota} area="Benefícios" next={path} />}
@@ -50,7 +50,7 @@ export default async function BenefitDetailPage({ params, searchParams }: { para
   }
   const { benefit: b, redemptionStatus } = await memberBenefitDetail(id);
   if (!b) notFound();
-  return <MemberWorkspace member={member} current="beneficios"><div className={`${shared.container} ${styles.root}`}>
+  return <MemberWorkspace member={member} current="beneficios"><div data-ap-benefits="detail" className={`${shared.container} ${styles.root}`}>
     <Link href={`${listHref}#oferta-${encodeURIComponent(id)}`} className={styles.back}>← {backLabel}</Link>
       <header className={styles.header}><p className={styles.eyebrow}>{b.category_name ?? "Benefícios da comunidade"}</p><h1>{b.name}</h1><p>{b.partner}{b.provider_label ? ` · Disponibilizado por ${b.provider_label}` : ""}</p></header>
       <article className={`${styles.card} ${styles.detail}`}><div className={styles.cardTop}><p className={styles.description}>{b.description}</p><BenefitSaveButton benefitId={b.id} name={b.name} saved={b.saved} /></div>

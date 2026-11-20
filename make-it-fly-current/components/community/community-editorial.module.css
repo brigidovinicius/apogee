@@ -55,3 +55,13 @@
 
 .page .intro .joinAction > a { background:transparent; color:#07182d; border:1px solid #9da9b5; }
 .page .intro .joinAction > a:hover { background:#edf3fa; }
+
+:global([data-ap-interface]) .toolboxSection .toolboxExample {
+  padding: .9rem 1.1rem;
+  color: var(--ap-text);
+  background: var(--ap-secondary-fill);
+  border: 1px solid var(--ap-line);
+  border-inline-start: 3px solid var(--ap-accent);
+  border-radius: var(--ap-control-radius);
+}
+:global([data-ap-interface]) .toolboxSection .textLink { text-decoration: none; }

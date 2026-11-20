@@ -83,3 +83,137 @@
 .card :is(a,button):focus-visible { outline-color: #244b73; }
 @media(max-width:700px) { .cards,.featuredGrid { grid-template-columns: minmax(0,1fr); } .detail dl { grid-template-columns: 1fr; gap: .25rem; } .detail dd { margin-bottom: .9rem; } }
 @media(max-width:420px) { .offerLink { justify-content: center; width: 100%; } }
+
+/* The catalogue shares the Radar studio materials. Partner marks keep their own backgrounds. */
+:global([data-ap-interface]) .root[data-ap-benefits] {
+  color: var(--ap-text);
+  background: var(--ap-canvas);
+  --benefit-studio-art: url("/design-system/recursos/carteira.webp");
+}
+.root[data-ap-benefits]:not([data-public-catalogue]) {
+  padding: clamp(.85rem, 2vw, 1.65rem);
+  border-radius: var(--ap-panel-radius);
+}
+.root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header {
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  max-width: none;
+  min-height: clamp(10rem, 17vw, 14rem);
+  align-items: center;
+  margin: 0 0 1.35rem;
+  padding: clamp(1rem, 2.6vw, 2.25rem);
+  border: 1px solid var(--ap-line);
+  border-radius: var(--ap-panel-radius);
+  background: linear-gradient(110deg,var(--ap-section),var(--ap-canvas) 54%,var(--ap-studio-paper));
+  box-shadow: var(--ap-edge);
+}
+.root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: .35rem 2% .35rem auto;
+  width: 32%;
+  pointer-events: none;
+  background: var(--benefit-studio-art) center / contain no-repeat,
+    radial-gradient(ellipse at 54% 85%, #162a4829, transparent 45%),
+    repeating-linear-gradient(90deg, transparent 0 23px,var(--ap-studio-rule) 23px 24px) center / 88% 68% no-repeat;
+  mask-image: linear-gradient(90deg,transparent,#000 12% 90%,transparent);
+}
+.root[data-ap-benefits] > header h1 {
+  margin: 0;
+  color: var(--ap-text);
+  font: 510 clamp(2rem, 4.5vw, 4.35rem)/1.06 var(--ap-font);
+  letter-spacing: -.055em;
+}
+.root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header > :is(div,p) { max-width: 63%; }
+.root[data-ap-benefits] > header p {
+  color: var(--ap-muted);
+  margin: .65rem 0 0;
+  line-height: 1.55;
+}
+.root[data-ap-benefits="catalogue"] > header { align-items: start; }
+.root[data-ap-benefits="catalogue"] > header:has(> a)::before { bottom: 3.75rem; }
+.root[data-ap-benefits="catalogue"] > header > a {
+  align-self: flex-end;
+  color: var(--ap-accent);
+  margin-bottom: -.75rem;
+}
+.root[data-ap-benefits] :is(.offerHeading,.previewTitle,.offerBody h3,.empty h2,.empty h3,.detail h2) {
+  color: var(--ap-text);
+  font-family: var(--ap-font);
+  font-weight: 590;
+  letter-spacing: -.035em;
+  line-height: 1.18;
+}
+.root[data-ap-benefits] .offerHeading { margin-block: 1.25rem .85rem; font-size: clamp(1.35rem, 2.2vw, 2rem); }
+.root[data-ap-benefits] nav[aria-label="Navegação de benefícios"] { border-color: var(--ap-line); }
+.root[data-ap-benefits] nav[aria-label="Navegação de benefícios"] a { color: var(--ap-muted); }
+.root[data-ap-benefits] nav[aria-label="Navegação de benefícios"] a[aria-current] { color: var(--ap-accent); border-color: currentColor; }
+.root[data-ap-benefits] nav[aria-label="Navegação de benefícios"] a:hover { background: var(--ap-section); }
+.root[data-ap-benefits] [role="search"] {
+  color: var(--ap-text);
+  background: linear-gradient(120deg,var(--ap-section),var(--ap-frost));
+  border: 1px solid var(--ap-line);
+  border-radius: var(--ap-panel-radius);
+  box-shadow: var(--ap-edge);
+}
+.root[data-ap-benefits] [role="search"] :is(input,select) {
+  color: var(--ap-text);
+  background-color: var(--ap-surface);
+  border-color: var(--ap-line);
+  border-radius: var(--ap-control-radius);
+}
+.root[data-ap-benefits] [role="search"] svg { color: var(--ap-muted); }
+.root[data-ap-benefits] [role="search"] input::placeholder { color: var(--ap-muted); }
+.root[data-ap-benefits] [role="search"] button,
+.root[data-ap-benefits] .offerFooter a.offerLink,
+.root[data-ap-benefits] .detail .primary {
+  background: var(--ap-primary-fill);
+  color: var(--ap-on-navy);
+  border: 1px solid var(--ap-primary-edge);
+  border-radius: var(--ap-control-radius);
+  box-shadow: var(--ap-primary-shadow);
+}
+.root[data-ap-benefits] :is(.result,.partner,.access,.validity,.provider,.condition,.footer,.explanation,.historyDate,.detail dt,.start p) { color: var(--ap-muted); }
+.root[data-ap-benefits] :is(.textLink,.back,.support a,.feedback,.empty a,.start a,[role="search"] a) { color: var(--ap-accent); }
+.root[data-ap-benefits] .category {
+  background: var(--ap-section);
+  color: var(--ap-accent);
+  border: 1px solid var(--ap-line);
+  border-radius: .42rem;
+  font-weight: 540;
+}
+.root[data-ap-benefits] .quickCategories a,
+.root[data-ap-benefits] .save {
+  color: var(--ap-accent);
+  border-color: var(--ap-line);
+  border-radius: var(--ap-control-radius);
+  background: var(--ap-surface);
+}
+.root[data-ap-benefits] :is(.quickCategories a[aria-current],.save[aria-pressed="true"]) { background: var(--ap-brand-sky); color: var(--ap-navy); }
+.root[data-ap-benefits] :is(.card,.empty) { background: var(--ap-card-fill); color: var(--ap-text); border: 1px solid var(--ap-line); border-radius: var(--ap-card-radius); box-shadow: var(--ap-shadow); }
+.root[data-ap-benefits] .offerBody .condition { background: var(--ap-section); border-inline-start: 2px solid var(--ap-line); color: var(--ap-muted); }
+.root[data-ap-benefits] .offerBody .condition strong { color: var(--ap-text); }
+.root[data-ap-benefits] .offerFooter { border-color: var(--ap-line); }
+.root[data-ap-benefits] :is(.empty p,.detail dd) { color: var(--ap-text); }
+.root[data-ap-benefits="preview"] .card { display: flex; flex-direction: column; align-items: start; }
+.root[data-ap-benefits="preview"] .cardTop { width: 100%; padding-bottom: .8rem; border-bottom: 1px solid var(--ap-line); }
+.root[data-ap-benefits="preview"] .card .partner { margin: .9rem 0 .25rem; }
+.root[data-ap-benefits="preview"] .card .textLink {
+  width: 100%; justify-content: space-between; margin-top: auto; padding-top: .55rem;
+  border-top: 1px solid var(--ap-line); text-decoration: none; font-weight: 570;
+}
+.root[data-ap-benefits="preview"] .previewTitle + p { margin: .25rem 0 1rem; color: var(--ap-muted); }
+.root[data-ap-benefits] :is(a,button,input,select):focus-visible { outline: 3px solid var(--ap-focus); outline-offset: 3px; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .root[data-ap-benefits] :is(.offerLink,.textLink) svg { transition: transform var(--ap-quick) var(--ap-ease); }
+  .root[data-ap-benefits] :is(.offerLink,.textLink):is(:hover,:focus-visible) svg { transform: translateX(3px); }
+}
+@media (max-width: 42rem) {
+  .root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header { min-height: 0; padding: 1rem; }
+  .root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header::before { width: 5.5rem; height: 4.5rem; inset: .4rem .5rem auto auto; background: var(--benefit-studio-art) right center / contain no-repeat; mask-image: none; }
+  .root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header > :is(div,p) { max-width: none; }
+  .root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header h1 { min-height: 3.8rem; max-width: calc(100% - 4.8rem); }
+  .root[data-ap-benefits="catalogue"] > header > a { margin: 0; }
+}

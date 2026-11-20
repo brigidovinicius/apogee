@@ -38,7 +38,7 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
   return (
     <MemberWorkspace member={member} current="radar"><div className={styles.container}>
 
-      <header className={styles.pageHead}>
+      <header data-ap-radar-hero="member" className={styles.pageHead}>
         <div>
           <p className={styles.eyebrow}>Oportunidades</p>
           <h1 className={styles.title}>Radar de oportunidades</h1>

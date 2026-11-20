@@ -135,7 +135,7 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
   };
 
   return (
-    <section className={styles.board} data-public-catalogue={publicCatalogue || undefined} aria-labelledby="mural-title">
+    <section data-ap-radar-board={management ? undefined : ""} className={styles.board} data-public-catalogue={publicCatalogue || undefined} aria-labelledby="mural-title">
       <LiveCatalogueRefresh />
       <div className={styles.boardHeading}>
         <div>

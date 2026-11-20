@@ -1209,3 +1209,84 @@
 .detailedCard .cardMain h3, .detailedCard .summary { display: block; overflow: visible; -webkit-line-clamp: unset; }
 .detailedCard .cardDisclosure > dl { max-height: none; overflow: visible; }
 .card .externalLink:not(.detailButton) { color: var(--radar-card-accent); }
+
+:global([data-ap-interface]) .board[data-ap-radar-board][data-public-catalogue] {
+  box-shadow: none;
+  border-color: var(--ap-line);
+}
+:global([data-ap-interface]) .board[data-ap-radar-board] :is(.count, .kicker, .searchBar label) {
+  color: var(--ap-muted);
+}
+:global([data-ap-interface]) .board[data-ap-radar-board] .searchBar label {
+  font-size: .82rem;
+}
+:global([data-ap-interface]) .board[data-ap-radar-board] .searchBar input {
+  border-radius: var(--ap-control-radius);
+  background-color: var(--ap-surface);
+  color: var(--ap-text);
+  border-color: var(--ap-line);
+  box-shadow: inset 0 1px 3px #07182d0e;
+}
+:global([data-ap-interface]) .board[data-ap-radar-board] .searchBar input::placeholder { color: var(--ap-muted); }
+:global([data-ap-interface]) .board[data-ap-radar-board] .searchBar button {
+  background: var(--ap-primary-fill);
+  color: var(--ap-on-navy);
+  border: 1px solid var(--ap-primary-edge);
+  box-shadow: var(--ap-primary-shadow);
+  border-radius: var(--ap-control-radius);
+}
+:global([data-ap-interface]) .board[data-ap-radar-board] .card {
+  color-scheme: inherit;
+  box-shadow: var(--ap-shadow);
+}
+:global([data-ap-interface]) .board[data-ap-radar-board] .kind {
+  display: inline-block;
+  border-inline-start: 2px solid var(--ap-accent);
+  padding-inline-start: .6rem;
+  color: var(--ap-accent);
+  font-weight: 600;
+}
+:global([data-ap-interface]) .board[data-ap-radar-board] .cardMain { margin-block-start: clamp(1.25rem, 2.3vw, 2rem); }
+:global([data-ap-interface]) .board[data-ap-radar-board] .launchWindow {
+  padding: .8rem .85rem;
+  background: var(--ap-section);
+  color: var(--ap-text);
+  border: 1px solid var(--ap-line);
+  border-radius: var(--ap-control-radius);
+  font-variant-numeric: tabular-nums;
+}
+:global([data-ap-interface]) .board[data-ap-radar-board] .launchWindow > svg { color: var(--ap-accent); }
+
+:global([data-ap-interface]) .board[data-ap-radar-board] .locationField label:has(> input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  min-block-size: var(--apogee-control-min-height, 44px);
+  cursor: pointer;
+}
+:global([data-ap-interface]) .board[data-ap-radar-board] .locationField input[type="checkbox"] {
+  flex: none;
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  min-block-size: 0;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--ap-accent);
+}
+:global([data-ap-interface]) .board[data-ap-radar-board] .filterPanelHeader {
+  padding-block-end: .9rem;
+  border-block-end: 1px solid var(--ap-line);
+}
+:global([data-ap-interface]) .board[data-ap-radar-board] .filterPanel h3 {
+  font: 600 clamp(1.15rem, 1.6vw, 1.45rem)/1.2 var(--ap-font);
+  letter-spacing: -.025em;
+}
+@media (prefers-reduced-motion: no-preference) {
+  :global([data-ap-interface]) .board[data-ap-radar-board] .filterPanel:not([hidden]) {
+    animation: revealRadarFilters var(--ap-quick) var(--ap-ease) both;
+  }
+}
+@keyframes revealRadarFilters {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}

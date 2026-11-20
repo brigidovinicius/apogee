@@ -22,3 +22,49 @@
 
 :global(html [data-ap-interface]) .tool :is(.domain,.conditions) { color: var(--ap-muted); }
 :global(html [data-ap-interface]) .tool h3 { letter-spacing: -.025em; }
+
+.catalogue[data-ap-toolbox] {
+  padding: clamp(.85rem,2vw,1.65rem);
+  background: var(--ap-canvas);
+  color: var(--ap-text);
+  border-radius: var(--ap-panel-radius);
+}
+.catalogue nav[aria-label] { border-color: var(--ap-line); }
+.catalogue nav[aria-label] a { color: var(--ap-muted); }
+.catalogue nav[aria-label] a[aria-current] { color: var(--ap-accent); border-bottom-color: currentColor; }
+.catalogue nav[aria-label] a:hover { background: var(--ap-section); }
+.catalogue [role="search"] {
+  color: var(--ap-text); border-color: var(--ap-line); border-radius: var(--ap-panel-radius);
+  background: linear-gradient(120deg,var(--ap-section),var(--ap-frost)); box-shadow: var(--ap-edge);
+}
+.catalogue [role="search"] :is(input,select) {
+  color: var(--ap-text); background-color: var(--ap-surface);
+  border-color: var(--ap-line); border-radius: var(--ap-control-radius);
+}
+.catalogue [role="search"] svg, .catalogue [role="search"] input::placeholder { color: var(--ap-muted); }
+.catalogue [role="search"] a,.catalogue .empty a { color: var(--ap-accent); }
+.catalogue :is(.count,.groupHead p,.footer,.conditions,.empty p) { color: var(--ap-muted); }
+.catalogue .groupHead {
+  padding-bottom: .55rem;
+  border-bottom: 1px solid var(--ap-line);
+}
+.catalogue :is(.groupHead h2,.empty h2) {
+  color: var(--ap-text); font: 580 clamp(1.35rem,2.2vw,2rem)/1.22 var(--ap-font); letter-spacing: -.035em;
+}
+.catalogue .tool { gap: 1rem; }
+.catalogue .tool > div { width: 100%; }
+.catalogue .domain {
+  padding-bottom: .7rem;
+  margin-bottom: .85rem;
+  border-bottom: 1px solid var(--ap-line);
+  font-size: .8rem;
+}
+.catalogue .tool h3 { color: var(--ap-text); font: 600 clamp(1.15rem,1.8vw,1.5rem)/1.22 var(--ap-font); }
+.catalogue .description { color: var(--ap-text); }
+.catalogue .conditions { padding: .6rem .85rem; border-radius: var(--ap-control-radius); background: var(--ap-section); }
+.catalogue .empty { background: var(--ap-secondary-fill); border-color: var(--ap-line); border-radius: var(--ap-card-radius); }
+.catalogue :is(a,input,button,select):focus-visible { outline: 3px solid var(--ap-focus); outline-offset: 3px; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .catalogue .open svg { transition: transform var(--ap-quick) var(--ap-ease); }
+  .catalogue .open:is(:hover,:focus-visible) svg { transform: translate(2px,-2px); }
+}

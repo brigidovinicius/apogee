@@ -29,7 +29,7 @@ export async function BenefitsWorkspace({ view = "catalogue", params = {} }: { v
   const ordered = view === "catalogue" ? orderCatalogueOffers(benefits) : benefits;
   const featured = view === "catalogue" && !filtered ? ordered.slice(0, 4) : [];
   const remaining = ordered.slice(featured.length);
-  return <MemberWorkspace member={member} current="beneficios"><div className={`${shared.container} ${styles.root}`}>
+  return <MemberWorkspace member={member} current="beneficios"><div data-ap-benefits="catalogue" className={`${shared.container} ${styles.root}`}>
     <ResourceHeader area="beneficios" showRelated={resources?.ferramentas === true} />
     {!access.allowed ? <AnnualAccessNotice title="Benefícios" next={BENEFIT_PATHS[view]} /> : <>
       <nav aria-label="Navegação de benefícios" className={navigation.tabs}>{(Object.keys(BENEFIT_PATHS) as BenefitView[]).map(key => { const Icon = icons[key]; return <Link href={BENEFIT_PATHS[key]} key={key} aria-current={view === key ? "page" : undefined}><Icon size={17} aria-hidden="true" />{titles[key]} {key !== "catalogue" && <span>{totals[key]}</span>}</Link>; })}</nav>

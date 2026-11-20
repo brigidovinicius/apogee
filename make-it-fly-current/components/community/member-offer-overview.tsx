@@ -32,7 +32,7 @@ export function MemberOfferOverview({ name, radarFullAccess, preview = false, an
       <Link data-ap-button="primary" className={styles.button} prefetch={false} href={step.href}>{step.label}</Link>
     </div>
     <div className={styles.pillarGrid}>
-      {pillars.map(item => <article data-ap-card="" data-ap-icon={item.artwork} className={styles.pillar} key={item.name}>
+      {pillars.map(item => <article data-ap-card="resource" data-ap-icon={item.artwork} className={styles.pillar} key={item.name}>
           <item.icon size={24} strokeWidth={1.5} aria-hidden="true" />
           <h3>{item.name}</h3>
           <p>{item.text}</p>
