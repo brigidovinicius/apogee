@@ -25,12 +25,16 @@ test("sales page retains the complete offer and honest delivery states with work
   assert.match(html, /href="\/evento-openai"/);
   assert.doesNotMatch(html, /href="\/membros\/ferramentas"|href="\/membros\/assinatura"/);
   assert.match(html, /A contratação anual está temporariamente indisponível/);
+  assert.doesNotMatch(html, /Ver o que está incluído|10 consultas mensais na conta gratuita|consultas gratuitas por mês|Explore o catálogo sem usar a sua cota/);
 });
 
 test("sales layout preserves the preview and safe return-destination contract", () => {
   assert.ok(render().includes('href="/membros/cadastro?next=%2Fmembros"'));
   const destination = "/membros/oportunidades/um-evento";
   assert.ok(render({ next: destination }).includes(`/membros/cadastro?next=${encodeURIComponent(destination)}`));
+  assert.match(render(), /href="\/membros\/entrar\?next=%2Fmembros">Continuar com minha conta/);
+  assert.ok(render({ next: destination }).includes(`href="/membros/entrar?next=${encodeURIComponent(destination)}">Continuar com minha conta`));
+  assert.ok(render({ next: destination, signedIn: true }).includes(`href="${destination}">Continuar com minha conta`));
   const preview = render({ preview: true, next: destination });
   assert.match(preview, /href="\/previa\/entrada"/);
   assert.doesNotMatch(preview, /href="\/membros\/cadastro/);

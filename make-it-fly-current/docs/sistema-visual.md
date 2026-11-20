@@ -25,7 +25,7 @@ A interface do site e da plataforma compartilha a folha `public/design-system/ap
 
 Use texto como padrão em títulos, cartões, listas, metadados, links secundários e rodapés. As folhas compartilhadas não acrescentam ícones herdados aos títulos. Para um conjunto de destinos, prefira linhas com divisórias e indicação clara de link. Dê a cada região uma ação principal.
 
-Use ícones explícitos em menus e controles de busca, filtros, carrosséis e estados quando esclarecem a função. Todo botão composto apenas por um ícone precisa de nome acessível. Reserve ilustrações para aberturas estratégicas. Marcas oficiais identificam a Apogee, ferramentas e parceiros. No rodapé, a única imagem é o logo oficial da Apogee com estrela.
+Use ícones explícitos em menus e controles de busca, filtros, carrosséis e estados quando esclarecem a função. Todo botão composto apenas por um ícone precisa de nome acessível. Reserve ilustrações para aberturas estratégicas, para os cards expandidos de “O que você recebe” e para os atalhos principais de “Minha comunidade”. Marcas oficiais identificam a Apogee, ferramentas e parceiros. No rodapé, a única imagem é o logo oficial da Apogee com estrela.
 
 Referência: [hierarquia e agrupamento no Astryx](https://astryx.atmeta.com/docs/layout-structure).
 

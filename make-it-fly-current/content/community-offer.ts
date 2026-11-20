@@ -4,7 +4,8 @@ export const COMMUNITY_PLANS_PATH = "/comunidade#planos";
 export const COMMUNITY_SIGNUP_PATH = "/membros/cadastro?next=%2Fmembros";
 export const RADAR_FREE_NOTE = "Com uma conta gratuita, consulte os detalhes de até 10 oportunidades por mês. Reabrir uma oportunidade no mesmo mês não usa outra consulta. A assinatura inclui o Radar completo.";
 
-export const COMMUNITY_BENEFITS_TERMS = "Explore o catálogo e consulte até 10 ofertas por mês com uma conta gratuita. O resgate exige assinatura e depende das condições e da elegibilidade de cada oferta.";
+export const COMMUNITY_BENEFITS_REDEMPTION = "O resgate exige assinatura e depende das condições e da elegibilidade de cada oferta.";
+export const COMMUNITY_BENEFITS_TERMS = `Explore o catálogo e consulte até 10 ofertas por mês com uma conta gratuita. ${COMMUNITY_BENEFITS_REDEMPTION}`;
 
 export const COMMUNITY_PILLARS = [
   { kind: "radar", name: "Apogee Radar", title: "Encontre seu próximo passo.", status: "Comece gratuitamente", description: "Eventos, bolsas, editais, programas e carreira, com requisitos, prazos e fontes oficiais.", href: "/oportunidades", action: "Explorar o Radar" },

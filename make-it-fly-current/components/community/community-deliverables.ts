@@ -1,4 +1,4 @@
-import { COMMUNITY_BENEFITS_TERMS } from "@/content/community-offer";
+import { COMMUNITY_BENEFITS_REDEMPTION } from "@/content/community-offer";
 
 export const COMMUNITY_SALES_DELIVERABLES = [
   {
@@ -16,13 +16,13 @@ export const COMMUNITY_SALES_DELIVERABLES = [
   {
     id: "radar", label: "Radar de oportunidades", fact: "10 consultas mensais na conta gratuita",
     title: "Oportunidades com prazos e fontes.",
-    description: "Eventos, bolsas, editais e carreira. Conta gratuita: 10 consultas por mês. Assinatura: Radar completo.",
+    description: "Eventos, bolsas, editais e vagas. A assinatura dá acesso ao Radar completo.",
     href: "#radar", action: "Conhecer o Radar",
   },
   {
     id: "perks", label: "Benefícios", fact: "10 consultas mensais na conta gratuita",
     title: "Ofertas de parceiros para você.",
-    description: COMMUNITY_BENEFITS_TERMS,
+    description: COMMUNITY_BENEFITS_REDEMPTION,
     href: "#perks", action: "Entender os benefícios",
   },
   {
