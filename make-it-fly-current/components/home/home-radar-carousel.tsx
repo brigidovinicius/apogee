@@ -66,7 +66,7 @@ export function HomeRadarCarousel({ opportunities, capturedAt }: { opportunities
       {visible.map((item) => <li key={item.id} className={styles.opportunity}>
         <article>
           <div className={styles.opportunityTop}><span>{item.kind}</span><ArrowUpRight aria-hidden="true" size={19} /></div>
-          <h3>{interfaceText(item.title)}</h3>
+          <h3 data-ap-heading="" data-ap-art="radar">{interfaceText(item.title)}</h3>
           <p className={styles.opportunityOrg}>{interfaceText(item.organization)}</p>
           <OpportunityDates opportunity={item} className={styles.opportunityDates} />
           <Link prefetch={false} className={styles.opportunityAction} href={publicOpportunityPath(item)} aria-label={`Ver resumo da oportunidade: ${item.title}`}>Ver resumo<ArrowRight size={16} aria-hidden="true" /></Link>

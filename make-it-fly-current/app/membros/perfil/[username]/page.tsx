@@ -51,7 +51,7 @@ export default async function ProfilePage({ params }: Props) {
       {profile.bio ? <p className={styles.bio}>{interfaceText(profile.bio)}</p> : null}
 
       <section className={styles.section} aria-labelledby="topicos">
-        <h2 className={styles.sectionTitle} id="topicos">
+        <h2 data-ap-heading="" className={styles.sectionTitle} id="topicos">
           {plural(profile.topicCount, "tópico", "tópicos")}
         </h2>
         {profile.topics.length === 0 ? (
@@ -61,7 +61,7 @@ export default async function ProfilePage({ params }: Props) {
             {profile.topics.map((topic) => (
               <li className={styles.listItem} key={topic.id}>
                 <div>
-                  <h3>
+                  <h3 data-ap-heading="">
                     <Link href={`/membros/forum/${topic.categorySlug}/${topicParam(topic.id, topic.slug)}`}>
                       {interfaceText(topic.title)}
                     </Link>
@@ -75,7 +75,7 @@ export default async function ProfilePage({ params }: Props) {
       </section>
 
       <section className={styles.section} aria-labelledby="respostas">
-        <h2 className={styles.sectionTitle} id="respostas">
+        <h2 data-ap-heading="" className={styles.sectionTitle} id="respostas">
           {plural(profile.replyCount, "resposta", "respostas")}
         </h2>
         {profile.replies.length === 0 ? (
@@ -85,7 +85,7 @@ export default async function ProfilePage({ params }: Props) {
             {profile.replies.map((reply) => (
               <li className={styles.listItem} key={reply.id}>
                 <div>
-                  <h3>
+                  <h3 data-ap-heading="">
                     <Link href={`/membros/forum/${reply.categorySlug}/${topicParam(reply.topicId, reply.topicSlug)}`}>
                       {interfaceText(reply.topicTitle)}
                     </Link>

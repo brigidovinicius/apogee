@@ -1,3 +1,4 @@
+import { AreaIcon } from "@/components/site/area-icon";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import styles from "./resource-header.module.css";
@@ -9,9 +10,10 @@ const resources = {
 
 export function ResourceHeader({ area, showRelated = true }: { area: keyof typeof resources; showRelated?: boolean }) {
   const current = resources[area];
-  const other = resources[area === "beneficios" ? "ferramentas" : "beneficios"];
-  return <header data-ap-toolbox-studio={area === "ferramentas" ? "catalogue" : undefined} className={styles.head}>
+  const otherArea = area === "beneficios" ? "ferramentas" : "beneficios";
+  const other = resources[otherArea];
+  return <header data-ap-art={area} data-ap-toolbox-studio={area === "ferramentas" ? "catalogue" : undefined} className={styles.head}>
     <div><h1>{current.title}</h1><p>{current.summary}</p></div>
-    {showRelated && <Link href={other.href} className={styles.switchArea}>{other.title}<ArrowRight size={16} aria-hidden="true" /></Link>}
+    {showRelated && <Link href={other.href} className={styles.switchArea}><AreaIcon area={otherArea} />{other.title}<ArrowRight size={16} aria-hidden="true" /></Link>}
   </header>;
 }

@@ -1,7 +1,8 @@
 "use client";
 
+import { AreaIcon } from "@/components/site/area-icon";
 import Link from "next/link";
-import { LogOut, UserRound } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
@@ -17,7 +18,7 @@ export function CommunityEntryLink({ className, offerHref = COMMUNITY_PLANS_PATH
 }) {
   const account = useContext(AccountContext);
   return <Link data-ap-button="primary" className={className} href={account?.communityActive ? "/membros" : offerHref} prefetch={false}>
-    {account?.communityActive ? "Acessar comunidade" : label}
+    <AreaIcon area={account?.communityActive ? "comunidade" : "perfil"} />{account?.communityActive ? "Acessar comunidade" : label}
   </Link>;
 }
 
@@ -71,16 +72,16 @@ export function AccountMenu({ fallback }: { fallback: ReactNode }) {
       details.current.querySelector("summary")?.focus();
     }
   }}>
-    <summary><UserRound size={18} aria-hidden="true" /><span>Minha conta</span></summary>
+    <summary><AreaIcon area="perfil" /><span>Minha conta</span></summary>
     <div className={styles.panel}>
       <p className={styles.identity}>{account.name}<span>@{account.username}</span></p>
       <nav aria-label="Minha conta">
-        <Link href="/membros">Minha comunidade</Link>
-        <Link href="/membros/perfil/editar">Meu perfil</Link>
-        <Link href="/membros/assinatura">Assinatura e acesso</Link>
-        <Link href="/membros/protecao">Verificação da conta</Link>
-        <Link href="/membros/suporte">Ajuda e suporte</Link>
-        {account.role === "admin" ? <Link href="/admin">Administração</Link> : null}
+        <Link href="/membros"><AreaIcon area="home" />Minha comunidade</Link>
+        <Link href="/membros/perfil/editar"><AreaIcon area="perfil" />Meu perfil</Link>
+        <Link href="/membros/assinatura"><AreaIcon area="assinatura" />Assinatura e acesso</Link>
+        <Link href="/membros/protecao"><AreaIcon area="protecao" />Verificação da conta</Link>
+        <Link href="/membros/suporte"><AreaIcon area="suporte" />Ajuda e suporte</Link>
+        {account.role === "admin" ? <Link href="/admin"><AreaIcon area="protecao" />Administração</Link> : null}
       </nav>
       <form action={signOut}><SignOutButton /></form>
     </div>

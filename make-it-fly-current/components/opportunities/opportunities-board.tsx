@@ -18,7 +18,7 @@ import { ShareButton } from "@/components/site/share-button";
 import { LiveCatalogueRefresh } from "./live-refresh";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpRight, CalendarDays, Compass, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { ArrowUpRight, CalendarDays, MapPin, SlidersHorizontal, X } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import {
   EMPTY_OPPORTUNITY_FILTERS,
@@ -135,12 +135,12 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
   };
 
   return (
-    <section data-ap-radar-board={management ? undefined : ""} className={styles.board} data-public-catalogue={publicCatalogue || undefined} aria-labelledby="mural-title">
+    <section data-ap-art="radar" data-ap-radar-board={management ? undefined : ""} className={styles.board} data-public-catalogue={publicCatalogue || undefined} aria-labelledby="mural-title">
       <LiveCatalogueRefresh />
       <div className={styles.boardHeading}>
         <div>
           {!publicCatalogue && <p className={styles.kicker}>Catálogo de oportunidades</p>}
-          <h2 data-ap-title="" id="mural-title">{publicCatalogue ? "Buscar no Radar" : "Explore o Radar"}</h2>
+          <h2 data-ap-heading="" data-ap-title="" id="mural-title">{publicCatalogue ? "Buscar no Radar" : "Explore o Radar"}</h2>
         </div>
         <p className={styles.count} aria-live="polite">
           {total} {total === 1 ? "oportunidade visível" : "oportunidades visíveis"}
@@ -371,8 +371,7 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
         </div>
       ) : total === 0 ? (
         <div className={styles.empty} role="status">
-          <Compass size={28} aria-hidden />
-          <h3>
+          <h3 data-ap-heading="">
             {filters.query
               ? "Nenhuma oportunidade encontrada para sua busca."
               : activeFilterCount > 0

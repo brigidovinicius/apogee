@@ -22,9 +22,9 @@ export default async function McpConnectionsPage({ searchParams }: { searchParam
       <p className={styles.lead}>Leve o Radar e as funções da sua conta para o ChatGPT ou o Claude, com o acesso que você já tem na Apogee.</p>
       <McpSetup resource={mcpResource()} />
       {params.desconectado === "1" && <p role="status">Conexão desconectada. Para usar novamente, autorize a Apogee no aplicativo.</p>}
-      <h2>Aplicativos autorizados</h2>
+      <h2 data-ap-heading="">Aplicativos autorizados</h2>
       {connections.length ? connections.map(connection => <div className={styles.panel} key={connection.clientId}>
-        <h3>{connection.name}</h3>
+        <h3 data-ap-heading="">{connection.name}</h3>
         <p>Conexão autorizada em {new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "America/Sao_Paulo" }).format(new Date(connection.authorizedAt))}.</p>
         <form action={disconnectMcp}>
           <input type="hidden" name="clientId" value={connection.clientId} />

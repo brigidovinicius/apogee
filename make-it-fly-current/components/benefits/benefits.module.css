@@ -37,10 +37,6 @@
 .offerCard { display: flex; flex-direction: column; gap: 1rem; border-radius: 12px; box-shadow: 0 8px 24px #060b1a24; }
 .offerTop { display: flex; justify-content: space-between; align-items: start; gap: .6rem; }
 .brand { display: flex; align-items: center; min-width: 0; gap: .7rem; }
-.brandMark { flex: 0 0 78px; width: 78px; height: 52px; display: grid; place-items: center; border: 1px solid #d6e1ef; border-radius: 10px; background: #fff; color: #244b73; }
-.brandMark img { width: 68px; height: 42px; object-fit: contain; }
-.brandMark[data-logo-background="dark"] { background: #18263a; border-color: #18263a; }
-.brandMark span { max-width: 66px; overflow-wrap: anywhere; text-align: center; font-size: .66rem; font-weight: 650; }
 .brandMeta { min-width: 0; }
 .brandMeta p { margin: 0 0 .2rem; font-size: .86rem; font-weight: 650; }
 .brandMeta .category { padding: .22rem .42rem; }
@@ -88,7 +84,6 @@
 :global([data-ap-interface]) .root[data-ap-benefits] {
   color: var(--ap-text);
   background: var(--ap-canvas);
-  --benefit-studio-art: url("/design-system/recursos/carteira.webp");
 }
 .root[data-ap-benefits]:not([data-public-catalogue]) {
   padding: clamp(.85rem, 2vw, 1.65rem);
@@ -108,32 +103,18 @@
   background: linear-gradient(110deg,var(--ap-section),var(--ap-canvas) 54%,var(--ap-studio-paper));
   box-shadow: var(--ap-edge);
 }
-.root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: .35rem 2% .35rem auto;
-  width: 32%;
-  pointer-events: none;
-  background: var(--benefit-studio-art) center / contain no-repeat,
-    radial-gradient(ellipse at 54% 85%, #162a4829, transparent 45%),
-    repeating-linear-gradient(90deg, transparent 0 23px,var(--ap-studio-rule) 23px 24px) center / 88% 68% no-repeat;
-  mask-image: linear-gradient(90deg,transparent,#000 12% 90%,transparent);
-}
 .root[data-ap-benefits] > header h1 {
   margin: 0;
   color: var(--ap-text);
   font: 510 clamp(2rem, 4.5vw, 4.35rem)/1.06 var(--ap-font);
   letter-spacing: -.055em;
 }
-.root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header > :is(div,p) { max-width: 63%; }
 .root[data-ap-benefits] > header p {
   color: var(--ap-muted);
   margin: .65rem 0 0;
   line-height: 1.55;
 }
 .root[data-ap-benefits="catalogue"] > header { align-items: start; }
-.root[data-ap-benefits="catalogue"] > header:has(> a)::before { bottom: 3.75rem; }
 .root[data-ap-benefits="catalogue"] > header > a {
   align-self: flex-end;
   color: var(--ap-accent);
@@ -212,8 +193,5 @@
 }
 @media (max-width: 42rem) {
   .root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header { min-height: 0; padding: 1rem; }
-  .root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header::before { width: 5.5rem; height: 4.5rem; inset: .4rem .5rem auto auto; background: var(--benefit-studio-art) right center / contain no-repeat; mask-image: none; }
-  .root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header > :is(div,p) { max-width: none; }
-  .root[data-ap-benefits]:where(:not([data-ap-benefits="detail"])) > header h1 { min-height: 3.8rem; max-width: calc(100% - 4.8rem); }
   .root[data-ap-benefits="catalogue"] > header > a { margin: 0; }
 }

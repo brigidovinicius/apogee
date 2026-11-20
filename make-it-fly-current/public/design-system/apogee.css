@@ -85,20 +85,25 @@
   transition: transform var(--ap-settle) var(--ap-ease), border-color var(--ap-quick), box-shadow var(--ap-settle);
 }
 [data-ap-title] { font-family: var(--ap-font); letter-spacing: -.044em; font-weight: 570; }
-[data-ap-icon=ferramentas] { --ap-art: url("/design-system/icons/ferramentas.webp"); }
-[data-ap-icon=learn] { --ap-art: url("/design-system/icons/learn.webp"); }
-[data-ap-icon=radar] { --ap-art: url("/design-system/icons/radar.webp"); }
-[data-ap-icon=perks] { --ap-art: url("/design-system/icons/perks.webp"); }
-[data-ap-icon=participar] { --ap-art: url("/design-system/icons/participar.webp"); }
-[data-ap-icon]::before {
-  content: "";
-  display: block;
-  width: 7.25rem;
-  max-width: 100%;
-  height: 5.5rem;
-  flex: none;
-  background: var(--ap-art) left center / contain no-repeat;
-}
+/* Semantic artwork is inherited by headings, cards and navigation. */
+[data-ap-art="home"] { --ap-art: url("/design-system/recursos/inicio.webp"); }
+[data-ap-art="radar"], [data-ap-icon="radar"] { --ap-art: url("/design-system/recursos/antena.webp"); }
+[data-ap-art="beneficios"], [data-ap-icon="perks"] { --ap-art: url("/design-system/recursos/carteira.webp"); }
+[data-ap-art="trilha"], [data-ap-icon="learn"] { --ap-art: url("/design-system/recursos/caderno-de-campo.webp"); }
+[data-ap-art="ferramentas"], [data-ap-icon="ferramentas"] { --ap-art: url("/design-system/recursos/estojo-aberto.webp"); }
+[data-ap-art="comunidade"] { --ap-art: url("/design-system/recursos/forum.webp"); }
+[data-ap-art="participar"], [data-ap-icon="participar"] { --ap-art: url("/design-system/icons/participar.webp"); }
+[data-ap-art="calendario"] { --ap-art: url("/design-system/recursos/calendario.webp"); }
+[data-ap-art="colecoes"] { --ap-art: url("/design-system/recursos/colecoes.webp"); }
+[data-ap-art="forum"] { --ap-art: url("/design-system/recursos/forum.webp"); }
+[data-ap-art="perfil"] { --ap-art: url("/design-system/recursos/perfil.webp"); }
+[data-ap-art="protecao"] { --ap-art: url("/design-system/recursos/protecao.webp"); }
+[data-ap-art="suporte"] { --ap-art: url("/design-system/recursos/suporte.webp"); }
+[data-ap-art="assinatura"] { --ap-art: url("/design-system/recursos/passe.webp"); }
+[data-ap-art="blog"] { --ap-art: url("/design-system/recursos/blog.webp"); }
+[data-ap-art="loja"] { --ap-art: url("/design-system/recursos/loja.webp"); }
+[data-ap-art="galeria"] { --ap-art: url("/design-system/recursos/galeria.webp"); }
+[data-ap-art="integracoes"] { --ap-art: url("/design-system/recursos/integracoes.webp"); }
 [data-ap-signature] {
   font-family: var(--ap-display);
   font-weight: 400;
@@ -115,14 +120,9 @@
   outline-offset: 3px;
 }
 :is([data-ap-button],[data-ap-chip]):disabled { opacity: .56; cursor: default; }
-@media (min-width: 48rem) {
-  [data-ap-card][data-ap-icon] h3 { min-block-size: 2lh; }
-}
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
   :is([data-ap-button],[data-ap-chip]):hover:not(:disabled) { transform: translateY(-1px); border-color: var(--ap-focus); }
   a[data-ap-card]:hover, [data-ap-card]:focus-within { border-color: var(--ap-focus); }
-  [data-ap-card][data-ap-icon]::before { transition: transform var(--ap-settle) var(--ap-ease); transform-origin: 42% 75%; }
-  [data-ap-card][data-ap-icon]:is(:hover,:focus-within)::before { transform: translateY(-3px) scale(1.02); }
   :is([data-ap-button],[data-ap-chip]):active:not(:disabled) { transform: translateY(1px); }
 }
 @keyframes ap-material-light { from {background-position: 100% 0} to {background-position: 0 0} }

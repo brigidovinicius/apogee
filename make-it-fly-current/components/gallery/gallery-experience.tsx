@@ -224,7 +224,7 @@ export function GalleryExperience({ initialPage, initialOffset = 0, pageNumber =
         <section id="enviar-fotos" className={styles.uploadSection} aria-labelledby="upload-title">
           <div className={styles.uploadIntro}>
             <p className={styles.kicker}>Sua câmera também fez parte</p>
-            <h2 id="upload-title">Inclua o seu ponto de vista.</h2>
+            <h2 data-ap-heading="" id="upload-title">Inclua o seu ponto de vista.</h2>
             <p>
               Selecione até {MAX_FILES} fotos, escolha como quer aparecer e publique seus
               registros na galeria da comunidade Apogee.

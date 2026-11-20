@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, CalendarDays, Compass, Gift, House, Layers, MessageCircle, Newspaper, Wrench } from "lucide-react";
+import { AreaIcon } from "@/components/site/area-icon";
 import { signOut } from "@/app/membros/actions";
 import { AdminModeSwitcher } from "@/components/admin/admin-mode-switcher";
 import type { CurrentMember } from "@/lib/members/dal";
@@ -22,17 +22,17 @@ export async function MemberBar({ member, current }: MemberBarProps) {
     (calendar || collections) ? radarAccess(member.id, process.env.STRIPE_MODE !== "test", { claimPurchases: false }).catch(() => null) : null,
   ]);
   const links = [
-    { key: "home", href: "/membros", label: "Início", icon: House },
-    { key: "radar", href: "/membros/oportunidades", label: "Radar", icon: Compass },
-    { key: "beneficios", href: "/membros/beneficios", label: "Benefícios", icon: Gift },
+    { key: "home", href: "/membros", label: "Início" },
+    { key: "radar", href: "/membros/oportunidades", label: "Radar" },
+    { key: "beneficios", href: "/membros/beneficios", label: "Benefícios" },
   ];
   const more = [
-    ...(resources.trilha ? [{ key: "trilha", href: "/membros/trilha", label: "Trilha inicial", icon: BookOpen }] : []),
-    ...(resources.ferramentas ? [{ key: "ferramentas", href: "/membros/ferramentas", label: "Caixa de ferramentas", icon: Wrench }] : []),
-    ...(radar?.active && calendar ? [{ key: "calendario", href: "/membros/meu-calendario", label: "Meu calendário", icon: CalendarDays }] : []),
-    ...(radar?.active && collections ? [{ key: "colecoes", href: "/membros/colecoes", label: "Minhas coleções", icon: Layers }] : []),
-    { key: "blog", href: "/membros/blog", label: "Blog", icon: Newspaper },
-    { key: "forum", href: "/membros#forum", label: "Fórum", icon: MessageCircle },
+    ...(resources.trilha ? [{ key: "trilha", href: "/membros/trilha", label: "Trilha inicial" }] : []),
+    ...(resources.ferramentas ? [{ key: "ferramentas", href: "/membros/ferramentas", label: "Caixa de ferramentas" }] : []),
+    ...(radar?.active && calendar ? [{ key: "calendario", href: "/membros/meu-calendario", label: "Meu calendário" }] : []),
+    ...(radar?.active && collections ? [{ key: "colecoes", href: "/membros/colecoes", label: "Minhas coleções" }] : []),
+    { key: "blog", href: "/membros/blog", label: "Blog" },
+    { key: "forum", href: "/membros#forum", label: "Fórum" },
   ];
   const account = [
     { key: "perfil", href: `/membros/perfil/${member.username}`, label: "Meu perfil" },
@@ -47,18 +47,18 @@ export async function MemberBar({ member, current }: MemberBarProps) {
       <span>@{member.username}</span>
     </div>
     <nav aria-label="Navegação da área de membros" className={styles.links}>
-      {links.map(({ key, href, label, icon: Icon }) => <Link key={key} href={href} prefetch={false} aria-current={current === key ? "page" : undefined}><Icon size={18} strokeWidth={1.6} aria-hidden="true" /><span>{label}</span></Link>)}
+      {links.map(({ key, href, label }) => <Link key={key} href={href} prefetch={false} aria-current={current === key ? "page" : undefined}><AreaIcon area={key} /><span>{label}</span></Link>)}
     </nav>
     <details className={styles.account} open={more.some(link => link.key === current)}>
-      <summary>Recursos</summary>
+      <summary><AreaIcon area="colecoes" />Recursos</summary>
       <nav aria-label="Recursos da comunidade" className={styles.links}>
-        {more.map(({ key, href, label, icon: Icon }) => <Link key={key} href={href} prefetch={false} aria-current={current === key ? "page" : undefined}><Icon size={18} aria-hidden="true" />{label}</Link>)}
+        {more.map(({ key, href, label }) => <Link key={key} href={href} prefetch={false} aria-current={current === key ? "page" : undefined}><AreaIcon area={key} />{label}</Link>)}
       </nav>
     </details>
     <details className={styles.account} open={account.some(link => link.key === current)}>
-      <summary>Minha conta</summary>
+      <summary><AreaIcon area="perfil" />Minha conta</summary>
       <nav aria-label="Configurações da conta" className={styles.links}>
-        {account.map(({ key, href, label }) => <Link key={key} href={href} prefetch={false} aria-current={current === key ? "page" : undefined}>{label}</Link>)}
+        {account.map(({ key, href, label }) => <Link key={key} href={href} prefetch={false} aria-current={current === key ? "page" : undefined}><AreaIcon area={key} />{label}</Link>)}
       </nav>
       <form action={signOut}><SignOutButton compact /></form>
     </details>

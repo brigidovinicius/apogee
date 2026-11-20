@@ -15,7 +15,7 @@ export function CommunityPlans({ preview = false, signedIn = false, subscribed =
   return <div className={styles.scope}>
     <div className={styles.plans}>
       <article id="plano-anual" className={`${styles.plan} ${styles.featured}`} aria-labelledby="community-plan-title">
-        <h3 id="community-plan-title">Assinatura anual</h3>
+        <h3 data-ap-art="assinatura" data-ap-heading="" id="community-plan-title">Assinatura anual</h3>
         <p>{resources?.trilha && resources.ferramentas ? "Use o catálogo de ferramentas, pratique com a trilha de IA e consulte o Radar completo." : "Consulte o Radar completo e acesse os recursos publicados da comunidade."}</p>
         <div data-annual-stage="annual_price" className={`${styles.price} ${styles.annualPrice}`}><strong>R$ 1.438,80</strong><span>/ano</span></div>
         <div>
@@ -34,7 +34,7 @@ export function CommunityPlans({ preview = false, signedIn = false, subscribed =
         <p className={styles.note}>Os acessos antigos do Radar são preservados.</p>
       </article>
       <article className={styles.plan} aria-labelledby="free-plan-title">
-        <h3 id="free-plan-title">Conta gratuita</h3>
+        <h3 data-ap-art="perfil" data-ap-heading="" id="free-plan-title">Conta gratuita</h3>
         <p>Entre na área de membros e participe das conversas do fórum após a verificação da conta.</p>
         <div className={styles.price}><strong>Grátis</strong><span>sem cartão</span></div>
         <ul><li>Pesquise e navegue pelo Radar e por Benefícios.</li><li>10 consultas mensais no Radar e 10 em Benefícios.</li><li>Reabra itens já liberados no mesmo mês sem usar outra consulta.</li></ul>

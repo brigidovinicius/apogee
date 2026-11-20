@@ -1,3 +1,5 @@
+import { areaForPath } from "./design-scope.mjs";
+import { AreaIcon } from "./area-icon";
 import Image from "next/image";
 import Link from "next/link";
 import { SiteMobileNavigation } from "./site-mobile-navigation";
@@ -34,7 +36,7 @@ export function SiteHeader({
   const renderLink = (item: (typeof navigation)[number]) => (
     <Link key={item.href} href={item.href} prefetch={prefetch}
       aria-current={item.section === current && item.section ? "page" : undefined}>
-      {item.label}
+      <AreaIcon area={areaForPath(item.href)} />{item.label}
     </Link>
   );
   const desktopNavigation = (

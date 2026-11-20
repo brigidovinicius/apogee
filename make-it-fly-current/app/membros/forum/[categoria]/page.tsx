@@ -60,7 +60,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           {topics.map((topic) => (
             <li className={styles.listItem} key={topic.id}>
               <div>
-                <h2>
+                <h2 data-ap-heading="">
                   <Link href={`${basePath}/${topicParam(topic.id, topic.slug)}`}>{interfaceText(topic.title)}</Link>
                 </h2>
                 <p className={styles.meta}>

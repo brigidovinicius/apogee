@@ -1,0 +1,203 @@
+{
+  "Google Flow": {
+    "destinations": [
+      "labs.google/fx/tools/flow",
+      "flow.google",
+      "flow.google.com"
+    ],
+    "image": "/brand/tools/google-flow.webp",
+    "background": "light",
+    "source": "https://www.gstatic.com/aitestkitchen/website/flow/favicon/flow_icon_192.png"
+  },
+  "Higgsfield": {
+    "destinations": [
+      "higgsfield.ai"
+    ],
+    "image": "/brand/tools/higgsfield.webp",
+    "background": "light",
+    "source": "https://higgsfield.ai/apple-icon.png"
+  },
+  "Runway": {
+    "destinations": [
+      "runway.com",
+      "runwayml.com",
+      "app.runwayml.com"
+    ],
+    "image": "/brand/tools/runway.webp",
+    "background": "light",
+    "source": "https://runway.com/icon.png?icon.35ps9bmugbe1e.png"
+  },
+  "CapCut": {
+    "destinations": [
+      "capcut.com"
+    ],
+    "image": "/brand/tools/capcut.webp",
+    "background": "light",
+    "source": "https://sf16-web-tos-buz.capcutstatic.com/obj/capcut-web-buz-sg/common/images/lv_web-2.ico"
+  },
+  "Canva": {
+    "destinations": [
+      "canva.com"
+    ],
+    "benefitPartner": "Canva"
+  },
+  "Figma": {
+    "destinations": [
+      "figma.com"
+    ],
+    "benefitPartner": "Figma"
+  },
+  "Adobe Firefly": {
+    "destinations": [
+      "adobe.com/products/firefly.html",
+      "firefly.adobe.com"
+    ],
+    "image": "/brand/tools/adobe-firefly.webp",
+    "background": "light",
+    "source": "https://firefly.adobe.com/releases/3ea12243f44cc04783faa51782100ebe5534bcd3/assets/fi_android_192-DXlUnW6D.png"
+  },
+  "ElevenLabs": {
+    "destinations": [
+      "elevenlabs.io"
+    ],
+    "benefitPartner": "ElevenLabs"
+  },
+  "Adobe Podcast": {
+    "destinations": [
+      "podcast.adobe.com"
+    ],
+    "image": "/brand/tools/adobe-podcast.svg",
+    "background": "light",
+    "source": "https://podcast.adobe.com/adobe-podcast-favicon.svg"
+  },
+  "Claude": {
+    "destinations": [
+      "claude.ai"
+    ],
+    "image": "/design-system/icons/claude.webp",
+    "background": "transparent"
+  },
+  "Perplexity": {
+    "destinations": [
+      "perplexity.ai"
+    ],
+    "image": "/brand/tools/perplexity.svg",
+    "background": "light",
+    "source": "https://www.perplexity.ai/favicon.svg"
+  },
+  "ChatGPT": {
+    "destinations": [
+      "chatgpt.com",
+      "chat.openai.com"
+    ],
+    "image": "/design-system/icons/chatgpt.webp",
+    "background": "transparent"
+  },
+  "Notion": {
+    "destinations": [
+      "notion.com",
+      "notion.so"
+    ],
+    "benefitPartner": "Notion"
+  },
+  "n8n": {
+    "destinations": [
+      "n8n.io"
+    ],
+    "benefitPartner": "n8n"
+  },
+  "Make": {
+    "destinations": [
+      "make.com"
+    ],
+    "image": "/brand/tools/make.webp",
+    "background": "light",
+    "source": "https://cdn.prod.website-files.com/6a294495bc84130c6dd0c4fd/6a7b9441756d01907cfc9bbb_favicon-32x32.png"
+  },
+  "GitHub": {
+    "destinations": [
+      "github.com"
+    ],
+    "image": "/brand/tools/github.webp",
+    "background": "light",
+    "source": "https://github.githubassets.com/favicons/favicon.svg"
+  },
+  "Cursor": {
+    "destinations": [
+      "cursor.com"
+    ],
+    "image": "/brand/tools/cursor.webp",
+    "background": "light",
+    "source": "https://cursor.com/marketing-static/icon-192x192-light.png"
+  },
+  "Replit": {
+    "destinations": [
+      "replit.com"
+    ],
+    "image": "/brand/tools/replit.webp",
+    "background": "light",
+    "source": "https://replit.com/public/icons/favicon-prompt-192-rebrand.png"
+  },
+  "Spacesheep": {
+    "destinations": [
+      "spacesheep.dev/home",
+      "spacesheep.dev"
+    ],
+    "image": "/brand/tools/spacesheep.webp",
+    "background": "light",
+    "source": "https://spacesheep.dev/apple-touch-icon.png"
+  },
+  "Framer": {
+    "destinations": [
+      "framer.com"
+    ],
+    "image": "/brand/tools/framer.webp",
+    "background": "light",
+    "source": "https://framerusercontent.com/images/aXvo6HfUhqvR7oFjFL8b4AcyGfg.png"
+  },
+  "Webflow": {
+    "destinations": [
+      "webflow.com"
+    ],
+    "image": "/brand/tools/webflow.webp",
+    "background": "light",
+    "source": "https://cdn.prod.website-files.com/686294e263eb7e215bd232f7/686d53d0446d4237b2f38c5f_webclip.png"
+  },
+  "HostGator": {
+    "destinations": [
+      "hostgator.com.br"
+    ],
+    "benefitPartner": "HostGator"
+  },
+  "Hostinger": {
+    "destinations": [
+      "hostinger.com/br",
+      "hostinger.com"
+    ],
+    "image": "/brand/tools/hostinger.webp",
+    "background": "light",
+    "source": "https://www.hostinger.com/favicon.ico"
+  },
+  "Cloudflare": {
+    "destinations": [
+      "cloudflare.com"
+    ],
+    "benefitPartner": "Cloudflare"
+  },
+  "Supabase": {
+    "destinations": [
+      "supabase.com"
+    ],
+    "image": "/brand/tools/supabase.webp",
+    "background": "light",
+    "source": "https://supabase.com/favicon/apple-icon-180x180.png"
+  },
+  "Hetzner": {
+    "destinations": [
+      "hetzner.com"
+    ],
+    "image": "/brand/tools/hetzner.webp",
+    "background": "light",
+    "source": "https://www.hetzner.com/_resources/themes/hetzner/images/favicons/android-icon-192x192.png"
+  }
+}

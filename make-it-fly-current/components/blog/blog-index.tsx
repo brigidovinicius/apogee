@@ -34,7 +34,7 @@ export async function BlogIndex({ searchParams, member = false }: { searchParams
       <Link href={`${basePath}/${post.slug}`} className={styles.cardLink} aria-label={`Ler ${interfaceText(post.title)}`}>
         <div className={styles.cardText}>
           <div className={styles.cardMeta}><span>{categoryLabel(post.category)}</span>{date ? <time dateTime={date.toISOString()}>{dateFormat.format(date)}</time> : null}</div>
-          <h3>{interfaceText(post.title)}</h3>
+          <h3 data-ap-heading="">{interfaceText(post.title)}</h3>
           <p>{interfaceText(post.excerpt)}</p>
         </div>
         {showCover && cover ? <div className={styles.cardArt}>
@@ -58,7 +58,7 @@ export async function BlogIndex({ searchParams, member = false }: { searchParams
         <Link href={basePath} aria-current={!category ? "page" : undefined}>Todos</Link>
         {BLOG_CATEGORIES.map((item) => <Link key={item.value} href={`${basePath}?tema=${item.value}`} aria-current={category === item.value ? "page" : undefined}>{item.label}</Link>)}
       </nav>
-      <div data-ap-reveal="" className={styles.sectionHeading}><h2 data-ap-title="">{category ? categoryLabel(category) : page === 1 ? "Em destaque" : "Últimas publicações"}</h2><span>{total} artigo{total === 1 ? "" : "s"}</span></div>
+      <div data-ap-reveal="" className={styles.sectionHeading}><h2 data-ap-heading="" data-ap-title="">{category ? categoryLabel(category) : page === 1 ? "Em destaque" : "Últimas publicações"}</h2><span>{total} artigo{total === 1 ? "" : "s"}</span></div>
       {posts.length ? <>
         <div className={styles.frontGrid} data-count={Math.min(posts.length, 3)}>
           <div>{renderPost(posts[0], 0)}</div>

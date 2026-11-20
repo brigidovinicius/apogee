@@ -35,7 +35,7 @@ export function PhotoGrid({ photos, loading, error, hasMore, loadingMore, onLoad
     >
       <div className={styles.galleryHeading}>
         <p>Registros da comunidade Apogee</p>
-        <h2 id="event-gallery-title">Quem mostra o que acontece são vocês.</h2>
+        <h2 data-ap-heading="" id="event-gallery-title">Quem mostra o que acontece são vocês.</h2>
         <span aria-hidden>↓</span>
       </div>
 

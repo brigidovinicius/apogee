@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
-import { usesApogeeDesign } from '../components/site/design-scope.mjs';
+import { areaForPath, usesApogeeDesign } from '../components/site/design-scope.mjs';
 
 const source = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
@@ -27,7 +27,7 @@ test('route changes preserve server children and render no theme DOM on event ro
   const mod = { exports: {} };
   new Function('require', 'module', 'exports', compiled)(specifier => {
     if (specifier === 'next/navigation') return { usePathname: () => pathname };
-    if (specifier === './design-scope.mjs') return { usesApogeeDesign };
+    if (specifier === './design-scope.mjs') return { areaForPath, usesApogeeDesign };
     if (specifier.endsWith('.css')) return { scope: 'theme' };
     return require(specifier);
   }, mod, mod.exports);
@@ -40,4 +40,13 @@ test('route changes preserve server children and render no theme DOM on event ro
     assert.ok(html.includes('data-apogee-design'));
     assert.ok(html.includes(original), 'existing form and server-rendered children remain intact');
   }
+});
+
+test('area artwork follows the destination on public routes and nested member links', () => {
+  for (const [href, area] of [
+    ['/', 'home'], ['/oportunidades', 'radar'], ['/membros/oportunidades', 'radar'],
+    ['/membros/ferramentas?categoria=skills', 'ferramentas'], ['/membros/trilha#atividade-2', 'trilha'],
+    ['/membros/beneficios/oferta', 'beneficios'], ['/membros/protecao?next=%2Fmembros', 'protecao'],
+    ['/membros', 'home'], ['/membros/entrar', 'perfil'], ['/makeitfly', undefined],
+  ]) assert.equal(areaForPath(href), area, href);
 });

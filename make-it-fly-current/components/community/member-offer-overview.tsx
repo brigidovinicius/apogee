@@ -1,5 +1,5 @@
+import { areaForPath } from "@/components/site/design-scope.mjs";
 import Link from "next/link";
-import { BookOpen, Compass, Gift, Wrench } from "lucide-react";
 import styles from "./community-offer.module.css";
 
 export function MemberOfferOverview({ name, radarFullAccess, preview = false, annual = false, resources, nextStep }: {
@@ -20,20 +20,19 @@ export function MemberOfferOverview({ name, radarFullAccess, preview = false, an
     href: preview ? "/oportunidades" : "/membros/oportunidades",
   });
   const pillars = [
-    { name: "Radar", icon: Compass, artwork: "radar", text: "Pesquise oportunidades e confira requisitos e prazos.", href: preview ? "/oportunidades" : "/membros/oportunidades", action: "Abrir o Radar" },
-    { name: "Benefícios", icon: Gift, artwork: "perks", text: "Consulte as condições das ofertas vigentes de parceiros.", href: preview ? "/beneficios" : "/membros/beneficios", action: "Ver benefícios" },
-    ...(resources?.trilha ? [{ name: "Trilha inicial", icon: BookOpen, artwork: "learn", text: "Pratique com três atividades de IA e acompanhe seu progresso.", href: "/membros/trilha", action: "Abrir a trilha" }] : []),
-    ...(resources?.ferramentas ? [{ name: "Caixa de Ferramentas", icon: Wrench, artwork: "ferramentas", text: "Escolha uma ferramenta por categoria e abra o site oficial.", href: "/membros/ferramentas", action: "Abrir ferramentas" }] : []),
+    { name: "Radar", artwork: "radar", text: "Pesquise oportunidades e confira requisitos e prazos.", href: preview ? "/oportunidades" : "/membros/oportunidades", action: "Abrir o Radar" },
+    { name: "Benefícios", artwork: "perks", text: "Consulte as condições das ofertas vigentes de parceiros.", href: preview ? "/beneficios" : "/membros/beneficios", action: "Ver benefícios" },
+    ...(resources?.trilha ? [{ name: "Trilha inicial", artwork: "learn", text: "Pratique com três atividades de IA e acompanhe seu progresso.", href: "/membros/trilha", action: "Abrir a trilha" }] : []),
+    ...(resources?.ferramentas ? [{ name: "Caixa de Ferramentas", artwork: "ferramentas", text: "Escolha uma ferramenta por categoria e abra o site oficial.", href: "/membros/ferramentas", action: "Abrir ferramentas" }] : []),
   ];
   return <section className={`${styles.scope} ${styles.overview}`} aria-labelledby="member-offer-title">
-    <h2 data-ap-title="" id="member-offer-title">Olá, {name}</h2>
+    <h2 data-ap-title="" data-ap-heading="section" data-ap-art="home" id="member-offer-title">Olá, {name}</h2>
     <div data-ap-panel="" className={styles.nextStep}>
-      <div><h3>Seu próximo passo</h3><p>{step.description}</p></div>
+      <div><h3 data-ap-heading="" data-ap-art={areaForPath(step.href)}>Seu próximo passo</h3><p>{step.description}</p></div>
       <Link data-ap-button="primary" className={styles.button} prefetch={false} href={step.href}>{step.label}</Link>
     </div>
     <div className={styles.pillarGrid}>
       {pillars.map(item => <article data-ap-card="resource" data-ap-icon={item.artwork} className={styles.pillar} key={item.name}>
-          <item.icon size={24} strokeWidth={1.5} aria-hidden="true" />
           <h3>{item.name}</h3>
           <p>{item.text}</p>
           <Link prefetch={false} href={item.href}>{item.action}</Link>

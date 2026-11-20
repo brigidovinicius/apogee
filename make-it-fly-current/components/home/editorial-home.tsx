@@ -1,7 +1,7 @@
 import { Suspense, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, CalendarDays, Compass, Gift, Wrench } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { McpConnectionStrip } from "@/components/site/mcp-connect-link";
@@ -10,10 +10,9 @@ import { HomeRadar } from "./home-radar";
 import { COMMUNITY_SIGNUP_PATH } from "@/content/community-offer";
 import { publishedResourceAvailability } from "@/lib/members/resource-availability";
 import { availableDeliverables } from "@/components/community/community-deliverables";
+import { areaForPath } from "@/components/site/design-scope.mjs";
 import { HomeStar } from "./home-star";
 import styles from "./journal-home.module.css";
-
-const resourceIcons = { ferramentas: Wrench, learn: BookOpen, radar: Compass, perks: Gift, encontros: CalendarDays };
 
 function EntryCard({ id, theme, title, href, action, picture, children }: {
   id: string; theme: string; title: string; href: string;
@@ -24,7 +23,7 @@ function EntryCard({ id, theme, title, href, action, picture, children }: {
       <div className={styles.entryPicture}>{picture}</div>
       <div className={styles.entryBody}>
         <p className={styles.entryMeta}>{theme}</p>
-        <h3 className={styles.entryTitle} id={id}>{title}</h3>
+        <h3 data-ap-heading="" data-ap-art={areaForPath(href)} className={styles.entryTitle} id={id}>{title}</h3>
         <p className={styles.entrySummary}>{children}</p>
         <Link className={styles.entryAction} href={href} prefetch={false}>{action}<ArrowUpRight aria-hidden="true" size={18} /></Link>
       </div>
@@ -53,13 +52,11 @@ export async function EditorialHome() {
 
       <section className={styles.resourceBand} id="recursos" aria-labelledby="home-resources-title">
         <div className={styles.featureLayout}>
-          <div data-ap-reveal="" className={styles.sectionHeading}><h2 data-ap-title="" id="home-resources-title">A comunidade</h2></div>
+          <div data-ap-reveal="" className={styles.sectionHeading}><h2 data-ap-title="" data-ap-heading="section" data-ap-art="comunidade" id="home-resources-title">A comunidade</h2></div>
           <ul className={styles.resourceGrid}>
             {availableDeliverables(resources).map(resource => {
-              const Icon = resourceIcons[resource.id];
               return <li key={resource.id}>
                 <Link data-ap-card="" data-ap-icon={resource.id === "encontros" ? "participar" : resource.id} className={styles.resourceLink} href={`/comunidade${resource.href}`} prefetch={false}>
-                  <Icon aria-hidden="true" size={23} strokeWidth={1.5} />
                   <h3 data-ap-title="">{resource.label}</h3>
                   <p>{resource.title}</p>
                   <span>{resource.fact}<ArrowUpRight aria-hidden="true" size={16} /></span>
@@ -74,7 +71,7 @@ export async function EditorialHome() {
 
       <section className={styles.radarSection} id="radar" aria-labelledby="home-opportunities-title">
         <div data-ap-reveal="" className={styles.sectionHeading}>
-          <div><h2 data-ap-title="" id="home-opportunities-title">Oportunidades em destaque</h2><p>Confira os prazos de inscrição e as datas dos eventos.</p></div>
+          <div><h2 data-ap-title="" data-ap-heading="section" data-ap-art="radar" id="home-opportunities-title">Oportunidades em destaque</h2><p>Confira os prazos de inscrição e as datas dos eventos.</p></div>
           <Link className={styles.inlineAction} href="/oportunidades" prefetch={false}>Explorar o Radar<ArrowUpRight aria-hidden="true" size={18} /></Link>
         </div>
         <Suspense fallback={<p className={styles.catalogueMessage} role="status">Consultando as oportunidades do Radar…</p>}>
@@ -84,7 +81,7 @@ export async function EditorialHome() {
 
       <section className={styles.featureBand} aria-labelledby="home-explore-title">
         <div className={styles.featureLayout}>
-          <div data-ap-reveal="" className={styles.sectionHeading}><h2 data-ap-title="" id="home-explore-title">Blog e coleção Apogee</h2></div>
+          <div data-ap-reveal="" className={styles.sectionHeading}><h2 data-ap-title="" data-ap-heading="section" data-ap-art="blog" id="home-explore-title">Blog e coleção Apogee</h2></div>
           <ul className={styles.entryGrid} aria-label="Destaques da Apogee">
             <EntryCard id="home-knowledge-title" theme="Conhecimento"
               title="Uma ideia pode levar você mais longe." href="/blog" action="Descobrir leituras"
@@ -102,7 +99,7 @@ export async function EditorialHome() {
 
       <section className={styles.community} aria-labelledby="home-community-title">
         <div className={styles.communityCopy}>
-          <h2 data-ap-title="" id="home-community-title">Comece com uma conta gratuita.</h2>
+          <h2 data-ap-title="" data-ap-heading="section" data-ap-art="comunidade" id="home-community-title">Comece com uma conta gratuita.</h2>
           <p>Consulte até 10 oportunidades no Radar e 10 ofertas em Benefícios por mês. O cadastro é gratuito e dispensa cartão.</p>
           <Link className={styles.inlineAction} href={COMMUNITY_SIGNUP_PATH} prefetch={false}>Criar minha conta gratuita<ArrowUpRight aria-hidden="true" size={18} /></Link>
         </div>

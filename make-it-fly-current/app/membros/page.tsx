@@ -48,7 +48,7 @@ export default async function MemberHomePage() {
         label: activities.some(activity => activity.completed_at) ? "Retomar a trilha" : "Começar a trilha",
         description: nextActivity.name, href: `/membros/trilha#atividade-${nextActivity.id}`,
       } : undefined} />
-      <MemberForumSection><h2 id="member-forum-title">Conversas da comunidade</h2>
+      <MemberForumSection><h2 data-ap-heading="section" data-ap-art="forum" id="member-forum-title">Conversas da comunidade</h2>
 
       {!verified ? <LockedMemberArea kind="forum" next="/membros#forum" reason="verification" /> : categories.length === 0 ? (
         <p className={styles.empty}>Nenhuma categoria criada ainda</p>
@@ -57,7 +57,7 @@ export default async function MemberHomePage() {
           {categories.map((category) => (
             <li className={styles.listItem} key={category.id}>
               <div>
-                <h3>
+                <h3 data-ap-heading="" data-ap-art="forum">
                   <Link href={`/membros/forum/${category.slug}`}>{interfaceText(category.name)}</Link>
                 </h3>
                 {category.description ? <p>{interfaceText(category.description)}</p> : null}

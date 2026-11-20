@@ -64,7 +64,7 @@ export default async function TopicPage({ params, searchParams }: Props) {
       <Pagination basePath={basePath} page={page} pages={pages} />
 
       <section className={styles.section} aria-labelledby="responder">
-        <h2 className={styles.sectionTitle} id="responder">
+        <h2 data-ap-heading="" className={styles.sectionTitle} id="responder">
           Responder
         </h2>
         <div className={styles.panel}>

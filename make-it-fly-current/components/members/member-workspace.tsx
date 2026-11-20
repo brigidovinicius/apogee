@@ -6,6 +6,6 @@ export function MemberWorkspace({ member, current, children }: Omit<MemberBarPro
   if (!member) return children;
   return <div className={styles.workspace}>
     <MemberBar member={member} current={current} />
-    <div className={styles.content} id="conteudo-membro" tabIndex={-1}>{children}</div>
+    <div className={styles.content} id="conteudo-membro" data-ap-member-area="" data-ap-art={current ?? "home"} tabIndex={-1}>{children}</div>
   </div>;
 }

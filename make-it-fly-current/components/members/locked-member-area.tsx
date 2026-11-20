@@ -26,7 +26,7 @@ export function LockedMemberArea({ kind, next, reason = "annual" }: { kind: Lock
       </div>
       <div className={styles.notice}>
         <LockKeyhole size={28} strokeWidth={1.5} aria-hidden="true" />
-        <h2>{title}</h2>
+        <h2 data-ap-heading="" data-ap-art={kind}>{title}</h2>
         <p>{reason === "verification" ? "Verifique sua conta para acessar esta seção." : reason === "unavailable" ? "Os recursos estarão aqui quando forem publicados." : "Disponível durante a vigência da assinatura anual."}</p>
         {kind === "beneficios" ? <p className={styles.note}>Benefícios de parceiros em preparação.</p> : null}
         {kind === "ferramentas" ? <p className={styles.note}>Ferramentas de terceiros seguem suas próprias condições.</p> : null}

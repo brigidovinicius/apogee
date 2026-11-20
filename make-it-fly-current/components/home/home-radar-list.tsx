@@ -41,7 +41,7 @@ export function HomeRadarList({ opportunities, capturedAt }: { opportunities: St
           <Link prefetch={false} href={opportunityDetailPath(item.id)} className={styles.opportunity}>
             <div>
               <p className={styles.opportunityOrganization}>{interfaceText(item.organization)} · {item.kind}</p>
-              <h3>{interfaceText(item.title)}</h3>
+              <h3 data-ap-heading="" data-ap-art="radar">{interfaceText(item.title)}</h3>
               <OpportunityDates opportunity={item} />
             </div>
             <p className={styles.opportunityBenefit}>{interfaceText(item.benefit)}</p>
