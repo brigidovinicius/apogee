@@ -1,3 +1,5 @@
+import { VOUCHER_PATH } from "@/lib/workshop-voucher/input";
+import { voucherConfigured } from "@/lib/workshop-voucher/secrets";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Bell, CirclePlay, Mail, Users } from "lucide-react";
@@ -37,6 +39,11 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
           <a className={`${styles.primary} ${styles.workshopOnline}`} href="#inscricao">
             Inscrever-se para assistir online <ArrowUpRight size={18} aria-hidden="true" />
           </a>
+          {voucherConfigured() && <p>
+            <Link href={VOUCHER_PATH} prefetch={false} className={styles.subtleLink}>
+              Acessar meu voucher na Apogee <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
+          </p>}
         </div>
         <div className={styles.workshopRegistration}>
           <iframe

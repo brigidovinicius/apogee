@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { VOUCHER_ADMIN_PATH } from "@/lib/workshop-voucher/input";
 import { adminDeliverables } from "@/lib/deliverables/store";
 import { DeliverableEditor } from "@/components/community/deliverable-editor";
 import { AdminPageHeader } from "@/components/admin/admin-ui";
@@ -15,6 +17,7 @@ export default async function BenefitsAdmin() {
   const checks = new Map(monitor.map(check => [check.benefit_id, check]));
   const choices = categories.map(c => ({ id: c.id, name: `${c.name} · ${c.status}` }));
   return <div className={styles.admin}><AdminPageHeader title="Benefícios" description="Cadastre apenas acordos comprovados. Rascunhos e benefícios fora da vigência não aparecem para o assinante." />
+    <p><Link href={VOUCHER_ADMIN_PATH}>Gerenciar vouchers do workshop OpenAI</Link></p>
     <h2>Ofertas</h2>
     <p>{available} ofertas disponíveis de {monitor.length} aprovadas. {available < 100 ? "O catálogo está abaixo da meta de 100 ofertas vigentes." : "Meta de 100 ofertas atingida."}</p><details><summary>Novo benefício</summary><DeliverableEditor kind="benefit" choices={choices} /></details>
     {!benefits.length ? <p>Nenhum benefício cadastrado. Faltam os acordos e as regras concretas para anunciar esta entrega.</p> : benefits.map(b => { const o = organization.find(row => row.benefit_id === b.id); return <details key={b.id}><summary>{b.name} · {b.status}</summary>{b.status === "published" ? <p>{checks.get(b.id)?.available ? "Disponível" : "Indisponível"} · {checks.get(b.id)?.reason ?? "Sem checagem vigente"}{checks.get(b.id)?.checked_at ? ` · ${new Date(checks.get(b.id)!.checked_at!).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}` : ""}</p> : null}<DeliverableEditor kind="benefit" choices={choices} values={{ id: b.id, revision: b.revision ?? "", name: b.name, partner: b.partner, audience: b.audience ?? "geral", description: b.description, evidenceUrl: b.evidence_url ?? "", eligibility: b.eligibility, availability: b.availability, startsAt: date(b.starts_at), endsAt: date(b.ends_at), verifiedOn: date(b.verified_at), redemption: b.redemption, redemptionUrl: b.redemption_url, status: b.status, sortOrder: String(b.sort_order), categoryId: o?.category_id ?? "", providerLabel: o?.provider_label ?? "", providerAccess: o?.provider_access ?? "unconfirmed", sourceUrl: o?.source_url ?? "" }} /></details>; })}

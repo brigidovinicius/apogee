@@ -13,6 +13,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uuid,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
@@ -49,6 +50,38 @@ export const monthlyDetailUnlock = pgTable("member_monthly_detail_unlock", {
   check("member_monthly_detail_unlock_area_check", sql`${table.area} in ('radar', 'beneficios')`),
   check("member_monthly_detail_unlock_period_check", sql`extract(day from ${table.period}) = 1`),
   check("member_monthly_detail_unlock_item_id_check", sql`${table.itemId} ~ '^[A-Za-z0-9_-]{1,200}$'`),
+]);
+
+export const workshopVoucherBatch = pgTable("workshop_voucher_batch", {
+  singleton: boolean("singleton").primaryKey().default(true),
+  revision: uuid("revision").notNull(),
+  releasedAt: timestamp("released_at", { withTimezone: true }),
+  releasedBy: text("released_by").references(() => user.id, { onDelete: "set null" }),
+  noticeStartedAt: timestamp("notice_started_at", { withTimezone: true }),
+  noticeAcceptedAt: timestamp("notice_accepted_at", { withTimezone: true }),
+}, table => [check("workshop_voucher_batch_singleton_check", sql`${table.singleton}`)]);
+
+export const workshopVoucherStock = pgTable("workshop_voucher_stock", {
+  slot: smallint("slot").primaryKey(),
+  urlEncrypted: text("url_encrypted").notNull(),
+}, table => [
+  check("workshop_voucher_stock_slot_check", sql`${table.slot} between 1 and 50`),
+  check("workshop_voucher_stock_url_encrypted_check", sql`length(${table.urlEncrypted}) > 0`),
+]);
+
+export const workshopVoucherAssignment = pgTable("workshop_voucher_assignment", {
+  slot: smallint("slot").primaryKey().references(() => workshopVoucherStock.slot),
+  email: text("email").notNull().unique(),
+  proofNonce: uuid("proof_nonce").notNull().unique(),
+  proofHash: text("proof_hash").notNull().unique(),
+  memberId: text("member_id").unique().references(() => user.id, { onDelete: "set null" }),
+  linkedAt: timestamp("linked_at", { withTimezone: true }),
+  openedAt: timestamp("opened_at", { withTimezone: true }),
+}, table => [
+  check("workshop_voucher_assignment_email_check", sql`${table.email} = lower(btrim(${table.email})) and length(${table.email}) between 3 and 254`),
+  check("workshop_voucher_assignment_proof_hash_check", sql`${table.proofHash} ~ '^[a-f0-9]{64}$'`),
+  check("workshop_voucher_assignment_member_link_check", sql`${table.memberId} is null or ${table.linkedAt} is not null`),
+  check("workshop_voucher_assignment_opened_check", sql`${table.openedAt} is null or ${table.linkedAt} is not null`),
 ]);
 
 export const radarCalendarFilter=pgTable('radar_calendar_filter',{

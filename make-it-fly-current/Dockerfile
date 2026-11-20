@@ -57,6 +57,7 @@ COPY --from=builder --chown=nextjs:nextjs /app/scripts/community-contacts-migrat
 COPY --from=builder --chown=nextjs:nextjs /app/sql/community-contacts.sql ./sql/community-contacts.sql
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/members-grant-invitation-manager.mjs ./scripts/members-grant-invitation-manager.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/monthly-detail-migrate.mjs ./scripts/monthly-detail-migrate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/scripts/workshop-voucher-migrate.mjs ./scripts/workshop-voucher-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/drizzle ./drizzle
 COPY --from=dependencies --chown=nextjs:nextjs /app/node_modules/postgres ./node_modules/postgres
 RUN mkdir -p /app/worker-state && chown nextjs:nextjs /app/worker-state
