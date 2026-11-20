@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Bell, CirclePlay, Mail, Users } from "lucide-react";
 import { RECORDING_FAQ } from "@/content/community";
-import { CommunityJoinButton, FunnelFaq, FunnelFooter, FunnelHeader } from "./community-funnel";
+import { SiteFooter } from "@/components/site/site-footer";
+import { CommunityJoinButton, FunnelFaq, FunnelHeader } from "./community-funnel";
 import { RecordingCaptureForm } from "./recording-capture-form";
 import styles from "./community-sales-page.module.css";
 
@@ -60,6 +61,6 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
       </section>
       <section className={[styles.section, styles.recordingCommunity].join(" ")} aria-labelledby="recording-community-title"><div><p className={styles.eyebrow}>Comunidade Apogee</p><h2 id="recording-community-title">Mais ideias.<br />Mais conexões.</h2><p>Continue com o Radar, as aplicações de IA e as conexões da Apogee. Conheça a entrada gratuita e a assinatura que reúne os quatro pilares. A inscrição neste evento é independente da comunidade.</p></div><div className={styles.communityActions}><CommunityJoinButton preview={preview} /><Link className={styles.subtleLink} href="/comunidade#planos" prefetch={false}>Conhecer a assinatura <ArrowUpRight size={16} aria-hidden="true" /></Link></div></section>
       <FunnelFaq id="duvidas" title="Sobre o evento." items={RECORDING_FAQ} />
-    </main><FunnelFooter />
+    </main><SiteFooter description="Conhecimento, oportunidades e gente para colocar ideias em movimento." />
   </div>;
 }
