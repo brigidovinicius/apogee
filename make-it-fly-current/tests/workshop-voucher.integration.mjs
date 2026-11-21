@@ -194,3 +194,54 @@ test("one batch and one link per person, including concurrent claims and retryab
   assert.equal(stock.length, 50);
   assert.ok(stock.every(row => !row.url_encrypted.includes("chatgpt.com")));
 });
+
+test("admins release one participant at a time, up to the 50 links", async t => {
+  const db = await nativeCommunityDatabase();
+  t.after(db.close);
+  const options = { expectedRole: "apogee_local", apply: true };
+  for (const migrate of [migrateCommunityAccess, migrateMemberToolbox, migrateMemberDeliverables, migrateMemberBenefits, migrateMonthlyDetails, migrateWorkshopVouchers]) {
+    await migrate(db.sql, options);
+  }
+  for (const [id, email, verified, role] of [
+    ["admin", "admin@example.test", true, "admin"], ["guest", "guest@example.test", true, "member"],
+    ["late", "late@example.test", true, "member"],
+  ]) await db.sql`insert into "user"(id,name,email,email_verified,role) values(${id},${id},${email},${verified},${role})`;
+  const oldKey = process.env.WORKSHOP_VOUCHER_KEY;
+  process.env.WORKSHOP_VOUCHER_KEY = "8c".repeat(32);
+  t.after(() => {
+    if (oldKey === undefined) delete process.env.WORKSHOP_VOUCHER_KEY;
+    else process.env.WORKSHOP_VOUCHER_KEY = oldKey;
+  });
+  const load = opportunityLoader({
+    "@/lib/members/db": { getSql: () => db.sql },
+    "@/lib/members/mail": { applicationOrigin: () => "https://apogee.example.test", sendMemberMailBatch: async () => {} },
+  });
+  const store = load("lib/workshop-voucher/store.ts");
+
+  await assert.rejects(store.releaseVoucherGuest("admin", "guest@example.test"), /50 links/);
+  const { batch } = await store.adminVoucherStatus();
+  await store.saveVoucherStock("admin", batch.revision, links);
+  await assert.rejects(store.releaseVoucherGuest("guest", "late@example.test"), /administrativo/);
+  assert.equal(await store.openMemberVoucher("guest"), null);
+
+  assert.deepEqual(await store.releaseVoucherGuest("admin", " Guest@Example.test "), { slot: 1, already: false });
+  assert.deepEqual(await store.releaseVoucherGuest("admin", "guest@example.test"), { slot: 1, already: true });
+  assert.ok((await store.adminVoucherStatus()).batch.released_at);
+  assert.equal((await store.memberVoucherState("late")).canOpen, false);
+  assert.deepEqual(await store.releaseVoucherGuest("admin", "late@example.test"), { slot: 2, already: false });
+
+  // A mistaken click can be undone while the link was never shown; the slot is reused.
+  await store.revokeVoucherGuest("admin", "late@example.test");
+  assert.equal((await store.memberVoucherState("late")).canOpen, false);
+  assert.deepEqual(await store.releaseVoucherGuest("admin", "late@example.test"), { slot: 2, already: false });
+  assert.equal(await store.openMemberVoucher("late"), links[1]);
+  await assert.rejects(store.revokeVoucherGuest("admin", "late@example.test"), /não pode ser desfeito/);
+  assert.equal(await store.openMemberVoucher("guest"), links[0]);
+
+  // Concurrent clicks for different people never share a link.
+  const crowd = Array.from({ length: 48 }, (_, i) => `pessoa${i + 3}@example.test`);
+  const slots = (await Promise.all(crowd.map(email => store.releaseVoucherGuest("admin", email)))).map(r => r.slot);
+  assert.deepEqual([...slots].sort((a, b) => a - b), Array.from({ length: 48 }, (_, i) => i + 3));
+  await assert.rejects(store.releaseVoucherGuest("admin", "extra@example.test"), /50 vouchers/);
+  assert.equal((await store.adminVoucherStatus()).guests.length, 50);
+});

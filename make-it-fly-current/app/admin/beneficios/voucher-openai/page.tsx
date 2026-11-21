@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AdminPageHeader } from "@/components/admin/admin-ui";
 import styles from "@/components/community/deliverables.module.css";
 import { VoucherForm } from "@/components/workshop-voucher/form";
+import { VoucherParticipants } from "@/components/workshop-voucher/participants";
 import { requireAdmin } from "@/lib/members/dal";
 import { memberMailAvailable } from "@/lib/members/mail";
 import { manageVoucherAction } from "@/lib/workshop-voucher/actions";
@@ -41,25 +42,9 @@ export default async function WorkshopVoucherAdmin() {
             {revision}<input type="hidden" name="operation" value="stock" />
             <ImportFields label="Ou cole os links" />
           </VoucherForm>
-          {stock === VOUCHER_LIMIT && <>
-            <h3>2. Contemplados</h3>
-            <p>Exporte do Luma o filtro Check-in Feito ao chegar a 50 pessoas distintas. Use esse CSV ou cole um e-mail por linha.</p>
-            <VoucherForm key={`guests-${batch.revision}`} action={manageVoucherAction} label="Carregar contemplados">
-              {revision}<input type="hidden" name="operation" value="guests" />
-              <ImportFields label="Ou cole os e-mails" />
-            </VoucherForm>
-          </>}
         </>}
-        {guests.length > 0 && <>
-          <details open={!batch.released_at}>
-            <summary>{guests.length} e-mails da lista de contemplados</summary>
-            <ol>{guests.map(guest => <li key={guest.slot}>{guest.email}{guest.opened_at ? " · link aberto" : guest.linked_at ? " · vinculado" : ""}</li>)}</ol>
-          </details>
-          {!batch.released_at && <VoucherForm key={`release-${batch.revision}`} action={manageVoucherAction} label="Liberar vouchers em Benefícios">
-            {revision}<input type="hidden" name="operation" value="release" />
-            <p><label><input type="checkbox" name="confirm" required /> Conferi a lista final de contemplados no Luma. {guests.length < VOUCHER_LIMIT && "O credenciamento para a distribuição já foi encerrado."}</label></p>
-          </VoucherForm>}
-        </>}
+        <VoucherParticipants revision={batch.revision} stockReady={stock === VOUCHER_LIMIT}
+          released={guests.map(guest => ({ email: guest.email, slot: guest.slot, linked: Boolean(guest.linked_at), opened: Boolean(guest.opened_at) }))} />
         {batch.released_at && <section>
           <h3>Avisos por e-mail</h3>
           {batch.notice_accepted_at ? <p role="status">O provedor aceitou os {guests.length} avisos.</p> : <>

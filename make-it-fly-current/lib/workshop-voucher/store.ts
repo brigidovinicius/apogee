@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { TransactionSql } from "postgres";
 import { getSql } from "@/lib/members/db";
 import { applicationOrigin, sendMemberMailBatch } from "@/lib/members/mail";
-import { VOUCHER_LIMIT, VOUCHER_PATH, VoucherInputError, voucherUrl } from "./input";
+import { VOUCHER_LIMIT, VOUCHER_PATH, VoucherInputError, voucherEmail, voucherUrl } from "./input";
 import { sealVoucher, unsealVoucher, voucherCode, voucherCodeHash } from "./secrets";
 
 type Assignment = {
@@ -76,6 +76,36 @@ export async function releaseVoucherBatch(actor: string, revision: string) {
     const [guest] = await tx`select slot from workshop_voucher_assignment limit 1`;
     if (!guest || await stocked(tx) !== VOUCHER_LIMIT) throw new VoucherInputError("Carregue os links e os contemplados antes de liberar.");
     await tx`update workshop_voucher_batch set released_at=now(), released_by=${actor} where singleton`;
+  });
+}
+
+// Reception flow: each click reserves the lowest free link for one e-mail. The batch
+// row lock serializes clicks, so two people never share a slot.
+export async function releaseVoucherGuest(actor: string, rawEmail: unknown): Promise<{ slot: number; already: boolean }> {
+  const email = voucherEmail(rawEmail);
+  return getSql().begin(async tx => {
+    await editableBatch(tx, actor);
+    if (await stocked(tx) !== VOUCHER_LIMIT) throw new VoucherInputError("Carregue os 50 links antes de liberar.");
+    const [existing] = await tx<{ slot: number }[]>`select slot from workshop_voucher_assignment where email=${email}`;
+    if (existing) return { slot: existing.slot, already: true };
+    const [free] = await tx<{ slot: number }[]>`select s.slot from workshop_voucher_stock s
+      where not exists (select 1 from workshop_voucher_assignment a where a.slot=s.slot) order by s.slot limit 1`;
+    if (!free) throw new VoucherInputError("Os 50 vouchers já foram liberados.");
+    const nonce = randomUUID();
+    await tx`insert into workshop_voucher_assignment ${tx({ slot: free.slot, email, proof_nonce: nonce, proof_hash: voucherCodeHash(voucherCode(nonce)) })}`;
+    await tx`update workshop_voucher_batch set released_at=coalesce(released_at,now()), released_by=coalesce(released_by,${actor}) where singleton`;
+    return { slot: free.slot, already: false };
+  });
+}
+
+// Undo is only possible while the link was never shown to anyone.
+export async function revokeVoucherGuest(actor: string, rawEmail: unknown): Promise<void> {
+  const email = voucherEmail(rawEmail);
+  await getSql().begin(async tx => {
+    await editableBatch(tx, actor);
+    const removed = await tx`delete from workshop_voucher_assignment
+      where email=${email} and member_id is null and linked_at is null and opened_at is null returning slot`;
+    if (!removed.length) throw new VoucherInputError("Este voucher já foi vinculado ou aberto e não pode ser desfeito.");
   });
 }
 

@@ -95,6 +95,48 @@ export function parseVoucherGuests(raw: string): string[] {
   return normalized;
 }
 
+export type VoucherParticipant = { name: string; email: string };
+export const PARTICIPANT_LIMIT = 2000;
+const emailHeaders = ["email", "e_mail", "guest_email", "email_address"];
+const nameHeaders = ["nome", "name", "nome_completo", "full_name"];
+
+export function voucherEmail(value: unknown): string {
+  const email = typeof value === "string" ? value.trim().toLowerCase() : "";
+  if (email.length <= 254 && z.email().safeParse(email).success) return email;
+  throw new VoucherInputError("Informe um e-mail válido.");
+}
+
+// The participant list stays in the admin's browser; only released e-mails reach the database.
+export function parseVoucherParticipants(raw: string): VoucherParticipant[] {
+  if (raw.length > maxInput) throw new VoucherInputError("O arquivo excede o tamanho permitido.");
+  const input = raw.replace(/^﻿/, "").trim();
+  for (const separator of [",", ";", "\t"]) {
+    const [header = [], ...rows] = input ? readTable(input, separator) : [];
+    const fields = header.map(field => field.toLowerCase().replace(/[\s-]+/g, "_"));
+    const emailColumn = fields.findIndex(field => emailHeaders.includes(field));
+    if (emailColumn < 0) continue;
+    if (!rows.length) throw new VoucherInputError("A lista não tem nenhum participante.");
+    if (rows.length > PARTICIPANT_LIMIT) throw new VoucherInputError(`A lista excede ${PARTICIPANT_LIMIT} participantes.`);
+    const nameColumn = fields.findIndex(field => nameHeaders.includes(field));
+    const seen = new Set<string>();
+    const participants: VoucherParticipant[] = [];
+    rows.forEach((row, index) => {
+      let email: string;
+      try {
+        email = voucherEmail(row[emailColumn] ?? "");
+      } catch {
+        throw new VoucherInputError(`A linha ${index + 2} não tem um e-mail válido.`);
+      }
+      if (seen.has(email)) return; // Luma may export one row per ticket.
+      seen.add(email);
+      const name = (nameColumn >= 0 ? row[nameColumn] ?? "" : "").replace(/[\u0000-\u001f\u007f]/gu, "").replace(/\s+/g, " ").trim().slice(0, 120);
+      participants.push({ name, email });
+    });
+    return participants;
+  }
+  throw new VoucherInputError(input ? "A tabela precisa de uma coluna E-mail." : "A lista não tem nenhum participante.");
+}
+
 export async function voucherImport(form: FormData): Promise<string> {
   const file = form.get("arquivo");
   const pasted = form.get("conteudo");

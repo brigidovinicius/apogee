@@ -16,12 +16,18 @@
 3. Carregue o CSV no painel da Apogee. Confira os e-mails exibidos e confirme **Liberar vouchers em Benefícios**. A liberação fixa a lista e deixa cada reserva acessível pelo e-mail confirmado do ingresso.
 4. Use **Enviar avisos aos contemplados** para enviar um e-mail individual com o endereço da Apogee e um código de vinculação. Um código permite resgatar com outra conta Apogee ou com uma conta de e-mail ainda não confirmado. O painel confirma a aceitação pelo provedor e mantém a mesma solicitação ao repetir um envio que ficou sem confirmação.
 
-### Regra deste evento: 45 vouchers e 5 reservados
+### Liberação por participante (fluxo usado em 21/11/2026)
 
-1. Carregue os 50 links com os **5 reservados para a dinâmica nas linhas 46 a 50**. O link de cada linha é atribuído ao e-mail da mesma posição.
-2. Faça a pausa ao completar **45 pessoas distintas** e carregue o CSV com esses 45 e-mails.
-3. A liberação fixa o lote. Os links 46 a 50 não são atribuídos a ninguém, e a equipe entrega esses 5 diretamente na dinâmica.
-4. No cadastro guiado, oriente quem usa Gmail a escolher **Entrar com Google** com o mesmo e-mail do Luma, que já chega confirmado. Quem cria conta com senha confirma o e-mail na página do voucher.
+Substitui a carga em lote dos contemplados. Os 50 links continuam sendo carregados uma única vez.
+
+1. Carregue os 50 links no painel.
+2. Em **Liberar por participante**, escolha o CSV com as colunas Nome e E-mail (ou a exportação de convidados do Luma). A lista fica somente no navegador do admin e não é gravada no servidor. Cada navegador carrega o arquivo uma vez; o estado das liberações vem do banco e é igual em qualquer aparelho.
+3. Na recepção, busque a pessoa pelo nome ou e-mail e clique em **Liberar**. Cada clique reserva o próximo link livre para aquele e-mail. Os vencedores da dinâmica recebem pelo mesmo botão, até o total de 50. Nenhum link deve ser entregue fora do sistema.
+4. **Desfazer** devolve o link ao estoque enquanto a pessoa ainda não abriu nem vinculou o voucher.
+5. Para alguém fora da lista, use **Liberar para alguém fora da lista** com o e-mail que a pessoa vai usar na Apogee.
+6. No cadastro guiado, oriente quem usa Gmail a escolher **Entrar com Google** com o mesmo e-mail liberado, que já chega confirmado. Quem cria conta com senha confirma o e-mail na página do voucher.
+
+Os avisos por e-mail são enviados uma única vez, para quem estiver liberado no momento do envio.
 
 ## Resgate
 

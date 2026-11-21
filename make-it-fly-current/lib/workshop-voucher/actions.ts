@@ -9,7 +9,7 @@ import { applicationOrigin, memberMailAvailable } from "@/lib/members/mail";
 import { consumeRateLimit } from "@/lib/members/rate-limit";
 import { parseVoucherGuests, parseVoucherLinks, voucherImport, VoucherInputError, VOUCHER_ADMIN_PATH, VOUCHER_PATH } from "./input";
 import { voucherConfigured } from "./secrets";
-import { linkVoucherCode, releaseVoucherBatch, saveVoucherGuests, saveVoucherStock, sendVoucherNotices } from "./store";
+import { linkVoucherCode, releaseVoucherBatch, releaseVoucherGuest, revokeVoucherGuest, saveVoucherGuests, saveVoucherStock, sendVoucherNotices } from "./store";
 
 export type VoucherActionResult = { ok?: boolean; message?: string };
 
@@ -34,6 +34,15 @@ export async function manageVoucherAction(_: VoucherActionResult, form: FormData
         if (form.get("confirm") !== "on") throw new VoucherInputError("Confirme a lista de contemplados.");
         await releaseVoucherBatch(admin.id, revision);
         message = "O lote foi liberado em Benefícios.";
+        break;
+      case "release-guest": {
+        const result = await releaseVoucherGuest(admin.id, form.get("email"));
+        message = result.already ? `Já estava liberado (voucher ${result.slot}).` : `Liberado: voucher ${result.slot}.`;
+        break;
+      }
+      case "revoke-guest":
+        await revokeVoucherGuest(admin.id, form.get("email"));
+        message = "Liberação desfeita. O link voltou para o estoque.";
         break;
       case "notify":
         if (form.get("confirm") !== "on") throw new VoucherInputError("Confirme o envio aos contemplados.");
