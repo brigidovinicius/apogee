@@ -16,6 +16,13 @@
 3. Carregue o CSV no painel da Apogee. Confira os e-mails exibidos e confirme **Liberar vouchers em Benefícios**. A liberação fixa a lista e deixa cada reserva acessível pelo e-mail confirmado do ingresso.
 4. Use **Enviar avisos aos contemplados** para enviar um e-mail individual com o endereço da Apogee e um código de vinculação. Um código permite resgatar com outra conta Apogee ou com uma conta de e-mail ainda não confirmado. O painel confirma a aceitação pelo provedor e mantém a mesma solicitação ao repetir um envio que ficou sem confirmação.
 
+### Regra deste evento: 45 vouchers e 5 reservados
+
+1. Carregue os 50 links com os **5 reservados para a dinâmica nas linhas 46 a 50**. O link de cada linha é atribuído ao e-mail da mesma posição.
+2. Faça a pausa ao completar **45 pessoas distintas** e carregue o CSV com esses 45 e-mails.
+3. A liberação fixa o lote. Os links 46 a 50 não são atribuídos a ninguém, e a equipe entrega esses 5 diretamente na dinâmica.
+4. No cadastro guiado, oriente quem usa Gmail a escolher **Entrar com Google** com o mesmo e-mail do Luma, que já chega confirmado. Quem cria conta com senha confirma o e-mail na página do voucher.
+
 ## Resgate
 
 O endereço da Apogee para o telão e para o e-mail é `/membros/beneficios/voucher-openai`. O participante entra ou cria uma conta e volta ao cartão. Quem usa outro endereço pode vincular a reserva com o código recebido no e-mail do Luma. O botão abre o link individual da OpenAI e permite reabri-lo pela mesma conta. O painel registra a abertura na Apogee. A ativação é concluída na OpenAI.

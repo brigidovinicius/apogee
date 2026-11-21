@@ -71,6 +71,7 @@
   "New Relic": {"image":"/brand/benefits/new-relic.png","source":"https://education.github.com/pack#newrelic","background":"light"},
   "Notion": {"image":"/brand/benefits/notion.png","source":"https://education.github.com/pack#notion","background":"light"},
   "Onshape": {"image":"/brand/benefits/onshape.png","source":"https://www.onshape.com/cdn-images/f35a61ea6bddcaa17307207813b50aaf8d6b846d-180x180.png","background":"light"},
+  "OpenAI": {"image":"/brand/benefits/openai.png","source":"https://openai.com/favicon.ico","background":"light"},
   "Pageclip": {"image":"/brand/benefits/pageclip.png","source":"https://education.github.com/pack#pageclip","background":"light"},
   "Pluralsight": {"image":"/brand/benefits/pluralsight.png","source":"https://www.pluralsight.com/favicon.ico","background":"light"},
   "POEditor": {"image":"/brand/benefits/poeditor.png","source":"https://education.github.com/pack#poeditor","background":"light"},
