@@ -15,6 +15,7 @@ const { analyzeSeo } = await load("../lib/blog/seo.ts", (source) => source.repla
 test("vídeos permitidos recebem embed seguro", () => {
   assert.deepEqual(parseVideoUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ"), { provider: "YouTube", src: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" });
   assert.deepEqual(parseVideoUrl("https://vimeo.com/123456789"), { provider: "Vimeo", src: "https://player.vimeo.com/video/123456789" });
+  assert.deepEqual(parseVideoUrl("https://www.youtube.com/live/innSLBAn8g8?is=Al8Mx0w6KmSy_o33"), { provider: "YouTube", src: "https://www.youtube-nocookie.com/embed/innSLBAn8g8" });
   for (const value of ["http://youtube.com/watch?v=dQw4w9WgXcQ", "https://youtube.com.evil.test/watch?v=dQw4w9WgXcQ", "https://evil.test/video", "javascript:alert(1)"]) {
     assert.equal(parseVideoUrl(value), null);
   }

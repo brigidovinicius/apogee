@@ -1,4 +1,5 @@
 import { VOUCHER_PATH } from "@/lib/workshop-voucher/input";
+import { EVENT_LIVE_REGISTERED_PATH } from "@/lib/community/event-live";
 import { voucherConfigured } from "@/lib/workshop-voucher/secrets";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,7 +27,7 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
           </div>
           <div className={styles.recordingArtwork} aria-hidden="true"><Image src="/brand/apogee-star.svg" alt="" width={703} height={870} priority /><div className={styles.recordingArtLabel}><CirclePlay size={28} strokeWidth={1.2} /><span>Codex Community<small>IA para o dia a dia</small></span></div></div>
         </div>
-        <div id="inscricao" className={styles.captureCard} tabIndex={-1}><RecordingCaptureForm preview={preview} /></div>
+        <div id="inscricao" className={styles.captureCard} tabIndex={-1}><RecordingCaptureForm preview={preview} successHref={EVENT_LIVE_REGISTERED_PATH} /></div>
       </section>
       <section id="workshop-florianopolis" tabIndex={-1} className={`${styles.section} ${styles.workshopSection}`} aria-labelledby="workshop-title">
         <div>

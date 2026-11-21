@@ -10,7 +10,7 @@ export function parseVideoUrl(value: string): VideoEmbed | null {
   if (host === "youtu.be" && /^\/[a-zA-Z0-9_-]{11}\/?$/.test(url.pathname)) id = url.pathname.split("/")[1];
   if (host === "www.youtube.com" || host === "youtube.com") {
     if (url.pathname === "/watch") id = url.searchParams.get("v");
-    else if (/^\/(?:shorts|embed)\/[a-zA-Z0-9_-]{11}\/?$/.test(url.pathname)) id = url.pathname.split("/")[2];
+    else if (/^\/(?:shorts|embed|live)\/[a-zA-Z0-9_-]{11}\/?$/.test(url.pathname)) id = url.pathname.split("/")[2];
   }
   if (id && /^[a-zA-Z0-9_-]{11}$/.test(id)) return { provider: "YouTube", src: `https://www.youtube-nocookie.com/embed/${id}` };
   if ((host === "vimeo.com" || host === "www.vimeo.com") && /^\/\d{5,15}\/?$/.test(url.pathname)) {

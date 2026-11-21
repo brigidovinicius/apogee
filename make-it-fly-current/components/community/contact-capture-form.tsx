@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { COMMUNITY_CONTACT_CONSENT, type ContactCampaign } from "@/lib/community/consent";
@@ -11,8 +12,9 @@ const subscribeToHydration = () => () => {};
 const clientSnapshot = () => true;
 const serverSnapshot = () => false;
 
-export function ContactCaptureForm({ preview = false }: { preview?: boolean }) {
+export function ContactCaptureForm({ preview = false, successHref }: { preview?: boolean; successHref?: string }) {
   const campaign: ContactCampaign = "codex";
+  const router = useRouter();
   const hydrated = useSyncExternalStore(subscribeToHydration, clientSnapshot, serverSnapshot);
   const id = useId();
   const [errors, setErrors] = useState<Errors>({});
@@ -50,7 +52,9 @@ export function ContactCaptureForm({ preview = false }: { preview?: boolean }) {
       const result = await response.json();
       if (!response.ok || result.ok !== true) throw new Error(typeof result.message === "string" ? result.message : "Não foi possível salvar seu pedido agora.");
       form.reset();
-      setSubmitted(true);
+      // The online event continues on its broadcast page; other uses keep the inline confirmation.
+      if (successHref) router.push(successHref);
+      else setSubmitted(true);
     } catch (error) {
       setFailure(error instanceof Error && error.name === "Error" ? error.message : "Não foi possível confirmar seu cadastro. Tente novamente.");
     } finally { setPending(false); }

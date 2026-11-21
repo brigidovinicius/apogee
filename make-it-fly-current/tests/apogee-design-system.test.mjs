@@ -9,7 +9,7 @@ test('homepage theme covers public, member and admin routes, excluding the whole
   for (const path of ['/', '/oportunidades', '/oportunidades/avisos', '/blog', '/blog/uma-ideia', '/galeria', '/loja', '/gerenciar-galeria', '/login', '/membros', '/membros/entrar', '/membros/cadastro', '/membros/oportunidades', '/membros/perfil/editar', '/membros/forum/tecnologia/novo', '/admin', '/admin/radar', '/admin/posts/123', '/home-robonauta', '/makeitfly-extra']) {
     assert.equal(usesApogeeDesign(path), true, path);
   }
-  for (const path of ['/comunidade', '/gravacao', '/evento-openai', '/makeitfly', '/makeitfly/', '/makeitfly/participar', '/makeitfly/participar/etapa', null, undefined]) {
+  for (const path of ['/comunidade', '/gravacao', '/evento-openai', '/evento-openai/ao-vivo', '/makeitfly', '/makeitfly/', '/makeitfly/participar', '/makeitfly/participar/etapa', null, undefined]) {
     assert.equal(usesApogeeDesign(path), false, String(path));
   }
 });

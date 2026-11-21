@@ -159,7 +159,7 @@ test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surf
     "app/.well-known/oauth-authorization-server/api/auth/route.ts", "app/.well-known/oauth-authorization-server/route.ts",
     "app/.well-known/oauth-protected-resource/mcp/route.ts", "app/.well-known/oauth-protected-resource/route.ts", "app/mcp/route.ts",
     "app/membros/integracoes/mcp/entrar/page.tsx", "app/membros/integracoes/mcp/autorizar/page.tsx", "app/membros/integracoes/mcp/page.tsx",
-    "app/beneficios/page.tsx", "app/comunidade/page.tsx", "app/gravacao/page.tsx", "app/evento-openai/page.tsx", "app/admin/comunidade/page.tsx", "app/api/comunidade/contatos/route.ts",
+    "app/beneficios/page.tsx", "app/comunidade/page.tsx", "app/gravacao/page.tsx", "app/evento-openai/page.tsx", "app/evento-openai/ao-vivo/page.tsx", "app/admin/comunidade/page.tsx", "app/api/comunidade/contatos/route.ts",
     "app/api/colecoes/resumos/route.ts", "app/colecoes/[token]/page.tsx", "app/colecoes/resumos/cancelar/[token]/page.tsx",
     "app/membros/colecoes/page.tsx", "app/membros/colecoes/[id]/page.tsx", "app/membros/colecoes/acompanhadas/page.tsx", "app/membros/colecoes/seguir/[token]/page.tsx",
     "app/membros/esqueci-senha/page.tsx", "app/membros/redefinir-senha/page.tsx",
