@@ -626,3 +626,13 @@ Publicação pedida pelo Vitor em nome do proprietário, para o Codex Community 
 - Banco: sem migração. Conferência somente leitura com `node scripts/workshop-voucher-migrate.mjs` no container: `0025_workshop_voucher` aplicada, lote não liberado, `stock` 0 e `assignments` 0.
 - Rollback: recriar `web` a partir de `/opt/apogee-site/releases/home-cards-aa215dc` com `APOGEE_RELEASE_SHA=aa215dc546a24e0ba1da3731ae4d1085b6d85c43`; imagem `apogee-site:aa215dc…` presente.
 - Limites: o painel administrativo não foi aberto com sessão real em produção; os 50 links e a lista de participantes são carregados pela equipe no painel. Registro documental posterior, sem novo deploy.
+
+## 21/11/2026 — Transmissão ao vivo após a inscrição online
+
+Publicação pedida pelo Vitor em nome do proprietário. SHA publicado `93e02b7173fb31b50e6ddcb5322ab37df07142e5` (branch `feat/voucher-openai-logo-20261121`), descendente direto de `033219b`. Validação local: 885 testes do site, typecheck, lint, build e prévia local com o fluxo completo de inscrição levando à nova página.
+
+- Mudança: após inscrição concluída em `/evento-openai`, o formulário leva a `/evento-openai/ao-vivo?inscricao=ok`, com a live do YouTube `innSLBAn8g8` via `youtube-nocookie`, confirmação da inscrição e link direto para o YouTube. Página `noindex`.
+- Troca: worktree `/opt/apogee-site/releases/evento-ao-vivo-93e02b7`, Compose com o `.env` do `repo`, somente `web` reconstruído e recriado. Sem migração.
+- Resultado: `healthy`, revisão `93e02b7`, zero reinícios, 24 containers preservados, checkout `repo` limpo. HTTP: `/`, `/evento-openai`, `/evento-openai/ao-vivo` e `/membros/beneficios/voucher-openai` responderam `200`.
+- Limite conhecido: o YouTube informa `playableInEmbed: false` para essa live; até o dono liberar a incorporação, o player mostra "Vídeo indisponível" e o botão "Assistir no YouTube" abre a transmissão.
+- Rollback: recriar `web` a partir de `/opt/apogee-site/releases/voucher-participants-033219b` com `APOGEE_RELEASE_SHA=033219ba09286ff8ac81fcf290a648f12c6ff8c1`. Registro documental posterior, sem novo deploy.
