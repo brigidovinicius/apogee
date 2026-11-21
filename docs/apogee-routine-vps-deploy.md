@@ -614,3 +614,15 @@ Detalhes em [loja-drops-admin-20261020.md](loja-drops-admin-20261020.md); runboo
 Publicação autorizada após o reteste do preview compilado. PR #87 integrado, CI 39702130219 com seis jobs aprovados e 478 testes do site passando. SHA publicado `41af1db8c6a5e0b88cd0803f4cede326e9049b3a`, mantendo as alterações de produção APG-84 e APG-85. Somente web reconstruído e recriado, healthy e zero reinícios; ambiente e 12 containers vizinhos preservados. Sem migrações.
 
 Quatorze verificações HTTPS e 23 verificações no navegador com sessão real existente passaram. Novo login em produção não foi executado. Rollback `7429096ddadc33bd5d3c7496960f5a8a9234a153` preservado. Detalhes e limites em [navigation-deploy-20261021.md](navigation-deploy-20261021.md). Registro documental posterior, sem novo deploy.
+
+## 21/11/2026 — Voucher OpenAI: marca no card e liberação por participante
+
+Publicação pedida pelo Vitor em nome do proprietário, para o Codex Community Workshop do mesmo dia. Branch `feat/voucher-openai-logo-20261121`, base `aa215dc546a24e0ba1da3731ae4d1085b6d85c43` (`release/home-cards-20261120`), SHA publicado `033219ba09286ff8ac81fcf290a648f12c6ff8c1`. Validação local: 882 testes do site, integração do voucher em PostgreSQL temporário (5), typecheck, lint, build e prévia local com dados sintéticos.
+
+- Acesso: chave SSH dedicada `apogee-deploy-mac-vitor-20261121`, autorizada na VPS pela equipe. Host `srv1439756`.
+- Preflight: checkout `/opt/apogee-site/repo` limpo em `4256cde` (ancestral da base), `.env` modo `600`, web `healthy` na revisão `aa215dc`, construído de `/opt/apogee-site/releases/home-cards-aa215dc`. 24 containers em execução.
+- Troca: fetch com refspec explícito da branch, `git worktree add --detach /opt/apogee-site/releases/voucher-participants-033219b 033219b` e Compose dessa worktree com `APOGEE_SITE_ENV_FILE` apontando para o `.env` do `repo`. Somente `web` reconstruído e recriado (`--no-deps --build --force-recreate`). O checkout `repo` e a worktree anterior não foram alterados.
+- Resultado: `apogee-site-web-1` `healthy`, revisão `033219b`, zero reinícios, 24 containers preservados. HTTP: `/`, `/membros/entrar`, `/beneficios` e `/membros/beneficios/voucher-openai` responderam `200`; `/admin/beneficios/voucher-openai` redirecionou ao login; `/brand/benefits/openai.png` respondeu `200`.
+- Banco: sem migração. Conferência somente leitura com `node scripts/workshop-voucher-migrate.mjs` no container: `0025_workshop_voucher` aplicada, lote não liberado, `stock` 0 e `assignments` 0.
+- Rollback: recriar `web` a partir de `/opt/apogee-site/releases/home-cards-aa215dc` com `APOGEE_RELEASE_SHA=aa215dc546a24e0ba1da3731ae4d1085b6d85c43`; imagem `apogee-site:aa215dc…` presente.
+- Limites: o painel administrativo não foi aberto com sessão real em produção; os 50 links e a lista de participantes são carregados pela equipe no painel. Registro documental posterior, sem novo deploy.
