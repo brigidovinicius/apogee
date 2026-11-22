@@ -636,3 +636,12 @@ Publicação pedida pelo Vitor em nome do proprietário. SHA publicado `93e02b71
 - Resultado: `healthy`, revisão `93e02b7`, zero reinícios, 24 containers preservados, checkout `repo` limpo. HTTP: `/`, `/evento-openai`, `/evento-openai/ao-vivo` e `/membros/beneficios/voucher-openai` responderam `200`.
 - Limite conhecido: o YouTube informa `playableInEmbed: false` para essa live; até o dono liberar a incorporação, o player mostra "Vídeo indisponível" e o botão "Assistir no YouTube" abre a transmissão.
 - Rollback: recriar `web` a partir de `/opt/apogee-site/releases/voucher-participants-033219b` com `APOGEE_RELEASE_SHA=033219ba09286ff8ac81fcf290a648f12c6ff8c1`. Registro documental posterior, sem novo deploy.
+
+## 22/11/2026 — Política de privacidade do piloto do Radar
+
+- O SHA autorizado `6bb2b71591b47474c2c25df6964c743aaa36e7c3` foi enviado à branch `release/radar-privacidade-amplitude-20261122` e implantado via `apogee-vps`. A validação local desse SHA cobriu 888 testes, ESLint dos arquivos alterados, build com TypeScript e Chrome com respostas simuladas.
+- Sob o lock `/opt/apogee-site/.deploy.lock`, o checkout remoto passou de `78ceee35c401323e8d756e0b22e4955b112de277` para o SHA autorizado. A VPS executou `docker compose config -q`, `docker compose build web` e `docker compose up -d --no-deps --no-build --force-recreate web`. A única alteração no arquivo de ambiente foi `APOGEE_PRIVACY_APPROVED_VERSION`, de `2026-11-08.1` para `2026-11-22.1`, com permissões e propriedade preservadas.
+- O web ficou `healthy`, com zero reinícios, checkout limpo e imagem `sha256:47a5bacdc11bc24c444ae4f1d1476697286d8231987c82ca0ecdc80382420237`. Os IDs dos containers vizinhos permaneceram iguais.
+- O Chrome anônimo confirmou a Política de Privacidade com HTTP `200`, versão `2026-11-22.1`, seção do Amplitude, links internos e link no rodapé do Radar. Radar e Termos também responderam `200`. O navegador observou zero requisições de medição. O teste interno de `/api/radar/amplitude` sem dados retornou `404`.
+- A integração mantém o aviso condicionado à ativação do piloto. A coleta permaneceu desligada, a publicação não executou a migração `0027_radar_amplitude_consent.sql` e nenhum dado real foi enviado ao Amplitude.
+- O rollback usa a imagem anterior `apogee-site:78ceee35c401323e8d756e0b22e4955b112de277` e a versão editorial anterior `2026-11-08.1`. Este registro é local e posterior à publicação.
