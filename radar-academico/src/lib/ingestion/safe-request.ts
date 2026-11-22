@@ -64,15 +64,18 @@ export function decodeBoundedResponse(body: Buffer, encoding: string | null, max
 // No proxy environment, redirects, connection reuse or cookies. Gzip requires an
 // individually audited opt-in and preserves both encoded and decoded byte caps.
 // A single deadline covers DNS, TLS, headers and streaming body consumption.
-export function safeRequest(url: string, headers: Record<string, string>, maxBytes: number, method = "GET", allowMalformedResponseHeaders = false, allowGzipResponse = false): Promise<Response> {
+export function safeRequest(url: string, headers: Record<string, string>, maxBytes: number, method = "GET", allowMalformedResponseHeaders = false, allowGzipResponse = false, requestGzip = false): Promise<Response> {
   const target = new URL(url);
+  const negotiatedGzip = requestGzip && allowGzipResponse;
   if (target.protocol !== "https:" || target.port && target.port !== "443" || target.username || target.password || isIP(target.hostname.replace(/^\[|\]$/g, ""))) {
     return Promise.reject(new Error("URL de rede não permitida"));
   }
   return new Promise((resolve, reject) => {
     const req = request(target, {
-      method, headers: { ...headers, "Accept-Encoding": "identity" },
-      agent: false, lookup: publicLookup, signal: officialRequestSignal(),
+      method, headers: { ...headers, "Accept-Encoding": negotiatedGzip ? "gzip" : "identity" },
+      // The audited UFSC routes can also serve a slow cache miss. The caller's
+      // absolute crawl deadline still caps both attempts and their backoff.
+      agent: false, lookup: publicLookup, signal: officialRequestSignal(negotiatedGzip ? 22_000 : undefined),
       // The official SEA host sends a multiline CSP header. This opt-in only
       // changes response-header parsing; DNS, TLS, body and redirect limits remain.
       insecureHTTPParser: allowMalformedResponseHeaders,
@@ -85,7 +88,8 @@ export function safeRequest(url: string, headers: Record<string, string>, maxByt
         }
         // A missing robots.txt is allowed by the caller. Its error body is never
         // needed, and some servers gzip it despite Accept-Encoding: identity.
-        if (method === "HEAD" || status === 204 || status === 304 || status === 404 || status >= 300 && status < 400) {
+        if (method === "HEAD" || status === 204 || status === 304 || status === 404 || status >= 300 && status < 400 ||
+          negotiatedGzip && [502, 503, 504].includes(status)) {
           response.destroy();
           resolve(new Response(null, { status, headers: responseHeaders }));
           return;

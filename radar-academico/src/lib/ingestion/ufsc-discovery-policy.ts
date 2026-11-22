@@ -3,6 +3,9 @@ import type { OfficialSource } from './types';
 
 const targetId = 'xlsx-20261014-001-ufsc';
 const roots = new Set(['https://noticias.ufsc.br', 'https://noticias.ufsc.br/']);
+export const UFSC_ENSUS_URL = 'https://joinville.ufsc.br/2026/10/28/ensus-2027-abre-inscricoes-e-submissao-de-trabalhos-cientificos/';
+export const UFSC_SECARTE_PERFORMANCE_URL = 'https://secarte.ufsc.br/performance-nada-sera-devolvido-em-silencio/';
+export const UFSC_DAC_PERFORMANCE_URL = 'https://dac.ufsc.br/2026/11/13/performance-nada-sera-devolvido-em-silencio/';
 // Each host was read from the verified UFSC index and audited on 19/11/2026.
 // This does not grant authority to arbitrary subdomains or shared platforms.
 const hosts = new Set(['noticias.ufsc.br', 'www.ca.ufsc.br', 'petletras.paginas.ufsc.br',

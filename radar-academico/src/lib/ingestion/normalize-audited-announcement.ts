@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
 import * as cheerio from 'cheerio';
 import { candidateUrl } from '@/lib/discovery/documents';
-import { auditedUfscPage } from './ufsc-discovery-policy';
+import { auditedUfscPage, UFSC_DAC_PERFORMANCE_URL, UFSC_ENSUS_URL, UFSC_SECARTE_PERFORMANCE_URL } from './ufsc-discovery-policy';
 import { explicitDatesToNumeric } from './explicit-dates';
 import { eventHasNotStarted, eventStartFromText, parseEventStart } from './event-start';
-import { confirmedTerminalStatus } from './publication';
+import { confirmedTerminalStatus, deadlineIsCurrent } from './publication';
 import { detectDeadline } from './detect-deadline';
 import type { OfficialSource, OpportunityCandidate } from './types';
 
@@ -98,10 +98,92 @@ function ufscCalendar(article: Article, source: OfficialSource, now: Date): Prep
       opportunity_status: proof(availability[0]) } } };
 }
 
+const hiddenControls = '[hidden],[disabled],[aria-disabled="true"],[aria-hidden="true"]';
+
+function ufscEnsus(article: Article, source: OfficialSource, now: Date): Prepared {
+  if (source.baseUrl !== UFSC_ENSUS_URL) return undefined;
+  if (!/^ENSUS 2027 abre inscrições e submissão de trabalhos científicos$/iu.test(article.title)) {
+    return { reason: 'candidate_unconfirmed' };
+  }
+  const $ = cheerio.load(article.html);
+  $(hiddenControls).remove();
+  const rows = $('li').map((_, node) => clean($(node).text())).get();
+  const deadlineRows = rows.filter(text => /^Prazo para submissão de trabalhos:/iu.test(text));
+  const eventRows = rows.filter(text => /^Realização do evento:/iu.test(text));
+  const range = /^Realização do evento:\s*(\d{1,2})\s+a\s+(\d{1,2})\s+de\s+(\p{L}+)\s+de\s+(2027)\.?$/iu.exec(eventRows[0] ?? '');
+  const deadline = detectDeadline(deadlineRows[0] ?? '');
+  if (deadlineRows.length !== 1 || eventRows.length !== 1 || !range ||
+    deadline.precision !== 'date_only' || !deadline.deadlineAt) return { reason: 'invalid_deadline' };
+  const start = ufscDay(`${range[1]} de ${range[3]} de ${range[4]}`);
+  const end = ufscDay(`${range[2]} de ${range[3]} de ${range[4]}`);
+  if (!start || !end || end < start || deadline.deadlineAt >= start) return { reason: 'invalid_deadline' };
+  const submissionLinks = $('p').filter((_, node) => /^As orientações para submissão\b/iu.test(clean($(node).text())))
+    .find('a[href]').map((_, node) => $(node).attr('href') ?? '').get();
+  const applicationUrl = 'https://www.even3.com.br/ensus-2027-783898/';
+  if (submissionLinks.length !== 1 || submissionLinks[0] !== applicationUrl) return { reason: 'application_route_unconfirmed' };
+  const availability = $('p').map((_, node) => clean($(node).text())).get()
+    .find(text => /^Estão abertas as submissões de trabalhos para o XV Encontro de Sustentabilidade em Projeto \(ENSUS 2027\)/iu.test(text));
+  const terminal = confirmedTerminalStatus(article.text, article.title);
+  if (!availability && !terminal) return { reason: 'status_unconfirmed' };
+  const proof = (excerpt: string) => ({ source_url: source.baseUrl, excerpt });
+  return { candidate: { ...base(article, source), title: 'ENSUS 2027 — Submissão de trabalhos científicos',
+    categories: ['eventos', 'pesquisa'], stateCode: 'SC', cityName: 'Florianópolis', countryCode: 'BR', geographicScopeKind: 'city',
+    applicationUrl, deadlineAt: deadline.deadlineAt, deadlinePrecision: deadline.precision, eventStartsAt: start,
+    opportunityStatus: terminal ?? (deadlineIsCurrent({ deadlineAt: deadline.deadlineAt, deadlinePrecision: deadline.precision }, now) ? 'open' : 'closed'),
+    requirementsText: 'Modalidade presencial para o encontro, na UFSC em Florianópolis. Pesquisadores, estudantes e profissionais podem submeter trabalhos em sustentabilidade. Consulte o regulamento oficial.',
+    evidenceJson: { deadline_at: proof(deadlineRows[0]), event_start: proof(eventRows[0]),
+      application_route: proof(`Plataforma de submissão indicada pela UFSC: ${applicationUrl}`),
+      opportunity_status: proof(terminal ? article.text.slice(0, 1000) : availability!) },
+    discovery: { primaryType: 'eventos', areas: ['ambiente', 'tecnologia'], editions: [{ id: 'ensus-2027',
+      name: 'XV Encontro de Sustentabilidade em Projeto', stages: [
+        { id: 'submissao', name: 'Prazo para envio de trabalhos', kind: 'registration', start: deadline.deadlineAt, sourceUrl: source.baseUrl, checkedAt: now.toISOString() },
+        { id: 'encontro', name: 'Realização do ENSUS 2027', kind: 'event', start, end, sourceUrl: source.baseUrl, checkedAt: now.toISOString() },
+      ] }] } } };
+}
+
+function ufscDay(value: string) {
+  const date = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(explicitDatesToNumeric(value));
+  try { return date ? parseEventStart(`${date[3]}-${date[2]}-${date[1]}`) : null; }
+  catch { return null; }
+}
+
+function ufscOpenCulture(article: Article, source: OfficialSource, now: Date): Prepared {
+  if (source.baseUrl !== UFSC_SECARTE_PERFORMANCE_URL && source.baseUrl !== UFSC_DAC_PERFORMANCE_URL) return undefined;
+  if (!/^Performance\s+[“"]Nada Será Devolvido em Silêncio[”"]$/iu.test(article.title)) return { reason: 'candidate_unconfirmed' };
+  const $ = cheerio.load(article.html);
+  $(hiddenControls).remove();
+  const service = $('p').filter((_, node) => /^O quê:\s*Performance Nada Será Devolvido em Silêncio/iu.test(clean($(node).text())));
+  if (service.length !== 1) return { reason: 'detail_layout_unrecognized' };
+  service.find('br').replaceWith('\n');
+  const lines = service.text().split('\n').map(clean);
+  const when = lines.find(line => /^Quando:/iu.test(line));
+  const where = lines.find(line => /^Onde:.*Teatro Carmen Fossari.*Florianópolis\s*[-–]\s*SC/iu.test(line));
+  const entry = lines.find(line => /^Quanto:\s*Evento gratuito e aberto a toda a comunidade\.?$/iu.test(line));
+  if (!entry || !where) return { reason: 'application_route_unconfirmed' };
+  const date = /^Quando:\s*(\d{2})\/(\d{2})\/(\d{4})\s*\|\s*sexta-feira\s*\|\s*(\d{1,2})h(\d{2})?$/iu.exec(when ?? '');
+  let start: string | null = null;
+  try {
+    if (date) start = parseEventStart(`${date[3]}-${date[2]}-${date[1]}T${date[4].padStart(2, '0')}:${date[5] ?? '00'}:00-03:00`);
+  } catch { return { reason: 'invalid_deadline' }; }
+  const deadline = detectDeadline(article.text);
+  if (!start || !when || deadline.stated || deadline.precision !== 'not_informed') return { reason: 'invalid_deadline' };
+  const proof = (excerpt: string) => ({ source_url: source.baseUrl, excerpt });
+  return { candidate: { ...base(article, source), title: 'Performance “Nada Será Devolvido em Silêncio”',
+    stateCode: 'SC', cityName: 'Florianópolis', countryCode: 'BR', geographicScopeKind: 'city', eventStartsAt: start,
+    requirementsText: `Modalidade presencial. Performance de poesia e música de Énia Lipanga. ${where}`,
+    amountText: 'Entrada gratuita e aberta à comunidade.',
+    opportunityStatus: confirmedTerminalStatus(article.text, article.title) ?? (eventHasNotStarted(start, now) ? 'open' : 'closed'),
+    evidenceJson: { event_start: proof(when), location: proof(where), registration_availability: proof(entry), opportunity_status: proof(entry) },
+    discovery: { primaryType: 'eventos', areas: ['artes'], editions: [{ id: 'performance-2026', name: 'Nada Será Devolvido em Silêncio',
+      stages: [{ id: 'event', name: 'Realização', kind: 'event', start, sourceUrl: source.baseUrl, checkedAt: now.toISOString() }] }] } } };
+}
+
 /** Narrow, recorded official templates; missing dates and unrelated hosts remain held. */
 export function prepareAuditedAnnouncement(article: Article, source: OfficialSource, now = new Date()): Prepared {
   const ceremony = obqCeremony(article, source, now);
   if (ceremony !== undefined) return ceremony;
+  const ufscEdition = ufscEnsus(article, source, now) ?? ufscOpenCulture(article, source, now);
+  if (ufscEdition !== undefined) return ufscEdition;
   if (!auditedUfscPage(source)) return undefined;
   return petVolunteers(article, source, now) ?? ufscCalendar(article, source, now);
 }

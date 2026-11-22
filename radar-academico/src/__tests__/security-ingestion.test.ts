@@ -4,6 +4,7 @@ vi.mock("node:dns/promises", () => ({ lookup: vi.fn() }));
 vi.mock("@/lib/ingestion/safe-request", async (original) => ({ ...await original<typeof import("@/lib/ingestion/safe-request")>(), safeRequest: vi.fn() }));
 import { lookup } from "node:dns/promises";
 import { collectBounded, decodeBoundedResponse, isPublicAddress, publicLookup, safeRequest } from "@/lib/ingestion/safe-request";
+import { UFSC_ENSUS_URL } from "@/lib/ingestion/ufsc-discovery-policy";
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { BoundedCache } from "@/lib/ingestion/bounded-cache";
 import { sourceSettings, sourceUrls } from "@/lib/ingestion/source-settings";
@@ -167,4 +168,31 @@ it.each([
  }
  vi.mocked(safeRequest).mockImplementation(async()=>new Response('User-agent: *\nDisallow: /'));
  await expect(fetchOfficialResource(s.baseUrl,s)).rejects.toThrow('robots');
+});
+it("negotiates bounded gzip for the audited UFSC edition and retries a transient gateway response", async () => {
+  vi.stubEnv("INGESTION_REQUEST_DELAY_MS", "100");
+  vi.useFakeTimers();
+  const official = { ...source, id: "ufsc-ensus-test", baseUrl: UFSC_ENSUS_URL,
+    allowedDomains: ["joinville.ufsc.br"], allowedPathPrefixes: ["/"] };
+  let pages = 0;
+  const request = vi.mocked(safeRequest);
+  request.mockClear();
+  request.mockImplementation(async (url) => {
+    if (url.endsWith("/robots.txt")) return new Response("");
+    return ++pages === 1 ? new Response(null, { status: 502 }) : new Response("official");
+  });
+  try {
+    const page = fetchOfficialResource(official.baseUrl, official);
+    await vi.runAllTimersAsync();
+    expect((await page).body.toString()).toBe("official");
+    expect(pages).toBe(2);
+    expect(request.mock.calls.every(call => call[5] && call[6])).toBe(true);
+    request.mockClear();
+    const other = fetchOfficialResource(new URL("/other/", official.baseUrl).href, official);
+    await vi.runAllTimersAsync();
+    await other;
+    expect(request.mock.calls.every(call => !call[6])).toBe(true);
+  } finally {
+    vi.useRealTimers();
+  }
 });

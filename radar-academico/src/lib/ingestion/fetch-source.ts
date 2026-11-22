@@ -6,7 +6,7 @@ import { safeRequest } from "./safe-request";
 import { BoundedCache } from "./bounded-cache";
 import { waitForOfficialRequest } from "./request-budget";
 import { jobBoard, jobFeedUrl, jobPostingUrl } from "./job-sources";
-import { ufscDiscoveryGzip } from './ufsc-discovery-policy';
+import { UFSC_DAC_PERFORMANCE_URL, UFSC_ENSUS_URL, UFSC_SECARTE_PERFORMANCE_URL, ufscDiscoveryGzip } from './ufsc-discovery-policy';
 
 // Only the individually audited EV.G host reuses robots for at most five minutes (RFC9309 section2.4).
 const evgRobotsCache = new BoundedCache<ReturnType<typeof robotsParser>>(8, 1024 * 1024, 5 * 60_000);
@@ -37,10 +37,10 @@ export async function rateLimit(host: string) {
 // One retry for transient gateway failures only. Never retry a denial, rate
 // limit, TLS/DNS error, or a response asking us to wait via Retry-After.
 async function requestOfficialUrl(url: string, headers: Record<string, string>, maxBytes: number,
-  allowMalformedHeaders: boolean, allowGzip: boolean): Promise<Response> {
+  allowMalformedHeaders: boolean, allowGzip: boolean, requestGzip: boolean): Promise<Response> {
   for (let attempt = 0; ; attempt += 1) {
     await rateLimit(new URL(url).hostname);
-    const response = await safeRequest(url, headers, maxBytes, "GET", allowMalformedHeaders, allowGzip);
+    const response = await safeRequest(url, headers, maxBytes, "GET", allowMalformedHeaders, allowGzip, requestGzip);
     if (attempt === 1 || ![502, 503, 504].includes(response.status) || response.headers.has("retry-after")) return response;
     await waitForOfficialRequest(2000);
   }
@@ -66,13 +66,18 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
       parsed.hostname === "dae.ufsc.br" && parsed.pathname === "/admissao-por-transferencias-e-retornos-edital/" ||
       parsed.hostname === "noticias.ufsc.br" && parsed.pathname === "/2026/10/ufsc-lanca-edital-de-transferencias-e-retornos-com-5-139-vagas/"
     );
-    const allowGzip = ufscGzipCompatibility || ufscDiscoveryGzip(source, url) ||
+    // The audited UFSC news gateway serves negotiated gzip quickly; identity
+    // took up to 16 seconds for the same page, beyond the per-request budget.
+    const auditedDiscoveryPage = ufscDiscoveryGzip(source, url);
+    const requestGzip = parsed.hostname === "noticias.ufsc.br" && auditedDiscoveryPage ||
+      url === UFSC_ENSUS_URL || url === UFSC_SECARTE_PERFORMANCE_URL || url === UFSC_DAC_PERFORMANCE_URL;
+    const allowGzip = requestGzip || ufscGzipCompatibility || auditedDiscoveryPage ||
       expansionGzipHosts[source.id] === parsed.hostname && parsed.pathname === "/";
     const robotsUrl = `${parsed.origin}/robots.txt`;
     const robotsKey = source.id === "evg-enap-open-courses" && parsed.hostname === "www.escolavirtual.gov.br" ? `${robotsUrl}|${agent}` : null;
     let robots = robotsKey ? evgRobotsCache.get(robotsKey) : undefined;
     if (!robots) {
-      const robotsResponse = await requestOfficialUrl(robotsUrl, { "User-Agent": agent }, 128 * 1024, seaOfficialHeaderCompatibility, allowGzip);
+      const robotsResponse = await requestOfficialUrl(robotsUrl, { "User-Agent": agent }, 128 * 1024, seaOfficialHeaderCompatibility, allowGzip, requestGzip);
       // Only a real 404 permits absence; errors are never cached or reused after expiry.
       if (!robotsResponse.ok && robotsResponse.status !== 404) throw new Error("robots.txt indisponível para revisão");
       const body = robotsResponse.ok ? await robotsResponse.text() : "";
@@ -89,7 +94,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     const headers: Record<string, string> = { "User-Agent": agent, Accept: "application/json,text/html,application/rss+xml,application/pdf;q=0.9" };
     if (cached?.etag) headers["If-None-Match"] = cached.etag;
     if (cached?.modified) headers["If-Modified-Since"] = cached.modified;
-    const response = await requestOfficialUrl(url, headers, maxBytes, seaOfficialHeaderCompatibility, allowGzip);
+    const response = await requestOfficialUrl(url, headers, maxBytes, seaOfficialHeaderCompatibility, allowGzip, requestGzip);
     // 304 is a cache response, not a redirect.
     if (response.status === 304 && cached) {
       return { body: cached.body, contentType: cached.contentType, hash: crypto.createHash("sha256").update(cached.body).digest("hex"), cached: true, discoverySitemaps: robots.getSitemaps() };
