@@ -645,3 +645,10 @@ Publicação pedida pelo Vitor em nome do proprietário. SHA publicado `93e02b71
 - O Chrome anônimo confirmou a Política de Privacidade com HTTP `200`, versão `2026-11-22.1`, seção do Amplitude, links internos e link no rodapé do Radar. Radar e Termos também responderam `200`. O navegador observou zero requisições de medição. O teste interno de `/api/radar/amplitude` sem dados retornou `404`.
 - A integração mantém o aviso condicionado à ativação do piloto. A coleta permaneceu desligada, a publicação não executou a migração `0027_radar_amplitude_consent.sql` e nenhum dado real foi enviado ao Amplitude.
 - O rollback usa a imagem anterior `apogee-site:78ceee35c401323e8d756e0b22e4955b112de277` e a versão editorial anterior `2026-11-08.1`. Este registro é local e posterior à publicação.
+
+## 22/11/2026 — Migração 0027 do consentimento do Radar
+
+- A migração autorizada `0027_radar_amplitude_consent.sql` usou o SQL do SHA `6bb2b71591b47474c2c25df6964c743aaa36e7c3`, com SHA-256 `bb4b640cb95f718b30c64cfcad2feebcceda80c856189b9b026b693824396a50`. O banco `apogee_membros` tinha 27 entradas no Drizzle, todas iguais ao manifesto.
+- O `pg_dump` protegido em `/opt/apogee-backups/radar-amplitude-0027-20261122T214202Z-ywla3w` passou em `sha256sum -c SHA256SUMS` e `pg_restore` em PostgreSQL temporário sem rede na própria VPS. A restauração conferiu o histórico e as 71 tabelas. O ensaio com uma conta sintética confirmou a validação da versão, o horário padrão e a exclusão em cascata.
+- Usando `apogee_app` no container web, a transação bloqueou o histórico, validou seus hashes, executou somente a 0027 e registrou sua entrada. A leitura independente confirmou 28 entradas e a tabela `radar_amplitude_consent` com as quatro colunas esperadas, chave primária, chave estrangeira com exclusão em cascata, validação de versão positiva e zero registros.
+- Web e banco permaneceram saudáveis com os mesmos IDs de container. Radar, Política de Privacidade e Termos responderam `200` no Chrome anônimo. A API do piloto retornou `404` e o navegador observou zero requisições de medição. A coleta permaneceu desligada.
