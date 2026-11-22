@@ -29,7 +29,7 @@ test("contact migration is idempotent and duplicate requests preserve original c
       const rows = await sql`select name,email,consent_text,consent_version from community_contact`;
       assert.equal(rows.length, 1);
       assert.equal(rows[0].name, "Pessoa Sintética");
-      assert.equal(rows[0].consent_version, "2026-11-12-v1");
+      assert.equal(rows[0].consent_version, "2026-11-22-v2");
       assert.match(rows[0].consent_text, /Codex Community/);
       assert.deepEqual(await sql`select count(*)::int as total from public."user"`, existing);
     } finally {

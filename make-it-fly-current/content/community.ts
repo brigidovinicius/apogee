@@ -14,7 +14,7 @@ export const RECORDING_FAQ = [
   { question: "O que vou aprender no evento?", answer: "Você vai explorar possibilidades de usar IA para pesquisar, escrever, organizar tarefas e desenvolver ideias. A proposta é ampliar seu repertório e encontrar pontos de partida para aplicar esse conhecimento no dia a dia." },
   { question: "Preciso ter experiência com inteligência artificial?", answer: "Não. O evento é um convite para quem quer entender novas possibilidades e relacioná-las ao trabalho e à vida pessoal. Curiosidade e vontade de aprender são um bom começo." },
   { question: "A inscrição é gratuita?", answer: "Sim. A inscrição no evento Codex Community organizado pela Apogee é gratuita." },
-  { question: "O que recebo ao me inscrever?", answer: "Você recebe por e-mail as orientações de acesso ao evento. É uma oportunidade para conhecer aplicações de IA e levar novas ideias para a sua rotina." },
+  { question: "Como assisto à gravação?", answer: "Preencha o cadastro gratuito. A gravação abre na própria Apogee assim que a inscrição é concluída." },
   { question: "Preciso participar do grupo no WhatsApp?", answer: "Não. A inscrição no evento é independente da comunidade. Você escolhe se quer conhecer a entrada gratuita e a proposta de assinatura da Apogee." },
   { question: "Quem organiza o evento?", answer: "A Apogee organiza o evento Codex Community, da comunidade OpenAI, conectando pessoas interessadas em tecnologia, aprendizado e aplicações de IA." },
 ] as const;
