@@ -5,18 +5,18 @@ import { EVENT_LIVE_EMBED, EVENT_LIVE_URL } from "@/lib/community/event-live";
 import { FunnelHeader } from "./community-funnel";
 import styles from "./community-sales-page.module.css";
 
-const liveTitle = "Transmissão ao vivo do Codex Community Workshop";
+const liveTitle = "Gravação do Codex Community Workshop";
 
 export function EventLivePage({ registered }: { registered: boolean }) {
   return <div className={styles.page} data-recording-page>
     <FunnelHeader page="recording" />
     <main id="experiencia" tabIndex={-1}>
       <section className={`${styles.section} ${styles.liveSection}`} aria-labelledby="live-title">
-        {registered && <p className={styles.liveNotice} role="status"><Check size={18} aria-hidden="true" />Inscrição registrada. A transmissão está logo abaixo.</p>}
+        {registered && <p className={styles.liveNotice} role="status"><Check size={18} aria-hidden="true" />Inscrição registrada. A gravação está logo abaixo.</p>}
         <div className={styles.sectionHeading}>
-          <p className={styles.eyebrow}>Codex Community · participe online</p>
-          <h1 id="live-title">Assista ao workshop<br /><span>ao vivo.</span></h1>
-          <p>Acompanhe a transmissão do Codex Community Workshop, da comunidade OpenAI, organizado pela Apogee. Se o vídeo não carregar aqui, abra a transmissão direto no YouTube.</p>
+          <p className={styles.eyebrow}>Codex Community · 21 de novembro de 2026</p>
+          <h1 id="live-title">Assista à gravação<br /><span>do workshop.</span></h1>
+          <p>Veja a gravação de 1h09 do Codex Community Workshop de Florianópolis.</p>
         </div>
         <div className={styles.livePlayer}>
           <iframe

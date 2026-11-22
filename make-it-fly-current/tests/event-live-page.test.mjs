@@ -12,16 +12,18 @@ const shell = {
   "./community-funnel": { CommunityJoinButton: empty, FunnelFaq: empty, FunnelHeader: empty },
 };
 
-test("the live page embeds the YouTube broadcast with a direct fallback link", async () => {
+test("the event page embeds the workshop recording with a direct YouTube link", () => {
   const { EVENT_LIVE_PATH, EVENT_LIVE_URL } = opportunityLoader()("lib/community/event-live.ts");
   assert.equal(EVENT_LIVE_PATH, "/evento-openai/ao-vivo");
   const { EventLivePage } = opportunityLoader(shell)("components/community/event-live-page.tsx");
   const html = renderToStaticMarkup(createElement(EventLivePage, { registered: false }));
-  assert.match(html, /<iframe[^>]+src="https:\/\/www\.youtube-nocookie\.com\/embed\/innSLBAn8g8"/);
-  assert.match(html, /<iframe[^>]+title="Transmissão ao vivo do Codex Community Workshop"/);
+  assert.equal(EVENT_LIVE_URL, "https://www.youtube.com/watch?v=msc2Hz8Uuzc");
+  assert.match(html, /<iframe[^>]+src="https:\/\/www\.youtube-nocookie\.com\/embed\/msc2Hz8Uuzc"/);
+  assert.match(html, /<iframe[^>]+title="Gravação do Codex Community Workshop"/);
   assert.match(html, /allowFullScreen=""|allowfullscreen=""/i);
   assert.ok(html.includes(`href="${EVENT_LIVE_URL}"`));
   assert.ok(html.includes("Assistir no YouTube"));
+  assert.ok(html.includes("Assista à gravação"));
   assert.ok(!html.includes("Inscrição registrada"));
   assert.ok(renderToStaticMarkup(createElement(EventLivePage, { registered: true })).includes("Inscrição registrada"));
 });
