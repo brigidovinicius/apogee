@@ -1,4 +1,4 @@
-import {legalApprovals} from "./legal-documents.mjs";
+import {approvedPrivacyVersion} from "./legal-documents.mjs";
 // Controller identity, contact and inclusion of minors confirmed on 2026-10-30.
 export const privacyIdentity: {name:string;document:string;location:string|null;email:string|null;audienceConfirmed:boolean} = {
   name:"62.858.706 ROSA MARIA PEREIRA MIRANDA - ME",
@@ -7,9 +7,15 @@ export const privacyIdentity: {name:string;document:string;location:string|null;
   email:"contato@apogee.community",
   audienceConfirmed:true,
 };
-export function privacyPolicyReady() {
-  return !!privacyIdentity.email && privacyIdentity.audienceConfirmed && process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED==='true' && legalApprovals().privacy;
+export function publishedPrivacyVersion() {
+  if (privacyIdentity.email && privacyIdentity.audienceConfirmed && process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED === "true") {
+    return approvedPrivacyVersion();
+  }
 }
+
+export const privacyPolicyReady = () => !!publishedPrivacyVersion();
+
+const aggregateMeasurementDetails = "guardamos no navegador somente sua escolha de permitir ou recusar, sem criar um identificador de visitante. A medição começa após você permitir. Você pode recusar ou alterar a escolha em Preferências de medição; a recusa interrompe a coleta e descarta eventos ainda não enviados. Sinais Do Not Track e Global Privacy Control do navegador desativam a medição mesmo quando havia permissão anterior. As requisições do coletor não enviam cookies de autenticação nem a URL da página de origem. Os cookies necessários à autenticação e à segurança têm finalidade separada.";
 
 export const privacySections = [
   {id:"alcance",title:"Sobre esta política",paragraphs:[
@@ -48,7 +54,7 @@ export const privacySections = [
   ]},
   {id:"cookies",title:"Cookies e armazenamento no navegador",paragraphs:[
     "Usamos cookies de sessão e mecanismos de segurança para manter a autenticação, proteger operações e permitir a navegação nas áreas restritas. Esses recursos são necessários ao funcionamento solicitado e podem deixar de funcionar se você bloquear todos os cookies.",
-    "Para a medição de uso, guardamos no navegador somente sua escolha de permitir ou recusar, sem criar um identificador de visitante. A medição começa após você permitir. Você pode recusar ou alterar a escolha em Preferências de medição; a recusa interrompe a coleta e descarta eventos ainda não enviados. Sinais Do Not Track e Global Privacy Control do navegador desativam a medição mesmo quando havia permissão anterior. As requisições do coletor não enviam cookies de autenticação nem a URL da página de origem. Os cookies necessários à autenticação e à segurança têm finalidade separada.",
+    "Para a medição de uso, " + aggregateMeasurementDetails,
   ]},
   {id:"retencao",title:"Conservação e eliminação",paragraphs:[
     "As contagens de comportamento usam categorias diárias e não mantêm um histórico individual. A rotina de gravação exclui contagens anteriores às últimas 90 datas; sem novas gravações, a exclusão ocorre na execução seguinte dessa rotina. O painel mostra os últimos 30 dias. Registros eventualmente mantidos pelo modelo anterior de jornada podem conter um identificador associado à inscrição; eles não alimentam o novo coletor. Pedidos sobre esse histórico podem ser enviados ao canal de privacidade.",
@@ -76,3 +82,7 @@ export const privacySections = [
     "Esta política pode ser atualizada para refletir mudanças no serviço, nas finalidades ou na legislação. Mudanças relevantes devem ser comunicadas de forma adequada. Quando uma nova finalidade exigir consentimento, a autorização deve ser solicitada antes do novo tratamento. A versão e a data de atualização ficam disponíveis nesta página.",
   ]},
 ];
+
+export const privacySectionsWithRadar = privacySections.map(section => section.id === "cookies"
+  ? { ...section, paragraphs: [section.paragraphs[0], "Para a medição agregada de uso do site e do Radar, " + aggregateMeasurementDetails] }
+  : section);

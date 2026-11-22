@@ -12,6 +12,7 @@ function fixture() {
 }
 test('consistent synthetic config and declared references never authorize a release',()=>{
   const report=evaluateGoogleRelease(fixture());assert.equal(report.readyForHumanReview,true);assert.equal(report.releaseAuthorized,false);
+  assert.equal(report.documentVersions.privacy,'2026-11-08.1');
   assert.ok(report.notice.includes('não foram verificadas automaticamente'));
 });
 test('missing defaults remain blocked instead of assuming real service readiness',()=>{

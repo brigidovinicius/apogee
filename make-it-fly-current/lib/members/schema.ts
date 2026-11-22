@@ -52,6 +52,13 @@ export const monthlyDetailUnlock = pgTable("member_monthly_detail_unlock", {
   check("member_monthly_detail_unlock_item_id_check", sql`${table.itemId} ~ '^[A-Za-z0-9_-]{1,200}$'`),
 ]);
 
+export const radarAmplitudeConsent = pgTable("radar_amplitude_consent", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  grantId: uuid("grant_id").notNull(),
+  policyVersion: integer("policy_version").notNull(),
+  grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [check("radar_amplitude_consent_policy_version_check", sql`${table.policyVersion} > 0`)]);
+
 export const workshopVoucherBatch = pgTable("workshop_voucher_batch", {
   singleton: boolean("singleton").primaryKey().default(true),
   revision: uuid("revision").notNull(),

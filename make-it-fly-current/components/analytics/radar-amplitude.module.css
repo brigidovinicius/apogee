@@ -1,0 +1,29 @@
+.preferences {
+  margin-block: 1rem;
+  color: var(--ap-text);
+}
+
+.preferences summary {
+  min-height: 44px;
+  align-content: center;
+  width: fit-content;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.preferences p {
+  max-width: 65ch;
+  margin: 0.5rem 0;
+}
+
+.policyLink {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

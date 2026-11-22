@@ -190,6 +190,13 @@
       "when": 1795305600026,
       "tag": "0026_store_drop_products",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1795305600027,
+      "tag": "0027_radar_amplitude_consent",
+      "breakpoints": true
     }
   ]
 }

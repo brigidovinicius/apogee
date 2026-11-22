@@ -11,6 +11,7 @@ import styles from "@/components/members/members.module.css";
 import { requireSignedInMember } from "@/lib/members/dal";
 import { listMemberOpportunityPage } from "@/lib/opportunities/access";
 import { memberRadarPath } from "@/lib/opportunities/navigation";
+import { RadarAmplitude } from "@/components/analytics/radar-amplitude";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,7 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
         </div>
       </header>
       {quota ? <MonthlyQuota quota={quota} area="Radar" next={returnTo} /> : <p>Seu acesso ao Radar completo está ativo.</p>}
+      {catalogue ? <RadarAmplitude view="radar_list_viewed" memberId={member.id} /> : null}
       {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} editorialFeed /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
     </div></MemberWorkspace>
   );

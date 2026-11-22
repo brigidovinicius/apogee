@@ -3,7 +3,7 @@ import {readFile,stat} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath,pathToFileURL} from 'node:url';
-import {legalApprovals,legalDocumentVersions} from '../lib/legal-documents.mjs';
+import {approvedPrivacyVersion,legalApprovals,legalDocumentVersions} from '../lib/legal-documents.mjs';
 
 export const launchEvidenceGates=Object.freeze([
   'guardianReviewProcess','existingAccountsPlan','retentionAndProviders','supportDelivery',
@@ -54,7 +54,7 @@ export function evaluateGoogleRelease({env={},evidence={},candidateSha='',checko
   const configurationReady=checks.every(c=>c.status==='pass'),evidenceComplete=evidenceChecks.every(c=>c.status==='recorded');
   return {mode:'local-read-only',candidateSha,configurationReady,evidenceComplete,readyForHumanReview:configurationReady&&evidenceComplete,
     releaseAuthorized:false,notice:'Referências declaradas não foram verificadas automaticamente. Este relatório não autoriza publicação ou migração.',
-    documentVersions:legalDocumentVersions,checks,evidenceChecks,manifest};
+    documentVersions:{...legalDocumentVersions,privacy:approvedPrivacyVersion(env)??legalDocumentVersions.privacy},checks,evidenceChecks,manifest};
 }
 async function main() {
   if(process.argv.includes('--help')){console.log('Uso: node scripts/google-calendar-release-check.mjs [--evidence arquivo.json]\nSomente leitura local. Não conecta à produção, não imprime valores de configuração e não autoriza deploy.');return;}

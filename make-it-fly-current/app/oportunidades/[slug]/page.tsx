@@ -10,6 +10,7 @@ import { OpportunityCard } from "@/components/opportunities/opportunities-board"
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import styles from "@/components/opportunities/calendar.module.css";
+import { RadarAmplitude } from "@/components/analytics/radar-amplitude";
 export const dynamic = "force-dynamic";
 const find = cache(async(slug:string)=>{
   const id=slug.slice(slug.lastIndexOf("--")+2);
@@ -41,6 +42,7 @@ export default async function PreviewPage({ params, searchParams }: Props) {
         <h1>{displayOpportunityTitle(item.title)}</h1>
         <p>Este é o resumo público. Consulte os requisitos e o link oficial na sua conta Apogee.</p>
       </div>
+      <RadarAmplitude key={item.id} view="radar_detail_viewed" />
       <OpportunityCard opportunity={item} detailHref={opportunityDetailPath(item.id, filters)} detailLabel="Consultar na minha conta" showTitle={false} />
     </main>
     <SiteFooter />

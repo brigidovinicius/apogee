@@ -42,13 +42,23 @@ export async function saveOpportunity(userId:string,id:string,remove:boolean) {
   if(!/^radar-[a-zA-Z0-9_-]{1,194}$/.test(id))throw Error("Oportunidade inválida");
   if(remove) {
     await getSql()`update radar_saved_opportunity set removed_at=now() where user_id=${userId} and opportunity_id=${id} and removed_at is null`;
-    return;
+    return false;
   }
   const item=(await listRadarOpportunities(true)).find(i=>i.id===id);
   if(!item)throw Error("Oportunidade indisponível");
   // Drizzle configures this shared client with transparent JSON serializers.
-  await getSql()`insert into radar_saved_opportunity (user_id,opportunity_id,snapshot) values (${userId},${id},${JSON.stringify(item)}::jsonb)
-    on conflict (user_id,opportunity_id) do update set snapshot=excluded.snapshot,removed_at=null`;
+  const snapshot = JSON.stringify(item);
+  return getSql().begin(async tx => {
+    const [changed] = await tx`insert into radar_saved_opportunity (user_id,opportunity_id,snapshot) values (${userId},${id},${snapshot}::jsonb)
+      on conflict (user_id,opportunity_id) do update set snapshot=excluded.snapshot,removed_at=null
+      where radar_saved_opportunity.removed_at is not null
+      returning opportunity_id`;
+    if (changed) return true;
+    // The conflict holds the existing row locked. Refresh its snapshot without
+    // counting a repeat submission as another saved opportunity.
+    await tx`update radar_saved_opportunity set snapshot=${snapshot}::jsonb where user_id=${userId} and opportunity_id=${id}`;
+    return false;
+  });
 }
 export async function savedOpportunities(userId:string) {
   const rows=await getSql()`select opportunity_id,snapshot,removed_at from radar_saved_opportunity where user_id=${userId} order by saved_at`;
