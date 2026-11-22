@@ -15,6 +15,7 @@ const liveItems = [
   { href: "/admin/posts", label: "Blog", exact: false },
   { href: "/admin/convites", label: "Convites", exact: false },
   { href: "/admin/comunidade", label: "Contatos do evento", exact: false },
+  { href: "/admin/pesquisas", label: "Pesquisas", exact: false },
   { href: "/admin/comportamento", label: "Comportamento", exact: false },
   { href: "/admin/usuarios", label: "Usuários", exact: false },
   { href: "/admin/protecao", label: "Cadastros protegidos", exact: false },

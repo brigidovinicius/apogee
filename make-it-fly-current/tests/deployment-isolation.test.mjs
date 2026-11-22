@@ -167,6 +167,8 @@ test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surf
     "app/calendarios/[slug]/page.tsx", "app/calendarios/page.tsx", "app/competicoes/page.tsx", "app/membros/meu-calendario/page.tsx", "app/membros/meu-calendario/salvar/[id]/page.tsx", "app/oportunidades/[slug]/page.tsx", "app/privacidade/page.tsx", "app/termos/page.tsx", "app/membros/protecao/page.tsx", "app/admin/protecao/page.tsx",
     "app/admin/acesso-negado/page.tsx", "app/admin/comportamento/page.tsx", "app/api/behavior/route.ts",
     "app/admin/convites/page.tsx", "app/admin/curadoria/page.tsx", "app/admin/layout.tsx", "app/admin/loja/drops/page.tsx", "app/admin/page.tsx",
+    "app/admin/pesquisas/page.tsx", "app/admin/pesquisas/nova/page.tsx", "app/admin/pesquisas/[id]/page.tsx",
+    "app/admin/pesquisas/[id]/respostas/page.tsx", "app/pesquisas/[slug]/page.tsx", "app/api/pesquisas/[slug]/route.ts",
     "app/admin/posts/[id]/page.tsx", "app/admin/posts/novo/page.tsx", "app/admin/posts/page.tsx", "app/admin/posts/pipeline/page.tsx", "app/admin/posts/pipeline/dossie/[id]/page.tsx", "app/admin/posts/pipeline/cover/[id]/route.ts", "app/admin/radar/page.tsx", "app/admin/usuarios/page.tsx",
     "app/api/admin/loja/drops/exportar/route.ts", "app/api/admin/posts/[id]/media/route.ts", "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/auth/[...all]/route.ts", "app/api/checkout/route.ts",
     "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts", "app/api/loja/novidades/route.ts",
