@@ -54,7 +54,7 @@ export function BehaviorInsightsPanel({ data }: { data: BehaviorInsights }) {
         <div className={styles.yAxis} aria-hidden="true">{scale.ticks.map(tick => <span key={tick}>{number.format(tick)}</span>)}</div>
         <div className={styles.plot}>
           <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" role="img" aria-labelledby={`${id}-chart-title ${id}-chart-desc`} onPointerMove={explore} onPointerDown={explore}>
-            <title id={`${id}-chart-title`}>{selectedMetric.label} por dia nos últimos 30 dias</title>
+            <title id={`${id}-chart-title`}>{`${selectedMetric.label} por dia nos últimos 30 dias`}</title>
             <desc id={`${id}-chart-desc`}>Contagens agregadas. Hoje é parcial. A faixa sombreada indica dias anteriores ao primeiro registro. Use Explorar dia ou a tabela de valores para consultar cada data.</desc>
             {unknownWidth > 0 && <rect x="0" y="0" width={unknownWidth} height={height} className={styles.noHistory} />}
             {[0, 1, 2, 3, 4].map(index => <line key={index} x1="0" x2={width} y1={index / 4 * height} y2={index / 4 * height} className={styles.gridLine} vectorEffect="non-scaling-stroke" />)}

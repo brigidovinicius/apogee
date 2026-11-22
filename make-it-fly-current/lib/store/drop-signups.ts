@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac } from "node:crypto";
 import { z } from "zod";
 import { readRequestBody, RequestBodyError } from "@/lib/request-body";
+import { products } from "./products";
 
 export { DROP_CONSENT_TEXT, DROP_CONSENT_VERSION } from "./drop-consent";
 const signupSchema = z.strictObject({
@@ -9,6 +10,7 @@ const signupSchema = z.strictObject({
   phone: z.string().trim().max(32).regex(/^\+?[0-9() .-]+$/, "Informe um telefone válido, com DDD.").transform(value => value.replace(/[^0-9+]/g, "")).refine(value => /^\+?[0-9]{10,15}$/.test(value), "Informe um telefone válido, com DDD."),
   email: z.string().trim().toLowerCase().max(254).email("Informe um e-mail válido."),
   consent: z.literal(true, { error: "Autorize o recebimento das novidades para se cadastrar." }),
+  productSlug: z.enum(products.map(product => product.slug), { error: "Selecione uma peça da loja." }),
   website: z.string().max(200).optional(),
 });
 export type DropSignup = Omit<z.infer<typeof signupSchema>, "website" | "consent">;
@@ -40,8 +42,8 @@ export async function handleDropSignup(request: Request, deps: Dependencies): Pr
     if (!await deps.consumeLimit(`store-drops:ip:${digest("ip", ip)}`, 10, 3600)) return respond({ message: "Muitas tentativas. Aguarde um pouco e tente novamente." }, 429);
     if (!await deps.consumeLimit(`store-drops:email:${digest("email", parsed.data.email)}`, 3, 3600)) return respond({ message: "Muitas tentativas. Aguarde um pouco e tente novamente." }, 429);
     if (!await deps.consumeLimit("store-drops:global", 200, 3600)) return respond({ message: "Muitas tentativas. Aguarde um pouco e tente novamente." }, 429);
-    const { name, phone, email } = parsed.data;
-    await deps.save({ name, phone, email });
+    const { name, phone, email, productSlug } = parsed.data;
+    await deps.save({ name, phone, email, productSlug });
     return respond({ ok: true });
   } catch {
     // Never log names, contacts, request bodies, database errors or secrets.

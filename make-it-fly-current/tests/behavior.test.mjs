@@ -52,6 +52,7 @@ test("origin, declared choice, JSON, keys, batch and body limits reject before s
     [request([item()], { "x-apogee-measurement": "" }), 400], [request([item()], { "content-type": "text/plain" }), 415],
     [request("{broken"), 400], [request([]), 400], [request(Array.from({ length: 21 }, () => item())), 400],
     [request([item(), item({ target: "maria_silva" })]), 400], [request('{"events":[],"userId":"private"}'), 400],
+    [request([item({ page: "store", event: "drop_signup_completed", target: "waitlist" })]), 400],
     [request("x".repeat(8193)), 413],
   ];
   for (const [req, expected] of cases) assert.equal((await api.handleBehaviorPost(req, options())).status, expected);

@@ -33,3 +33,7 @@ export const products = [
 ] as const;
 
 export type StoreProduct = (typeof products)[number];
+
+export function dropProductNames(slugs: string[]): string {
+  return slugs.map(slug => products.find(product => product.slug === slug)?.name ?? slug).join(", ") || "Sem peça registrada";
+}

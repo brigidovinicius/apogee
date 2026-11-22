@@ -7,6 +7,7 @@ import type { FormEvent } from "react";
 import { EditorialPageShell } from "@/components/site/editorial-page-shell";
 import { products, type StoreProduct } from "@/lib/store/products";
 import { DROP_CONSENT_TEXT } from "@/lib/store/drop-consent";
+import { behaviorAllowed, behaviorDevice } from "@/components/analytics/behavior-client";
 import styles from "./loja.module.css";
 
 function ProductGallery({ product, onBuy }: { product: StoreProduct; onBuy: () => void }) {
@@ -38,7 +39,7 @@ function ProductGallery({ product, onBuy }: { product: StoreProduct; onBuy: () =
   );
 }
 
-function DropSignup({ productName }: { productName: string }) {
+function DropSignup({ product }: { product: StoreProduct }) {
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const submitting = useRef(false);
@@ -52,16 +53,21 @@ function DropSignup({ productName }: { productName: string }) {
     setStatus("sending");
     setMessage("");
     try {
+      const headers = new Headers({ "Content-Type": "application/json" });
+      if (behaviorAllowed()) {
+        headers.set("X-Apogee-Measurement", "allow-v1");
+        headers.set("X-Apogee-Measurement-Device", behaviorDevice());
+      }
       const response = await fetch("/api/loja/novidades", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: data.get("name"), phone: data.get("phone"), email: data.get("email"), consent: data.get("consent") === "on", website: data.get("website") }),
+        headers,
+        body: JSON.stringify({ name: data.get("name"), phone: data.get("phone"), email: data.get("email"), consent: data.get("consent") === "on", website: data.get("website"), productSlug: product.slug }),
         signal: AbortSignal.timeout(15_000),
       });
       const result = await response.json();
       if (!response.ok || result.ok !== true) throw new Error(result.message || "Não foi possível cadastrar agora, tente novamente");
       setStatus("success");
-      setMessage("Cadastro recebido! Você está na lista para receber novidades dos próximos drops");
+      setMessage(`Cadastro recebido! Você está na lista de espera para ${product.name}.`);
       form.reset();
     } catch (error) {
       setStatus("error");
@@ -73,7 +79,7 @@ function DropSignup({ productName }: { productName: string }) {
 
   return (
     <section className={styles.signup}>
-      <div className={styles.signupCopy}><span>{productName}</span><h2 id="signup-title">Novos drops em breve</h2><p id="signup-description">Este produto ainda não está disponível para compra, cadastre-se para receber novidades dos próximos drops</p></div>
+      <div className={styles.signupCopy}><span>{product.name}</span><h2 id="signup-title">Novos drops em breve</h2><p id="signup-description">Cadastre-se na lista de espera para receber novidades sobre esta peça.</p></div>
       <form className={styles.form} onSubmit={submit} aria-busy={status === "sending"}>
         <div className={styles.fields}>
           <label htmlFor="drop-name">Nome<input id="drop-name" name="name" autoComplete="name" required minLength={2} maxLength={120} placeholder="Seu nome" /></label>
@@ -121,7 +127,7 @@ export function StoreExperience() {
           onClose={() => setSelectedProduct(null)}
           onClick={(event) => { if (event.target === event.currentTarget) purchaseDialog.current?.close(); }}>
           <button className={styles.closePurchase} type="button" autoFocus onClick={() => purchaseDialog.current?.close()}>Fechar <X size={18} aria-hidden="true" /></button>
-          {selectedProduct ? <DropSignup key={selectedProduct.slug} productName={selectedProduct.name} /> : null}
+          {selectedProduct ? <DropSignup key={selectedProduct.slug} product={selectedProduct} /> : null}
         </dialog>
       </main>
     </EditorialPageShell>

@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin/access";
 import { getMemberFromHeaders } from "@/lib/members/dal";
 import { getDb } from "@/lib/members/db";
 import { storeDropSignup } from "@/lib/members/schema";
+import { dropProductNames } from "@/lib/store/products";
 
 const PAGE_SIZE = 50;
 const EXPORT_LIMIT = 10_000;
@@ -12,6 +13,7 @@ const columns = {
   name: storeDropSignup.name,
   phone: storeDropSignup.phone,
   email: storeDropSignup.email,
+  productSlugs: storeDropSignup.productSlugs,
   consentedAt: storeDropSignup.consentedAt,
 };
 
@@ -20,6 +22,7 @@ export type DropSignupRow = {
   name: string;
   phone: string;
   email: string;
+  productSlugs: string[];
   consentedAt: Date;
 };
 
@@ -77,9 +80,9 @@ function csvCell(value: string, forceText = false) {
 }
 
 export function dropSignupsToCsv(rows: DropSignupRow[]): string {
-  const lines = [["Nome", "Telefone", "E-mail", "Data do cadastro (Brasília)"].map(value => csvCell(value)).join(";")];
+  const lines = [["Nome", "Telefone", "E-mail", "Peças", "Primeiro cadastro (Brasília)"].map(value => csvCell(value)).join(";")];
   for (const row of rows) {
-    lines.push([csvCell(row.name), csvCell(row.phone, true), csvCell(row.email), csvCell(dateTime.format(row.consentedAt))].join(";"));
+    lines.push([csvCell(row.name), csvCell(row.phone, true), csvCell(row.email), csvCell(dropProductNames(row.productSlugs)), csvCell(dateTime.format(row.consentedAt))].join(";"));
   }
   return `\uFEFF${lines.join("\r\n")}\r\n`;
 }

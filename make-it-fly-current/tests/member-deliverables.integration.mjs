@@ -129,6 +129,7 @@ test("nine released events and two concurrent requests allow only the tenth", as
 });
 test("event and drop persist separate purposes; duplicate retries preserve evidence and create no account or subscription", async () => {
   await sql.unsafe(await readFile(new URL("../sql/community-contacts.sql", import.meta.url), "utf8"));
+  await sql.unsafe(await readFile(new URL("../drizzle/0026_store_drop_products.sql", import.meta.url), "utf8"));
   process.env.BETTER_AUTH_SECRET = "synthetic-local-secret-that-is-longer-than-32-characters";
   const routeLoad = opportunityLoader({ "@/lib/members/db": { getSql: () => sql }, "@/lib/members/client-ip": { memberClientIp: () => "127.0.0.1" }, "@/lib/members/rate-limit": { consumeRateLimit: async () => true } });
   const post = (url, body, origin = "https://apogee.test") => new Request(`https://apogee.test${url}`, { method: "POST", headers: { origin, "content-type": "application/json" }, body: JSON.stringify(body) });
@@ -140,7 +141,7 @@ test("event and drop persist separate purposes; duplicate retries preserve evide
   assert.equal((await contact(post("/api/comunidade/contatos", payload, "https://evil.test"))).status, 403);
   assert.equal((await contact(post("/api/comunidade/contatos", payload))).status, 200);
   assert.equal((await contact(post("/api/comunidade/contatos", { ...payload, name: "Different" }))).status, 200);
-  assert.equal((await drop(post("/api/loja/novidades", { name: "Pessoa Sintética", phone: "12345678901", email: payload.email, consent: true }))).status, 200);
+  assert.equal((await drop(post("/api/loja/novidades", { name: "Pessoa Sintética", phone: "12345678901", email: payload.email, consent: true, productSlug: "camiseta-apogee" }))).status, 200);
   const rows = await sql`select name,consent_version,consent_text from community_contact where email='lead@example.test'`;
   assert.equal(rows.length, 1); assert.equal(rows[0].name, payload.name); assert.ok(rows[0].consent_version); assert.ok(rows[0].consent_text);
   const [signup] = await sql`select consent_text from store_drop_signup where email='lead@example.test'`; assert.notEqual(signup.consent_text, rows[0].consent_text);

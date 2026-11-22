@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AdminPageHeader, adminStyles } from "@/components/admin/admin-ui";
 import type { DropSignupList } from "@/lib/admin/drop-signups";
+import { dropProductNames } from "@/lib/store/products";
 import { DropExportButton } from "./export-button";
 import styles from "./drops.module.css";
 
@@ -31,10 +32,11 @@ export function DropSignupsView({ result }: { result: DropSignupList }) {
       {rows.length ? <>
         <div className={styles.tableRegion} role="region" aria-label="Lista dos cadastros dos drops" tabIndex={0}>
           <table className={styles.table}>
-            <caption className={styles.caption}>Nome, contato e data de cadastro</caption>
-            <thead><tr><th scope="col">Nome</th><th scope="col">Telefone</th><th scope="col">E-mail</th><th scope="col">Data do cadastro</th></tr></thead>
+            <caption className={styles.caption}>Contatos, peças escolhidas e data do primeiro cadastro</caption>
+            <thead><tr><th scope="col">Nome</th><th scope="col">Telefone</th><th scope="col">E-mail</th><th scope="col">Peças</th><th scope="col">Primeiro cadastro</th></tr></thead>
             <tbody>{rows.map(row => <tr key={row.id}>
               <th scope="row">{row.name}</th><td>{row.phone}</td><td>{row.email}</td>
+              <td>{dropProductNames(row.productSlugs)}</td>
               <td><time dateTime={row.consentedAt.toISOString()}>{dateTime.format(row.consentedAt)}</time></td>
             </tr>)}</tbody>
           </table>

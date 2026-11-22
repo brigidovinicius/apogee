@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { PgDialect } from "drizzle-orm/pg-core";
 import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
-const row = { id: 1, name: 'Ana "Apogee"', phone: "+5511999991234", email: "ana@example.test", consentedAt: new Date("2026-10-20T15:30:00Z") };
+const row = { id: 1, name: 'Ana "Apogee"', phone: "+5511999991234", email: "ana@example.test", productSlugs: ["camiseta-apogee"], consentedAt: new Date("2026-10-20T15:30:00Z") };
 const dialect = new PgDialect();
 const request = search => new Request(`https://www.apogee.community/api/admin/loja/drops/exportar?${new URLSearchParams({ busca: search ?? "" })}`);
 
@@ -79,12 +79,13 @@ test("formatted telephone searches and filtered exports use the same predicate",
 
 test("CSV preserves accents, quotes, phones and Brasília dates, and neutralizes formulas", async () => {
   const { dropSignupsToCsv } = fixture();
-  const csv = dropSignupsToCsv([row, { ...row, name: '\t =HYPERLINK("bad")', phone: "0011999991234", email: "+formula@example.test" }, { ...row, name: "João; Silva\nNova linha" }]);
+  const csv = dropSignupsToCsv([row, { ...row, name: '\t =HYPERLINK("bad")', phone: "0011999991234", email: "+formula@example.test" }, { ...row, name: "João; Silva\nNova linha", productSlugs: [] }]);
   assert.equal(csv.charCodeAt(0), 0xfeff);
-  assert.match(csv, /"Nome";"Telefone";"E-mail";"Data do cadastro \(Brasília\)"/);
-  assert.match(csv, /"Ana ""Apogee""";"'\+5511999991234";"ana@example.test";"20\/10\/2026, 12:30:00"/);
+  assert.match(csv, /"Nome";"Telefone";"E-mail";"Peças";"Primeiro cadastro \(Brasília\)"/);
+  assert.match(csv, /"Ana ""Apogee""";"'\+5511999991234";"ana@example.test";"Camiseta Apogee";"20\/10\/2026, 12:30:00"/);
   assert.match(csv, /"'  =HYPERLINK\(""bad""\)";"'0011999991234";"'\+formula@example.test"/);
   assert.match(csv, /"João; Silva Nova linha"/);
+  assert.match(csv, /"Sem peça registrada"/);
   assert.equal(csv.split("\r\n").length, 5);
 });
 
@@ -109,6 +110,7 @@ test("admin page shows contacts and pagination, escapes content and handles empt
   const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ busca: "Ana & João", pagina: "1" }) }));
   assert.match(html, /Cadastros dos drops/);
   assert.match(html, /ana@example.test/);
+  assert.match(html, /Camiseta Apogee/);
   assert.match(html, /\+5511999991234/);
   assert.match(html, /20\/10\/2026, 12:30/);
   assert.match(html, /Exportar para planilha/);

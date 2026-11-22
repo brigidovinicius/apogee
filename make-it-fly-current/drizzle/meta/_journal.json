@@ -183,6 +183,13 @@
       "when": 1795046400025,
       "tag": "0025_workshop_voucher",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1795305600026,
+      "tag": "0026_store_drop_products",
+      "breakpoints": true
     }
   ]
 }

@@ -366,6 +366,7 @@ export const storeDropSignup = pgTable("store_drop_signup", {
   consentVersion: text("consent_version").notNull(),
   consentText: text("consent_text").notNull(),
   consentedAt: timestamp("consented_at", { withTimezone: true }).notNull().defaultNow(),
+  productSlugs: text("product_slugs").array().notNull().default(sql`'{}'::text[]`),
 }, table => [
   check("store_drop_signup_name_check", sql`length(trim(${table.name})) between 2 and 120`),
   check("store_drop_signup_phone_check", sql`${table.phone} ~ '^\\+?[0-9]{10,15}$'`),

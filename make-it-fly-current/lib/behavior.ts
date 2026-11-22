@@ -21,7 +21,8 @@ function consume(request: Request) {
   buckets.set(key, { count: 1, expires: now + 600_000 });
   return true;
 }
-export type BehaviorCount = BehaviorEvent & { count: number };
+type DropSignupCompletion = { page: "store"; event: "drop_signup_completed"; target: "waitlist"; device: BehaviorEvent["device"] };
+export type BehaviorCount = (BehaviorEvent | DropSignupCompletion) & { count: number };
 export function aggregateBehavior(events: BehaviorEvent[]): BehaviorCount[] {
   const counts = new Map<string, BehaviorCount>();
   for (const event of events) {
@@ -40,6 +41,17 @@ export async function storeBehavior(counts: BehaviorCount[]) {
       values ((now() at time zone 'America/Sao_Paulo')::date, ${item.page}, ${item.event}, ${item.target}, ${item.device}, ${item.count})
       on conflict (day, page, event, target, device) do update set count = apogee_behavior_daily.count + excluded.count`;
   });
+}
+export async function recordDropSignupBehavior(requestHeaders: Headers) {
+  if (process.env.APOGEE_BEHAVIOR_ENABLED !== "true" || requestHeaders.get("x-apogee-measurement") !== "allow-v1") return;
+  if (requestHeaders.get("dnt") === "1" || requestHeaders.get("sec-gpc") === "1") return;
+  const device = requestHeaders.get("x-apogee-measurement-device");
+  if (device !== "mobile" && device !== "desktop") return;
+  try {
+    await storeBehavior([{ page: "store", event: "drop_signup_completed", target: "waitlist", device, count: 1 }]);
+  } catch {
+    // The registration is already saved. An unavailable metric must not turn it into a failed signup.
+  }
 }
 type Options = { enabled?: boolean; origin?: string; rateLimit?: (request: Request) => boolean; store?: typeof storeBehavior };
 export async function handleBehaviorPost(request: Request, options: Options = {}) {

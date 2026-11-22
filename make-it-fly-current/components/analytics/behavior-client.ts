@@ -36,6 +36,7 @@ export function subscribeBehavior(listener: () => void) {
   return () => { window.removeEventListener(BEHAVIOR_CHOICE_EVENT, notify); window.removeEventListener("storage", storage); };
 }
 export function behaviorAllowed() { return enabled && !browserRefusesBehavior() && readBehaviorChoice() === "allow"; }
+export function behaviorDevice() { return window.matchMedia("(max-width: 800px)").matches ? "mobile" : "desktop"; }
 export function clearBehaviorQueue() {
   queue = [];
   if (timer !== undefined && typeof window !== "undefined") window.clearTimeout(timer);
@@ -49,7 +50,7 @@ export function setBehaviorChoice(value: "allow" | "deny") {
 }
 export function trackBehavior(event: BehaviorEventName, target: string, page = typeof window === "undefined" ? null : behaviorPage(window.location.pathname)) {
   if (!behaviorAllowed() || !page) return;
-  const item = { page, event, target, device: window.matchMedia("(max-width: 800px)").matches ? "mobile" as const : "desktop" as const };
+  const item = { page, event, target, device: behaviorDevice() };
   if (!validBehaviorEvent(item) || queue.length >= 40) return;
   queue.push(item);
   if (queue.length >= 20) void flushBehavior();
