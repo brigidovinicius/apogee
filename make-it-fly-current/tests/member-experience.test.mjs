@@ -20,6 +20,27 @@ test("every exclusive preview is inert, decorative and contains no real action o
   }
 });
 
+test("the learning page requires a session and renders the coming-soon panel with an inert preview", async () => {
+  let signedIn = false;
+  const LearningPage = opportunityLoader({ ...uiMocks,
+    "@/lib/members/dal": { requireSignedInMember: async path => {
+      assert.equal(path, "/membros/trilha");
+      if (!signedIn) throw Error("SIGN_IN_REQUIRED");
+      return member;
+    } },
+    "@/components/members/member-workspace": { MemberWorkspace: ({ current, children }) => {
+      assert.equal(current, "trilha");
+      return children;
+    } },
+  })("app/membros/trilha/page.tsx").default;
+  await assert.rejects(LearningPage(), /SIGN_IN_REQUIRED/);
+  signedIn = true;
+  const html = renderToStaticMarkup(await LearningPage());
+  assert.match(html, /aria-hidden="true" inert="" data-locked-preview="trilha"/);
+  assert.match(html, /<h2[^>]*>Em breve<\/h2>/);
+  assert.doesNotMatch(html, /Um primeiro resultado com IA|name="activityId"|Conhecer a assinatura anual/);
+});
+
 test("pending free accounts can discover their home without reading the forum or granting access", async () => {
   let forumReads = 0;
   const Page = opportunityLoader({ ...uiMocks,
@@ -31,7 +52,7 @@ test("pending free accounts can discover their home without reading the forum or
   })("app/membros/page.tsx").default;
   const html = renderToStaticMarkup(await Page());
   assert.equal(forumReads, 0);
-  for (const path of ["/membros/ferramentas", "/membros/trilha"]) assert.ok(!html.includes(`href="${path}"`), path);
+  assert.doesNotMatch(html, /href="\/membros\/ferramentas"/);
   for (const path of ["/membros/beneficios", "/membros/oportunidades", "/membros/assinatura"]) assert.ok(html.includes(`href="${path}"`), path);
   assert.match(html, /Verificar minha conta/);
   assert.match(html, /data-locked-preview="forum"/);
@@ -76,12 +97,12 @@ test("administrator content access still requires account verification and never
   const deliverables = load("lib/deliverables/store.ts");
   await assert.rejects(deliverables.memberBenefits(), /VERIFICATION_REQUIRED/);
   const home = load("app/membros/page.tsx").default;
-  assert.doesNotMatch(renderToStaticMarkup(await home()), /href="\/membros\/(?:trilha|ferramentas)"/);
+  assert.doesNotMatch(renderToStaticMarkup(await home()), /href="\/membros\/ferramentas"/);
   verified = true;
   const html = renderToStaticMarkup(await home());
   assert.doesNotMatch(html, /Exclusivo da assinatura|Assinatura anual ativa|Prévia administrativa/);
   assert.match(html, /href="\/membros\/ferramentas"/);
-  assert.doesNotMatch(html, /trilha|\/admin\/trilha/i);
+  assert.doesNotMatch(html, /Um primeiro resultado com IA|name="activityId"/);
 });
 
 test("calendar and collection previews preserve the destination and respect verification and existing Radar rights", async () => {

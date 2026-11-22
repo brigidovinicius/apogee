@@ -44,6 +44,11 @@ async function page(path, expected, status = 200) {
   report.results.push({ profile, path, status, result: "passed" });
   return html;
 }
+async function trackPreview() {
+  const html = clean(await page("/membros/trilha", /Em breve/));
+  assert.match(html, /data-locked-preview="trilha"/);
+  assert.doesNotMatch(html, /Um primeiro resultado com IA|name="activityId"|Conhecer a assinatura anual/);
+}
 async function login(name) {
   const response = await request("/api/auth/sign-in/email", { method: "POST", headers: { Origin: origin, "Content-Type": "application/json" }, body: JSON.stringify({ email: `${name}@example.test`, password: "RevisaoLocal2026!" }) });
   assert.equal(response.status, 200, `login ${name}`);
@@ -84,7 +89,11 @@ try {
     report.results.push(...previous.results);
   } else {
   await page("/membros/suporte", /Como podemos ajudar/);
-  await page("/membros/trilha", null, 404);
+  const anonymousTrack = await request("/membros/trilha");
+  assert.equal(anonymousTrack.status, 307);
+  const trackLogin = new URL(anonymousTrack.headers.get("location"), origin);
+  assert.equal(trackLogin.pathname, "/membros/entrar");
+  assert.equal(trackLogin.searchParams.get("next"), "/membros/trilha");
   const protectedResponse = await request("/membros");
   assert.equal(protectedResponse.status, 307);
   assert.match(protectedResponse.headers.get("location"), /\/membros\/entrar/);
@@ -132,8 +141,8 @@ try {
   await page(firstPath, /Detalhe protegido/);
   await login("revisaoanual");
   await page("/membros/ferramentas", /Google Flow/);
-  assert.doesNotMatch(clean(await page("/membros", /Conversas da comunidade/)), /trilha|primeiro resultado com IA/i);
-  await page("/membros/trilha", null, 404);
+  assert.match(clean(await page("/membros", /Conversas da comunidade/)), /href="\/membros\/trilha"/);
+  await trackPreview();
   const progress = await request("/membros/trilha", { method: "POST", headers: { Origin: origin }, body: new URLSearchParams({ activityId: "fixture", completed: "true" }) });
   assert.ok([404, 405].includes(progress.status), `retired progress endpoint: ${progress.status}`);
   await progress.text();
@@ -149,7 +158,7 @@ try {
   }
   await login("revisaocancelada");
   await page("/membros/ferramentas", /Google Flow/);
-  await page("/membros/trilha", null, 404);
+  await trackPreview();
   const otherCollection = await request(ownCollection), missing = clean(await otherCollection.text());
   assert.match(missing, /Página não encontrada|<meta name="next-error" content="not-found"/);
   assert.doesNotMatch(missing, /Coleção sintética de navegação/);
@@ -160,11 +169,11 @@ try {
   for (const name of ["revisaoexpirado", "revisaoreembolso"]) {
     await login(name);
     await page("/membros/ferramentas", /data-locked-preview="ferramentas"/);
-    await page("/membros/trilha", null, 404);
+    await trackPreview();
   }
   await login("revisaoadmin");
   await page("/admin/trilha", /Um primeiro resultado com IA/);
-  await page("/membros/trilha", null, 404);
+  await trackPreview();
   await login("revisaopendente");
   await page("/membros", /Sua comunidade/);
   report.completed = true;

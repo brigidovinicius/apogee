@@ -45,7 +45,7 @@ test('route changes preserve server children and render no theme DOM on event ro
 test('area artwork follows the destination on public routes and nested member links', () => {
   for (const [href, area] of [
     ['/', 'home'], ['/oportunidades', 'radar'], ['/membros/oportunidades', 'radar'],
-    ['/membros/ferramentas?categoria=skills', 'ferramentas'],
+    ['/membros/ferramentas?categoria=skills', 'ferramentas'], ['/membros/trilha', 'trilha'],
     ['/membros/beneficios/oferta', 'beneficios'], ['/membros/protecao?next=%2Fmembros', 'protecao'],
     ['/membros', 'home'], ['/membros/entrar', 'perfil'], ['/makeitfly', undefined],
   ]) assert.equal(areaForPath(href), area, href);

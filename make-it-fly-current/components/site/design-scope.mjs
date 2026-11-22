@@ -15,7 +15,7 @@ const publicAreas = {
 /** @type {Record<string, string>} */
 const memberAreas = {
   "": "home", oportunidades: "radar", radar: "radar", beneficios: "beneficios",
-  ferramentas: "ferramentas", "meu-calendario": "calendario",
+  ferramentas: "ferramentas", trilha: "trilha", "meu-calendario": "calendario",
   colecoes: "colecoes", forum: "forum", perfil: "perfil", protecao: "protecao",
   assinatura: "assinatura", suporte: "suporte", blog: "blog", integracoes: "integracoes",
 };

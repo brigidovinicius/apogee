@@ -12,7 +12,7 @@ import { memberResourceAvailability } from "@/lib/members/resource-availability"
 import { radarAccess } from "@/lib/billing/store";
 import styles from "./member-navigation.module.css";
 
-export type MemberSection = "home" | "forum" | "perfil" | "radar" | "calendario" | "colecoes" | "protecao" | "ferramentas" | "beneficios" | "assinatura" | "suporte" | "blog" | "integracoes";
+export type MemberSection = "home" | "forum" | "perfil" | "radar" | "calendario" | "colecoes" | "protecao" | "ferramentas" | "beneficios" | "trilha" | "assinatura" | "suporte" | "blog" | "integracoes";
 export type MemberBarProps = { member: CurrentMember; current?: MemberSection };
 
 export async function MemberBar({ member, current }: MemberBarProps) {
@@ -27,6 +27,7 @@ export async function MemberBar({ member, current }: MemberBarProps) {
     { key: "beneficios", href: "/membros/beneficios", label: "Benefícios" },
   ];
   const more = [
+    { key: "trilha", href: "/membros/trilha", label: "Trilha de Aprendizagem" },
     ...(resources.ferramentas ? [{ key: "ferramentas", href: "/membros/ferramentas", label: "Caixa de ferramentas" }] : []),
     ...(radar?.active && calendar ? [{ key: "calendario", href: "/membros/meu-calendario", label: "Meu calendário" }] : []),
     ...(radar?.active && collections ? [{ key: "colecoes", href: "/membros/colecoes", label: "Minhas coleções" }] : []),
