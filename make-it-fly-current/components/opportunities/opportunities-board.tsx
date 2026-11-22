@@ -4,7 +4,7 @@ import { trackBehavior } from "@/components/analytics/behavior-client";
 
 import { SaveOpportunityButton } from "./save-opportunity";
 import { AREAS, displayOpportunityTitle, publicOpportunityPath } from "@/lib/opportunities/discovery";
-import { radarCatalogueQuery } from "@/lib/opportunities/navigation";
+import { radarCatalogueQuery, radarLocationOptOut } from "@/lib/opportunities/navigation";
 import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
 import { employmentExperienceSummary } from "@/lib/opportunities/employment-experience";
 import { interfaceText } from "@/lib/presentation-text.mjs";
@@ -134,6 +134,15 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
     return `${pathname}${params.size ? `?${params}` : ""}#mural-title`;
   };
 
+  const locationRanking = catalogue?.locationRanking;
+  const locationHref = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("pagina");
+    if (locationRanking === "applied") params.set(radarLocationOptOut, "off");
+    else params.delete(radarLocationOptOut);
+    return `${pathname}${radarCatalogueQuery(params)}#mural-title`;
+  };
+
   return (
     <section data-ap-radar-board={management ? undefined : ""} className={styles.board} data-public-catalogue={publicCatalogue || undefined} aria-labelledby="mural-title">
       <LiveCatalogueRefresh />
@@ -149,6 +158,17 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
       {management ? <p className={styles.coverageProgress}>
         Cobertura do Radar: {coverage.total.toLocaleString("pt-BR")} de 1.000 oportunidades vigentes verificadas.
       </p> : null}
+
+      {locationRanking && <p className={styles.locationRanking}>
+        {locationRanking === "applied" ? <>
+          Eventos na sua região recebem destaque com base na localização aproximada do IP.{" "}
+          <a href="https://db-ip.com" rel="noreferrer">Dados de localização por DB-IP</a>.{" "}
+          <Link href={locationHref()} prefetch={false}>Ver sem usar localização</Link>
+        </> : <>
+          Ordenação sem localização por IP.{" "}
+          <Link href={locationHref()} prefetch={false}>Usar localização aproximada</Link>
+        </>}
+      </p>}
 
       <div className={styles.searchBar}>
           <form className={styles.locationField} role="search" aria-labelledby="mural-title" onSubmit={(event) => {
