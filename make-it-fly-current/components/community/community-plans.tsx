@@ -14,7 +14,7 @@ export function CommunityPlans({ preview = false, signedIn = false, subscribed =
     <div className={styles.plans}>
       <article id="plano-anual" className={`${styles.plan} ${styles.featured}`} aria-labelledby="community-plan-title">
         <h3 id="community-plan-title">Assinatura anual</h3>
-        <p>{resources?.trilha && resources.ferramentas ? "Ferramentas, prática com IA e Radar completo por um ano." : "Consulte o Radar completo e acesse os recursos publicados da comunidade."}</p>
+        <p>Consulte o Radar completo e acesse os recursos publicados da comunidade.</p>
         <div data-annual-stage="annual_price" className={`${styles.price} ${styles.annualPrice}`}><strong>R$ 1.438,80</strong><span>/ano</span></div>
         <div>
           <p className={styles.note}>Equivale a R$ 119,90/mês. Pagamento integral anual.</p>
@@ -25,7 +25,6 @@ export function CommunityPlans({ preview = false, signedIn = false, subscribed =
         {!subscribed && (available || preview) && <p className={styles.note}>Pagamento seguro com a Stripe.</p>}
         <ul>
           {resources?.ferramentas && <li>Caixa de Ferramentas organizada por tarefa.</li>}
-          {resources?.trilha && <li>Trilha inicial de IA: três atividades práticas.</li>}
           <li>Radar completo: eventos, bolsas e editais.</li>
         </ul>
         <p className={styles.note}>Benefícios de parceiros conforme disponibilidade e elegibilidade. Licenças de ferramentas não incluídas.</p>

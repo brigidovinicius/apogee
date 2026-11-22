@@ -10,7 +10,7 @@ const uiMocks = { "next/link": { __esModule: true, default: Link }, "@/component
 
 test("every exclusive preview is inert, decorative and contains no real action or private record", () => {
   const { LockedMemberArea } = opportunityLoader(uiMocks)("components/members/locked-member-area.tsx");
-  for (const kind of ["ferramentas", "beneficios", "trilha", "forum", "calendario", "colecoes", "perfil"]) {
+  for (const kind of ["ferramentas", "beneficios", "forum", "calendario", "colecoes", "perfil"]) {
     const html = renderToStaticMarkup(React.createElement(LockedMemberArea, { kind, next: `/membros/${kind}` }));
     assert.match(html, /aria-hidden="true" inert="" data-locked-preview=/);
     const backdrop = html.slice(html.indexOf('data-locked-preview='), html.indexOf('class="notice"'));
@@ -50,13 +50,11 @@ test("free and legacy members never load paid catalogues; paid members still req
   const toolbox = load("lib/toolbox/store.ts"), deliverables = load("lib/deliverables/store.ts");
   assert.deepEqual((await toolbox.memberToolbox()).tools, []);
   assert.deepEqual((await deliverables.memberBenefits()).benefits, []);
-  assert.deepEqual((await deliverables.memberLearning()).activities, []);
-  await assert.rejects(deliverables.setLearningProgress({ activityId: "private", completed: true }), /anual/);
   assert.equal(verificationChecks, 0);
   assert.equal(catalogueReads, 0);
   paid = true;
-  for (const read of [() => toolbox.memberToolbox(), () => deliverables.memberBenefits(), () => deliverables.memberLearning(), () => deliverables.setLearningProgress({})]) await assert.rejects(read(), /VERIFICATION_REQUIRED/);
-  assert.equal(verificationChecks, 4);
+  for (const read of [() => toolbox.memberToolbox(), () => deliverables.memberBenefits()]) await assert.rejects(read(), /VERIFICATION_REQUIRED/);
+  assert.equal(verificationChecks, 2);
   assert.equal(catalogueReads, 0);
 });
 
@@ -65,9 +63,10 @@ test("administrator content access still requires account verification and never
   const admin = { ...member, role: "admin" };
   const load = opportunityLoader({ ...uiMocks,
     "@/lib/members/dal": { requireSignedInMember: async () => admin, requireMember: async () => { throw Error("VERIFICATION_REQUIRED"); } },
-    "@/lib/members/db": { getSql: () => async () => {
+    "@/lib/members/db": { getSql: () => async (query) => {
+      assert.doesNotMatch(query.join(""), /member_learning/);
       assert.ok(verified, "unverified account must never query resource availability");
-      return [{ trilha: true, ferramentas: true }];
+      return [{ ferramentas: true }];
     } },
     "@/lib/billing/community-store": { communityAccess: async () => ({ active: false }) },
     "@/lib/billing/store": { radarAccess: async () => ({ active: true }) },
@@ -75,13 +74,14 @@ test("administrator content access still requires account verification and never
     "@/lib/members/forum": { listCategories: async () => [] },
   });
   const deliverables = load("lib/deliverables/store.ts");
-  for (const read of [() => deliverables.memberBenefits(), () => deliverables.memberLearning(), () => deliverables.setLearningProgress({})]) await assert.rejects(read(), /VERIFICATION_REQUIRED/);
+  await assert.rejects(deliverables.memberBenefits(), /VERIFICATION_REQUIRED/);
   const home = load("app/membros/page.tsx").default;
   assert.doesNotMatch(renderToStaticMarkup(await home()), /href="\/membros\/(?:trilha|ferramentas)"/);
   verified = true;
   const html = renderToStaticMarkup(await home());
   assert.doesNotMatch(html, /Exclusivo da assinatura|Assinatura anual ativa|Prévia administrativa/);
-  assert.match(html, /href="\/membros\/trilha"/);
+  assert.match(html, /href="\/membros\/ferramentas"/);
+  assert.doesNotMatch(html, /trilha|\/admin\/trilha/i);
 });
 
 test("calendar and collection previews preserve the destination and respect verification and existing Radar rights", async () => {

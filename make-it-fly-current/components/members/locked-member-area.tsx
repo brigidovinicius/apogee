@@ -2,12 +2,11 @@ import Link from "next/link";
 import { LockKeyhole, ArrowUpRight } from "lucide-react";
 import styles from "./locked-member-area.module.css";
 
-export type LockedAreaKind = "ferramentas" | "beneficios" | "trilha" | "forum" | "calendario" | "colecoes" | "perfil";
+export type LockedAreaKind = "ferramentas" | "beneficios" | "forum" | "calendario" | "colecoes" | "perfil";
 export type LockedAreaReason = "annual" | "verification" | "unavailable";
 const previews: Record<LockedAreaKind, { name: string; items: string[] }> = {
   ferramentas: { name: "Caixa de ferramentas", items: ["Vídeo", "Imagem e design", "Áudio", "Texto e pesquisa", "Produtividade", "Programação"] },
   beneficios: { name: "Benefícios", items: ["Condições de acesso", "Elegibilidade", "Como resgatar"] },
-  trilha: { name: "Trilha inicial", items: ["Escolher uma tarefa", "Preparar um pedido", "Conferir o resultado"] },
   forum: { name: "Conversas da comunidade", items: ["Boas-vindas", "Ideias e projetos", "Dúvidas"] },
   calendario: { name: "Meu calendário", items: ["Oportunidades salvas", "Próximas etapas", "Combinações de filtros"] },
   colecoes: { name: "Minhas coleções", items: ["Seleções pessoais", "Organizar oportunidades", "Coleções acompanhadas"] },

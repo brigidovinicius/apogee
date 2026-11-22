@@ -21,13 +21,6 @@ export function CommunityResourceCards({ resources, destination }: {
       href: { home: "/comunidade#perks", members: "/membros/beneficios", preview: "/beneficios" },
       action: "Ver benefícios",
     },
-    ...(resources?.trilha ? [{
-      artwork: "learn",
-      name: "Trilha inicial",
-      text: "Pratique com três atividades de IA e acompanhe seu progresso.",
-      href: { home: "/comunidade#learn", members: "/membros/trilha", preview: "/membros/trilha" },
-      action: destination === "home" ? "Conhecer a trilha" : "Abrir a trilha",
-    }] : []),
     ...(resources?.ferramentas ? [{
       artwork: "ferramentas",
       name: "Caixa de Ferramentas",

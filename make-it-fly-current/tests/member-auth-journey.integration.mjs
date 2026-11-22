@@ -49,11 +49,11 @@ test('isolated signup, email verification, recovery, session revocation and logo
       const r=await call('request-password-reset',{email:'unknown@example.test',redirectTo:origin+'/membros/redefinir-senha'});assert.equal(r.status,200);unknownAcknowledgement=await r.json();await drain();assert.equal(emails.length,count);
     });
     async function resetToken(){
-      const r=await call('request-password-reset',{email:signup.email,redirectTo:origin+'/membros/redefinir-senha?next=%2Fmembros%2Ftrilha'});assert.equal(r.status,200);assert.deepEqual(await r.json(),unknownAcknowledgement);await drain();
+      const r=await call('request-password-reset',{email:signup.email,redirectTo:origin+'/membros/redefinir-senha?next=%2Fmembros%2Fbeneficios'});assert.equal(r.status,200);assert.deepEqual(await r.json(),unknownAcknowledgement);await drain();
       assert.match(emails.at(-1).subject,/Redefina/);
       const link=new URL(emails.at(-1).text.match(/http:\/\/\S+/)[0]);assert.equal(link.origin,origin);
       const response=await auth.handler(new Request(link));assert.equal(response.status,302);
-      const target=new URL(response.headers.get('location'));assert.equal(target.origin,origin);assert.equal(target.pathname,'/membros/redefinir-senha');assert.equal(target.searchParams.get('next'),'/membros/trilha');
+      const target=new URL(response.headers.get('location'));assert.equal(target.origin,origin);assert.equal(target.pathname,'/membros/redefinir-senha');assert.equal(target.searchParams.get('next'),'/membros/beneficios');
       const token=target.searchParams.get('token');assert.ok(token);
       const rows=await db.sql`select identifier,value from verification`;assert.ok(!JSON.stringify(rows).includes(token),'Reset token is hashed at rest.');return token;
     }

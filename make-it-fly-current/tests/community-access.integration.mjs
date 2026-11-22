@@ -244,7 +244,7 @@ test('pausing new sales preserves signed payment processing, refunds, portal and
 test('repeated cancellation after resuming renewal performs a fresh idempotent state change and preserves destination',async()=>{
   member='paid';const cancel=load('app/api/comunidade/assinatura/cancelar/route.ts').POST;
   model.sub.cancel_at_period_end=false;const before=model.cancelCalls;
-  let response=await cancel(req('/api/comunidade/assinatura/cancelar?next=%2Fmembros%2Ftrilha'));assert.equal(response.status,303);assert.equal(new URL(response.headers.get('location')).searchParams.get('next'),'/membros/trilha');assert.equal(model.cancelCalls,before+1);
+  let response=await cancel(req('/api/comunidade/assinatura/cancelar?next=%2Fmembros%2Fbeneficios'));assert.equal(response.status,303);assert.equal(new URL(response.headers.get('location')).searchParams.get('next'),'/membros/beneficios');assert.equal(model.cancelCalls,before+1);
   await cancel(req('/api/comunidade/assinatura/cancelar'));assert.equal(model.cancelCalls,before+1,'already cancelled needs no update');
   model.sub.cancel_at_period_end=false;await cancel(req('/api/comunidade/assinatura/cancelar'));assert.equal(model.cancelCalls,before+2,'resumed renewal must be cancellable again');
 });

@@ -23,7 +23,7 @@ export type BehaviorEventName = keyof typeof BEHAVIOR_TARGETS;
 export type BehaviorEvent = { page: BehaviorPage; event: BehaviorEventName; target: string; device: "mobile" | "desktop" };
 const routes: Record<string, BehaviorPage> = {
   "/evento-openai": "event_page", "/membros/beneficios": "member_benefits",
-  "/membros/ferramentas": "member_toolbox", "/membros/trilha": "member_learning",
+  "/membros/ferramentas": "member_toolbox",
   "/comunidade": "annual_offer", "/membros/assinatura": "annual_summary",
   "/": "home", "/oportunidades": "radar_list", "/membros/oportunidades": "radar_saved",
   "/membros/meu-calendario": "radar_calendar", "/membros/radar/acesso": "radar_access",

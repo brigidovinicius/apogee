@@ -3,13 +3,13 @@ import { randomUUID } from "node:crypto";
 import { getSql } from "@/lib/members/db";
 import { requireAdmin, requireMember, requireSignedInMember } from "@/lib/members/dal";
 import { communityAccess } from "@/lib/billing/community-store";
-import { benefitSchema, trackSchema, moduleSchema, activitySchema, progressSchema, type DeliverableKind } from "./validation";
+import { benefitSchema, trackSchema, moduleSchema, activitySchema, type DeliverableKind } from "./validation";
 
 export class DeliverableConflictError extends Error {}
 export type Benefit = { id: string; name: string; partner: string; description: string; eligibility: string; availability: string; starts_at: Date | null; ends_at: Date | null; verified_at: Date | null; redemption: string; redemption_url: string; audience?: string; evidence_url?: string; revision?: string; status: string; sort_order: number };
 export type Track = { id: string; name: string; description: string; status: string; sort_order: number; revision?: string };
 export type LearningModule = Track & { track_id: string; deliverable: string };
-export type Activity = { id: string; module_id: string; name: string; instructions: string; resource_url: string; status: string; sort_order: number; completed_at?: Date | null; revision?: string };
+export type Activity = { id: string; module_id: string; name: string; instructions: string; resource_url: string; status: string; sort_order: number; revision?: string };
 // Drizzle configures the shared postgres-js client to return raw timestamps.
 // Normalize at the boundary so valid published benefits also render after auth.
 const benefitDates = (b: Benefit): Benefit => ({ ...b, verified_at: b.verified_at ? new Date(b.verified_at) : null, starts_at: b.starts_at ? new Date(b.starts_at) : null, ends_at: b.ends_at ? new Date(b.ends_at) : null });
@@ -30,45 +30,6 @@ export async function memberBenefits() {
   const benefits = await getSql()<Benefit[]>`select id,name,partner,description,eligibility,availability,starts_at,ends_at,verified_at,redemption,redemption_url,status,sort_order
     from member_benefit b where public.member_benefit_is_available(b) order by sort_order,name,id`;
   return { member, access, benefits: benefits.map(benefitDates) };
-}
-
-export async function memberLearning() {
-  const { member, access } = await deliverableMember("/membros/trilha");
-  if (!access.allowed) return { member, access, tracks: [] as Track[], modules: [] as LearningModule[], activities: [] as Activity[] };
-  const sql = getSql();
-  const tracks = await sql<Track[]>`select id,name,description,status,sort_order from member_learning_track where status='published' order by sort_order,name,id`;
-  // Preparing modules disclose only their public title; no private unfinished material.
-  const modules = await sql<LearningModule[]>`select m.id,m.track_id,m.name,m.status,m.sort_order,
-      case when m.status='published' then m.description else '' end as description,
-      case when m.status='published' then m.deliverable else '' end as deliverable
-    from member_learning_module m join member_learning_track t on t.id=m.track_id
-    where t.status='published' and m.status in ('published','preparing') order by m.sort_order,m.name,m.id`;
-  const activities = await sql<Activity[]>`select a.id,a.module_id,a.name,a.instructions,a.resource_url,a.status,a.sort_order,p.completed_at
-    from member_learning_activity a join member_learning_module m on m.id=a.module_id
-    join member_learning_track t on t.id=m.track_id
-    left join member_learning_progress p on p.activity_id=a.id and p.user_id=${member.id}
-    where a.status='published' and m.status='published' and t.status='published' order by a.sort_order,a.name,a.id`;
-  return { member, access, tracks, modules, activities };
-}
-
-export async function setLearningProgress(input: unknown) {
-  const { member, access } = await deliverableMember("/membros/trilha");
-  if (!access.allowed) throw Error("A Trilha exige assinatura anual vigente.");
-  const v = progressSchema.parse(input), sql = getSql();
-  // Recheck account/right/content inside the mutation. Never accept a user ID.
-  return sql.begin(async tx => {
-    const [account] = await tx`select id,role,blocked from "user" where id=${member.id} for update`;
-    if (!account || account.blocked) throw Error("Acesso indisponível para esta conta.");
-    const eligible = account.role === "admin" ? [account] : await tx`select 1 from community_subscription s join community_invoice i on i.subscription_id=s.id
-      where s.user_id=${member.id} and s.livemode=${process.env.STRIPE_MODE !== "test"}
-      and i.status='paid' and i.fraud_review_required=false and i.period_start<=now() and i.period_end>now() limit 1`;
-    if (!eligible.length) throw Error("A Trilha exige assinatura anual vigente.");
-    const content = await tx`select a.id from member_learning_activity a join member_learning_module m on m.id=a.module_id
-      join member_learning_track t on t.id=m.track_id where a.id=${v.activityId} and a.status='published' and m.status='published' and t.status='published' for share of a,m,t`;
-    if (!content.length) throw Error("Atividade indisponível. Atualize a página.");
-    if (v.completed) await tx`insert into member_learning_progress(user_id,activity_id) values(${member.id},${v.activityId}) on conflict do nothing`;
-    else await tx`delete from member_learning_progress where user_id=${member.id} and activity_id=${v.activityId}`;
-  });
 }
 
 export async function adminDeliverables(next: "/admin/beneficios" | "/admin/trilha" = "/admin/trilha") {

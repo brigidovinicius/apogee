@@ -10,14 +10,14 @@ function render(props = {}, enabled = false) {
     "next/link": { __esModule: true, default: ({ children, prefetch, ...props }) => { void prefetch; return React.createElement("a", props, children); } },
     "@/lib/billing/community-config": { communityBillingEnabled: () => enabled },
   });
-  return renderToStaticMarkup(React.createElement(load("components/community/community-sales-page.tsx").CommunitySalesPage, { resources: { trilha: true, ferramentas: true }, ...props }));
+  return renderToStaticMarkup(React.createElement(load("components/community/community-sales-page.tsx").CommunitySalesPage, { resources: { ferramentas: true }, ...props }));
 }
 
 test("sales page retains the complete offer and honest delivery states with working section links", () => {
   const html = render();
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-  for (const text of ["Caixa de Ferramentas", "Benefícios", "Trilha de IA", "R$ 1.438,80", "R$ 119,90", "10 consultas mensais no Radar e 10 em Benefícios", "Os acessos anteriores ao Radar continuam válidos", "disponível de forma parcial", "depende das condições e da elegibilidade de cada oferta", "independente da assinatura"]) assert.ok(html.includes(text), text);
-  for (const id of ["comunidade", "radar", "ferramentas", "learn", "perks", "planos", "participar", "duvidas"]) assert.ok(html.includes(`id="${id}"`), id);
+  for (const text of ["Caixa de Ferramentas", "Benefícios", "R$ 1.438,80", "R$ 119,90", "10 consultas mensais no Radar e 10 em Benefícios", "Os acessos anteriores ao Radar continuam válidos", "depende das condições e da elegibilidade de cada oferta", "independente da assinatura"]) assert.ok(html.includes(text), text);
+  for (const id of ["comunidade", "radar", "ferramentas", "perks", "planos", "participar", "duvidas"]) assert.ok(html.includes(`id="${id}"`), id);
   for (const [, id] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(html.includes(`id="${id}"`), `broken section link: ${id}`);
   assert.match(html, /href="\/evento-openai#workshop-florianopolis"/);
   assert.match(html, /href="\/galeria"[^>]*>Ver fotos do Make It Fly/);
@@ -53,7 +53,6 @@ test("annual sales link is enabled only by the commercial switch and never by pr
   assert.match(active, /Pagamento integral anual/);
   assert.match(active, /Renovação automática/);
   assert.doesNotMatch(active, /O catálogo ainda está em preparação|valor proposto|serão apresentados antes da adesão/);
-  assert.match(active, /formação ainda não está completa/);
   const preview = render({ preview: true, next }, true);
   assert.doesNotMatch(preview, /action="\/api\/comunidade\/assinatura/);
   assert.match(preview, /aria-disabled="true"/);
@@ -66,11 +65,14 @@ test("benefits availability reflects the real catalogue without promising eligib
   assert.match(render({ hasBenefits: true }), /elegibilidade de cada oferta/);
 });
 
-test("recursos sem conteúdo publicado saem da oferta e dos atalhos", () => {
-  const html = render({ resources: { trilha: false, ferramentas: false } });
-  for (const target of ["learn", "ferramentas"]) {
-    assert.ok(!html.includes(`href="#${target}"`));
-    assert.ok(!html.includes(`id="${target}"`));
+test("the learning track is absent from the public offer and local preview", () => {
+  for (const props of [{}, { preview: true }, { signedIn: true }, { signedIn: true, subscribed: true }]) {
+    assert.doesNotMatch(render(props, true), /trilha|#learn|id="learn"|primeiro resultado com IA/i);
   }
+});
+
+test("the toolbox is absent from the offer when it has no published content", () => {
+  const html = render({ resources: { ferramentas: false } });
+  assert.doesNotMatch(html, /href="#ferramentas"|id="ferramentas"/);
   assert.match(html, /10 consultas mensais no Radar e 10 em Benefícios/);
 });

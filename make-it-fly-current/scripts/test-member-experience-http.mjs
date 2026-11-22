@@ -84,13 +84,14 @@ try {
     report.results.push(...previous.results);
   } else {
   await page("/membros/suporte", /Como podemos ajudar/);
+  await page("/membros/trilha", null, 404);
   const protectedResponse = await request("/membros");
   assert.equal(protectedResponse.status, 307);
   assert.match(protectedResponse.headers.get("location"), /\/membros\/entrar/);
   await login("revisaopendente");
   const home = await page("/membros", /Sua comunidade/);
   assert.match(home, /Minha conta/); assert.match(home, /Sair da conta/);
-  for (const part of ["ferramentas", "beneficios", "trilha"]) {
+  for (const part of ["ferramentas", "beneficios"]) {
     const html = await page(`/membros/${part}`, new RegExp(`data-locked-preview="${part}"`));
     assert.doesNotMatch(html, /https:\/\/labs\.google|Escolha uma tarefa real|PRIVATE_INSTRUCTIONS/);
   }
@@ -98,7 +99,7 @@ try {
   await page("/membros/colecoes", /data-locked-preview="colecoes"/);
   await page("/membros/perfil/editar", /data-locked-preview="perfil"/);
   await page("/membros/forum/boas-vindas", /data-locked-preview="forum"/);
-  await page("/membros/assinatura", /assinatura/i);
+  assert.doesNotMatch(clean(await page("/membros/assinatura", /assinatura/i)), /trilha|primeiro resultado com IA/i);
   await page("/membros/protecao", /Confirme seu e-mail/);
   await page("/oportunidades", /Minha conta/);
   const logoutAt = "/membros/ferramentas", logoutHtml = await page(logoutAt, /Sair da conta/);
@@ -131,9 +132,11 @@ try {
   await page(firstPath, /Detalhe protegido/);
   await login("revisaoanual");
   await page("/membros/ferramentas", /Google Flow/);
-  const learning = await page("/membros/trilha", /Marcar como concluída/);
-  await submit("/membros/trilha", learning, form => form.includes('name="activityId"'), { completed: "true" });
-  await page("/membros/trilha", /Reabrir atividade/);
+  assert.doesNotMatch(clean(await page("/membros", /Conversas da comunidade/)), /trilha|primeiro resultado com IA/i);
+  await page("/membros/trilha", null, 404);
+  const progress = await request("/membros/trilha", { method: "POST", headers: { Origin: origin }, body: new URLSearchParams({ activityId: "fixture", completed: "true" }) });
+  assert.ok([404, 405].includes(progress.status), `retired progress endpoint: ${progress.status}`);
+  await progress.text();
   await page("/membros/beneficios", /Nenhum benefício confirmado/);
   await page("/membros/meu-calendario", /Minhas oportunidades salvas/);
   const collections = await page("/membros/colecoes", /Criar coleção privada/);
@@ -146,7 +149,7 @@ try {
   }
   await login("revisaocancelada");
   await page("/membros/ferramentas", /Google Flow/);
-  assert.doesNotMatch(clean(await page("/membros/trilha", /Marcar como concluída/)), /Reabrir atividade/);
+  await page("/membros/trilha", null, 404);
   const otherCollection = await request(ownCollection), missing = clean(await otherCollection.text());
   assert.match(missing, /Página não encontrada|<meta name="next-error" content="not-found"/);
   assert.doesNotMatch(missing, /Coleção sintética de navegação/);
@@ -157,8 +160,11 @@ try {
   for (const name of ["revisaoexpirado", "revisaoreembolso"]) {
     await login(name);
     await page("/membros/ferramentas", /data-locked-preview="ferramentas"/);
-    await page("/membros/trilha", /data-locked-preview="trilha"/);
+    await page("/membros/trilha", null, 404);
   }
+  await login("revisaoadmin");
+  await page("/admin/trilha", /Um primeiro resultado com IA/);
+  await page("/membros/trilha", null, 404);
   await login("revisaopendente");
   await page("/membros", /Sua comunidade/);
   report.completed = true;

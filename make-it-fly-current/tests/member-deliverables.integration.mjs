@@ -62,7 +62,7 @@ test("protected editorial creation, ordering, updating, publication and audit pe
   const [audit] = await sql`select count(*)::int as n from member_deliverable_audit`; assert.equal(audit.n, 5);
   actor = "free0"; await assert.rejects(store.adminDeliverables(), /ADMIN/); await assert.rejects(store.saveDeliverable("benefit", benefit), /ADMIN/);
 });
-test("ordinary accounts need annual rights; current administrators can read published content without a subscription", async () => {
+test("ordinary accounts need annual rights for protected benefits; administrators can read them without a subscription", async () => {
   for (const id of ["paid", "cancelled", "expired", "refunded", "blocked"]) {
     await sql`insert into community_subscription(id,user_id,customer_id,livemode,status,cancel_at_period_end) values(${"sub_" + id},${id},${"cus_" + id},false,'active',${id === "cancelled"})`;
     await sql`insert into community_invoice(id,subscription_id,amount,currency,period_start,period_end,status) values(${"in_" + id},${"sub_" + id},143880,'brl',now()-interval '1 year',${id === "expired" ? new Date(Date.now() - 10000) : new Date(Date.now() + 86400000)},${id === "refunded" ? "refunded" : "paid"})`;
@@ -70,65 +70,40 @@ test("ordinary accounts need annual rights; current administrators can read publ
   await sql`insert into radar_legacy_access(user_id) values('legacy')`;
   for (const id of ["free9", "free10"]) for (let i = 1; i <= (id === "free9" ? 9 : 10); i++) await sql`insert into radar_free_event(user_id,opportunity_id,slot) values(${id},${"fixture-event-" + i},${i})`;
   for (actor of ["free0", "free9", "free10", "legacy", "expired", "refunded", "revoked-admin", "other"]) {
-    const b = await store.memberBenefits(), t = await store.memberLearning();
+    const b = await store.memberBenefits();
     assert.equal(b.access.active, false, actor); assert.equal(b.access.allowed, false, actor); assert.deepEqual(b.benefits, [], actor);
-    assert.deepEqual(t.activities, [], actor); assert.deepEqual(t.tracks, [], actor);
-    assert.ok(!JSON.stringify({ b, t }).includes("PRIVATE_FIXTURE"), actor);
+    assert.ok(!JSON.stringify(b).includes("PRIVATE_FIXTURE"), actor);
   }
-  for (actor of ["paid", "cancelled"]) { assert.equal((await store.memberBenefits()).benefits.length, 1); assert.equal((await store.memberLearning()).activities.length, 1); }
+  for (actor of ["paid", "cancelled"]) assert.equal((await store.memberBenefits()).benefits.length, 1);
   actor = "admin";
-  const adminBenefits = await store.memberBenefits(), adminLearning = await store.memberLearning();
+  const adminBenefits = await store.memberBenefits();
   assert.equal(adminBenefits.access.allowed, true); assert.equal(adminBenefits.access.active, false);
-  assert.equal(adminBenefits.benefits.length, 1); assert.equal(adminLearning.activities.length, 1);
+  assert.equal(adminBenefits.benefits.length, 1);
   assert.doesNotMatch(JSON.stringify(adminBenefits.benefits), /evidence_url|example.org\/agreement|reviewed_by/);
   assert.equal((await sql`select count(*)::int as n from community_subscription where user_id='admin'`)[0].n, 0);
   actor = null; await assert.rejects(store.memberBenefits(), /AUTH/);
-  for (actor of ["blocked", "blocked-admin"]) { await assert.rejects(store.memberLearning(), /AUTH/); await assert.rejects(store.memberBenefits(), /AUTH/); }
+  for (actor of ["blocked", "blocked-admin"]) await assert.rejects(store.memberBenefits(), /AUTH/);
 });
-test("administrator progress stays account-bound and the transaction rejects blocked or revoked roles despite stale authorization", async () => {
-  actor = "admin";
-  await store.setLearningProgress({ activityId, completed: true });
-  assert.ok((await store.memberLearning()).activities[0].completed_at);
-  actor = "paid"; assert.equal((await store.memberLearning()).activities[0].completed_at, null);
-  actor = "admin"; await assert.rejects(store.setLearningProgress({ activityId, completed: true, userId: "paid" }));
-  await store.setLearningProgress({ activityId, completed: false });
-  assert.equal((await store.memberLearning()).activities[0].completed_at, null);
-  for (const id of ["revoked-admin", "blocked-admin"]) {
-    const stale = async () => ({ id, role: "admin" });
-    const staleStore = opportunityLoader({ "@/lib/members/db": { getSql: () => sql }, "@/lib/members/dal": { requireSignedInMember: stale, requireMember: stale } })("lib/deliverables/store.ts");
-    await assert.rejects(staleStore.setLearningProgress({ activityId, completed: true }), /anual|indisponível/);
-    assert.equal((await sql`select count(*)::int as n from member_learning_progress where user_id=${id}`)[0].n, 0);
+test("learning content stays accessible only through administrative curatorship", async () => {
+  for (actor of [null, "free0", "legacy", "paid", "cancelled", "revoked-admin", "blocked-admin"]) {
+    await assert.rejects(store.adminDeliverables(), /ADMIN/);
+    await assert.rejects(store.saveDeliverable("track", {}), /ADMIN/);
   }
+  assert.equal(store.memberLearning, undefined);
+  assert.equal(store.setLearningProgress, undefined);
+  actor = "admin";
+  const { tracks, modules, activities } = await store.adminDeliverables();
+  assert.equal(tracks.find(track => track.id === trackId)?.status, "published");
+  assert.equal(modules.find(module => module.id === moduleId)?.track_id, trackId);
+  assert.match(activities.find(activity => activity.id === activityId)?.instructions, /PRIVATE_INSTRUCTIONS/);
+  assert.equal((await sql`select count(*)::int as n from member_learning_progress`)[0].n, 0);
 });
-test("private progress is idempotent, account-bound, restricted on expiry and independent of the Radar quota", async () => {
-  actor = "paid";
-  const [before] = await sql`select count(*)::int as n from radar_free_event`;
-  await Promise.all(Array.from({ length: 6 }, () => store.setLearningProgress({ activityId, completed: true })));
-  const [count] = await sql`select count(*)::int as n from member_learning_progress where user_id='paid'`; assert.equal(count.n, 1);
-  assert.ok((await store.memberLearning()).activities[0].completed_at);
-  actor = "cancelled"; assert.equal((await store.memberLearning()).activities[0].completed_at, null);
-  await assert.rejects(store.setLearningProgress({ activityId, completed: true, userId: "paid" }));
-  actor = "free0"; await assert.rejects(store.setLearningProgress({ activityId, completed: true }), /anual/);
-  actor = "paid"; await store.setLearningProgress({ activityId, completed: false });
-  assert.equal((await store.memberLearning()).activities[0].completed_at, null);
-  await sql`update community_invoice set status='fraud',fraud_review_required=true where id='in_paid'`;
-  await assert.rejects(store.setLearningProgress({ activityId, completed: true }), /anual/);
-  // Keep the risk marker; later checks use the independent cancelled-but-paid
-  // account instead of clearing a risk hold to make a fixture eligible.
-  const [after] = await sql`select count(*)::int as n from radar_free_event`; assert.equal(before.n, after.n);
-});
-test("draft/archive/expiry and parent publication apply to direct reads and progress writes", async () => {
-  actor = "admin"; await store.saveDeliverable("benefit", { ...benefit, id: benefitId, revision: (await store.adminDeliverables()).benefits[0].revision, status: "archived" });
-  await sql`update member_learning_module set status='preparing' where id=${moduleId}`;
-  assert.equal((await store.memberLearning()).activities.length, 0);
+test("archived and expired benefits are hidden from otherwise eligible accounts", async () => {
+  actor = "admin";
+  await store.saveDeliverable("benefit", { ...benefit, id: benefitId, revision: (await store.adminDeliverables()).benefits[0].revision, status: "archived" });
   assert.equal((await store.memberBenefits()).benefits.length, 0);
-  await assert.rejects(store.setLearningProgress({ activityId, completed: true }), /indisponível/);
-  actor = "cancelled"; assert.equal((await store.memberBenefits()).benefits.length, 0);
-  let t = await store.memberLearning(); assert.equal(t.modules[0].status, "preparing"); assert.equal(t.modules[0].description, ""); assert.equal(t.activities.length, 0);
-  await assert.rejects(store.setLearningProgress({ activityId, completed: true }), /indisponível/);
-  await sql`update member_learning_module set status='published' where id=${moduleId}`;
-  await sql`update member_learning_track set status='archived' where id=${trackId}`;
-  t = await store.memberLearning(); assert.equal(t.modules.length, 0); assert.equal(t.activities.length, 0);
+  actor = "cancelled";
+  assert.equal((await store.memberBenefits()).benefits.length, 0);
   await sql`update member_benefit set status='published',ends_at=now()-interval '1 day' where id=${benefitId}`;
   assert.equal((await store.memberBenefits()).benefits.length, 0);
 });

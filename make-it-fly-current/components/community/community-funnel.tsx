@@ -11,7 +11,7 @@ export function FunnelHeader({ page }: { page: "community" | "recording" }) {
     <Link className={styles.brand} href="/comunidade" prefetch={false} aria-label="Comunidade Apogee - início"><Image src="/brand/apogee-star.svg" alt="" width={24} height={30} /><span>Apogee<small>{page === "community" ? "Comunidade" : "Codex Community"}</small></span></Link>
     <nav className={styles.navigation} aria-label="Navegação principal">
       <Link href={page === "community" ? "#comunidade" : "/comunidade"} prefetch={false}>A comunidade</Link>
-      <Link href={page === "community" ? "#learn" : "#como-funciona"}>{page === "community" ? "Learn" : "O que aprender"}</Link>
+      {page === "recording" && <Link href="#como-funciona">O que aprender</Link>}
       <Link href={page === "community" ? "#planos" : "#duvidas"}>{page === "community" ? "Planos" : "Dúvidas"}</Link>
     </nav><Link className={styles.previewBadge} href="/">Conheça a Apogee</Link>
   </header>;

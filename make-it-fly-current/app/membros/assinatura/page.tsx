@@ -59,10 +59,9 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
       <ul className={annual.annualList}>
         <li><div><h3>Radar completo</h3><p>Explore oportunidades e consulte os detalhes sem o limite das 10 consultas gratuitas.</p></div></li>
         <li><div><h3>Caixa de Ferramentas</h3><p>Encontre ferramentas e recursos para apoiar suas ideias e colocar projetos em prática.</p></div></li>
-        <li><div><h3>Seu primeiro resultado com IA</h3><p>Comece a Trilha com o exercício “Um primeiro resultado com IA”: três atividades para sair da intenção e experimentar.</p></div></li>
         <li><div><h3>Fórum da comunidade</h3><p>Troque experiências, compartilhe dúvidas e participe das conversas.</p></div></li>
       </ul>
-      <p className={annual.annualScope}>{COMMUNITY_BENEFITS_TERMS} A Trilha está em sua etapa inicial. <Link href="/comunidade">Conheça todas as entregas</Link>.</p>
+      <p className={annual.annualScope}>{COMMUNITY_BENEFITS_TERMS} <Link href="/comunidade">Conheça todas as entregas</Link>.</p>
       {legacy ? <p className={annual.annualLegacy}><strong>Seu Radar continua com você.</strong><br />Seu acesso antigo ao Radar está preservado e independe desta assinatura.</p> : null}
     </section>
     </div>

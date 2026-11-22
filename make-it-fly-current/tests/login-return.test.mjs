@@ -20,7 +20,7 @@ test("allowing admin returns does not allow external origins or lookalike paths"
 
 test("authentication and recovery return destinations cannot loop back to transient forms", () => {
   for (const path of ["/membros/entrar", "/membros/cadastro?next=%2Fmembros%2Fentrar", "/membros/entrar/google/concluir", "/membros/esqueci-senha", "/membros/redefinir-senha?token=private", "/membros/integracoes/mcp/entrar", "/membros/entrar/", "/membros/\ntrilha", "/membros/" + "x".repeat(4096)]) assert.equal(safeNextPath(path), "/membros", path);
-  for (const path of ["/membros/suporte", "/membros/trilha", "/membros/assinatura?next=%2Fmembros%2Ftrilha"]) assert.equal(safeNextPath(path), path);
+  for (const path of ["/membros/suporte", "/membros/beneficios", "/membros/assinatura?next=%2Fmembros%2Fbeneficios"]) assert.equal(safeNextPath(path), path);
 });
 
 function loginAction(authenticate) {

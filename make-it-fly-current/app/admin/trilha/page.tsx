@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Trilha inicial" };
 export default async function LearningAdmin() {
   const { tracks, modules, activities } = await adminDeliverables();
-  return <div className={styles.admin}><AdminPageHeader title="Trilha inicial" description="Gestão de conteúdo e ordenação. A trilha é parcial; publique apenas atividades com instruções e entregável reais." />
+  return <div className={styles.admin}><AdminPageHeader title="Trilha inicial" description="Gerencie as trilhas, os módulos e as atividades. O conteúdo está disponível somente na administração." />
     <h2>Trilhas</h2><details><summary>Nova trilha</summary><DeliverableEditor kind="track" /></details>
     {tracks.map(t => <details key={t.id}><summary>{t.name} · {t.status}</summary><DeliverableEditor kind="track" values={{ id: t.id, revision: t.revision ?? "", name: t.name, description: t.description, status: t.status, sortOrder: String(t.sort_order) }} /></details>)}
     <h2>Módulos</h2>{!tracks.length ? <p>Crie uma trilha antes de incluir módulos.</p> : <details><summary>Novo módulo</summary><DeliverableEditor kind="module" choices={tracks} /></details>}

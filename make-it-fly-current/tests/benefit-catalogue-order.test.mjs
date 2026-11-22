@@ -28,13 +28,13 @@ test("respects editorial priority, then brand and access, with stable fallback",
 async function renderView(view, params, benefits, allowed = true, toolbox = true) {
   const load = opportunityLoader({
     "next/link": { __esModule: true, default: "a" },
-    "@/lib/members/resource-availability": { memberResourceAvailability: async () => ({ ferramentas: toolbox, trilha: false }) },
+    "@/lib/members/resource-availability": { memberResourceAvailability: async () => ({ ferramentas: toolbox }) },
     "@/lib/benefits/store": { memberBenefitWorkspace: async () => ({
       member: {}, access: { allowed }, categories: [], benefits, history: [],
       totals: { catalogue: benefits.length, saved: 0, history: 0 },
     }) },
     "@/components/members/member-workspace": { MemberWorkspace: ({ children }) => children },
-    "@/components/community/annual-access-notice": { AnnualAccessNotice: () => "Acesso anual" },
+    "@/components/members/locked-member-area": { LockedMemberArea: () => "Acesso anual" },
     "./benefit-card": { BenefitCard: ({ benefit }) => createElement("article", { "data-offer": benefit.id }) },
   });
   const { BenefitsWorkspace } = load("components/benefits/workspace.tsx");

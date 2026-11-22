@@ -9,7 +9,7 @@ import { getCurrentMember } from "@/lib/members/dal";
 import { publishedResourceAvailability } from "@/lib/members/resource-availability";
 import { communityAccess } from "@/lib/billing/community-store";
 
-const description = "Conheça a conta gratuita e a assinatura anual da Comunidade Apogee. Compare a Caixa de Ferramentas, a Trilha de IA, o Radar e os benefícios disponíveis.";
+const description = "Compare a conta gratuita e a assinatura anual da Comunidade Apogee. Conheça o Radar, a Caixa de Ferramentas e os benefícios disponíveis.";
 
 export const metadata: Metadata = {
   title: "Comunidade Apogee",
@@ -30,6 +30,6 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
   const preview = localStaticOfferPreview();
   const member = !preview && getSessionCookie(await headers()) ? await getCurrentMember() : null;
   const subscribed = member ? (await communityAccess(member.id, process.env.STRIPE_MODE !== "test")).active : false;
-  const resources = preview ? { trilha: true, ferramentas: true } : await publishedResourceAvailability();
+  const resources = preview ? { ferramentas: true } : await publishedResourceAvailability();
   return <CommunitySalesPage resources={resources} preview={preview} signedIn={Boolean(member)} subscribed={subscribed} next={communityReturnPath(params.next ?? "/membros")} hasBenefits={preview ? null : await hasPublicBenefits()} />;
 }

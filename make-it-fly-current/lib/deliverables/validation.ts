@@ -59,5 +59,4 @@ export const benefitSchema = z.strictObject({
 export const trackSchema = z.strictObject({ ...common, description: text(2000) });
 export const moduleSchema = z.strictObject({ ...common, trackId: identifier, description: text(4000), deliverable: text(2000) });
 export const activitySchema = z.strictObject({ ...common, moduleId: identifier, instructions: text(12000), resourceUrl: officialUrl });
-export const progressSchema = z.strictObject({ activityId: identifier, completed: z.boolean() });
 export type DeliverableKind = "benefit" | "track" | "module" | "activity";

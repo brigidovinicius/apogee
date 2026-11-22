@@ -73,13 +73,14 @@ try {
   assert.match(communityBody, /Sua comunidade/);
   assert.match(communityBody, /data-locked-preview="forum"/, "participation remains behind account review");
   assert.match(communityBody, /Verificar minha conta/);
-  for (const section of ["ferramentas", "trilha"]) {
-    const preview = await get(`/membros/${section}`, cookie);
-    assert.equal(preview.status, 200, `the free member can navigate to ${section}`);
-    const html = await preview.text();
-    assert.match(html, new RegExp(`aria-hidden="true" inert="" data-locked-preview="${section}"`));
-    assert.match(html, /Conhecer a assinatura anual/);
-  }
+  const preview = await get("/membros/ferramentas", cookie);
+  assert.equal(preview.status, 200, "the free member can navigate to the toolbox");
+  const toolbox = await preview.text();
+  assert.match(toolbox, /aria-hidden="true" inert="" data-locked-preview="ferramentas"/);
+  assert.match(toolbox, /Conhecer a assinatura anual/);
+  assert.equal((await get("/membros/trilha")).status, 404);
+  assert.equal((await get("/membros/trilha", cookie)).status, 404);
+  assert.doesNotMatch(communityBody, /trilha|primeiro resultado com IA/i);
   assert.equal((await database`select email_verified from public."user" where email='synthetic-radar@example.test'`)[0].email_verified, false);
   const benefits = await get("/membros/beneficios", cookie);
   assert.equal(benefits.status, 200);

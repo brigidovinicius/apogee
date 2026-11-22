@@ -11,7 +11,6 @@ import { requireSignedInMember } from "@/lib/members/dal";
 import { adultAccess } from "@/lib/members/protection";
 import { LockedMemberArea } from "@/components/members/locked-member-area";
 import { listCategories } from "@/lib/members/forum";
-import { memberLearning } from "@/lib/deliverables/store";
 import { MemberForumSection } from "@/components/members/member-forum-section";
 import { memberResourceAvailability } from "@/lib/members/resource-availability";
 
@@ -25,11 +24,6 @@ export default async function MemberHomePage() {
 
   const annual = await communityAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null);
   const resources = await memberResourceAvailability(member.id, member.role);
-  const learning = resources.trilha ? await memberLearning().catch(() => null) : null;
-  const activities = learning?.tracks.flatMap(track => learning.modules
-    .filter(module => module.track_id === track.id)
-    .flatMap(module => learning.activities.filter(activity => activity.module_id === module.id))) ?? [];
-  const nextActivity = activities.find(activity => !activity.completed_at);
 
   return (
     <MemberWorkspace member={member} current="home"><div className={styles.container}>
@@ -44,9 +38,6 @@ export default async function MemberHomePage() {
       <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} resources={resources} nextStep={!verified ? {
         label: "Verificar minha conta", description: "Conclua a verificação para participar do fórum e acessar os recursos da sua conta.",
         href: "/membros/protecao?next=%2Fmembros",
-      } : nextActivity ? {
-        label: activities.some(activity => activity.completed_at) ? "Retomar a trilha" : "Começar a trilha",
-        description: nextActivity.name, href: `/membros/trilha#atividade-${nextActivity.id}`,
       } : undefined} />
       <MemberForumSection><h2 data-ap-heading="section" data-ap-art="forum" id="member-forum-title">Conversas da comunidade</h2>
 

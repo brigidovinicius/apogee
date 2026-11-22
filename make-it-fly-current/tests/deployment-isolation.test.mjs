@@ -187,7 +187,7 @@ test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surf
     "app/membros/assinatura/page.tsx",
     "app/membros/ferramentas/page.tsx",
     "app/admin/ferramentas/page.tsx", "app/admin/beneficios/page.tsx", "app/admin/trilha/page.tsx", "app/admin/assinaturas/page.tsx",
-    "app/membros/beneficios/page.tsx", "app/membros/trilha/page.tsx", "app/membros/suporte/page.tsx",
+    "app/membros/beneficios/page.tsx", "app/membros/suporte/page.tsx",
     "app/membros/beneficios/[id]/page.tsx", "app/membros/beneficios/salvos/page.tsx", "app/membros/beneficios/resgates/page.tsx",
     "app/admin/beneficios/voucher-openai/page.tsx",
     "app/membros/beneficios/voucher-openai/page.tsx",

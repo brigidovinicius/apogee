@@ -22,6 +22,6 @@ export async function saveEditorial(_: EditorialState, form: FormData): Promise<
   let saved;
   try { saved = await saveDeliverable(kind as DeliverableKind, input); }
   catch (error) { return { message: error instanceof DeliverableConflictError ? error.message : error instanceof z.ZodError ? error.issues[0]?.message : "Não foi possível salvar. Confira os vínculos e tente novamente." }; }
-  for (const path of ["/admin/beneficios", "/admin/trilha", "/membros/beneficios", "/membros/trilha"]) revalidatePath(path, "layout");
+  for (const path of ["/admin/beneficios", "/admin/trilha", "/membros/beneficios"]) revalidatePath(path, "layout");
   return { ok: true, revision: saved.revision, message: "Conteúdo salvo. Confira o estado editorial antes de anunciar disponibilidade." };
 }

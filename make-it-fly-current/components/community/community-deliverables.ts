@@ -8,12 +8,6 @@ export const COMMUNITY_SALES_DELIVERABLES = [
     href: "#ferramentas", action: "Conhecer a Caixa de Ferramentas",
   },
   {
-    id: "learn", label: "Trilha de IA", fact: "Assinatura anual",
-    title: "Seu primeiro resultado com IA.",
-    description: "Três atividades: escolha uma tarefa, crie seu pedido e revise o resultado. Próximos módulos em preparação.",
-    href: "#learn", action: "Conhecer a trilha",
-  },
-  {
     id: "radar", label: "Radar de oportunidades",
     title: "Oportunidades com prazos e fontes.",
     description: "Eventos, bolsas, editais e vagas. A assinatura dá acesso ao Radar completo.",
@@ -33,12 +27,8 @@ export const COMMUNITY_SALES_DELIVERABLES = [
   },
 ] as const;
 
-export type PublishedResources = { trilha: boolean; ferramentas: boolean };
+export type PublishedResources = { ferramentas: boolean };
 
 export function availableDeliverables(resources: PublishedResources) {
-  return COMMUNITY_SALES_DELIVERABLES.filter(item => {
-    if (item.id === "learn") return resources.trilha;
-    if (item.id === "ferramentas") return resources.ferramentas;
-    return true;
-  });
+  return COMMUNITY_SALES_DELIVERABLES.filter(item => item.id !== "ferramentas" || resources.ferramentas);
 }

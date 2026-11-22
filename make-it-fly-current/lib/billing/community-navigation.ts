@@ -3,7 +3,7 @@ import { radarDetailReturnPath } from "@/lib/opportunities/detail-path";
 /** Only product destinations; never forward personal data, arbitrary queries or external URLs. */
 export function communityReturnPath(value: unknown): string {
   if (typeof value !== "string" || value.length > 4096 || /[\\\u0000-\u001f]/.test(value)) return "/membros/oportunidades";
-  if (value === "/membros" || value === "/membros/trilha" || value === "/membros/beneficios") return value;
+  if (value === "/membros" || value === "/membros/beneficios") return value;
   try {
     const u = new URL(value, "https://apogee.invalid");
     if (u.origin !== "https://apogee.invalid") return "/membros/oportunidades";
@@ -40,7 +40,6 @@ export function annualResourceLabel(path: string) {
   if (path.startsWith("/membros/oportunidades/")) return "Abrir a oportunidade";
   if (path.startsWith("/membros/oportunidades")) return "Continuar no Radar";
   if (path.startsWith("/membros/ferramentas")) return "Abrir Caixa de Ferramentas";
-  if (path === "/membros/trilha") return "Continuar na Trilha";
   if (path === "/membros/beneficios") return "Ver benefícios";
   if (path.startsWith("/membros/meu-calendario")) return "Abrir minha agenda";
   if (path.startsWith("/membros/colecoes")) return "Abrir minhas coleções";

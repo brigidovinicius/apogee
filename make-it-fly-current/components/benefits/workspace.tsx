@@ -6,7 +6,7 @@ import { memberBenefitWorkspace } from "@/lib/benefits/store";
 import { BENEFIT_AUDIENCES, BENEFIT_PATHS, REDEMPTION_LABELS, type BenefitView, type CatalogueBenefit } from "@/lib/benefits/types";
 import { orderCatalogueOffers } from "@/lib/benefits/catalogue-order";
 import { MemberWorkspace } from "@/components/members/member-workspace";
-import { AnnualAccessNotice } from "@/components/community/annual-access-notice";
+import { LockedMemberArea } from "@/components/members/locked-member-area";
 import { memberResourceAvailability } from "@/lib/members/resource-availability";
 import { ResourceHeader } from "@/components/members/resource-header";
 import { benefitNavigation, type BenefitSearchParams } from "@/lib/benefits/navigation";
@@ -34,7 +34,7 @@ export async function BenefitsWorkspace({ view = "catalogue", params = {} }: { v
   return <MemberWorkspace member={member} current="beneficios"><div data-ap-benefits="catalogue" className={`${shared.container} ${styles.root}`}>
     <ResourceHeader area="beneficios" showRelated={resources?.ferramentas === true} />
     {view === "catalogue" && <WorkshopVoucherCard />}
-    {!access.allowed ? <AnnualAccessNotice title="Benefícios" next={BENEFIT_PATHS[view]} /> : <>
+    {!access.allowed ? <LockedMemberArea kind="beneficios" next={BENEFIT_PATHS[view]} /> : <>
       <nav aria-label="Navegação de benefícios" className={navigation.tabs}>{(Object.keys(BENEFIT_PATHS) as BenefitView[]).map(key => { const Icon = icons[key]; return <Link href={BENEFIT_PATHS[key]} key={key} aria-current={view === key ? "page" : undefined}><Icon size={17} aria-hidden="true" />{titles[key]} {key !== "catalogue" && <span>{totals[key]}</span>}</Link>; })}</nav>
       {view !== "history" ? <section aria-labelledby="benefit-offers-title">
         <h2 data-ap-heading="" id="benefit-offers-title" className={styles.offerHeading}>{view === "catalogue" ? "Ofertas da Apogee" : "Ofertas salvas"}</h2>
