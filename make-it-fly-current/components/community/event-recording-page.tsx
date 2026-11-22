@@ -1,5 +1,5 @@
 import { VOUCHER_PATH } from "@/lib/workshop-voucher/input";
-import { EVENT_LIVE_REGISTERED_PATH } from "@/lib/community/event-live";
+import { EVENT_LIVE_PATH } from "@/lib/community/event-live";
 import { voucherConfigured } from "@/lib/workshop-voucher/secrets";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,20 +14,29 @@ const workshopTitle = "Codex Community Workshop: Florianópolis";
 const workshopUrl = "https://luma.com/praotcz3";
 const workshopEmbedUrl = "https://luma.com/embed/event/evt-jWqDrNqr3QQDoBd/simple";
 
-export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
+export function EventRecordingPage({ preview = false, registered = false }: { preview?: boolean; registered?: boolean }) {
+  const watchHref = registered ? EVENT_LIVE_PATH : "#inscricao";
+  const watchLabel = registered ? "Assistir à gravação" : "Inscrever-se para assistir";
   return <div className={styles.page} data-recording-page>
     <FunnelHeader page="recording" />
     <main id="experiencia" tabIndex={-1}>
       <section className={styles.recordingHero} aria-labelledby="recording-title">
         <div className={styles.heroGlow} aria-hidden="true" />
-        <div className={styles.recordingCopy}><p className={styles.eyebrow}>Codex Community · organização Apogee</p><h1 id="recording-title">Descubra o que a IA pode<br /><span>mudar na sua vida.</span></h1><p className={styles.recordingLead}>Assista gratuitamente ao evento exclusivo Codex Community, da comunidade OpenAI, organizado pela Apogee. Explore como a IA pode ajudar você a pesquisar, escrever, organizar a rotina e colocar ideias em prática.</p><p className={styles.recordingAvailability}><Bell size={16} aria-hidden="true" /> Inscrição gratuita · orientações de acesso por e-mail.</p>
+        <div className={styles.recordingCopy}><p className={styles.eyebrow}>Codex Community · organização Apogee</p><h1 id="recording-title">Descubra o que a IA pode<br /><span>mudar na sua vida.</span></h1><p className={styles.recordingLead}>Assista à gravação do Codex Community Workshop de Florianópolis. Explore como a IA pode ajudar você a pesquisar, escrever, organizar a rotina e colocar ideias em prática.</p><p className={styles.recordingAvailability}><Bell size={16} aria-hidden="true" /> Gravação de 1h09 · acesso gratuito após a inscrição.</p>
           <div className={styles.eventOptions} role="group" aria-label="Modalidades de participação">
-            <Link className={styles.primary} href="#inscricao" data-behavior-action="event_online_selected">Participar online</Link>
+            <Link className={styles.primary} href={watchHref} prefetch={false} data-behavior-action="event_online_selected">{watchLabel}</Link>
             <Link className={styles.secondary} href="#workshop-florianopolis" data-behavior-action="event_workshop_selected">Lista de espera presencial</Link>
           </div>
           <div className={styles.recordingArtwork} aria-hidden="true"><Image src="/brand/apogee-star.svg" alt="" width={703} height={870} priority /><div className={styles.recordingArtLabel}><CirclePlay size={28} strokeWidth={1.2} /><span>Codex Community<small>IA para o dia a dia</small></span></div></div>
         </div>
-        <div id="inscricao" className={styles.captureCard} tabIndex={-1}><RecordingCaptureForm preview={preview} successHref={EVENT_LIVE_REGISTERED_PATH} /></div>
+        <div id="inscricao" className={styles.captureCard} tabIndex={-1}>
+          {registered ? <div className={styles.captureForm}>
+            <p className={styles.eyebrow}>Codex Community · acesso gratuito</p>
+            <h2>Inscrição registrada.</h2>
+            <p className={styles.formLead}>A gravação está disponível neste navegador.</p>
+            <Link className={styles.primary} href={EVENT_LIVE_PATH} prefetch={false}>Assistir à gravação</Link>
+          </div> : <RecordingCaptureForm preview={preview} successHref={EVENT_LIVE_PATH} />}
+        </div>
       </section>
       <section id="workshop-florianopolis" tabIndex={-1} className={`${styles.section} ${styles.workshopSection}`} aria-labelledby="workshop-title">
         <div>
@@ -37,8 +46,8 @@ export function EventRecordingPage({ preview = false }: { preview?: boolean }) {
             <p><time dateTime="2026-11-21T18:00:00-03:00">21 de novembro de 2026, às 18h</time> · Florianópolis, SC · Participação gratuita</p>
             <p>A lista de espera é gerenciada pelo Luma. A inscrição na lista não garante uma vaga.</p>
           </div>
-          <a className={`${styles.primary} ${styles.workshopOnline}`} href="#inscricao">
-            Inscrever-se para assistir online
+          <a className={`${styles.primary} ${styles.workshopOnline}`} href={watchHref}>
+            {watchLabel}
           </a>
           {voucherConfigured() && <p>
             <Link href={VOUCHER_PATH} prefetch={false} className={styles.subtleLink}>

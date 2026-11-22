@@ -3,13 +3,14 @@ import { createHmac } from "node:crypto";
 import { z } from "zod";
 import { readRequestBody, RequestBodyError } from "@/lib/request-body";
 import type { ContactCampaign } from "./consent";
+import { eventAccessSetCookie } from "./event-access";
 
 const contactSchema = z.strictObject({
   campaign: z.literal("codex"),
   name: z.string().trim().min(2, "Informe seu nome.").max(100).regex(/^[^\p{C}]+$/u, "Confira seu nome."),
   email: z.string().trim().toLowerCase().max(254).email("Informe um e-mail válido."),
   goal: z.string().trim().max(600).refine(value => !value.includes("\0")).optional().default(""),
-  consent: z.literal(true, { error: "Autorize o aviso por e-mail para continuar." }),
+  consent: z.literal(true, { error: "Confirme a autorização para registrar sua inscrição." }),
   website: z.string().max(200).optional(),
 });
 
@@ -54,7 +55,9 @@ export async function handleCommunityContact(request: Request, deps: Dependencie
     }
     const { campaign, name, email, goal } = parsed.data;
     await deps.save({ campaign, name, email, goal });
-    return respond({ ok: true });
+    const response = respond({ ok: true });
+    response.headers.set("Set-Cookie", eventAccessSetCookie(deps.secret));
+    return response;
   } catch {
     // Contacts, answers, database errors and secrets never enter the logs or response.
     return respond({ message: "Não foi possível salvar seu pedido agora. Tente novamente." }, 503);

@@ -16,7 +16,7 @@ test("the event page embeds the workshop recording with a direct YouTube link", 
   const { EVENT_LIVE_PATH, EVENT_LIVE_URL } = opportunityLoader()("lib/community/event-live.ts");
   assert.equal(EVENT_LIVE_PATH, "/evento-openai/ao-vivo");
   const { EventLivePage } = opportunityLoader(shell)("components/community/event-live-page.tsx");
-  const html = renderToStaticMarkup(createElement(EventLivePage, { registered: false }));
+  const html = renderToStaticMarkup(createElement(EventLivePage));
   assert.equal(EVENT_LIVE_URL, "https://www.youtube.com/watch?v=msc2Hz8Uuzc");
   assert.match(html, /<iframe[^>]+src="https:\/\/www\.youtube-nocookie\.com\/embed\/msc2Hz8Uuzc"/);
   assert.match(html, /<iframe[^>]+title="Gravação do Codex Community Workshop"/);
@@ -24,16 +24,37 @@ test("the event page embeds the workshop recording with a direct YouTube link", 
   assert.ok(html.includes(`href="${EVENT_LIVE_URL}"`));
   assert.ok(html.includes("Assistir no YouTube"));
   assert.ok(html.includes("Assista à gravação"));
-  assert.ok(!html.includes("Inscrição registrada"));
-  assert.ok(renderToStaticMarkup(createElement(EventLivePage, { registered: true })).includes("Inscrição registrada"));
+  assert.ok(html.includes("Inscrição registrada"));
 });
 
-test("the live route is not indexed and reads the confirmation flag", async () => {
-  const load = opportunityLoader({ "@/components/community/event-live-page": { EventLivePage: props => createElement("p", null, JSON.stringify(props)) } });
+test("the live route redirects visitors and accepts only a signed, unexpired registration cookie", async (t) => {
+  let now = Date.now();
+  t.mock.method(Date, "now", () => now);
+  const secret = "s".repeat(32);
+  const previous = process.env.BETTER_AUTH_SECRET;
+  t.after(() => {
+    if (previous === undefined) delete process.env.BETTER_AUTH_SECRET;
+    else process.env.BETTER_AUTH_SECRET = previous;
+  });
+  process.env.BETTER_AUTH_SECRET = secret;
+
+  let receipt;
+  const load = opportunityLoader({
+    "next/headers": { cookies: async () => ({ get: name => name === "apogee-event-replay" ? { value: receipt } : undefined }) },
+    "next/navigation": { redirect: path => { throw new Error(path); } },
+    "@/components/community/event-live-page": { EventLivePage: () => createElement("p", null, "Player da gravação") },
+  });
   const route = load("app/evento-openai/ao-vivo/page.tsx");
+  const { eventAccessSetCookie } = load("lib/community/event-access.ts");
   assert.equal(route.metadata.robots.index, false);
-  assert.equal(renderToStaticMarkup(await route.default({ searchParams: Promise.resolve({ inscricao: "ok" }) })), '<p>{&quot;registered&quot;:true}</p>');
-  assert.equal(renderToStaticMarkup(await route.default({ searchParams: Promise.resolve({}) })), '<p>{&quot;registered&quot;:false}</p>');
+  await assert.rejects(() => route.default({ searchParams: Promise.resolve({ inscricao: "ok" }) }), /\/evento-openai#inscricao/);
+  const signed = eventAccessSetCookie(secret).split(";")[0].split("=")[1];
+  receipt = signed.replace(/.$/, ch => ch === "a" ? "b" : "a");
+  await assert.rejects(() => route.default(), /\/evento-openai#inscricao/);
+  receipt = signed;
+  assert.equal(renderToStaticMarkup(await route.default()), "<p>Player da gravação</p>");
+  now += 366 * 24 * 60 * 60 * 1000;
+  await assert.rejects(() => route.default(), /\/evento-openai#inscricao/);
 });
 
 test("the event registration form sends people to the live page after signing up", () => {
@@ -44,5 +65,10 @@ test("the event registration form sends people to the live page after signing up
   });
   const { EventRecordingPage } = load("components/community/event-recording-page.tsx");
   renderToStaticMarkup(createElement(EventRecordingPage));
-  assert.equal(received.successHref, "/evento-openai/ao-vivo?inscricao=ok");
+  assert.equal(received.successHref, "/evento-openai/ao-vivo");
+  received = undefined;
+  const html = renderToStaticMarkup(createElement(EventRecordingPage, { registered: true }));
+  assert.match(html, /href="\/evento-openai\/ao-vivo"/);
+  assert.match(html, /A gravação está disponível neste navegador/);
+  assert.equal(received, undefined);
 });

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { EventLivePage } from "@/components/community/event-live-page";
+import { EVENT_ACCESS_COOKIE, hasEventAccess } from "@/lib/community/event-access";
 
 export const metadata: Metadata = {
   title: "Gravação do Codex Community Workshop | Apogee",
@@ -8,7 +11,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default async function EventLiveRoute({ searchParams }: { searchParams: Promise<{ inscricao?: string | string[] }> }) {
-  const { inscricao } = await searchParams;
-  return <EventLivePage registered={inscricao === "ok"} />;
+export default async function EventLiveRoute() {
+  const receipt = (await cookies()).get(EVENT_ACCESS_COOKIE)?.value;
+  if (!hasEventAccess(receipt)) redirect("/evento-openai#inscricao");
+  return <EventLivePage />;
 }

@@ -7,12 +7,12 @@ import styles from "./community-sales-page.module.css";
 
 const liveTitle = "Gravação do Codex Community Workshop";
 
-export function EventLivePage({ registered }: { registered: boolean }) {
+export function EventLivePage() {
   return <div className={styles.page} data-recording-page>
     <FunnelHeader page="recording" />
     <main id="experiencia" tabIndex={-1}>
       <section className={`${styles.section} ${styles.liveSection}`} aria-labelledby="live-title">
-        {registered && <p className={styles.liveNotice} role="status"><Check size={18} aria-hidden="true" />Inscrição registrada. A gravação está logo abaixo.</p>}
+        <p className={styles.liveNotice} role="status"><Check size={18} aria-hidden="true" />Inscrição registrada. A gravação está logo abaixo.</p>
         <div className={styles.sectionHeading}>
           <p className={styles.eyebrow}>Codex Community · 21 de novembro de 2026</p>
           <h1 id="live-title">Assista à gravação<br /><span>do workshop.</span></h1>
