@@ -62,7 +62,7 @@ function SurveyProgress({ answered, total, complete = false }: { answered: numbe
       <div className={styles.routeTrack} />
       <div className={styles.routeFill} />
       <div className={styles.rocket}>
-        <Image src="/brand/rocket-progress.webp" alt="" width={64} height={64} unoptimized />
+        <Image src="/brand/rocket-progress.webp" alt="" width={72} height={72} unoptimized />
       </div>
     </div>
     <p className={styles.progressCount}>{label}</p>
