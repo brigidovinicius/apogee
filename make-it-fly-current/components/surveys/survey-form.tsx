@@ -53,7 +53,7 @@ function SurveyProgress({ answered, total, complete = false }: { answered: numbe
   const count = total === 1 ? `${answered} de 1 pergunta respondida` : `${answered} de ${total} perguntas respondidas`;
   const label = complete ? "Pesquisa concluída" : count;
 
-  return <div className={styles.progress}>
+  return <div className={styles.progress} data-ap-card="">
     <div className={styles.progressHeader}>
       <span>Seu progresso</span>
       <span className={styles.progressPercent} aria-hidden="true">{percentage}%</span>
@@ -135,7 +135,7 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
   const showProgress = research !== "deny" && questions.length > 0;
   if (complete) return <div className={styles.receipt} data-ap-card="" tabIndex={-1} ref={receipt} role="status">
     {showProgress && <SurveyProgress answered={answered} total={questions.length} complete />}
-    <h2>Obrigado pelo seu tempo.</h2>
+    <h2 data-ap-title="">Obrigado pelo seu tempo.</h2>
     <p>{preview ? "Prévia concluída. Nenhuma resposta foi gravada." : "Você concluiu a pesquisa."}</p>
   </div>;
 
@@ -143,16 +143,18 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
     {showProgress && <div className={styles.progressPosition}>
       <SurveyProgress answered={answered} total={questions.length} />
     </div>}
-    <fieldset className={styles.formFields} data-ap-card="" disabled={!hydrated || busy}>
-      <fieldset className={styles.question}>
-        <legend>Você autoriza o uso das suas respostas para esta pesquisa?</legend>
-        <p>{researchNotice(survey)} <Link href="/privacidade">Política de Privacidade</Link></p>
-        <div className={styles.choices}>
-          <label><input type="radio" name="research" value="allow" required onChange={() => setResearch("allow")} /> Sim, autorizo.</label>
-          <label><input type="radio" name="research" value="deny" onChange={() => { setResearch("deny"); setCollaboration(""); setDraft(new Map()); }} /> Não autorizo.</label>
-        </div>
-      </fieldset>
-      {research === "allow" && <>
+    <fieldset className={styles.formFields} disabled={!hydrated || busy}>
+      <div className={styles.formCard} data-ap-card="">
+        <fieldset className={styles.question}>
+          <legend>Você autoriza o uso das suas respostas para esta pesquisa?</legend>
+          <p>{researchNotice(survey)} <Link href="/privacidade" prefetch={false}>Política de Privacidade</Link></p>
+          <div className={styles.choices}>
+            <label><input type="radio" name="research" value="allow" required onChange={() => setResearch("allow")} /> Sim, autorizo.</label>
+            <label><input type="radio" name="research" value="deny" onChange={() => { setResearch("deny"); setCollaboration(""); setDraft(new Map()); }} /> Não autorizo.</label>
+          </div>
+        </fieldset>
+      </div>
+      {research === "allow" && <div className={styles.formCard} data-ap-card="">
         {questions.map(item => <Question item={item} key={item.id} answer={draft.get(item.id)}
           onAnswer={answer => setDraft(current => new Map(current).set(item.id, answer))} />)}
         {survey.collaboration && <fieldset className={styles.question}>
@@ -168,16 +170,18 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
             <input type="email" name="email" autoComplete="email" maxLength={254} required />
           </label>}
         </fieldset>}
-      </>}
-      {research && survey.radar && <fieldset className={styles.question}>
-        <legend>Você autoriza a medição opcional do seu uso futuro do Radar?</legend>
-        <p>{radarNotice} <Link href="/privacidade#radar-amplitude">Saiba mais sobre a medição</Link></p>
-        <div className={styles.choices}>
-          <label><input type="radio" name="radar" value="allow" /> Sim, após confirmar nas preferências da minha conta.</label>
-          <label><input type="radio" name="radar" value="deny" /> Não autorizo.</label>
-          <label><input type="radio" name="radar" value="" /> Prefiro decidir depois.</label>
-        </div>
-      </fieldset>}
+      </div>}
+      {research && survey.radar && <div className={styles.formCard} data-ap-card="">
+        <fieldset className={styles.question}>
+          <legend>Você autoriza a medição opcional do seu uso futuro do Radar?</legend>
+          <p>{radarNotice} <Link href="/privacidade#radar-amplitude" prefetch={false}>Saiba mais sobre a medição</Link></p>
+          <div className={styles.choices}>
+            <label><input type="radio" name="radar" value="allow" /> Sim, após confirmar nas preferências da minha conta.</label>
+            <label><input type="radio" name="radar" value="deny" /> Não autorizo.</label>
+            <label><input type="radio" name="radar" value="" /> Prefiro decidir depois.</label>
+          </div>
+        </fieldset>
+      </div>}
       {message && <p role="alert" className={styles.error}>{message}</p>}
       <button type="submit" data-ap-button="primary">{busy ? "Enviando…" : preview ? "Testar envio" : research === "deny" ? "Concluir" : "Enviar respostas"}</button>
     </fieldset>

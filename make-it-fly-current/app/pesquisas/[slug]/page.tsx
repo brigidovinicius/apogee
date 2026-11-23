@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { SiteFooter } from "@/components/site/site-footer";
+import { SiteHeader } from "@/components/site/site-header";
 import { SurveyForm } from "@/components/surveys/survey-form";
 import styles from "@/components/surveys/surveys.module.css";
 import { surveySlug } from "@/lib/surveys/contract";
@@ -14,12 +15,21 @@ export default async function SurveyPage({ params }: { params: Promise<{ slug: s
   if (!surveySlug.safeParse(slug).success) notFound();
   const survey = await getPublicSurvey(slug);
   if (!survey) notFound();
-  return <main id="experiencia" className={styles.publicPage}>
-    <header className={styles.pageHeader}>
-      <Link href="/" prefetch={false} className={styles.homeLink}>Apogee</Link>
-      <h1>{survey.title}</h1>
-      {survey.intro && <p>{survey.intro}</p>}
-    </header>
-    <SurveyForm survey={survey} />
-  </main>;
+  return <>
+    <SiteHeader adaptive tone="light" prefetch={false} />
+    <main id="experiencia" tabIndex={-1} aria-labelledby="survey-title">
+      <section data-ap-section="" aria-labelledby="survey-title">
+        <header className={styles.pageHeader}>
+          <h1 id="survey-title" data-ap-title="">{survey.title}</h1>
+          {survey.intro && <p>{survey.intro}</p>}
+        </header>
+      </section>
+      <section data-ap-section="tonal" className={styles.surveySection} aria-label="Formulário da pesquisa">
+        <div className={styles.formWrap}>
+          <SurveyForm survey={survey} />
+        </div>
+      </section>
+    </main>
+    <SiteFooter />
+  </>;
 }

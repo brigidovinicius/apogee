@@ -1,22 +1,23 @@
-.publicPage {
-  width: min(100% - 2rem, 67rem);
-  margin: 0 auto;
-  padding: clamp(1.75rem, 5vw, 4rem) 0 clamp(3rem, 7vw, 5rem);
-  color: var(--ap-text);
-  font-family: var(--ap-font);
-}
-
-.pageHeader { max-width: 46rem; margin-bottom: clamp(1.4rem, 4vw, 2.25rem); }
+.pageHeader, .formWrap { margin-inline: var(--apogee-page-margin); }
+.pageHeader { padding-block: clamp(2rem, 5vw, 4rem); }
 .pageHeader h1 {
-  margin: 1rem 0 .75rem;
-  font-size: clamp(1.75rem, 4.5vw, 3.25rem);
-  line-height: 1.08;
-  letter-spacing: -.045em;
-  font-weight: 650;
+  max-width: 50rem;
+  margin: 0;
+  font-size: clamp(2rem, 4.6vw, 3.75rem);
+  line-height: 1.1;
   text-wrap: balance;
 }
-.pageHeader p { max-width: 41rem; margin: 0; color: var(--ap-muted); line-height: 1.6; }
-.homeLink { color: var(--ap-accent); font-weight: 700; text-decoration: underline; text-underline-offset: .25em; }
+.pageHeader p {
+  max-width: 63ch;
+  margin: .85rem 0 0;
+  color: var(--ap-muted);
+  line-height: 1.6;
+}
+.surveySection {
+  padding-block: clamp(1.25rem, 3vw, 2rem) var(--apogee-section-space);
+  border-block-start: 1px solid var(--ap-line);
+}
+.formWrap { max-width: 67rem; }
 
 .panel {
   margin-block: 1rem;
@@ -55,9 +56,8 @@
 }
 .choices input, .scale input { flex: none; margin: 0; }
 .row > * { flex: 1 1 10rem; }
-.panel :is(input, textarea, select, button, a):focus-visible,
-.publicPage a:focus-visible { outline: 2px solid var(--ap-sky, #77a9ed); outline-offset: 3px; }
-.panel a, .publicPage > a { text-decoration: underline; text-underline-offset: .2em; }
+.panel :is(input, textarea, select, button, a):focus-visible { outline: 2px solid var(--ap-focus); outline-offset: 3px; }
+.panel a { text-decoration: underline; text-underline-offset: .2em; }
 .error { color: light-dark(#a03735, #ff9a95); font-weight: 700; }
 .list { display: grid; gap: .8rem; list-style: none; padding: 0; }
 .list li { overflow-wrap: anywhere; }
@@ -69,26 +69,30 @@
   max-width: 45rem;
 }
 
-.formFields, .receipt {
+.formFields, .formCard, .receipt {
   min-width: 0;
   display: grid;
-  gap: 1.35rem;
+  gap: 1.25rem;
+}
+.formCard, .receipt {
   padding: clamp(1rem, 3vw, 1.85rem);
-  background: var(--ap-surface);
 }
 
 .formFields .question { padding: .4rem 0 1.1rem; }
+.formCard > .question:last-child { padding-bottom: 0; border-bottom: 0; }
+.formFields .field + .field,
+.formFields .field + .question { padding-top: .8rem; }
 .formFields .question p { color: var(--ap-muted); line-height: 1.55; }
 .formFields .questionHint { margin: 0; color: var(--ap-muted); font-size: .925rem; font-weight: 400; }
 .formFields .field .choices label { font-weight: 400; }
-.formFields a { text-decoration: underline; text-underline-offset: .18em; }
+.formFields a { color: var(--ap-accent); text-decoration: underline; text-underline-offset: .18em; }
 .formFields .field :is(input:not([type="checkbox"]), textarea, select) { border-radius: var(--ap-control-radius); }
 .formFields :is(input, textarea, select, button, a):focus-visible {
   outline: 2px solid var(--ap-focus);
   outline-offset: 3px;
   scroll-margin-block-start: 9.5rem;
 }
-.formFields input[type="radio"] { accent-color: var(--ap-accent); }
+.formFields input:is([type="radio"], [type="checkbox"]) { accent-color: var(--ap-accent); }
 
 .formFields .scale {
   display: grid;
@@ -102,13 +106,19 @@
   min-width: 0;
   border: 1px solid var(--ap-line);
   border-radius: var(--ap-control-radius);
-  background: var(--ap-surface);
+  background: var(--ap-secondary-fill);
+  box-shadow: var(--ap-edge);
   cursor: pointer;
   font-weight: 650;
 }
 .formFields .scale label:has(input[value=""]) { grid-column: 1 / -1; justify-self: start; padding-inline: .75rem; }
 .formFields .scale input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-.formFields .scale label:has(:checked) { color: var(--ap-on-navy); border-color: var(--ap-primary-edge); background: var(--ap-primary-fill); }
+.formFields .scale label:has(:checked) {
+  color: var(--ap-on-navy);
+  border-color: var(--ap-primary-edge);
+  background: var(--ap-primary-fill);
+  box-shadow: var(--ap-primary-shadow);
+}
 .formFields .scale label:has(:focus-visible) { outline: 2px solid var(--ap-focus); outline-offset: 2px; }
 .formFields button { justify-self: start; }
 
@@ -122,11 +132,10 @@
 .progress {
   min-width: 0;
   padding: .75rem 1rem .7rem;
-  border: 1px solid var(--ap-primary-edge);
-  border-radius: var(--ap-card-radius);
-  background: radial-gradient(ellipse at 85% 5%, #254563 0, var(--ap-navy) 70%);
-  color: var(--ap-on-navy);
-  box-shadow: 0 5px 18px #07182d24;
+  --ap-card-fill: var(--ap-primary-fill);
+  --ap-line: var(--ap-primary-edge);
+  --ap-text: var(--ap-on-navy);
+  --ap-shadow: var(--ap-primary-shadow);
 }
 .progressHeader {
   display: flex;
@@ -150,7 +159,10 @@
   height: .1875rem;
   border-radius: 99px;
 }
-.routeTrack { width: 100%; background: #58718a; }
+.routeTrack {
+  width: 100%;
+  background: color-mix(in srgb, var(--ap-brand-sky) 50%, var(--ap-navy));
+}
 .routeTrack::before, .routeTrack::after {
   content: "";
   position: absolute;
@@ -177,6 +189,10 @@
 .rocket img { display: block; width: 100%; height: auto; }
 .receipt { max-width: 45rem; gap: .8rem; }
 .receipt :is(h2, p) { margin: 0; }
+
+@media (max-width: 36rem) {
+  .formFields > button { justify-self: stretch; }
+}
 
 @media (min-width: 56rem) {
   .form[data-has-progress="true"][data-preview="false"] {
