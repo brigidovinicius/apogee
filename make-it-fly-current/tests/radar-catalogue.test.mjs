@@ -132,7 +132,7 @@ test("audited noncash prizes lead without manufacturing money and nearby confere
   const conference = item("a-conference", { title: "Summit de tecnologia", organization: "Outro organizador" });
   assert.equal(rankOpportunities([conference, awarded], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], awarded);
   assert.deepEqual(awarded.financials.benefits, []);
-  const first = item("z-first", { title: "Conferência de negócios", organization: "A", deadline: null, eventStartsAt: "2026-10-18" });
+  const first = item("z-first", { title: "Conferência de programação", organization: "A", deadline: null, eventStartsAt: "2026-10-18" });
   const second = item("a-second", { title: "Conferência de tecnologia", organization: "B", deadline: null, eventStartsAt: "2026-10-19" });
   assert.deepEqual(rankOpportunities([second, first], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime(), { ...DEFAULT_RANKING, dailyRotation: 0 }), [first, second]);
   const admission = exam("admission", { kind: "Prêmio" });
@@ -177,6 +177,42 @@ test("verified technology and business themes fill the feed after prizes without
   assert.deepEqual(rankOpportunities([technical, summit, prize], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime()), [prize, summit, technical]);
   const formal = exam("formal", { discovery: summit.discovery });
   assert.equal(rankOpportunities([formal, technical], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime())[0], technical);
+});
+
+test("technology company promotion requires its organizer name and official domain", () => {
+  const openAI = item("Workshop para pais", { organization: "OpenAI Academy", officialUrl: "https://academy.openai.com/evento" });
+  const programming = item("Workshop de programação");
+  const impostor = item("Encontro que cita OpenAI", { organization: "OpenAI Academy", officialUrl: "https://example.com/openai.com" });
+  const project = item("Projeto de robótica", { categories: ["pesquisa"], editorialFocus: "extracurricular_project" });
+  const genericProject = item("Projeto de extensão", { categories: ["pesquisa"], editorialFocus: "extracurricular_project" });
+  const ranking = rankOpportunities([impostor, programming, openAI, project, genericProject], logic.EMPTY_OPPORTUNITY_FILTERS, now.getTime());
+  assert.deepEqual(ranking.slice(0, 3), [openAI, programming, project]);
+  const { technologyEventOrganizer } = load("lib/opportunities/technology-event-organizers.ts");
+  assert.equal(technologyEventOrganizer({ ...openAI, officialUrl: "https://openai.com.example.org/evento" }), false);
+  assert.equal(technologyEventOrganizer({ ...openAI, organization: "Universidade; patrocínio: OpenAI" }), false);
+});
+
+test("local ranking considers city, state and online access without changing explicit filters or sending geography", () => {
+  const local = item("Meetup de IA na cidade", { cityName: "Florianópolis", participationFormat: "presencial" });
+  const regional = item("Meetup de IA em SC", { cityName: "Joinville", participationFormat: "hibrido" });
+  const elsewhere = item("Meetup de IA em São Paulo", { stateCode: "SP", cityName: "São Paulo", participationFormat: "presencial" });
+  const online = item("Meetup de IA online", { stateCode: "SP", cityName: "São Paulo", participationFormat: "online" });
+  const location = { stateCode: "SC", cityName: "Florianopolis" };
+  const candidates = [elsewhere, regional, online, local];
+  const ranked = buildOpportunityPage(candidates, new URLSearchParams("categoria=eventos"), now, location);
+  assert.deepEqual(ranked.opportunities, [local, regional, online, elsewhere]);
+  assert.equal(ranked.total, 4);
+  assert.equal(Object.hasOwn(ranked, "location"), false);
+  const localizedMarkup = html({ ...ranked, locationRanking: "applied" });
+  assert.match(localizedMarkup, /Dados de localização por DB-IP/);
+  assert.match(localizedMarkup, /localizacao=off#mural-title/);
+  for (const params of ["categoria=eventos&uf=SP&cidade=São Paulo", "categoria=eventos&formato=online", "busca=São Paulo"]) {
+    const query = new URLSearchParams(params);
+    const result = buildOpportunityPage(candidates, query, now, location);
+    assert.deepEqual(result.opportunities, buildOpportunityPage(candidates, query, now).opportunities);
+  }
+  const stateOnly = buildOpportunityPage(candidates, new URLSearchParams(), now, { stateCode: "SC", cityName: null });
+  assert.ok(stateOnly.opportunities.slice(0, 2).every(event => event.stateCode === "SC"));
 });
 
 test("nearby event dates break ties without becoming registration deadlines or overriding a requested subject", () => {

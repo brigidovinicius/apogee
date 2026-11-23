@@ -70,6 +70,44 @@ indisponível. Não exponha a porta do web nem encaminhe tráfego de CDN/proxy n
 sem revisar a cadeia de confiança. Leia `docs/members-security-sec02.md` na raiz
 do repositório antes do corte. Esta implementação local não autoriza ativação.
 
+## Recomendações locais no Radar
+
+O ranking de tecnologia e atividades extracurriculares funciona sem configuração
+adicional. Para ativar o destaque geográfico na lista pública e na área de membros,
+use a [base IP to City Lite da DB-IP](https://db-ip.com/db/download/ip-to-city-lite)
+no formato MMDB. Baixe a edição mensal no host, descompacte e compare o checksum
+do arquivo MMDB com o publicado pelo fornecedor. O arquivo não entra no Git nem na
+imagem Docker.
+
+No deploy autorizado, defina `RADAR_DBIP_CITY_FILE` no serviço `web` com o caminho
+interno de um bind mount somente leitura, por exemplo:
+
+```yaml
+services:
+  web:
+    environment:
+      RADAR_DBIP_CITY_FILE: /run/apogee/geoip/city.mmdb
+    volumes:
+      - type: bind
+        source: /opt/apogee-site/geoip/city.mmdb
+        target: /run/apogee/geoip/city.mmdb
+        read_only: true
+        bind:
+          create_host_path: false
+```
+
+Valide o arquivo e a leitura pelo usuário do container antes de recriar apenas
+`web`. O processo mantém a base em memória e a lê novamente ao reiniciar.
+A edição de novembro de 2026 ocupa aproximadamente 121 MiB descompactada.
+Atualize a base por substituição do arquivo e recriação de `web`. Para desativar
+a preferência geográfica, retire a variável e a montagem e recrie `web`.
+
+O Caddy deve continuar autenticando a origem do cabeçalho de IP como descrito acima.
+A busca aproximada roda no servidor durante a requisição, sem armazenar IP ou
+localização para o ranking e sem enviar esses dados à DB-IP. A lista identifica
+a origem dos dados e oferece a navegação sem localização. Filtros manuais de
+cidade ou UF, Do Not Track e Global Privacy Control desativam o uso do IP.
+
 ## Rollback
 
 Se o site não responder após a mudança de DNS, pare apenas este stack (`docker compose --profile public down`) e restaure o valor anterior do registro A. Não execute comandos em `/opt/sistema-de-locacao` e não remova redes ou volumes compartilhados/existentes.

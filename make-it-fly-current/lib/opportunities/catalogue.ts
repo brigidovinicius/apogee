@@ -1,6 +1,7 @@
 import "server-only";
 import { groupAdmissionProcesses } from "./admission-processes";
 import { rankOpportunities } from "./ranking";
+import type { CanonicalBrazilianLocation } from "./location";
 import { EMPTY_OPPORTUNITY_FILTERS, OPPORTUNITY_CATEGORIES, dateInBrazil, filterOpportunities,
   getOpportunityFilterOptions, opportunityFiltersFromSearchParams, sanitizeOpportunityFilters,
   type OpportunityCategory, type OpportunityFilterOptions, type OpportunityFilters, type StudentOpportunity } from "./types";
@@ -14,16 +15,17 @@ export type OpportunityPage = {
   page: number;
   pageCount: number;
   today: string;
+  locationRanking?: "applied" | "off";
 };
 export const CATALOGUE_PAGE_SIZE = 24;
 
 /** Do not serialize the whole live catalogue into public/member client props. */
-export function buildOpportunityPage(items: readonly StudentOpportunity[], params: URLSearchParams, now = new Date()): OpportunityPage {
+export function buildOpportunityPage(items: readonly StudentOpportunity[], params: URLSearchParams, now = new Date(), location?: CanonicalBrazilianLocation): OpportunityPage {
   const today = dateInBrazil(now);
   const filterOptions = getOpportunityFilterOptions(items, today, now.getTime());
   const filters = sanitizeOpportunityFilters(opportunityFiltersFromSearchParams(params), filterOptions);
   const visible = filterOpportunities(items, filters, today, true, false, now.getTime());
-  const entries = groupAdmissionProcesses(rankOpportunities(visible, filters, now.getTime())).entries;
+  const entries = groupAdmissionProcesses(rankOpportunities(visible, filters, now.getTime(), undefined, location)).entries;
   const pageCount = Math.max(1, Math.ceil(entries.length / CATALOGUE_PAGE_SIZE));
   const requestedPage = Number(params.get("pagina"));
   const page = Math.min(pageCount, Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1);

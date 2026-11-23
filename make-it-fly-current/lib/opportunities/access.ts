@@ -6,8 +6,10 @@ import { listRadarOpportunities } from "@/lib/opportunities/radar-client";
 import { buildOpportunityPage } from "./catalogue";
 import { filterOpportunities } from "./types";
 import { orderOpportunityFeed } from "./member-feed";
-import { memberRadarPath } from "./navigation";
-import { EMPTY_OPPORTUNITY_FILTERS, getOpportunityFilterOptions, sanitizeOpportunityFilters, type OpportunityFilters, sortByDeadline, type StudentOpportunity } from "@/lib/opportunities/types";
+import { memberRadarPath, radarLocationOptOut } from "./navigation";
+import { canRankByLocation } from "./ranking";
+import { radarLocationConfigured, radarRequestLocation } from "./radar-request-location";
+import { EMPTY_OPPORTUNITY_FILTERS, getOpportunityFilterOptions, sanitizeOpportunityFilters, opportunityFiltersFromSearchParams, type OpportunityFilters, sortByDeadline, type StudentOpportunity } from "@/lib/opportunities/types";
 export async function listPublicOpportunities(filters: OpportunityFilters = EMPTY_OPPORTUNITY_FILTERS): Promise<StudentOpportunity[]> {
   const opportunities = await listRadarOpportunities();
   const normalizedFilters = sanitizeOpportunityFilters(filters, getOpportunityFilterOptions(opportunities));
@@ -23,7 +25,16 @@ export async function listAdminOpportunityCatalogue(): Promise<StudentOpportunit
 }
 
 export async function listPublicOpportunityPage(params: URLSearchParams) {
-  const page = buildOpportunityPage(await listRadarOpportunities(), params);
+  const useLocation = radarLocationConfigured() && canRankByLocation(opportunityFiltersFromSearchParams(params));
+  const optedOut = useLocation && params.get(radarLocationOptOut) === "off";
+  const [opportunities, location] = await Promise.all([
+    listRadarOpportunities(),
+    useLocation && !optedOut ? radarRequestLocation() : undefined,
+  ]);
+  const page = buildOpportunityPage(opportunities, params, undefined, location);
+  if (location) page.locationRanking = "applied";
+  if (optedOut) page.locationRanking = "off";
+
   return { ...page, opportunities: page.opportunities.map(opportunityCardData) };
 }
 export async function listMemberOpportunityPage(params: URLSearchParams) {
