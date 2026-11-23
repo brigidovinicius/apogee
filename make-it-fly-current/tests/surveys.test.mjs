@@ -15,10 +15,12 @@ const valid = {
   radar: null,
 };
 
-test("the workshop template can be reviewed as a draft before retention is set", () => {
+test("the workshop template is a draft with its approved retention and opening requires a retention period", () => {
   assert.equal(surveyDefinition.safeParse(codexWorkshopSurvey).success, true);
-  assert.equal(surveyDefinition.safeParse({ ...codexWorkshopSurvey, status: "open" }).success, false);
-  assert.equal(surveyDefinition.safeParse({ ...codexWorkshopSurvey, status: "open", retentionDays: 30 }).success, true);
+  assert.equal(codexWorkshopSurvey.status, "draft");
+  assert.equal(codexWorkshopSurvey.retentionDays, 90);
+  assert.equal(surveyDefinition.safeParse({ ...codexWorkshopSurvey, status: "open", retentionDays: null }).success, false);
+  assert.equal(surveyDefinition.safeParse({ ...codexWorkshopSurvey, status: "open" }).success, true);
 });
 
 test("zero is a valid rating and answers must match the saved fields", () => {

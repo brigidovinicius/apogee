@@ -5,7 +5,7 @@ export const codexWorkshopSurvey: SurveyDefinition = {
   slug: "codex-florianopolis",
   intro: "Queremos saber o que funcionou no workshop, o que melhorar no próximo encontro e o que você gostaria de fazer com IA. Sua participação é voluntária.",
   purpose: "avaliar o evento, melhorar os próximos encontros e a Trilha de Aprendizagem e entender o interesse em novidades da Apogee",
-  retentionDays: null,
+  retentionDays: 90,
   status: "draft",
   collaboration: false,
   radar: true,
