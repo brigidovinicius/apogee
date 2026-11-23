@@ -34,7 +34,7 @@
 .question p { margin: 0; }
 .field { display: grid; gap: .4rem; font-weight: 600; }
 .field span, .question p { font-weight: normal; }
-.field :is(input, textarea, select) {
+.field :is(input:not([type="checkbox"]), textarea, select) {
   min-width: 0;
   padding: .65rem;
   border: 1px solid var(--ap-line, #8493a57a);
@@ -79,8 +79,10 @@
 
 .formFields .question { padding: .4rem 0 1.1rem; }
 .formFields .question p { color: var(--ap-muted); line-height: 1.55; }
+.formFields .questionHint { margin: 0; color: var(--ap-muted); font-size: .925rem; font-weight: 400; }
+.formFields .field .choices label { font-weight: 400; }
 .formFields a { text-decoration: underline; text-underline-offset: .18em; }
-.formFields .field :is(input, textarea, select) { border-radius: var(--ap-control-radius); }
+.formFields .field :is(input:not([type="checkbox"]), textarea, select) { border-radius: var(--ap-control-radius); }
 .formFields :is(input, textarea, select, button, a):focus-visible {
   outline: 2px solid var(--ap-focus);
   outline-offset: 3px;

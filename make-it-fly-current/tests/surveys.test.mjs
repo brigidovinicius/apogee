@@ -9,7 +9,7 @@ const valid = {
   id: "11111111-1111-4111-8111-111111111111",
   revision: 1,
   research: true,
-  answers: { nota: 0, tarefa: "Revisar uma apresentação sintética", obstaculo: "Conferir e corrigir o resultado." },
+  answers: { nota: 0, tarefa: "Revisar uma apresentação sintética", obstaculo: "Conferir e corrigir o resultado.", atualizacoes: "Não" },
   collaboration: null,
   email: null,
   radar: null,
@@ -29,13 +29,31 @@ test("zero is a valid rating and answers must match the saved fields", () => {
     { ...valid.answers, obstaculo: "Opção de outra versão" },
     { ...valid.answers, desconhecida: "valor fora da pesquisa" },
     { ...valid.answers, tarefa: " " },
+    { ...valid.answers, atualizacoes: "Talvez" },
+    { ...valid.answers, motivo: null },
   ]) assert.equal(validateSurveySubmission(codexWorkshopSurvey, { ...valid, answers }), null);
+});
+
+test("the explicit None choice skips the obstacle and is saved under its displayed label", () => {
+  const { obstaculo, ...remaining } = valid.answers;
+  const answers = { ...remaining, tarefa: null };
+  assert.equal(validateSurveySubmission(codexWorkshopSurvey, { ...valid, answers }).answers.tarefa, "Nenhuma");
+  assert.equal(validateSurveySubmission(codexWorkshopSurvey, { ...valid, answers: { ...answers, obstaculo } }), null);
+  assert.equal(validateSurveySubmission(codexWorkshopSurvey, { ...valid, answers: remaining }), null);
+  assert.ok(validateSurveySubmission(codexWorkshopSurvey, { ...valid, answers: { ...valid.answers, tarefa: "Nenhuma por enquanto" } }));
+});
+
+test("conditional questions must refer to an earlier question offering None", () => {
+  const questions = [...codexWorkshopSurvey.questions].reverse();
+  assert.equal(surveyDefinition.safeParse({ ...codexWorkshopSurvey, questions }).success, false);
 });
 
 test("research, the invitation and the Radar choice are independent", () => {
   assert.equal(validateSurveySubmission(codexWorkshopSurvey, { ...valid, email: "fixture@example.test" }), null);
   assert.equal(validateSurveySubmission(codexWorkshopSurvey, { ...valid, collaboration: "exercise" }), null);
-  assert.ok(validateSurveySubmission(codexWorkshopSurvey, { ...valid, collaboration: "exercise", email: "fixture@example.test" }));
+  const invitation = { ...valid, collaboration: "exercise", email: "fixture@example.test" };
+  assert.equal(validateSurveySubmission(codexWorkshopSurvey, invitation), null);
+  assert.ok(validateSurveySubmission({ ...codexWorkshopSurvey, collaboration: true }, invitation));
   assert.equal(validateSurveySubmission(codexWorkshopSurvey, { ...valid, research: false, radar: "allow" }), null);
   assert.ok(validateSurveySubmission(codexWorkshopSurvey, { ...valid, research: false, answers: {}, radar: "deny" }));
   assert.equal(validateSurveySubmission(codexWorkshopSurvey, { ...valid, research: false, answers: {} }), null);

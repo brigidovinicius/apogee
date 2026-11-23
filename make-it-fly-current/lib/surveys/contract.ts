@@ -12,14 +12,17 @@ export const collaborationLabels = {
 export const radarNotice = "O piloto mede visualizações da lista, aberturas de oportunidades, salvamentos na agenda e cliques em links oficiais. A Apogee enviará ao Amplitude o tipo, o horário e o identificador de cada evento, junto com um código que representa sua conta. Os eventos ficam no projeto europeu por três meses. A medição só começa após confirmação nas preferências da conta, onde você também pode revogar a permissão.";
 export const collaborationNotice = "Se você escolher colaborar, a Apogee usará seu e-mail para enviar um convite sobre essa atividade.";
 
+const questionId = z.string().regex(/^[a-z0-9][a-z0-9-]{1,63}$/);
 const questionBase = {
-  id: z.string().regex(/^[a-z0-9][a-z0-9-]{1,63}$/),
+  id: questionId,
   label: z.string().trim().min(1).max(220),
   required: z.boolean(),
+  hint: z.string().trim().min(1).max(240).optional(),
+  skipIfNone: questionId.optional(),
 };
 const question = z.discriminatedUnion("kind", [
   z.strictObject({ ...questionBase, kind: z.literal("score") }),
-  z.strictObject({ ...questionBase, kind: z.literal("text") }),
+  z.strictObject({ ...questionBase, kind: z.literal("text"), noneOption: z.string().trim().min(1).max(80).optional() }),
   z.strictObject({
     ...questionBase, kind: z.literal("choice"),
     options: z.array(z.string().trim().min(1).max(140)).min(2).max(12)
@@ -38,11 +41,26 @@ export const surveyDefinition = z.strictObject({
   radar: z.boolean(),
 }).refine(value => value.status !== "open" || value.retentionDays !== null, {
   path: ["retentionDays"], message: "Informe o prazo de retenção para abrir a pesquisa.",
+}).refine(({ questions }) => questions.every((item, index) =>
+  !item.skipIfNone || questions.slice(0, index).some(source =>
+    source.id === item.skipIfNone && source.kind === "text" && source.noneOption,
+  ),
+), {
+  path: ["questions"], message: "Selecione uma pergunta aberta anterior com opção para nenhuma resposta.",
 });
 
 export type SurveyDefinition = z.infer<typeof surveyDefinition>;
 export type SurveyQuestion = z.infer<typeof question>;
 export type Survey = SurveyDefinition & { id: string; revision: number };
+
+export function visibleSurveyQuestions(questions: SurveyQuestion[], hasSelectedNone: (id: string) => boolean) {
+  const selectedNone = new Set<string>();
+  return questions.filter(item => {
+    if (item.skipIfNone && selectedNone.has(item.skipIfNone)) return false;
+    if (item.kind === "text" && item.noneOption && hasSelectedNone(item.id)) selectedNone.add(item.id);
+    return true;
+  });
+}
 
 export function researchNotice(survey: Pick<SurveyDefinition, "purpose" | "retentionDays">) {
   const retention = survey.retentionDays === null ? "Prazo de retenção a definir." : `As respostas serão guardadas na Apogee por ${survey.retentionDays} ${survey.retentionDays === 1 ? "dia" : "dias"}.`;
@@ -57,7 +75,7 @@ export const surveySubmissionVersion = z.object({
 const submission = z.strictObject({
   ...surveySubmissionVersion.shape,
   research: z.boolean(),
-  answers: z.record(z.string(), z.union([z.string().trim().max(1000), z.number().int()])),
+  answers: z.record(z.string(), z.union([z.string().trim().max(1000), z.number().int(), z.null()])),
   collaboration: z.enum(collaborationOptions).nullable(),
   email: z.email().max(254).nullable(),
   radar: z.enum(["allow", "deny"]).nullable(),
@@ -71,14 +89,19 @@ export function validateSurveySubmission(survey: SurveyDefinition, input: unknow
   if (!data.research && (Object.keys(data.answers).length || data.collaboration || data.email || data.radar === null)) return null;
   if (data.collaboration && (!survey.collaboration || !data.email) || data.email && !data.collaboration) return null;
 
-  const questions = new Map(survey.questions.map(item => [item.id, item]));
-  for (const [id, value] of Object.entries(data.answers)) {
+  const visible = visibleSurveyQuestions(survey.questions, id => data.answers[id] === null);
+  const questions = new Map(visible.map(item => [item.id, item]));
+  const answers: [string, string | number][] = [];
+  for (const [id, answer] of Object.entries(data.answers)) {
     const item = questions.get(id);
     if (!item) return null;
+    const value = answer === null && item.kind === "text" ? item.noneOption : answer;
+    if (value == null) return null;
     if (item.kind === "score" && (typeof value !== "number" || value < 0 || value > 10)) return null;
     if (item.kind === "text" && (typeof value !== "string" || !value)) return null;
     if (item.kind === "choice" && (typeof value !== "string" || !item.options.includes(value))) return null;
+    answers.push([id, value]);
   }
-  if (data.research && survey.questions.some(item => item.required && !Object.hasOwn(data.answers, item.id))) return null;
-  return data;
+  if (data.research && visible.some(item => item.required && !Object.hasOwn(data.answers, item.id))) return null;
+  return { ...data, answers: Object.fromEntries(answers) };
 }

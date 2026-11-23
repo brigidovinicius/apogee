@@ -3,28 +3,47 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from "react";
-import { collaborationLabels, collaborationNotice, radarNotice, researchNotice, type Survey, type SurveyQuestion } from "@/lib/surveys/contract";
+import { collaborationLabels, collaborationNotice, radarNotice, researchNotice, visibleSurveyQuestions, type Survey, type SurveyQuestion } from "@/lib/surveys/contract";
 import styles from "./surveys.module.css";
 
 const subscribe = () => () => {};
 const clientReady = () => true;
 const serverReady = () => false;
 
-function Question({ item, onAnswer }: { item: SurveyQuestion; onAnswer: (id: string, value: string) => void }) {
+type DraftAnswer = { value: string; none?: boolean };
+
+function Question({ item, answer, onAnswer }: {
+  item: SurveyQuestion;
+  answer?: DraftAnswer;
+  onAnswer: (answer: DraftAnswer) => void;
+}) {
   const id = `question-${item.id}`;
+  const hintId = item.hint ? `${id}-hint` : undefined;
+  const hint = item.hint && <p id={hintId} className={styles.questionHint}>{item.hint}</p>;
   const label = item.required ? item.label : `${item.label} (opcional)`;
-  if (item.kind === "text") return <label className={styles.field} htmlFor={id}>
-    {label}
-    <textarea id={id} name={id} rows={3} maxLength={1000} required={item.required} onChange={event => onAnswer(item.id, event.target.value)} />
-  </label>;
+  if (item.kind === "text") {
+    const value = answer?.value ?? "";
+    const none = answer?.none ?? false;
+    return <div className={styles.field}>
+      <label htmlFor={id}>{label}</label>
+      {hint}
+      <textarea id={id} name={id} rows={3} maxLength={1000} required={item.required && !none}
+        aria-describedby={hintId} disabled={none} value={value} onChange={event => onAnswer({ value: event.target.value })} />
+      {item.noneOption && <div className={styles.choices}>
+        <label><input type="checkbox" checked={none} onChange={event => onAnswer({ value, none: event.target.checked })} /> {item.noneOption}</label>
+      </div>}
+    </div>;
+  }
   const options = item.kind === "score" ? Array.from({ length: 11 }, (_, value) => String(value)) : item.options;
-  return <fieldset className={styles.question}>
+  return <fieldset className={styles.question} aria-describedby={hintId}>
     <legend>{label}</legend>
+    {hint}
     <div className={item.kind === "score" ? styles.scale : styles.choices}>
       {options.map((option, index) => <label key={option}>
-        <input type="radio" name={id} value={option} required={index === 0 && item.required} onChange={() => onAnswer(item.id, option)} /> {option}
+        <input type="radio" name={id} value={option} required={index === 0 && item.required}
+          checked={answer?.value === option} onChange={() => onAnswer({ value: option })} /> {option}
       </label>)}
-      {!item.required && <label><input type="radio" name={id} value="" onChange={() => onAnswer(item.id, "")} /> Sem resposta</label>}
+      {!item.required && <label><input type="radio" name={id} value="" checked={answer?.value === ""} onChange={() => onAnswer({ value: "" })} /> Sem resposta</label>}
     </div>
   </fieldset>;
 }
@@ -53,7 +72,7 @@ function SurveyProgress({ answered, total, complete = false }: { answered: numbe
 export function SurveyForm({ survey, preview = false }: { survey: Survey; preview?: boolean }) {
   const hydrated = useSyncExternalStore(subscribe, clientReady, serverReady);
   const [research, setResearch] = useState<"allow" | "deny" | null>(null);
-  const [answered, setAnswered] = useState<ReadonlySet<string>>(() => new Set());
+  const [draft, setDraft] = useState<ReadonlyMap<string, DraftAnswer>>(() => new Map());
   const [collaboration, setCollaboration] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -63,16 +82,11 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
 
   useEffect(() => { if (complete) receipt.current?.focus(); }, [complete]);
 
-  function recordAnswer(id: string, value: string) {
-    const hasAnswer = value.trim().length > 0;
-    setAnswered(current => {
-      if (current.has(id) === hasAnswer) return current;
-      const next = new Set(current);
-      if (hasAnswer) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-  }
+  const questions = visibleSurveyQuestions(survey.questions, id => draft.get(id)?.none === true);
+  const answered = questions.filter(item => {
+    const answer = draft.get(item.id);
+    return answer?.none || answer?.value.trim();
+  }).length;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -84,10 +98,11 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
       setComplete(true);
       return;
     }
-    const answers: Record<string, string | number> = {};
-    if (allowed) for (const question of survey.questions) {
+    const answers: Record<string, string | number | null> = {};
+    if (allowed) for (const question of questions) {
       const value = String(form.get(`question-${question.id}`) ?? "").trim();
-      if (value) answers[question.id] = question.kind === "score" ? Number(value) : value;
+      if (draft.get(question.id)?.none) answers[question.id] = null;
+      else if (value) answers[question.id] = question.kind === "score" ? Number(value) : value;
     }
     const email = allowed && collaboration ? String(form.get("email") ?? "").trim() : null;
     const values = { revision: survey.revision, research: allowed, answers, collaboration: allowed && collaboration || null, email, radar };
@@ -117,16 +132,16 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
     }
   }
 
-  const showProgress = research !== "deny" && survey.questions.length > 0;
+  const showProgress = research !== "deny" && questions.length > 0;
   if (complete) return <div className={styles.receipt} data-ap-card="" tabIndex={-1} ref={receipt} role="status">
-    {showProgress && <SurveyProgress answered={answered.size} total={survey.questions.length} complete />}
+    {showProgress && <SurveyProgress answered={answered} total={questions.length} complete />}
     <h2>Obrigado pelo seu tempo.</h2>
     <p>{preview ? "Prévia concluída. Nenhuma resposta foi gravada." : "Você concluiu a pesquisa."}</p>
   </div>;
 
   return <form className={styles.form} data-has-progress={showProgress} data-preview={preview} method="post" onSubmit={submit} aria-busy={busy}>
     {showProgress && <div className={styles.progressPosition}>
-      <SurveyProgress answered={answered.size} total={survey.questions.length} />
+      <SurveyProgress answered={answered} total={questions.length} />
     </div>}
     <fieldset className={styles.formFields} data-ap-card="" disabled={!hydrated || busy}>
       <fieldset className={styles.question}>
@@ -134,11 +149,12 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
         <p>{researchNotice(survey)} <Link href="/privacidade">Política de Privacidade</Link></p>
         <div className={styles.choices}>
           <label><input type="radio" name="research" value="allow" required onChange={() => setResearch("allow")} /> Sim, autorizo.</label>
-          <label><input type="radio" name="research" value="deny" onChange={() => { setResearch("deny"); setCollaboration(""); setAnswered(new Set()); }} /> Não autorizo.</label>
+          <label><input type="radio" name="research" value="deny" onChange={() => { setResearch("deny"); setCollaboration(""); setDraft(new Map()); }} /> Não autorizo.</label>
         </div>
       </fieldset>
       {research === "allow" && <>
-        {survey.questions.map(item => <Question item={item} key={item.id} onAnswer={recordAnswer} />)}
+        {questions.map(item => <Question item={item} key={item.id} answer={draft.get(item.id)}
+          onAnswer={answer => setDraft(current => new Map(current).set(item.id, answer))} />)}
         {survey.collaboration && <fieldset className={styles.question}>
           <legend>Você gostaria de receber um convite para colaborar? (opcional)</legend>
           <p>{collaborationNotice}</p>

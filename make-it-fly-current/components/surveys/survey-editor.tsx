@@ -6,7 +6,20 @@ import { saveSurveyAction } from "@/app/admin/pesquisas/actions";
 import { surveyStatuses, surveyStatusLabels, type Survey, type SurveyDefinition, type SurveyQuestion } from "@/lib/surveys/contract";
 import styles from "./surveys.module.css";
 
-type EditableQuestion = { id: string; label: string; required: boolean; kind: SurveyQuestion["kind"]; optionsText: string };
+type EditableQuestion = {
+  id: string;
+  label: string;
+  required: boolean;
+  kind: SurveyQuestion["kind"];
+  hint?: string;
+  noneOption?: string;
+  skipIfNone?: string;
+  optionsText: string;
+};
+
+function noneSources(questions: EditableQuestion[], index: number) {
+  return questions.slice(0, index).filter(item => item.kind === "text" && item.noneOption?.trim());
+}
 
 export function SurveyEditor({ initial, existing }: { initial: SurveyDefinition; existing?: Pick<Survey, "id" | "revision"> }) {
   const router = useRouter();
@@ -44,8 +57,12 @@ export function SurveyEditor({ initial, existing }: { initial: SurveyDefinition;
         title: text("title"), slug: text("slug"), intro: text("intro"), purpose: text("purpose"),
         retentionDays: retention ? Number(retention) : null, status: text("status"),
         collaboration: fields.has("collaboration"), radar: fields.has("radar"),
-        questions: questions.map(({ id, kind, label, required, optionsText }) => ({
-          id, label, required, kind, ...(kind === "choice" ? { options: optionsText.split(/\r?\n/).map(text => text.trim()).filter(Boolean) } : {}),
+        questions: questions.map(({ id, kind, label, required, hint, noneOption, skipIfNone, optionsText }, index) => ({
+          id, label, required, kind,
+          hint: hint?.trim() || undefined,
+          skipIfNone: noneSources(questions, index).some(item => item.id === skipIfNone) ? skipIfNone : undefined,
+          ...(kind === "text" && noneOption?.trim() ? { noneOption: noneOption.trim() } : {}),
+          ...(kind === "choice" ? { options: optionsText.split(/\r?\n/).map(text => text.trim()).filter(Boolean) } : {}),
         })),
       }, version);
       if ("error" in result) { setError(result.error); return; }
@@ -84,28 +101,44 @@ export function SurveyEditor({ initial, existing }: { initial: SurveyDefinition;
         <label><input type="checkbox" name="radar" defaultChecked={initial.radar} /> Perguntar sobre a medição opcional do Radar</label>
       </div>
       <h2>Perguntas</h2>
-      {questions.map((item, index) => <fieldset className={styles.question} key={item.id}>
-        <legend>Pergunta {index + 1}</legend>
-        <label className={styles.field}>Enunciado
-          <input required maxLength={220} value={item.label} onChange={event => update(item.id, { label: event.target.value })} />
-        </label>
-        <label className={styles.field}>Tipo
-          <select value={item.kind} onChange={event => update(item.id, { kind: event.target.value as EditableQuestion["kind"] })}>
-            <option value="text">Resposta aberta</option>
-            <option value="score">Nota de 0 a 10</option>
-            <option value="choice">Escolha única</option>
-          </select>
-        </label>
-        {item.kind === "choice" && <label className={styles.field}>Opções, uma por linha
-          <textarea rows={3} required value={item.optionsText} onChange={event => update(item.id, { optionsText: event.target.value })} />
-        </label>}
-        <label><input type="checkbox" checked={item.required} onChange={event => update(item.id, { required: event.target.checked })} /> Obrigatória</label>
-        <div className={styles.actions}>
-          <button type="button" data-ap-button="secondary" aria-label={`Subir pergunta ${index + 1}`} disabled={!index} onClick={() => move(index, -1)}>Subir</button>
-          <button type="button" data-ap-button="secondary" aria-label={`Descer pergunta ${index + 1}`} disabled={index === questions.length - 1} onClick={() => move(index, 1)}>Descer</button>
-          <button type="button" data-ap-button="secondary" aria-label={`Remover pergunta ${index + 1}`} disabled={questions.length < 2} onClick={() => setQuestions(items => items.filter(q => q.id !== item.id))}>Remover</button>
-        </div>
-      </fieldset>)}
+      {questions.map((item, index) => {
+        const sources = noneSources(questions, index);
+        return <fieldset className={styles.question} key={item.id}>
+          <legend>Pergunta {index + 1}</legend>
+          <label className={styles.field}>Enunciado
+            <input required maxLength={220} value={item.label} onChange={event => update(item.id, { label: event.target.value })} />
+          </label>
+          <label className={styles.field}>Texto de ajuda (opcional)
+            <input maxLength={240} value={item.hint ?? ""} onChange={event => update(item.id, { hint: event.target.value })} />
+          </label>
+          <label className={styles.field}>Tipo
+            <select value={item.kind} onChange={event => update(item.id, { kind: event.target.value as EditableQuestion["kind"] })}>
+              <option value="text">Resposta aberta</option>
+              <option value="score">Nota de 0 a 10</option>
+              <option value="choice">Escolha única</option>
+            </select>
+          </label>
+          {item.kind === "choice" && <label className={styles.field}>Opções, uma por linha
+            <textarea rows={3} required value={item.optionsText} onChange={event => update(item.id, { optionsText: event.target.value })} />
+          </label>}
+          {item.kind === "text" && <label className={styles.field}>Opção para indicar que nenhuma resposta se aplica (opcional)
+            <input maxLength={80} value={item.noneOption ?? ""} onChange={event => update(item.id, { noneOption: event.target.value })} />
+          </label>}
+          {sources.length > 0 && <label className={styles.field}>Pular se a pessoa marcar a opção de nenhuma resposta em
+            <select value={sources.some(source => source.id === item.skipIfNone) ? item.skipIfNone : ""}
+              onChange={event => update(item.id, { skipIfNone: event.target.value })}>
+              <option value="">Sempre mostrar</option>
+              {sources.map(source => <option key={source.id} value={source.id}>{source.label}</option>)}
+            </select>
+          </label>}
+          <label><input type="checkbox" checked={item.required} onChange={event => update(item.id, { required: event.target.checked })} /> Obrigatória</label>
+          <div className={styles.actions}>
+            <button type="button" data-ap-button="secondary" aria-label={`Subir pergunta ${index + 1}`} disabled={!index} onClick={() => move(index, -1)}>Subir</button>
+            <button type="button" data-ap-button="secondary" aria-label={`Descer pergunta ${index + 1}`} disabled={index === questions.length - 1} onClick={() => move(index, 1)}>Descer</button>
+            <button type="button" data-ap-button="secondary" aria-label={`Remover pergunta ${index + 1}`} disabled={questions.length < 2} onClick={() => setQuestions(items => items.filter(q => q.id !== item.id))}>Remover</button>
+          </div>
+        </fieldset>;
+      })}
       {error && <p role="alert" className={styles.error}>{error}</p>}
       {notice && <p role="status">{notice}</p>}
       <div className={styles.actions}>
