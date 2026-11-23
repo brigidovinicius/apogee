@@ -1,12 +1,23 @@
 .pageHeader, .formWrap { margin-inline: var(--apogee-page-margin); }
 .pageHeader { position: relative; isolation: isolate; padding-block: clamp(1.75rem, 4.5vw, 3.5rem); }
-.pageHeader::before {
+.eventIdentity {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-block-end: .75rem;
+}
+.eventIdentity::after {
   content: "";
-  display: block;
   width: 3.25rem;
   height: .375rem;
-  margin-block-end: .75rem;
   background: repeating-linear-gradient(90deg, var(--ap-accent) 0 .375rem, transparent .375rem .625rem);
+}
+.eventIdentity img {
+  display: block;
+  width: clamp(2.5rem, 5vw, 3.25rem);
+  height: auto;
+  border: 1px solid var(--ap-line);
+  border-radius: var(--ap-control-radius);
 }
 .pageHeader h1 {
   max-width: 50rem;
