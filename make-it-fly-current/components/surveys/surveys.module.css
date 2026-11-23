@@ -141,16 +141,8 @@
 .progress {
   min-width: 0;
   padding: .75rem 1rem .7rem;
-  --survey-grid-line: color-mix(in srgb, var(--ap-brand-sky) 11%, transparent);
   --survey-propulsion: #ffb46e;
   --ap-card-radius: .625rem;
-  --ap-card-fill:
-    linear-gradient(var(--survey-grid-line) 1px, transparent 1px) 0 0 / .75rem .75rem,
-    linear-gradient(90deg, var(--survey-grid-line) 1px, transparent 1px) 0 0 / .75rem .75rem,
-    var(--ap-primary-fill);
-  --ap-line: var(--ap-primary-edge);
-  --ap-text: var(--ap-on-navy);
-  --ap-shadow: var(--ap-primary-shadow);
 }
 .progressHeader {
   display: flex;
@@ -215,6 +207,45 @@
   .formFields > button { justify-self: stretch; }
 }
 
+@media (width < 56rem) {
+  .formFields :is(input, textarea, select, button, a):focus-visible {
+    scroll-margin-block-start: 4.75rem;
+  }
+  .progress {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "count percent" "route route";
+    align-items: baseline;
+    column-gap: .5rem;
+    padding: .45rem .7rem .2rem;
+    --survey-propulsion: light-dark(#93501e, #ffb46e);
+    --ap-card-fill: var(--ap-surface);
+    --ap-shadow: var(--ap-edge);
+  }
+  .progressHeader { display: contents; }
+  .progressHeader > span:first-child { display: none; }
+  .progressPercent { grid-area: percent; color: var(--ap-accent); font-size: .8rem; font-weight: 650; }
+  .progress .progressCount {
+    grid-area: count;
+    margin: 0;
+    color: var(--ap-muted);
+    font-size: .8rem;
+  }
+  .route { grid-area: route; height: 1.4rem; margin-inline: .85rem; }
+  .routeTrack, .routeFill { bottom: .4rem; height: .125rem; }
+  .routeTrack {
+    background: repeating-linear-gradient(90deg, var(--ap-line) 0 .3rem, transparent .3rem .42rem);
+  }
+  .routeTrack::before, .routeTrack::after {
+    width: .25rem;
+    height: .25rem;
+    background: var(--ap-muted);
+  }
+  .routeTrack::before { left: -.125rem; }
+  .routeTrack::after { right: -.125rem; }
+  .rocket { bottom: -.42rem; width: 2.125rem; }
+}
+
 @media (min-width: 56rem) {
   .pageHeader::after {
     content: "";
@@ -232,7 +263,17 @@
   }
   .form[data-preview="false"] .progressPosition { grid-area: 1 / 2; top: 1.25rem; }
   .form[data-has-progress="true"][data-preview="false"] .formFields { grid-area: 1 / 1; }
-  .progress { padding: 1rem; }
+  .progress {
+    padding: 1rem;
+    --survey-grid-line: color-mix(in srgb, var(--ap-brand-sky) 11%, transparent);
+    --ap-card-fill:
+      linear-gradient(var(--survey-grid-line) 1px, transparent 1px) 0 0 / .75rem .75rem,
+      linear-gradient(90deg, var(--survey-grid-line) 1px, transparent 1px) 0 0 / .75rem .75rem,
+      var(--ap-primary-fill);
+    --ap-line: var(--ap-primary-edge);
+    --ap-text: var(--ap-on-navy);
+    --ap-shadow: var(--ap-primary-shadow);
+  }
   .route { height: 3.75rem; }
   .rocket { width: 4.5rem; }
 }
