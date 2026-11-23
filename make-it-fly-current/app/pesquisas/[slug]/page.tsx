@@ -15,9 +15,11 @@ export default async function SurveyPage({ params }: { params: Promise<{ slug: s
   const survey = await getPublicSurvey(slug);
   if (!survey) notFound();
   return <main id="experiencia" className={styles.publicPage}>
-    <Link href="/" prefetch={false}>Apogee</Link>
-    <h1>{survey.title}</h1>
-    {survey.intro && <p>{survey.intro}</p>}
+    <header className={styles.pageHeader}>
+      <Link href="/" prefetch={false} className={styles.homeLink}>Apogee</Link>
+      <h1>{survey.title}</h1>
+      {survey.intro && <p>{survey.intro}</p>}
+    </header>
     <SurveyForm survey={survey} />
   </main>;
 }
