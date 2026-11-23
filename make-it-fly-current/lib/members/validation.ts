@@ -129,7 +129,8 @@ export function safeNextPath(value: unknown): string {
     if (["/membros/entrar", "/membros/cadastro", "/membros/entrar/google/concluir", "/membros/esqueci-senha", "/membros/redefinir-senha", "/membros/integracoes/mcp/entrar"].includes(next.pathname.replace(/\/$/, ""))) return "/membros";
     const protectedPath = next.pathname === "/membros" || next.pathname.startsWith("/membros/") ||
       next.pathname === "/admin" || next.pathname.startsWith("/admin/") ||
-      next.pathname === "/gerenciar-galeria";
+      next.pathname === "/gerenciar-galeria" ||
+      /^\/pesquisas\/[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/?$/.test(next.pathname);
     if (!protectedPath) return "/membros";
     return `${next.pathname}${next.search}${next.hash}`;
   } catch {

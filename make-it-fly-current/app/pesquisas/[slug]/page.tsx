@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { SurveyForm } from "@/components/surveys/survey-form";
 import styles from "@/components/surveys/surveys.module.css";
+import { requireSignedInMember } from "@/lib/members/dal";
 import { surveySlug } from "@/lib/surveys/contract";
 import { getPublicSurvey } from "@/lib/surveys/store";
 import { codexWorkshopSurvey } from "@/lib/surveys/templates";
@@ -17,6 +18,7 @@ export default async function SurveyPage({ params }: { params: Promise<{ slug: s
   if (!surveySlug.safeParse(slug).success) notFound();
   const survey = await getPublicSurvey(slug);
   if (!survey) notFound();
+  await requireSignedInMember(`/pesquisas/${survey.slug}`);
   return <>
     <SiteHeader adaptive tone="light" prefetch={false} />
     <main id="experiencia" tabIndex={-1} aria-labelledby="survey-title">

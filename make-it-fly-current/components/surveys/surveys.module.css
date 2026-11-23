@@ -81,6 +81,14 @@
 .list { display: grid; gap: .8rem; list-style: none; padding: 0; }
 .list li { overflow-wrap: anywhere; }
 .answer { white-space: pre-wrap; overflow-wrap: anywhere; }
+.stageTable { overflow-x: auto; }
+.stageTable table { width: 100%; border-collapse: collapse; }
+.stageTable :is(th, td) {
+  padding: .6rem .5rem;
+  border-bottom: 1px solid var(--ap-line);
+  text-align: start;
+}
+.stageTable :is(th, td):not(:first-child) { text-align: end; }
 
 .form {
   display: grid;

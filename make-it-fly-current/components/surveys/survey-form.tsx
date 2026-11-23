@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from "react";
-import { collaborationLabels, collaborationNotice, radarNotice, researchNotice, visibleSurveyQuestions, type Survey, type SurveyQuestion } from "@/lib/surveys/contract";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from "react";
+import { collaborationLabels, collaborationNotice, radarNotice, researchNotice, surveyQuestionStage, visibleSurveyQuestions, type Survey, type SurveyQuestion } from "@/lib/surveys/contract";
 import styles from "./surveys.module.css";
 
 const subscribe = () => () => {};
@@ -24,7 +24,7 @@ function Question({ item, answer, onAnswer }: {
   if (item.kind === "text") {
     const value = answer?.value ?? "";
     const none = answer?.none ?? false;
-    return <div className={styles.field}>
+    return <div className={styles.field} data-survey-stage={surveyQuestionStage(item.id)}>
       <label htmlFor={id}>{label}</label>
       {hint}
       <textarea id={id} name={id} rows={3} maxLength={1000} required={item.required && !none}
@@ -35,7 +35,7 @@ function Question({ item, answer, onAnswer }: {
     </div>;
   }
   const options = item.kind === "score" ? Array.from({ length: 11 }, (_, value) => String(value)) : item.options;
-  return <fieldset className={styles.question} aria-describedby={hintId}>
+  return <fieldset className={styles.question} aria-describedby={hintId} data-survey-stage={surveyQuestionStage(item.id)}>
     <legend>{label}</legend>
     {hint}
     <div className={item.kind === "score" ? styles.scale : styles.choices}>
@@ -78,9 +78,72 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
   const [message, setMessage] = useState("");
   const [complete, setComplete] = useState(false);
   const receipt = useRef<HTMLDivElement>(null);
+  const formElement = useRef<HTMLFormElement>(null);
   const request = useRef<{ id: string; payload: string } | null>(null);
+  const attempt = useRef<{ id: string; sequence: number; stage: string; sentAt: number } | null>(null);
+  const endpoint = `/api/pesquisas/${survey.slug}`;
+
+  const sendProgress = useCallback((event: object) => {
+    void fetch(endpoint, {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...event, revision: survey.revision }),
+      credentials: "same-origin", referrerPolicy: "no-referrer", keepalive: true,
+    }).catch(() => {});
+  }, [endpoint, survey.revision]);
+
+  const markStage = useCallback((stage: string | undefined, touch = false) => {
+    const current = attempt.current;
+    const now = Date.now();
+    if (!current || !stage || current.stage === stage && (!touch || now - current.sentAt < 60_000)) return;
+    current.stage = stage;
+    current.sentAt = now;
+    sendProgress({ kind: "stage", id: current.id, stage, sequence: ++current.sequence });
+  }, [sendProgress]);
+
+  function chooseResearch(choice: "allow" | "deny") {
+    setResearch(choice);
+    if (choice === "allow") {
+      if (!preview && !attempt.current) {
+        attempt.current = { id: crypto.randomUUID(), sequence: 0, stage: "", sentAt: 0 };
+        markStage("inicio");
+      }
+    } else {
+      if (attempt.current) sendProgress({ kind: "withdraw", id: attempt.current.id });
+      attempt.current = null;
+      setCollaboration("");
+      setDraft(new Map());
+    }
+  }
 
   useEffect(() => { if (complete) receipt.current?.focus(); }, [complete]);
+  useEffect(() => {
+    if (preview || research !== "allow" || complete) return;
+    let timer: number | undefined;
+    function checkStage() {
+      if (document.visibilityState !== "visible") return;
+      const center = window.innerHeight * .5;
+      const nodes = formElement.current?.querySelectorAll<HTMLElement>("[data-survey-stage]") ?? [];
+      for (const element of nodes) {
+        const { top, bottom } = element.getBoundingClientRect();
+        if (top <= center && bottom > center) {
+          markStage(element.dataset.surveyStage);
+          return;
+        }
+      }
+    }
+    function schedule() {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(checkStage, 240);
+    }
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    schedule();
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      window.clearTimeout(timer);
+    };
+  }, [complete, markStage, preview, research]);
 
   const questions = visibleSurveyQuestions(survey.questions, id => draft.get(id)?.none === true);
   const answered = questions.filter(item => {
@@ -105,21 +168,24 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
       else if (value) answers[question.id] = question.kind === "score" ? Number(value) : value;
     }
     const email = allowed && collaboration ? String(form.get("email") ?? "").trim() : null;
-    const values = { revision: survey.revision, research: allowed, answers, collaboration: allowed && collaboration || null, email, radar };
+    if (allowed) markStage("envio");
+    const values = { revision: survey.revision, research: allowed, answers, collaboration: allowed && collaboration || null,
+      email, radar, attempt: allowed ? attempt.current?.id : undefined };
     const payload = JSON.stringify(values);
     if (request.current?.payload !== payload) request.current = { payload, id: crypto.randomUUID() };
     setMessage("");
     setBusy(true);
     try {
-      const result = await fetch(`/api/pesquisas/${survey.slug}`, {
+      const result = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: request.current.id, ...values }),
-        credentials: "omit",
+        credentials: "same-origin",
         referrerPolicy: "no-referrer",
         signal: AbortSignal.timeout(15_000),
       });
       if (result.ok) setComplete(true);
+      else if (result.status === 401) setMessage("Sua sessão terminou. Entre novamente na Apogee para enviar.");
       else if (result.status === 409) setMessage("A pesquisa foi atualizada. Recarregue a página para responder à nova versão.");
       else if (result.status === 404) setMessage("Esta pesquisa foi encerrada.");
       else if (result.status === 429) setMessage("Aguarde alguns minutos antes de tentar novamente.");
@@ -139,7 +205,10 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
     <p>{preview ? "Prévia concluída. Nenhuma resposta foi gravada." : "Você concluiu a pesquisa."}</p>
   </div>;
 
-  return <form className={styles.form} data-has-progress={showProgress} data-preview={preview} method="post" onSubmit={submit} aria-busy={busy}>
+  return <form ref={formElement} className={styles.form} data-has-progress={showProgress} data-preview={preview} method="post"
+    onSubmit={submit} aria-busy={busy}
+    onFocusCapture={event => markStage((event.target as HTMLElement).closest<HTMLElement>("[data-survey-stage]")?.dataset.surveyStage, true)}
+    onChangeCapture={event => markStage((event.target as HTMLElement).closest<HTMLElement>("[data-survey-stage]")?.dataset.surveyStage, true)}>
     {showProgress && <div className={styles.progressPosition}>
       <SurveyProgress answered={answered} total={questions.length} />
     </div>}
@@ -149,15 +218,15 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
           <legend>Você autoriza o uso das suas respostas para esta pesquisa?</legend>
           <p>{researchNotice(survey)} <Link href="/privacidade" prefetch={false}>Política de Privacidade</Link></p>
           <div className={styles.choices}>
-            <label><input type="radio" name="research" value="allow" required onChange={() => setResearch("allow")} /> Sim, autorizo.</label>
-            <label><input type="radio" name="research" value="deny" onChange={() => { setResearch("deny"); setCollaboration(""); setDraft(new Map()); }} /> Não autorizo.</label>
+            <label><input type="radio" name="research" value="allow" required onChange={() => chooseResearch("allow")} /> Sim, autorizo.</label>
+            <label><input type="radio" name="research" value="deny" onChange={() => chooseResearch("deny")} /> Não autorizo.</label>
           </div>
         </fieldset>
       </div>
       {research === "allow" && <div className={styles.formCard} data-ap-card="">
         {questions.map(item => <Question item={item} key={item.id} answer={draft.get(item.id)}
           onAnswer={answer => setDraft(current => new Map(current).set(item.id, answer))} />)}
-        {survey.collaboration && <fieldset className={styles.question}>
+        {survey.collaboration && <fieldset className={styles.question} data-survey-stage="colaboracao">
           <legend>Você gostaria de receber um convite para colaborar? (opcional)</legend>
           <p>{collaborationNotice}</p>
           <label className={styles.field}>Como gostaria de ajudar?
@@ -172,7 +241,7 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
         </fieldset>}
       </div>}
       {research && survey.radar && <div className={styles.formCard} data-ap-card="">
-        <fieldset className={styles.question}>
+        <fieldset className={styles.question} data-survey-stage="radar">
           <legend>Você autoriza a medição opcional do seu uso futuro do Radar?</legend>
           <p>{radarNotice} <Link href="/privacidade#radar-amplitude" prefetch={false}>Saiba mais sobre a medição</Link></p>
           <div className={styles.choices}>
@@ -183,7 +252,7 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
         </fieldset>
       </div>}
       {message && <p role="alert" className={styles.error}>{message}</p>}
-      <button type="submit" data-ap-button="primary">{busy ? "Enviando…" : preview ? "Testar envio" : research === "deny" ? "Concluir" : "Enviar respostas"}</button>
+      <button type="submit" data-ap-button="primary" data-survey-stage="envio">{busy ? "Enviando…" : preview ? "Testar envio" : research === "deny" ? "Concluir" : "Enviar respostas"}</button>
     </fieldset>
   </form>;
 }

@@ -53,6 +53,19 @@ export type SurveyDefinition = z.infer<typeof surveyDefinition>;
 export type SurveyQuestion = z.infer<typeof question>;
 export type Survey = SurveyDefinition & { id: string; revision: number };
 
+export const surveyInactivityMinutes = 30;
+export const surveyQuestionStage = (id: string) => `pergunta:${id}`;
+
+export function surveyStages(survey: Pick<SurveyDefinition, "questions" | "collaboration" | "radar">) {
+  return [
+    { id: "inicio", label: "Início após a autorização" },
+    ...survey.questions.map((item, index) => ({ id: surveyQuestionStage(item.id), label: `${index + 1}. ${item.label}` })),
+    ...(survey.collaboration ? [{ id: "colaboracao", label: "Convite para colaborar" }] : []),
+    ...(survey.radar ? [{ id: "radar", label: "Escolha sobre a medição do Radar" }] : []),
+    { id: "envio", label: "Envio das respostas" },
+  ];
+}
+
 export function visibleSurveyQuestions(questions: SurveyQuestion[], hasSelectedNone: (id: string) => boolean) {
   const selectedNone = new Set<string>();
   return questions.filter(item => {
@@ -63,14 +76,20 @@ export function visibleSurveyQuestions(questions: SurveyQuestion[], hasSelectedN
 }
 
 export function researchNotice(survey: Pick<SurveyDefinition, "purpose" | "retentionDays">) {
-  const retention = survey.retentionDays === null ? "Prazo de retenção a definir." : `As respostas serão guardadas na Apogee por ${survey.retentionDays} ${survey.retentionDays === 1 ? "dia" : "dias"}.`;
-  return `A Apogee usará suas respostas para ${survey.purpose}. ${retention} A equipe da Apogee terá acesso às respostas. Para revogar a autorização ou solicitar acesso, correção ou exclusão, escreva para contato@apogee.community.`;
+  const retention = survey.retentionDays === null ? "Prazo de retenção a definir." : `As respostas e os registros de progresso serão guardados na Apogee por ${survey.retentionDays} ${survey.retentionDays === 1 ? "dia" : "dias"}.`;
+  return `A Apogee usará suas respostas para ${survey.purpose}. Ao autorizar, a Apogee também registra as etapas visitadas para entender onde o preenchimento é interrompido, mesmo sem envio. Esse registro de progresso usa um código de tentativa, sem nome, e-mail ou conteúdo das respostas. ${retention} A equipe da Apogee terá acesso às respostas e ao progresso agregado. Para revogar a autorização ou solicitar acesso, correção ou exclusão, escreva para contato@apogee.community.`;
 }
 
 export const surveySubmissionVersion = z.object({
   id: z.uuid(),
   revision: z.number().int().positive(),
 });
+
+const progressIdentity = { id: z.uuid(), revision: z.number().int().positive() };
+export const surveyProgressEvent = z.discriminatedUnion("kind", [
+  z.strictObject({ ...progressIdentity, kind: z.literal("stage"), stage: z.string().max(80), sequence: z.number().int().min(1).max(100_000) }),
+  z.strictObject({ ...progressIdentity, kind: z.literal("withdraw") }),
+]);
 
 const submission = z.strictObject({
   ...surveySubmissionVersion.shape,
@@ -79,6 +98,7 @@ const submission = z.strictObject({
   collaboration: z.enum(collaborationOptions).nullable(),
   email: z.email().max(254).nullable(),
   radar: z.enum(["allow", "deny"]).nullable(),
+  attempt: z.uuid().optional(),
 });
 
 export function validateSurveySubmission(survey: SurveyDefinition, input: unknown) {
@@ -86,7 +106,7 @@ export function validateSurveySubmission(survey: SurveyDefinition, input: unknow
   if (!result.success) return null;
   const data = result.data;
   if (data.radar !== null && !survey.radar) return null;
-  if (!data.research && (Object.keys(data.answers).length || data.collaboration || data.email || data.radar === null)) return null;
+  if (!data.research && (Object.keys(data.answers).length || data.collaboration || data.email || data.radar === null || data.attempt)) return null;
   if (data.collaboration && (!survey.collaboration || !data.email) || data.email && !data.collaboration) return null;
 
   const visible = visibleSurveyQuestions(survey.questions, id => data.answers[id] === null);

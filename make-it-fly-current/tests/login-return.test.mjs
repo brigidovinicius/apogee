@@ -7,7 +7,7 @@ import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 const { safeNextPath } = opportunityLoader()("lib/members/validation.ts");
 
 test("login preserves protected admin and gallery destinations including query and hash", () => {
-  for (const path of ["/admin", "/admin/posts", "/admin/usuarios?pagina=2#resultados", "/gerenciar-galeria"])
+  for (const path of ["/admin", "/admin/posts", "/admin/usuarios?pagina=2#resultados", "/gerenciar-galeria", "/pesquisas/codex-florianopolis"])
     assert.equal(safeNextPath(path), path);
 });
 
