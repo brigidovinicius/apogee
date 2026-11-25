@@ -1,0 +1,13 @@
+# Recuperação da produção diária — 25/11/2026
+
+O worker 02b46f3 estava saudável, mas a descoberta de links era executada antes da preparação de matérias. Um resultado sem dossiê ainda impedia essa preparação. Além disso, duas comparações reprovadas bloqueavam o restante da editoria no dia e palavras genéricas aproximavam páginas sobre produtos diferentes. A comprovação de preços do modelo de texto expirou às 10h35 de Brasília, mantendo corretamente a API bloqueada apesar da existência de créditos gratuitos.
+
+A seleção agora prepara evidências e matérias antes de ampliar a descoberta. Um ciclo que já usou HTTP não abre outro. Descoberta sem modelo continua possível quando a capacidade Google estiver bloqueada. Quando a pesquisa depende da API gratuita, o planejamento respeita seu transporte e tamanho máximo. Os assuntos reprovados e seus recibos permanecem intactos; outras perguntas podem usar os mesmos limites globais, sem o bloqueio diário de toda a editoria.
+
+Pares automáticos precisam cobrir pelo menos metade dos termos específicos de ambos os títulos. Qualificadores genéricos de produtos e páginas de templates não definem uma pauta explicativa. Guias de instituições exclusivamente empresariais permanecem em Negócios.
+
+O verificador de preços consulta apenas as páginas públicas oficiais dos dois modelos aprovados. Renova por até sete dias somente os mesmos valores já aprovados; mudança de tarifa desativa aquele modelo para revisão, e falha de consulta não inventa comprovação. Não cria chaves, chama modelos ou altera crédito, saldo, recarga, limites, qualidade de imagem, horário ou validação factual. Os relatórios e o catálogo anterior são preservados antes de cada atualização. O timer proposto é diário às 05h15 de Brasília, somente na VPS.
+
+Validação: 179 testes Node, 106 cenários em PostgreSQL criado exclusivamente para o teste e seis testes Python. Nenhum desses testes usa provedores. O ensaio de consulta real, sem escrita, confirmou os preços dos dois modelos nas páginas oficiais. Não há migração. O piloto editorial real e o CI da versão final são verificações separadas; uma contagem de dez artigos sintéticos não representa dez publicações reais.
+
+Instalação proposta: atualizar somente o serviço `blog-worker`, preservar o site/painel já publicado e instalar o verificador diário a partir deste mesmo SHA. Antes da ativação, conferir CI, imagem exata, backup restaurado, cinco locks compartilhados, configuração, montagens e saúde. A janela de saúde precisa respeitar os 180 segundos de inicialização e as tentativas configuradas; 90 segundos causaram um rollback prematuro em 19/11.

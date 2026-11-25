@@ -95,3 +95,33 @@ test('public source discovery continues without a model call when the Google tok
  const result=await tick({store,identity:{},config:{sources:[],catalog:[],policy:{...defaultPolicy,generation_enabled:true,operator_commands_only:false,automatic_explainers_enabled:true,google_account_email:'blog-owner@example.test'}},provider:async()=>{calls++;}});
  assert.equal(reads,1);assert.equal(calls,0);assert.equal(result.research.requests,2);assert.equal(result.generation.reason,'google_token_limit');
 });
+
+test('discovery cannot starve a ready dossier when each discovery cycle captures a page or rejects its URL',async()=>{
+ for(const reason of ['reference_captured','invalid_reference_url']){
+  let ready=false,prepared=0,discoveries=0,calls=0;
+  const store={recover:async()=>{},maintenance:async()=>({capture_allowed:true}),nextAutomaticWork:async()=>ready?{method:'reserveComparison',candidateId:'synthetic-ready'}:null,
+   prepareRenewableResearch:async()=>{discoveries++;return {prepared:0,requests:1,reason};},checkResearchBudget:async()=>{},
+   prepareAutomaticResearch:async()=>{prepared++;ready=true;return {prepared:1,requests:0};},
+   reserveComparison:async()=>({status:'reserved'}),finish:async()=>({status:'comparison_ready'})};
+  const result=await tick({store,identity:{},config:{sources:[],catalog:[],policy:{...defaultPolicy,generation_enabled:true,operator_commands_only:false,automatic_explainers_enabled:true,google_account_email:'blog-owner@example.test'}},provider:async()=>{calls++;return {outcome:'completed'};}});
+  assert.equal(prepared,1);assert.equal(discoveries,0);assert.equal(calls,1);assert.equal(result.generation.status,'comparison_ready');
+ }
+});
+test('an evidence fetch consumes the cycle and cannot start an additional discovery request',async()=>{
+ let discoveries=0;
+ const store={recover:async()=>{},maintenance:async()=>({capture_allowed:true}),nextAutomaticWork:async()=>null,
+  checkResearchBudget:async()=>{},prepareAutomaticResearch:async()=>({prepared:0,requests:2,reason:'research_independent_missing'}),
+  prepareRenewableResearch:async()=>{discoveries++;assert.fail('one network research cycle only');}};
+ const r=await tick({store,identity:{},config:{sources:[],catalog:[],policy:{...defaultPolicy,generation_enabled:true,operator_commands_only:false,automatic_explainers_enabled:true,google_account_email:'blog-owner@example.test'}},provider:async()=>assert.fail('no dossier')});
+ assert.equal(discoveries,0);assert.equal(r.research.requests,2);
+});
+test('generic product qualifiers and downloadable templates are not corroborating educational subjects',()=>{
+ const bad=[doc('https://blogs.nvidia.com/blog/enterprise-custom','Enterprise custom generative foundation services','ARTICLE_PRIMARY_NVIDIA','Nvidia'),doc('https://docs.github.com/en/copilot/custom-enterprise','Enterprise custom configuration','ARTICLE_PRIMARY_GITHUB_DOCS','GitHub')];
+ assert.equal(renewableExplainerPlans(bad,{policy,at}).length,0);
+ const templates=[doc('https://business.gov.au/planning/social-media','Social media for business','ARTICLE_PRIMARY_BUSINESS_AU','Government'),doc('https://www.bdc.ca/en/articles-tools/template-social-media-calendar','Social media calendar template','ARTICLE_PRIMARY_BDC','BDC')];
+ assert.equal(renewableExplainerPlans(templates,{policy,at}).length,0);
+});
+test('business education remains in Business even when the title contains software terminology',()=>{
+ const captures=[doc('https://business.gov.au/planning/inventory-management','Inventory management software','ARTICLE_PRIMARY_BUSINESS_AU','Government'),doc('https://www.bdc.ca/en/articles-tools/inventory-management','Inventory management software','ARTICLE_PRIMARY_BDC','BDC')];
+ const [plan]=renewableExplainerPlans(captures,{policy,at});assert.ok(plan);assert.equal(plan.category,'negocios');
+});

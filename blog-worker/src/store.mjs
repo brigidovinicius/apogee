@@ -284,7 +284,7 @@ export class Store {
       ...(recovering?{recovery_day:day,recovery_tries:candidate.artifact?.research?.recovery_day===day?Number(candidate.artifact.research.recovery_tries??0)+1:1}:{}),next_at:new Date(+at+3600000).toISOString()});
     return {prepared:0,kind:'explainer',reason,requests:budget.used};
   }
-  async prepareRenewableResearch(policy,{read=defaultArticleReader,at=new Date(),discoveryOnly=false}={}){
+  async prepareRenewableResearch(policy,{read=defaultArticleReader,at=new Date(),discoveryOnly=false,allowDiscovery=true}={}){
     if(!policy.automatic_explainers_enabled)return null;
     const [control]=await this.sql`select paused from blog_worker.control where singleton=true`;if(control?.paused)return null;
     const usage=await this.productionUsage(this.sql,at,policy);
@@ -312,9 +312,10 @@ export class Store {
       where c.explainer_key like 'auto-%' and c.post_id is null and v.assessment->>'eligible'='false'
         and exists(select 1 from blog_worker.attempt a where a.candidate_id=c.id and a.kind='comparison' and a.day=${periodKeys(at).day}::date and a.state='confirmed' and not coalesce(a.usage->>'not_generated'='true',false)) group by 1`;
     const options={blockedUrls:held.map(r=>r.url),seedBlockedUrls:blocked.map(r=>r.url),existing,usage,failedTopics,policy,at,approvedReferenceIds:approved.map(r=>r.id)};
-    const plans=[...storedExplainerPlans(stored),...renewableExplainerPlans(captures,options)].filter(p=>!failedTopics.some(f=>f.pool===focusPool(p)&&Number(f.failed)>=2)&&p.urls.every(url=>permitted(url)&&substantiveGuide(captures.find(d=>d.url===url||d.requested_url===url)??{url,title:''})))
+    const plans=[...storedExplainerPlans(stored),...renewableExplainerPlans(captures,options)].filter(p=>p.urls.every(url=>permitted(url)&&substantiveGuide(captures.find(d=>d.url===url||d.requested_url===url)??{url,title:''})))
       .map(p=>({...p,...(p.additional_sources?{additional_sources:p.additional_sources.filter(s=>permitted(s.url))}:{})}));
     if(!discoveryOnly&&explainerWindowOpen(policy,at)&&plans.length){const result=await this.prepareAutomaticExplainer(policy,{read,plans,at});if(result)return {...result,renewable:true};}
+    if(!allowDiscovery)return null;
     // A durable two-minute interval shares the tick's one bounded HTTP cycle.
     // Restarting cannot reset failures, cooldowns, already-used URLs or holds.
     const [recent]=await this.sql`select exists(select 1 from blog_worker.reference_discovery where attempted_at>${new Date(+at-120000)}) as busy`;
@@ -430,7 +431,7 @@ export class Store {
       // A cached failure is not a consumed HTTP cycle. Continue to fresh news
       // when a fallback did neither preparation nor a network request.
       const explainer=await this.prepareAutomaticExplainer(policy,{read,plans:eligible,at});if(explainer?.prepared||explainer?.requests)return explainer;
-      const renewed=await this.prepareRenewableResearch(policy,{read,at});if(renewed?.prepared||renewed?.requests)return renewed;
+      const renewed=await this.prepareRenewableResearch(policy,{read,at,allowDiscovery:false});if(renewed?.prepared||renewed?.requests)return renewed;
     }
     // After the hybrid window, a topic already researched today gets its
     // explanatory fallback before another news-page enrichment can starve it.

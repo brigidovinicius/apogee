@@ -14,6 +14,7 @@ for(const word of ('the and are for our out not but you its can all any will may
 for(const word of ['could','should','would','must','might','also','just','still','some','much','many','each','another','other'])STOP.add(word);
 // Course/site labels and broad disciplines cannot identify an editorial question.
 for(const word of 'machine learning model models training course courses crash introduction overview documentation docs tutorial tutorials basic basics advanced'.split(' '))STOP.add(word);
+for(const word of 'enterprise custom template templates plan plans'.split(' '))STOP.add(word);
 const DISTINCT_CONCEPTS=new Set('kubernetes container serverless hypervisor virtualization cryptography cybersecurity concurrency database tokenization embedding tokenizador criptografia ciberseguranca escalabilidade observabilidade computacao virtualizacao aprendizado iaas paas saas microservice transformer observability budget budgeting bookkeeping'.split(' '));
 const normalize=value=>String(value??'').normalize('NFKD').replace(/\p{M}/gu,'').toLowerCase();
 const words=value=>[...new Set((normalize(value).match(/[a-z][a-z0-9-]{2,}/g)??[])
@@ -24,13 +25,18 @@ const fresh=(d,at)=>d.extraction_method==='public_article'&&d.extraction_version
   &&Number.isFinite(Date.parse(d.checked_at??d.captured_at))&&Date.parse(d.checked_at??d.captured_at)<=+at
   &&+at-Date.parse(d.checked_at??d.captured_at)<7*86400000
   &&(!d.published_at||Number.isFinite(Date.parse(d.published_at))&&Date.parse(d.published_at)<=+at+900000);
-const topicFor=d=>researchTopic({title:d.title,source_id:d.source_id,editoria:referenceForUrl(d.url)?.categories.includes('negocios')?'startups':referenceForUrl(d.url)?.categories.includes('ciencia')?'ciencia-espaco':'tecnologia',evidence:[d]});
+const topicFor=d=>{
+ const ref=referenceForUrl(d.url);
+ if(ref?.categories.length===1&&ref.categories[0]==='negocios')return {category:'negocios',subcategory:/marketing|advertis|social media/i.test(d.title)?'marketing':null};
+ return researchTopic({title:d.title,source_id:d.source_id,editoria:ref?.categories.includes('ciencia')?'ciencia-espaco':'tecnologia',evidence:[d]});
+};
 const fingerprint=text=>String(text??'').normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim();
 const subjectTitle=d=>d.title.split(/\s+[|｜]\s+/)[0];
 export function substantiveGuide(d){
  const ref=referenceForUrl(d.url);if(!ref||!/educacao/.test(ref.role))return false;
- const path=new URL(d.url).pathname;
+ const path=new URL(d.url).pathname,leaf=path.split('/').filter(Boolean).at(-1)??'';
  return !/(?:^|\/)(?:acknowledg(?:e)?ments?|citing|citations?|faq|glossary|test-your-knowledge|exercises?|quiz|quizzes|credits|advanced-courses)(?:\/|$)/i.test(path)
+   &&!/(?:^|[-_])templates?(?:$|[-_])/i.test(leaf)
    &&!/^\s*(?:acknowledg(?:e)?ments?|citing|faq|glossary|introduction|overview|courses?|test your knowledge|exercises?|quiz)\s*$/i.test(subjectTitle(d))
    &&words(subjectTitle(d)).length>0;
 }
@@ -60,13 +66,14 @@ export function renewableExplainerPlans(captures,{blockedUrls=[],seedBlockedUrls
  for(const seed of rows){
   if(plans.length>=Math.min(30,limit))break;
   if(!primaryDocument(seed,seed.ref)||!/educacao/.test(seed.ref.role)||usedSeeds.has(seed.url)||usedSeeds.has(canonical(seed.requested_url))||paired.has(seed.url))continue;
-  const topic=seed.topic;if(!topic||!topicAvailable(policy,usage,topic,at)||failedTopics.some(f=>f.pool===focusPool(topic)&&Number(f.failed)>=2))continue;
+  const topic=seed.topic;if(!topic||!topicAvailable(policy,usage,topic,at))continue;
   const key='auto-'+hash(seed.url).slice(0,40);
   if(byKey.has(key))continue; // No new identity after a hold, failure, restart or publication.
   const peers=rows.filter(d=>d.ref.publisher!==seed.ref.publisher&&(primaryReference(d.ref)||independentReference(d.ref))
     &&d.fingerprint!==seed.fingerprint&&focusPool(d.topic)===focusPool(topic))
     .map(d=>({d,common:seed.tokens.filter(t=>d.tokens.includes(t)&&seed.normalizedText.includes(t)&&d.normalizedText.includes(t))}))
     .filter(p=>p.common.length>=2||p.common.length===1&&DISTINCT_CONCEPTS.has(p.common[0])&&frequencies.get(p.common[0])<=10)
+    .filter(p=>p.common.length/seed.tokens.length>=0.5&&p.common.length/p.d.tokens.length>=0.5)
     .map(p=>({...p,score:p.common.reduce((n,t)=>n+Math.min(t.length,12)/(frequencies.get(t)??1),0)}))
     .sort((a,b)=>b.score-a.score);
   if(!peers.length)continue;
@@ -83,7 +90,9 @@ export function renewableExplainerPlans(captures,{blockedUrls=[],seedBlockedUrls
       .map(v=>({url:v.d.url,kind:'independent',origin_url:v.d.url,terms:v.common.slice(0,6),independence_note:'Outra referência pública do mesmo assunto para reapuração. A comparação verifica dependência, fatos críticos e divergências.'}))};
   try{validateExplainerCatalog([plan]);plans.push(plan);subjects.add(subjectKey);paired.add(seed.url);paired.add(peer.d.url);}catch{/* Discovery cannot relax the approved catalog contract. */}
  }
- return plans;
+ // Prior failed identities stay blocked above. A different subject can still
+ // use its native article/day budget; two bad pairs must not black out a focus.
+ return plans.sort((a,b)=>Number(failedTopics.find(f=>f.pool===focusPool(a))?.failed??0)-Number(failedTopics.find(f=>f.pool===focusPool(b))?.failed??0));
 }
 
 export function nextReferenceDiscovery(captures,{blockedUrls=[],seedBlockedUrls=[],attemptedUrls=[],approvedReferenceIds=null,isApproved=null,usage=[],policy=null,at=new Date()}={}){
