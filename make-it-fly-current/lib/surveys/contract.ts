@@ -54,6 +54,9 @@ export type SurveyQuestion = z.infer<typeof question>;
 export type Survey = SurveyDefinition & { id: string; revision: number };
 
 export const surveyInactivityMinutes = 30;
+export const surveyIdentityNoticeVersion = 1;
+export const surveyResponseFilters = ["todos", "pesquisa", "radar"] as const;
+export type SurveyResponseFilter = typeof surveyResponseFilters[number];
 export const surveyQuestionStage = (id: string) => `pergunta:${id}`;
 
 export function surveyStages(survey: Pick<SurveyDefinition, "questions" | "collaboration" | "radar">) {
@@ -75,9 +78,10 @@ export function visibleSurveyQuestions(questions: SurveyQuestion[], hasSelectedN
   });
 }
 
-export function researchNotice(survey: Pick<SurveyDefinition, "purpose" | "retentionDays">) {
+export function researchNotice(survey: Pick<SurveyDefinition, "purpose" | "retentionDays">, identified = false) {
   const retention = survey.retentionDays === null ? "Prazo de retenção a definir." : `As respostas e os registros de progresso serão guardados na Apogee por ${survey.retentionDays} ${survey.retentionDays === 1 ? "dia" : "dias"}.`;
-  return `A Apogee usará suas respostas para ${survey.purpose}. Ao autorizar, a Apogee também registra as etapas visitadas para entender onde o preenchimento é interrompido, mesmo sem envio. Esse registro de progresso usa um código de tentativa, sem nome, e-mail ou conteúdo das respostas. ${retention} A equipe da Apogee terá acesso às respostas e ao progresso agregado. Para revogar a autorização ou solicitar acesso, correção ou exclusão, escreva para contato@apogee.community.`;
+  const identity = identified ? " Ao enviar as respostas da pesquisa, elas ficam vinculadas à sua conta Apogee. Administradores autorizados podem consultar o nome e o e-mail do seu perfil junto com as respostas durante esse prazo." : "";
+  return `A Apogee usará suas respostas para ${survey.purpose}. Ao autorizar, a Apogee também registra as etapas visitadas para entender onde o preenchimento é interrompido, mesmo sem envio. Esse registro de progresso usa um código de tentativa, sem nome, e-mail ou conteúdo das respostas. ${retention}${identity} A equipe da Apogee terá acesso às respostas e ao progresso agregado. Para revogar a autorização ou solicitar acesso, correção ou exclusão, escreva para contato@apogee.community.`;
 }
 
 export const surveySubmissionVersion = z.object({
@@ -99,6 +103,7 @@ const submission = z.strictObject({
   email: z.email().max(254).nullable(),
   radar: z.enum(["allow", "deny"]).nullable(),
   attempt: z.uuid().optional(),
+  identityNoticeVersion: z.literal(surveyIdentityNoticeVersion).optional(),
 });
 
 export function validateSurveySubmission(survey: SurveyDefinition, input: unknown) {
@@ -106,7 +111,7 @@ export function validateSurveySubmission(survey: SurveyDefinition, input: unknow
   if (!result.success) return null;
   const data = result.data;
   if (data.radar !== null && !survey.radar) return null;
-  if (!data.research && (Object.keys(data.answers).length || data.collaboration || data.email || data.radar === null || data.attempt)) return null;
+  if (!data.research && (Object.keys(data.answers).length || data.collaboration || data.email || data.radar === null || data.attempt || data.identityNoticeVersion)) return null;
   if (data.collaboration && (!survey.collaboration || !data.email) || data.email && !data.collaboration) return null;
 
   const visible = visibleSurveyQuestions(survey.questions, id => data.answers[id] === null);

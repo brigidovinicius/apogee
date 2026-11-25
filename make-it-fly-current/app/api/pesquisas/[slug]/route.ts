@@ -27,7 +27,7 @@ async function handle(request: Request, { params }: Context, progress: boolean) 
     const scope = progress ? "survey-progress" : "survey";
     const key = createHmac("sha256", secret).update(`${scope}:${slug}:`).update(keySource).digest("hex");
     if (!await consumeRateLimit(`${scope}:${key}`, 120, 10 * 60)) return response(429);
-    return response(progress ? await recordSurveyProgress(slug, body) : await recordSurveyResponse(slug, body));
+    return response(progress ? await recordSurveyProgress(slug, body) : await recordSurveyResponse(slug, body, member.id));
   } catch (error) {
     return response(error instanceof RequestBodyError ? error.status : error instanceof SyntaxError ? 400 : 503);
   }

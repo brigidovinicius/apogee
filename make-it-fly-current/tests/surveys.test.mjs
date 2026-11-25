@@ -4,7 +4,7 @@ import { opportunityLoader } from "./helpers/load-opportunity-module.mjs";
 
 const load = opportunityLoader();
 const { codexWorkshopSurvey } = load("lib/surveys/templates.ts");
-const { researchNotice, surveyDefinition, surveyProgressEvent, surveyStages, validateSurveySubmission } = load("lib/surveys/contract.ts");
+const { researchNotice, surveyDefinition, surveyIdentityNoticeVersion, surveyProgressEvent, surveyStages, validateSurveySubmission } = load("lib/surveys/contract.ts");
 const valid = {
   id: "11111111-1111-4111-8111-111111111111",
   revision: 1,
@@ -69,11 +69,23 @@ test("survey progress carries a stage but rejects response content and identifie
   assert.ok(surveyProgressEvent.safeParse(event).success);
   assert.equal(surveyProgressEvent.safeParse({ ...event, email: "fixture@example.test" }).success, false);
   assert.equal(surveyProgressEvent.safeParse({ ...event, answers: {} }).success, false);
+  assert.equal(surveyProgressEvent.safeParse({ ...event, identityNoticeVersion: surveyIdentityNoticeVersion }).success, false);
   assert.deepEqual(surveyStages(codexWorkshopSurvey).map(item => item.id), [
     "inicio", "pergunta:nota", "pergunta:motivo", "pergunta:melhoria", "pergunta:tarefa",
     "pergunta:obstaculo", "pergunta:atualizacoes", "radar", "envio",
   ]);
   assert.match(researchNotice({ ...codexWorkshopSurvey, retentionDays: 90 }), /etapas visitadas.*mesmo sem envio.*90 dias/);
+});
+
+test("identity is disclosed for research submissions and never accompanies a Radar-only choice", () => {
+  assert.match(researchNotice(codexWorkshopSurvey, true), /vinculadas à sua conta Apogee/);
+  assert.doesNotMatch(researchNotice(codexWorkshopSurvey), /vinculadas à sua conta Apogee/);
+  assert.equal(validateSurveySubmission(codexWorkshopSurvey, valid).identityNoticeVersion, undefined);
+  assert.ok(validateSurveySubmission(codexWorkshopSurvey, { ...valid, identityNoticeVersion: surveyIdentityNoticeVersion }));
+  assert.equal(validateSurveySubmission(codexWorkshopSurvey, { ...valid, identityNoticeVersion: -1 }), null);
+  assert.equal(validateSurveySubmission(codexWorkshopSurvey, {
+    ...valid, research: false, answers: {}, radar: "deny", identityNoticeVersion: surveyIdentityNoticeVersion,
+  }), null);
 });
 
 test("both survey writes reject requests without a valid session", async () => {

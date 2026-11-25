@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from "react";
-import { collaborationLabels, collaborationNotice, radarNotice, researchNotice, surveyQuestionStage, visibleSurveyQuestions, type Survey, type SurveyQuestion } from "@/lib/surveys/contract";
+import { collaborationLabels, collaborationNotice, radarNotice, researchNotice, surveyIdentityNoticeVersion, surveyQuestionStage, visibleSurveyQuestions, type Survey, type SurveyQuestion } from "@/lib/surveys/contract";
 import styles from "./surveys.module.css";
 
 const subscribe = () => () => {};
@@ -170,7 +170,8 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
     const email = allowed && collaboration ? String(form.get("email") ?? "").trim() : null;
     if (allowed) markStage("envio");
     const values = { revision: survey.revision, research: allowed, answers, collaboration: allowed && collaboration || null,
-      email, radar, attempt: allowed ? attempt.current?.id : undefined };
+      email, radar, attempt: allowed ? attempt.current?.id : undefined,
+      identityNoticeVersion: allowed ? surveyIdentityNoticeVersion : undefined };
     const payload = JSON.stringify(values);
     if (request.current?.payload !== payload) request.current = { payload, id: crypto.randomUUID() };
     setMessage("");
@@ -216,7 +217,7 @@ export function SurveyForm({ survey, preview = false }: { survey: Survey; previe
       <div className={styles.formCard} data-ap-card="">
         <fieldset className={styles.question}>
           <legend>Você autoriza o uso das suas respostas para esta pesquisa?</legend>
-          <p>{researchNotice(survey)} <Link href="/privacidade" prefetch={false}>Política de Privacidade</Link></p>
+          <p>{researchNotice(survey, true)} <Link href="/privacidade" prefetch={false}>Política de Privacidade</Link></p>
           <div className={styles.choices}>
             <label><input type="radio" name="research" value="allow" required onChange={() => chooseResearch("allow")} /> Sim, autorizo.</label>
             <label><input type="radio" name="research" value="deny" onChange={() => chooseResearch("deny")} /> Não autorizo.</label>

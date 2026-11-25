@@ -13,7 +13,10 @@ export default async function SurveysAdminPage() {
     <section className={styles.panel} aria-label="Pesquisas">
       <p><Link href="/admin/pesquisas/nova?modelo=codex">Usar modelo do workshop Codex</Link></p>
       {surveys.length ? <ul className={styles.list}>{surveys.map(survey => <li key={survey.id}>
-        <Link href={`/admin/pesquisas/${survey.id}`}>{survey.title}</Link> · {surveyStatusLabels[survey.status]}
+        <div className={styles.actions}>
+          <div><Link href={`/admin/pesquisas/${survey.id}`}>{survey.title}</Link> · {surveyStatusLabels[survey.status]}</div>
+          <Link href={`/admin/pesquisas/${survey.id}/respostas`} aria-label={`Ver respostas de ${survey.title}`}>Ver respostas</Link>
+        </div>
       </li>)}</ul> : <p>Você ainda não criou nenhuma pesquisa.</p>}
     </section>
   </div>;

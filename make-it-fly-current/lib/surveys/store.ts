@@ -5,16 +5,17 @@ import { getSql } from "@/lib/members/db";
 import {
   collaborationNotice, radarNotice, researchNotice, surveyDefinition, surveyInactivityMinutes, surveyProgressEvent,
   surveyStages, surveySubmissionVersion, validateSurveySubmission,
-  type Survey, type SurveyDefinition,
+  type Survey, type SurveyDefinition, type SurveyResponseFilter,
 } from "./contract";
 
 const adminPath = "/admin/pesquisas";
 type SurveyRow = { id: string; revision: number; definition: SurveyDefinition };
 type ResponseRow = {
-  id: string; revision: number; created_at: string; research_notice: string | null;
+  id: string; revision: number; created_at: string; expires_at: string; research_notice: string | null;
   answers: { label: string; value: string | number }[];
   collaboration: "exercise" | "event" | "project" | null; email: string | null;
-  radar_choice: "allow" | "deny" | null;
+  collaboration_notice: string | null; radar_choice: "allow" | "deny" | null; radar_notice: string | null;
+  respondent_name: string | null; respondent_email: string | null;
 };
 const toSurvey = (row: SurveyRow): Survey => ({ ...surveyDefinition.parse(row.definition), id: row.id, revision: row.revision });
 
@@ -57,36 +58,53 @@ export async function saveSurvey(input: SurveyDefinition, previous?: { id: strin
   });
 }
 
-export async function surveyResponses(id: string, page: number) {
+const responsePageSize = 20;
+
+export async function surveyResponses(id: string, requestedPage: number, filter: SurveyResponseFilter) {
   await requireAdmin(adminPath);
-  const [row] = await getSql()<SurveyRow[]>`select id, revision, definition from apogee_survey where id = ${id}`;
-  if (!row) return null;
-  const survey = toSurvey(row);
-  const stages = surveyStages(survey);
-  const stageIds = stages.map(stage => stage.id);
-  const sql = getSql();
-  const [summary] = await sql<{ started: number; submitted: number; inactive: number }[]>`
-    select count(*)::int as started,
-      count(*) filter (where status = 'submitted')::int as submitted,
-      count(*) filter (where status = 'active' and touched_at <= now() - make_interval(mins => ${surveyInactivityMinutes}))::int as inactive
-    from apogee_survey_progress
-    where survey_id = ${id} and revision = ${survey.revision} and expires_at > now() and status <> 'withdrawn'`;
-  const counts = await sql<{ stage: string; reached: number; inactive: number }[]>`
-    select catalog.stage,
-      count(*) filter (where catalog.stage = any(progress.stages))::int as reached,
-      count(*) filter (where progress.last_stage = catalog.stage and progress.status = 'active'
-        and progress.touched_at <= now() - make_interval(mins => ${surveyInactivityMinutes}))::int as inactive
-    from unnest(${stageIds}::text[]) as catalog(stage)
-    left join apogee_survey_progress progress on progress.survey_id = ${id} and progress.revision = ${survey.revision}
-      and progress.expires_at > now() and progress.status <> 'withdrawn'
-    group by catalog.stage`;
-  const byStage = new Map(counts.map(item => [item.stage, item]));
-  const responses = await getSql()<ResponseRow[]>`
-    select id, revision, created_at, research_notice, answers, collaboration, email, radar_choice
-    from apogee_survey_response where survey_id = ${id} and expires_at > now()
-    order by created_at desc, id limit 21 offset ${(page - 1) * 20}`;
-  return { survey, responses: responses.slice(0, 20), hasMore: responses.length > 20, summary,
-    stages: stages.map(stage => ({ ...stage, reached: byStage.get(stage.id)?.reached ?? 0, inactive: byStage.get(stage.id)?.inactive ?? 0 })) };
+  return getSql().begin("isolation level repeatable read read only", async tx => {
+    const [row] = await tx<SurveyRow[]>`select id, revision, definition from apogee_survey where id = ${id}`;
+    if (!row) return null;
+    const survey = toSurvey(row);
+    const stages = surveyStages(survey);
+    const stageIds = stages.map(stage => stage.id);
+    const [totals] = await tx<{ todos: number; pesquisa: number; radar: number; identified: number }[]>`
+      select count(*)::int as todos,
+        count(*) filter (where research_notice is not null)::int as pesquisa,
+        count(*) filter (where research_notice is null)::int as radar,
+        count(*) filter (where respondent_id is not null)::int as identified
+      from apogee_survey_response where survey_id = ${id} and expires_at > now()`;
+    const pageCount = Math.max(1, Math.ceil(totals[filter] / responsePageSize));
+    const page = Math.min(requestedPage, pageCount);
+    const responses = await tx<ResponseRow[]>`
+      select response.id, response.revision, response.created_at, response.expires_at, response.research_notice,
+        response.answers, response.collaboration, response.collaboration_notice, response.email, response.radar_choice,
+        response.radar_notice, member.name as respondent_name, member.email as respondent_email
+      from apogee_survey_response response
+      left join "user" member on member.id = response.respondent_id
+      where response.survey_id = ${id} and response.expires_at > now()
+        and (${filter} = 'todos' or ${filter} = 'pesquisa' and response.research_notice is not null
+          or ${filter} = 'radar' and response.research_notice is null)
+      order by response.created_at desc, response.id limit ${responsePageSize} offset ${(page - 1) * responsePageSize}`;
+    const [summary] = await tx<{ started: number; submitted: number; inactive: number }[]>`
+      select count(*)::int as started,
+        count(*) filter (where status = 'submitted')::int as submitted,
+        count(*) filter (where status = 'active' and touched_at <= now() - make_interval(mins => ${surveyInactivityMinutes}))::int as inactive
+      from apogee_survey_progress
+      where survey_id = ${id} and revision = ${survey.revision} and expires_at > now() and status <> 'withdrawn'`;
+    const counts = await tx<{ stage: string; reached: number; inactive: number }[]>`
+      select catalog.stage,
+        count(*) filter (where catalog.stage = any(progress.stages))::int as reached,
+        count(*) filter (where progress.last_stage = catalog.stage and progress.status = 'active'
+          and progress.touched_at <= now() - make_interval(mins => ${surveyInactivityMinutes}))::int as inactive
+      from unnest(${stageIds}::text[]) as catalog(stage)
+      left join apogee_survey_progress progress on progress.survey_id = ${id} and progress.revision = ${survey.revision}
+        and progress.expires_at > now() and progress.status <> 'withdrawn'
+      group by catalog.stage`;
+    const byStage = new Map(counts.map(item => [item.stage, item]));
+    return { survey, responses, totals, page, pageCount, summary,
+      stages: stages.map(stage => ({ ...stage, reached: byStage.get(stage.id)?.reached ?? 0, inactive: byStage.get(stage.id)?.inactive ?? 0 })) };
+  });
 }
 
 export async function deleteExpiredSurveyResponses(id: string) {
@@ -141,7 +159,7 @@ export async function recordSurveyProgress(slug: string, input: unknown) {
   });
 }
 
-export async function recordSurveyResponse(slug: string, input: unknown) {
+export async function recordSurveyResponse(slug: string, input: unknown, memberId: string) {
   if (!surveysEnabled()) return 404;
   return getSql().begin(async tx => {
     const [row] = await tx<SurveyRow[]>`
@@ -160,12 +178,13 @@ export async function recordSurveyResponse(slug: string, input: unknown) {
     const answers = response.research ? survey.questions.flatMap(q => Object.hasOwn(response.answers, q.id)
       ? [{ label: q.label, value: response.answers[q.id] }]
       : []) : [];
+    const respondentId = response.identityNoticeVersion ? memberId : null;
     await tx`delete from apogee_survey_response where survey_id = ${row.id} and expires_at <= now()`;
     const [created] = await tx`insert into apogee_survey_response
-      (survey_id, id, revision, research_notice, answers, collaboration, collaboration_notice, email, radar_choice, radar_notice, expires_at)
-      values (${row.id}, ${response.id}, ${row.revision}, ${response.research ? researchNotice(survey) : null}, ${JSON.stringify(answers)}::jsonb,
+      (survey_id, id, revision, research_notice, answers, collaboration, collaboration_notice, email, radar_choice, radar_notice, expires_at, respondent_id)
+      values (${row.id}, ${response.id}, ${row.revision}, ${response.research ? researchNotice(survey, Boolean(respondentId)) : null}, ${JSON.stringify(answers)}::jsonb,
         ${response.collaboration}, ${response.collaboration ? collaborationNotice : null}, ${response.email}, ${response.radar},
-        ${response.radar ? radarNotice : null}, now() + make_interval(days => ${survey.retentionDays}))
+        ${response.radar ? radarNotice : null}, now() + make_interval(days => ${survey.retentionDays}), ${respondentId})
       on conflict (survey_id, id) do nothing returning id`;
     if (created && response.attempt) {
       await tx`
