@@ -125,3 +125,23 @@ test('business education remains in Business even when the title contains softwa
  const captures=[doc('https://business.gov.au/planning/inventory-management','Inventory management software','ARTICLE_PRIMARY_BUSINESS_AU','Government'),doc('https://www.bdc.ca/en/articles-tools/inventory-management','Inventory management software','ARTICLE_PRIMARY_BDC','BDC')];
  const [plan]=renewableExplainerPlans(captures,{policy,at});assert.ok(plan);assert.equal(plan.category,'negocios');
 });
+test('discovery prioritizes an observed missing corroborator over another unrelated guide',()=>{
+ const [parent,peer]=pair();
+ const bridge='https://cloud.google.com/learn/packet-routing';
+ const unrelated='https://cloud.google.com/learn/what-is-virtualization';
+ const seed={...parent,url:'https://cloud.google.com/learn/documentation',title:'Educational documentation',related_urls:[unrelated,bridge]};
+ assert.equal(nextReferenceDiscovery([seed,peer],{policy,at}).url,bridge);
+ assert.equal(nextReferenceDiscovery([seed,peer],{policy,at,attemptedUrls:[bridge]}).url,unrelated,'a failed matching link stays in cooldown');
+ assert.equal(nextReferenceDiscovery([seed,peer],{policy,at,blockedUrls:[peer.url]}).url,unrelated,'a held source cannot drive a new seed');
+ assert.equal(nextReferenceDiscovery([seed,peer],{policy,at,seedBlockedUrls:[peer.url]}).url,unrelated,'a written topic cannot drive replacement identities');
+ assert.equal(nextReferenceDiscovery([seed,{...peer,extraction_version:'old'}],{policy,at}).url,unrelated,'historical text is not current counterpart evidence');
+});
+test('registered technical education can classify a concept-only title and an explicit ML course path',()=>{
+ const sockets=[doc('https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API','WebSockets','ARTICLE_PRIMARY_MDN','Mozilla'),doc('https://learn.microsoft.com/en-us/aspnet/core/fundamentals/websockets','WebSockets','ARTICLE_PRIMARY_MICROSOFT_EDUCATION','Microsoft')];
+ assert.equal(renewableExplainerPlans(sockets,{policy,at})[0]?.category,'tecnologia');
+ const forests=[doc('https://developers.google.com/machine-learning/decision-forests/random-forests','Random forests','ARTICLE_PRIMARY_GOOGLE_EDUCATION','Google'),doc('https://learn.microsoft.com/en-us/azure/machine-learning/decision-forests','Random forests','ARTICLE_PRIMARY_MICROSOFT_EDUCATION','Microsoft')];
+ assert.equal(renewableExplainerPlans(forests,{policy,at})[0]?.subcategory,'ia');
+ const generic={...forests[0],title:'Machine Learning | Google for Developers'};
+ assert.equal(renewableExplainerPlans([generic,forests[1]],{policy,at})[0]?.subcategory,'ia','a site-wide course title must not hide its authored subject path');
+ assert.equal(generic.title,'Machine Learning | Google for Developers','the discovery label never rewrites captured metadata');
+});
