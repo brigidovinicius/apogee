@@ -297,6 +297,34 @@ class AlbumTest(unittest.TestCase):
         album.delete("workshop", photo_id)
         self.assertEqual(self.request("/workshop/saved"), (200, {"ids": []}))
 
+    def test_manual_saves_join_search_results_without_requiring_selfie_consent(self):
+        self.seed()
+        album.import_batch("otro-evento", self.source)
+        with album.connect() as db:
+            manual_id = db.execute("SELECT id FROM photo WHERE event='workshop' AND name='other.jpg'").fetchone()[0]
+            invalid_id = db.execute("SELECT id FROM photo WHERE event='workshop' AND name='broken.jpg'").fetchone()[0]
+            foreign_id = db.execute("SELECT id FROM photo WHERE event='otro-evento' AND name='other.jpg'").fetchone()[0]
+        path = f"/workshop/saved/{manual_id}"
+        another = dict(HTTP_X_ALBUM_ACTOR=self.actor(member="another"), HTTP_X_ALBUM_MEMBER="another")
+
+        self.assertEqual(self.request("/workshop/consent"), (200, {"granted": False, "indexed": False}))
+        for _ in range(2):
+            self.assertEqual(self.request(path, REQUEST_METHOD="PUT"), (200, {"ids": [manual_id]}))
+        self.assertEqual(self.request(path, REQUEST_METHOD="PUT", HTTP_X_ALBUM_MEMBER="another")[0], 400)
+        for photo_id in (invalid_id, foreign_id):
+            self.assertEqual(self.request(f"/workshop/saved/{photo_id}", REQUEST_METHOD="PUT")[0], 404)
+        self.assertEqual(self.request(path, REQUEST_METHOD="DELETE", **another), (200, {"ids": []}))
+        self.assertEqual(self.request("/workshop/saved"), (200, {"ids": [manual_id]}))
+
+        matched_id = self.enroll()
+        self.assertEqual(self.request("/workshop/search", fixture("red")), (200, {"ids": [matched_id]}))
+        self.assertEqual(set(self.request("/workshop/saved")[1]["ids"]), {manual_id, matched_id})
+        self.assertEqual(self.request("/workshop/saved", **another), (200, {"ids": []}))
+
+        for _ in range(2):
+            self.assertEqual(self.request(path, REQUEST_METHOD="DELETE"), (200, {"ids": []}))
+        self.assertEqual(self.request("/workshop/saved"), (200, {"ids": [matched_id]}))
+
     def test_upgrade_removes_legacy_vectors_from_live_database(self):
         with album.connect() as db:
             db.execute("CREATE TABLE opt_in_face (embedding BLOB)")

@@ -51,13 +51,17 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [error, setError] = useState("");
   const [results, setResults] = useState<AlbumPhoto[]>([]);
+  const [saved, setSaved] = useState<AlbumPhoto[]>([]);
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [selected, setSelected] = useState<AlbumPhoto | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const video = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream>(null);
   const cameraRequest = useRef(0);
   const dialog = useRef<HTMLDialogElement>(null);
-  const photos = mode === "browse" ? album : results;
+  const photos = mode === "browse" ? album : mode === "saved" ? saved : results;
+  const selectedSaved = !!selected && saved.some(photo => photo.id === selected.id);
   const pending = busy || loadingOptIn;
   const selfieAction = optIn?.indexed ? "Buscar com meu rosto" : "Validar selfie";
   const captureAction = optIn?.indexed ? "Tirar selfie e buscar" : "Tirar selfie";
@@ -233,18 +237,19 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
     }
   }
 
-  async function openSaved() {
-    if (busy) return;
+  async function openGallery(view: "browse" | "saved") {
+    if (pending) return;
     clear();
+    setVisible(PAGE_SIZE);
+    if (view === "browse") setMode(view);
     setBusy(true);
     setLoadingSaved(true);
     try {
       const response = await fetch(PHOTO_API, { cache: "no-store" });
       if (!response.ok) throw new Error();
       const payload = await response.json();
-      setResults(payload.photos);
-      setMode("saved");
-      setVisible(PAGE_SIZE);
+      setSaved(payload.photos);
+      setMode(view);
     } catch {
       setError("Não foi possível abrir suas fotos salvas. Tente novamente.");
     } finally {
@@ -283,7 +288,30 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
 
   function openPhoto(photo: AlbumPhoto) {
     setSelected(photo);
+    setSaveError("");
     dialog.current?.showModal();
+  }
+
+  async function changeSavedPhoto(photo: AlbumPhoto) {
+    if (saving || loadingSaved) return;
+    const remove = selectedSaved;
+    setSaving(true);
+    setSaveError("");
+    try {
+      const response = await fetch(`${PHOTO_API}/${photo.id}/salvar`, {
+        method: remove ? "DELETE" : "PUT", cache: "no-store",
+      });
+      if (!response.ok) throw new Error();
+      setSaved(current => {
+        const others = current.filter(item => item.id !== photo.id);
+        return remove ? others : [photo, ...others];
+      });
+      if (remove && mode === "saved") dialog.current?.close();
+    } catch {
+      setSaveError(remove ? "Não foi possível remover a foto dos salvos." : "Não foi possível salvar a foto.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return <section data-ap-card="" className={styles.panel} aria-labelledby="fotos-evento">
@@ -292,10 +320,10 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
     <div className={styles.actions}>
       {selfieEnabled && <button type="button" data-ap-button="primary" disabled={pending} aria-expanded={expanded}
         aria-controls="busca-facial-workshop" onClick={toggleSearch}>Encontrar minhas fotos</button>}
-      {browse && <button type="button" data-ap-button="secondary" disabled={pending} onClick={() => {
-        clear(); setMode("browse"); setVisible(PAGE_SIZE);
-      }}>Ver álbum completo</button>}
-      <button type="button" data-ap-button="secondary" disabled={pending} onClick={openSaved}>Minhas fotos salvas</button>
+      {browse && <button type="button" data-ap-button="secondary" disabled={pending} onClick={() => void openGallery("browse")}>
+        Ver álbum completo
+      </button>}
+      <button type="button" data-ap-button="secondary" disabled={pending} onClick={() => void openGallery("saved")}>Minhas fotos salvas</button>
       {mode === "results" && <button type="button" data-ap-button="secondary" disabled={pending} onClick={clear}>Fechar resultados</button>}
     </div>
     <div id="busca-facial-workshop" className={styles.searchPanel} hidden={!expanded}>
@@ -350,14 +378,20 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
       </ul>}
       {visible < photos.length && <button type="button" data-ap-button="secondary" onClick={() => setVisible(visible + PAGE_SIZE)}>Carregar mais fotos</button>}
     </div>}
-    <dialog ref={dialog} className={styles.dialog} aria-label="Visualização da foto" onClose={() => setSelected(null)}>
+    <dialog ref={dialog} className={styles.dialog} aria-label="Visualização da foto" onClose={() => setSelected(null)}
+      onCancel={event => { if (saving) event.preventDefault(); }}>
       {selected && <>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={selected.thumbnail} alt="Foto do evento" />
         <div className={styles.actions}>
           <a href={selected.download} data-ap-button="primary" download>Baixar original</a>
-          <button type="button" data-ap-button="secondary" onClick={() => dialog.current?.close()}>Fechar</button>
+          {(mode === "browse" || mode === "saved") && <button type="button" data-ap-button="secondary"
+            disabled={saving || loadingSaved} onClick={() => void changeSavedPhoto(selected)}>
+            {saving ? "Atualizando…" : selectedSaved ? "Remover dos salvos" : "Salvar foto"}
+          </button>}
+          <button type="button" data-ap-button="secondary" onClick={() => dialog.current?.close()} disabled={saving}>Fechar</button>
         </div>
+        {saveError && <p role="alert">{saveError}</p>}
       </>}
     </dialog>
   </section>;

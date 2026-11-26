@@ -71,10 +71,11 @@ class Service:
                     return result(respond, "200 OK", {"members": [row["member_id"] for row in members]})
                 if len(route) == 2 and PHOTO_RE.fullmatch(route[1]) and method in {"GET", "PUT", "DELETE"}:
                     return self.reference(db, event, route[1], env, respond, method)
-            if method == "GET" and route[:1] == ["saved"] and (
-                len(route) == 1 or (len(route) == 2 and PHOTO_RE.fullmatch(route[1]))
-            ):
-                return self.saved(db, event, env, respond, *route[1:])
+            if method == "GET" and route == ["saved"]:
+                return self.saved(db, event, env, respond, method)
+            if (method in {"GET", "PUT", "DELETE"} and len(route) == 2
+                    and route[0] == "saved" and PHOTO_RE.fullmatch(route[1])):
+                return self.saved(db, event, env, respond, method, route[1])
             if self.vision and method == "POST" and route in (["search"], ["validate"]):
                 return self.search(db, event, env, respond, validate_only=route == ["validate"])
         return result(respond, "404 Not Found", {"error": "not_found"})
@@ -86,10 +87,22 @@ class Service:
             return send_file(paths(photo_id)[variant == "thumb"], "image/jpeg", respond, env)
         return result(respond, "404 Not Found", {"error": "not_found"})
 
-    def saved(self, db, event, env, respond, photo_id=None):
+    def saved(self, db, event, env, respond, method, photo_id=None):
         member = self.member(event, env)
         if not member:
             return result(respond, "400 Bad Request", {"error": "forbidden"})
+        if method == "PUT":
+            db.execute("""
+                INSERT OR IGNORE INTO saved_photo (event, member_id, photo, saved_at)
+                SELECT event, ?, id, ? FROM photo
+                WHERE event=? AND id=? AND state='ready'
+            """, (member, int(time.time()), event, photo_id))
+            db.commit()
+        if method == "DELETE":
+            db.execute("DELETE FROM saved_photo WHERE event=? AND member_id=? AND photo=?", (event, member, photo_id))
+            db.commit()
+            return result(respond, "200 OK", {"ids": []})
+
         rows = db.execute("""
             SELECT s.photo FROM saved_photo s JOIN photo p ON p.id=s.photo AND p.event=s.event
             WHERE s.event=? AND s.member_id=? AND p.state='ready' AND (? IS NULL OR s.photo=?)
