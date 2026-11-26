@@ -635,3 +635,8 @@ Os quatro cenários usaram `c2fa91d02db977e7c7e5637e297c604e50f65b54`, que inclu
 | Premium no Stripe Sandbox | `/membros/eventos/workshop-codex-community-florianopolis` | A Apogee processou `invoice.paid` e ativou a conta fictícia. Depois de sair e abrir novamente o link protegido, o login por e-mail e senha retornou direto ao workshop. **Minha assinatura** mostrou acesso ativo até 26/11/2027. |
 
 **Destino do login na revisão testada.** O botão **Entrar** da home leva a **Minha comunidade** (`/membros`) após a autenticação. Ao abrir um link protegido sem sessão, o login guarda o destino original em `next` e retoma aquela rota após entrar. O workshop apareceu como destino porque os cenários de administrador e Premium começaram pelo link protegido da ficha.
+
+### Validação em produção da versão `2621cdb`
+
+- A suíte completa do site aprovou **904 de 904 testes** na revisão publicada `2621cdbd01a8e5855cc51797199fb53907f27d32`.
+- Em 26/11/2026, com o navegador sem sessão na Apogee, o botão **Entrar** do cabeçalho da home abriu `/membros/entrar` sem o parâmetro `next`. Após autenticar com Google, o navegador abriu diretamente **Minha comunidade** (`/membros`), com a sessão ativa.
