@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FotosDoEvento } from "@/components/eventos/fotos-do-evento";
 import styles from "@/components/eventos/eventos.module.css";
@@ -23,7 +22,7 @@ export default async function EventMediaPage({ params }: { params: Promise<{ slu
   return <MemberWorkspace member={member} current="eventos">
     <div className={`${shared.container} ${styles.page}`}>
       <header className={styles.section}>
-        <Link href={EVENTS_PATH} className={styles.support} prefetch={false}>Voltar para Eventos</Link>
+        <a href={EVENTS_PATH} className={styles.support}>Voltar para Eventos</a>
         <h1 className={shared.title}>{WORKSHOP.title}</h1>
         <p className={styles.meta}><time dateTime={WORKSHOP.startsAt}>{WORKSHOP.dateLabel}</time> · {WORKSHOP.location}</p>
       </header>
@@ -35,7 +34,7 @@ export default async function EventMediaPage({ params }: { params: Promise<{ slu
       <section data-ap-card="" className={styles.panel} aria-labelledby="videos">
         <h2 id="videos" data-ap-title="">Vídeos do evento</h2>
         <div className={styles.actions}>
-          <Link href={WORKSHOP.recording} data-ap-button="secondary" prefetch={false}>Assistir à gravação</Link>
+          <a href={WORKSHOP.recording} data-ap-button="secondary">Assistir à gravação</a>
           {album?.video && <a href={VIDEO_API} data-ap-button="primary" download>Baixar vídeo do workshop</a>}
         </div>
         {!album?.video && <p>Download de vídeo indisponível.</p>}

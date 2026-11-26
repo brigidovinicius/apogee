@@ -19,7 +19,8 @@ www.apogee.community {
     X-Content-Type-Options "nosniff"
     # Preserva políticas mais restritas enviadas pela aplicação (ex.: recuperação de senha).
     ?Referrer-Policy "strict-origin-when-cross-origin"
-    Permissions-Policy "camera=(), geolocation=(), microphone=()"
+    # A aplicação limita a câmera ao documento do workshop.
+    ?Permissions-Policy "camera=(), geolocation=(), microphone=()"
     -Server
   }
   # remote_ip rejects TLS early data with 425 until the peer is verified.

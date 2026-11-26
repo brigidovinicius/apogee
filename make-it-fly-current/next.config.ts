@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { WORKSHOP_MEDIA_PATH } from "./lib/eventos/catalogo";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -23,7 +24,9 @@ const nextConfig: NextConfig = {
         { key: "Referrer-Policy", value: "no-referrer" },
         { key: "Cache-Control", value: "private, no-store" },
       ],
-    })), ...["/colecoes/:path*", "/membros/colecoes/:path*", "/membros/esqueci-senha", "/membros/redefinir-senha", "/api/auth/reset-password/:path*", "/api/auth/verify-email", "/api/integracoes/google-agenda/callback", "/membros/integracoes/mcp/:path*", "/api/auth/oauth2/:path*"].map(source => ({
+    })), { source: WORKSHOP_MEDIA_PATH, headers: [
+      { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" },
+    ] }, ...["/colecoes/:path*", "/membros/colecoes/:path*", "/membros/esqueci-senha", "/membros/redefinir-senha", "/api/auth/reset-password/:path*", "/api/auth/verify-email", "/api/integracoes/google-agenda/callback", "/membros/integracoes/mcp/:path*", "/api/auth/oauth2/:path*"].map(source => ({
       source, headers: [
         { key: "Referrer-Policy", value: "no-referrer" },
         { key: "Cache-Control", value: "no-store" },

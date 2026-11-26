@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { MemberWorkspace } from "@/components/members/member-workspace";
 import { AreaIcon } from "@/components/site/area-icon";
 import shared from "@/components/members/members.module.css";
@@ -26,7 +25,8 @@ export default async function EventsPage() {
         <div className={styles.cards}>{mediaEvents.map(event => <article data-ap-card="" className={styles.panel} key={event.slug}>
           <h3>{event.title}</h3>
           <p><time dateTime={event.startsAt}>{event.dateLabel}</time> · {event.location}</p>
-          <Link href={`${EVENTS_PATH}/${event.slug}`} data-ap-button="primary" prefetch={false}>Abrir mídias do evento</Link>
+          {/* A captura depende da política de câmera enviada com o documento. */}
+          <a href={`${EVENTS_PATH}/${event.slug}`} data-ap-button="primary">Abrir mídias do evento</a>
         </article>)}</div>
       </section>
     </div>

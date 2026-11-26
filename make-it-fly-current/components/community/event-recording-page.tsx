@@ -50,7 +50,7 @@ export function EventRecordingPage({ preview = false, registered = false }: { pr
           <a className={`${styles.primary} ${styles.workshopOnline}`} href={watchHref}>
             {watchLabel}
           </a>
-          {!preview && <p><Link href={WORKSHOP_MEDIA_PATH} prefetch={false} className={styles.subtleLink}>Mídias do workshop</Link></p>}
+          {!preview && <p><a href={WORKSHOP_MEDIA_PATH} className={styles.subtleLink}>Mídias do workshop</a></p>}
           {voucherConfigured() && <p>
             <Link href={VOUCHER_PATH} prefetch={false} className={styles.subtleLink}>
               Acessar meu voucher na Apogee

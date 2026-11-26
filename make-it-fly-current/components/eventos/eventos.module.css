@@ -71,21 +71,12 @@
   border-block-start: 1px solid var(--ap-line);
   padding-block-start: 1rem;
 }
-.fileOptions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-.fileOptions label {
-  display: grid;
-  gap: 0.35rem;
-}
-.fileOptions input {
-  width: min(100%, 16rem);
-}
-.fileOptions input::file-selector-button {
-  min-height: 44px;
-  margin-inline-end: 0.5rem;
+.cameraPreview {
+  width: min(100%, 24rem);
+  max-height: 45vh;
+  border-radius: var(--ap-control-radius);
+  object-fit: contain;
+  transform: scaleX(-1);
 }
 .consent {
   display: flex;
