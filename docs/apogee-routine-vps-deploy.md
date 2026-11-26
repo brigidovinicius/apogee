@@ -640,3 +640,7 @@ Os quatro cenários usaram `c2fa91d02db977e7c7e5637e297c604e50f65b54`, que inclu
 
 - A suíte completa do site aprovou **904 de 904 testes** na revisão publicada `2621cdbd01a8e5855cc51797199fb53907f27d32`.
 - Em 26/11/2026, com o navegador sem sessão na Apogee, o botão **Entrar** do cabeçalho da home abriu `/membros/entrar` sem o parâmetro `next`. Após autenticar com Google, o navegador abriu diretamente **Minha comunidade** (`/membros`), com a sessão ativa.
+
+### Validação em produção da versão `7c1b0b8`
+
+Em 26/11/2026, o teste começou na home, sem sessão na Apogee, na revisão publicada `7c1b0b88879a503de86943595fe24a056040d955`. O botão **Entrar** abriu `/membros/entrar` sem o parâmetro `next`. Após autenticar com Google, o navegador abriu diretamente **Minha comunidade** (`/membros`).
