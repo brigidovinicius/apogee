@@ -3,6 +3,7 @@ import { RequestBodyError, UPLOAD_BODY_TIMEOUT_MS, readRequestBody } from "@/lib
 import { MAX_SELFIE_BYTES, SELFIE_CONSENT } from "@/lib/eventos/catalogo";
 import { PRIVATE, albumConfig, albumError, albumIdentity, albumMember, albumWorker, photoLinks } from "@/lib/eventos/fotos";
 
+const SEARCH_TIMEOUT_MS = 195_000;
 const SEARCH_ERRORS = new Set(["no_face", "multiple_faces", "invalid_image", "invalid_size",
   "invalid_format", "not_enrolled", "consent_required", "not_found", "busy", "rate_limit", "search_timeout"]);
 
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
     try {
       response = await albumWorker(config, validateOnly ? "/validate" : "/search", { method: "POST", body, headers: {
         ...albumIdentity(config, member.id), "Content-Type": type, "X-Album-Consent": SELFIE_CONSENT,
-      } }, 95_000);
+      } }, validateOnly ? 95_000 : SEARCH_TIMEOUT_MS);
     } finally {
       body.fill(0);
     }

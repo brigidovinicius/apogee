@@ -94,6 +94,18 @@ O CLI permanece disponível. Use os limites normalizados de 0 a 1 na imagem orie
 python cli.py index-opt-in "$album_event" ID_OPACO_DA_FOTO   --member-id ID_DA_CONTA --box 0.25 0.17 0.42 0.53
 ```
 
+### Busca automática no álbum
+
+A busca automática depende de um registro específico que cubra a comparação dos rostos nas fotos incluídas. Após conferir o alcance do registro, use no serviço privado:
+
+```sh
+python cli.py authorize-album-search "$album_event" --authorization-reference "referencia-do-registro"
+```
+
+O comando autoriza as fotos disponíveis naquele momento. Inclua `--expires` com data e fuso quando o registro tiver prazo. Novas fotos ficam fora dessa autorização até que o registro atualizado as cubra. `python cli.py disable-album-search "$album_event"` encerra a busca automática e preserva as marcações individuais. A autorização de distribuição do álbum registrada no comando `init` é independente.
+
+Quem dá aceite no site usa **Buscar com meu Rosto**. O serviço compara somente as miniaturas do conjunto autorizado e as marcações da pessoa. A busca do conjunto usa similaridade mínima de 0,55 e pode levar até 180 segundos. Rostos pequenos nas miniaturas podem ficar abaixo do limite de detecção. A selfie e os vetores ficam em memória durante a consulta. O banco recebe somente os vínculos das fotos encontradas com a conta.
+
 A inicialização do worker atualizado mantém álbuns, originais e aceites do volume SQLite, cria as tabelas para coordenadas e fotos salvas e apaga a tabela legada de vetores com `secure_delete`. Regiões anteriormente indexadas como vetores precisam ser cadastradas novamente. Em reversão para o worker anterior, desligue a busca nos dois serviços para evitar retomar a gravação de vetores.
 
 Para exclusões durante o piloto, rode o CLI com as mesmas variáveis e acesso ao volume. Em Docker use `docker compose -p apogee-event-photos run --rm photos python cli.py` seguido dos argumentos. Um registro de exclusão conserva o hash do original até a expiração, para impedir que a reimportação reative a foto.

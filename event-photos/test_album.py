@@ -32,7 +32,7 @@ class FixtureVision:
         if green > 100:
             if selfie:
                 raise InvalidImage("multiple_faces")
-            return [match, match]
+            return [different, match]
         return [match if red > blue else different]
 
 
@@ -188,6 +188,61 @@ class AlbumTest(unittest.TestCase):
             db.execute("UPDATE opt_in SET expires=0 WHERE event='workshop'")
         self.assertEqual(self.request("/workshop/references"), (200, {"members": []}))
         self.assertEqual(self.request(url, json.dumps(box).encode(), REQUEST_METHOD="PUT")[0], 409)
+
+    def test_album_search_is_disabled_without_facial_scope_and_only_scans_approved_photos(self):
+        self.seed()
+        (self.source / "crowd.jpg").write_bytes(fixture("lime"))
+        album.import_batch("workshop", self.source)
+        self.request("/workshop/consent", b"", HTTP_X_ALBUM_CONSENT=album.CONSENT_VERSION)
+        self.assertEqual(self.request("/workshop/consent"), (200, {"granted": True, "indexed": False}))
+        self.assertEqual(self.request("/workshop/search", fixture("red"))[1]["error"], "not_enrolled")
+        with self.assertRaises(ValueError):
+            album.authorize_album_search("workshop", " ")
+
+        self.assertEqual(album.authorize_album_search("workshop", "synthetic-specific-authorization"), 3)
+        self.assertEqual(self.request("/workshop/consent"), (200, {"granted": True, "indexed": True}))
+        another = {"HTTP_X_ALBUM_MEMBER": "another", "HTTP_X_ALBUM_ACTOR": self.actor(member="another")}
+        self.assertEqual(self.request("/workshop/search", fixture("red"), **another)[1]["error"], "consent_required")
+        (self.source / "imported-after-authorization.jpg").write_bytes(fixture("maroon"))
+        album.import_batch("workshop", self.source)
+        files_before = set(self.private.iterdir())
+        with album.connect() as db:
+            expected = {row[0] for row in db.execute("SELECT id FROM photo WHERE name IN ('group.jpg', 'crowd.jpg')")}
+
+        with patch.object(self.vision, "features", wraps=self.vision.features) as features:
+            status, payload = self.request("/workshop/search", fixture("red"))
+            self.assertEqual((status, set(payload["ids"])), (200, expected))
+            self.assertEqual(features.call_count, 4)
+        self.assertEqual(set(self.request("/workshop/saved")[1]["ids"]), expected)
+        self.assertEqual(self.request("/workshop/saved", **another), (200, {"ids": []}))
+        self.assertEqual(set(self.private.iterdir()), files_before)
+        self.assertEqual(self.request("/otro-evento/consent", HTTP_X_ALBUM_ACTOR=self.actor("otro-evento")),
+                         (200, {"granted": False, "indexed": False}))
+
+        album.disable_album_search("workshop")
+        self.assertEqual(self.request("/workshop/consent"), (200, {"granted": True, "indexed": False}))
+        self.assertEqual(self.request("/workshop/search", fixture("red"))[1]["error"], "not_enrolled")
+        self.assertEqual(set(self.request("/workshop/saved")[1]["ids"]), expected)
+
+    def test_expired_album_scope_preserves_manual_references(self):
+        self.seed()
+        photo = self.enroll()
+        album.authorize_album_search("workshop", "synthetic-expiring-authorization", time.time() + 3600)
+        with album.connect() as db:
+            db.execute("UPDATE album_face_scope SET expires=0 WHERE event='workshop'")
+        with patch.object(self.service, "match_album", side_effect=AssertionError("Expired scope was scanned")):
+            self.assertEqual(self.request("/workshop/search", fixture("red")), (200, {"ids": [photo]}))
+
+    def test_timeout_discards_album_matches_and_clears_query(self):
+        self.seed()
+        self.request("/workshop/consent", b"", HTTP_X_ALBUM_CONSENT=album.CONSENT_VERSION)
+        album.authorize_album_search("workshop", "synthetic-specific-authorization")
+        query = np.ones(128, dtype="<f4")
+        with patch.object(self.service, "query_vector", return_value=query), \
+                patch.object(self.service, "match_album", side_effect=TimeoutError):
+            self.assertEqual(self.request("/workshop/search", fixture("red"))[1]["error"], "search_timeout")
+        self.assertFalse(query.any())
+        self.assertEqual(self.request("/workshop/saved"), (200, {"ids": []}))
 
     def test_validate_only_checks_selfie_and_never_saves_a_photo(self):
         self.seed()

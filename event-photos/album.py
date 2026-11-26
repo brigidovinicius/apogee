@@ -46,6 +46,16 @@ CREATE TABLE IF NOT EXISTS opt_in_region (
     PRIMARY KEY(event, actor, photo),
     FOREIGN KEY(event, actor) REFERENCES opt_in(event, actor) ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS album_face_scope (
+    event TEXT PRIMARY KEY REFERENCES album(id) ON DELETE CASCADE,
+    authorization_reference TEXT NOT NULL,
+    expires INTEGER
+);
+CREATE TABLE IF NOT EXISTS album_face_photo (
+    event TEXT NOT NULL REFERENCES album_face_scope(event) ON DELETE CASCADE,
+    photo TEXT NOT NULL REFERENCES photo(id) ON DELETE CASCADE,
+    PRIMARY KEY(event, photo)
+);
 CREATE TABLE IF NOT EXISTS saved_photo (
     event TEXT NOT NULL REFERENCES album(id) ON DELETE CASCADE,
     member_id TEXT NOT NULL,
@@ -171,16 +181,51 @@ def import_batch(event, source):
     return counters
 
 
+def authorize_album_search(event, authorization_reference, expires=None):
+    reference = authorization_reference.strip()
+    if not EVENT_RE.fullmatch(event) or not reference or (expires is not None and expires <= time.time()):
+        raise ValueError("Informe evento, referência específica para reconhecimento facial e prazo válido, se houver")
+    with writer(), connect() as db:
+        if not active(db, event):
+            raise ValueError("Álbum inexistente ou vencido")
+        photos = db.execute("SELECT id FROM photo WHERE event=? AND state='ready'", (event,)).fetchall()
+        if not photos:
+            raise ValueError("Álbum sem fotos disponíveis")
+        db.execute("DELETE FROM album_face_scope WHERE event=?", (event,))
+        db.execute("INSERT INTO album_face_scope VALUES (?, ?, ?)", (event, reference, expires))
+        db.executemany("INSERT INTO album_face_photo VALUES (?, ?)", [(event, row["id"]) for row in photos])
+        return len(photos)
+
+
+def disable_album_search(event):
+    with writer(), connect() as db:
+        db.execute("DELETE FROM album_face_scope WHERE event=?", (event,))
+
+
+def active_album_scope(db, event):
+    return db.execute("""
+        SELECT s.expires FROM album_face_scope s
+        WHERE s.event=? AND (s.expires IS NULL OR s.expires>?) AND EXISTS (
+            SELECT 1 FROM album_face_photo f JOIN photo p ON p.id=f.photo AND p.event=f.event
+            WHERE f.event=s.event AND p.state='ready'
+        )
+    """, (event, time.time())).fetchone()
+
+
+def active_consent(db, event, actor):
+    return db.execute("""
+        SELECT expires FROM opt_in WHERE event=? AND actor=? AND version=? AND expires>?
+    """, (event, actor, CONSENT_VERSION, time.time())).fetchone()
+
+
 def consent_state(db, event, actor):
-    row = db.execute(
-        "SELECT version FROM opt_in WHERE event=? AND actor=? AND expires>?", (event, actor, time.time()),
-    ).fetchone()
-    granted = bool(row and row["version"] == CONSENT_VERSION)
-    indexed = granted and db.execute("""
+    if not active_consent(db, event, actor):
+        return {"granted": False, "indexed": False}
+    region = db.execute("""
         SELECT 1 FROM opt_in_region r JOIN photo p ON p.id=r.photo AND p.event=r.event
         WHERE r.event=? AND r.actor=? AND p.state='ready' LIMIT 1
-    """, (event, actor)).fetchone() is not None
-    return {"granted": granted, "indexed": indexed}
+    """, (event, actor)).fetchone()
+    return {"granted": True, "indexed": region is not None or active_album_scope(db, event) is not None}
 
 
 def change_consent(event, actor, granted, member_id=None):
@@ -188,9 +233,7 @@ def change_consent(event, actor, granted, member_id=None):
         if not active(db, event):
             return False
         if granted:
-            version = db.execute("SELECT version FROM opt_in WHERE event=? AND actor=? AND expires>?",
-                                 (event, actor, time.time())).fetchone()
-            if not version or version["version"] != CONSENT_VERSION:
+            if not active_consent(db, event, actor):
                 db.execute("DELETE FROM opt_in WHERE event=? AND actor=?", (event, actor))
                 now = int(time.time())
                 db.execute("INSERT INTO opt_in VALUES (?, ?, ?, ?, ?, ?)",
@@ -284,6 +327,7 @@ def delete_video(event):
 def remove_photo(db, photo_id):
     db.execute("UPDATE photo SET state='deleted', name='', error=NULL WHERE id=?", (photo_id,))
     db.execute("DELETE FROM opt_in_region WHERE photo=?", (photo_id,))
+    db.execute("DELETE FROM album_face_photo WHERE photo=?", (photo_id,))
     db.execute("DELETE FROM saved_photo WHERE photo=?", (photo_id,))
 
 

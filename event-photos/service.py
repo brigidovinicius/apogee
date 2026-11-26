@@ -10,12 +10,15 @@ from wsgiref.util import FileWrapper
 import cv2
 
 from album import (
-    CONSENT_VERSION, EVENT_RE, MEMBER_RE, PHOTO_RE, active, actor_key, change_consent, connect, consent_state,
+    CONSENT_VERSION, EVENT_RE, MEMBER_RE, PHOTO_RE, active, active_album_scope, active_consent, actor_key,
+    change_consent, connect, consent_state,
     index_opt_in, paths, purge, region_crop, remove_opt_in_region, search_guard, upgrade, video_path,
 )
 from vision import MAX_SELFIE, THRESHOLD, InvalidImage, Vision, decode
 
 MAX_SEARCH_SECONDS = 80
+MAX_ALBUM_SEARCH_SECONDS = 180
+ALBUM_MATCH_THRESHOLD = max(THRESHOLD, 0.55)
 PHOTO_QUERY = """
     SELECT id FROM photo
     WHERE event=? AND state='ready'
@@ -207,7 +210,18 @@ class Service:
         if len(self.attempts) >= 5000 or self.attempts.get(key, 0) >= 6:
             return result(respond, "429 Too Many Requests", {"error": "rate_limit"})
         self.attempts[key] = self.attempts.get(key, 0) + 1
-        deadline = time.monotonic() + MAX_SEARCH_SECONDS
+        scope = None if validate_only else active_album_scope(db, event)
+        consent = active_consent(db, event, actor)
+        album = active(db, event)
+        if not consent:
+            return result(respond, "400 Bad Request", {"error": "consent_required"})
+        if not album:
+            return result(respond, "404 Not Found", {"error": "not_found"})
+        duration = MAX_ALBUM_SEARCH_SECONDS if scope else MAX_SEARCH_SECONDS
+        deadline = time.monotonic() + min(duration, consent["expires"] - time.time())
+        for expiry in (album["expires"], scope["expires"] if scope else None):
+            if expiry is not None:
+                deadline = min(deadline, time.monotonic() + expiry - time.time())
         try:
             query = self.query_vector(env["wsgi.input"], length, formats)
         except InvalidImage as error:
@@ -216,12 +230,16 @@ class Service:
             if validate_only:
                 return result(respond, "200 OK", {"validated": True})
             scores = self.match_regions(db, event, actor, query, deadline)
+            if scope:
+                self.match_album(db, event, query, deadline, scores)
         except TimeoutError:
             return result(respond, "503 Service Unavailable", {"error": "search_timeout"})
         finally:
             query.fill(0)
-        if not active(db, event) or not consent_state(db, event, actor)["granted"]:
+        if not active(db, event) or not active_consent(db, event, actor):
             return result(respond, "404 Not Found", {"error": "not_found"})
+        if scope and not active_album_scope(db, event):
+            return result(respond, "409 Conflict", {"error": "not_enrolled"})
         ids = sorted(scores, key=lambda photo_id: (-scores[photo_id], photo_id))
         now = int(time.time())
         db.executemany(
@@ -248,16 +266,42 @@ class Service:
                     candidates = self.vision.features(crop, selfie=True)
             except (InvalidImage, FileNotFoundError):
                 continue
-            for candidate in candidates:
-                try:
-                    score = float(query @ candidate)
-                    if score >= THRESHOLD:
-                        scores[photo_id] = score
-                finally:
-                    candidate.fill(0)
+            score = self.best_score(query, candidates)
+            if score >= THRESHOLD:
+                scores[photo_id] = score
         if time.monotonic() >= deadline:
             raise TimeoutError()
         return scores
+
+    def match_album(self, db, event, query, deadline, scores):
+        rows = db.execute("""
+            SELECT f.photo FROM album_face_photo f JOIN photo p ON p.id=f.photo AND p.event=f.event
+            WHERE f.event=? AND p.state='ready' ORDER BY p.rowid
+        """, (event,))
+        for (photo_id,) in rows:
+            if time.monotonic() >= deadline:
+                raise TimeoutError()
+            if photo_id in scores:
+                continue
+            _, thumbnail = paths(photo_id)
+            try:
+                with decode(thumbnail.read_bytes(), ["JPEG"]) as image:
+                    candidates = self.vision.features(image)
+            except (InvalidImage, FileNotFoundError):
+                continue
+            score = self.best_score(query, candidates)
+            if score >= ALBUM_MATCH_THRESHOLD:
+                scores[photo_id] = score
+        if time.monotonic() >= deadline:
+            raise TimeoutError()
+
+    @staticmethod
+    def best_score(query, candidates):
+        try:
+            return max((float(query @ candidate) for candidate in candidates), default=-1.0)
+        finally:
+            for candidate in candidates:
+                candidate.fill(0)
 
 
 def send_file(path, content_type, respond, env):

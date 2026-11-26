@@ -7,8 +7,18 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from album import connect, delete, delete_video, import_batch, import_video, index_opt_in, purge, start
+from album import (
+    authorize_album_search, connect, delete, delete_video, disable_album_search,
+    import_batch, import_video, index_opt_in, purge, start,
+)
 from vision import MODEL, models
+
+
+def parse_expiry(value):
+    date = datetime.fromisoformat(value)
+    if date.tzinfo is None:
+        raise ValueError("Informe o fuso da data de expiração")
+    return int(date.timestamp())
 
 
 def main():
@@ -21,6 +31,12 @@ def main():
     retention.add_argument("--expires", help="ISO 8601 com fuso")
     retention.add_argument("--no-expiry", action="store_true", help="Manter a galeria até exclusão")
     init.add_argument("--authorization", required=True, help="Referência interna, sem dados pessoais")
+    album_search = sub.add_parser("authorize-album-search")
+    album_search.add_argument("event")
+    album_search.add_argument("--authorization-reference", required=True,
+                              help="Referência interna da autorização específica para reconhecimento facial")
+    album_search.add_argument("--expires", help="ISO 8601 com fuso, quando a autorização tiver prazo")
+    sub.add_parser("disable-album-search").add_argument("event")
     batch = sub.add_parser("import")
     batch.add_argument("event")
     batch.add_argument("folder", type=Path)
@@ -50,13 +66,14 @@ def main():
         models(download=True)
         print(MODEL)
     elif args.command == "init":
-        expires = None
-        if not args.no_expiry:
-            date = datetime.fromisoformat(args.expires)
-            if date.tzinfo is None:
-                raise ValueError("Informe o fuso da data de expiração")
-            expires = int(date.timestamp())
+        expires = None if args.no_expiry else parse_expiry(args.expires)
         start(args.event, expires, args.authorization)
+    elif args.command == "authorize-album-search":
+        expires = parse_expiry(args.expires) if args.expires else None
+        count = authorize_album_search(args.event, args.authorization_reference, expires)
+        print(json.dumps({"authorizedPhotos": count}))
+    elif args.command == "disable-album-search":
+        disable_album_search(args.event)
     elif args.command == "import":
         counts = import_batch(args.event, args.folder)
         print(json.dumps(counts))

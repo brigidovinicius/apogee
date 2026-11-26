@@ -87,20 +87,33 @@ class Vision:
 
     def features(self, image, selfie=False):
         bgr = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
-        self.detector.setInputSize(image.size)
-        _, faces = self.detector.detect(bgr)
-        if faces is None:
-            return []
-        if selfie and len(faces) != 1:
-            raise InvalidImage("multiple_faces")
-        if len(faces) > 100:
-            raise InvalidImage("too_many_faces")
         vectors = []
-        for face in faces:
-            aligned = self.recognizer.alignCrop(bgr, face)
-            vector = self.recognizer.feature(aligned).reshape(-1)
-            norm = np.linalg.norm(vector)
-            if vector.size != 128 or not np.isfinite(norm) or norm <= 0:
-                raise InvalidImage("invalid_feature")
-            vectors.append((vector / norm).astype("<f4"))
-        return vectors
+        try:
+            self.detector.setInputSize(image.size)
+            _, faces = self.detector.detect(bgr)
+            if faces is None:
+                return vectors
+            if selfie and len(faces) != 1:
+                raise InvalidImage("multiple_faces")
+            if len(faces) > 100:
+                raise InvalidImage("too_many_faces")
+            for face in faces:
+                aligned = self.recognizer.alignCrop(bgr, face)
+                try:
+                    vector = self.recognizer.feature(aligned).reshape(-1)
+                    try:
+                        norm = np.linalg.norm(vector)
+                        if vector.size != 128 or not np.isfinite(norm) or norm <= 0:
+                            raise InvalidImage("invalid_feature")
+                        vectors.append((vector / norm).astype("<f4"))
+                    finally:
+                        vector.fill(0)
+                finally:
+                    aligned.fill(0)
+            return vectors
+        except Exception:
+            for vector in vectors:
+                vector.fill(0)
+            raise
+        finally:
+            bgr.fill(0)
