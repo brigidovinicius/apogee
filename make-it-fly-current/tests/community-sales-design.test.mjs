@@ -59,9 +59,10 @@ test("annual sales link is enabled only by the commercial switch and never by pr
 });
 
 test("benefits availability reflects the real catalogue without promising eligibility", () => {
-  assert.match(render({ hasBenefits: true }), /Há ofertas vigentes no catálogo/);
-  assert.match(render({ hasBenefits: false }), /O catálogo está sem ofertas vigentes no momento/);
-  assert.doesNotMatch(render({ hasBenefits: null }), /Há ofertas vigentes|está sem ofertas vigentes/);
+  assert.match(render({ hasBenefits: false }), /Sem ofertas vigentes no momento/);
+  for (const hasBenefits of [true, null]) {
+    assert.doesNotMatch(render({ hasBenefits }), /Sem ofertas vigentes no momento/);
+  }
   assert.match(render({ hasBenefits: true }), /elegibilidade de cada oferta/);
 });
 

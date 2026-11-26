@@ -9,7 +9,7 @@ export function AdminPageHeader({
 }: {
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   aside?: ReactNode;
 }) {
   return (
@@ -17,7 +17,7 @@ export function AdminPageHeader({
       <div>
         <p className={styles.eyebrow}>{eyebrow}</p>
         <h1>{title}</h1>
-        <p>{description}</p>
+        {description && <p>{description}</p>}
       </div>
       {aside ? <div className={styles.pageHeaderAside}>{aside}</div> : null}
     </header>

@@ -36,7 +36,7 @@ export function CalendarView({items,filters,path='/membros/meu-calendario',query
     {filters.view==='month'?<>
       <CalendarMonth entries={visible} month={month} selectedDay={selectedDay} today={today} path={path} query={query}/>
       <section id="agenda-do-dia" aria-label={'Agenda de '+selectedDay}><CalendarList member={member} items={items} entries={visible.filter(e=>calendarEntryOverlaps(e,selectedDay,selectedDay))} allStages selectedDay={selectedDay}/></section>
-    </>:visible.length>0?<CalendarList member={member} items={items} entries={visible} allStages startDate={range.start}/>:<p className={styles.empty}>Nenhuma etapa para estes filtros. Ajuste o período ou use Limpar. A agenda reúne as próximas etapas disponíveis; meses anteriores podem não ter histórico completo.</p>}
-    {undated.length>0&&<section><h2>Próxima data a anunciar</h2><ul className={styles.list}>{undated.map(i=><li className={styles.row} key={i.id}><Link href={member ? opportunityDetailPath(i.id) : publicOpportunityPath(i)}>{i.title}</Link><SaveOpportunityButton id={i.id} title={i.title}/></li>)}</ul><p>As oportunidades aparecem no mês quando uma próxima data for confirmada.</p></section>}
+    </>:visible.length>0?<CalendarList member={member} items={items} entries={visible} allStages startDate={range.start}/>:<p className={styles.empty}>Nenhuma etapa para estes filtros. Ajuste o período ou limpe os filtros. Meses anteriores podem ter histórico incompleto.</p>}
+    {undated.length>0&&<section><h2>Próxima data a anunciar</h2><ul className={styles.list}>{undated.map(i=><li className={styles.row} key={i.id}><Link href={member ? opportunityDetailPath(i.id) : publicOpportunityPath(i)}>{i.title}</Link><SaveOpportunityButton id={i.id} title={i.title}/></li>)}</ul><p>As oportunidades entram no calendário após a confirmação da data.</p></section>}
   </>;
 }

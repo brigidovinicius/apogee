@@ -19,7 +19,6 @@ export default async function McpConnectionsPage({ searchParams }: { searchParam
   return <MemberWorkspace member={member} current="integracoes">
     <div className={styles.container}>
       <h1 className={styles.title}>Conexões de IA</h1>
-      <p className={styles.lead}>Leve o Radar e as funções da sua conta para o ChatGPT ou o Claude, com o acesso que você já tem na Apogee.</p>
       <McpSetup resource={mcpResource()} />
       {params.desconectado === "1" && <p role="status">Conexão desconectada. Para usar novamente, autorize a Apogee no aplicativo.</p>}
       <h2 data-ap-heading="">Aplicativos autorizados</h2>

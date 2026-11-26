@@ -23,7 +23,7 @@ export function EventRecordingPage({ preview = false, registered = false }: { pr
     <main id="experiencia" tabIndex={-1}>
       <section className={styles.recordingHero} aria-labelledby="recording-title">
         <div className={styles.heroGlow} aria-hidden="true" />
-        <div className={styles.recordingCopy}><p className={styles.eyebrow}>Codex Community · organização Apogee</p><h1 id="recording-title">Descubra o que a IA pode<br /><span>mudar na sua vida.</span></h1><p className={styles.recordingLead}>Assista à gravação do Codex Community Workshop de Florianópolis. Explore como a IA pode ajudar você a pesquisar, escrever, organizar a rotina e colocar ideias em prática.</p><p className={styles.recordingAvailability}><Bell size={16} aria-hidden="true" /> Gravação de 1h09 · acesso gratuito após a inscrição.</p>
+        <div className={styles.recordingCopy}><p className={styles.eyebrow}>Codex Community · organização Apogee</p><h1 id="recording-title">Descubra o que a IA pode<br /><span>mudar na sua vida.</span></h1><p className={styles.recordingLead}>Assista à gravação do Codex Community Workshop de Florianópolis.</p><p className={styles.recordingAvailability}><Bell size={16} aria-hidden="true" /> Gravação de 1h09 · acesso gratuito após a inscrição.</p>
           <div className={styles.eventOptions} role="group" aria-label="Modalidades de participação">
             <Link className={styles.primary} href={watchHref} prefetch={false} data-behavior-action="event_online_selected">{watchLabel}</Link>
             <Link className={styles.secondary} href="#workshop-florianopolis" data-behavior-action="event_workshop_selected">Lista de espera presencial</Link>
@@ -45,7 +45,7 @@ export function EventRecordingPage({ preview = false, registered = false }: { pr
             <p className={styles.eyebrow}>Workshop presencial</p>
             <h2 id="workshop-title">{workshopTitle}</h2>
             <p><time dateTime="2026-11-21T18:00:00-03:00">21 de novembro de 2026, às 18h</time> · Florianópolis, SC · Participação gratuita</p>
-            <p>A lista de espera é gerenciada pelo Luma. A inscrição na lista não garante uma vaga.</p>
+            <p>Entrar na lista de espera do Luma não garante vaga.</p>
           </div>
           <a className={`${styles.primary} ${styles.workshopOnline}`} href={watchHref}>
             {watchLabel}
@@ -71,14 +71,14 @@ export function EventRecordingPage({ preview = false, registered = false }: { pr
           </a>
         </div>
       </section>
-      <section id="como-funciona" className={styles.section} aria-labelledby="recording-steps-title"><div className={styles.sectionHeading}><p className={styles.eyebrow}>O que você vai aprender</p><h2 id="recording-steps-title">Conhecimento para colocar<br />em prática.</h2><p>Explore aplicações da IA para o trabalho e a vida pessoal. Amplie seu repertório e encontre ideias para experimentar na sua rotina.</p></div>
+      <section id="como-funciona" className={styles.section} aria-labelledby="recording-steps-title"><div className={styles.sectionHeading}><p className={styles.eyebrow}>O que você vai aprender</p><h2 id="recording-steps-title">Conhecimento para colocar<br />em prática.</h2></div>
         <ol className={styles.recordingSteps}>
-          <li><Mail size={26} strokeWidth={1.3} aria-hidden="true" /><span className={styles.stepNumber}>01</span><h3>Pesquise e escreva melhor.</h3><p>Conheça possibilidades para organizar informações, desenvolver ideias e dar mais clareza à comunicação com apoio da IA.</p></li>
-          <li><Bell size={26} strokeWidth={1.3} aria-hidden="true" /><span className={styles.stepNumber}>02</span><h3>Organize sua rotina.</h3><p>Explore formas de simplificar tarefas e usar seu tempo com mais intenção no trabalho e na vida pessoal.</p></li>
-          <li><Users size={26} strokeWidth={1.3} aria-hidden="true" /><span className={styles.stepNumber}>03</span><h3>Encontre por onde começar.</h3><p>Identifique tarefas em que a IA pode ser útil e leve novas ideias para experimentar na sua realidade.</p></li>
+          <li><Mail size={26} strokeWidth={1.3} aria-hidden="true" /><h3>Pesquise e escreva melhor.</h3><p>Organize informações e desenvolva ideias com IA.</p></li>
+          <li><Bell size={26} strokeWidth={1.3} aria-hidden="true" /><h3>Organize sua rotina.</h3><p>Simplifique tarefas do trabalho e da vida pessoal.</p></li>
+          <li><Users size={26} strokeWidth={1.3} aria-hidden="true" /><h3>Encontre por onde começar.</h3><p>Identifique tarefas em que a IA pode ajudar.</p></li>
         </ol>
       </section>
-      <section className={[styles.section, styles.recordingCommunity].join(" ")} aria-labelledby="recording-community-title"><div><p className={styles.eyebrow}>Comunidade Apogee</p><h2 id="recording-community-title">Mais ideias.<br />Mais conexões.</h2><p>Continue com o Radar, as aplicações de IA e as conexões da Apogee. Conheça a entrada gratuita e a assinatura que reúne os quatro pilares. A inscrição neste evento é independente da comunidade.</p></div><div className={styles.communityActions}><CommunityJoinButton preview={preview} /><Link className={styles.subtleLink} href="/comunidade#planos" prefetch={false}>Conhecer a assinatura</Link></div></section>
+      <section className={[styles.section, styles.recordingCommunity].join(" ")} aria-labelledby="recording-community-title"><div><p className={styles.eyebrow}>Comunidade Apogee</p><h2 id="recording-community-title">Mais ideias.<br />Mais conexões.</h2><p>A inscrição no evento é independente da sua conta na Apogee.</p></div><div className={styles.communityActions}><CommunityJoinButton preview={preview} /><Link className={styles.subtleLink} href="/comunidade#planos" prefetch={false}>Conhecer a assinatura</Link></div></section>
       <FunnelFaq id="duvidas" title="Sobre o evento." items={RECORDING_FAQ} />
     </main><SiteFooter description="Conhecimento, oportunidades e gente para colocar ideias em movimento." />
   </div>;

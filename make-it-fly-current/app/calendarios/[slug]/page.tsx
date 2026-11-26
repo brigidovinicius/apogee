@@ -29,7 +29,7 @@ export default async function CalendarPage({params,searchParams}:Props) {
   const returnTo=calendarReturnPath('/calendarios/'+slug+'?'+paramsQuery);
   const saveState=await calendarSaveState(visible?.map(item=>item.id)??[],returnTo);
   return <div className={styles.page}><SiteHeader current="opportunities"/><main className={styles.main}>
-    <div className={styles.hero}><Link href="/calendarios">← Todos os calendários</Link><h1>{calendar.name}</h1><p>{calendar.description}</p><p>As etapas de prova e resultado ajudam quem já participa. Confira a etapa de inscrição para saber quando se candidatar.</p></div>
+    <div className={styles.hero}><Link href="/calendarios">← Todos os calendários</Link><h1>{calendar.name}</h1><p>{calendar.description}</p><p>Para se candidatar, confira a etapa de inscrição.</p></div>
     {items&&<CalendarFilters filters={filters} items={items} path={`/calendarios/${slug}`} hidden={{calendario:slug}}/>}
     <Link className={styles.action} href={`/membros/meu-calendario?catalogo=1&${calendarFilterQuery(paramsQuery)}`}>Salvar esta combinação na minha conta</Link>
     {visible ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><CalendarView items={visible} filters={filters} path={"/calendarios/"+slug} query={paramsQuery.toString()}/></CalendarSaveProvider> : <p role="alert">Calendário temporariamente indisponível.</p>}

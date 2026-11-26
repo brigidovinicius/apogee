@@ -17,7 +17,7 @@ export default async function McpLoginPage({ searchParams }: { searchParams: Pro
   return <div className={styles.narrow}>
     <h1 className={styles.title}>Conectar o Radar</h1>
     {query ? <>
-      <p className={styles.lead}>Entre com sua conta da Apogee. Depois, você poderá autorizar o aplicativo a consultar o Radar com o acesso que já possui.</p>
+      <p className={styles.lead}>Entre para autorizar o aplicativo a consultar o Radar com o acesso da sua conta.</p>
       <div className={styles.panel}><McpLogin /></div>
       <p><Link href="/membros/esqueci-senha">Esqueci minha senha</Link></p>
     </> : <p role="alert">Esta solicitação expirou ou é inválida. Volte ao aplicativo e conecte a Apogee novamente.</p>}

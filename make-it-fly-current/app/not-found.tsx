@@ -10,7 +10,6 @@ export default function NotFound() {
       <StatePanel
         eyebrow="Apogee · 404"
         title="Página não encontrada."
-        description="Este endereço não está disponível. Explore a comunidade ou volte ao início."
         actions={<>
           <Link className={statePanelStyles.primary} href="/">Voltar ao início</Link>
           <Link className={statePanelStyles.secondary} href="/galeria">Conhecer a galeria</Link>

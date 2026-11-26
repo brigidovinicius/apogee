@@ -105,9 +105,8 @@ export default async function AdminUsersPage({
       ) : (
         <section className={styles.emptyState} role="status">
           <div className={styles.stateCard}>
-            <p className={styles.eyebrow}>Nenhum resultado</p>
             <h2>Não há contas com estes filtros.</h2>
-            <p>Revise a busca ou selecione outro papel. Nenhum dado foi alterado.</p>
+            <p>Revise a busca ou selecione outro papel.</p>
           </div>
         </section>
       )}

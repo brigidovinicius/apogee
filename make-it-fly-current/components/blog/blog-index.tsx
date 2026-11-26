@@ -50,8 +50,8 @@ export async function BlogIndex({ searchParams, member = false }: { searchParams
     <Content id={member ? undefined : "experiencia"} tabIndex={-1} className={styles.main}>
       <section className={styles.hero}>
         <p className={styles.eyebrow}>Apogee / editorial</p>
-        <h1>{member ? "Blog" : "Ideias que abrem caminhos"}</h1>
-        <p>Ciência, tecnologia e possibilidades para aprender, construir e participar.</p>
+        <h1>Blog</h1>
+        <p>Ciência, tecnologia e empreendedorismo.</p>
       </section>
       <nav className={styles.categories} aria-label="Temas do blog">
         <Link href={basePath} aria-current={!category ? "page" : undefined}>Todos</Link>
@@ -64,7 +64,7 @@ export async function BlogIndex({ searchParams, member = false }: { searchParams
           {posts.length > 1 ? <div className={styles.secondary}>{posts.slice(1, 3).map((post, index) => renderPost(post, index + 1))}</div> : null}
         </div>
         {posts.length > 3 ? <div className={styles.grid}>{posts.slice(3).map((post, index) => renderPost(post, index + 3))}</div> : null}
-      </> : <div className={styles.empty}><p>Novas ideias estão a caminho</p><span>{category ? "Ainda não há artigos publicados neste tema" : "O blog ainda não tem artigos publicados"}</span></div>}
+      </> : <div className={styles.empty}><p>{category ? "Nenhum artigo publicado neste tema." : "Nenhum artigo publicado."}</p></div>}
       {pages > 1 ? <nav className={styles.pagination} aria-label="Páginas do blog">
         {page > 1 ? <Link href={pageUrl(page - 1)}>← Anterior</Link> : <span />}
         <span>{page} / {pages}</span>

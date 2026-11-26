@@ -30,7 +30,7 @@ test("gallery publishes real photos with Apogee credits and no fake examples", a
   assert.match(source, /fetch\("\/api\/gallery", \{ method: "POST"/);
   assert.match(hero, /Make it <em>Fly<\/em>/);
   assert.match(hero, /Fotos da comunidade Apogee/);
-  assert.match(grid, /Quem mostra o que acontece são vocês/);
+  assert.match(grid, /id="event-gallery-title">Fotos do Make It Fly/);
   assert.match(grid, /photo\.author/);
   assert.match(grid, /@\{photo\.instagram\}/);
   assert.doesNotMatch(grid, /images\.unsplash\.com/);

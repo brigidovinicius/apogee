@@ -74,7 +74,7 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
         <p className={styles.footer}>Os links abrem em uma nova aba. Planos e créditos seguem as condições de cada fornecedor.</p>
       </> : <section className={styles.empty}>
         <h2 data-ap-heading="">{filtered ? "Nenhum resultado para esses filtros" : skills ? "Skills em preparação" : "Ferramentas em preparação"}</h2>
-        <p>{filtered ? "Tente outro termo ou limpe os filtros para ver as opções disponíveis." : skills ? "As instruções reutilizáveis para seus assistentes de IA aparecerão aqui à medida que forem publicadas." : "As ferramentas aparecerão aqui quando forem publicadas."}</p>
+        {filtered && <p>Tente outro termo.</p>}
         <Link href={filtered ? sectionPath : skills ? toolboxPath : "/membros"}>{filtered ? "Limpar filtros" : skills ? "Explorar ferramentas" : "Voltar para a comunidade"}</Link>
       </section>}
     </>}

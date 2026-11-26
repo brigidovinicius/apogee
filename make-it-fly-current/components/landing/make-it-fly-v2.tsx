@@ -368,8 +368,7 @@ export function MakeItFlyV2() {
                 <p className={styles.galleryPreviewLabel}>Comunidade Apogee · Make it Fly</p>
                 <h2 id="gallery-preview-title">O evento também é visto por quem participa.</h2>
                 <p>
-                  Compartilhe seu olhar sobre o evento Make it Fly. Seus registros
-                  integram a galeria da comunidade Apogee com créditos ou anonimamente.
+                  Compartilhe suas fotos do Make It Fly com créditos ou anonimamente.
                 </p>
                 <Link className={styles.galleryPreviewLink} href="/galeria#enviar-fotos">
                   Incluir fotos <ArrowDownRight aria-hidden strokeWidth={1.5} />

@@ -30,7 +30,7 @@ export default async function AdminEditPostPage({ params, searchParams }: {
   if (!post) notFound();
 
   return <div className={styles.content}>
-    <AdminPageHeader title="Editar artigo" description="Altere o conteúdo e escolha como ele deve aparecer no blog." aside={<Link className={styles.secondaryButton} href="/admin/posts">Todos os artigos</Link>} />
+    <AdminPageHeader title="Editar artigo" aside={<Link className={styles.secondaryButton} href="/admin/posts">Todos os artigos</Link>} />
     <Link href="/admin/posts/pipeline">← Central Editorial</Link>
     {query.salvo === "1" ? <p className={editorStyles.success} role="status">Alterações salvas.</p> : null}
     {isPublicPost(post) ? <p className={editorStyles.publicLink}><Link href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">Ver artigo publicado <ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></Link></p> : null}

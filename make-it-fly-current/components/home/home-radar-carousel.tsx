@@ -77,6 +77,6 @@ export function HomeRadarCarousel({ opportunities, capturedAt }: { opportunities
       <p>Nenhuma oportunidade em destaque nesta categoria agora.</p>
       <Link href="/oportunidades" prefetch={false}>Explorar o catálogo completo</Link>
     </div>}
-    <p className={styles.radarNote}>Seu próximo passo pode começar aqui. Consulte até 10 oportunidades por mês gratuitamente.</p>
+    <p className={styles.radarNote}>Consulte até 10 oportunidades por mês gratuitamente.</p>
   </div>;
 }

@@ -36,8 +36,8 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
     <header className={annual.annualHero}><p className={styles.eyebrow}>Comunidade Apogee · Plano anual</p><h1 className={styles.title}>{membership.active ? "Minha assinatura" : awaitingPayment || pending ? "Situação da assinatura" : "Resumo da assinatura"}</h1></header>
     {reviewing ? <p role="note">Validação local com contas e pagamentos sintéticos. Nenhuma cobrança ou alteração na Stripe é realizada aqui.</p> : null}
     {params.billing_error ? <p role="alert">{params.billing_error === "409" ? "Já existe uma assinatura ou um pagamento em andamento. Confira o estado abaixo antes de tentar novamente." : params.billing_error === "403" ? "Conclua a verificação da sua conta antes de contratar." : params.billing_error === "429" ? "Muitas tentativas. Aguarde alguns minutos antes de tentar novamente." : "Não foi possível concluir a operação. Confira o estado abaixo antes de tentar novamente."}</p> : null}
-    {params.payment === "received" && membership.active ? <p role="status" data-annual-stage="confirmed_return" className={annual.annualStatus}>Pagamento confirmado. Sua assinatura anual está ativa. Vamos começar?</p> : null}
-    {params.payment === "cancelled" ? <p role="status">Você voltou do checkout. Confira abaixo a situação atual da assinatura.</p> : null}
+    {params.payment === "received" && membership.active ? <p role="status" data-annual-stage="confirmed_return" className={annual.annualStatus}>Pagamento confirmado. Sua assinatura anual está ativa.</p> : null}
+    {params.payment === "cancelled" ? <p role="status">Você voltou do checkout. Confira a situação da assinatura.</p> : null}
     {params.cancellation === "requested" ? <p role="status">{membership.subscription?.cancelAtPeriodEnd ? "Renovação anual cancelada. O período pago está preservado." : "Solicitação de cancelamento da renovação enviada. Atualize esta página em instantes para conferir a confirmação."}</p> : null}
     <div className={annual.annualLayout}>
     <section className={annual.annualCard} aria-labelledby="annual-plan-title"><h2 id="annual-plan-title">Comunidade Apogee · Anual</h2>
@@ -58,8 +58,8 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
     <section className={annual.annualBenefits} aria-labelledby="annual-benefits-title"><h2 id="annual-benefits-title">Recursos da assinatura</h2>
       <ul className={annual.annualList}>
         <li><div><h3>Radar completo</h3><p>Explore oportunidades e consulte os detalhes sem o limite das 10 consultas gratuitas.</p></div></li>
-        <li><div><h3>Caixa de Ferramentas</h3><p>Encontre ferramentas e recursos para apoiar suas ideias e colocar projetos em prática.</p></div></li>
-        <li><div><h3>Fórum da comunidade</h3><p>Troque experiências, compartilhe dúvidas e participe das conversas.</p></div></li>
+        <li><div><h3>Caixa de Ferramentas</h3><p>Ferramentas e skills por tarefa.</p></div></li>
+        <li><div><h3>Fórum da comunidade</h3><p>Troque experiências e tire dúvidas.</p></div></li>
       </ul>
       <p className={annual.annualScope}>{COMMUNITY_BENEFITS_TERMS} <Link href="/comunidade">Conheça todas as entregas</Link>.</p>
       {legacy ? <p className={annual.annualLegacy}><strong>Seu Radar continua com você.</strong><br />Seu acesso antigo ao Radar está preservado e independe desta assinatura.</p> : null}

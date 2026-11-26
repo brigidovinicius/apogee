@@ -97,7 +97,7 @@ test("the UI confirms every saved application without exposing score or redirect
   assert.match(form, /Se sua participação for aprovada, enviaremos o link do ingresso pelo contato informado/);
   assert.match(form, /O envio desta aplicação ainda não garante uma vaga/);
   const page = await read("app/makeitfly/participar/page.tsx");
-  assert.match(page, /analisamos cada aplicação e enviamos o link do ingresso a quem for selecionado/);
+  assert.match(page, /Se sua inscrição for aprovada, enviaremos o link do ingresso/);
   assert.doesNotMatch(page, /segue direto para o ingresso/);
 });
 

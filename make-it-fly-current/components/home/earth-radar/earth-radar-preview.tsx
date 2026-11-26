@@ -96,23 +96,23 @@ export function EarthRadarPreview({ radar }: { radar: ReactNode }) {
         <header className={styles["radar-heading"]}>
           <div className={styles["radar-heading-top"]}><span>Radar de oportunidades</span><span>Explore novas possibilidades</span></div>
           <h2 id="preview-radar-title">Encontre o seu próximo salto</h2>
-          <p>Hackathons, competições, eventos e outras possibilidades para colocar suas ideias em movimento</p>
+          <p>Hackathons, competições e eventos.</p>
         </header>
         {radar}
       </section>
       <section className={styles["habit-section"]} aria-labelledby="preview-habit-title">
         <div className={styles["habit-grid"]}>
-          <div className={styles["habit-copy"]}><h2 id="preview-habit-title">Um Radar que muda com você</h2><p>A experiência não termina na primeira busca, ela organiza o que é novo, o que está perto do prazo e o que você decidiu acompanhar</p></div>
+          <div className={styles["habit-copy"]}><h2 id="preview-habit-title">Um Radar que muda com você</h2><p>Veja novidades, prazos próximos e o que você acompanha.</p></div>
           <div className={styles["habit-cards"]}>
-            <article className={styles["habit-card"]}><small>Quando você volta</small><h3>Encontre seu próximo passo</h3><p>Explore o catálogo atualizado e descubra possibilidades para seu próximo passo</p><div className={styles["habit-example"]}><span>Oportunidades em destaque</span><Link prefetch={false} href="/oportunidades">Explorar</Link></div></article>
-            <article className={styles["habit-card"]}><small>Antes que o prazo passe</small><h3>Saiba o que exige atenção agora</h3><p>Prazos próximos ficam claros sem transformar o site numa sequência de alertas agressivos</p><div className={styles["habit-example"]}><span>Encontre os próximos prazos</span><Link prefetch={false} href="/oportunidades?prazo=7dias">Consultar</Link></div></article>
-            <article className={styles["habit-card"]}><small>Para continuar depois</small><h3>Guarde possibilidades, não abas</h3><p>O que você salva forma um espaço pessoal de pesquisa e ajuda a organizar seu próximo passo</p><div className={styles["habit-example"]}><span>Continue no seu espaço pessoal</span><Link prefetch={false} href="/membros/oportunidades">Acessar</Link></div></article>
+            <article className={styles["habit-card"]}><small>Quando você volta</small><h3>Encontre seu próximo passo</h3><p>Explore as novidades do catálogo.</p><div className={styles["habit-example"]}><span>Oportunidades em destaque</span><Link prefetch={false} href="/oportunidades">Explorar</Link></div></article>
+            <article className={styles["habit-card"]}><small>Antes que o prazo passe</small><h3>Saiba o que exige atenção agora</h3><p>Veja quais inscrições encerram em breve.</p><div className={styles["habit-example"]}><span>Encontre os próximos prazos</span><Link prefetch={false} href="/oportunidades?prazo=7dias">Consultar</Link></div></article>
+            <article className={styles["habit-card"]}><small>Para continuar depois</small><h3>Guarde possibilidades, não abas</h3><p>Encontre as oportunidades que você salvou.</p><div className={styles["habit-example"]}><span>Continue no seu espaço pessoal</span><Link prefetch={false} href="/membros/oportunidades">Acessar</Link></div></article>
           </div>
         </div>
       </section>
       <section className={styles.community} id="comunidade" data-nav-theme="light" aria-labelledby="preview-community-title">
         <div className={styles["community-inner"]}>
-          <div className={styles["community-copy"]}><h2 id="preview-community-title">Juntos, mais longe</h2><p>Uma ideia pode começar com você e, na Apogee, encontrar outras perspectivas, conversas e espaço para sair do papel</p></div>
+          <div className={styles["community-copy"]}><h2 id="preview-community-title">Juntos, mais longe</h2><p>Conheça os encontros e as publicações da Apogee.</p></div>
           <nav className={styles["community-links"]} aria-label="Explorar a comunidade">
             <Link prefetch={false} href="/galeria"><span>Os encontros em imagens</span><span>Galeria</span></Link>
             <Link prefetch={false} href="/blog"><span>Ideias para continuar a conversa</span><span>Blog</span></Link>

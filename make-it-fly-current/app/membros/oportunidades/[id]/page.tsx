@@ -43,7 +43,7 @@ export default async function OpportunityDetailPage({ params, searchParams }: {
         {result.opportunity.discovery?.editions.map(edition=><section key={edition.id}><h2 data-ap-heading="">{edition.name}</h2><ol>{edition.stages.map(stage=><li key={stage.id}><strong>{stage.name}</strong>: <time dateTime={stage.start}>{formatCalendarDate(stage.start)}</time>{stage.end ? <> a <time dateTime={stage.end}>{formatCalendarDate(stage.end)}</time></> : null} · <a data-behavior-action="official_link" href={stage.sourceUrl} target="_blank" rel="noopener noreferrer">Fonte oficial</a></li>)}</ol></section>)}
       </> : result.status === "purchase" ? <p><Link href={`/membros/radar/acesso?next=${encodeURIComponent(detailPath)}`}>Já tenho acesso ao Radar</Link></p> : <section className={styles.panel} aria-labelledby="free-detail-title">
         <h2 data-ap-heading="" id="free-detail-title">Consultar detalhes</h2>
-        <p>Abrir esta oportunidade usa uma consulta do Radar. Você pode reabri-la no mesmo mês sem usar outra.</p>
+        <p>Abrir usa uma consulta do Radar. Reabrir no mesmo mês não usa outra.</p>
         <form action={openFreeOpportunity.bind(null, id, radarCatalogueQuery(query))}>
           <button className={styles.primary} type="submit">Usar consulta gratuita</button>
         </form>

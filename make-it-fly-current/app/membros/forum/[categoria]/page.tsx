@@ -54,7 +54,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       </header>
 
       {total === 0 ? (
-        <p className={styles.empty}>Nenhum tópico ainda. Que tal abrir o primeiro?</p>
+        <p className={styles.empty}>Nenhum tópico ainda.</p>
       ) : (
         <ul className={styles.list}>
           {topics.map((topic) => (

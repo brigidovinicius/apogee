@@ -17,7 +17,7 @@ export function McpSetup({ resource }: { resource: string }) {
   return <section data-ap-integration-guide="" className={styles.setup} aria-labelledby="mcp-setup-title">
     <p className={styles.eyebrow}>Apogee + ChatGPT + Claude</p>
     <h2 data-ap-heading="section" data-ap-art="integracoes" id="mcp-setup-title">Suas oportunidades, na conversa.</h2>
-    <p>Explore o Radar, consulte seu perfil e organize seu calendário e suas coleções com sua conta Apogee.</p>
+    <p>Explore o Radar, consulte seu perfil e organize seu calendário e suas coleções.</p>
     <div className={styles.providers}><a data-ap-button="secondary" className={styles.primary} href="https://chatgpt.com/plugins" target="_blank" rel="noopener noreferrer">
       Incluir no meu ChatGPT
     </a>

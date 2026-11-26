@@ -36,12 +36,12 @@ export default async function MyCalendarPage({searchParams}:{searchParams:Promis
   const items=filterCalendarItems(source,filters);
   const saveState=await calendarSaveState(items.map(item=>item.id),returnTo);
   return <MemberWorkspace member={member} current="calendario"><div className={styles.page}><div className={styles.main}>
-    <div className={styles.hero}><h1>Meu calendário</h1><p>As próximas etapas das oportunidades que você salvou.</p><Link href="/calendarios">Explorar calendários</Link></div>
+    <div className={styles.hero}><h1>Meu calendário</h1><Link href="/calendarios">Explorar calendários</Link></div>
     <GoogleCalendar status={googleStatus} result={typeof query.google==="string"?query.google:undefined} returnTo={returnTo}/>
     <nav aria-label="Origem do calendário"><Link className={styles.action} href="/membros/meu-calendario">Minhas oportunidades salvas</Link><Link className={styles.action} href="/membros/meu-calendario?catalogo=1">Explorar catálogo com filtros</Link></nav>
     {collectionsEnabled()&&<p><Link className={styles.action} href="/membros/colecoes">Minhas coleções</Link></p>}
     <h2>Minhas combinações de filtros</h2>
-    {presets.length?<ul className={styles.savedFilters}>{presets.map(p=><li key={p.id}><Link href={'/membros/meu-calendario?catalogo=1&'+p.query}>{p.name}</Link><form action={deleteCalendarFilter}><input type="hidden" name="id" value={p.id}/><button type="submit" aria-label={'Remover filtro '+p.name}>Remover</button></form></li>)}</ul>:<p>Salve uma combinação para encontrá-la aqui quando voltar.</p>}
+    {presets.length?<ul className={styles.savedFilters}>{presets.map(p=><li key={p.id}><Link href={'/membros/meu-calendario?catalogo=1&'+p.query}>{p.name}</Link><form action={deleteCalendarFilter}><input type="hidden" name="id" value={p.id}/><button type="submit" aria-label={'Remover filtro '+p.name}>Remover</button></form></li>)}</ul>:<p>Nenhuma combinação salva.</p>}
     {query.filtro&&<p role="status">{query.filtro==='salvo'?'Combinação salva.':'Não foi possível salvar. Use um nome de até 80 caracteres e mantenha até 20 combinações.'}</p>}
     <CalendarFilters filters={filters} items={source} path="/membros/meu-calendario" hidden={catalogue?{catalogo:'1'}:{}}/>
     <form action={saveCalendarFilter} className={styles.filters}><input type="hidden" name="filters" value={calendarFilterQuery(paramsQuery)}/><label>Nome da combinação<input name="name" maxLength={80} required placeholder="Ex.: Astronomia online"/></label><button type="submit">Salvar combinação</button></form>

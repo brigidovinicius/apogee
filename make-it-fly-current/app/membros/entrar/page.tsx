@@ -21,7 +21,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
       <header className={styles.authIntro}>
         <p className={styles.eyebrow}>{annual ? "Comunidade Apogee · Plano anual" : "Área de membros"}</p>
         <h1 className={styles.title}>{annual ? "Entre para continuar a assinatura" : "Entrar"}</h1>
-        <p className={styles.lead}>{annual ? "R$ 1.438,80 por ano, com renovação automática. Você revisa o total antes de pagar." : "Acesse o fórum, seu perfil e o Radar de oportunidades da comunidade Apogee"}</p>
+        {annual && <p className={styles.lead}>R$ 1.438,80 por ano, com renovação automática. Revise o total antes de pagar.</p>}
       </header>
       <div className={`${styles.panel} ${styles.authPanel}`}>
         {params.senha === "redefinida" && <p role="status">Senha redefinida. Entre com sua nova senha.</p>}

@@ -223,11 +223,9 @@ export function GalleryExperience({ initialPage, initialOffset = 0, pageNumber =
 
         <section id="enviar-fotos" className={styles.uploadSection} aria-labelledby="upload-title">
           <div className={styles.uploadIntro}>
-            <p className={styles.kicker}>Sua câmera também fez parte</p>
-            <h2 data-ap-heading="" id="upload-title">Inclua o seu ponto de vista.</h2>
+            <h2 data-ap-heading="" id="upload-title">Compartilhe suas fotos.</h2>
             <p>
-              Selecione até {MAX_FILES} fotos, escolha como quer aparecer e publique seus
-              registros na galeria da comunidade Apogee.
+              Selecione até {MAX_FILES} fotos e escolha como quer aparecer na galeria.
             </p>
             <ol>
               <li><span>1</span> Selecione as fotos</li>
@@ -329,7 +327,7 @@ export function GalleryExperience({ initialPage, initialOffset = 0, pageNumber =
 
               <div className={styles.formFooter}>
                 <p aria-live="polite">
-                  {message || "As fotos serão publicadas automaticamente após o envio."}
+                  {message}
                 </p>
                 <button
                   type="submit"

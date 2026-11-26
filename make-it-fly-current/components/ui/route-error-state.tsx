@@ -13,7 +13,6 @@ export function RouteErrorState({ retry, homeHref = "/" }: RouteErrorStateProps)
     <StatePanel
       eyebrow="Apogee"
       title="Não foi possível carregar esta página."
-      description="Tente novamente. Se o problema continuar, volte ao início e retome por lá."
       role="alert"
       actions={
         <>

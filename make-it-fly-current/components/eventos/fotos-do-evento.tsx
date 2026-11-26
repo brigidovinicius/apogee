@@ -290,7 +290,7 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
         <a href="/membros/protecao" data-ap-button="secondary">Verificar minha conta</a>
       </div>}
       {optIn && !optIn.granted && <form className={styles.form} aria-busy={busy} onSubmit={changeOptIn}>
-        <p>Vamos filtrar as fotos do evento. A selfie é descartada após a consulta e as fotos encontradas ficam salvas na sua conta.</p>
+        <p>A selfie é descartada após a consulta e as fotos encontradas ficam salvas na sua conta.</p>
         <label className={styles.consent}><input type="checkbox" checked={consent} disabled={busy}
           onChange={event => setConsent(event.target.checked)} required />
           <span>Aceito que a Apogee processe meu rosto e minha selfie para encontrar minhas fotos deste evento.</span></label>
@@ -298,7 +298,7 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
       </form>}
       {optIn?.granted && <form className={styles.form} onSubmit={search} aria-busy={busy}>
         <p role="status">Autorização registrada.</p>
-        <p>Vamos filtrar as fotos do evento. Tire uma selfie em que apareça só você. A selfie é descartada após a consulta e as fotos encontradas ficam salvas na sua conta.</p>
+        <p>Tire uma selfie em que apareça só você. A selfie é descartada após a consulta e as fotos encontradas ficam salvas na sua conta.</p>
         {!optIn.indexed && <p>A busca no álbum ainda aguarda referências autorizadas para sua conta.</p>}
         <video ref={video} className={styles.cameraPreview} hidden={camera === "off"} autoPlay muted playsInline
           aria-label="Prévia da câmera" onCanPlay={() => { if (stream.current) setCameraReady(true); }} />

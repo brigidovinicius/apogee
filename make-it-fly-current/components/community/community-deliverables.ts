@@ -22,7 +22,7 @@ export const COMMUNITY_SALES_DELIVERABLES = [
   {
     id: "encontros", label: "Eventos presenciais", fact: "Condições por evento",
     title: "Encontre a comunidade pessoalmente.",
-    description: "Conheça a agenda e as fotos dos encontros. Inscrições e condições são definidas por evento.",
+    description: "Agenda e fotos dos encontros. Consulte as condições de cada evento.",
     href: "#participar", action: "Ver eventos presenciais",
   },
 ] as const;

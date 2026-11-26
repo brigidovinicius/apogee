@@ -21,7 +21,7 @@ export default async function BehaviorPage({ searchParams }: {
     <AdminPageHeader title="Comportamento" description="Contagens dos últimos 30 dias, no horário de Brasília. Incluem apenas a medição permitida pelo visitante; não representam pessoas únicas nem todo o tráfego." />
     <section className={styles.surface} aria-labelledby="blog-radar-title">
       <h2 id="blog-radar-title">Blog → Radar</h2>
-      <p>Uma leitura pode registrar um clique medido no Radar. As contagens incluem somente visitas com medição permitida e usam datas de Brasília.</p>
+      <p>Cada leitura pode registrar um clique medido no Radar.</p>
       <form method="get" action="/admin/comportamento">
         <label>Início <input type="date" name="inicio" defaultValue={blog.range.start} required /></label>{" "}
         <label>Fim <input type="date" name="fim" defaultValue={blog.range.end} required /></label>{" "}

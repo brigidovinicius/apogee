@@ -14,7 +14,6 @@ export function CommunityPlans({ preview = false, signedIn = false, subscribed =
     <div className={styles.plans}>
       <article id="plano-anual" className={`${styles.plan} ${styles.featured}`} aria-labelledby="community-plan-title">
         <h3 id="community-plan-title">Assinatura anual</h3>
-        <p>Consulte o Radar completo e acesse os recursos publicados da comunidade.</p>
         <div data-annual-stage="annual_price" className={`${styles.price} ${styles.annualPrice}`}><strong>R$ 1.438,80</strong><span>/ano</span></div>
         <div>
           <p className={styles.note}>Equivale a R$ 119,90/mês. Pagamento integral anual.</p>
@@ -31,7 +30,7 @@ export function CommunityPlans({ preview = false, signedIn = false, subscribed =
       </article>
       <article className={styles.plan} aria-labelledby="free-plan-title">
         <h3 id="free-plan-title">Conta gratuita</h3>
-        <p>Explore os catálogos e participe do fórum após verificar sua conta.</p>
+        <p>Participe do fórum após verificar sua conta.</p>
         <div className={styles.price}><strong>Grátis</strong><span>sem cartão</span></div>
         <ul><li>Pesquise e navegue pelo Radar e por Benefícios.</li><li>10 consultas mensais no Radar e 10 em Benefícios.</li><li>Reabra itens no mesmo mês sem gastar outra consulta.</li></ul>
         {!subscribed && <div className={styles.actions}><Link data-ap-button="secondary" className={styles.secondary} href={free} prefetch={false}>{signedIn ? "Continuar com minha conta gratuita" : "Criar minha conta gratuita"}</Link></div>}

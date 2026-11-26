@@ -38,7 +38,7 @@ export async function EditorialHome() {
       <section className={styles.intro} aria-labelledby="home-title">
         <div className={styles.introHeading}>
           <h1 id="home-title">Uma comunidade para criar com IA.</h1>
-          <p className={styles.introLead}>Na Apogee, você troca ideias com outros membros, encontra ferramentas e aprende a usar IA em um projeto seu.</p>
+          <p className={styles.introLead}>Troque ideias, encontre ferramentas e aplique IA ao seu projeto.</p>
           <div className={styles.introActions}>
             <Link data-ap-button="primary" className={styles.heroPrimary} href="/comunidade" prefetch={false}>Conhecer a comunidade<ArrowUpRight aria-hidden="true" size={16} /></Link>
             <Link data-ap-button="secondary" className={styles.heroSecondary} href="#recursos">Ver recursos e eventos</Link>
@@ -65,7 +65,7 @@ export async function EditorialHome() {
 
       <section className={styles.radarSection} id="radar" aria-labelledby="home-opportunities-title">
         <div data-ap-reveal="" className={styles.sectionHeading}>
-          <div><h2 data-ap-title="" id="home-opportunities-title">Oportunidades em destaque</h2><p>Confira os prazos de inscrição e as datas dos eventos.</p></div>
+          <div><h2 data-ap-title="" id="home-opportunities-title">Oportunidades em destaque</h2></div>
           <Link className={styles.inlineAction} href="/oportunidades" prefetch={false}>Explorar o Radar</Link>
         </div>
         <Suspense fallback={<p className={styles.catalogueMessage} role="status">Consultando as oportunidades do Radar…</p>}>
@@ -80,12 +80,12 @@ export async function EditorialHome() {
             <EntryCard id="home-knowledge-title" theme="Conhecimento"
               title="Uma ideia pode levar você mais longe." href="/blog" action="Descobrir leituras"
               picture={<Image src="/media/earth-v2/earth-desktop-960.webp" alt="Terra vista do espaço, imagem da Apogee" width={960} height={540} sizes="(max-width: 760px) 100vw, 50vw" />}>
-              Ciência, tecnologia e novas perspectivas.
+              Ciência e tecnologia.
             </EntryCard>
             <EntryCard id="home-collection-title" theme="Builders Club"
               title="Vista o que você cria." href="/loja" action="Conhecer a coleção"
               picture={<Image className={styles.collectionImage} src="/images/loja/moletom-frente.jpg" alt="Moletom da Apogee" width={1254} height={1254} sizes="(max-width: 760px) 100vw, 50vw" />}>
-              A estrela da Apogee no seu dia a dia.
+              Peças do Builders Club.
             </EntryCard>
           </ul>
         </div>
@@ -94,14 +94,14 @@ export async function EditorialHome() {
       <section className={styles.community} aria-labelledby="home-community-title">
         <div className={styles.communityCopy}>
           <h2 data-ap-title="" id="home-community-title">Comece com uma conta gratuita.</h2>
-          <p>Consulte até 10 oportunidades no Radar e 10 ofertas em Benefícios por mês. O cadastro é gratuito e dispensa cartão.</p>
+          <p>Consulte até 10 oportunidades no Radar e 10 ofertas em Benefícios por mês. Sem cartão.</p>
           <Link className={styles.inlineAction} href={COMMUNITY_SIGNUP_PATH} prefetch={false}>Criar minha conta gratuita</Link>
         </div>
         <article className={styles.experience} aria-labelledby="home-experience-title">
           <Image className={styles.eventArt} src="/brand/apogee-star.svg" alt="" width={703} height={870} sizes="100px" />
-          <div><p>Evento gratuito · organização Apogee</p><h3 id="home-experience-title">Codex Community</h3>
+          <div><p>Evento gratuito</p><h3 id="home-experience-title">Codex Community</h3>
             <p>Um encontro para colocar a inteligência artificial em prática.</p>
-            <Link href="/evento-openai" prefetch={false}>Conhecer o evento gratuito</Link>
+            <Link href="/evento-openai" prefetch={false}>Conhecer o evento</Link>
           </div>
         </article>
       </section>

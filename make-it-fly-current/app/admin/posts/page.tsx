@@ -19,7 +19,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   const { posts, total, pages } = await listAdminPosts(page);
 
   return <div className={styles.content}>
-    <AdminPageHeader title="Blog" description="Gerencie artigos, rascunhos e publicações agendadas. Somente administradores podem alterar conteúdo." aside={<Link className={styles.button} href="/admin/posts/novo">Novo artigo</Link>} />
+    <AdminPageHeader title="Blog" description="Artigos, rascunhos e publicações agendadas." aside={<Link className={styles.button} href="/admin/posts/novo">Novo artigo</Link>} />
     <section className={editorStyles.list} aria-label="Artigos do blog">
       <div className={editorStyles.listHeader}><span>{total} artigo{total === 1 ? "" : "s"}</span><Link href="/admin/posts/pipeline">Central Editorial →</Link><Link href="/blog" target="_blank" rel="noopener noreferrer">Ver blog público <ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></Link></div>
       {posts.length ? posts.map((post) => <article className={editorStyles.listRow} key={post.id}>

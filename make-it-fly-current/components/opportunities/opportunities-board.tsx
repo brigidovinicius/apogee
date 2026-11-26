@@ -252,7 +252,6 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
       >
         <div className={styles.filterPanelHeader}>
           <div>
-            <p className={styles.filterPanelEyebrow}>Refine o radar</p>
             <h3 id="opportunity-filter-title">Filtrar oportunidades</h3>
             <p className={styles.filterPanelDescription}>
               UFs e cidades mostram oportunidades locais e programas nacionais elegíveis no Brasil.
@@ -399,13 +398,7 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
               ? "Nenhuma oportunidade com estes filtros."
               : "Nenhuma oportunidade aberta no momento."}
           </h3>
-          <p>
-            {filters.query
-              ? "Tente parte do nome da oportunidade, outro tema ou a instituição. Os filtros selecionados também limitam os resultados."
-              : activeFilterCount > 0
-              ? "Limpe ou ajuste os filtros para explorar outras chamadas verificadas pela Apogee."
-              : "Novas chamadas verificadas aparecerão aqui assim que estiverem disponíveis."}
-          </p>
+          {filters.query && <p>Tente outro nome, tema ou instituição.</p>}
           {filters.query && activeFilterCount > 1 ? <button type="button" onClick={() => updateFilters({ ...EMPTY_OPPORTUNITY_FILTERS, query: filters.query })}>
             Buscar em todas as categorias e locais
           </button> : null}
