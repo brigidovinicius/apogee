@@ -433,3 +433,15 @@ it('follows and registers a linked institutional event agenda, publishes a dated
     .toEqual([{ reason: 'event_started' }]);
   await state.db!.query("delete from discovery_targets where notes=$1", ['radar:linked-event-calendar:' + target]);
 });
+
+it('prioritizes recent event access evidence in the fresh slot while preserving older leads', async () => {
+  await state.db!.query(`insert into discovery_leads(target_id,url,title,excerpt,first_seen_at)
+    values ($1,$2,'Seminário antigo sobre tecnologia','Evento aberto ao público',now()-interval '5 days'),
+           ($1,$3,'Chamada acadêmica mais recente','Inscrições',now()),
+           ($1,$4,'Exposição de trabalhos estudantis','Entrada gratuita e aberta ao público',now()-interval '10 minutes')`,
+  [target, parent + 'seminario-antigo', parent + 'chamada-nova', parent + 'exposicao']);
+  const [fresh] = await claimDueDiscoveryLeads(1, [], false, true);
+  expect(fresh.url).toBe(parent + 'exposicao');
+  const [nextFresh] = await claimDueDiscoveryLeads(1, [], false, true);
+  expect(nextFresh.url).toBe(parent + 'chamada-nova');
+});

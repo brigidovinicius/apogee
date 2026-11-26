@@ -44,6 +44,7 @@ export function sanitizedLeadReason(reason: string) {
 }
 
 const MAX_ATTEMPTS = 4;
+const PUBLIC_EVENT_ACCESS_PATTERN = 'abert[ao] ao p.blico|gratuidade da visita..o|sem necessidade de inscri..o|entrada gratuita';
 const RETRYABLE_REASONS = new Set(["processing_failed", "request_timeout", "dns_failure", "source_request_failed",
   "robots_unavailable_or_disallowed", "http_408", "http_429", "http_500", "http_502", "http_503", "http_504"]);
 export function leadRetryDelayMinutes(attempt: number) {
@@ -100,6 +101,8 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
                and not exists(select 1 from ingestion_runs run where run.discovery_lead_id=lead.id
                  and run.execution_metadata->>'source_expansion_version'='10')))
          order by case when (lead.processing_status='blocked' or coalesce(lead.processing_reason='processing_budget_exhausted',false))=$6 then 0 else 1 end,
+           case when $7 and lead.processing_status='pending' and lead.first_seen_at>=now()-interval '30 hours'
+             and length(lead.title)>=20 and lead.excerpt ~* $8 then 0 else 1 end,
            case when $7 then lead.first_seen_at end desc,
            coalesce(advice.priority,0) desc,
            case when lead.processing_reason='processing_budget_exhausted' then 0 else 1 end,
@@ -115,7 +118,7 @@ export async function claimDueDiscoveryLeads(limit = 2, excludedTargets: string[
        from due where lead.id=due.id
        returning lead.*,due.target_official_url,due.target_verified_at,due.target_enabled,due.target_verified_url,
          due.target_name,due.target_organizer,due.target_priority,due.target_topics,due.previous_run_id`,
-      [MAX_ATTEMPTS, randomUUID(), batchSize, excludedTargets, CALL_PRIORITY_PATTERN, preferReevaluation, preferFresh],
+      [MAX_ATTEMPTS, randomUUID(), batchSize, excludedTargets, CALL_PRIORITY_PATTERN, preferReevaluation, preferFresh, PUBLIC_EVENT_ACCESS_PATTERN],
     );
     for (const lead of rows) {
       if (lead.previous_run_id) await client.query(
@@ -274,8 +277,10 @@ export async function runScheduledLeadProcessing(parentDeadline = Infinity) {
   // Stop starting work after 90 seconds; reserve a full 90-second chain plus
   // claim overhead before leasing. The final candidate may finish afterwards.
   while (report.leadsChecked < 24 && Date.now() - started < 90_000 && hardDeadline - Date.now() >= 95_000) {
-    const preferReevaluation = report.leadsChecked % 4 === 0;
-    const preferFresh = report.leadsChecked % 4 === 1;
+    // Give evidenced, time-sensitive new announcements one slot before
+    // re-evaluating historical links from the same organizer.
+    const preferFresh = report.leadsChecked % 4 === 0;
+    const preferReevaluation = report.leadsChecked % 4 === 1;
     let [lead] = await claimDueDiscoveryLeads(1, [...roundTargets], preferReevaluation, preferFresh);
     if (!lead && roundTargets.size) {
       roundTargets.clear();
