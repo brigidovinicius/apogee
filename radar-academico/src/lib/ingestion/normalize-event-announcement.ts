@@ -49,7 +49,7 @@ export function normalizeEventAnnouncement(article: { title: string; text: strin
   const $ = load(article.html.replace(/[\r\n]+/g, " "));
   $("[hidden],[aria-hidden='true'],[disabled],[aria-disabled='true'],script,style,form").remove();
   $("br").replaceWith("\n");
-  $("p,li,div,td").append("\n");
+  $("h1,h2,h3,h4,p,li,div,td").append("\n");
   const lines = $("body").text().split("\n").map(clean).filter(Boolean);
   const values = (label: RegExp) => lines.filter(line => label.test(line)).map(line => line.replace(label, "").trim());
   const what = values(/^o quê:\s*/iu);

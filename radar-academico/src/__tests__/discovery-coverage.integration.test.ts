@@ -418,7 +418,7 @@ it('follows and registers a linked institutional event agenda, publishes a dated
     ['radar:linked-event-calendar:' + target])).rows;
   expect(derived).toEqual([{ official_url: calendar, organizer: 'Instituto de Tecnologia', enabled: true,
     check_interval_hours: 24, official_verified_url: calendar }]);
-  expect(await runScheduledLeadProcessing()).toMatchObject({ created: 1, published: 1 });
+  expect(await runScheduledLeadProcessing()).toMatchObject({ created: 1, published: 1, reasons: { published: 1 } });
   const events = (await state.db!.query("select id,city_name,state_code,event_starts_at,deadline_at from opportunities where 'eventos'=any(categories)")).rows;
   expect(events).toEqual([expect.objectContaining({ city_name: 'Florianópolis', state_code: 'SC', event_starts_at: '2099-05-05', deadline_at: null })]);
   const id = (events[0] as { id: string }).id;
