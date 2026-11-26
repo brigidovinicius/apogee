@@ -680,3 +680,11 @@ Publicação pedida pelo Vitor em nome do proprietário. SHA publicado `93e02b71
 ### Teste com login do Google em produção
 
 A conta Free da Comunidade entrou pelo botão **Entrar com Google**, abriu as 280 fotos em **Ver álbum completo** e baixou um JPEG válido de 21.864.075 bytes. O fluxo não usou selfie. A conta testada tem perfil administrativo e foi usada no modo Usuário. A validação com uma conta Premium ficou pendente.
+
+## 26/11/2026 · Entrada e navegação da Apogee
+
+- Publicado `6379181b71bf67c6b7c25a72848ce7c5cdaca579` da branch `release/navegacao-20261126`. O patch de navegação revisado em `b75a482` foi aplicado sobre `318bd4ac1abaa46b1d1f4135de618a5118b7f9df`, revisão ativa da galeria no preflight. O TypeScript e os 904 testes passaram na revisão integrada.
+- No host `srv1439756`, sob o lock `/opt/apogee-site/.deploy.lock`, foram executados `docker compose config -q`, `docker compose build web` e `docker compose up -d --no-deps --no-build --force-recreate --wait web`. Foram usados o Compose do site e os overlays GeoIP e Eventos. Os hashes dos arquivos de ambiente do site e de Eventos e do override GeoIP foram conferidos antes e depois. A publicação consistiu na recriação de `web`, sem migração de banco.
+- Web saudável, com zero reinícios, checkout limpo, revisão publicada no label e imagem `sha256:431d6d7f43f4e54cfae19e7774be2dd794191520e781f929844fe3e69eef1be4`. IDs do worker da galeria, Radar, Blog, PostgreSQL de membros e Caddy conferidos antes e depois.
+- As 14 verificações HTTPS sem cookies passaram. O formulário de login mostrou as opções de e-mail/senha e Google. Os redirecionamentos preservaram a rota original e as opções do Radar. Com uma sessão já ativa no navegador, a rota de login abriu o Radar filtrado e a área de membros. O menu público foi conferido no desktop e em 390 px. Calendário e Coleções abriram em dois toques, havia um único menu Minha conta e o atalho do workshop abriu sua ficha. O login completo com contas Free e Premium foi verificado em prévia local com contas sintéticas.
+- Para rollback, use a imagem `apogee-site:318bd4ac1abaa46b1d1f4135de618a5118b7f9df`, disponível no preflight, e os mesmos três arquivos Compose. Use o lock de publicação e confira a revisão, o healthcheck e os redirecionamentos depois de restaurar.
