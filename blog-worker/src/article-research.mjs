@@ -5,7 +5,7 @@ import {hash,fail} from './policy.mjs';
 import {canonicalResearchUrl} from './research-links.mjs';
 import {isIP} from 'node:net';
 
-export const ARTICLE_EXTRACTION_VERSION='public-article-v7-accordion-headings';
+export const ARTICLE_EXTRACTION_VERSION='public-article-v8-published-date';
 export const primaryReference=r=>!!r&&(/^(institucional|periodico_cientifico$|periodico_e_jornalismo$|projeto_software_proprio$)/.test(r.role));
 export const independentReference=r=>!!r&&!primaryReference(r)&&/jornalismo|divulgacao|analise_especialista|publicacao_especializada/.test(r.role);
 export function primaryDocument(document,reference=referenceForUrl(document.url)){
@@ -71,6 +71,38 @@ function textOf(node){
 const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
 const visible=node=>{for(let n=node;n;n=n.parentNode){const a=attrs(n);if(a.hidden!==undefined||a['aria-hidden']==='true'||/display\s*:\s*none|visibility\s*:\s*hidden/i.test(a.style??''))return false;}return true;};
 const mediaLink=(value,base)=>{try{if(typeof value!=='string'||!value)return null;const url=canonicalResearchUrl(value,base),u=new URL(url);return !isIP(u.hostname)&&u.hostname.includes('.')&&!/\.(?:local|internal|invalid|test|example)$/.test(u.hostname)?url:null;}catch{return null;}};
+function within(node,ancestor){
+  for(let n=node;n;n=n.parentNode)if(n===ancestor)return true;
+  return false;
+}
+function openAIPublicationDate(nodes,withinRoot){
+  const headline=nodes.find(n=>n.tagName==='h1'&&attrs(n)['data-article-hero-copy-region']==='headline'&&visible(n)&&withinRoot(n));
+  let hero=headline?.parentNode;
+  while(hero&&withinRoot(hero)&&attrs(hero)['data-section-header']!=='true')hero=hero.parentNode;
+  if(!hero||!withinRoot(hero))return null;
+  const dates=new Set();
+  for(const n of nodes){
+    if(n.tagName!=='p'||attrs(n.parentNode)['data-article-hero-copy-region']!=='meta'||!visible(n)||!within(n,hero))continue;
+    const text=clean(textOf(n));
+    const parts=/^(January|February|March|April|May|June|July|August|September|October|November|December) (\d{1,2}), (\d{4})$/.exec(text);
+    if(!parts)continue;
+    const date=new Date(text+' UTC');
+    if(Number.isFinite(+date)&&date.getUTCDate()===Number(parts[2]))dates.add(date.toISOString());
+  }
+  return dates.size===1?[...dates][0]:null;
+}
+function articleTime(node,root,url){
+  if(node.tagName!=='time'||!attrs(node).datetime||!visible(node))return false;
+  for(let n=node.parentNode;n&&n!==root;n=n.parentNode){
+    if(['aside','footer','nav'].includes(n.tagName))return false;
+    const href=n.tagName==='a'&&attrs(n).href;
+    if(href){
+      try{if(canonicalResearchUrl(href,url)!==referenceUrl(url))return false;}
+      catch{return false;}
+    }
+  }
+  return true;
+}
 export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={}){
   if(Buffer.byteLength(html)>3145728)fail('research_page_size');
   const tree=parse(html),nodes=[];const visit=n=>{nodes.push(n);for(const c of n.childNodes??[])visit(c);};visit(tree);
@@ -126,8 +158,9 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   if(title.length<3)fail('research_title_missing');
   const structuredDate=own.find(v=>typeof v.datePublished==='string')?.datePublished;
   const withinRoot=n=>{for(let parent=n;parent;parent=parent.parentNode)if(parent===root||guideParts.includes(parent))return true;return false;};
-  const time=nodes.find(n=>n.tagName==='time'&&attrs(n).datetime&&visible(n)&&withinRoot(n));
-  const rawDate=meta['article:published_time']??meta['citation_online_date']??structuredDate??meta['citation_publication_date']??meta['date']??meta['dc.date']??meta['dcterms.created']??(time?attrs(time).datetime:null)??fallbackDate;
+  const time=nodes.find(n=>articleTime(n,root,url)&&withinRoot(n));
+  const heroDate=guideHost==='openai.com'&&new URL(url).pathname.startsWith('/index/')?openAIPublicationDate(nodes,withinRoot):null;
+  const rawDate=meta['article:published_time']??meta['citation_online_date']??structuredDate??meta['citation_publication_date']??meta['date']??meta['dc.date']??meta['dcterms.created']??heroDate??(time?attrs(time).datetime:null)??fallbackDate;
   const date=rawDate?new Date(rawDate):null;
   const bodyNodes=[];const walk=n=>{if(ignored.has(n.tagName)||!visible(n))return;bodyNodes.push(n);for(const c of n.childNodes??[])walk(c);};walk(root);
   // Explicit journal-reference blocks belong to the article, even when the

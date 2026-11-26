@@ -34,6 +34,17 @@ test('article extraction excludes hidden/navigation content and blocks paywalls 
  assert.throws(()=>extractArticle('<script>{"isAccessibleForFree":false}</script>'+html,d.url),/research_access_restricted/);
  assert.throws(()=>extractArticle('<p>'+content+'</p>',d.url),/research_article_missing/);
 });
+test('an OpenAI announcement uses the publication date beside its headline, not a linked recommendation',()=>{
+ const url='https://openai.com/index/synthetic-announcement/';
+ const page=date=>`<main><div data-section-header="true">
+   <div data-article-hero-copy-region="meta"><p>${date}</p><a>Product</a></div>
+   <h1 data-article-hero-copy-region="headline">Synthetic announcement</h1>
+ </div><p>${content}</p>
+ <section><a href="/index/other-report/"><time datetime="2026-08-11T10:00">Aug 11, 2026</time></a></section></main>`;
+ assert.equal(extractArticle(page('November 9, 2026'),url).published_at,'2026-11-09T00:00:00.000Z');
+ assert.equal(extractArticle(page('February 30, 2026'),url).published_at,null);
+ assert.equal(extractArticle(page(''),url,{fallbackDate:'2026-11-09T12:00:00Z'}).published_at,'2026-11-09T12:00:00.000Z');
+});
 test('STE layouts retain all public FAQ panels and the complete expert article only on inspected pages',()=>{
  const faq='<meta property="og:title" content="FAQ"><nav>Unrelated navigation</nav><section class="list1"><h2>About STE</h2><div class="panel-collapse collapse"><p>'+content+' Public controlled-language definition.</p></div></section><section class="list1"><h2>Limits</h2><p>'+content+' Not intended for general-purpose writing.</p><p hidden>Hidden text must stay out</p></section><footer>Unrelated footer</footer>';
  const url='https://www.asd-ste100.org/STE_faq.html',d=extractArticle(faq,url);
