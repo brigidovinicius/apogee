@@ -161,6 +161,25 @@ class AlbumTest(unittest.TestCase):
         self.assertEqual(self.request("/workshop/photos")[0], 200)
         self.assertEqual(self.request("/workshop/search", fixture("red"))[0], 404)
 
+    def test_validate_only_checks_selfie_and_never_saves_a_photo(self):
+        self.seed()
+        original_files = set(self.private.glob("*.jpg"))
+        self.assertEqual(self.request("/workshop/validate", fixture("red")),
+                         (400, {"error": "consent_required"}))
+        self.assertEqual(self.request("/workshop/consent", b"", HTTP_X_ALBUM_CONSENT=album.CONSENT_VERSION),
+                         (200, {"granted": True, "indexed": False}))
+        self.assertEqual(self.request("/workshop/search", fixture("red")), (409, {"error": "not_enrolled"}))
+
+        with patch.object(self.service, "match_regions", side_effect=AssertionError("Album was scanned")):
+            self.assertEqual(self.request("/workshop/validate", fixture("red")), (200, {"validated": True}))
+            self.assertEqual(self.request("/workshop/validate", fixture("black")), (422, {"error": "no_face"}))
+            self.assertEqual(self.request("/workshop/validate", fixture("lime")), (422, {"error": "multiple_faces"}))
+            self.enroll()
+            self.assertEqual(self.request("/workshop/validate", fixture("red")), (200, {"validated": True}))
+
+        self.assertEqual(self.request("/workshop/saved"), (200, {"ids": []}))
+        self.assertEqual(set(self.private.glob("*.jpg")), original_files)
+
     def test_search_saves_only_original_photo_ids_per_account(self):
         self.seed()
         photo_id = self.enroll()

@@ -32,12 +32,13 @@ export async function POST(request: Request) {
     if (request.headers.get("x-apogee-consent") !== SELFIE_CONSENT) return albumError("consent_required", 400);
     const type = request.headers.get("content-type");
     if (type !== "image/jpeg" && type !== "image/png") return albumError("invalid_format", 415);
+    const validateOnly = new URL(request.url).searchParams.get("modo") === "validar";
     const body = await readRequestBody(request, MAX_SELFIE_BYTES, UPLOAD_BODY_TIMEOUT_MS);
     if (!body.length) return albumError("invalid_size", 400);
 
     let response: Response;
     try {
-      response = await albumWorker(config, "/search", { method: "POST", body, headers: {
+      response = await albumWorker(config, validateOnly ? "/validate" : "/search", { method: "POST", body, headers: {
         ...albumIdentity(config, member.id), "Content-Type": type, "X-Album-Consent": SELFIE_CONSENT,
       } }, 95_000);
     } finally {
@@ -47,6 +48,8 @@ export async function POST(request: Request) {
     if (!response.ok) return SEARCH_ERRORS.has(result.error)
       ? albumError(result.error, response.status) : albumError("unavailable", 503);
 
+    if (validateOnly) return result.validated === true
+      ? Response.json({ validated: true }, { headers: PRIVATE }) : albumError("unavailable", 503);
     return Response.json({ photos: photoLinks(result.ids) }, { headers: PRIVATE });
   } catch (error) {
     if (error instanceof RequestBodyError) {

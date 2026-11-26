@@ -62,8 +62,8 @@ class Service:
                 len(route) == 1 or (len(route) == 2 and PHOTO_RE.fullmatch(route[1]))
             ):
                 return self.saved(db, event, env, respond, *route[1:])
-            if self.vision and method == "POST" and route == ["search"]:
-                return self.search(db, event, env, respond)
+            if self.vision and method == "POST" and route in (["search"], ["validate"]):
+                return self.search(db, event, env, respond, validate_only=route == ["validate"])
         return result(respond, "404 Not Found", {"error": "not_found"})
 
     def media(self, db, event, photo_id, variant, respond, env):
@@ -116,7 +116,7 @@ class Service:
             return result(respond, "200 OK", consent_state(db, event, actor))
         return result(respond, "404 Not Found", {"error": "not_found"})
 
-    def search(self, db, event, env, respond):
+    def search(self, db, event, env, respond, validate_only=False):
         actor = env.get("HTTP_X_ALBUM_ACTOR", "")
         member = self.member(event, env)
         if not member or env.get("HTTP_X_ALBUM_CONSENT") != "selfie-v1":
@@ -134,9 +134,9 @@ class Service:
                 state = consent_state(db, event, actor)
                 if not state["granted"]:
                     return result(respond, "400 Bad Request", {"error": "consent_required"})
-                if not state["indexed"]:
+                if not validate_only and not state["indexed"]:
                     return result(respond, "409 Conflict", {"error": "not_enrolled"})
-                return self.compare(db, event, env, respond, actor, member, int(raw_size), formats)
+                return self.compare(db, event, env, respond, actor, member, int(raw_size), formats, validate_only)
         except BlockingIOError:
             return result(respond, "429 Too Many Requests", {"error": "busy"})
         finally:
@@ -156,7 +156,7 @@ class Service:
         finally:
             data[:] = bytes(len(data))
 
-    def compare(self, db, event, env, respond, actor, member, length, formats):
+    def compare(self, db, event, env, respond, actor, member, length, formats, validate_only):
         window = int(time.monotonic() // 60)
         self.attempts = {key: val for key, val in self.attempts.items() if key[1] == window}
         key = (actor, window)
@@ -169,6 +169,8 @@ class Service:
         except InvalidImage as error:
             return result(respond, "422 Unprocessable Content", {"error": str(error)})
         try:
+            if validate_only:
+                return result(respond, "200 OK", {"validated": True})
             scores = self.match_regions(db, event, actor, query, deadline)
         except TimeoutError:
             return result(respond, "503 Service Unavailable", {"error": "search_timeout"})

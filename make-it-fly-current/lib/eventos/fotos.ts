@@ -3,7 +3,7 @@ import { createHmac } from "node:crypto";
 import { getSessionCookie } from "better-auth/cookies";
 import { getMemberFromHeaders } from "@/lib/members/dal";
 import { adultAccess } from "@/lib/members/protection";
-import { PHOTO_API, WORKSHOP, type AlbumPhoto, type PhotoOptIn } from "./catalogo";
+import { PHOTO_API, WORKSHOP, type AlbumPhoto } from "./catalogo";
 
 export const PRIVATE = { "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" };
 export const PHOTO_ID = /^[a-f0-9]{32}$/;
@@ -60,14 +60,6 @@ export function photoLinks(ids: unknown): AlbumPhoto[] {
   return [...new Set<string>(ids)].map(id => ({
     id, thumbnail: `${PHOTO_API}/${id}/thumb`, download: `${PHOTO_API}/${id}/download`,
   }));
-}
-
-export async function readPhotoOptIn(config: AlbumConfig, memberId: string): Promise<PhotoOptIn | null> {
-  if (!config.selfie || !await adultAccess(memberId)) return null;
-  const response = await albumWorker(config, "/consent", { headers: albumIdentity(config, memberId) });
-  if (!response.ok) return null;
-  const state = await response.json();
-  return { granted: state.granted === true, indexed: state.indexed === true };
 }
 
 export async function readAlbum(config: AlbumConfig) {
