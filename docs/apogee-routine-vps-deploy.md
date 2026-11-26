@@ -644,3 +644,7 @@ Os quatro cenários usaram `c2fa91d02db977e7c7e5637e297c604e50f65b54`, que inclu
 ### Validação em produção da versão `7c1b0b8`
 
 Em 26/11/2026, o teste começou na home, sem sessão na Apogee, na revisão publicada `7c1b0b88879a503de86943595fe24a056040d955`. O botão **Entrar** abriu `/membros/entrar` sem o parâmetro `next`. Após autenticar com Google, o navegador abriu diretamente **Minha comunidade** (`/membros`).
+
+### Validação em produção da versão `4ce0ce6`
+
+Em 26/11/2026, na revisão publicada `4ce0ce6e983d011ec9bda0bb9d54801f00493e84`, o teste começou na home sem sessão na Apogee. O botão **Entrar** abriu `/membros/entrar` sem o parâmetro `next`. Após o login com Google, o navegador abriu diretamente **Minha comunidade** (`/membros`).
