@@ -302,6 +302,7 @@ test("public page uses shared editorial order before pagination and respects URL
   const project = opportunity({ ...location, id: "project", title: "Projeto de extensão em robótica", categories: ["pesquisa"], benefitType: "extension_scholarship" });
   const event = opportunity({ ...location, id: "event", title: "Encontro extracurricular", categories: ["eventos"] });
   const isolated = opportunityLoader({
+    "next/headers": { headers: async () => new Headers() },
     "@/lib/members/dal": { requireSignedInMember: async () => { throw new Error("Public catalogue must not require a member"); } },
     "@/lib/admin/access": { requireAdmin: async () => { throw new Error("Public catalogue must not require an admin"); } },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => [formal, ...research, event, project] },

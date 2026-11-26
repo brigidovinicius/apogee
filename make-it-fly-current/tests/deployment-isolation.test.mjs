@@ -75,7 +75,7 @@ test("the single root layout preserves the approved visual wrapper and relocated
     .replace("async function RootLayout", "function RootLayout")
     .replace("  // Legal approvals are runtime configuration, absent from the build image.\n  await connection();\n", "")
     // Session lookup and context add no DOM to the preserved event wrapper.
-    .replace("  // Public visitors never initialize auth or query the members database here.\n  const member = getSessionCookie(await headers()) ? await getCurrentMember().catch(() => null) : null;\n  const annual = member ? await communityAccess(member.id, process.env.STRIPE_MODE !== \"test\").catch(() => null) : null;\n  const account: AccountIdentity | null = member ? { name: member.name, username: member.username, role: member.role, communityActive: annual?.active } : null;\n", "")
+    .replace("  // Public visitors never initialize auth or query the members database here.\n  const member = getSessionCookie(await headers()) ? await getCurrentMember().catch(() => null) : null;\n  const account: AccountIdentity | null = member ? { name: member.name, username: member.username, role: member.role } : null;\n", "")
     .replace("<AccountProvider account={account}>", "").replace("</AccountProvider>", "")
     // The skip link keeps the same rendered anchor; only history handling changes.
     .replace('<Link className="skip-link" href="#experiencia">', '<a className="skip-link" href="#experiencia">')
@@ -171,6 +171,7 @@ test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surf
     "app/admin/pesquisas/[id]/respostas/page.tsx", "app/pesquisas/[slug]/page.tsx", "app/api/pesquisas/[slug]/route.ts",
     "app/admin/posts/[id]/page.tsx", "app/admin/posts/novo/page.tsx", "app/admin/posts/page.tsx", "app/admin/posts/pipeline/page.tsx", "app/admin/posts/pipeline/dossie/[id]/page.tsx", "app/admin/posts/pipeline/cover/[id]/route.ts", "app/admin/radar/page.tsx", "app/admin/usuarios/page.tsx",
     "app/api/admin/loja/drops/exportar/route.ts", "app/api/admin/posts/[id]/media/route.ts", "app/api/applications-export/route.ts", "app/api/applications/route.ts", "app/api/auth/[...all]/route.ts", "app/api/checkout/route.ts",
+    "app/api/eventos/fotos/[id]/[variant]/route.ts", "app/api/eventos/fotos/consentimento/route.ts", "app/api/eventos/fotos/route.ts", "app/api/eventos/video/route.ts",
     "app/api/gallery/admin/route.ts", "app/api/gallery/route.ts", "app/api/journey/route.ts", "app/api/loja/novidades/route.ts",
     "app/api/integracoes/google-agenda/callback/route.ts", "app/api/internal/beneficios/hostgator/route.ts", "app/api/internal/google-agenda/sync/route.ts",
     "app/api/marcas/route.ts", "app/api/members/invitations/route.ts", "app/api/members/verification/route.ts",
@@ -181,6 +182,7 @@ test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surf
     "app/gerenciar-galeria/page.tsx", "app/home-robonauta/page.tsx", "app/layout.tsx", "app/login/page.tsx", "app/loja/page.tsx", "app/makeitfly/layout.tsx", "app/makeitfly/page.tsx",
     "app/makeitfly/participar/page.tsx", "app/membros/cadastro/page.tsx", "app/membros/convite/page.tsx",
     "app/membros/entrar/google/concluir/page.tsx", "app/membros/entrar/page.tsx",
+    "app/membros/eventos/page.tsx", "app/membros/eventos/[slug]/page.tsx",
     "app/membros/forum/[categoria]/[topico]/page.tsx", "app/membros/forum/[categoria]/novo/page.tsx",
     "app/membros/forum/[categoria]/page.tsx", "app/membros/layout.tsx", "app/membros/oportunidades/[id]/page.tsx", "app/membros/oportunidades/page.tsx", "app/membros/page.tsx",
     "app/membros/perfil/[username]/page.tsx", "app/membros/perfil/configurar/page.tsx", "app/membros/perfil/editar/page.tsx", "app/membros/radar/acesso/page.tsx", "app/oportunidades/avisos/page.tsx", "app/oportunidades/page.tsx", "app/page.tsx",

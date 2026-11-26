@@ -4,6 +4,7 @@ import { EditorialPageShell } from "@/components/site/editorial-page-shell";
 import { RedBullSupport } from "@/components/site/red-bull-support";
 import { COMMUNITY_FAQ } from "@/content/community";
 import { COMMUNITY_BENEFITS_REDEMPTION } from "@/content/community-offer";
+import { WORKSHOP_MEDIA_PATH } from "@/lib/eventos/catalogo";
 import { CommunityJoinButton } from "./community-funnel";
 import { CommunityCheckoutButton } from "./community-checkout-button";
 import { CommunityPlans } from "./community-plans";
@@ -62,6 +63,7 @@ export function CommunitySalesPage({ preview = false, signedIn = false, subscrib
           <div className={styles.courseCopy}>
             <p className={styles.lead}>Encontre a comunidade. Participação e ingressos seguem as condições de cada evento.</p>
             <p><Link className={styles.textLink} href="/evento-openai#workshop-florianopolis" prefetch={false}>Ver workshop em Florianópolis</Link></p>
+            {!preview && <p><Link className={styles.textLink} href={WORKSHOP_MEDIA_PATH} prefetch={false}>Ver fotos e vídeos do workshop</Link></p>}
             <p><Link className={styles.textLink} href="/galeria" prefetch={false}>Ver fotos do Make It Fly</Link></p>
             <p className={styles.accessNote}>A inscrição no evento Codex Community é independente da assinatura e do cadastro na comunidade.</p>
             <div className={styles.joinAction}><CommunityJoinButton next={next} preview={preview} signedIn={signedIn} /></div>

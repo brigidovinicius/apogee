@@ -10,8 +10,12 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import styles from "@/components/opportunities/opportunities.module.css";
 import { listPublicOpportunityPage } from "@/lib/opportunities/access";
-import { memberRadarPath } from "@/lib/opportunities/navigation";
+import { memberRadarLoginHref, memberRadarPath } from "@/lib/opportunities/navigation";
 import { RadarAmplitude } from "@/components/analytics/radar-amplitude";
+import { getSessionCookie } from "better-auth/cookies";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { getCurrentMember } from "@/lib/members/dal";
 
 export const dynamic = "force-dynamic";
 
@@ -39,9 +43,10 @@ export default async function OpportunitiesPage({ searchParams }: {
   for (const [key, value] of Object.entries(await searchParams)) {
     if (typeof value === "string") params.set(key, value);
   }
-  const catalogue = await listPublicOpportunityPage(params).catch(() => null);
-  const memberHref = `/comunidade?next=${encodeURIComponent(memberRadarPath(params))}#planos`;
+  const memberPath = memberRadarPath(params);
+  if (getSessionCookie(await headers()) && await getCurrentMember()) redirect(memberPath);
 
+  const catalogue = await listPublicOpportunityPage(params).catch(() => null);
   const returnTo=calendarReturnPath('/membros/oportunidades?'+params);
   const saveState=await calendarSaveState(catalogue?.opportunities.map(item=>item.id)??[],returnTo);
 
@@ -51,8 +56,7 @@ export default async function OpportunitiesPage({ searchParams }: {
         current="opportunities"
         adaptive
         tone="light"
-        memberHref={memberHref}
-        memberLabel="Entrar"
+        memberHref={memberRadarLoginHref(params)}
       />
 
       <main id="experiencia" className={styles.main} tabIndex={-1}>
@@ -65,7 +69,7 @@ export default async function OpportunitiesPage({ searchParams }: {
 
         {catalogue ? <RadarAmplitude view="radar_list_viewed" /> : null}
         {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} showCalendarLink editorialFeed publicCatalogue /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
-        <RadarOfferIntro next={memberRadarPath(params)} />
+        <RadarOfferIntro next={memberPath} />
       </main>
 
       <SiteFooter />

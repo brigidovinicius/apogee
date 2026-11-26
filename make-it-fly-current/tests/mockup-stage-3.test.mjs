@@ -25,8 +25,9 @@ test("a prévia pública filtra somente a DTO segura e anuncia resultados recupe
 });
 
 test("a navegação responsiva do membro só expõe os destinos já implementados", async () => {
-  const [bar, styles, memberPage, radarPage, profilePage, editPage] = await Promise.all([
+  const [bar, account, styles, memberPage, radarPage, profilePage, editPage] = await Promise.all([
     source("components/members/member-bar.tsx"),
+    source("components/members/account-menu.tsx"),
     source("components/members/member-navigation.module.css"),
     source("app/membros/page.tsx"),
     source("app/membros/oportunidades/page.tsx"),
@@ -36,7 +37,8 @@ test("a navegação responsiva do membro só expõe os destinos já implementado
 
   assert.match(bar, /href: "\/membros"/);
   assert.match(bar, /href: "\/membros\/oportunidades"/);
-  assert.match(bar, /Meu perfil/);
+  assert.doesNotMatch(bar, /Minha conta|Meu perfil/);
+  assert.match(account, /Meu perfil/);
   assert.doesNotMatch(bar, /\/membros\/(?:salvos|alertas|onboarding)/);
   assert.match(styles, /\.navigation\[data-open="true"\]/);
   assert.match(styles, /@media \(max-width: 900px\)/);

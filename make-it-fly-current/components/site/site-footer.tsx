@@ -35,7 +35,7 @@ export function SiteFooter({ editorial = false, description = "Comunidade e expe
               <h2>Explore a Apogee</h2>
               <ul>
                 <li><Link href="/blog" prefetch={false}>Blog</Link></li>
-                <li><Link href="/galeria" prefetch={false}>Galeria</Link></li>
+                <li><Link href="/galeria" prefetch={false}>Galeria Make It Fly</Link></li>
                 <li><Link href="/loja" prefetch={false}>Loja</Link></li>
                 <li><Link href="/evento-openai" prefetch={false}>Evento gratuito</Link></li>
               </ul>

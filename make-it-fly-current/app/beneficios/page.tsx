@@ -11,6 +11,8 @@ export const metadata: Metadata = { title: "Benefícios da Apogee", alternates: 
 
 export default async function PublicBenefitsPage({ searchParams }: { searchParams: Promise<BenefitSearchParams> }) {
   const params = await searchParams;
-  if (getSessionCookie(await headers()) && await getCurrentMember()) redirect(benefitNavigation(params, "catalogue").listHref);
-  return <EditorialPageShell current="benefits"><main id="experiencia" tabIndex={-1}><BenefitPreviewCatalogue params={params} /></main></EditorialPageShell>;
+  const { listHref } = benefitNavigation(params, "catalogue");
+  if (getSessionCookie(await headers()) && await getCurrentMember()) redirect(listHref);
+  const memberHref = `/membros/entrar?next=${encodeURIComponent(listHref)}`;
+  return <EditorialPageShell current="benefits" memberHref={memberHref}><main id="experiencia" tabIndex={-1}><BenefitPreviewCatalogue params={params} /></main></EditorialPageShell>;
 }

@@ -7,18 +7,24 @@ import { createContext, useContext, useEffect, useRef, type ReactNode } from "re
 import { usePathname, useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { signOut } from "@/app/membros/actions";
-import { COMMUNITY_PLANS_PATH } from "@/content/community-offer";
 import styles from "./account-menu.module.css";
 
-export type AccountIdentity = { name: string; username: string; role: "member" | "admin"; communityActive?: boolean };
+export type AccountIdentity = { name: string; username: string; role: "member" | "admin" };
 const AccountContext = createContext<AccountIdentity | null>(null);
 
-export function CommunityEntryLink({ className, offerHref = COMMUNITY_PLANS_PATH, label = "Entrar" }: {
-  className?: string; offerHref?: string; label?: string;
+export function CommunityEntryLink({ className, href = "/membros/entrar", label = "Entrar" }: {
+  className?: string; href?: string; label?: string;
 }) {
   const account = useContext(AccountContext);
-  return <Link data-ap-button="primary" className={className} href={account?.communityActive ? "/membros" : offerHref} prefetch={false}>
-    <AreaIcon area={account?.communityActive ? "comunidade" : "perfil"} />{account?.communityActive ? "Acessar comunidade" : label}
+  return <Link data-ap-button="primary" className={className} href={account ? "/membros" : href} prefetch={false}>
+    <AreaIcon area={account ? "comunidade" : "perfil"} />{account ? "Minha comunidade" : label}
+  </Link>;
+}
+
+export function MemberBrandLink({ className, children }: { className?: string; children: ReactNode }) {
+  const account = useContext(AccountContext);
+  return <Link className={className} href={account ? "/membros" : "/"} aria-label={account ? "Início da área de membros" : "Apogee - início"}>
+    {children}
   </Link>;
 }
 
@@ -36,10 +42,10 @@ export function AccountProvider({ account, children }: { account: AccountIdentit
   return <AccountContext.Provider value={account}>{children}</AccountContext.Provider>;
 }
 
-export function SignOutButton({ compact = false }: { compact?: boolean }) {
+function SignOutButton() {
   const { pending } = useFormStatus();
   return <button className={styles.signOut} type="submit" disabled={pending} aria-label="Sair da conta">
-    <LogOut size={17} aria-hidden="true" />{pending ? "Saindo…" : compact ? "Sair" : "Sair da conta"}
+    <LogOut size={17} aria-hidden="true" />{pending ? "Saindo…" : "Sair da conta"}
   </button>;
 }
 
@@ -76,12 +82,12 @@ export function AccountMenu({ fallback }: { fallback: ReactNode }) {
     <div className={styles.panel}>
       <p className={styles.identity}>{account.name}<span>@{account.username}</span></p>
       <nav aria-label="Minha conta">
-        <Link href="/membros"><AreaIcon area="home" />Minha comunidade</Link>
-        <Link href="/membros/perfil/editar"><AreaIcon area="perfil" />Meu perfil</Link>
+        <Link href={account.username ? `/membros/perfil/${encodeURIComponent(account.username)}` : "/membros/perfil/configurar"}><AreaIcon area="perfil" />Meu perfil</Link>
         <Link href="/membros/assinatura"><AreaIcon area="assinatura" />Assinatura e acesso</Link>
         <Link href="/membros/protecao"><AreaIcon area="protecao" />Verificação da conta</Link>
         <Link href="/membros/suporte"><AreaIcon area="suporte" />Ajuda e suporte</Link>
         {account.role === "admin" ? <Link href="/admin"><AreaIcon area="protecao" />Administração</Link> : null}
+        <Link href="/"><AreaIcon area="home" />Voltar ao site</Link>
       </nav>
       <form action={signOut}><SignOutButton /></form>
     </div>

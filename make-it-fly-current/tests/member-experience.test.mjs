@@ -125,7 +125,22 @@ test("calendar and collection previews preserve the destination and respect veri
   assert.match(renderToStaticMarkup(await gates.calendarPagePreview("calendario", "/membros/meu-calendario")), /em preparação/);
 });
 
-test("the global account menu exposes logout on public pages and never offers administration to ordinary members", () => {
+test("all authenticated accounts enter the member area without requiring an annual subscription", () => {
+  const load = opportunityLoader({ ...uiMocks,
+    "next/navigation": { usePathname: () => "/", useRouter: () => ({ refresh() {} }) },
+    "@/app/membros/actions": { signOut: async () => {} },
+  });
+  const { AccountProvider, CommunityEntryLink, MemberBrandLink } = load("components/members/account-menu.tsx");
+  const render = (account, child) => renderToStaticMarkup(React.createElement(AccountProvider, { account }, child));
+  assert.match(render(null, React.createElement(CommunityEntryLink)), /href="\/membros\/entrar"[\s\S]*Entrar/);
+  const login = "/membros/entrar?next=%2Fmembros%2Feventos";
+  assert.ok(render(null, React.createElement(CommunityEntryLink, { href: login })).includes(login));
+  assert.match(render(member, React.createElement(CommunityEntryLink, { href: login })), /href="\/membros"[\s\S]*Minha comunidade/);
+  assert.match(render(member, React.createElement(MemberBrandLink, null, "Apogee")), /href="\/membros"/);
+  assert.match(render(null, React.createElement(MemberBrandLink, null, "Apogee")), /href="\/"/);
+});
+
+test("the account menu exposes logout and never offers administration to ordinary members", () => {
   const load = opportunityLoader({ ...uiMocks,
     "next/navigation": { usePathname: () => "/", useRouter: () => ({ refresh() {} }) },
     "@/app/membros/actions": { signOut: async () => {} },
@@ -135,6 +150,8 @@ test("the global account menu exposes logout on public pages and never offers ad
   assert.equal(render(null), '<a href="/membros">Membros</a>');
   const html = render(member);
   assert.match(html, /Minha conta/); assert.match(html, /Sair da conta/);
+  assert.ok(html.includes(`href="/membros/perfil/${member.username}"`));
+  assert.match(html, /Voltar ao site/);
   assert.doesNotMatch(html, /href="\/admin"|email|synthetic-member/);
   assert.match(render({ ...member, role: "admin" }), /href="\/admin"/);
 });
