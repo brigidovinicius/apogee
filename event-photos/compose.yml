@@ -3,6 +3,7 @@ services:
     build: .
     environment:
       ALBUM_SECRET: ${ALBUM_SECRET:?Defina ALBUM_SECRET no ambiente do piloto}
+      ALBUM_SELFIE_ENABLED: ${ALBUM_SELFIE_ENABLED:-false}
       ALBUM_ANALYSIS_EDGE: ${ALBUM_ANALYSIS_EDGE:-1600}
       ALBUM_THRESHOLD: ${ALBUM_THRESHOLD:-0.45}
     ports:

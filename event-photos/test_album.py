@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import io
 import json
 import tempfile
@@ -50,11 +52,15 @@ class AlbumTest(unittest.TestCase):
         for event in ("workshop", "otro-evento"):
             album.start(event, int(time.time()) + 1000, "synthetic-test")
 
+    def actor(self, event="workshop", member="fixture"):
+        proof = json.dumps(["actor", event, member], separators=(",", ":"))
+        return hmac.new(b"x" * 32, proof.encode(), hashlib.sha256).hexdigest()
+
     def request(self, path, body=None, **headers):
         captured = {}
         env = {
             "PATH_INFO": path, "REQUEST_METHOD": "GET" if body is None else "POST",
-            "HTTP_AUTHORIZATION": "Bearer " + "x" * 32, "HTTP_X_ALBUM_ACTOR": "f" * 64,
+            "HTTP_AUTHORIZATION": "Bearer " + "x" * 32, "HTTP_X_ALBUM_ACTOR": self.actor(),
             "HTTP_X_ALBUM_CONSENT": "selfie-v1", "CONTENT_LENGTH": str(len(body or b"")),
             "CONTENT_TYPE": "image/jpeg", "wsgi.input": io.BytesIO(body or b""), **headers,
         }
@@ -75,19 +81,35 @@ class AlbumTest(unittest.TestCase):
         return captured["status"], data
 
     def seed(self):
-        (self.source / "group.jpg").write_bytes(fixture("green"))
+        group = Image.new("RGB", (128, 64), "blue")
+        group.paste("red", (0, 0, 64, 64))
+        group.save(self.source / "group.jpg")
         (self.source / "other.jpg").write_bytes(fixture("blue"))
         (self.source / "broken.jpg").write_bytes(b"broken-image")
-        return album.import_batch("workshop", self.source, self.vision)
+        return album.import_batch("workshop", self.source)
+
+    def enroll(self, member="fixture"):
+        with album.connect() as db:
+            photo_id = db.execute("SELECT id FROM photo WHERE name='group.jpg'").fetchone()[0]
+        actor = self.actor(member=member)
+        self.assertEqual(self.request("/workshop/consent", b"", HTTP_X_ALBUM_ACTOR=actor, HTTP_X_ALBUM_MEMBER=member,
+                                      HTTP_X_ALBUM_CONSENT=album.CONSENT_VERSION),
+                         (200, {"granted": True, "indexed": False}))
+        album.index_opt_in("workshop", member, photo_id, (0, 0, .5, 1), self.vision, "x" * 32)
+        return photo_id
 
     def test_resume_deduplication_and_original(self):
-        self.assertEqual(self.seed(), {"ready": 2, "faces": 3, "skipped": 0, "errors": 1})
+        self.assertEqual(self.seed(), {"ready": 2, "skipped": 0, "errors": 1})
         with album.connect() as db:
             db.execute("UPDATE photo SET state='pending' WHERE name='group.jpg'")
-        self.assertEqual(album.import_batch("workshop", self.source, self.vision),
-                         {"ready": 1, "faces": 2, "skipped": 1, "errors": 1})
+        self.assertEqual(album.import_batch("workshop", self.source),
+                         {"ready": 1, "skipped": 1, "errors": 1})
         _, response = self.request("/workshop/photos")
         self.assertEqual(len(response["ids"]), 2)
+        with album.connect() as db:
+            self.assertEqual(db.execute("SELECT count(*) FROM opt_in_face").fetchone()[0], 0)
+        self.assertEqual(self.request("/workshop/search", fixture("red"))[1]["error"], "consent_required")
+        self.enroll()
         status, results = self.request("/workshop/search", fixture("red"))
         self.assertEqual(status, 200)
         self.assertEqual(len(results["ids"]), 1)
@@ -95,11 +117,12 @@ class AlbumTest(unittest.TestCase):
         self.assertEqual(self.request(f"/workshop/{photo_id}/download"),
                          (200, (self.source / "group.jpg").read_bytes()))
         self.assertEqual(self.request(f"/otro-evento/{photo_id}/thumb")[0], 404)
-        self.assertEqual(self.request("/otro-evento/search", fixture("red"))[0], 409)
+        self.assertEqual(self.request("/otro-evento/search", fixture("red"))[0], 400)
         self.assertEqual(self.request("/workshop/photos", HTTP_AUTHORIZATION="")[0], 401)
 
     def test_errors_and_purge(self):
         self.seed()
+        self.enroll()
         self.assertEqual(self.request("/workshop/search", fixture("red"), HTTP_X_ALBUM_CONSENT="")[1]["error"], "consent_required")
         self.assertEqual(self.request("/workshop/search", b"?", CONTENT_TYPE="image/gif")[0], 415)
         self.assertEqual(self.request("/workshop/search", b"?", CONTENT_LENGTH="9000000")[0], 413)
@@ -112,11 +135,45 @@ class AlbumTest(unittest.TestCase):
         photo_id = result["ids"][0]
         album.delete("workshop", photo_id)
         self.assertEqual(self.request(f"/workshop/{photo_id}/download")[0], 404)
-        self.assertEqual(self.request("/workshop/search", fixture("red"))[1]["ids"], [])
-        self.assertEqual(album.import_batch("workshop", self.source, self.vision)["skipped"], 2)
+        self.assertEqual(self.request("/workshop/search", fixture("red"))[1]["error"], "not_enrolled")
+        self.assertEqual(album.import_batch("workshop", self.source)["skipped"], 2)
         album.purge("workshop")
         self.assertEqual(self.request("/workshop/photos")[0], 404)
         self.assertFalse(list(self.private.glob("*.jpg")))
+
+    def test_opt_in_scopes_faces_and_revocation(self):
+        self.seed()
+        photo_id = self.enroll()
+        self.assertTrue(self.request(f"/workshop/consent/{photo_id}")[1]["indexed"])
+        self.assertFalse(self.request("/workshop/consent/" + "0"*32)[1]["indexed"])
+        second = self.actor(member="another")
+        self.assertEqual(self.request("/workshop/consent", b"", HTTP_X_ALBUM_ACTOR=second, HTTP_X_ALBUM_MEMBER="another",
+                                      HTTP_X_ALBUM_CONSENT=album.CONSENT_VERSION)[0], 200)
+        self.assertEqual(self.request("/workshop/search", fixture("red"), HTTP_X_ALBUM_ACTOR=second)[1]["error"],
+                         "not_enrolled")
+        with self.assertRaisesRegex(ValueError, "precisa autorizar"):
+            album.index_opt_in("workshop", "unconsented", photo_id, (0, 0, 1, 1), self.vision, "x" * 32)
+        self.assertEqual(self.request("/workshop/consent", REQUEST_METHOD="DELETE"),
+                         (200, {"granted": False, "indexed": False}))
+        with album.connect() as db:
+            self.assertEqual(db.execute("SELECT count(*) FROM opt_in_face").fetchone()[0], 0)
+        self.service = Service("x" * 32, None)
+        self.assertEqual(self.request("/workshop/photos")[0], 200)
+        self.assertEqual(self.request("/workshop/search", fixture("red"))[0], 404)
+
+    def test_indefinite_gallery_does_not_extend_face_retention(self):
+        with album.connect() as db:
+            db.execute("UPDATE album SET expires=NULL WHERE id='workshop'")
+        self.seed()
+        photo_id = self.enroll()
+        with album.connect() as db:
+            db.execute("UPDATE opt_in SET expires=0 WHERE event='workshop'")
+        self.assertEqual(self.request("/workshop/photos")[1]["expires"], None)
+        self.assertEqual(self.request("/workshop/search", fixture("red"))[1]["error"], "consent_required")
+        album.purge()
+        self.assertEqual(self.request(f"/workshop/{photo_id}/download")[0], 200)
+        with album.connect() as db:
+            self.assertEqual(db.execute("SELECT count(*) FROM opt_in_face").fetchone()[0], 0)
 
     def test_expiry_hides_and_removes_media(self):
         self.seed()

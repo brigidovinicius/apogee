@@ -1,0 +1,27 @@
+services:
+  photos:
+    ports: !reset []
+    networks: [event_photos]
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - |
+          import os, urllib.request
+          request = urllib.request.Request(
+              "http://127.0.0.1:8786/workshop-codex-community-florianopolis/photos",
+              headers={"Authorization": "Bearer " + os.environ["ALBUM_SECRET"]},
+          )
+          with urllib.request.urlopen(request, timeout=5) as response:
+              assert response.status == 200
+      interval: 20s
+      timeout: 7s
+      retries: 3
+      start_period: 20s
+
+networks:
+  event_photos:
+    external: true
+    name: apogee-event-media

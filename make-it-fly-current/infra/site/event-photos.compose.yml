@@ -1,0 +1,10 @@
+services:
+  web:
+    env_file:
+      - ${APOGEE_EVENT_PHOTOS_ENV_FILE:?Defina o arquivo privado de ativação do álbum}
+    networks: [event_photos]
+
+networks:
+  event_photos:
+    external: true
+    name: apogee-event-media

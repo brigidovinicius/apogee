@@ -4,14 +4,14 @@ import { MAX_SELFIE_BYTES, SELFIE_CONSENT } from "@/lib/eventos/catalogo";
 import { PRIVATE, actorKey, albumConfig, albumError, albumMember, albumWorker, photoLinks } from "@/lib/eventos/fotos";
 
 const SEARCH_ERRORS = new Set(["no_face", "multiple_faces", "invalid_image", "invalid_size",
-  "invalid_format", "not_indexed", "not_found", "busy", "rate_limit"]);
+  "invalid_format", "not_enrolled", "consent_required", "not_found", "busy", "rate_limit"]);
 
 export async function POST(request: Request) {
   const config = albumConfig();
-  if (!config) return albumError("not_found", 404);
+  if (!config?.selfie) return albumError("not_found", 404);
   try {
     if (request.headers.get("origin") !== applicationOrigin()) return albumError("forbidden", 403);
-    const member = await albumMember(request.headers, config);
+    const member = await albumMember(request.headers, config, true);
     if (!member) return albumError("forbidden", 403);
     if (request.headers.get("x-apogee-consent") !== SELFIE_CONSENT) return albumError("consent_required", 400);
     const type = request.headers.get("content-type");

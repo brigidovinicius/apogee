@@ -10,7 +10,10 @@ from wsgiref.util import FileWrapper
 import cv2
 import numpy as np
 
-from album import EVENT_RE, PHOTO_RE, active, connect, paths, purge, search_guard, video_path
+from album import (
+    CONSENT_VERSION, EVENT_RE, MEMBER_RE, PHOTO_RE, active, actor_key, change_consent, connect, consent_state,
+    paths, purge, search_guard, video_path,
+)
 from vision import MAX_SELFIE, MODEL, THRESHOLD, InvalidImage, Vision, decode
 
 PHOTO_QUERY = """
@@ -53,7 +56,11 @@ class Service:
                 return send_file(video_path(event), "video/mp4", respond, env)
             if method == "GET" and len(route) == 2 and PHOTO_RE.fullmatch(route[0]):
                 return self.media(db, event, route[0], route[1], respond, env)
-            if method == "POST" and route == ["search"]:
+            if self.vision and route == ["consent"]:
+                return self.consent(db, event, env, respond, method)
+            if self.vision and method == "GET" and len(route) == 2 and route[0] == "consent" and PHOTO_RE.fullmatch(route[1]):
+                return self.consent(db, event, env, respond, method, route[1])
+            if self.vision and method == "POST" and route == ["search"]:
                 return self.search(db, event, env, respond)
         return result(respond, "404 Not Found", {"error": "not_found"})
 
@@ -64,10 +71,28 @@ class Service:
             return send_file(paths(photo_id)[variant == "thumb"], "image/jpeg", respond, env)
         return result(respond, "404 Not Found", {"error": "not_found"})
 
+    def consent(self, db, event, env, respond, method, photo_id=None):
+        actor = env.get("HTTP_X_ALBUM_ACTOR", "")
+        if not re.fullmatch(r"[a-f0-9]{64}", actor):
+            return result(respond, "400 Bad Request", {"error": "forbidden"})
+        if method == "GET":
+            return result(respond, "200 OK", consent_state(db, event, actor, photo_id))
+        if method in {"POST", "DELETE"}:
+            member_id = env.get("HTTP_X_ALBUM_MEMBER", "")
+            if method == "POST" and (
+                env.get("HTTP_X_ALBUM_CONSENT") != CONSENT_VERSION or not MEMBER_RE.fullmatch(member_id)
+                or not hmac.compare_digest(actor, actor_key(self.secret, event, member_id))
+            ):
+                return result(respond, "400 Bad Request", {"error": "consent_required"})
+            try:
+                if not change_consent(event, actor, method == "POST", member_id):
+                    return result(respond, "404 Not Found", {"error": "not_found"})
+            except BlockingIOError:
+                return result(respond, "429 Too Many Requests", {"error": "busy"})
+            return result(respond, "200 OK", consent_state(db, event, actor))
+        return result(respond, "404 Not Found", {"error": "not_found"})
+
     def search(self, db, event, env, respond):
-        if not db.execute("SELECT 1 FROM photo WHERE event=? AND state='ready' AND model=? LIMIT 1",
-                          (event, MODEL)).fetchone():
-            return result(respond, "409 Conflict", {"error": "not_indexed"})
         actor = env.get("HTTP_X_ALBUM_ACTOR", "")
         if env.get("HTTP_X_ALBUM_CONSENT") != "selfie-v1" or not re.fullmatch(r"[a-f0-9]{64}", actor):
             return result(respond, "400 Bad Request", {"error": "consent_required"})
@@ -81,6 +106,11 @@ class Service:
             return result(respond, "429 Too Many Requests", {"error": "busy"})
         try:
             with search_guard():
+                state = consent_state(db, event, actor)
+                if not state["granted"]:
+                    return result(respond, "400 Bad Request", {"error": "consent_required"})
+                if not state["indexed"]:
+                    return result(respond, "409 Conflict", {"error": "not_enrolled"})
                 return self.compare(db, event, env, respond, actor, raw_size, formats)
         except BlockingIOError:
             return result(respond, "429 Too Many Requests", {"error": "busy"})
@@ -106,15 +136,15 @@ class Service:
         if not vectors:
             return result(respond, "422 Unprocessable Content", {"error": "no_face"})
         rows = db.execute("""
-            SELECT photo.id, face.embedding FROM face JOIN photo ON photo.id=face.photo
-            WHERE photo.event=? AND photo.state='ready' AND photo.model=?
-        """, (event, MODEL))
+            SELECT p.id, f.embedding FROM opt_in_face f JOIN photo p ON p.id=f.photo
+            WHERE f.event=? AND f.actor=? AND p.event=f.event AND p.state='ready' AND f.model=?
+        """, (event, actor, MODEL))
         scores = {}
         for photo_id, embedding in rows:
             score = float(vectors[0] @ np.frombuffer(embedding, dtype="<f4"))
             if score >= THRESHOLD:
                 scores[photo_id] = max(score, scores.get(photo_id, -1))
-        if not active(db, event):
+        if not active(db, event) or not consent_state(db, event, actor)["granted"]:
             return result(respond, "404 Not Found", {"error": "not_found"})
         ids = sorted(scores, key=lambda photo_id: (-scores[photo_id], photo_id))
         return result(respond, "200 OK", {"ids": ids})
@@ -153,6 +183,6 @@ def janitor():
 def create_app():
     with connect() as db:
         db.execute("SELECT 1 FROM album LIMIT 1").fetchone()
-    app = Service(os.environ["ALBUM_SECRET"], Vision())
+    app = Service(os.environ["ALBUM_SECRET"], Vision() if os.getenv("ALBUM_SELFIE_ENABLED") == "true" else None)
     threading.Thread(target=janitor, daemon=True).start()
     return app

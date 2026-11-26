@@ -3,7 +3,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { getSessionCookie } from "better-auth/cookies";
 import { getMemberFromHeaders } from "@/lib/members/dal";
 import { adultAccess } from "@/lib/members/protection";
-import { PHOTO_API, WORKSHOP, type AlbumPhoto } from "./catalogo";
+import { PHOTO_API, WORKSHOP, type AlbumPhoto, type PhotoOptIn } from "./catalogo";
 
 export const PRIVATE = { "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" };
 export const PHOTO_ID = /^[a-f0-9]{32}$/;
@@ -16,20 +16,26 @@ export function albumConfig() {
   if (!/^http:\/\/(127\.0\.0\.1|localhost|photos):8786$/.test(base) ||
       !/^[a-zA-Z0-9_-]{32,128}$/.test(secret)) return null;
   const allowed = new Set((process.env.APOGEE_WORKSHOP_MEDIA_MEMBER_IDS ?? "").split(",").map(id => id.trim()).filter(Boolean));
-  if (!allowed.size) return null;
-  return { base: `${base}/${WORKSHOP.slug}`, secret, allowed, browse: process.env.APOGEE_WORKSHOP_MEDIA_BROWSE === "true" };
+  const members = process.env.APOGEE_WORKSHOP_MEDIA_AUDIENCE === "members";
+  if (!members && !allowed.size) return null;
+  return {
+    base: `${base}/${WORKSHOP.slug}`, secret, allowed, members,
+    browse: process.env.APOGEE_WORKSHOP_MEDIA_BROWSE === "true",
+    selfie: process.env.APOGEE_WORKSHOP_SELFIE_ENABLED === "true",
+  };
 }
 
 type AlbumConfig = NonNullable<ReturnType<typeof albumConfig>>;
 
-export async function canAccessAlbum(memberId: string, config: AlbumConfig) {
-  return config.allowed.has(memberId) && await adultAccess(memberId);
+export function canAccessAlbum(memberId: string, config: AlbumConfig) {
+  return config.members || config.allowed.has(memberId);
 }
 
-export async function albumMember(headers: Headers, config: AlbumConfig) {
+export async function albumMember(headers: Headers, config: AlbumConfig, forSelfie = false) {
   if (!getSessionCookie(headers)) return null;
   const member = await getMemberFromHeaders(headers);
-  return member && await canAccessAlbum(member.id, config) ? member : null;
+  if (!member || !canAccessAlbum(member.id, config) || (forSelfie && !await adultAccess(member.id))) return null;
+  return member;
 }
 
 export function albumWorker(config: AlbumConfig, path: string, init?: RequestInit, timeout = 25_000) {
@@ -69,11 +75,19 @@ export function photoLinks(ids: unknown, config: AlbumConfig, memberId: string):
   });
 }
 
+export async function readPhotoOptIn(config: AlbumConfig, memberId: string, photoId?: string): Promise<PhotoOptIn | null> {
+  if (!config.selfie || !await adultAccess(memberId)) return null;
+  const response = await albumWorker(config, photoId ? `/consent/${photoId}` : "/consent", { headers: { "X-Album-Actor": actorKey(config, memberId) } });
+  if (!response.ok) return null;
+  const state = await response.json();
+  return { granted: state.granted === true, indexed: state.indexed === true };
+}
+
 export async function readAlbum(config: AlbumConfig, memberId: string) {
   const response = await albumWorker(config, "/photos");
   if (!response.ok) return null;
-  const index: { ids: unknown; expires: number; video: boolean } = await response.json();
-  if (!Number.isSafeInteger(index.expires) || index.expires <= Date.now() / 1000) return null;
+  const index: { ids: unknown; expires: number | null; video: boolean } = await response.json();
+  if (index.expires !== null && (!Number.isSafeInteger(index.expires) || index.expires <= Date.now() / 1000)) return null;
   return {
     expires: index.expires,
     video: index.video === true,

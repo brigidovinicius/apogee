@@ -21,6 +21,10 @@ export const mediaEvents = [WORKSHOP];
 
 export const PHOTO_API = "/api/eventos/fotos";
 export const VIDEO_API = "/api/eventos/video";
+export const PHOTO_CONSENT_API = "/api/eventos/fotos/consentimento";
+export const PHOTO_OPT_IN = "opt-in-v1";
+export type PhotoOptIn = { granted: boolean; indexed: boolean };
+
 export const SELFIE_CONSENT = "selfie-v1";
 export const MAX_SELFIE_BYTES = 8 * 1024 * 1024;
 

@@ -24,13 +24,13 @@ A listagem de metadados do Drive confirmou 280 JPEGs, **5.967.030.799 bytes** e 
 
 ## Como funciona
 
-- A Apogee reutiliza a sessão Better Auth e a proteção da conta. Fotos, miniaturas e downloads exigem conta ativa na lista explícita do workshop. A permissão da gravação segue o fluxo já existente da Apogee. Com a galeria manual desativada, fotos encontradas recebem links temporários de 15 min vinculados à conta e à foto. A checagem da conta acontece em cada requisição.
-- O Python roda em rede privada e valida um segredo entre o site e o worker. YuNet detecta faces e SFace produz vetores normalizados de 128 dimensões. A comparação é linear e isolada por evento e versão do índice. O limite do piloto é 400 registros por álbum, com uma busca ativa e até seis consultas por minuto por conta.
-- O diretório privado armazena os JPEGs originais, miniaturas de até 640 px, MP4 opcional e SQLite. A escolha evita colocar as mídias grandes ou o processamento no PostgreSQL de membros. O álbum usa SHA-256 por evento para retomar a importação, grava cada estado no banco, finaliza arquivos por rename e preserva a versão do processamento. O importador opera em sequência; o worker recusa buscas enquanto a importação detém o lock. A dimensão de análise começa em 1.600 px com decodificação JPEG reduzida e pode ser comparada com 2.000 e 2.400 px. Mudar a dimensão reindexa o lote na próxima importação.
-- O upload aceita JPEG/PNG até 8 MiB e 16 MP. A selfie e seu vetor existem em memória durante a consulta. O checkbox de consentimento é obrigatório em cada busca, a solicitação especifica a versão do texto e a aplicação deixa a selfie fora de arquivos, analytics e histórico. O piloto não mantém um recibo durável de consentimento. Definir com o responsável de privacidade a comprovação e a retenção necessárias antes do uso real.
-- A expiração bloqueia o álbum, inclusive downloads, imediatamente. Com o serviço ativo, a rotina verifica a expiração a cada minuto e apaga dados e cópias locais. `delete-photo`, `delete-video` e `delete-album` atendem exclusões antecipadas. A interface aponta para o contato de privacidade. O operador precisa localizar todas as fotos aplicáveis e tratar separadamente mídia original no Drive, cópias de segurança e downloads já realizados. Se o serviço ficar suspenso, o expurgo ocorre na retomada ou por comando administrativo.
+- A Apogee reutiliza a sessão Better Auth e a proteção da conta. Fotos, miniaturas e downloads exigem conta ativa. Com `APOGEE_WORKSHOP_MEDIA_AUDIENCE=members`, a galeria é aberta a contas Free e Premium. A lista explícita continua disponível para pilotos isolados. A permissão da gravação segue o fluxo já existente da Apogee. Com a galeria manual desativada, fotos encontradas recebem links temporários de 15 min vinculados à conta e à foto. A checagem da conta acontece em cada requisição.
+- O Python roda em rede privada e valida um segredo entre o site e o worker. O importador da galeria faz cópia e miniaturas sem rodar YuNet ou SFace. O limite do piloto é 400 fotos por álbum.
+- O diretório privado armazena os JPEGs originais, miniaturas de até 640 px, MP4 opcional e SQLite. A escolha evita colocar as mídias grandes ou o processamento no PostgreSQL de membros. O álbum usa SHA-256 por evento para retomar a importação, grava cada estado no banco, finaliza arquivos por rename e preserva a versão do processamento. O importador opera em sequência. Para a busca opcional, a dimensão de análise começa em 1.600 px com decodificação JPEG reduzida. Se ela mudar, os recortes autorizados precisam ser indexados com a nova versão.
+- Quem escolhe a busca pode autorizar o processamento do próprio rosto. O serviço guarda o aceite com versão, hora, ID da conta acessível apenas à operação e um identificador pseudonimizado para a busca. O aceite e os vetores expiram em 30 dias ou ao revogar. Depois do aceite, a equipe associa a conta às fotos e delimita somente o rosto daquela pessoa. YuNet e SFace recebem o recorte. O índice e a comparação ficam restritos à conta, ao evento e à versão do modelo. A busca recusa a selfie enquanto não houver referência autorizada. Cada consulta exige confirmação, aceita JPEG/PNG até 8 MiB e 16 MP e usa selfie e vetor em memória durante o processamento. A revogação remove aceite e vetores associados. Há uma busca ativa por vez e até seis consultas por minuto por conta.
+- Quando houver expiração configurada para a galeria, ela bloqueia visualização e downloads imediatamente. O álbum do Workshop pode ser cadastrado com `--no-expiry`; a expiração do aceite facial continua valendo. Com o serviço ativo, a rotina verifica a expiração a cada minuto e apaga dados e cópias locais. `delete-photo`, `delete-video` e `delete-album` atendem exclusões antecipadas. A interface aponta para o contato de privacidade. O operador precisa localizar todas as fotos aplicáveis e tratar separadamente mídia original no Drive, cópias de segurança e downloads já realizados. Se o serviço ficar suspenso, o expurgo ocorre na retomada ou por comando administrativo.
 
-Para o lote real, documentar a finalidade, a autorização/base legal aplicável às pessoas fotografadas, o período aprovado e a permissão para distribuição de fotos e vídeo. O consentimento da selfie vale para a consulta do titular. [LGPD, arts. 5º, 8º, 11 e 18](https://planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm)
+Antes de ativar o álbum real, registre o público, o prazo e a autorização para distribuir a mídia. O aceite de reconhecimento é separado e vale para o rosto da própria pessoa. A autorização precisa estar vigente quando a equipe delimitar cada referência. [LGPD, arts. 5º, 8º, 11 e 18](https://planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm)
 
 ### Modelos e dependências
 
@@ -78,7 +78,19 @@ gunicorn --bind 127.0.0.1:8786 --workers 1 --threads 4 'service:create_app()'
 
 No macOS, se o Python instalado não localizar suas autoridades TLS, use a cadeia local com `SSL_CERT_FILE=/etc/ssl/cert.pem python cli.py models`.
 
-Para o site local, mantenha a configuração de desenvolvimento do Better Auth e PostgreSQL. Configure `APOGEE_WORKSHOP_MEDIA_ENABLED=true`, `APOGEE_WORKSHOP_MEDIA_URL=http://127.0.0.1:8786`, `APOGEE_WORKSHOP_MEDIA_MEMBER_IDS` com os IDs das contas de teste, e o mesmo `ALBUM_SECRET`. A galeria manual só aparece com `APOGEE_WORKSHOP_MEDIA_BROWSE=true`. Entre na conta autorizada e acesse `/membros/eventos`. A marcação de captura é um seletor de arquivo nativo no dispositivo.
+Para o site local, mantenha a configuração de desenvolvimento do Better Auth e PostgreSQL. Configure `APOGEE_WORKSHOP_MEDIA_ENABLED=true`, `APOGEE_WORKSHOP_MEDIA_URL=http://127.0.0.1:8786`, `APOGEE_WORKSHOP_MEDIA_MEMBER_IDS` com os IDs das contas de teste, e o mesmo `ALBUM_SECRET`. Use `APOGEE_WORKSHOP_MEDIA_BROWSE=true` para a opção de galeria. A busca é controlada separadamente por `APOGEE_WORKSHOP_SELFIE_ENABLED=true` no site e `ALBUM_SELFIE_ENABLED=true` no worker. Entre com uma conta autorizada e acesse `/membros/eventos`. A marcação de captura usa o seletor de arquivo nativo.
+
+### Preparar referências de um participante
+
+1. A pessoa entra em **Encontrar minhas fotos** e dá o aceite. A equipe consulta `python cli.py list-opt-ins "$album_event"` no serviço privado, usa a conta do evento e a galeria para identificar manualmente a foto e delimitar somente o rosto daquela pessoa.
+2. Use a posição normalizada de 0 a 1 na imagem orientada, na ordem esquerda, topo, direita e base. Use apenas recortes que contenham exclusivamente o rosto autorizado. O comando verifica o aceite vigente e recusa recortes sem rosto ou com mais de um rosto.
+3. Repita nas fotos autorizadas. Depois, o participante pode buscar com a selfie ou revogar a autorização na própria página.
+
+```sh
+python cli.py index-opt-in "$album_event" ID_OPACO_DA_FOTO   --member-id ID_DA_CONTA --box 0.25 0.17 0.42 0.53
+```
+
+A versão com opção individual usa um volume SQLite próprio. Os resultados do piloto anterior são históricos e não habilitam referências nessa versão.
 
 Para exclusões durante o piloto, rode o CLI com as mesmas variáveis e acesso ao volume. Em Docker use `docker compose -p apogee-event-photos run --rm photos python cli.py` seguido dos argumentos. Um registro de exclusão conserva o hash do original até a expiração, para impedir que a reimportação reative a foto.
 
@@ -88,9 +100,13 @@ python cli.py delete-video "$album_event"
 python cli.py delete-album "$album_event"
 ```
 
-## Resultados do piloto local
+## Validação da opção individual
 
-Mac M3, Python 3.13, OpenCV 4.13 e análise de 1.600 px. O lote continha quatro JPEGs sintéticos. Um era retrato, um era grupo, um era retrato de outra pessoa e um era uma cópia ampliada a 29 MP para medir a decodificação. A consulta usou uma imagem sintética produzida em outra composição, sem recorte das fotos indexadas.
+O navegador confirmou a galeria com a busca desabilitada. Com a busca habilitada e dados fictícios, o aceite habilitou o cadastro de referência de uma conta, a selfie devolveu somente a foto com o recorte autorizado e a revogação removeu o vetor e o acesso pelos links anteriores quando a galeria manual estava desabilitada. Uma busca de referência levou 127 ms em loopback. A importação da galeria criou zero vetores.
+
+## Resultados da primeira implementação local
+
+As medições abaixo são do piloto sintético anterior à indexação individual. Mac M3, Python 3.13, OpenCV 4.13 e análise de 1.600 px. O lote continha quatro JPEGs sintéticos. Um era retrato, um era grupo, um era retrato de outra pessoa e um era uma cópia ampliada a 29 MP para medir a decodificação. A consulta usou uma imagem sintética produzida em outra composição, sem recorte das fotos indexadas.
 
 | Verificação | Resultado observado |
 | --- | --- |
@@ -107,6 +123,6 @@ A amostra verifica o fluxo e a decodificação em alta resolução. Precisão, c
 
 1. Aprovar separadamente o SHA da área Eventos, o ambiente isolado do piloto na VPS, a base legal, as regras de acesso e a expiração. O material original do Drive permanece na origem e a ingestão usa cópia controlada com o mount de entrada somente leitura.
 2. Repetir o preflight do runbook do site por SSH. Disponibilizar o piloto em projeto Compose separado, com os limites iniciais. Começar com a amostra sintética. Testar uso de CPU/RAM, throttling, latência e ausência de falhas no site, Radar e locação antes de aumentar a carga. Ampliar com fotos autorizadas, selfies independentes, retratos, grupos, planos gerais, pouca luz e perfis. Medir correspondências corretas e total de fotografias conhecidas encontradas. A similaridade do SFace não representa probabilidade de identidade.
-3. Para o site em contêiner, usar rede Docker interna entre site e piloto com alias `photos` e URL `http://photos:8786`. O Compose local publica só loopback. Na VPS, remover o port mapping por overlay no momento da aprovação e manter a API fora do proxy público. Usar arquivo de ambiente protegido e revisar a omissão de URLs com grants em logs, inclusive na borda. Não publicar o volume de mídia nem incluí-lo em backups sem política de retenção.
+3. Para o site em contêiner, usar rede Docker interna entre site e piloto com alias `photos` e URL `http://photos:8786`. O Compose local publica só loopback. Na VPS, aplique `event-photos/compose.production.yml` ao worker e `make-it-fly-current/infra/site/event-photos.compose.yml` ao site. Os dois usam a rede Docker interna `apogee-event-media`. O overlay do worker remove as portas publicadas e o do site recebe um arquivo de ambiente separado, mantendo o original. Usar arquivo de ambiente protegido e revisar a omissão de URLs com grants em logs, inclusive na borda. Não publicar o volume de mídia nem incluí-lo em backups sem política de retenção.
 4. Validar com uma conta permitida, uma conta negada e sem sessão. Testar a captura em iOS/Android, confirmação de consentimento, exclusões, expiração e vídeo real autorizado. Ativar galeria manual apenas com liberação específica do álbum. Observar o primeiro lote em lotes de teste crescentes antes das 280 fotos.
 5. Para reverter o acesso, desligar `APOGEE_WORKSHOP_MEDIA_ENABLED` e reaplicar apenas o serviço web pelo runbook de deploy. Para reverter também o catálogo, voltar ao SHA web registrado no preflight. Para interromper o processamento, parar apenas o projeto Compose do piloto. A remoção definitiva do volume passa pelo procedimento de expiração ou exclusão aprovado. A reversão da interface não requer migração ou rollback do PostgreSQL de membros.
