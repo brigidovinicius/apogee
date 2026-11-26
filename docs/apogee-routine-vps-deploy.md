@@ -676,3 +676,7 @@ Publicação pedida pelo Vitor em nome do proprietário. SHA publicado `93e02b71
 - O worker tem 0,5 vCPU, 768 MiB e rede interna sem porta publicada. O teste sintético de 29 MP importou a imagem sem vetores e mediu 149.159.936 bytes de pico no cgroup. O lote real chegou ao limite de 805.306.368 bytes no cgroup, incluindo cache, e terminou sem falhas. A importação consumiu cerca de 176,9 s de CPU. O volume tinha 25 GiB livres após a carga.
 - A integração web–worker confirmou 280 fotos, entrega de miniatura e original JPEG e galeria sem data de expiração. A ficha do workshop redirecionou visitantes ao login. Os endpoints de miniatura, busca e aceite retornaram 403 sem sessão. O site e a página pública do evento responderam 200. O acesso de uma conta real no navegador não foi exercitado.
 - Rollback de web para `3371dff0c386512fc1c716086e5c6a71c5e0a68a` com os arquivos Compose do site e GeoIP, retirando o overlay de Eventos. Para suspender processamento, pare o serviço do projeto `apogee-event-photos`. Conserve o volume até executar uma exclusão pelo procedimento aprovado. A API do worker é privada e o arquivo original de ambiente do site é separado do arquivo de Eventos.
+
+### Teste com login do Google em produção
+
+A conta Free da Comunidade entrou pelo botão **Entrar com Google**, abriu as 280 fotos em **Ver álbum completo** e baixou um JPEG válido de 21.864.075 bytes. O fluxo não usou selfie. A conta testada tem perfil administrativo e foi usada no modo Usuário. A validação com uma conta Premium ficou pendente.
