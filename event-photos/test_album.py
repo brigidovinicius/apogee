@@ -161,6 +161,34 @@ class AlbumTest(unittest.TestCase):
         self.assertEqual(self.request("/workshop/photos")[0], 200)
         self.assertEqual(self.request("/workshop/search", fixture("red"))[0], 404)
 
+    def test_reference_endpoint_requires_active_consent_and_scopes_matches(self):
+        self.seed()
+        with album.connect() as db:
+            photo = db.execute("SELECT id FROM photo WHERE name='group.jpg'").fetchone()[0]
+        url = f"/workshop/references/{photo}"
+        box = [0, 0, .5, 1]
+        self.assertEqual(self.request("/workshop/references", HTTP_AUTHORIZATION="")[0], 401)
+        self.assertEqual(self.request("/workshop/references"), (200, {"members": []}))
+        self.assertEqual(self.request(url, json.dumps(box).encode(), REQUEST_METHOD="PUT"),
+                         (409, {"error": "consent_required"}))
+        self.request("/workshop/consent", b"", HTTP_X_ALBUM_CONSENT=album.CONSENT_VERSION)
+        self.assertEqual(self.request("/workshop/references"), (200, {"members": ["fixture"]}))
+        self.assertEqual(self.request(url), (200, {"box": None}))
+        self.assertEqual(self.request(url, b"[0,0,true,1]", REQUEST_METHOD="PUT")[0], 400)
+        self.assertEqual(self.request(url, b"[0,0,1,1]", REQUEST_METHOD="PUT", HTTP_X_ALBUM_MEMBER="other")[0], 409)
+        with patch.object(self.vision, "features", side_effect=AssertionError("Marking processed a face")):
+            self.assertEqual(self.request(url, json.dumps(box).encode(), REQUEST_METHOD="PUT"),
+                             (200, {"box": box}))
+        self.assertEqual(self.request(url), (200, {"box": box}))
+        self.assertEqual(self.request("/workshop/search", fixture("red")), (200, {"ids": [photo]}))
+        self.assertEqual(self.request("/workshop/search", fixture("blue")), (200, {"ids": []}))
+        self.assertEqual(self.request(url, REQUEST_METHOD="DELETE"), (200, {"box": None}))
+        self.assertEqual(self.request("/workshop/search", fixture("red"))[1]["error"], "not_enrolled")
+        with album.connect() as db:
+            db.execute("UPDATE opt_in SET expires=0 WHERE event='workshop'")
+        self.assertEqual(self.request("/workshop/references"), (200, {"members": []}))
+        self.assertEqual(self.request(url, json.dumps(box).encode(), REQUEST_METHOD="PUT")[0], 409)
+
     def test_validate_only_checks_selfie_and_never_saves_a_photo(self):
         self.seed()
         original_files = set(self.private.glob("*.jpg"))

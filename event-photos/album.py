@@ -243,6 +243,14 @@ def index_opt_in(event, member_id, photo_id, box, secret):
         """, (event, actor, photo_id, *box))
 
 
+def remove_opt_in_region(event, member_id, photo_id, secret):
+    actor = actor_key(secret, event, member_id)
+    with writer(), connect() as db:
+        if not active(db, event) or not consent_state(db, event, actor)["granted"]:
+            raise ValueError("O participante precisa autorizar a busca antes da alteração")
+        db.execute("DELETE FROM opt_in_region WHERE event=? AND actor=? AND photo=?", (event, actor, photo_id))
+
+
 def video_path(event):
     if not EVENT_RE.fullmatch(event):
         raise ValueError("Evento inválido")

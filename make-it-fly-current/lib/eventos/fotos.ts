@@ -62,7 +62,7 @@ export function photoLinks(ids: unknown): AlbumPhoto[] {
   }));
 }
 
-export async function readAlbum(config: AlbumConfig) {
+export async function readAlbum(config: AlbumConfig, includePhotos = config.browse) {
   const response = await albumWorker(config, "/photos");
   if (!response.ok) return null;
   const index: { ids: unknown; expires: number | null; video: boolean } = await response.json();
@@ -71,7 +71,7 @@ export async function readAlbum(config: AlbumConfig) {
     expires: index.expires,
     video: index.video === true,
     browse: config.browse,
-    photos: config.browse ? photoLinks(index.ids) : [],
+    photos: includePhotos ? photoLinks(index.ids) : [],
   };
 }
 

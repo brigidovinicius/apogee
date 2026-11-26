@@ -4,7 +4,7 @@ import styles from "@/components/eventos/eventos.module.css";
 import { MemberWorkspace } from "@/components/members/member-workspace";
 import shared from "@/components/members/members.module.css";
 import { requireSignedInMember } from "@/lib/members/dal";
-import { EVENTS_PATH, VIDEO_API, WORKSHOP, WORKSHOP_MEDIA_PATH } from "@/lib/eventos/catalogo";
+import { EVENTS_PATH, VIDEO_API, WORKSHOP, WORKSHOP_MEDIA_PATH, WORKSHOP_REFERENCES_PATH } from "@/lib/eventos/catalogo";
 import { albumConfig, canAccessAlbum, readAlbum } from "@/lib/eventos/fotos";
 
 export const metadata = { title: WORKSHOP.title, referrer: "no-referrer" as const };
@@ -25,6 +25,9 @@ export default async function EventMediaPage({ params }: { params: Promise<{ slu
         <a href={EVENTS_PATH} className={styles.support}>Voltar para Eventos</a>
         <h1 className={shared.title}>{WORKSHOP.title}</h1>
         <p className={styles.meta}><time dateTime={WORKSHOP.startsAt}>{WORKSHOP.dateLabel}</time> · {WORKSHOP.location}</p>
+        {member.role === "admin" && config?.selfie && <a href={WORKSHOP_REFERENCES_PATH} className={styles.support}>
+          Gerenciar marcações autorizadas
+        </a>}
       </header>
       {album ? <FotosDoEvento album={album.photos} browse={album.browse} expires={expires} selfieEnabled={config?.selfie === true} /> :
         <section data-ap-card="" className={styles.panel} aria-labelledby="fotos">
