@@ -24,6 +24,8 @@ export async function crawlDiscovery(target: { official_url: string; discovery_c
   const root = new URL(target.official_url).href;
   const state = checkpoint(target.discovery_crawl, root, hash);
   const leads: DiscoveredLink[] = [];
+  const calendars: string[] = [];
+  const rootCalendars = new Set<string>();
   // The caller has already fetched the root to validate the checkpoint.
   let remaining = 30, pagesChecked = 1, failures = 0;
   const visited = (url: string) => { state.visited.push(url); state.visited = state.visited.slice(-64); };
@@ -37,8 +39,18 @@ export async function crawlDiscovery(target: { official_url: string; discovery_c
     let parsed: ReturnType<typeof discoveryDocument>;
     try { parsed = discoveryDocument(resource, current.url, root); }
     catch { failures++; visited(current.url); continue; }
+    if (current.url === root) for (const calendar of parsed.eventCalendars ?? []) rootCalendars.add(calendar);
+    if (current.path.length === 1 && rootCalendars.has(current.url) && resource.finalUrl === current.url &&
+      parsed.links.some(link => sameDiscoveryScope(root, link.url) &&
+        /evento|palestra|workshop|seminário|congresso|oficina|feira|exposição|festival|encontro|hackathon/i.test(link.title))) {
+      calendars.push(current.url);
+    }
     if (current.url === root && includeRoot) parsed.links.unshift({ url: root, title: target.name, excerpt: "Página oficial de origem." });
-    const selected = parsed.links.slice(current.offset, current.offset + remaining);
+    // Leave space to visit a linked calendar on the first pass, even when
+    // the verified homepage is a large or frequently changing news index.
+    const selectionLimit = current.url === root && current.pageOffset === 0 && rootCalendars.size
+      ? Math.min(remaining, 15) : remaining;
+    const selected = parsed.links.slice(current.offset, current.offset + selectionLimit);
     remaining -= selected.length;
     current.offset += selected.length;
     for (const link of selected) if (!known.has(link.url) && !leads.some(l => l.url === link.url)) {
@@ -53,5 +65,5 @@ export async function crawlDiscovery(target: { official_url: string; discovery_c
     if (current.offset < parsed.links.length || current.pageOffset < parsed.pages.length) state.queue.push(current);
     else visited(current.url);
   }
-  return { leads, state, pagesChecked, failures };
+  return { leads, state, pagesChecked, failures, calendars };
 }

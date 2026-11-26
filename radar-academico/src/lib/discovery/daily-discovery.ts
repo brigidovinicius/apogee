@@ -5,7 +5,7 @@ import { loadActiveOfficialSources } from "@/lib/ingestion/official-source-regis
 import { fetchOfficialResource } from "@/lib/ingestion/fetch-source";
 import { isOfficialSourceUrl } from "@/lib/ingestion/validate-url";
 import type { OfficialSource } from "@/lib/ingestion/types";
-import { claimDueDiscoveryTargets, completeDiscoveryTarget, saveDiscoveryLeads, recordDiscoveryObservation, recordDiscoveryObservationChanged, knownOpportunityUrls, type DiscoveryTarget } from "./watchlist";
+import { claimDueDiscoveryTargets, completeDiscoveryTarget, saveDiscoveryLeads, saveVerifiedEventCalendar, recordDiscoveryObservation, recordDiscoveryObservationChanged, knownOpportunityUrls, type DiscoveryTarget } from "./watchlist";
 import { candidateUrl, discoveryDocument } from "./documents";
 import { crawlDiscovery, type CrawlState } from "./crawl";
 export { candidateUrl } from "./documents";
@@ -53,12 +53,12 @@ export async function runScheduledDiscovery() {
   const targets = await claimDueDiscoveryTargets(2);
   const mappedSources = await loadActiveOfficialSources();
   const knownUrls = targets.length ? await knownOpportunityUrls() : new Set<string>();
-  const results: { targetId: string; status: DiscoveryTarget["last_status"]; links: number; newLeads: number; pagesChecked: number; pageFailures: number; continued: boolean }[] = [];
+  const results: { targetId: string; status: DiscoveryTarget["last_status"]; links: number; newLeads: number; pagesChecked: number; pageFailures: number; calendarsRegistered: number; continued: boolean }[] = [];
   for (const target of targets) {
     let status: DiscoveryTarget["last_status"] = "failed";
     let links = 0;
     let newLeads = 0;
-    let pagesChecked = 0, pageFailures = 0;
+    let pagesChecked = 0, pageFailures = 0, calendarsRegistered = 0;
     let checkpoint: CrawlState | undefined;
     try {
       const source = asCrawlSource(target);
@@ -79,6 +79,10 @@ export async function runScheduledDiscovery() {
         if (changed) await recordDiscoveryObservationChanged(target.id);
         links = leads.length;
         newLeads = await saveDiscoveryLeads(target.id, leads);
+        for (const calendar of crawled.calendars) {
+          calendarsRegistered += await saveVerifiedEventCalendar(target, calendar);
+          if (calendarsRegistered) break;
+        }
         status = "checked";
       }
     } catch {
@@ -89,9 +93,10 @@ export async function runScheduledDiscovery() {
       if (checkpoint) await completeDiscoveryTarget(target.id, status, checkpoint);
       else await completeDiscoveryTarget(target.id, status);
     }
-    results.push({ targetId: target.id, status, links, newLeads, pagesChecked, pageFailures, continued: Boolean(checkpoint?.queue.length) });
+    results.push({ targetId: target.id, status, links, newLeads, pagesChecked, pageFailures, calendarsRegistered, continued: Boolean(checkpoint?.queue.length) });
   }
   return { targetsChecked: results.length, newLeads: results.reduce((sum, item) => sum + item.newLeads, 0),
+    calendarsRegistered: results.reduce((sum, item) => sum + item.calendarsRegistered, 0),
     pagesChecked: results.reduce((sum, item) => sum + item.pagesChecked, 0),
     pageFailures: results.reduce((sum, item) => sum + item.pageFailures, 0), targets: results };
 }

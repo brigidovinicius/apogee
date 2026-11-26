@@ -2,6 +2,7 @@ import { withAdminTransaction } from "@/lib/db/client";
 import type { IngestionResult, OfficialSource, OpportunityCandidate } from "./types";
 import { persistCandidate, lockSource } from "./persist-candidate";
 import { deadlineIsCurrent } from "./publication";
+import { eventHasNotStarted } from "./event-start";
 import { normalizeBrazilianLocation } from "@/lib/location";
 
 export async function syncOfficialSource(source: OfficialSource) {
@@ -55,5 +56,7 @@ export function isPublishable(candidate: OpportunityCandidate) {
 }
 export function isVisiblePublicOpportunity(candidate: OpportunityCandidate, now = new Date()) {
   return candidate.reviewStatus === "approved" && Boolean(candidate.officialSourceId) &&
-    !candidate.sourceConflict && ["open", "upcoming"].includes(candidate.opportunityStatus) && deadlineIsCurrent(candidate, now);
+    !candidate.sourceConflict && ["open", "upcoming"].includes(candidate.opportunityStatus) &&
+    (!candidate.categories?.includes("eventos") || !candidate.eventStartsAt || eventHasNotStarted(candidate.eventStartsAt, now)) &&
+    deadlineIsCurrent(candidate, now);
 }

@@ -97,3 +97,19 @@ it('limits university authority and gzip to the recorded target and hosts', () =
   expect(ufscDiscoveryGzip(s, child + 'unverified')).toBe(false);
   expect(ufscDiscoveryGzip({ ...s, id: 'unverified-source' }, child)).toBe(false);
 });
+
+it('bounds a UFSC relative event date to the official article date and verifies public entry', () => {
+  today();
+  const s = source('https://noticias.ufsc.br/2026/11/mostra-dos-estudantes/');
+  const html = `<meta property="article:published_time" content="2026-11-18T16:00:00Z">
+    <article><h1>Estudantes apresentam os projetos do semestre</h1>
+    <p>O instituto recebe, na próxima segunda-feira, 23 de novembro, a Feira de Tecnologia.
+    A atividade será realizada das 10h às 12h, no Auditório, com entrada gratuita e aberta ao público, sem necessidade de inscrição.</p></article>`;
+  const card = normalizeDiscoveredPage(html, s);
+  expect(card).toMatchObject({ eventStartsAt: '2026-11-23', deadlinePrecision: 'not_informed',
+    categories: ['eventos'], evidenceJson: { location: { excerpt: 'Auditório' } } });
+  expect(publicationIssue(card!, s)).toBeNull();
+  expect(normalizeDiscoveredPage(html.replace('23 de novembro', '24 de novembro'), s)).toBeNull();
+  expect(normalizeDiscoveredPage(html.replace('article:published_time', 'article:modified_time'), s)).toBeNull();
+  expect(normalizeDiscoveredPage(html.replace('aberta ao público', 'restrita aos convidados'), s)).toBeNull();
+});

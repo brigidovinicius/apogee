@@ -6,9 +6,9 @@ import { eventHasNotStarted } from "@/lib/ingestion/event-start";
 import { parseHtml } from "@/lib/ingestion/parse-html";
 import { discoveryLinkIssue } from "./link-selection";
 
-const navigationLabel = /^(?:[«»\s]*(?:anterior|próximo)[«»\s]*|cursos|eventos e cursos|calendário de inscrições|inscrições e acompanhamento|chamadas (?:abertas|andamento)|ver todos os palestrantes|programação|destaques|a feira|acesso à informação)$/i;
+const navigationLabel = /^(?:[«»\s]*(?:anterior|próximo)[«»\s]*|agenda de eventos|calendário de eventos|próximos eventos|todos os eventos|cursos|eventos e cursos|calendário de inscrições|inscrições e acompanhamento|chamadas (?:abertas|andamento)|ver todos os palestrantes|programação|destaques|a feira|acesso à informação)$/i;
 export type DiscoveredLink = { url: string; title: string; excerpt: string; discoveryPath?: string[] };
-export type DiscoveryResource = { body: Buffer; contentType: string; discoverySitemaps?: string[] };
+export type DiscoveryResource = { body: Buffer; contentType: string; discoverySitemaps?: string[]; finalUrl?: string };
 const sharedHosts = new Set(["www.gov.br", "gov.br", "luma.com", "sites.google.com", "sympla.com.br", "www.sympla.com.br"]);
 
 /** A shared platform's whole hostname does not belong to one verified institution. */
@@ -40,13 +40,25 @@ export function discoveryDocument(resource: DiscoveryResource, url: string, root
   const text = resource.body.toString("utf8");
   const html = /text\/html|application\/xhtml/i.test(resource.contentType);
   if (!html && (!/xml|rss|atom/i.test(resource.contentType) || /<!DOCTYPE|<!ENTITY/i.test(text))) throw Error("Unsupported discovery document");
-  const links: DiscoveredLink[] = [], pages: string[] = [];
+  const links: DiscoveredLink[] = [], pages: string[] = [], eventCalendars: string[] = [];
   const addPage = (raw: string) => {
     const next = resolved(raw, url);
     if (next && sameDiscoveryScope(root, next) && next !== url && !pages.includes(next)) pages.push(next);
   };
   if (html) {
     const $ = cheerio.load(text);
+    $('a[href]').each((_, node) => {
+      const link = $(node), label = link.text().replace(/\s+/g, " ").trim();
+      if (eventCalendars.length >= 2 || /\bnofollow\b/i.test(link.attr("rel") ?? "") ||
+        !/^(?:(?:agenda|calendário) de eventos(?: [\p{L} .-]{1,60})?|(?:próximos|todos os) eventos|(?:upcoming|all) events|events calendar|ver calendário)$/iu.test(label)) return;
+      const next = resolved(link.attr("href") ?? "", url);
+      if (!next || next === url || !sameDiscoveryScope(root, next) || eventCalendars.includes(next)) return;
+      const parsed = new URL(next);
+      const path = parsed.pathname.replace(/\/$/, "");
+      if (!parsed.search && /(?:^|\/)(?:agenda|calendario|calendar|eventos|events|agenda-de-eventos|calendario-de-eventos|agenda-eventos)$/.test(path)) {
+        eventCalendars.push(next);
+      }
+    });
     $("header,aside").remove();
     // This audited organizer's index labels the section "Hackathons" but its
     // creative card names (e.g. Toggle Wars) omit that word. Preserve that
@@ -112,12 +124,16 @@ export function discoveryDocument(resource: DiscoveryResource, url: string, root
   const seen = new Set<string>();
   const candidates = links.flatMap(link => {
     const safe = resolved(link.url, url);
-    if (!safe || safe === url || seen.has(safe) || navigationLabel.test(link.title) ||
+    if (!safe || safe === url || eventCalendars.includes(safe) || seen.has(safe) || navigationLabel.test(link.title) ||
       discoveryLinkIssue({ ...link, url: safe })) return [];
     seen.add(safe);
     return [{ url: safe, title: link.title.slice(0, 240), excerpt: link.excerpt.slice(0, 500) }];
   });
-  return { links: candidates.slice(0, 10000), pages: pages.slice(0, 2000) };
+  return {
+    links: candidates.slice(0, 10000),
+    pages: [...new Set([...eventCalendars, ...pages])].slice(0, 2000),
+    ...(eventCalendars.length ? { eventCalendars: eventCalendars } : {}),
+  };
 }
 
 /** Verify a chain edge again; a stored URL list alone never grants publication authority. */

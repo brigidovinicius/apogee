@@ -3,6 +3,7 @@ import type { PoolClient } from "pg";
 import type { OfficialSource, OpportunityCandidate } from "./types";
 import { canonicalOpportunityKey } from "./revision-key";
 import { publicationIssue } from "./publication";
+import { eventHasNotStarted } from "./event-start";
 import { categoriesFromEvidence } from "./categories";
 import { parseDiscovery, classifyDiscovery, discoveryContent } from "./discovery";
 import { sourceCheckHours } from "./source-check-policy";
@@ -62,6 +63,10 @@ export async function findCandidate(client: PoolClient, candidate: OpportunityCa
 export async function persistCandidate(client: PoolClient, source: OfficialSource, incoming: OpportunityCandidate,
   options: { mode: "automatic" | "admin"; actor?: string; existing?: StoredOpportunity; overrides?: Partial<OpportunityCandidate> }) {
   const existing = options.existing ?? await findCandidate(client, incoming);
+  if (incoming.categories?.includes("eventos") && incoming.eventStartsAt &&
+      ["open", "upcoming"].includes(incoming.opportunityStatus) && !eventHasNotStarted(incoming.eventStartsAt)) {
+    incoming = { ...incoming, opportunityStatus: "closed" };
+  }
   if (existing && existing.official_source_id!==source.id) {
     if (options.mode==="admin") throw new Error("Esta página já possui ficha em outra fonte oficial");
     return { id: existing.id, saved: 0, published: 0, blocked: 1, created: 0, updated: 0 };

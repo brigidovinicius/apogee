@@ -13,6 +13,7 @@ vi.mock('@/lib/ingestion/fetch-source', () => ({ fetchOfficialResource: vi.fn() 
 import { fetchOfficialResource } from '@/lib/ingestion/fetch-source';
 import { runScheduledDiscovery } from '@/lib/discovery/daily-discovery';
 import { runScheduledLeadProcessing, claimDueDiscoveryLeads, finishDiscoveryLead } from '@/lib/discovery/process-leads';
+import { retireElapsedEvents } from '@/lib/ingestion/event-lifecycle';
 import { listPublicOpportunities } from '@/lib/db/read-models';
 const parent = 'https://official.example.org/';
 const target = 'coverage-test';
@@ -39,7 +40,7 @@ beforeEach(async () => {
     const p = pages.get(url);
     if (!p) throw Error('Unexpected URL: ' + url);
     const body = Buffer.from(p.body);
-    return { body, contentType: p.type, hash: createHash('sha256').update(body).digest('hex'), cached: false, discoverySitemaps: p.sitemaps };
+    return { body, contentType: p.type, hash: createHash('sha256').update(body).digest('hex'), cached: false, finalUrl: url, discoverySitemaps: p.sitemaps };
   });
 });
 const due = () => state.db!.query('update discovery_targets set next_check_at=now() where id=$1', [target]);
@@ -400,4 +401,35 @@ it('returns an unstarted budget deferral to the queue without spending the final
   expect(await finishDiscoveryLead(last,{reason:'request_timeout',retry:true})).toMatchObject({state:'blocked',reason:'retry_exhausted'});
   expect((await state.db!.query('select processing_attempts from discovery_leads')).rows).toEqual([{processing_attempts:4}]);
   expect((await state.db!.query('select id from opportunities')).rows).toHaveLength(0);
+});
+
+it('follows and registers a linked institutional event agenda, publishes a dated event, and retires it once', async () => {
+  const calendar = parent + 'agenda-de-eventos';
+  const article = parent + 'workshop-tecnologia-2099';
+  await state.db!.query("update discovery_targets set topics=array['eventos'] where id=$1", [target]);
+  page(parent, `<header><a href="${calendar}">Agenda de eventos</a></header>
+    <main><a href="https://outside.example.org/agenda-de-eventos">Agenda de eventos</a></main>`);
+  page(calendar, `<main><h1>Agenda de eventos</h1><a href="${article}">Workshop de tecnologia</a></main>`);
+  page(article, `<article><h1>Workshop de tecnologia</h1>
+    <p>Quando: 5 de maio de 2099</p><p>Onde: Auditório, Florianópolis – SC</p>
+    <p>Entrada: entrada gratuita e aberta ao público, sem necessidade de inscrição.</p></article>`);
+  expect(await runScheduledDiscovery()).toMatchObject({ newLeads: 1, calendarsRegistered: 1 });
+  const derived = (await state.db!.query('select official_url, organizer, enabled, check_interval_hours, official_verified_url from discovery_targets where notes=$1',
+    ['radar:linked-event-calendar:' + target])).rows;
+  expect(derived).toEqual([{ official_url: calendar, organizer: 'Instituto de Tecnologia', enabled: true,
+    check_interval_hours: 24, official_verified_url: calendar }]);
+  expect(await runScheduledLeadProcessing()).toMatchObject({ created: 1, published: 1 });
+  const events = (await state.db!.query("select id,city_name,state_code,event_starts_at,deadline_at from opportunities where 'eventos'=any(categories)")).rows;
+  expect(events).toEqual([expect.objectContaining({ city_name: 'Florianópolis', state_code: 'SC', event_starts_at: '2099-05-05', deadline_at: null })]);
+  const id = (events[0] as { id: string }).id;
+  // A contradictory later registration deadline cannot keep an elapsed event visible.
+  await state.db!.query("update opportunities set event_starts_at='2000-01-01',deadline_precision='exact_datetime',deadline_at=now()+interval '2 days' where id=$1", [id]);
+  expect((await listPublicOpportunities()).some(item => item.id === id)).toBe(false);
+  expect(await retireElapsedEvents()).toMatchObject({ eventsStarted: 1 });
+  expect(await retireElapsedEvents()).toEqual({ eventsStarted: 0, registrationsExpired: 0, editionsPast: 0 });
+  expect((await state.db!.query("select opportunity_status, published_at from opportunities where id=$1", [id])).rows)
+    .toEqual([{ opportunity_status: 'closed', published_at: null }]);
+  expect((await state.db!.query("select new_data->>'reason' as reason from opportunity_management_events where opportunity_id=$1 and action='withdraw'", [id])).rows)
+    .toEqual([{ reason: 'event_started' }]);
+  await state.db!.query("delete from discovery_targets where notes=$1", ['radar:linked-event-calendar:' + target]);
 });

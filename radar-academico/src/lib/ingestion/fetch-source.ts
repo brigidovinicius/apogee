@@ -47,7 +47,7 @@ async function requestOfficialUrl(url: string, headers: Record<string, string>, 
 }
 
 
-export type OfficialResource = { body: Buffer; contentType: string; hash: string; cached: boolean; discoverySitemaps?: string[] };
+export type OfficialResource = { body: Buffer; contentType: string; hash: string; cached: boolean; finalUrl?: string; discoverySitemaps?: string[] };
 export async function fetchOfficialResource(initialUrl: string, source: OfficialSource, maxBytesCap?: number): Promise<OfficialResource> {
   const configuredMaxBytes = boundedInteger(process.env.INGESTION_MAX_FILE_SIZE_MB, 15, 1, 15) * 1024 * 1024;
   const maxBytes = maxBytesCap ? Math.min(configuredMaxBytes, maxBytesCap) : configuredMaxBytes;
@@ -97,7 +97,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     const response = await requestOfficialUrl(url, headers, maxBytes, seaOfficialHeaderCompatibility, allowGzip, requestGzip);
     // 304 is a cache response, not a redirect.
     if (response.status === 304 && cached) {
-      return { body: cached.body, contentType: cached.contentType, hash: crypto.createHash("sha256").update(cached.body).digest("hex"), cached: true, discoverySitemaps: robots.getSitemaps() };
+      return { body: cached.body, contentType: cached.contentType, hash: crypto.createHash("sha256").update(cached.body).digest("hex"), cached: true, finalUrl: url, discoverySitemaps: robots.getSitemaps() };
     }
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get("location");
@@ -110,7 +110,7 @@ export async function fetchOfficialResource(initialUrl: string, source: Official
     const body = Buffer.from(await response.arrayBuffer());
     const contentType = response.headers.get("content-type") ?? "";
     responseCache.set(url, { etag: response.headers.get("etag") ?? undefined, modified: response.headers.get("last-modified") ?? undefined, contentType, body }, body.byteLength);
-    return { body, contentType, hash: crypto.createHash("sha256").update(body).digest("hex"), cached: false, discoverySitemaps: robots.getSitemaps() };
+    return { body, contentType, hash: crypto.createHash("sha256").update(body).digest("hex"), cached: false, finalUrl: url, discoverySitemaps: robots.getSitemaps() };
   }
   throw new Error("Limite de redirecionamentos");
 }

@@ -4,6 +4,7 @@ import { runScheduledDiscovery } from "@/lib/discovery/daily-discovery";
 import { runScheduledLeadProcessing } from "@/lib/discovery/process-leads";
 import { secretMatches } from "@/lib/security";
 import { runOpportunityAlerts } from "@/lib/alerts/monitoring";
+import { retireElapsedEvents } from "@/lib/ingestion/event-lifecycle";
 import { runAutomaticDiscoveryAdvice } from "@/lib/discovery/automatic-ai";
 
 export const runtime = "nodejs";
@@ -35,6 +36,9 @@ export async function POST(request: Request) {
       return Response.json({ error: "Parâmetros de ingestão inválidos" }, { status: 400 });
     }
     try {
+      let eventLifecycle;
+      try { eventLifecycle = await retireElapsedEvents(); }
+      catch { eventLifecycle = { eventsStarted: 0, registrationsExpired: 0, editionsPast: 0, failed: true }; }
       const ingestion = await runScheduledOfficialSourceIngestion();
       let discovery;
       try { discovery=await runScheduledDiscovery(); }
@@ -48,7 +52,7 @@ export async function POST(request: Request) {
       let alerts;
       try { alerts=await runOpportunityAlerts(); }
       catch { alerts={enabled:true,queued:0,sent:0,failed:1}; }
-      return Response.json({ ...ingestion, discovery, aiDiscovery, leadProcessing, alerts });
+      return Response.json({ ...ingestion, discovery, aiDiscovery, leadProcessing, eventLifecycle, alerts });
     }
     catch { return Response.json({ error: "Falha na ingestão" }, { status: 500 }); }
   }

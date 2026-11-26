@@ -28,6 +28,8 @@ export function publicationIssue(candidate: OpportunityCandidate, source: Offici
   if (candidate.sourceConflict) return "source_conflict";
   if (!["open", "upcoming"].includes(candidate.opportunityStatus)) return "status_unconfirmed";
   if (!deadlineIsCurrent(candidate, now)) return "invalid_deadline";
+  if (candidate.categories?.includes("eventos") && candidate.eventStartsAt &&
+      !eventHasNotStarted(candidate.eventStartsAt, now)) return "status_unconfirmed";
   if (candidate.applicationRoute === "unclear") return "application_route_unconfirmed";
   if (candidate.benefitType === "employment") {
     const job = readEmployment(candidate.employment);

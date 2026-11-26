@@ -8,6 +8,7 @@ import { normalizePublicEvent } from "./public-event";
 import { detectDeadline } from './detect-deadline';
 import { classifyApplicationRoute } from './classify-application-route';
 import { confirmedTerminalStatus, deadlineIsCurrent } from './publication';
+import { normalizeEventAnnouncement } from "./normalize-event-announcement";
 import { normalizeServiceEvent } from './normalize-service-event';
 import { normalizeWeMakeDevsHackathon } from './normalize-wemakedevs';
 import { prepareAuditedAnnouncement } from './normalize-audited-announcement';
@@ -153,7 +154,8 @@ export function normalizeDiscoveredPage(html: string, source: OfficialSource): O
   const audited = prepareAuditedAnnouncement(article, source);
   if (audited !== undefined) return 'candidate' in audited ? audited.candidate : null;
   const service = normalizeServiceEvent(article, source);
-  return service === undefined ? normalizeOpportunity({ ...article, url: source.baseUrl, source }) : service;
+  if (service !== undefined) return service;
+  return normalizeEventAnnouncement(article, source, new Date(), html) ?? normalizeOpportunity({ ...article, url: source.baseUrl, source });
 }
 
 /** Explain a failed generic extraction without turning incomplete text into a candidate. */

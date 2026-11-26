@@ -1,12 +1,19 @@
+// Stored precision is explicit. Validate older text values before casting.
+export const knownEventStart = `case
+  when o.event_starts_at ~ '^\\d{4}-\\d{2}-\\d{2}$'
+    and pg_input_is_valid(o.event_starts_at,'date')
+    then (o.event_starts_at || 'T00:00:00-03:00')::timestamptz
+  when o.event_starts_at ~ '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d{1,3})?)?(Z|[+-]\\d{2}:\\d{2})$'
+    and pg_input_is_valid(o.event_starts_at,'timestamp with time zone')
+    then o.event_starts_at::timestamptz
+  else null end`;
+
 export const openDeadlinePredicate = `((o.benefit_type='employment' and o.deadline_precision='not_informed' and o.deadline_at is null and public.radar_job_current(o.employment,coalesce(o.last_source_check_at,o.verified_at))) or (o.deadline_precision='continuous_flow' and o.deadline_at is null)
   or (o.deadline_precision='not_informed' and o.deadline_at is null and 'eventos'=any(o.categories)
     and o.opportunity_status='open'
     and coalesce(o.evidence_json->'event_start'->>'excerpt','')<>''
     and coalesce(o.evidence_json->'registration_availability'->>'excerpt','')<>''
-    and case when o.event_starts_at ~ '^\\d{4}-\\d{2}-\\d{2}$'
-      then (o.event_starts_at || 'T00:00:00-03:00')::timestamptz > now()
-      when o.event_starts_at ~ '^\\d{4}-\\d{2}-\\d{2}T' then o.event_starts_at::timestamptz > now()
-      else false end)
+    and (${knownEventStart}) > now())
   or (o.deadline_precision='date_only' and (o.deadline_at at time zone 'UTC')::date >= (now() at time zone 'America/Sao_Paulo')::date)
   or (o.deadline_precision='exact_datetime' and o.deadline_at >= now()))`;
 
@@ -16,6 +23,7 @@ export const publishedOpportunityPredicate = `o.review_status='approved'
   and o.opportunity_status in ('open','upcoming') and not o.source_conflict
   and o.deleted_at is null and o.publication_issue is null
   and o.published_at is not null and ${openDeadlinePredicate}
+  and (not ('eventos'=any(o.categories)) or o.event_starts_at is null or (${knownEventStart}) > now())
   and exists (select 1 from official_sources s where s.id=o.official_source_id and s.active and s.verification_status='verified')`;
 
 export const calendarOpportunityPredicate = `o.verified_at is not null and o.verification_method in ('automatic','admin')

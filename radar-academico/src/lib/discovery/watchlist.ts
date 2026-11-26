@@ -1,5 +1,7 @@
+import { createHash } from "node:crypto";
 import type { PoolClient } from "pg";
 import { withAdminTransaction } from "@/lib/db/client";
+import { candidateUrl, sameDiscoveryScope } from "./documents";
 import type { CrawlState } from "./crawl";
 
 export type DiscoveryTarget = {
@@ -71,6 +73,35 @@ export async function claimDueDiscoveryTargets(limit: number): Promise<Discovery
      from due where target.id=due.id returning target.*`,
     [limit],
   )).rows);
+}
+
+/** Register one linked, fetched calendar under the same verified organizer.
+ * Existing targets, including paused/manual targets, keep their settings.
+ */
+export async function saveVerifiedEventCalendar(parent: DiscoveryTarget, calendar: string) {
+  if (parent.id.startsWith("event-calendar-") || candidateUrl(calendar) !== calendar ||
+      !sameDiscoveryScope(parent.official_url, calendar)) return 0;
+  const key = "event-calendar-" + createHash("sha256").update(calendar.replace(/\/$/, "")).digest("hex").slice(0, 32);
+  const parentNote = `radar:linked-event-calendar:${parent.id}`;
+  return withAdminTransaction(async client => {
+    await client.query("select 1 from discovery_targets where id=$1 for update", [parent.id]);
+    await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [key]);
+    const result = await client.query(`
+      insert into discovery_targets (id,name,organizer,kind,official_url,topics,priority,enabled,
+        check_interval_hours,next_check_at,evidence_url,notes,official_verified_at,
+        official_verified_url,official_verified_by,official_review_note)
+      select $1, left(target.organizer, 100) || ' — Agenda de eventos',target.organizer,'site',
+        $2,array(select distinct t from unnest(target.topics || array['eventos']) t),
+        least(target.priority,50),true,24,now()+interval '24 hours',target.official_url,$3,now(),$2,
+        'radar:discovery','Agenda pública lida pelo coletor, vinculada pela fonte institucional verificada.'
+      from discovery_targets target
+      where target.id=$4 and target.enabled and target.official_url=$5
+        and target.official_verified_url=target.official_url and target.official_verified_at is not null
+        and not exists(select 1 from discovery_targets same
+          where rtrim(same.official_url,'/')=rtrim($2,'/') or same.notes=$3)
+      on conflict(id) do nothing`, [key,calendar,parentNote,parent.id,parent.official_url]);
+    return result.rowCount ?? 0;
+  });
 }
 
 export async function knownOpportunityUrls(): Promise<Set<string>> {

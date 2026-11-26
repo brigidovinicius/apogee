@@ -21,7 +21,7 @@ async function run() {
     console.log(JSON.stringify({
       component: "radar-scheduler",
       startedAt,
-      status: report.failed > 0 || report.discovery?.failed || report.discovery?.pageFailures > 0 || discoveryBlocked > 0 || report.leadProcessing?.failed > 0 ||
+      status: report.failed > 0 || report.eventLifecycle?.failed || report.discovery?.failed || report.discovery?.pageFailures > 0 || discoveryBlocked > 0 || report.leadProcessing?.failed > 0 ||
         report.leadProcessing?.blocked > 0 || report.leadProcessing?.retried > 0 || report.leadProcessing?.deferred > 0 ? "completed_with_warnings" : "completed",
       sourcesChecked: report.sourcesChecked,
       pagesChecked: report.pagesChecked,
@@ -31,6 +31,7 @@ async function run() {
       published: report.published,
       discoveryTargetsChecked: report.discovery?.targetsChecked ?? 0,
       discoveryNewLeads: report.discovery?.newLeads ?? 0,
+      discoveryCalendarsRegistered: report.discovery?.calendarsRegistered ?? 0,
       discoveryPagesChecked: report.discovery?.pagesChecked ?? 0,
       discoveryPageFailures: report.discovery?.pageFailures ?? 0,
       discoveryFailed: report.discovery?.failed === true,
@@ -47,6 +48,10 @@ async function run() {
       leadsLeaseLost: report.leadProcessing?.leaseLost ?? 0,
       leadsFailed: report.leadProcessing?.failed ?? 0,
       leadReasons: report.leadProcessing?.reasons ?? {},
+      eventsStarted: report.eventLifecycle?.eventsStarted ?? 0,
+      eventRegistrationsExpired: report.eventLifecycle?.registrationsExpired ?? 0,
+      eventEditionsPast: report.eventLifecycle?.editionsPast ?? 0,
+      eventLifecycleFailed: report.eventLifecycle?.failed === true,
       alertsEnabled: report.alerts?.enabled === true,
       alertsSent: report.alerts?.sent ?? 0,
       alertsFailed: report.alerts?.failed ?? 0,

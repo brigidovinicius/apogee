@@ -125,12 +125,21 @@ export async function recheckKnownOpportunities(source: OfficialSource, limit: n
         if (candidate) published += (await persistCandidate(client, source, candidate, { mode: "automatic", existing: current })).published;
         else {
           const issue = terminalStatus ? "status_unconfirmed" : "unconfirmed_on_recheck";
-          await client.query(`update opportunities set publication_issue=$2,published_at=null,
-            opportunity_status=coalesce($3::text,opportunity_status),
-            evidence_json=case when $3::text is not null then evidence_json || $4::jsonb else evidence_json end,
-            last_source_check_at=now(),version=version+1 where id=$1`,
-          [row.id, issue, terminalStatus, { opportunity_status: { source_url: statusEvidenceUrl, excerpt: statusEvidence } }]);
-          await client.query("insert into opportunity_management_events (opportunity_id,actor,action,previous_data,new_data) values ($1,'radar:automatic','withdraw',$2,$3)", [row.id, current, { publicationIssue: issue, ...(terminalStatus ? { opportunityStatus: terminalStatus, evidence: statusEvidence } : {}) }]);
+          // A subsequent check of the same retired record refreshes its
+          // checked timestamp without creating another withdrawal event.
+          const statusChanged = terminalStatus && current.opportunity_status !== terminalStatus;
+          const alreadyRetired = !current.published_at && !statusChanged &&
+            (current.opportunity_status === 'closed' || current.publication_issue === issue);
+          if (alreadyRetired) {
+            await client.query('update opportunities set last_source_check_at=now() where id=$1', [row.id]);
+          } else {
+            await client.query(`update opportunities set publication_issue=$2,published_at=null,
+              opportunity_status=coalesce($3::text,opportunity_status),
+              evidence_json=case when $3::text is not null then evidence_json || $4::jsonb else evidence_json end,
+              last_source_check_at=now(),version=version+1 where id=$1`,
+            [row.id, issue, terminalStatus, { opportunity_status: { source_url: statusEvidenceUrl, excerpt: statusEvidence } }]);
+            await client.query("insert into opportunity_management_events (opportunity_id,actor,action,previous_data,new_data) values ($1,'radar:automatic','withdraw',$2,$3)", [row.id, current, { publicationIssue: issue, ...(terminalStatus ? { opportunityStatus: terminalStatus, evidence: statusEvidence } : {}) }]);
+            }
         }
         await client.query("update opportunities set next_source_check_at=now()+$2*interval '1 hour' where id=$1", [row.id, sourceCheckHours(source.id)]);
       });
