@@ -718,3 +718,10 @@ A conta Free da Comunidade entrou pelo botão **Entrar com Google**, abriu as 28
 - Sob o lock, foram recriados site e worker. Caddy, serviços vizinhos, volume de fotos e arquivos de ambiente foram preservados. O worker criou duas tabelas de escopo facial no SQLite, inicialmente vazias. Não houve migração de PostgreSQL. Rollback pela imagem web de `2621cdbd01a8e5855cc51797199fb53907f27d32` e pela imagem do worker `sha256:ec0b10449cfcbfa68fffc853fcd0f9a68bc995e439ecfc2931b89d4054fdd239`.
 - O serviço de produção encontrou o retrato e a foto de grupo esperados em um álbum sintético isolado, verificou exclusão de uma foto acrescentada após o escopo, bloqueio sem aceite e acesso privado aos resultados. O Chrome confirmou aceite e captura sintética no site. Álbum, imagens, conta, sessões e aceite de teste foram removidos.
 - A busca automática do Workshop real continua inativa enquanto se aguarda o registro que cobre reconhecimento facial nas fotos. As 280 fotos do evento permaneceram disponíveis. Nenhum rosto de foto real foi comparado no teste.
+
+## 26/11/2026 · Ativação da busca no Workshop
+
+- O responsável pelo evento confirmou no chat o aceite para reconhecimento facial das pessoas fotografadas. A confirmação foi registrada como `workshop-codex:2026-11-26:aceite-confirmado-pelo-responsavel-no-chat` no escopo do álbum.
+- Na revisão publicada `7c1b0b88879a503de86943595fe24a056040d955`, o comando `python cli.py authorize-album-search workshop-codex-community-florianopolis --authorization-reference` foi executado com essa referência no worker. A leitura posterior confirmou as 280 fotos no escopo ativo. A revisão e os containers permaneceram os mesmos.
+- A consulta assinada ao serviço confirmou a busca disponível para a conta do solicitante com aceite ativo e indisponível sem aceite. A página redirecionou para login e a API de consentimento retornou HTTP 403 sem sessão. A verificação consultou o estado do recurso sem enviar selfie ou executar uma comparação no álbum real.
+- Para desativar a busca automática, use `python cli.py disable-album-search workshop-codex-community-florianopolis` no worker. A galeria continua disponível aos membros.
