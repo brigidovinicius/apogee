@@ -74,3 +74,29 @@ test("calendar-only opportunities without a legacy deadline preserve audited sta
   assert.match(mapped.summary,/encerradas/);
   assert.equal(client.toOpportunity({...item,discovery:undefined}),null);
 });
+
+test("shows verified open Amazon internships without assigning a deadline", () => {
+  const client = opportunityLoader()("lib/opportunities/radar-client.ts");
+  const item = {
+    id: "amazon-internship", title: "Estágio em dados", institution: "Amazon Brasil",
+    officialUrl: "https://www.amazon.jobs/en/jobs/10592140/amazon-intern",
+    applicationUrl: "https://www.amazon.jobs/applicant/jobs/10592140/apply",
+    lastCheckedAt: new Date(Date.now() - 60_000).toISOString(),
+    benefitType: "internship", applicantType: "undergraduate_student", categories: ["carreira"],
+    countryCode: "BR", stateCode: "SP", cityName: "São Paulo",
+    verificationMethod: "automatic", opportunityStatus: "open",
+    deadlineAt: null, deadlinePrecision: "not_informed",
+  };
+  const mapped = client.toOpportunity(item);
+  assert.equal(mapped.kind, "Estágio");
+  assert.equal(mapped.deadline, null);
+  assert.equal(mapped.deadlineLabel, "Prazo não informado");
+  for (const override of [
+    { countryCode: "US" },
+    { opportunityStatus: "closed" },
+    { verificationMethod: "admin" },
+    { lastCheckedAt: new Date(Date.now() - 49 * 3600_000).toISOString() },
+    { applicationUrl: "https://www.amazon.jobs/applicant/jobs/10592141/apply" },
+    { officialUrl: "https://example.com/en/jobs/10592140/amazon-intern" },
+  ]) assert.equal(client.toOpportunity({ ...item, ...override }), null);
+});

@@ -94,6 +94,15 @@ function levelFromRadar(value: string): EducationLevel {
   return "Público diverso";
 }
 
+function currentAmazonInternship(value: Record<string, unknown>, officialUrl: string, lastCheckedAt: string) {
+  const posting = /^https:\/\/www\.amazon\.jobs\/en\/jobs\/(\d{5,12})\/[a-z0-9-]+$/.exec(officialUrl);
+  const age = Date.now() - Date.parse(lastCheckedAt);
+  return posting !== null && value.benefitType === "internship" && value.countryCode === "BR" &&
+    value.opportunityStatus === "open" && value.verificationMethod === "automatic" &&
+    value.deadlineAt === null && age >= 0 && age < 48 * 3600_000 &&
+    value.applicationUrl === `https://www.amazon.jobs/applicant/jobs/${posting[1]}/apply`;
+}
+
 export function toOpportunity(value: unknown): StudentOpportunity | null {
   if (!isRecord(value)) return null;
   const id = stringValue(value.id);
@@ -128,7 +137,7 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
   const discovery = readDiscovery(value.discovery);
   const hasCalendarStages = ["open", "upcoming", "closed", "result_published"].includes(String(value.opportunityStatus)) && discovery.editions.some(edition => edition.stages.some(stage => stageEnd(stage) >= Date.now()));
   if (benefitType === "employment" && (!employment || employment.workplace !== "remote" || employment.brazilEligibility !== "confirmed" || Date.parse(lastCheckedAt) > Date.now() || Date.now() - Date.parse(lastCheckedAt) >= 48 * 3600_000)) return null;
-  if (deadlineUnknown && !employment && !hasCalendarStages && (deadlineAt || !categories.includes("eventos") || !["open","closed","result_published"].includes(String(value.opportunityStatus)) || !eventStartsAt || !Number.isFinite(Date.parse(eventStartsAt)))) return null;
+  if (deadlineUnknown && !employment && !hasCalendarStages && !currentAmazonInternship(value, officialUrl, lastCheckedAt) && (deadlineAt || !categories.includes("eventos") || !["open","closed","result_published"].includes(String(value.opportunityStatus)) || !eventStartsAt || !Number.isFinite(Date.parse(eventStartsAt)))) return null;
   if (deadlinePrecision !== "continuous_flow" && !deadlineUnknown && !deadline && !hasCalendarStages) return null;
 
   const editorialNature = editorialNatureFromRadar(value);
