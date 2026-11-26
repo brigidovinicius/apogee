@@ -31,6 +31,10 @@ if not 640 <= ANALYSIS_EDGE <= 2400 or not 0.30 <= THRESHOLD <= 1.0:
 MODEL = f"yunet-2023mar+sface-2021dec/{REVISION}/cv{cv2.__version__}/edge{ANALYSIS_EDGE}/v2"
 cv2.setNumThreads(1)
 
+FACE_DETECTION_SCORE = 0.84
+ALBUM_DETECTION_SCORE = 0.75
+ALBUM_DETECTION_EDGE = 832
+
 
 class InvalidImage(Exception):
     pass
@@ -82,13 +86,23 @@ def decode(data, formats, max_pixels=MAX_PIXELS):
 class Vision:
     def __init__(self):
         detector, recognizer = models()
-        self.detector = cv2.FaceDetectorYN.create(detector, "", (320, 320), 0.84, 0.3, 500)
+        self.detector = cv2.FaceDetectorYN.create(detector, "", (320, 320), FACE_DETECTION_SCORE, 0.3, 500)
         self.recognizer = cv2.FaceRecognizerSF.create(recognizer, "")
 
-    def features(self, image, selfie=False):
+    def album_features(self, image):
+        # Enlarging the existing thumbnail helps YuNet detect smaller faces in group photos.
+        scale = min(1.3, ALBUM_DETECTION_EDGE / max(image.size))
+        if scale == 1:
+            return self.features(image, detection_score=ALBUM_DETECTION_SCORE)
+        size = tuple(round(axis * scale) for axis in image.size)
+        with image.resize(size, Image.Resampling.BICUBIC) as enlarged:
+            return self.features(enlarged, detection_score=ALBUM_DETECTION_SCORE)
+
+    def features(self, image, selfie=False, detection_score=FACE_DETECTION_SCORE):
         bgr = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
         vectors = []
         try:
+            self.detector.setScoreThreshold(detection_score)
             self.detector.setInputSize(image.size)
             _, faces = self.detector.detect(bgr)
             if faces is None:

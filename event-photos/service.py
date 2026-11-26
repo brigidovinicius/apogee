@@ -286,7 +286,7 @@ class Service:
             _, thumbnail = paths(photo_id)
             try:
                 with decode(thumbnail.read_bytes(), ["JPEG"]) as image:
-                    candidates = self.vision.features(image)
+                    candidates = self.vision.album_features(image)
             except (InvalidImage, FileNotFoundError):
                 continue
             score = self.best_score(query, candidates)

@@ -6,14 +6,14 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import numpy as np
 from PIL import Image
 
 import album
 from service import Service
-from vision import InvalidImage
+from vision import InvalidImage, Vision
 
 
 def fixture(color):
@@ -23,6 +23,9 @@ def fixture(color):
 
 
 class FixtureVision:
+    def album_features(self, image):
+        return self.features(image)
+
     def features(self, image, selfie=False):
         red, green, blue = image.getpixel((0, 0))
         if max(red, green, blue) < 10:
@@ -188,6 +191,15 @@ class AlbumTest(unittest.TestCase):
             db.execute("UPDATE opt_in SET expires=0 WHERE event='workshop'")
         self.assertEqual(self.request("/workshop/references"), (200, {"members": []}))
         self.assertEqual(self.request(url, json.dumps(box).encode(), REQUEST_METHOD="PUT")[0], 409)
+
+    def test_whole_photo_detection_uses_its_own_resolution_and_threshold(self):
+        vision = Vision.__new__(Vision)
+        with patch.object(vision, "detector", create=True) as detector, Image.new("RGB", (640, 480)) as image:
+            detector.detect.return_value = (1, None)
+            self.assertEqual(vision.album_features(image), [])
+            self.assertEqual(vision.features(image, selfie=True), [])
+            self.assertEqual(detector.setInputSize.call_args_list, [call((832, 624)), call((640, 480))])
+            self.assertEqual(detector.setScoreThreshold.call_args_list, [call(.75), call(.84)])
 
     def test_album_search_is_disabled_without_facial_scope_and_only_scans_approved_photos(self):
         self.seed()

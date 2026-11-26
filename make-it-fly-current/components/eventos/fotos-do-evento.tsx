@@ -12,7 +12,7 @@ const errors: Record<string, string> = {
   invalid_format: "A câmera não gerou uma imagem compatível. Tente novamente.",
   invalid_size: "A selfie ficou grande demais para enviar. Tire outra foto.",
   upload_timeout: "O envio demorou demais. Tente novamente.",
-  not_enrolled: "Ainda não há fotos do evento vinculadas ao seu aceite. Você pode abrir o álbum completo.",
+  not_enrolled: "A busca ainda não está disponível para esta conta neste álbum.",
   busy: "Outra busca está em andamento. Tente novamente em instantes.",
   search_timeout: "Não foi possível concluir a busca a tempo. Tente novamente em instantes.",
   rate_limit: "Você fez várias buscas em sequência. Aguarde um minuto para tentar de novo.",
@@ -322,7 +322,10 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
           </button>
           {camera !== "off" && <button type="button" data-ap-button="secondary" onClick={closeCamera}>Cancelar câmera</button>}
         </div>
-        {!optIn.indexed && <p role="status">{selfieValidated && "Selfie validada. "}A busca aguarda fotos vinculadas à sua autorização.</p>}
+        {!optIn.indexed && <p role="status">
+          {selfieValidated ? "Selfie validada. " : "A validação só confere a selfie. "}
+          A busca ainda não está disponível para esta conta neste álbum.
+        </p>}
       </form>}
     </div>
     {busy && <p role="status">{loadingSaved ? "Carregando suas fotos salvas…" : "Processando…"}</p>}
