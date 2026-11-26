@@ -24,12 +24,12 @@ export function AdminPageHeader({
   );
 }
 
-export function MetricCard({ label, value, detail }: { label: string; value: string; detail: string }) {
+export function MetricCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return (
     <article className={styles.metricCard}>
       <p>{label}</p>
       <strong>{value}</strong>
-      <span>{detail}</span>
+      {detail && <span>{detail}</span>}
     </article>
   );
 }

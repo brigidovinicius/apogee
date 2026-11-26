@@ -33,7 +33,7 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
     !["canceled", "incomplete_expired", "past_due", "unpaid"].includes(membership.subscription?.status ?? "");
   return <MemberWorkspace member={member} current="assinatura"><div className={`${styles.container} ${annual.annualPage}`}>
 
-    <header className={annual.annualHero}><p className={styles.eyebrow}>Comunidade Apogee · Plano anual</p><h1 className={styles.title}>{membership.active ? "Minha assinatura" : awaitingPayment || pending ? "Situação da assinatura" : "Resumo da assinatura"}</h1></header>
+    <header className={annual.annualHero}><h1 className={styles.title}>{membership.active ? "Minha assinatura" : awaitingPayment || pending ? "Situação da assinatura" : "Resumo da assinatura"}</h1></header>
     {reviewing ? <p role="note">Validação local com contas e pagamentos sintéticos. Nenhuma cobrança ou alteração na Stripe é realizada aqui.</p> : null}
     {params.billing_error ? <p role="alert">{params.billing_error === "409" ? "Já existe uma assinatura ou um pagamento em andamento. Confira o estado abaixo antes de tentar novamente." : params.billing_error === "403" ? "Conclua a verificação da sua conta antes de contratar." : params.billing_error === "429" ? "Muitas tentativas. Aguarde alguns minutos antes de tentar novamente." : "Não foi possível concluir a operação. Confira o estado abaixo antes de tentar novamente."}</p> : null}
     {params.payment === "received" && membership.active ? <p role="status" data-annual-stage="confirmed_return" className={annual.annualStatus}>Pagamento confirmado. Sua assinatura anual está ativa.</p> : null}

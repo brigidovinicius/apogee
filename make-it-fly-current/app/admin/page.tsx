@@ -34,11 +34,11 @@ export default async function AdminDashboardPage() {
       />
 
       <section className={styles.metrics} aria-label="Indicadores atuais">
-        <MetricCard label="Contas" value={number.format(overview.accounts)} detail="Registros de usuário existentes" />
+        <MetricCard label="Contas" value={number.format(overview.accounts)} />
         <MetricCard label="Novas em 30 dias" value={number.format(overview.newAccounts30Days)} detail="Criadas no período móvel" />
-        <MetricCard label="Administradores" value={number.format(overview.admins)} detail="Papel administrativo atual" />
-        <MetricCard label="Membros" value={number.format(overview.members)} detail="Papel padrão de membro" />
-        <MetricCard label="Tópicos do fórum" value={number.format(overview.topics)} detail="Discussões criadas" />
+        <MetricCard label="Administradores" value={number.format(overview.admins)} />
+        <MetricCard label="Membros" value={number.format(overview.members)} />
+        <MetricCard label="Tópicos do fórum" value={number.format(overview.topics)} />
         <MetricCard label="Mensagens do fórum" value={number.format(overview.posts)} detail="Aberturas e respostas" />
       </section>
 

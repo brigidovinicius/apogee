@@ -13,17 +13,15 @@ export function MemberOfferOverview({ name, radarFullAccess, preview = false, an
 }) {
   const step = nextStep ?? (resources?.ferramentas ? {
     label: "Escolher uma ferramenta",
-    description: "Escolha uma tarefa e encontre um recurso para realizá-la.",
     href: "/membros/ferramentas",
   } : {
     label: "Explorar o Radar",
-    description: "Encontre uma oportunidade e confira quando e como participar.",
     href: preview ? "/oportunidades" : "/membros/oportunidades",
   });
   return <section className={`${styles.scope} ${styles.overview}`} aria-labelledby="member-offer-title">
     <h2 data-ap-title="" id="member-offer-title">Olá, {name}</h2>
     <div data-ap-panel="" className={styles.nextStep}>
-      <div><h3>Seu próximo passo</h3><p>{step.description}</p></div>
+      <div><h3>Seu próximo passo</h3>{nextStep && <p>{nextStep.description}</p>}</div>
       <Link data-ap-button="primary" className={styles.button} prefetch={false} href={step.href}>{step.label}</Link>
     </div>
     <CommunityResourceCards resources={resources} destination={preview ? "preview" : "members"} />
