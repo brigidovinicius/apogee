@@ -72,12 +72,7 @@ export async function tick({store,config,identity,provider,apiProvider,download}
   const command=store.claimCommand?await store.claimCommand():null;
   const storage=await store.maintenance();
   const collection=storage.capture_allowed?await collect({store,sources,download}):{sources:0,created:0,duplicate:0,failed:0,reason:'storage_cap'};
-  let research={prepared:0},discovery=null;
-  if(!command&&storage.capture_allowed&&config.policy.generation_enabled&&config.policy.provider==='google_subscription'&&config.policy.automatic_explainers_enabled&&store.prepareRenewableResearch){
-    try{discovery=await store.prepareRenewableResearch(config.policy,{discoveryOnly:true});}
-    catch(error){discovery={prepared:0,kind:'reference_discovery',reason:error instanceof Blocked?error.code:'research_source_unavailable'};}
-    if(discovery)research=discovery;
-  }
+  let research={prepared:0};
   async function generate(){
     if(command?.kind==='collect')return {collection,generation:{status:'idle'}};
     if(!config.policy.generation_enabled)return {collection,generation:{status:'blocked',reason:'generation_disabled'}};
@@ -123,13 +118,15 @@ export async function tick({store,config,identity,provider,apiProvider,download}
     }
     let automatic=!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.nextAutomaticWork?await store.nextAutomaticWork(config.policy):null;
     if(!automatic&&!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.prepareAutomaticResearch){
+      let researchPolicy=config.policy;
       try{if(store.checkResearchBudget)await store.checkResearchBudget(comparisonReservationPolicy(config.policy));}
       catch(error){
         if(!(error instanceof Blocked))throw error;
         if(!GOOGLE_FALLBACK_REASONS.has(error.code)||!config.openai?.enabled||!apiProvider||!store.checkAPIResearchBudget)return {collection,research,generation:{status:'blocked',reason:error.code}};
         try{await store.checkAPIResearchBudget(config,identity);}catch(apiError){if(apiError instanceof Blocked)return {collection,research,generation:{status:'blocked',reason:apiError.code}};throw apiError;}
+        researchPolicy=apiOperationPolicy(config.policy,config.openai,'comparison');
       }
-      if(storage.capture_allowed&&!discovery)research=await store.prepareAutomaticResearch(config.policy);
+      if(storage.capture_allowed)research=await store.prepareAutomaticResearch(researchPolicy);
       automatic=store.nextAutomaticWork?await store.nextAutomaticWork(config.policy):null;
     }
     if(!command&&config.policy.provider==='google_subscription'&&!config.policy.operator_commands_only&&store.nextAutomaticWork&&!automatic)return {collection,research,generation:{status:'idle',reason:'waiting_for_evidence'}};
@@ -143,6 +140,17 @@ export async function tick({store,config,identity,provider,apiProvider,download}
   }
   try{
     const generated=await generate();
+    // Spend the single public research cycle on a publishable dossier first.
+    // Discovery remains model-free when budgets are held, but cannot suppress
+    // cached comparisons or consume a second network cycle after research.
+    if(!command&&storage.capture_allowed&&config.policy.generation_enabled&&config.policy.provider==='google_subscription'
+      &&config.policy.automatic_explainers_enabled&&store.prepareRenewableResearch
+      &&!research?.prepared&&!research?.requests&&['idle','blocked'].includes(generated.generation?.status)){
+      let discovery;
+      try{discovery=await store.prepareRenewableResearch(config.policy,{discoveryOnly:true});}
+      catch(error){discovery={prepared:0,kind:'reference_discovery',reason:error instanceof Blocked?error.code:'research_source_unavailable'};}
+      if(discovery){research=discovery;generated.research=research;}
+    }
     const publication=store.publishAutomatically?await store.publishAutomatically():null;
     const result=publication?{...generated,publication}:generated;
     if(store.recordAutomaticOutcome)await store.recordAutomaticOutcome(result);

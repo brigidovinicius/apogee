@@ -1,0 +1,16 @@
+[Unit]
+Description=Verify unchanged official prices for the Apogee blog
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/apogee-blog/price-verifier/current.py --catalog /opt/apogee-blog/config/prices.json --evidence-dir /opt/apogee-blog/price-verifier/evidence --execute
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/apogee-blog/config /opt/apogee-blog/price-verifier/evidence
+UMask=0077
+MemoryMax=128M
+TimeoutStartSec=90

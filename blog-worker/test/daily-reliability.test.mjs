@@ -95,11 +95,11 @@ test('missing evidence and operator holds are not provider failures and cannot d
  }
 });
 test('model-free research continues through an attested API lane when Google capacity is unavailable',async()=>{
- let checked=0,prepared=0;
+ let checked=0,prepared=0,plannedProvider=null;
  const store={recover:async()=>{},maintenance:async()=>({capture_allowed:true}),nextAutomaticWork:async()=>null,
-  checkResearchBudget:async()=>fail('google_token_limit'),checkAPIResearchBudget:async()=>{checked++;},prepareAutomaticResearch:async()=>{prepared++;return {prepared:0};}};
+  checkResearchBudget:async()=>fail('google_token_limit'),checkAPIResearchBudget:async()=>{checked++;},prepareAutomaticResearch:async p=>{prepared++;plannedProvider=p.provider;return {prepared:0};}};
  const r=await tick({store,config:{policy:editorial,sources:[],catalog:[],openai},identity,provider:async()=>assert.fail(),apiProvider:async()=>assert.fail()});
- assert.equal(checked,1);assert.equal(prepared,1);assert.equal(r.generation.reason,'waiting_for_evidence');
+ assert.equal(checked,1);assert.equal(prepared,1);assert.equal(plannedProvider,'openai_api');assert.equal(r.generation.reason,'waiting_for_evidence');
 });
 test('image credit rejection is proven zero generation; other HTTP errors keep the reservation',async()=>{
  const p=apiOperationPolicy(editorial,openai,'image'),body={model:p.image_model_id,prompt:'Photo of neutral computer hardware on a workbench.',n:1,size:p.image_size,quality:p.image_quality,output_format:'webp',output_compression:80,background:'opaque',moderation:'auto'};
@@ -109,10 +109,11 @@ test('image credit rejection is proven zero generation; other HTTP errors keep t
   assert.equal(r.outcome,code==='insufficient_quota'?'not_generated':'unknown');
  }
 });
-test('two failed renewable candidates stop that focus from consuming the rest of the day',()=>{
+test('failed source identities stay blocked while a distinct question can use the unchanged native budgets',()=>{
  const base={text:'Packet routing software describes paths, packets and network decisions. '.repeat(15),checked_at:at.toISOString(),extraction_method:'public_article',extraction_version:ARTICLE_EXTRACTION_VERSION,rights_reference:'public excerpt'};
  const captures=[{...base,url:'https://cloud.google.com/learn/packet-routing',title:'Packet routing software'},{...base,url:'https://azure.microsoft.com/resources/packet-routing',title:'Packet routing software',text:'Independent guide. '+base.text}];
  assert.equal(renewableExplainerPlans(captures,{at}).length,1);
- assert.equal(renewableExplainerPlans(captures,{at,failedTopics:[{pool:'tecnologia',failed:2}]}).length,0);
+ assert.equal(renewableExplainerPlans(captures,{at,failedTopics:[{pool:'tecnologia',failed:2}]}).length,1);
+ assert.equal(renewableExplainerPlans(captures,{at,failedTopics:[{pool:'tecnologia',failed:2}],seedBlockedUrls:[captures[0].url,captures[1].url]}).length,0);
  assert.equal(renewableExplainerPlans(captures,{at,failedTopics:[{pool:'negocios',failed:2}]}).length,1);
 });

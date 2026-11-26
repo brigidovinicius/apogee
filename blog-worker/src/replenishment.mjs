@@ -14,7 +14,9 @@ for(const word of ('the and are for our out not but you its can all any will may
 for(const word of ['could','should','would','must','might','also','just','still','some','much','many','each','another','other'])STOP.add(word);
 // Course/site labels and broad disciplines cannot identify an editorial question.
 for(const word of 'machine learning model models training course courses crash introduction overview documentation docs tutorial tutorials basic basics advanced'.split(' '))STOP.add(word);
+for(const word of 'enterprise custom template templates plan plans'.split(' '))STOP.add(word);
 const DISTINCT_CONCEPTS=new Set('kubernetes container serverless hypervisor virtualization cryptography cybersecurity concurrency database tokenization embedding tokenizador criptografia ciberseguranca escalabilidade observabilidade computacao virtualizacao aprendizado iaas paas saas microservice transformer observability budget budgeting bookkeeping'.split(' '));
+for(const word of ['websocket','oauth','compression','franchise','patent'])DISTINCT_CONCEPTS.add(word);
 const normalize=value=>String(value??'').normalize('NFKD').replace(/\p{M}/gu,'').toLowerCase();
 const words=value=>[...new Set((normalize(value).match(/[a-z][a-z0-9-]{2,}/g)??[])
   .map(w=>w.length>5&&w.endsWith('s')&&!w.endsWith('ss')&&!w.endsWith('us')?w.slice(0,-1):w).filter(w=>!STOP.has(w)&&!/^\d|^announc|^introduc|^launch|^updat|^expand|^improv/.test(w)))];
@@ -24,13 +26,32 @@ const fresh=(d,at)=>d.extraction_method==='public_article'&&d.extraction_version
   &&Number.isFinite(Date.parse(d.checked_at??d.captured_at))&&Date.parse(d.checked_at??d.captured_at)<=+at
   &&+at-Date.parse(d.checked_at??d.captured_at)<7*86400000
   &&(!d.published_at||Number.isFinite(Date.parse(d.published_at))&&Date.parse(d.published_at)<=+at+900000);
-const topicFor=d=>researchTopic({title:d.title,source_id:d.source_id,editoria:referenceForUrl(d.url)?.categories.includes('negocios')?'startups':referenceForUrl(d.url)?.categories.includes('ciencia')?'ciencia-espaco':'tecnologia',evidence:[d]});
+const topicFor=d=>{
+ const ref=referenceForUrl(d.url);
+ if(ref?.categories.length===1&&ref.categories[0]==='negocios')return {category:'negocios',subcategory:/marketing|advertis|social media/i.test(d.title)?'marketing':null};
+ const topic=researchTopic({title:d.title,source_id:d.source_id,editoria:ref?.categories.includes('ciencia')?'ciencia-espaco':'tecnologia',evidence:[d]});
+ // Technical documentation often uses the concept alone as its title (for
+ // example WebSockets). Its registered educational scope supplies the focus;
+ // an arbitrary news feed still cannot infer a topic from its publisher alone.
+ if(['PRIMARY_GOOGLE_EDUCATION','PRIMARY_MICROSOFT_EDUCATION','PRIMARY_MDN','PRIMARY_GIT','PRIMARY_GITHUB'].includes(ref?.id)){
+  if((!topic||topic.category==='tecnologia'&&!topic.subcategory)&&/\/(?:machine-learning|decision-forests|copilot)(?:\/|$)/.test(new URL(d.url).pathname))return {category:'tecnologia',subcategory:'ia'};
+  return topic??{category:'tecnologia',subcategory:null};
+ }
+ return topic;
+};
 const fingerprint=text=>String(text??'').normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim();
-const subjectTitle=d=>d.title.split(/\s+[|｜]\s+/)[0];
+const subjectTitle=d=>{
+ const title=d.title.split(/\s+[|｜]\s+/)[0],u=new URL(d.url);
+ // Some Google course pages publish a site-wide og:title. The observed URL
+ // supplies a discovery label only; original captured metadata stays intact.
+ if(u.hostname==='developers.google.com'&&u.pathname.startsWith('/machine-learning/')&&/^machine learning$/i.test(title))return u.pathname.split('/').filter(Boolean).at(-1).replace(/[-_]/g,' ');
+ return title;
+};
 export function substantiveGuide(d){
  const ref=referenceForUrl(d.url);if(!ref||!/educacao/.test(ref.role))return false;
- const path=new URL(d.url).pathname;
+ const path=new URL(d.url).pathname,leaf=path.split('/').filter(Boolean).at(-1)??'';
  return !/(?:^|\/)(?:acknowledg(?:e)?ments?|citing|citations?|faq|glossary|test-your-knowledge|exercises?|quiz|quizzes|credits|advanced-courses)(?:\/|$)/i.test(path)
+   &&!/(?:^|[-_])templates?(?:$|[-_])/i.test(leaf)
    &&!/^\s*(?:acknowledg(?:e)?ments?|citing|faq|glossary|introduction|overview|courses?|test your knowledge|exercises?|quiz)\s*$/i.test(subjectTitle(d))
    &&words(subjectTitle(d)).length>0;
 }
@@ -60,13 +81,14 @@ export function renewableExplainerPlans(captures,{blockedUrls=[],seedBlockedUrls
  for(const seed of rows){
   if(plans.length>=Math.min(30,limit))break;
   if(!primaryDocument(seed,seed.ref)||!/educacao/.test(seed.ref.role)||usedSeeds.has(seed.url)||usedSeeds.has(canonical(seed.requested_url))||paired.has(seed.url))continue;
-  const topic=seed.topic;if(!topic||!topicAvailable(policy,usage,topic,at)||failedTopics.some(f=>f.pool===focusPool(topic)&&Number(f.failed)>=2))continue;
+  const topic=seed.topic;if(!topic||!topicAvailable(policy,usage,topic,at))continue;
   const key='auto-'+hash(seed.url).slice(0,40);
   if(byKey.has(key))continue; // No new identity after a hold, failure, restart or publication.
   const peers=rows.filter(d=>d.ref.publisher!==seed.ref.publisher&&(primaryReference(d.ref)||independentReference(d.ref))
     &&d.fingerprint!==seed.fingerprint&&focusPool(d.topic)===focusPool(topic))
     .map(d=>({d,common:seed.tokens.filter(t=>d.tokens.includes(t)&&seed.normalizedText.includes(t)&&d.normalizedText.includes(t))}))
     .filter(p=>p.common.length>=2||p.common.length===1&&DISTINCT_CONCEPTS.has(p.common[0])&&frequencies.get(p.common[0])<=10)
+    .filter(p=>p.common.length/seed.tokens.length>=0.5&&p.common.length/p.d.tokens.length>=0.5)
     .map(p=>({...p,score:p.common.reduce((n,t)=>n+Math.min(t.length,12)/(frequencies.get(t)??1),0)}))
     .sort((a,b)=>b.score-a.score);
   if(!peers.length)continue;
@@ -83,11 +105,36 @@ export function renewableExplainerPlans(captures,{blockedUrls=[],seedBlockedUrls
       .map(v=>({url:v.d.url,kind:'independent',origin_url:v.d.url,terms:v.common.slice(0,6),independence_note:'Outra referência pública do mesmo assunto para reapuração. A comparação verifica dependência, fatos críticos e divergências.'}))};
   try{validateExplainerCatalog([plan]);plans.push(plan);subjects.add(subjectKey);paired.add(seed.url);paired.add(peer.d.url);}catch{/* Discovery cannot relax the approved catalog contract. */}
  }
- return plans;
+ // Prior failed identities stay blocked above. A different subject can still
+ // use its native article/day budget; two bad pairs must not black out a focus.
+ return plans.sort((a,b)=>Number(failedTopics.find(f=>f.pool===focusPool(a))?.failed??0)-Number(failedTopics.find(f=>f.pool===focusPool(b))?.failed??0));
 }
 
 export function nextReferenceDiscovery(captures,{blockedUrls=[],seedBlockedUrls=[],attemptedUrls=[],approvedReferenceIds=null,isApproved=null,usage=[],policy=null,at=new Date()}={}){
  const seen=new Set([...captures.map(c=>canonical(c.url)),...blockedUrls.map(canonical),...seedBlockedUrls.map(canonical),...attemptedUrls.map(canonical)].filter(Boolean));
+ const held=new Set(blockedUrls.map(canonical).filter(Boolean)),used=new Set(seedBlockedUrls.map(canonical).filter(Boolean));
+ // Prioritize an observed link that can supply a missing second authorship.
+ // This is acquisition planning, never support for a fact: the actual page
+ // must still be read and pass the unchanged native comparison afterwards.
+ const index=new Map();
+ for(const d of captures.slice(0,800)){
+  const url=canonical(d.url),ref=url&&referenceForUrl(url);
+  if(!ref||!/educacao/.test(ref.role)||!fresh(d,at)||!substantiveGuide(d)||held.has(url)||held.has(canonical(d.requested_url))
+    ||used.has(url)||used.has(canonical(d.requested_url))||approvedReferenceIds&&!approvedReferenceIds.includes('ARTICLE_'+ref.id)||isApproved&&!isApproved(url))continue;
+  const tokens=words(subjectTitle(d)),topic=topicFor(d),item={publisher:ref.publisher,tokens,topic};
+  for(const token of tokens){if(!index.has(token))index.set(token,[]);if(index.get(token).length<80)index.get(token).push(item);}
+ }
+ const bridgePriority=(ref,title,topic)=>{
+  if(!/educacao/.test(ref.role))return 0;
+  const tokens=words(title),matches=new Set(tokens.flatMap(t=>index.get(t)??[]));
+  for(const d of matches){
+   if(d.publisher===ref.publisher||!d.topic||focusPool(d.topic)!==focusPool(topic))continue;
+   const common=tokens.filter(t=>d.tokens.includes(t));
+   if((common.length>=2||common.length===1&&DISTINCT_CONCEPTS.has(common[0]))
+     &&common.length/tokens.length>=0.5&&common.length/d.tokens.length>=0.5)return 200;
+  }
+  return 0;
+ };
  const visits=new Map();for(const url of attemptedUrls){const publisher=referenceForUrl(url)?.publisher;if(publisher)visits.set(publisher,(visits.get(publisher)??0)+1);}
  const selected=new Map();
  const consider=(ref,value)=>{const previous=selected.get(ref.publisher);if(!previous||value.priority>previous.priority)selected.set(ref.publisher,{...value,publisher:ref.publisher});};
@@ -119,7 +166,7 @@ export function nextReferenceDiscovery(captures,{blockedUrls=[],seedBlockedUrls=
    const educational=/educacao/.test(ref.role),guide=/(?:what-is|what-are|learn|guide|planning|business-plan|marketing|how-to)/i.test(url);
    // A new educational document takes precedence over repeatedly refreshing
    // already consumed parents. Publisher fairness and failed-link cooldowns stay.
-   const priority=(educational?100:0)+(guide?10:0);
+   const priority=(educational?100:0)+(guide?10:0)+bridgePriority(ref,title,topic);
    consider(ref,{url,topic,parent_url:parent.url,priority});
   }
  }

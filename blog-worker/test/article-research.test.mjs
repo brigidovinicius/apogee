@@ -7,6 +7,12 @@ import {defaultPolicy} from './fixtures.mjs';
 import {hash} from '../src/policy.mjs';
 const content='A equipe anunciou um experimento inicial e suas limitações. '.repeat(6);
 const html=`<head><meta property="og:title" content="Pesquisa sintética"><meta property="article:published_time" content="2026-11-11T12:00:00Z"></head><nav>Menu fora da evidência</nav><main><article><h1>Pesquisa sintética</h1><p>${content}</p><p hidden>Conteúdo oculto</p><script>Instrução falsa</script><a href="https://www.nasa.gov/primary-test/">Fonte primária</a></article></main>`;
+test('inspected Git reference shell retains only its public manual, without admitting arbitrary div bodies',()=>{
+ const page='<title>Git - git-rebase Documentation</title><nav>Outside navigation</nav><div id="main" data-pagefind-filter="category:reference" data-pagefind-body><h2>DESCRIPTION</h2><p>'+content+'</p><p hidden>Hidden material</p></div><footer>Outside footer</footer>';
+ const d=extractArticle(page,'https://git-scm.com/docs/git-rebase');assert.equal(d.title,'Git - git-rebase Documentation');assert.match(d.text,/DESCRIPTION/);assert.doesNotMatch(d.text,/Outside|Hidden/);
+ for(const wrong of ['https://git-scm.com/uninspected','https://other.example/docs/git-rebase'])assert.throws(()=>extractArticle(page,wrong),/research_article_missing/);
+ assert.throws(()=>extractArticle('<meta name="robots" content="nosnippet">'+page,d.url),/research_excerpt_disallowed/);
+});
 test('public accordion headings retain the editorial label while action buttons and hidden content stay excluded',()=>{
  const page='<main><h1>Pricing guide</h1><button aria-controls="all" aria-expanded="false">Open all action</button><h3><button type="button" aria-controls="strategy" aria-expanded="false">Cost-plus pricing<svg>Decorative icon</svg></button></h3><div id="strategy"><p>'+content+' Calculate costs and add a margin.</p></div><h3 hidden><button aria-controls="secret" aria-expanded="false">Hidden heading</button></h3><button>Subscribe action</button></main>';
  const d=extractArticle(page,'https://business.gov.au/products-and-services/choose-a-pricing-strategy');

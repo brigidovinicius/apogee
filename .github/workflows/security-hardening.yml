@@ -66,6 +66,7 @@ jobs:
           npm ci --prefix ../blog-worker --no-audit --no-fund
           cd ../blog-worker
           npm test
+          python3 test/pricing-refresh.test.py
           BLOG_TEST_PG_BIN="$(pg_config --bindir)" npm run test:integration
       - run: npm run typegen
       - run: npm run typecheck

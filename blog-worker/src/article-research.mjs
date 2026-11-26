@@ -89,7 +89,8 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   if(restricted&&!abstracts.length)fail('research_access_restricted');
   const guideHost=new URL(url).hostname.replace(/^www\./,'');
   const bodies=nodes.filter(n=>{const a=attrs(n);return a.itemprop==='articleBody'||/(?:^|\s)(?:article-body|article_body|story-body|story_body|post-content|entry-content|article-content|news-article--content|story_text|elementor-widget-theme-post-content|mc-article-body|book-content|field--name-body|field-name-body)(?:\s|$)/i.test((a.id??'')+' '+(a.class??''))
-    ||guideHost==='git-scm.com'&&a.id==='main'&&/(?:^|\s)book(?:\s|$)/.test(a.class??'')
+    ||guideHost==='git-scm.com'&&a.id==='main'&&(/(?:^|\s)book(?:\s|$)/.test(a.class??'')
+      ||/^\/docs\/[^/]+(?:\/[^/]+)?\/?$/.test(new URL(url).pathname)&&a['data-pagefind-filter']==='category:reference'&&Object.hasOwn(a,'data-pagefind-body'))
     ||guideHost==='qbi.uq.edu.au'&&/(?:^|\s)field-name-field-uq-basic-body(?:\s|$)/.test(a.class??'');});
   const articles=nodes.filter(n=>n.tagName==='article');
   const usable=items=>items.filter(n=>visible(n)&&clean(textOf(n)).length>=200);
@@ -120,7 +121,8 @@ export function extractArticle(html,url,{fallbackTitle='',fallbackDate=null}={})
   // Keep late guide sections available for subject selection. The dossier and
   // provider request retain their separate, smaller limits.
   const text=clean(textOf(root)).slice(0,48000);if(text.length<200)fail('research_text_insufficient');
-  const title=clean(meta['og:title']??textOf(nodes.find(n=>n.tagName==='h1')??{}))||fallbackTitle;
+  const title=clean(meta['og:title']??textOf(nodes.find(n=>n.tagName==='h1')??{}))
+    ||clean(textOf(nodes.find(n=>n.tagName==='title')??{}))||fallbackTitle;
   if(title.length<3)fail('research_title_missing');
   const structuredDate=own.find(v=>typeof v.datePublished==='string')?.datePublished;
   const withinRoot=n=>{for(let parent=n;parent;parent=parent.parentNode)if(parent===root||guideParts.includes(parent))return true;return false;};

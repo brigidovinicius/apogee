@@ -970,7 +970,7 @@ try{
       const fresh=new Store(runtime);let renewals=0;
       fresh.prepareAutomaticNewsRecovery=async()=>({prepared:0,requests:0,reason:'research_evidence_unchanged'});
       fresh.prepareAutomaticExplainer=async()=>({prepared:0,kind:'explainer',requests,reason:'explainer_sources_missing'});
-      fresh.prepareRenewableResearch=async()=>{renewals++;return {prepared:0,requests:0};};
+      fresh.prepareRenewableResearch=async(_p,options)=>{assert.equal(options.allowDiscovery,false,'discovery cannot claim the cycle before cached or fresh news');renewals++;return {prepared:0,requests:0};};
       const result=await fresh.prepareAutomaticResearch(hybridPolicy,{at:hybridAt(),read:async()=>assert.fail('complete cached evidence needs no network')});
       assert.equal(result.prepared,requests?0:1);assert.equal(renewals,requests?0:1);
       assert.equal((await admin`select count(*)::int as n from blog_worker.dossier_version`)[0].n,requests?0:1);
