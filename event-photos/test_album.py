@@ -60,7 +60,7 @@ class AlbumTest(unittest.TestCase):
         captured = {}
         env = {
             "PATH_INFO": path, "REQUEST_METHOD": "GET" if body is None else "POST",
-            "HTTP_AUTHORIZATION": "Bearer " + "x" * 32, "HTTP_X_ALBUM_ACTOR": self.actor(),
+            "HTTP_AUTHORIZATION": "Bearer " + "x" * 32, "HTTP_X_ALBUM_ACTOR": self.actor(), "HTTP_X_ALBUM_MEMBER": "fixture",
             "HTTP_X_ALBUM_CONSENT": "selfie-v1", "CONTENT_LENGTH": str(len(body or b"")),
             "CONTENT_TYPE": "image/jpeg", "wsgi.input": io.BytesIO(body or b""), **headers,
         }
@@ -95,7 +95,7 @@ class AlbumTest(unittest.TestCase):
         self.assertEqual(self.request("/workshop/consent", b"", HTTP_X_ALBUM_ACTOR=actor, HTTP_X_ALBUM_MEMBER=member,
                                       HTTP_X_ALBUM_CONSENT=album.CONSENT_VERSION),
                          (200, {"granted": True, "indexed": False}))
-        album.index_opt_in("workshop", member, photo_id, (0, 0, .5, 1), self.vision, "x" * 32)
+        album.index_opt_in("workshop", member, photo_id, (0, 0, .5, 1), "x" * 32)
         return photo_id
 
     def test_resume_deduplication_and_original(self):
@@ -107,7 +107,7 @@ class AlbumTest(unittest.TestCase):
         _, response = self.request("/workshop/photos")
         self.assertEqual(len(response["ids"]), 2)
         with album.connect() as db:
-            self.assertEqual(db.execute("SELECT count(*) FROM opt_in_face").fetchone()[0], 0)
+            self.assertEqual(db.execute("SELECT count(*) FROM opt_in_region").fetchone()[0], 0)
         self.assertEqual(self.request("/workshop/search", fixture("red"))[1]["error"], "consent_required")
         self.enroll()
         status, results = self.request("/workshop/search", fixture("red"))
@@ -144,36 +144,72 @@ class AlbumTest(unittest.TestCase):
     def test_opt_in_scopes_faces_and_revocation(self):
         self.seed()
         photo_id = self.enroll()
-        self.assertTrue(self.request(f"/workshop/consent/{photo_id}")[1]["indexed"])
-        self.assertFalse(self.request("/workshop/consent/" + "0"*32)[1]["indexed"])
+        self.assertTrue(self.request("/workshop/consent")[1]["indexed"])
         second = self.actor(member="another")
         self.assertEqual(self.request("/workshop/consent", b"", HTTP_X_ALBUM_ACTOR=second, HTTP_X_ALBUM_MEMBER="another",
                                       HTTP_X_ALBUM_CONSENT=album.CONSENT_VERSION)[0], 200)
-        self.assertEqual(self.request("/workshop/search", fixture("red"), HTTP_X_ALBUM_ACTOR=second)[1]["error"],
+        self.assertEqual(self.request("/workshop/search", fixture("red"), HTTP_X_ALBUM_ACTOR=second,
+                                                       HTTP_X_ALBUM_MEMBER="another")[1]["error"],
                          "not_enrolled")
         with self.assertRaisesRegex(ValueError, "precisa autorizar"):
-            album.index_opt_in("workshop", "unconsented", photo_id, (0, 0, 1, 1), self.vision, "x" * 32)
+            album.index_opt_in("workshop", "unconsented", photo_id, (0, 0, 1, 1), "x" * 32)
         self.assertEqual(self.request("/workshop/consent", REQUEST_METHOD="DELETE"),
                          (200, {"granted": False, "indexed": False}))
         with album.connect() as db:
-            self.assertEqual(db.execute("SELECT count(*) FROM opt_in_face").fetchone()[0], 0)
+            self.assertEqual(db.execute("SELECT count(*) FROM opt_in_region").fetchone()[0], 0)
         self.service = Service("x" * 32, None)
         self.assertEqual(self.request("/workshop/photos")[0], 200)
         self.assertEqual(self.request("/workshop/search", fixture("red"))[0], 404)
+
+    def test_search_saves_only_original_photo_ids_per_account(self):
+        self.seed()
+        photo_id = self.enroll()
+        original_files = set(self.private.glob("*.jpg"))
+        for _ in range(2):
+            self.assertEqual(self.request("/workshop/search", fixture("red")), (200, {"ids": [photo_id]}))
+        self.assertEqual(self.request("/workshop/search", fixture("blue")), (200, {"ids": []}))
+        self.assertEqual(set(self.private.glob("*.jpg")), original_files)
+
+        self.service = Service("x" * 32, None)
+        self.assertEqual(self.request("/workshop/saved"), (200, {"ids": [photo_id]}))
+        self.assertEqual(self.request(f"/workshop/saved/{photo_id}")[0], 200)
+        second = dict(HTTP_X_ALBUM_ACTOR=self.actor(member="another"), HTTP_X_ALBUM_MEMBER="another")
+        self.assertEqual(self.request("/workshop/saved", **second), (200, {"ids": []}))
+        self.assertEqual(self.request(f"/workshop/saved/{photo_id}", **second)[0], 404)
+        self.assertEqual(self.request("/workshop/saved", HTTP_X_ALBUM_MEMBER="another")[0], 400)
+        with album.connect() as db:
+            self.assertEqual(db.execute("SELECT count(*) FROM saved_photo").fetchone()[0], 1)
+            self.assertIsNone(db.execute("SELECT name FROM sqlite_schema WHERE name='opt_in_face'").fetchone())
+        album.delete("workshop", photo_id)
+        self.assertEqual(self.request("/workshop/saved"), (200, {"ids": []}))
+
+    def test_upgrade_removes_legacy_vectors_from_live_database(self):
+        with album.connect() as db:
+            db.execute("CREATE TABLE opt_in_face (embedding BLOB)")
+            marker = b"fixture-legacy-vector-to-be-erased" * 64
+            db.execute("INSERT INTO opt_in_face VALUES (?)", (marker,))
+        album.upgrade()
+        album.upgrade()
+        with album.connect() as db:
+            self.assertIsNone(db.execute("SELECT name FROM sqlite_schema WHERE name='opt_in_face'").fetchone())
+            self.assertEqual(db.execute("SELECT count(*) FROM album").fetchone()[0], 2)
+        self.assertNotIn(marker[:100], (self.private / "album.sqlite3").read_bytes())
 
     def test_indefinite_gallery_does_not_extend_face_retention(self):
         with album.connect() as db:
             db.execute("UPDATE album SET expires=NULL WHERE id='workshop'")
         self.seed()
         photo_id = self.enroll()
+        self.assertEqual(self.request("/workshop/search", fixture("red")), (200, {"ids": [photo_id]}))
         with album.connect() as db:
             db.execute("UPDATE opt_in SET expires=0 WHERE event='workshop'")
         self.assertEqual(self.request("/workshop/photos")[1]["expires"], None)
         self.assertEqual(self.request("/workshop/search", fixture("red"))[1]["error"], "consent_required")
         album.purge()
         self.assertEqual(self.request(f"/workshop/{photo_id}/download")[0], 200)
+        self.assertEqual(self.request("/workshop/saved"), (200, {"ids": [photo_id]}))
         with album.connect() as db:
-            self.assertEqual(db.execute("SELECT count(*) FROM opt_in_face").fetchone()[0], 0)
+            self.assertEqual(db.execute("SELECT count(*) FROM opt_in_region").fetchone()[0], 0)
 
     def test_expiry_hides_and_removes_media(self):
         self.seed()

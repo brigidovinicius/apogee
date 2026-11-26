@@ -24,13 +24,14 @@ A listagem de metadados do Drive confirmou 280 JPEGs, **5.967.030.799 bytes** e 
 
 ## Como funciona
 
-- A Apogee reutiliza a sessão Better Auth e a proteção da conta. Fotos, miniaturas e downloads exigem conta ativa. Com `APOGEE_WORKSHOP_MEDIA_AUDIENCE=members`, a galeria é aberta a contas Free e Premium. A lista explícita continua disponível para pilotos isolados. A permissão da gravação segue o fluxo já existente da Apogee. Com a galeria manual desativada, fotos encontradas recebem links temporários de 15 min vinculados à conta e à foto. A checagem da conta acontece em cada requisição.
+- A Apogee reutiliza a sessão Better Auth e a proteção da conta. Fotos, miniaturas e downloads exigem conta ativa. Com `APOGEE_WORKSHOP_MEDIA_AUDIENCE=members`, a galeria é aberta a contas Free e Premium. A lista explícita continua disponível para pilotos isolados. A permissão da gravação segue o fluxo já existente da Apogee. Com a galeria manual desativada, somente a conta que tem a foto salva pode visualizar ou baixar aquele original. A checagem da conta acontece em cada requisição.
 - O Python roda em rede privada e valida um segredo entre o site e o worker. O importador da galeria faz cópia e miniaturas sem rodar YuNet ou SFace. O limite do piloto é 400 fotos por álbum.
 - O diretório privado armazena os JPEGs originais, miniaturas de até 640 px, MP4 opcional e SQLite. A escolha evita colocar as mídias grandes ou o processamento no PostgreSQL de membros. O álbum usa SHA-256 por evento para retomar a importação, grava cada estado no banco, finaliza arquivos por rename e preserva a versão do processamento. O importador opera em sequência. Para a busca opcional, a dimensão de análise começa em 1.600 px com decodificação JPEG reduzida. Se ela mudar, os recortes autorizados precisam ser indexados com a nova versão.
-- Quem escolhe a busca pode autorizar o processamento do próprio rosto. O serviço guarda o aceite com versão, hora, ID da conta acessível apenas à operação e um identificador pseudonimizado para a busca. O aceite e os vetores expiram em 30 dias ou ao revogar. Depois do aceite, a equipe associa a conta às fotos e delimita somente o rosto daquela pessoa. YuNet e SFace recebem o recorte. O índice e a comparação ficam restritos à conta, ao evento e à versão do modelo. A busca recusa a selfie enquanto não houver referência autorizada. Cada consulta exige confirmação, aceita JPEG/PNG até 8 MiB e 16 MP e usa selfie e vetor em memória durante o processamento. A revogação remove aceite e vetores associados. Há uma busca ativa por vez e até seis consultas por minuto por conta.
+- Quem escolhe a busca autoriza o processamento do próprio rosto. O worker registra o aceite e apenas as coordenadas das regiões autorizadas nas fotos originais. O aceite e as coordenadas expiram após 30 dias e podem ser removidos pelo atendimento de privacidade. A busca fica limitada à conta e ao evento e aguarda pelo menos uma região autorizada. Durante a consulta, a imagem enviada e os recortes são lidos em memória. A cópia da selfie é liberada assim que o vetor de consulta é extraído. Os vetores usados na comparação também são descartados antes de salvar os resultados. A consulta aceita JPEG/PNG até 8 MiB e 16 MP, tem limite de 80 segundos e usa uma busca ativa por vez, com até seis consultas por minuto por conta.
+- **Minhas fotos salvas** guarda no banco privado apenas o ID da conta, do evento e da foto original, com a data do vínculo. A busca salva automaticamente os resultados confirmados sem duplicar vínculos. As fotos salvas continuam visíveis ao entrar novamente na conta. A exclusão da foto do álbum ou do álbum remove os vínculos correspondentes.
 - Quando houver expiração configurada para a galeria, ela bloqueia visualização e downloads imediatamente. O álbum do Workshop pode ser cadastrado com `--no-expiry`; a expiração do aceite facial continua valendo. Com o serviço ativo, a rotina verifica a expiração a cada minuto e apaga dados e cópias locais. `delete-photo`, `delete-video` e `delete-album` atendem exclusões antecipadas. A interface aponta para o contato de privacidade. O operador precisa localizar todas as fotos aplicáveis e tratar separadamente mídia original no Drive, cópias de segurança e downloads já realizados. Se o serviço ficar suspenso, o expurgo ocorre na retomada ou por comando administrativo.
 
-Antes de ativar o álbum real, registre o público, o prazo e a autorização para distribuir a mídia. O aceite de reconhecimento é separado e vale para o rosto da própria pessoa. A autorização precisa estar vigente quando a equipe delimitar cada referência. [LGPD, arts. 5º, 8º, 11 e 18](https://planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm)
+Antes de ativar o álbum real, registre o público, o prazo e a autorização para distribuir a mídia. O aceite de reconhecimento é separado e vale para o rosto da própria pessoa. A autorização precisa estar vigente no cadastro das regiões e na consulta. [LGPD, arts. 5º, 8º, 11 e 18](https://planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm)
 
 ### Modelos e dependências
 
@@ -83,14 +84,14 @@ Para o site local, mantenha a configuração de desenvolvimento do Better Auth e
 ### Preparar referências de um participante
 
 1. A pessoa entra em **Encontrar minhas fotos** e dá o aceite. A equipe consulta `python cli.py list-opt-ins "$album_event"` no serviço privado, usa a conta do evento e a galeria para identificar manualmente a foto e delimitar somente o rosto daquela pessoa.
-2. Use a posição normalizada de 0 a 1 na imagem orientada, na ordem esquerda, topo, direita e base. Use apenas recortes que contenham exclusivamente o rosto autorizado. O comando verifica o aceite vigente e recusa recortes sem rosto ou com mais de um rosto.
-3. Repita nas fotos autorizadas. Depois, o participante pode buscar com a selfie ou revogar a autorização na própria página.
+2. Use a posição normalizada de 0 a 1 na imagem orientada, na ordem esquerda, topo, direita e base. Use apenas recortes que contenham exclusivamente o rosto autorizado. O comando verifica o aceite vigente e cadastra apenas as coordenadas. A busca usa somente regiões com um rosto detectável.
+3. Repita nas fotos autorizadas. Depois, o participante pode buscar com uma selfie. A remoção de coordenadas e aceite pode ser pedida ao atendimento de privacidade.
 
 ```sh
 python cli.py index-opt-in "$album_event" ID_OPACO_DA_FOTO   --member-id ID_DA_CONTA --box 0.25 0.17 0.42 0.53
 ```
 
-A versão com opção individual usa um volume SQLite próprio. Os resultados do piloto anterior são históricos e não habilitam referências nessa versão.
+A inicialização do worker atualizado mantém álbuns, originais e aceites do volume SQLite, cria as tabelas para coordenadas e fotos salvas e apaga a tabela legada de vetores com `secure_delete`. Regiões anteriormente indexadas como vetores precisam ser cadastradas novamente. Em reversão para o worker anterior, desligue a busca nos dois serviços para evitar retomar a gravação de vetores.
 
 Para exclusões durante o piloto, rode o CLI com as mesmas variáveis e acesso ao volume. Em Docker use `docker compose -p apogee-event-photos run --rm photos python cli.py` seguido dos argumentos. Um registro de exclusão conserva o hash do original até a expiração, para impedir que a reimportação reative a foto.
 
@@ -100,7 +101,13 @@ python cli.py delete-video "$album_event"
 python cli.py delete-album "$album_event"
 ```
 
-## Validação da opção individual
+## Validação da busca em memória e das fotos salvas
+
+A validação local com imagens fictícias passou em oito testes do worker, TypeScript, ESLint e no fluxo completo pelo navegador. A busca encontrou um original da conta autorizada, salvou seu vínculo, confirmou o download e mostrou o resultado novamente após recarregar a página. O teste também verificou a ausência do botão de revogação, a separação entre contas e a remoção segura da tabela de vetores legados em um banco de teste. A galeria manual e o vídeo permaneceram acessíveis no cenário de membros.
+
+A configuração em produção foi conferida em modo somente leitura. O site e o worker tinham a busca ativa. O álbum tinha 280 fotos, um aceite registrado e zero referências na versão em execução. A ativação com fotos reais depende de registrar regiões correspondentes às pessoas que optarem pela busca.
+
+## Validação da versão anterior da opção individual
 
 O navegador confirmou a galeria com a busca desabilitada. Com a busca habilitada e dados fictícios, o aceite habilitou o cadastro de referência de uma conta, a selfie devolveu somente a foto com o recorte autorizado e a revogação removeu o vetor e o acesso pelos links anteriores quando a galeria manual estava desabilitada. Uma busca de referência levou 127 ms em loopback. A importação da galeria criou zero vetores.
 

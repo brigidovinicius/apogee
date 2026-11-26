@@ -1,5 +1,5 @@
 import "server-only";
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac } from "node:crypto";
 import { getSessionCookie } from "better-auth/cookies";
 import { getMemberFromHeaders } from "@/lib/members/dal";
 import { adultAccess } from "@/lib/members/protection";
@@ -7,7 +7,6 @@ import { PHOTO_API, WORKSHOP, type AlbumPhoto, type PhotoOptIn } from "./catalog
 
 export const PRIVATE = { "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" };
 export const PHOTO_ID = /^[a-f0-9]{32}$/;
-const GRANT_SECONDS = 15 * 60;
 
 export function albumConfig() {
   if (process.env.APOGEE_WORKSHOP_MEDIA_ENABLED !== "true") return null;
@@ -46,44 +45,32 @@ export function albumWorker(config: AlbumConfig, path: string, init?: RequestIni
   });
 }
 
-export function actorKey(config: AlbumConfig, id: string) {
+function actorKey(config: AlbumConfig, id: string) {
   return createHmac("sha256", config.secret).update(JSON.stringify(["actor", WORKSHOP.slug, id])).digest("hex");
 }
 
-function sign(config: AlbumConfig, memberId: string, id: string, expires: number) {
-  return createHmac("sha256", config.secret)
-    .update(JSON.stringify(["media", WORKSHOP.slug, memberId, id, expires])).digest("hex");
+export function albumIdentity(config: AlbumConfig, memberId: string) {
+  return { "X-Album-Member": memberId, "X-Album-Actor": actorKey(config, memberId) };
 }
 
-export function validPhotoGrant(config: AlbumConfig, memberId: string, id: string, grant: string | null) {
-  const match = /^(\d{1,12})\.([a-f0-9]{64})$/.exec(grant ?? "");
-  if (!match) return false;
-  const expires = Number(match[1]);
-  const now = Math.floor(Date.now() / 1000);
-  return expires > now && expires <= now + GRANT_SECONDS &&
-    timingSafeEqual(Buffer.from(match[2], "hex"), Buffer.from(sign(config, memberId, id, expires), "hex"));
-}
-
-export function photoLinks(ids: unknown, config: AlbumConfig, memberId: string): AlbumPhoto[] {
+export function photoLinks(ids: unknown): AlbumPhoto[] {
   if (!Array.isArray(ids) || ids.length > 400 || !ids.every(id => typeof id === "string" && PHOTO_ID.test(id))) {
     throw new Error("Lista de fotos inválida.");
   }
-  const expires = Math.floor(Date.now() / 1000) + GRANT_SECONDS;
-  return [...new Set<string>(ids)].map(id => {
-    const grant = config.browse ? "" : `?grant=${expires}.${sign(config, memberId, id, expires)}`;
-    return { id, thumbnail: `${PHOTO_API}/${id}/thumb${grant}`, download: `${PHOTO_API}/${id}/download${grant}` };
-  });
+  return [...new Set<string>(ids)].map(id => ({
+    id, thumbnail: `${PHOTO_API}/${id}/thumb`, download: `${PHOTO_API}/${id}/download`,
+  }));
 }
 
-export async function readPhotoOptIn(config: AlbumConfig, memberId: string, photoId?: string): Promise<PhotoOptIn | null> {
+export async function readPhotoOptIn(config: AlbumConfig, memberId: string): Promise<PhotoOptIn | null> {
   if (!config.selfie || !await adultAccess(memberId)) return null;
-  const response = await albumWorker(config, photoId ? `/consent/${photoId}` : "/consent", { headers: { "X-Album-Actor": actorKey(config, memberId) } });
+  const response = await albumWorker(config, "/consent", { headers: albumIdentity(config, memberId) });
   if (!response.ok) return null;
   const state = await response.json();
   return { granted: state.granted === true, indexed: state.indexed === true };
 }
 
-export async function readAlbum(config: AlbumConfig, memberId: string) {
+export async function readAlbum(config: AlbumConfig) {
   const response = await albumWorker(config, "/photos");
   if (!response.ok) return null;
   const index: { ids: unknown; expires: number | null; video: boolean } = await response.json();
@@ -92,7 +79,7 @@ export async function readAlbum(config: AlbumConfig, memberId: string) {
     expires: index.expires,
     video: index.video === true,
     browse: config.browse,
-    photos: config.browse ? photoLinks(index.ids, config, memberId) : [],
+    photos: config.browse ? photoLinks(index.ids) : [],
   };
 }
 

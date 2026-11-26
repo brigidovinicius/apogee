@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from album import connect, delete, delete_video, import_batch, import_video, index_opt_in, purge, start
-from vision import MODEL, Vision, models
+from vision import MODEL, models
 
 
 def main():
@@ -65,7 +65,7 @@ def main():
         with connect() as db:
             rows = db.execute("""
                 SELECT o.member_id, o.granted_at, o.expires, count(f.photo) AS photos
-                FROM opt_in o LEFT JOIN opt_in_face f ON f.event=o.event AND f.actor=o.actor
+                FROM opt_in o LEFT JOIN opt_in_region f ON f.event=o.event AND f.actor=o.actor
                 WHERE o.event=? AND o.expires>?
                 GROUP BY o.member_id, o.granted_at, o.expires ORDER BY o.granted_at
             """, (args.event, time.time()))
@@ -75,7 +75,7 @@ def main():
         secret = os.getenv("ALBUM_SECRET", "")
         if os.getenv("ALBUM_SELFIE_ENABLED") != "true" or len(secret) < 32:
             raise ValueError("Ative ALBUM_SELFIE_ENABLED e configure o segredo do álbum")
-        index_opt_in(args.event, args.member_id, args.photo, args.box, Vision(), secret)
+        index_opt_in(args.event, args.member_id, args.photo, args.box, secret)
     elif args.command == "import-video":
         import_video(args.event, args.file)
     elif args.command == "delete-video":

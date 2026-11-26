@@ -1,6 +1,6 @@
 import { applicationOrigin } from "@/lib/members/mail";
 import { PHOTO_OPT_IN } from "@/lib/eventos/catalogo";
-import { PRIVATE, actorKey, albumConfig, albumError, albumMember, albumWorker } from "@/lib/eventos/fotos";
+import { PRIVATE, albumConfig, albumError, albumIdentity, albumMember, albumWorker } from "@/lib/eventos/fotos";
 
 async function change(request: Request, method: "POST" | "DELETE") {
   const config = albumConfig();
@@ -13,7 +13,7 @@ async function change(request: Request, method: "POST" | "DELETE") {
       return albumError("consent_required", 400);
     }
     const response = await albumWorker(config, "/consent", { method, headers: {
-      "X-Album-Actor": actorKey(config, member.id), "X-Album-Consent": PHOTO_OPT_IN, "X-Album-Member": member.id,
+      ...albumIdentity(config, member.id), "X-Album-Consent": PHOTO_OPT_IN,
     } });
     if (!response.ok) return response.status === 429 ? albumError("busy", 429) : albumError("unavailable", 503);
     const state = await response.json();

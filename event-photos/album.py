@@ -14,7 +14,7 @@ from uuid import uuid4
 
 import cv2
 
-from vision import MAX_ORIGINAL, MODEL, InvalidImage, decode
+from vision import MAX_ORIGINAL, InvalidImage, decode
 
 ROOT = Path(os.getenv("ALBUM_DATA", "data")).resolve()
 EVENT_RE = re.compile(r"[a-z0-9][a-z0-9-]{0,79}")
@@ -38,12 +38,20 @@ CREATE TABLE IF NOT EXISTS opt_in (
     actor TEXT NOT NULL, member_id TEXT NOT NULL, version TEXT NOT NULL, granted_at INTEGER NOT NULL, expires INTEGER NOT NULL,
     PRIMARY KEY(event, actor)
 );
-CREATE TABLE IF NOT EXISTS opt_in_face (
+CREATE TABLE IF NOT EXISTS opt_in_region (
     event TEXT NOT NULL, actor TEXT NOT NULL,
     photo TEXT NOT NULL REFERENCES photo(id) ON DELETE CASCADE,
-    model TEXT NOT NULL, embedding BLOB NOT NULL CHECK(length(embedding) = 512),
+    left REAL NOT NULL, top REAL NOT NULL, right REAL NOT NULL, bottom REAL NOT NULL,
+    CHECK(0 <= left AND left < right AND right <= 1 AND 0 <= top AND top < bottom AND bottom <= 1),
     PRIMARY KEY(event, actor, photo),
     FOREIGN KEY(event, actor) REFERENCES opt_in(event, actor) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS saved_photo (
+    event TEXT NOT NULL REFERENCES album(id) ON DELETE CASCADE,
+    member_id TEXT NOT NULL,
+    photo TEXT NOT NULL REFERENCES photo(id) ON DELETE CASCADE,
+    saved_at INTEGER NOT NULL,
+    PRIMARY KEY(event, member_id, photo)
 );
 """
 
@@ -73,6 +81,13 @@ def search_guard():
     with (ROOT / ".writer.lock").open("rb") as lock:
         fcntl.flock(lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
         yield
+
+
+def upgrade():
+    with writer(), connect() as db:
+        db.executescript(SCHEMA)
+        # connect() enables secure_delete before removing legacy vectors.
+        db.execute("DROP TABLE IF EXISTS opt_in_face")
 
 
 def start(event, expires, authorization):
@@ -156,16 +171,15 @@ def import_batch(event, source):
     return counters
 
 
-def consent_state(db, event, actor, photo_id=None):
+def consent_state(db, event, actor):
     row = db.execute(
         "SELECT version FROM opt_in WHERE event=? AND actor=? AND expires>?", (event, actor, time.time()),
     ).fetchone()
     granted = bool(row and row["version"] == CONSENT_VERSION)
     indexed = granted and db.execute("""
-        SELECT 1 FROM opt_in_face f JOIN photo p ON p.id=f.photo
-        WHERE f.event=? AND f.actor=? AND f.model=? AND p.state='ready'
-          AND (? IS NULL OR f.photo=?) LIMIT 1
-    """, (event, actor, MODEL, photo_id, photo_id)).fetchone() is not None
+        SELECT 1 FROM opt_in_region r JOIN photo p ON p.id=r.photo AND p.event=r.event
+        WHERE r.event=? AND r.actor=? AND p.state='ready' LIMIT 1
+    """, (event, actor)).fetchone() is not None
     return {"granted": granted, "indexed": indexed}
 
 
@@ -191,31 +205,42 @@ def actor_key(secret, event, member_id):
     return hmac.new(secret.encode(), proof.encode(), "sha256").hexdigest()
 
 
-def index_opt_in(event, member_id, photo_id, box, vision, secret):
+def region_pixels(image, box):
+    left, top, right, bottom = box
+    return (round(left*image.width), round(top*image.height),
+            round(right*image.width), round(bottom*image.height))
+
+
+def region_crop(photo_id, box):
+    original, thumbnail = paths(photo_id)
+    try:
+        with decode(thumbnail.read_bytes(), ["JPEG"]) as image:
+            left, top, right, bottom = region_pixels(image, box)
+            if min(right - left, bottom - top) >= 96:
+                return image.crop((left, top, right, bottom))
+    except FileNotFoundError:
+        pass
+    with decode(original.read_bytes(), ["JPEG"]) as image:
+        return image.crop(region_pixels(image, box))
+
+
+def index_opt_in(event, member_id, photo_id, box, secret):
     actor = actor_key(secret, event, member_id)
     left, top, right, bottom = box
     if not (0 <= left < right <= 1 and 0 <= top < bottom <= 1) or not PHOTO_RE.fullmatch(photo_id):
-        raise ValueError("Informe a foto e os quatro limites normalizados do recorte")
+        raise ValueError("Informe a foto e os quatro limites normalizados da região")
     with writer(), connect() as db:
         if not active(db, event) or not consent_state(db, event, actor)["granted"]:
-            raise ValueError("O participante precisa autorizar a busca antes da indexação")
+            raise ValueError("O participante precisa autorizar a busca antes do cadastro")
         photo = db.execute("SELECT 1 FROM photo WHERE id=? AND event=? AND state='ready'",
                            (photo_id, event)).fetchone()
         if not photo:
             raise ValueError("Foto indisponível no evento")
-        image = decode(paths(photo_id)[0].read_bytes(), ["JPEG"])
-        crop = image.crop((round(left*image.width), round(top*image.height),
-                           round(right*image.width), round(bottom*image.height)))
-        if min(crop.size) < 32:
-            raise ValueError("O recorte precisa ter pelo menos 32 pixels por lado na resolução de análise")
-        vectors = vision.features(crop, selfie=True)
-        if not vectors:
-            raise ValueError("Nenhum rosto no recorte autorizado")
         db.execute("""
-            INSERT INTO opt_in_face VALUES (?, ?, ?, ?, ?)
+            INSERT INTO opt_in_region VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(event, actor, photo) DO UPDATE SET
-                model=excluded.model, embedding=excluded.embedding
-        """, (event, actor, photo_id, MODEL, vectors[0].tobytes()))
+                left=excluded.left, top=excluded.top, right=excluded.right, bottom=excluded.bottom
+        """, (event, actor, photo_id, *box))
 
 
 def video_path(event):
@@ -250,7 +275,8 @@ def delete_video(event):
 
 def remove_photo(db, photo_id):
     db.execute("UPDATE photo SET state='deleted', name='', error=NULL WHERE id=?", (photo_id,))
-    db.execute("DELETE FROM opt_in_face WHERE photo=?", (photo_id,))
+    db.execute("DELETE FROM opt_in_region WHERE photo=?", (photo_id,))
+    db.execute("DELETE FROM saved_photo WHERE photo=?", (photo_id,))
 
 
 def delete(event, photo_id):

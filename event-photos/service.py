@@ -8,14 +8,14 @@ import time
 from wsgiref.util import FileWrapper
 
 import cv2
-import numpy as np
 
 from album import (
     CONSENT_VERSION, EVENT_RE, MEMBER_RE, PHOTO_RE, active, actor_key, change_consent, connect, consent_state,
-    paths, purge, search_guard, video_path,
+    paths, purge, region_crop, search_guard, upgrade, video_path,
 )
-from vision import MAX_SELFIE, MODEL, THRESHOLD, InvalidImage, Vision, decode
+from vision import MAX_SELFIE, THRESHOLD, InvalidImage, Vision, decode
 
+MAX_SEARCH_SECONDS = 80
 PHOTO_QUERY = """
     SELECT id FROM photo
     WHERE event=? AND state='ready'
@@ -58,8 +58,10 @@ class Service:
                 return self.media(db, event, route[0], route[1], respond, env)
             if self.vision and route == ["consent"]:
                 return self.consent(db, event, env, respond, method)
-            if self.vision and method == "GET" and len(route) == 2 and route[0] == "consent" and PHOTO_RE.fullmatch(route[1]):
-                return self.consent(db, event, env, respond, method, route[1])
+            if method == "GET" and route[:1] == ["saved"] and (
+                len(route) == 1 or (len(route) == 2 and PHOTO_RE.fullmatch(route[1]))
+            ):
+                return self.saved(db, event, env, respond, *route[1:])
             if self.vision and method == "POST" and route == ["search"]:
                 return self.search(db, event, env, respond)
         return result(respond, "404 Not Found", {"error": "not_found"})
@@ -71,12 +73,34 @@ class Service:
             return send_file(paths(photo_id)[variant == "thumb"], "image/jpeg", respond, env)
         return result(respond, "404 Not Found", {"error": "not_found"})
 
-    def consent(self, db, event, env, respond, method, photo_id=None):
+    def saved(self, db, event, env, respond, photo_id=None):
+        member = self.member(event, env)
+        if not member:
+            return result(respond, "400 Bad Request", {"error": "forbidden"})
+        rows = db.execute("""
+            SELECT s.photo FROM saved_photo s JOIN photo p ON p.id=s.photo AND p.event=s.event
+            WHERE s.event=? AND s.member_id=? AND p.state='ready' AND (? IS NULL OR s.photo=?)
+            ORDER BY s.saved_at DESC, p.rowid
+        """, (event, member, photo_id, photo_id))
+        ids = [row["photo"] for row in rows]
+        if photo_id and not ids:
+            return result(respond, "404 Not Found", {"error": "not_found"})
+        return result(respond, "200 OK", {"ids": ids})
+
+    def member(self, event, env):
+        member = env.get("HTTP_X_ALBUM_MEMBER", "")
+        if MEMBER_RE.fullmatch(member) and hmac.compare_digest(
+            env.get("HTTP_X_ALBUM_ACTOR", "").encode(), actor_key(self.secret, event, member).encode()
+        ):
+            return member
+        return None
+
+    def consent(self, db, event, env, respond, method):
         actor = env.get("HTTP_X_ALBUM_ACTOR", "")
         if not re.fullmatch(r"[a-f0-9]{64}", actor):
             return result(respond, "400 Bad Request", {"error": "forbidden"})
         if method == "GET":
-            return result(respond, "200 OK", consent_state(db, event, actor, photo_id))
+            return result(respond, "200 OK", consent_state(db, event, actor))
         if method in {"POST", "DELETE"}:
             member_id = env.get("HTTP_X_ALBUM_MEMBER", "")
             if method == "POST" and (
@@ -94,7 +118,8 @@ class Service:
 
     def search(self, db, event, env, respond):
         actor = env.get("HTTP_X_ALBUM_ACTOR", "")
-        if env.get("HTTP_X_ALBUM_CONSENT") != "selfie-v1" or not re.fullmatch(r"[a-f0-9]{64}", actor):
+        member = self.member(event, env)
+        if not member or env.get("HTTP_X_ALBUM_CONSENT") != "selfie-v1":
             return result(respond, "400 Bad Request", {"error": "consent_required"})
         raw_size = env.get("CONTENT_LENGTH", "")
         if not re.fullmatch(r"\d{1,8}", raw_size) or not 0 < int(raw_size) <= MAX_SELFIE:
@@ -111,43 +136,82 @@ class Service:
                     return result(respond, "400 Bad Request", {"error": "consent_required"})
                 if not state["indexed"]:
                     return result(respond, "409 Conflict", {"error": "not_enrolled"})
-                return self.compare(db, event, env, respond, actor, raw_size, formats)
+                return self.compare(db, event, env, respond, actor, member, int(raw_size), formats)
         except BlockingIOError:
             return result(respond, "429 Too Many Requests", {"error": "busy"})
         finally:
             self.search_slot.release()
 
 
-    def compare(self, db, event, env, respond, actor, raw_size, formats):
+    def query_vector(self, stream, length, formats):
+        data = bytearray(stream.read(length))
+        try:
+            if len(data) != length:
+                raise InvalidImage("invalid_image")
+            with decode(data, formats, max_pixels=16_000_000) as image:
+                vectors = self.vision.features(image, selfie=True)
+            if not vectors:
+                raise InvalidImage("no_face")
+            return vectors[0]
+        finally:
+            data[:] = bytes(len(data))
+
+    def compare(self, db, event, env, respond, actor, member, length, formats):
         window = int(time.monotonic() // 60)
         self.attempts = {key: val for key, val in self.attempts.items() if key[1] == window}
         key = (actor, window)
         if len(self.attempts) >= 5000 or self.attempts.get(key, 0) >= 6:
             return result(respond, "429 Too Many Requests", {"error": "rate_limit"})
         self.attempts[key] = self.attempts.get(key, 0) + 1
-        length = int(raw_size)
-        data = env["wsgi.input"].read(length)
-        if len(data) != length:
-            return result(respond, "400 Bad Request", {"error": "invalid_image"})
+        deadline = time.monotonic() + MAX_SEARCH_SECONDS
         try:
-            vectors = self.vision.features(decode(data, formats, max_pixels=16_000_000), selfie=True)
+            query = self.query_vector(env["wsgi.input"], length, formats)
         except InvalidImage as error:
             return result(respond, "422 Unprocessable Content", {"error": str(error)})
-        if not vectors:
-            return result(respond, "422 Unprocessable Content", {"error": "no_face"})
-        rows = db.execute("""
-            SELECT p.id, f.embedding FROM opt_in_face f JOIN photo p ON p.id=f.photo
-            WHERE f.event=? AND f.actor=? AND p.event=f.event AND p.state='ready' AND f.model=?
-        """, (event, actor, MODEL))
-        scores = {}
-        for photo_id, embedding in rows:
-            score = float(vectors[0] @ np.frombuffer(embedding, dtype="<f4"))
-            if score >= THRESHOLD:
-                scores[photo_id] = max(score, scores.get(photo_id, -1))
+        try:
+            scores = self.match_regions(db, event, actor, query, deadline)
+        except TimeoutError:
+            return result(respond, "503 Service Unavailable", {"error": "search_timeout"})
+        finally:
+            query.fill(0)
         if not active(db, event) or not consent_state(db, event, actor)["granted"]:
             return result(respond, "404 Not Found", {"error": "not_found"})
         ids = sorted(scores, key=lambda photo_id: (-scores[photo_id], photo_id))
+        now = int(time.time())
+        db.executemany(
+            "INSERT OR IGNORE INTO saved_photo VALUES (?, ?, ?, ?)",
+            [(event, member, photo_id, now) for photo_id in ids],
+        )
+        db.commit()
         return result(respond, "200 OK", {"ids": ids})
+
+    def match_regions(self, db, event, actor, query, deadline):
+        rows = db.execute("""
+            SELECT r.photo, r.left, r.top, r.right, r.bottom
+            FROM opt_in_region r JOIN photo p ON p.id=r.photo AND p.event=r.event
+            WHERE r.event=? AND r.actor=? AND p.state='ready'
+        """, (event, actor))
+        scores = {}
+        for photo_id, *box in rows:
+            if time.monotonic() >= deadline:
+                raise TimeoutError()
+            try:
+                with region_crop(photo_id, box) as crop:
+                    if min(crop.size) < 32:
+                        continue
+                    candidates = self.vision.features(crop, selfie=True)
+            except (InvalidImage, FileNotFoundError):
+                continue
+            for candidate in candidates:
+                try:
+                    score = float(query @ candidate)
+                    if score >= THRESHOLD:
+                        scores[photo_id] = score
+                finally:
+                    candidate.fill(0)
+        if time.monotonic() >= deadline:
+            raise TimeoutError()
+        return scores
 
 
 def send_file(path, content_type, respond, env):
@@ -181,8 +245,7 @@ def janitor():
 
 
 def create_app():
-    with connect() as db:
-        db.execute("SELECT 1 FROM album LIMIT 1").fetchone()
+    upgrade()
     app = Service(os.environ["ALBUM_SECRET"], Vision() if os.getenv("ALBUM_SELFIE_ENABLED") == "true" else None)
     threading.Thread(target=janitor, daemon=True).start()
     return app

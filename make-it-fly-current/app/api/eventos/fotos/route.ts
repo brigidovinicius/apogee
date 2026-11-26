@@ -1,10 +1,26 @@
 import { applicationOrigin } from "@/lib/members/mail";
 import { RequestBodyError, UPLOAD_BODY_TIMEOUT_MS, readRequestBody } from "@/lib/request-body";
 import { MAX_SELFIE_BYTES, SELFIE_CONSENT } from "@/lib/eventos/catalogo";
-import { PRIVATE, actorKey, albumConfig, albumError, albumMember, albumWorker, photoLinks } from "@/lib/eventos/fotos";
+import { PRIVATE, albumConfig, albumError, albumIdentity, albumMember, albumWorker, photoLinks } from "@/lib/eventos/fotos";
 
 const SEARCH_ERRORS = new Set(["no_face", "multiple_faces", "invalid_image", "invalid_size",
-  "invalid_format", "not_enrolled", "consent_required", "not_found", "busy", "rate_limit"]);
+  "invalid_format", "not_enrolled", "consent_required", "not_found", "busy", "rate_limit", "search_timeout"]);
+
+export async function GET(request: Request) {
+  const config = albumConfig();
+  if (!config) return albumError("not_found", 404);
+  try {
+    const member = await albumMember(request.headers, config);
+    if (!member) return albumError("forbidden", 403);
+    const response = await albumWorker(config, "/saved", { headers: albumIdentity(config, member.id) });
+    if (response.status === 404) return albumError("not_found", 404);
+    if (!response.ok) return albumError("unavailable", 503);
+    const result = await response.json();
+    return Response.json({ photos: photoLinks(result.ids) }, { headers: PRIVATE });
+  } catch {
+    return albumError("unavailable", 503);
+  }
+}
 
 export async function POST(request: Request) {
   const config = albumConfig();
@@ -19,14 +35,19 @@ export async function POST(request: Request) {
     const body = await readRequestBody(request, MAX_SELFIE_BYTES, UPLOAD_BODY_TIMEOUT_MS);
     if (!body.length) return albumError("invalid_size", 400);
 
-    const response = await albumWorker(config, "/search", { method: "POST", body, headers: {
-      "Content-Type": type, "X-Album-Consent": SELFIE_CONSENT, "X-Album-Actor": actorKey(config, member.id),
-    } });
+    let response: Response;
+    try {
+      response = await albumWorker(config, "/search", { method: "POST", body, headers: {
+        ...albumIdentity(config, member.id), "Content-Type": type, "X-Album-Consent": SELFIE_CONSENT,
+      } }, 95_000);
+    } finally {
+      body.fill(0);
+    }
     const result = await response.json();
     if (!response.ok) return SEARCH_ERRORS.has(result.error)
       ? albumError(result.error, response.status) : albumError("unavailable", 503);
 
-    return Response.json({ photos: photoLinks(result.ids, config, member.id) }, { headers: PRIVATE });
+    return Response.json({ photos: photoLinks(result.ids) }, { headers: PRIVATE });
   } catch (error) {
     if (error instanceof RequestBodyError) {
       return albumError(error.status === 413 ? "invalid_size" : error.status === 408 ? "upload_timeout" : "invalid_image", error.status);

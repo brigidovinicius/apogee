@@ -16,7 +16,7 @@ export default async function EventMediaPage({ params }: { params: Promise<{ slu
   const config = albumConfig();
   const permitted = config ? canAccessAlbum(member.id, config) : false;
   const [album, optIn] = permitted && config ? await Promise.all([
-    readAlbum(config, member.id).catch(() => null),
+    readAlbum(config).catch(() => null),
     readPhotoOptIn(config, member.id).catch(() => null),
   ]) : [null, null];
   const expires = album?.expires ? new Intl.DateTimeFormat("pt-BR", {

@@ -8,4 +8,4 @@ COPY --chown=10001:10001 album.py cli.py service.py vision.py ./
 RUN python cli.py models && mkdir -m 700 /data && chown -R 10001:10001 /data /opt/models
 USER 10001:10001
 EXPOSE 8786
-CMD ["gunicorn", "--bind", "0.0.0.0:8786", "--workers", "1", "--threads", "4", "--timeout", "35", "service:create_app()"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8786", "--workers", "1", "--threads", "4", "--timeout", "100", "service:create_app()"]
