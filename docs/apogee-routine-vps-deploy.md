@@ -680,3 +680,11 @@ Publicação pedida pelo Vitor em nome do proprietário. SHA publicado `93e02b71
 ### Teste com login do Google em produção
 
 A conta Free da Comunidade entrou pelo botão **Entrar com Google**, abriu as 280 fotos em **Ver álbum completo** e baixou um JPEG válido de 21.864.075 bytes. O fluxo não usou selfie. A conta testada tem perfil administrativo e foi usada no modo Usuário. A validação com uma conta Premium ficou pendente.
+
+## 26/11/2026 · Aceite e validação de selfie do Workshop
+
+- Revisão publicada `318bd4ac1abaa46b1d1f4135de618a5118b7f9df` via SSH e lock de deploy. Site e serviço privado de fotos saudáveis, sem reinícios. Imagens `sha256:6ef654546e5f5fe49b77b03928311e69100a251fc4acd1302d8b7443891231c8` e `sha256:4dee1d62b68c644c65171ae30d5c7c9cc6ebb52db83e11e94406f349a81333fe`, respectivamente. Arquivos de ambiente, volume da galeria e containers vizinhos foram conferidos.
+- TypeScript, ESLint, nove testes do worker e dois cenários de navegador local passaram. Os testes com dados fictícios confirmaram abertura dos termos, aceite, validação de selfie sem referências, pesquisa com referência autorizada, salvamento e download pela conta correta. Uma conta com verificação pendente recebeu a orientação e abriu a galeria manual sem selfie.
+- Produção confirmou 280 fotos sem prazo de retirada, miniatura JPEG, zero referências autorizadas e bloqueio da validação sem aceite. A ficha do workshop redirecionou visitantes ao login, e as rotas de aceite e selfie retornaram 403 sem sessão. O teste autenticado com selfie foi feito no ambiente local.
+- O SQLite recebeu a estrutura de regiões autorizadas e vínculos com fotos salvas. A tabela legada de vetores estava vazia e foi removida. Backup em `/opt/apogee-backups/event-photos-318bd4a.Ilvjveyl`, com `quick_check` e SHA-256 conferidos. O PostgreSQL não recebeu migração.
+- Imagens de rollback retidas da revisão `bc4739161595d65b9087e283b69fd42c9cbfe94f`. Se precisar reativá-las, pause a busca nas duas configurações de serviço e preserve o SQLite atualizado para manter a galeria e os vínculos existentes.
