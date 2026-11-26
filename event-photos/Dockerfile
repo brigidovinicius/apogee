@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 ALBUM_DATA=/data ALBUM_MODELS=/
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY album.py cli.py service.py vision.py ./
+COPY --chown=10001:10001 album.py cli.py service.py vision.py ./
 RUN python cli.py models && mkdir -m 700 /data && chown -R 10001:10001 /data /opt/models
 USER 10001:10001
 EXPOSE 8786
