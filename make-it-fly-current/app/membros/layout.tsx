@@ -15,7 +15,7 @@ export default function MembersLayout({ children }: { children: ReactNode }) {
       <SiteHeader current="members" compact />
       <main className={styles.page} id="experiencia">{children}</main>
       <footer className={styles.memberFooter}>
-        <Link href="/">Apogee</Link>
+        <Link href="/">Voltar ao site</Link>
         <nav aria-label="Ajuda e termos"><Link href="/membros/suporte">Suporte</Link><Link href="/privacidade">Privacidade</Link><Link href="/termos">Termos de uso</Link></nav>
       </footer>
     </>

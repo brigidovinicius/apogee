@@ -5,7 +5,6 @@ import { headers } from "next/headers";
 import { getSessionCookie } from "better-auth/cookies";
 import { getCurrentMember } from "@/lib/members/dal";
 import { AccountProvider, type AccountIdentity } from "@/components/members/account-menu";
-import { communityAccess } from "@/lib/billing/community-store";
 import type { ReactNode } from "react";
 import { JourneyTracker } from "@/components/analytics/JourneyTracker";
 import { ApogeeDesignSystem } from "@/components/site/apogee-design-system";
@@ -91,8 +90,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   await connection();
   // Public visitors never initialize auth or query the members database here.
   const member = getSessionCookie(await headers()) ? await getCurrentMember().catch(() => null) : null;
-  const annual = member ? await communityAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null) : null;
-  const account: AccountIdentity | null = member ? { name: member.name, username: member.username, role: member.role, communityActive: annual?.active } : null;
+  const account: AccountIdentity | null = member ? { name: member.name, username: member.username, role: member.role } : null;
   return (
     <html
       lang="pt-BR"

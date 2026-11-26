@@ -33,9 +33,10 @@ export default async function PreviewPage({ params, searchParams }: Props) {
   }
   const query = radarCatalogueQuery(filters);
   if (canonical !== `/oportunidades/${slug}`) permanentRedirect(canonical + query);
+  const detailPath = opportunityDetailPath(item.id, filters);
 
   return <div className={styles.page}>
-    <SiteHeader current="opportunities" adaptive tone="light" />
+    <SiteHeader current="opportunities" adaptive tone="light" memberHref={`/membros/entrar?next=${encodeURIComponent(detailPath)}`} />
     <main id="experiencia" className={styles.main} tabIndex={-1}>
       <div className={`${styles.hero} ${styles.previewHero}`}>
         <Link href={`/oportunidades${query}#mural-title`}>← Voltar ao Radar</Link>
@@ -43,7 +44,7 @@ export default async function PreviewPage({ params, searchParams }: Props) {
         <p>Este é o resumo público. Consulte os requisitos e o link oficial na sua conta Apogee.</p>
       </div>
       <RadarAmplitude key={item.id} view="radar_detail_viewed" />
-      <OpportunityCard opportunity={item} detailHref={opportunityDetailPath(item.id, filters)} detailLabel="Consultar na minha conta" showTitle={false} />
+      <OpportunityCard opportunity={item} detailHref={detailPath} detailLabel="Consultar na minha conta" showTitle={false} />
     </main>
     <SiteFooter />
   </div>;

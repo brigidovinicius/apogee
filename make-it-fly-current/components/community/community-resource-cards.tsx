@@ -12,14 +12,14 @@ export function CommunityResourceCards({ resources, destination }: {
       artwork: "radar",
       name: "Radar",
       text: "Pesquise oportunidades e confira requisitos e prazos.",
-      href: { home: "/comunidade#radar", members: "/membros/oportunidades", preview: "/oportunidades" },
-      action: destination === "home" ? "Conhecer o Radar" : "Abrir o Radar",
+      href: { home: "/oportunidades", members: "/membros/oportunidades", preview: "/oportunidades" },
+      action: destination === "home" ? "Explorar o Radar" : "Abrir o Radar",
     },
     {
       artwork: "perks",
       name: "Benefícios",
       text: "Consulte as condições das ofertas vigentes de parceiros.",
-      href: { home: "/comunidade#perks", members: "/membros/beneficios", preview: "/beneficios" },
+      href: { home: "/beneficios", members: "/membros/beneficios", preview: "/beneficios" },
       action: "Ver benefícios",
     },
     ...(resources?.ferramentas ? [{

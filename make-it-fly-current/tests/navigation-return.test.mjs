@@ -33,20 +33,51 @@ test("Radar transfers no unrelated destinations and ignores invalid page numbers
   assert.equal(memberRadarPath(new URLSearchParams({ busca: "x".repeat(150) })).split("busca=")[1].length, 100);
 });
 
-test("the public Radar sends the header to the offer while preserving the filtered return", async () => {
+test("the public Radar sends visitors directly to sign-in and routes signed-in members to the filtered catalogue", async () => {
+  let signedIn = false;
+  let catalogueReads = 0;
+  const redirect = href => { throw Error(href); };
   const pageLoad = opportunityLoader({
     "next/link": { __esModule: true, default: "Link" },
+    "next/headers": { headers: async () => new Headers() },
+    "next/navigation": { redirect },
+    "better-auth/cookies": { getSessionCookie: () => signedIn },
+    "@/lib/members/dal": { getCurrentMember: async () => ({ id: "fixture" }) },
     "@/components/site/site-header": { SiteHeader: "SiteHeader" },
     "@/components/site/site-footer": { SiteFooter: "SiteFooter" },
     "@/components/site/share-button": { ShareButton: "ShareButton" },
     "@/components/opportunities/opportunities-board": { OpportunitiesBoard: "OpportunitiesBoard" },
-    "@/lib/opportunities/access": { listPublicOpportunityPage: async () => null },
+    "@/lib/opportunities/access": { listPublicOpportunityPage: async () => { catalogueReads += 1; return null; } },
   });
   const Page = pageLoad("app/oportunidades/page.tsx").default;
-  const tree = await Page({ searchParams: Promise.resolve({ categoria: "competicoes", pagina: "2" }) });
-  const expected = "/comunidade?next=%2Fmembros%2Foportunidades%3Fcategoria%3Dcompeticoes%26pagina%3D2#planos";
+  const query = { categoria: "competicoes", pagina: "2", localizacao: "off", token: "ignored" };
+  const params = new URLSearchParams(query);
+  const tree = await Page({ searchParams: Promise.resolve(query) });
+  const expected = memberRadarLoginHref(params);
   assert.equal(nodes(tree, (node) => node.type === "SiteHeader")[0].props.memberHref, expected);
-  assert.equal(nodes(tree,node=>typeof node.type === "function" && node.type.name === "RadarOfferIntro")[0].props.next,memberRadarPath(new URLSearchParams("categoria=competicoes&pagina=2")));
+  assert.equal(nodes(tree, node => node.type?.name === "RadarOfferIntro")[0].props.next, memberRadarPath(params));
+  signedIn = true;
+  await assert.rejects(Page({ searchParams: Promise.resolve(query) }), error => error.message === memberRadarPath(params));
+  assert.equal(catalogueReads, 1);
+});
+
+test("the public Benefits sign-in and signed-in redirect share the filtered member destination", async () => {
+  let signedIn = false;
+  const pageLoad = opportunityLoader({
+    "next/headers": { headers: async () => new Headers() },
+    "next/navigation": { redirect: href => { throw Error(href); } },
+    "better-auth/cookies": { getSessionCookie: () => signedIn },
+    "@/lib/members/dal": { getCurrentMember: async () => ({ id: "fixture" }) },
+    "@/components/site/editorial-page-shell": { EditorialPageShell: "EditorialPageShell" },
+    "@/components/benefits/preview-catalogue": { BenefitPreviewCatalogue: "BenefitPreviewCatalogue" },
+  });
+  const Page = pageLoad("app/beneficios/page.tsx").default;
+  const searchParams = Promise.resolve({ q: "crédito", categoria: "video", next: "ignored" });
+  const destination = "/membros/beneficios?q=cr%C3%A9dito&categoria=video";
+  const tree = await Page({ searchParams });
+  assert.equal(tree.props.memberHref, `/membros/entrar?next=${encodeURIComponent(destination)}`);
+  signedIn = true;
+  await assert.rejects(Page({ searchParams }), error => error.message === destination);
 });
 
 test("member route and data guard keep Radar state when authentication or onboarding redirects", async () => {
@@ -74,6 +105,30 @@ test("member route and data guard keep Radar state when authentication or onboar
   assert.equal(catalogueRead, false);
 });
 
+test("member navigation makes Events and entitled Radar resources directly reachable", async () => {
+  let radarActive = false;
+  const loadBar = opportunityLoader({
+    "next/link": { __esModule: true, default: "Link" },
+    "./member-navigation": { MemberNavigation: "MemberNavigation" },
+    "@/lib/opportunities/personal-calendar": { personalCalendarEnabled: () => true },
+    "@/lib/opportunities/collections": { collectionsEnabled: () => true },
+    "@/lib/members/resource-availability": { memberResourceAvailability: async () => ({ ferramentas: false }) },
+    "@/lib/billing/store": { radarAccess: async () => ({ active: radarActive }) },
+  });
+  const { MemberBar } = loadBar("components/members/member-bar.tsx");
+  const member = { id: "fixture", role: "member" };
+  const links = async () => {
+    const tree = await MemberBar({ member, current: "calendario" });
+    const [nav] = nodes(tree, node => node.props?.["aria-label"] === "Navegação da área de membros");
+    return nodes(nav, node => node.type === "Link").map(node => node.props);
+  };
+  assert.deepEqual((await links()).map(link => link.href), ["/membros", "/membros/oportunidades", "/membros/beneficios", "/membros/eventos"]);
+  radarActive = true;
+  const direct = await links();
+  assert.deepEqual(direct.slice(-2).map(link => link.href), ["/membros/meu-calendario", "/membros/colecoes"]);
+  assert.equal(direct.at(-2)["aria-current"], "page");
+});
+
 test("shared navigation marks only a defined current section and preserves the configured member destination", () => {
   const headerLoad = opportunityLoader({
     "next/link": { __esModule: true, default: "Link" },
@@ -84,7 +139,14 @@ test("shared navigation marks only a defined current section and preserves the c
   const memberHref = "/membros/entrar?next=%2Fmembros%2Foportunidades%3Fcategoria%3Deventos";
   const tree = SiteHeader({ memberHref });
   const entries = nodes(tree, node => node.type?.name === "CommunityEntryLink");
-  assert.deepEqual(entries.map(node => node.props.offerHref), [memberHref]);
+  assert.deepEqual(entries.map(node => node.props.href), [memberHref]);
+  const exploreDestinations = ["/blog", "/comunidade#participar", "/galeria", "/loja"];
+  const menus = nodes(tree, node => node.type === "MobileNavigation");
+  assert.equal(menus.length, 2);
+  for (const menu of menus) {
+    const entries = nodes(menu, node => node.type === "Link").map(node => node.props.href);
+    assert.deepEqual(entries.slice(-4), exploreDestinations);
+  }
   assert.equal(nodes(tree, node => node.type === "Link" && node.props["aria-current"] === "page").length, 0);
   for (const adaptive of [false, true]) {
     const selected = nodes(SiteHeader({ current: "benefits", memberHref, adaptive }), node => node.type === "Link" && node.props["aria-current"] === "page");

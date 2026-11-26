@@ -73,6 +73,7 @@ const nextConfig: NextConfig = {
   // Make It Fly is archived, preserving its source and assets for future use.
   async redirects() {
     return [
+      { source: "/radar", destination: "/oportunidades", permanent: true },
       { source: "/makeitfly/:path*", destination: "/comunidade", permanent: false },
       { source: "/participar", destination: "/comunidade", permanent: false },
       {
