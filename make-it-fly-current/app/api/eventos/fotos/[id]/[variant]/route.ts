@@ -1,6 +1,9 @@
-import { PHOTO_ID, albumConfig, albumError, albumMember, albumIdentity, albumWorker, streamAlbumFile } from "@/lib/eventos/fotos";
+import { applicationOrigin } from "@/lib/members/mail";
+import { PRIVATE, PHOTO_ID, albumConfig, albumError, albumMember, albumIdentity, albumWorker, streamAlbumFile } from "@/lib/eventos/fotos";
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string; variant: string }> }) {
+type PhotoRoute = { params: Promise<{ id: string; variant: string }> };
+
+export async function GET(request: Request, { params }: PhotoRoute) {
   const config = albumConfig();
   const { id, variant } = await params;
   if (!config || !PHOTO_ID.test(id) || (variant !== "thumb" && variant !== "download")) return albumError("not_found", 404);
@@ -19,4 +22,31 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   } catch {
     return albumError("unavailable", 503);
   }
+}
+
+async function changeSavedPhoto(request: Request, { params }: PhotoRoute, method: "PUT" | "DELETE") {
+  const config = albumConfig();
+  const { id, variant } = await params;
+  if (!config || variant !== "salvar" || !PHOTO_ID.test(id) || (method === "PUT" && !config.browse)) {
+    return albumError("not_found", 404);
+  }
+  try {
+    if (request.headers.get("origin") !== applicationOrigin()) return albumError("forbidden", 403);
+    const member = await albumMember(request.headers, config);
+    if (!member) return albumError("forbidden", 403);
+    const response = await albumWorker(config, `/saved/${id}`, { method, headers: albumIdentity(config, member.id) });
+    if (response.status === 404) return albumError("not_found", 404);
+    if (!response.ok) return albumError("unavailable", 503);
+    return Response.json({ saved: method === "PUT" }, { headers: PRIVATE });
+  } catch {
+    return albumError("unavailable", 503);
+  }
+}
+
+export function PUT(request: Request, context: PhotoRoute) {
+  return changeSavedPhoto(request, context, "PUT");
+}
+
+export function DELETE(request: Request, context: PhotoRoute) {
+  return changeSavedPhoto(request, context, "DELETE");
 }

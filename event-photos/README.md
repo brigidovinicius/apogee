@@ -106,6 +106,8 @@ O comando autoriza as fotos disponíveis naquele momento. Inclua `--expires` com
 
 Quem dá aceite no site usa **Buscar com meu Rosto**. O serviço compara somente as miniaturas do conjunto autorizado e as marcações da pessoa. A busca do conjunto amplia as miniaturas até 832 px em memória para melhorar a detecção de rostos distantes. A similaridade mínima é 0,55 e a consulta pode levar até 180 segundos. Rostos pequenos nas miniaturas ainda podem ficar abaixo do limite de detecção. A selfie e os vetores ficam em memória durante a consulta. O banco recebe somente os vínculos das fotos encontradas com a conta.
 
+Quando o álbum completo estiver habilitado, o membro pode abrir uma foto e usar **Salvar foto**. As fotos escolhidas e as encontradas pela busca aparecem em **Minhas fotos salvas**. Remover uma foto dos salvos afeta apenas a lista daquela conta. O salvamento manual dispensa a selfie e seu aceite.
+
 A inicialização do worker atualizado mantém álbuns, originais e aceites do volume SQLite, cria as tabelas para coordenadas e fotos salvas e apaga a tabela legada de vetores com `secure_delete`. Regiões anteriormente indexadas como vetores precisam ser cadastradas novamente. Em reversão para o worker anterior, desligue a busca nos dois serviços para evitar retomar a gravação de vetores.
 
 Para exclusões durante o piloto, rode o CLI com as mesmas variáveis e acesso ao volume. Em Docker use `docker compose -p apogee-event-photos run --rm photos python cli.py` seguido dos argumentos. Um registro de exclusão conserva o hash do original até a expiração, para impedir que a reimportação reative a foto.
