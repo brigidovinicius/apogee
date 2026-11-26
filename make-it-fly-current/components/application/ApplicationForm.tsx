@@ -156,10 +156,8 @@ export function ApplicationForm() {
   if (submitted) return (
     <section className={`${styles.panel} ${styles.result}`} aria-labelledby="result-title">
       <span className={styles.resultSymbol} aria-hidden="true"><BrandMark /></span>
-      <p className={styles.panelEyebrow}>Aplicação recebida</p>
       <h2 ref={headingRef} tabIndex={-1} id="result-title">Recebemos sua aplicação.</h2>
       <div role="status" aria-live="polite">
-        <p>Vamos revisar seu perfil e suas respostas com atenção.</p>
         <p className={styles.resultNote}>Se sua participação for aprovada, enviaremos o link do ingresso pelo contato informado. O envio desta aplicação ainda não garante uma vaga.</p>
       </div>
       <Link href="/makeitfly" className={styles.secondary}>Voltar ao evento <span aria-hidden="true"><ArrowUpRight aria-hidden="true" size="1em" style={{ display: "inline-block", verticalAlign: "middle" }} /></span></Link>
@@ -177,7 +175,7 @@ export function ApplicationForm() {
           <div className={styles.formHeading}>
             <p className={styles.panelEyebrow}>Etapa {step + 1} de 3</p>
             <h2 id="form-title" ref={headingRef} tabIndex={-1}>{step === 0 ? "Vamos nos conhecer." : step === 1 ? "O que você quer colocar no mundo?" : "Sua estrutura e rotina."}</h2>
-            <p>{step === 0 ? "Conte um pouco sobre você e como podemos manter contato." : step === 1 ? "Não precisa estar pronta. Toda ideia tem um começo." : "Duas últimas informações antes de enviar sua aplicação."}</p>
+            {step === 1 && <p>A ideia pode estar em fase inicial.</p>}
           </div>
           {errorMessage && <div ref={errorRef} role="alert" tabIndex={-1} className={styles.errorSummary}>{errorMessage}</div>}
           {step === 0 && <div className={styles.fields}>

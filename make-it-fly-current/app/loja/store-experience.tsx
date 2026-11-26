@@ -79,7 +79,7 @@ function DropSignup({ product }: { product: StoreProduct }) {
 
   return (
     <section className={styles.signup}>
-      <div className={styles.signupCopy}><span>{product.name}</span><h2 id="signup-title">Novos drops em breve</h2><p id="signup-description">Cadastre-se na lista de espera para receber novidades sobre esta peça.</p></div>
+      <div className={styles.signupCopy}><span>{product.name}</span><h2 id="signup-title">Novos drops em breve</h2><p id="signup-description">Receba novidades sobre esta peça.</p></div>
       <form className={styles.form} onSubmit={submit} aria-busy={status === "sending"}>
         <div className={styles.fields}>
           <label htmlFor="drop-name">Nome<input id="drop-name" name="name" autoComplete="name" required minLength={2} maxLength={120} placeholder="Seu nome" /></label>
@@ -112,11 +112,11 @@ export function StoreExperience() {
       <main id="experiencia" tabIndex={-1}>
         <section className={styles.intro} aria-labelledby="store-title">
           <div><p className={styles.eyebrow}>Coleção Apogee</p><h1 id="store-title">Vista o que<br />você cria.</h1></div>
-          <p className={styles.introCopy}>A estrela, a comunidade e a vontade de construir. Peças que fazem parte da Apogee.</p>
+          <p className={styles.introCopy}>Peças da coleção Apogee Builders Club.</p>
         </section>
         <section className={styles.showcase} aria-labelledby="showcase-title">
           <div className={styles.showcasePhoto}><Image src={products[0].photos[0].src} alt={products[0].photos[0].alt} width={1254} height={1254} sizes="(max-width: 760px) 100vw, 55vw" preload /></div>
-          <div className={styles.showcaseCopy}><p className={styles.eyebrow}>Apogee Builders Club</p><h2 id="showcase-title">Uma marca<br />para levar junto.</h2><p>Peças que levam a estrela e a vontade de construir para o seu dia a dia.</p><a className={styles.collectionLink} href="#produtos">Conhecer a coleção</a><p className={styles.availability}>Acompanhe as peças e as novidades dos próximos drops.</p></div>
+          <div className={styles.showcaseCopy}><p className={styles.eyebrow}>Apogee Builders Club</p><h2 id="showcase-title">Uma marca<br />para levar junto.</h2><p>Peças com a estrela da Apogee.</p><a className={styles.collectionLink} href="#produtos">Conhecer a coleção</a></div>
         </section>
         <section className={styles.collection} aria-labelledby="collection-title" id="produtos">
           <h2 className={styles.collectionTitle} id="collection-title">A coleção.</h2>

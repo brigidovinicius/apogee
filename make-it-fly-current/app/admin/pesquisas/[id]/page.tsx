@@ -16,7 +16,7 @@ export default async function EditSurveyPage({ params }: { params: Promise<{ id:
   if (!survey) notFound();
 
   return <div className={adminStyles.content}>
-    <AdminPageHeader title="Editar pesquisa" description="A prévia mostra a última versão salva." aside={<Link href="/admin/pesquisas">Voltar às pesquisas</Link>} />
+    <AdminPageHeader title="Editar pesquisa" aside={<Link href="/admin/pesquisas">Voltar às pesquisas</Link>} />
     <div className={styles.actions}>
       <Link href={`/admin/pesquisas/${id}/respostas`} data-ap-button="secondary">Ver respostas</Link>
       {surveysEnabled() && survey.status === "open" && <Link href={`/pesquisas/${survey.slug}`} data-ap-button="secondary">Abrir formulário</Link>}

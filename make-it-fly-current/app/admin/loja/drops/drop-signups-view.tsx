@@ -47,8 +47,8 @@ export function DropSignupsView({ result }: { result: DropSignupList }) {
             {page < pageCount ? <Link className={adminStyles.secondaryButton} href={pageHref(page + 1)}>Próxima</Link> : null}</div>
         </nav>
       </> : <section className={adminStyles.emptyState} role="status"><div className={adminStyles.stateCard}>
-        <h2>{search ? "Nenhum cadastro encontrado." : "Os próximos cadastros aparecerão aqui."}</h2>
-        <p>{search ? "Tente outro nome, telefone ou e-mail, ou limpe a busca." : "Os contatos enviados pelo formulário da loja serão listados automaticamente."}</p>
+        <h2>{search ? "Nenhum cadastro encontrado." : "Nenhum cadastro recebido."}</h2>
+        {search && <p>Tente outro nome, telefone ou e-mail, ou limpe a busca.</p>}
       </div></section>}
     </div>
   );

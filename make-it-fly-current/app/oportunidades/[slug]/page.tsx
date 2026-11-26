@@ -41,7 +41,7 @@ export default async function PreviewPage({ params, searchParams }: Props) {
       <div className={`${styles.hero} ${styles.previewHero}`}>
         <Link href={`/oportunidades${query}#mural-title`}>← Voltar ao Radar</Link>
         <h1>{displayOpportunityTitle(item.title)}</h1>
-        <p>Este é o resumo público. Consulte os requisitos e o link oficial na sua conta Apogee.</p>
+        <p>Entre na Apogee para consultar requisitos e o link oficial.</p>
       </div>
       <RadarAmplitude key={item.id} view="radar_detail_viewed" />
       <OpportunityCard opportunity={item} detailHref={detailPath} detailLabel="Consultar na minha conta" showTitle={false} />

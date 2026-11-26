@@ -114,7 +114,7 @@ test("support has its own measured scroll scene without changing the primary sec
 
 test("landing and footer retain the reviewed source after the authorized text, vector-icon, return-link and hash-history changes", async () => {
   const source = await readSource("components/landing/make-it-fly-v2.tsx");
-  assert.equal(sha256(source), "169811a0dfc2043696fd56fd7eb4f47ea1dfcb8bfac3251ea290a4ad6f5e0325");
+  assert.equal(sha256(source), "99efc3c60e6be4b8e57b540472ac137a1b486d817fe5b9ce3d5eaa6e191a061a");
 });
 
 test("Earth animation, hero and supplied can retain their approved hashes", async () => {

@@ -4,7 +4,7 @@ import styles from "./state-panel.module.css";
 type StatePanelProps = {
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   actions?: ReactNode;
   busy?: boolean;
   role?: "alert" | "status";
@@ -22,7 +22,7 @@ export function StatePanel({
     <section className={styles.panel} aria-busy={busy || undefined} aria-live="polite" role={role}>
       {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
       <h1 className={styles.title}>{title}</h1>
-      <p className={styles.description}>{description}</p>
+      {description && <p className={styles.description}>{description}</p>}
       {actions ? <div className={styles.actions}>{actions}</div> : null}
     </section>
   );

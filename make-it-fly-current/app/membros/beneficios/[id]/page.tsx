@@ -43,7 +43,7 @@ export default async function BenefitDetailPage({ params, searchParams }: { para
         </dl><p>O resgate está disponível para assinantes elegíveis, conforme as condições do parceiro.</p>
           <Link href={`/comunidade?next=${encodeURIComponent(path)}#planos`} prefetch={false}>Conhecer o plano anual</Link></article> :
         Boolean(quota?.remaining) && <section className={`${styles.card} ${styles.detail}`}><h2 data-ap-heading="">Consultar condições</h2>
-          <p>Abrir esta oferta usa uma consulta de Benefícios. Reabrir no mesmo mês é gratuito.</p>
+          <p>Abrir usa uma consulta de Benefícios. Reabrir no mesmo mês não usa outra.</p>
           <form action={openFreeBenefit.bind(null, id, { q: query, categoria: category, publico: audience })}>
             <button type="submit" className={shared.primary}>Usar consulta gratuita</button>
           </form></section>}

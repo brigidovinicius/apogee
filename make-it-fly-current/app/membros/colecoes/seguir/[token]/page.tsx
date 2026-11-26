@@ -13,6 +13,6 @@ export default async function FollowPage({params}:{params:Promise<{token:string}
  const {token}=await params;const collection=await sharedCollection(token);if(!collection)notFound();
  const member=await requireCollectionMember('/membros/colecoes/seguir/'+token);
  const following=(await followedCollections(member.id)).some(f=>f.id===collection.id&&f.available);
- return <MemberWorkspace member={member} current="colecoes"><div className={styles.page}><Link href={'/colecoes/'+token}>← Voltar à coleção</Link><h1>{collection.name}</h1><p>Encontre esta seleção em suas coleções acompanhadas. Acompanhar não ativa e-mails nem adiciona eventos à sua agenda.</p>
+ return <MemberWorkspace member={member} current="colecoes"><div className={styles.page}><Link href={'/colecoes/'+token}>← Voltar à coleção</Link><h1>{collection.name}</h1><p>Acompanhar a coleção não ativa e-mails nem adiciona eventos à sua agenda.</p>
  {following?<p>Você já acompanha esta coleção. <Link href="/membros/colecoes/acompanhadas">Gerenciar acompanhamento</Link></p>:<CollectionMutationForm action={followCollectionAction} label="Confirmar acompanhamento"><input type="hidden" name="token" value={token}/></CollectionMutationForm>}</div></MemberWorkspace>;
 }

@@ -23,7 +23,7 @@ export default async function ToolboxAdminPage({ searchParams }: { searchParams:
       <ToolboxToolForm key={`tool:${tool?.id ?? 'new'}:${tool?.version ?? 0}`} item={tool} categories={categories.map(c => ({ id:c.id,name:c.name,status:c.status }))} />
     </div>
     <section aria-labelledby="categories-title"><h2 id="categories-title">Categorias · {categories.length}</h2>
-      {!categories.length ? <p>Comece criando a categoria da primeira ferramenta.</p> : <ul className={styles.list}>{categories.map(c => <li className={styles.row} key={c.id}>
+      {!categories.length ? <p>Crie a primeira categoria.</p> : <ul className={styles.list}>{categories.map(c => <li className={styles.row} key={c.id}>
         <div><h3>{c.name}</h3><p>{c.description ?? "Sem descrição adicional."}</p><p>Ordem {c.order} · {tools.filter(t => t.categoryId === c.id).length} ferramenta(s)</p></div>
         <span className={styles.state} data-status={c.status}>{TOOLBOX_STATUS_LABELS[c.status]}</span><Link href={`/admin/ferramentas?categoria=${c.id}#editor-categoria`}>Editar categoria<span className="sr-only"> {c.name}</span></Link>
       </li>)}</ul>}

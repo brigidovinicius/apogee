@@ -12,9 +12,8 @@ export default async function AdminAccessDeniedPage() {
   return (
     <section className={styles.accessDenied} role="alert">
       <div className={styles.stateCard}>
-        <p className={styles.eyebrow}>Acesso restrito</p>
         <h1>Esta área exige papel administrativo.</h1>
-        <p>Sua sessão continua válida como membro, mas ela não autoriza leitura de dados operacionais.</p>
+        <p>Sua sessão de membro continua ativa.</p>
         <div className={styles.stateActions}>
           <Link className={styles.button} href="/membros">Voltar para membros</Link>
           <Link className={styles.secondaryButton} href="/">Ir ao início</Link>

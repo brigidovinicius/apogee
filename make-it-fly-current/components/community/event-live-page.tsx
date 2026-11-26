@@ -12,11 +12,11 @@ export function EventLivePage() {
     <FunnelHeader page="recording" />
     <main id="experiencia" tabIndex={-1}>
       <section className={`${styles.section} ${styles.liveSection}`} aria-labelledby="live-title">
-        <p className={styles.liveNotice} role="status"><Check size={18} aria-hidden="true" />Inscrição registrada. A gravação está logo abaixo.</p>
+        <p className={styles.liveNotice} role="status"><Check size={18} aria-hidden="true" />Inscrição registrada.</p>
         <div className={styles.sectionHeading}>
           <p className={styles.eyebrow}>Codex Community · 21 de novembro de 2026</p>
           <h1 id="live-title">Assista à gravação<br /><span>do workshop.</span></h1>
-          <p>Veja a gravação de 1h09 do Codex Community Workshop de Florianópolis.</p>
+          <p>Workshop de Florianópolis · 1h09.</p>
         </div>
         <div className={styles.livePlayer}>
           <iframe

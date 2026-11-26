@@ -35,7 +35,7 @@ export function PhotoGrid({ photos, loading, error, hasMore, loadingMore, onLoad
     >
       <div className={styles.galleryHeading}>
         <p>Registros da comunidade Apogee</p>
-        <h2 data-ap-heading="" id="event-gallery-title">Quem mostra o que acontece são vocês.</h2>
+        <h2 data-ap-heading="" id="event-gallery-title">Fotos do Make It Fly</h2>
         <span aria-hidden>↓</span>
       </div>
 
@@ -70,10 +70,9 @@ export function PhotoGrid({ photos, loading, error, hasMore, loadingMore, onLoad
         <div className={styles.emptyGallery}>
           <div aria-hidden className={styles.emptyGalleryMark}><BrandMark /></div>
           <div>
-            <strong>{error ? "Não foi possível carregar as fotos agora." : loading ? "Carregando os registros da comunidade…" : "A galeria da Apogee começa com registros reais."}</strong>
+            <strong>{error ? "Não foi possível carregar as fotos agora." : loading ? "Carregando os registros da comunidade…" : "Ainda não há fotos na galeria."}</strong>
             <p>
-              Compartilhe suas fotos do Make It Fly com créditos ou anonimamente.
-              Elas aparecerão aqui depois do envio.
+              Compartilhe suas fotos com créditos ou anonimamente.
             </p>
           </div>
           <a href="#enviar-fotos">

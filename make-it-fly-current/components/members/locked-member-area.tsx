@@ -18,15 +18,11 @@ const previews: Record<LockedAreaKind, { name: string; items: string[] }> = {
 // No catalogue, redemption link, lesson or personal data is accepted by this component.
 export function LockedMemberArea({ kind, next, reason = "annual" }: { kind: LockedAreaKind; next: string; reason?: LockedAreaReason }) {
   const preview = previews[kind];
-  const unavailableNotice = kind === "trilha"
-    ? { title: "Em breve", description: "Estamos preparando as atividades da Trilha de Aprendizagem." }
-    : { title: "Esta área está em preparação", description: "Os recursos estarão aqui quando forem publicados." };
-  const notices = {
-    verification: { title: "Conclua a verificação da conta", description: "Verifique sua conta para acessar esta seção." },
-    unavailable: unavailableNotice,
-    annual: { title: `${preview.name} para assinantes anuais`, description: "Disponível durante a vigência da assinatura anual." },
+  const titles = {
+    verification: "Conclua a verificação da conta",
+    unavailable: kind === "trilha" ? "Em breve" : "Esta área está em preparação",
+    annual: `${preview.name} para assinantes anuais`,
   };
-  const { title, description } = notices[reason];
   return <section className={styles.preview} aria-label={`${preview.name}: prévia com acesso restrito`}>
     <div className={styles.stage}>
       <div className={styles.skeleton} aria-hidden="true" inert data-locked-preview={kind}>
@@ -34,8 +30,8 @@ export function LockedMemberArea({ kind, next, reason = "annual" }: { kind: Lock
       </div>
       <div className={styles.notice}>
         <LockKeyhole size={28} strokeWidth={1.5} aria-hidden="true" />
-        <h2 data-ap-heading="" data-ap-art={kind}>{title}</h2>
-        <p>{description}</p>
+        <h2 data-ap-heading="" data-ap-art={kind}>{titles[reason]}</h2>
+        {reason === "annual" && <p>Disponível durante a vigência da assinatura anual.</p>}
         {kind === "beneficios" ? <p className={styles.note}>Benefícios de parceiros em preparação.</p> : null}
         {kind === "ferramentas" ? <p className={styles.note}>Ferramentas de terceiros seguem suas próprias condições.</p> : null}
         <div className={styles.actions}>

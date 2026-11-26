@@ -27,8 +27,8 @@ export function GoogleCalendar({status,result,returnTo}: {
     result === "failed" ? "Não foi possível concluir a conexão ou atualização. Tente novamente." : result === "access" ? errors.access : null;
   return <section className={styles.subscription} aria-labelledby="google-calendar-heading">
     <h2 id="google-calendar-heading">Google Agenda</h2>
-    <p><strong>Leve seus eventos para o Google Agenda.</strong> Você pode conectar uma conta Google mesmo tendo criado sua conta Apogee com e-mail e senha.</p>
-    <p>Os eventos salvos e suas etapas serão atualizados no calendário da Apogee dentro do Google Agenda. Ao conectar, as oportunidades que você já salvou também serão sincronizadas.</p>
+    <p>Você pode conectar o Google Agenda mesmo se entrou por e-mail e senha.</p>
+    <p>Ao conectar, as oportunidades que você já salvou e suas etapas serão sincronizadas no calendário da Apogee no Google Agenda.</p>
     <p><a href="/privacidade#google-agenda">Como seus dados são usados na conexão Google</a></p>
     {!status.configured ? <><p>A conexão com o Google Agenda ainda precisa ser configurada neste ambiente.</p><button className={styles.action} disabled>Conectar Google Agenda</button></> : <>
       <p>O Apogee solicita acesso somente aos calendários que ele cria.</p>

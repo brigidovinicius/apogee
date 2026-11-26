@@ -26,10 +26,9 @@ export default function ParticipatePage() {
       <main id="experiencia" className={styles.main} tabIndex={-1}>
         <section className={styles.intro} aria-labelledby="application-title">
           <h1 id="application-title">Uma ideia. O próximo passo.</h1>
-          <p className={styles.introCopy}>Queremos conhecer você, entender o que está construindo e saber como a Make It Fly pode ajudar sua ideia a avançar.</p>
           <div className={styles.processNote}>
             <span aria-hidden="true"><BrandMark /></span>
-            <p>Preencha todas as etapas: analisamos cada aplicação e enviamos o link do ingresso a quem for selecionado.</p>
+            <p>Preencha todas as etapas. Se sua inscrição for aprovada, enviaremos o link do ingresso.</p>
           </div>
           <p className={styles.privacy}>Seus dados serão usados apenas para avaliar sua participação, organizar esta edição e entrar em contato sobre a Make It Fly.</p>
           <div className={styles.introSignature}>

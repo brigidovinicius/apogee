@@ -102,7 +102,7 @@ test("home structured data identifies the actual website and organization withou
 });
 
 test("API responses are noindex while robots and sitemap remain crawlable", async () => {
-  const config = (await load("next.config.ts")).default;
+  const config = opportunityLoader()("next.config.ts").default;
   const rules = await config.headers();
   assert.deepEqual(rules.find(rule => rule.source === "/api/:path*").headers,
     [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]);

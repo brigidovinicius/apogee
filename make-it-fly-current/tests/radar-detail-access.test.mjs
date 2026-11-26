@@ -113,7 +113,7 @@ test("first navigation explains the free consultation and preserves the filtered
   const props = { params: Promise.resolve({ id: first.id }), searchParams: Promise.resolve(filters) };
   const html = renderToStaticMarkup(await Page(props));
   assert.match(html, /Usar consulta gratuita/);
-  assert.match(html, /Abrir esta oportunidade usa uma consulta do Radar/);
+  assert.match(html, /Abrir usa uma consulta do Radar\. Reabrir no mesmo mês não usa outra\./);
   assert.match(html, /href="\/membros\/oportunidades\?busca=Evento&amp;pagina=2"/);
   assert.doesNotMatch(html, /data-radar-detail-opening|REQUISITO_PRIVADO|do-not-forward/);
   assert.match(state.authenticatedPaths.at(-1), /radar-first\?busca=Evento&pagina=2$/);

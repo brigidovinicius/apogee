@@ -9,7 +9,7 @@ export function AdminPageHeader({
 }: {
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   aside?: ReactNode;
 }) {
   return (
@@ -17,19 +17,19 @@ export function AdminPageHeader({
       <div>
         <p className={styles.eyebrow}>{eyebrow}</p>
         <h1>{title}</h1>
-        <p>{description}</p>
+        {description && <p>{description}</p>}
       </div>
       {aside ? <div className={styles.pageHeaderAside}>{aside}</div> : null}
     </header>
   );
 }
 
-export function MetricCard({ label, value, detail }: { label: string; value: string; detail: string }) {
+export function MetricCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return (
     <article className={styles.metricCard}>
       <p>{label}</p>
       <strong>{value}</strong>
-      <span>{detail}</span>
+      {detail && <span>{detail}</span>}
     </article>
   );
 }

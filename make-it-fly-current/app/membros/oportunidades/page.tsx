@@ -43,14 +43,13 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
 
       <header data-ap-radar-hero="member" className={styles.pageHead}>
         <div>
-          <p className={styles.eyebrow}>Oportunidades</p>
           <h1 className={styles.title}>Radar de oportunidades</h1>
           <p className={styles.lead}>
-            Encontre empregos, eventos, programas e oportunidades para o seu próximo passo.
+            Vagas, eventos e programas com fontes oficiais.
           </p>
         </div>
       </header>
-      {quota ? <MonthlyQuota quota={quota} area="Radar" next={returnTo} /> : <p>Seu acesso ao Radar completo está ativo.</p>}
+      {quota ? <MonthlyQuota quota={quota} area="Radar" next={returnTo} /> : <p>Radar completo ativo.</p>}
       {saveState.kind === "ready" && <nav className={navigation.tabs} aria-label="Seus recursos do Radar">
         <Link href="/membros/meu-calendario">Meu calendário</Link>
         {saveState.collections && <Link href="/membros/colecoes">Minhas coleções</Link>}

@@ -14,7 +14,7 @@ export default async function FollowedPage() {
  const member=await requireSignedInMember('/membros/colecoes/acompanhadas');
  const follows=await followedCollections(member.id);
  return <MemberWorkspace member={member} current="colecoes"><div className={styles.page}><Link href="/membros/colecoes">← Minhas coleções</Link><h1>Coleções acompanhadas</h1>
- <p>Acompanhar uma coleção não adiciona seus eventos à sua agenda. Os resumos por e-mail são opcionais: até um por semana, apenas quando houver novidades.</p>
+ <p>Acompanhar não adiciona eventos à sua agenda. Os resumos por e-mail são opcionais, até um por semana, quando houver novidades.</p>
  {!follows.length&&<p>Abra o link de uma coleção e escolha “Acompanhar coleção” para encontrá-la aqui.</p>}
  <ul className={styles.list}>{follows.map(f=><li className={styles.cardContent} key={f.id}><h2 data-ap-heading="">{f.token?<Link href={'/colecoes/'+f.token}>{f.name}</Link>:f.name}</h2><p>{f.description}</p>
  {!f.available&&<p>O compartilhamento mudou ou foi desativado. Peça um novo link ao responsável pela coleção.</p>}

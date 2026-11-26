@@ -58,9 +58,9 @@ export function ContactCaptureForm({ preview = false, successHref }: { preview?:
   }
 
   if (submitted) return <div ref={confirmation} tabIndex={-1} className={styles.captureConfirmation} role="status" aria-labelledby={`${id}-confirmation`}>
-    <span className={styles.confirmationIcon}><Check size={24} aria-hidden="true" /></span><p className={styles.eyebrow}>{preview ? "Demonstração concluída" : "Inscrição registrada"}</p>
-    <h2 id={`${id}-confirmation`}>Você deu o primeiro passo.</h2>
-    <p>{preview ? "Demonstração concluída. Nenhum contato foi registrado e nenhum e-mail será enviado." : "Sua inscrição foi registrada."}</p>
+    <span className={styles.confirmationIcon}><Check size={24} aria-hidden="true" /></span>
+    <h2 id={`${id}-confirmation`}>{preview ? "Demonstração concluída." : "Inscrição registrada."}</h2>
+    {preview && <p>Nenhum contato foi registrado e nenhum e-mail será enviado.</p>}
     <p className={styles.formPurpose}>Este cadastro não cria uma conta nem inscreve você em outros comunicados.</p>
     {!preview ? <p>Se precisar de ajuda, escreva para <a href="mailto:contato@apogee.community">contato@apogee.community</a>.</p> : null}
     <Link className={styles.subtleLink} href="/comunidade" prefetch={false}>Conhecer a Comunidade Apogee</Link>
@@ -80,7 +80,7 @@ export function ContactCaptureForm({ preview = false, successHref }: { preview?:
       <button className={styles.primary} type="submit">{pending ? "Registrando inscrição…" : "Cadastrar e assistir"}</button>
     </fieldset>
     {failure && <p className={styles.fieldError} role="alert">{failure}</p>}
-    <p className={styles.formPurpose}>Usaremos seus dados para registrar a inscrição e liberar a gravação. Você pode pedir a exclusão pelo canal da <Link href="/privacidade">Política de Privacidade</Link>.</p>
+    <p className={styles.formPurpose}>Para pedir a exclusão dos seus dados, use o canal indicado na <Link href="/privacidade">Política de Privacidade</Link>.</p>
     <noscript><p>Ative o JavaScript para enviar seu pedido.</p></noscript>
   </form>;
 }

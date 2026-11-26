@@ -59,6 +59,8 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
   const dialog = useRef<HTMLDialogElement>(null);
   const photos = mode === "browse" ? album : results;
   const pending = busy || loadingOptIn;
+  const selfieAction = optIn?.indexed ? "Buscar com meu rosto" : "Validar selfie";
+  const captureAction = optIn?.indexed ? "Tirar selfie e buscar" : "Tirar selfie";
 
   const releaseCamera = useCallback(() => {
     cameraRequest.current++;
@@ -303,26 +305,24 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
         <a href="/membros/protecao" data-ap-button="secondary">Verificar minha conta</a>
       </div>}
       {optIn && !optIn.granted && <form className={styles.form} aria-busy={busy} onSubmit={changeOptIn}>
-        <p>Vamos filtrar as fotos do evento. A selfie é descartada após a consulta e as fotos encontradas ficam salvas na sua conta.</p>
         <label className={styles.consent}><input type="checkbox" checked={consent} disabled={busy}
-          onChange={event => setConsent(event.target.checked)} required />
-          <span>Aceito que a Apogee processe meu rosto e minha selfie para encontrar minhas fotos deste evento.</span></label>
-        <button type="submit" data-ap-button="secondary" disabled={busy || !consent}>Aceitar e continuar</button>
+          onChange={event => setConsent(event.target.checked)} aria-describedby="busca-facial-privacidade" required />
+          <span>Autorizo o uso da minha imagem para buscar minhas fotos deste evento.</span></label>
+        <p id="busca-facial-privacidade">A busca usa seu rosto. A selfie é descartada após a consulta e as fotos encontradas ficam salvas na sua conta.</p>
+        <button type="submit" data-ap-button="secondary" disabled={busy || !consent}>Continuar</button>
       </form>}
       {optIn?.granted && <form className={styles.form} onSubmit={search} aria-busy={busy}>
-        <p role="status">Autorização registrada.</p>
-        <p>Vamos filtrar as fotos do evento. Tire uma selfie em que apareça só você. A selfie é descartada após a consulta e as fotos encontradas ficam salvas na sua conta.</p>
-        {!optIn.indexed && !selfieValidated && <p>Você já pode validar a selfie. A busca começa quando houver fotos do evento vinculadas ao seu aceite.</p>}
+        {camera === "preview" && <p>Apareça sozinho na selfie.</p>}
         <video ref={video} className={styles.cameraPreview} hidden={camera === "off"} autoPlay muted playsInline
           aria-label="Prévia da câmera" onCanPlay={() => { if (stream.current) setCameraReady(true); }} />
         {camera === "opening" && <p role="status">Aguardando acesso à câmera…</p>}
         <div className={styles.actions}>
           <button type="submit" data-ap-button="secondary" disabled={busy || camera === "opening" || (camera === "preview" && !cameraReady)}>
-            {camera === "preview" ? "Tirar foto e buscar" : "Buscar com meu Rosto"}
+            {camera === "preview" ? captureAction : selfieAction}
           </button>
           {camera !== "off" && <button type="button" data-ap-button="secondary" onClick={closeCamera}>Cancelar câmera</button>}
         </div>
-        {selfieValidated && <p role="status">Selfie validada. Ainda não há fotos do evento vinculadas ao seu aceite para a busca.</p>}
+        {!optIn.indexed && <p role="status">{selfieValidated && "Selfie validada. "}A busca aguarda fotos vinculadas à sua autorização.</p>}
       </form>}
     </div>
     {busy && <p role="status">{loadingSaved ? "Carregando suas fotos salvas…" : "Processando…"}</p>}

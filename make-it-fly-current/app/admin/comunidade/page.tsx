@@ -19,7 +19,7 @@ export default async function CommunityContactsPage({ searchParams }: { searchPa
       <div><h2>{row.name}</h2><p>{row.email}</p></div>
       <time dateTime={row.consented_at.toISOString()}>{dateTime.format(row.consented_at)}</time>
       {row.goal && <details><summary>O que quer fazer com IA</summary><p>{row.goal}</p></details>}
-    </article>)}</div> : <p>Nenhum pedido recebido ainda. Os cadastros enviados pela página do evento aparecerão aqui.</p>}
+    </article>)}</div> : <p>Nenhum cadastro recebido.</p>}
     <nav className={styles.pagination} aria-label="Páginas dos contatos"><p>Página {page} de {pageCount}</p><div>
       {page > 1 && <Link className={adminStyles.secondaryButton} href={`/admin/comunidade?pagina=${page - 1}`}>Anterior</Link>}
       {page < pageCount && <Link className={adminStyles.secondaryButton} href={`/admin/comunidade?pagina=${page + 1}`}>Próxima</Link>}

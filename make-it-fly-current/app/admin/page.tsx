@@ -30,16 +30,15 @@ export default async function AdminDashboardPage() {
     <div className={styles.content}>
       <AdminPageHeader
         title="Painel"
-        description="Uma visão operacional do que já existe no produto. As métricas abaixo vêm do banco de membros; módulos ainda sem contrato aparecem separados como pendências."
-        aside={<span className={styles.dataBadge}>Dados atuais do servidor</span>}
+        description="Indicadores da área de membros."
       />
 
       <section className={styles.metrics} aria-label="Indicadores atuais">
-        <MetricCard label="Contas" value={number.format(overview.accounts)} detail="Registros de usuário existentes" />
+        <MetricCard label="Contas" value={number.format(overview.accounts)} />
         <MetricCard label="Novas em 30 dias" value={number.format(overview.newAccounts30Days)} detail="Criadas no período móvel" />
-        <MetricCard label="Administradores" value={number.format(overview.admins)} detail="Papel administrativo atual" />
-        <MetricCard label="Membros" value={number.format(overview.members)} detail="Papel padrão de membro" />
-        <MetricCard label="Tópicos do fórum" value={number.format(overview.topics)} detail="Discussões criadas" />
+        <MetricCard label="Administradores" value={number.format(overview.admins)} />
+        <MetricCard label="Membros" value={number.format(overview.members)} />
+        <MetricCard label="Tópicos do fórum" value={number.format(overview.topics)} />
         <MetricCard label="Mensagens do fórum" value={number.format(overview.posts)} detail="Aberturas e respostas" />
       </section>
 
@@ -47,9 +46,8 @@ export default async function AdminDashboardPage() {
         <section className={styles.surface} aria-labelledby="attention-title">
           <div className={styles.surfaceHeader}>
             <div>
-              <p className={styles.sectionEyebrow}>Exceções primeiro</p>
               <h2 id="attention-title">Precisa de definição</h2>
-              <p>Itens visíveis no protótipo que ainda não têm domínio persistido ou regra aprovada.</p>
+              <p>Funcionalidades com regras ou dados pendentes.</p>
             </div>
           </div>
           <div className={styles.noticeList}>
@@ -67,7 +65,7 @@ export default async function AdminDashboardPage() {
             />
             <AdminNotice
               title="Galeria mantém acesso administrativo separado"
-              description="A operação do Make It Fly continua protegida pela credencial própria existente; o papel admin não amplia esse acesso."
+              description="A galeria do Make It Fly exige credencial própria."
               action={<Link href="/gerenciar-galeria">Abrir rota separada</Link>}
             />
           </div>
@@ -76,7 +74,6 @@ export default async function AdminDashboardPage() {
         <section className={styles.surface} aria-labelledby="recent-title">
           <div className={styles.surfaceHeader}>
             <div>
-              <p className={styles.sectionEyebrow}>Pessoas</p>
               <h2 id="recent-title">Cadastros recentes</h2>
               <p>Sem candidaturas, notas privadas ou credenciais.</p>
             </div>

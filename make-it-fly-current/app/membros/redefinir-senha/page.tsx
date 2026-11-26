@@ -15,7 +15,7 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
     <header className={styles.authIntro}>
       <p className={styles.eyebrow}>Área de membros</p>
       <h1 className={styles.title}>Redefinir senha</h1>
-      <p className={styles.lead}>Escolha sua nova senha. Depois, entre novamente na sua conta.</p>
+      <p className={styles.lead}>Depois de salvar, entre com a nova senha.</p>
     </header>
     <div className={`${styles.panel} ${styles.authPanel}`}>
       {!params.error && token.success ? <ResetPasswordForm token={token.data} next={next} /> : <p role="alert">{PASSWORD_RESET_INVALID}</p>}

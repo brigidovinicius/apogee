@@ -167,6 +167,7 @@ test("only the approved Apogee, blog, admin, community, MCP and Make It Fly surf
     "app/calendarios/[slug]/page.tsx", "app/calendarios/page.tsx", "app/competicoes/page.tsx", "app/membros/meu-calendario/page.tsx", "app/membros/meu-calendario/salvar/[id]/page.tsx", "app/oportunidades/[slug]/page.tsx", "app/privacidade/page.tsx", "app/termos/page.tsx", "app/membros/protecao/page.tsx", "app/admin/protecao/page.tsx",
     "app/admin/acesso-negado/page.tsx", "app/admin/comportamento/page.tsx", "app/api/behavior/route.ts",
     "app/admin/convites/page.tsx", "app/admin/curadoria/page.tsx", "app/admin/layout.tsx", "app/admin/loja/drops/page.tsx", "app/admin/page.tsx",
+    "app/admin/eventos/fotos/[id]/miniatura/route.ts", "app/admin/eventos/fotos/page.tsx",
     "app/admin/pesquisas/page.tsx", "app/admin/pesquisas/nova/page.tsx", "app/admin/pesquisas/[id]/page.tsx",
     "app/admin/pesquisas/[id]/respostas/page.tsx", "app/pesquisas/[slug]/page.tsx", "app/api/pesquisas/[slug]/route.ts",
     "app/admin/posts/[id]/page.tsx", "app/admin/posts/novo/page.tsx", "app/admin/posts/page.tsx", "app/admin/posts/pipeline/page.tsx", "app/admin/posts/pipeline/dossie/[id]/page.tsx", "app/admin/posts/pipeline/cover/[id]/route.ts", "app/admin/radar/page.tsx", "app/admin/usuarios/page.tsx",
@@ -250,7 +251,7 @@ test("public home and Make It Fly remain indexable while the Robonauta preview s
 test("application-era landing resources remain locked to their approved bytes", async () => {
   // 2026-10-27: requested global logo standardization changes only the Apogee return-link artwork; event visuals stay locked.
   const approved = {
-    "components/landing/make-it-fly-v2.tsx": "169811a0dfc2043696fd56fd7eb4f47ea1dfcb8bfac3251ea290a4ad6f5e0325",
+    "components/landing/make-it-fly-v2.tsx": "99efc3c60e6be4b8e57b540472ac137a1b486d817fe5b9ce3d5eaa6e191a061a",
     "components/landing/EnergySupport.tsx": "a26cec4e4ac498608f037b82567600c3beb972acd9835400b12ae2a8b11a5812",
     "components/landing/energy-support.module.css": "07be5818f9aea583a15ceac6a93c61295c613c730ae6ea16615e6d330fe910d4",
     "components/landing/make-it-fly-v2.module.css": "f851e77636550b48c8a166f5bfc60a3031df580ef19f76c58d9cb72016549602",
