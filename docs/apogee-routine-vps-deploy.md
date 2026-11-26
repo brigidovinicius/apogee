@@ -691,10 +691,11 @@ A conta Free da Comunidade entrou pelo botão **Entrar com Google**, abriu as 28
 
 ### Validação do login sem sessão
 
-Os três cenários usaram `c2fa91d02db977e7c7e5637e297c604e50f65b54`, que inclui a navegação de `6379181`. Os testes Free e administrador aconteceram no site publicado. O teste Premium usou uma prévia local dessa revisão com Stripe Sandbox e banco isolado.
+Os quatro cenários usaram `c2fa91d02db977e7c7e5637e297c604e50f65b54`, que inclui a navegação de `6379181`. Os testes de entrada pela home, Free e administrador aconteceram no site publicado. O teste Premium usou uma prévia local dessa revisão com Stripe Sandbox e banco isolado.
 
 | Cenário | Destino solicitado antes do login | Resultado observado |
 | --- | --- | --- |
+| Botão Entrar da home em produção | Home pública (`/`), com o navegador sem sessão | O botão **Entrar** do cabeçalho abriu `/membros/entrar` sem o parâmetro `next`. Após o login pelo Google, o navegador abriu diretamente **Minha comunidade** em `/membros`, com a sessão ativa. |
 | Free em produção | `/membros/oportunidades?categoria=eventos&localizacao=off` | O login pelo Google retornou direto ao Radar com a categoria Eventos e a localização desativada. A conta tinha acesso legado ao Radar e estava sem assinatura anual ativa. |
 | Administrador em produção | `/membros/eventos/workshop-codex-community-florianopolis` | Após autenticar, o navegador abriu direto a ficha do Codex Community Workshop, com as seções de fotos e vídeos. O painel ainda oferecia a contratação do plano anual. |
 | Premium no Stripe Sandbox | `/membros/eventos/workshop-codex-community-florianopolis` | A Apogee processou `invoice.paid` e ativou a conta fictícia. Depois de sair e abrir novamente o link protegido, o login por e-mail e senha retornou direto ao workshop. **Minha assinatura** mostrou acesso ativo até 26/11/2027. |
