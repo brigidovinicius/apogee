@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { PublishedResources } from "./community-deliverables";
+import { EVENTS_PATH } from "@/lib/eventos/catalogo";
 import styles from "./community-offer.module.css";
 
 export function CommunityResourceCards({ resources, destination }: {
@@ -27,6 +28,13 @@ export function CommunityResourceCards({ resources, destination }: {
       text: "Escolha uma ferramenta por categoria e abra o site oficial.",
       href: { home: "/comunidade#ferramentas", members: "/membros/ferramentas", preview: "/membros/ferramentas" },
       action: destination === "home" ? "Conhecer ferramentas" : "Abrir ferramentas",
+    }] : []),
+    ...(destination !== "home" ? [{
+      artwork: "eventos",
+      name: "Eventos",
+      text: "Veja os próximos encontros e acesse as fotos e os vídeos de cada evento.",
+      href: { home: EVENTS_PATH, members: EVENTS_PATH, preview: EVENTS_PATH },
+      action: "Abrir eventos",
     }] : []),
   ];
 

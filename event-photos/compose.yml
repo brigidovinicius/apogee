@@ -1,0 +1,26 @@
+services:
+  photos:
+    build: .
+    environment:
+      ALBUM_SECRET: ${ALBUM_SECRET:?Defina ALBUM_SECRET no ambiente do piloto}
+      ALBUM_ANALYSIS_EDGE: ${ALBUM_ANALYSIS_EDGE:-1600}
+      ALBUM_THRESHOLD: ${ALBUM_THRESHOLD:-0.45}
+    ports:
+      - "127.0.0.1:8786:8786"
+    volumes:
+      - private-data:/data
+      - ${ALBUM_INPUT:?Defina ALBUM_INPUT com o caminho absoluto do lote}:/input:ro
+    cpus: 0.50
+    mem_limit: 768m
+    memswap_limit: 768m
+    pids_limit: 64
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  private-data:

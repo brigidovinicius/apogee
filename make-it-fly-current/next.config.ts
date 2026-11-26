@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Links de convite/verificação contêm segredos transitórios; omitir dos logs dev.
-  logging: { incomingRequests: { ignore: [/\/api\/integracoes\/google-agenda\/callback/, /\/meu-calendario\//, /\/colecoes\//, /\/membros\/convite/, /\/membros\/(cadastro|entrar|esqueci-senha|redefinir-senha)/, /\/api\/auth\/(verify-email|reset-password|callback)/, /\/membros\/integracoes\/mcp/, /\/api\/auth\/(?:admin\/)?oauth2\//] } },
+  logging: { incomingRequests: { ignore: [/\/api\/eventos\//, /\/api\/integracoes\/google-agenda\/callback/, /\/meu-calendario\//, /\/colecoes\//, /\/membros\/convite/, /\/membros\/(cadastro|entrar|esqueci-senha|redefinir-senha)/, /\/api\/auth\/(verify-email|reset-password|callback)/, /\/membros\/integracoes\/mcp/, /\/api\/auth\/(?:admin\/)?oauth2\//] } },
   async headers() {
     return [{ source: "/:path*", headers: [
       { key: "X-Content-Type-Options", value: "nosniff" },
@@ -18,7 +18,12 @@ const nextConfig: NextConfig = {
     ] }, { source: "/pesquisas/:path*", headers: [
       { key: "X-Robots-Tag", value: "noindex, nofollow" },
       { key: "Cache-Control", value: "private, no-store" },
-    ] }, ...["/colecoes/:path*", "/membros/colecoes/:path*", "/membros/esqueci-senha", "/membros/redefinir-senha", "/api/auth/reset-password/:path*", "/api/auth/verify-email", "/api/integracoes/google-agenda/callback", "/membros/integracoes/mcp/:path*", "/api/auth/oauth2/:path*"].map(source => ({
+    ] }, ...["/membros/eventos/:path*", "/api/eventos/:path*"].map(source => ({
+      source, headers: [
+        { key: "Referrer-Policy", value: "no-referrer" },
+        { key: "Cache-Control", value: "private, no-store" },
+      ],
+    })), ...["/colecoes/:path*", "/membros/colecoes/:path*", "/membros/esqueci-senha", "/membros/redefinir-senha", "/api/auth/reset-password/:path*", "/api/auth/verify-email", "/api/integracoes/google-agenda/callback", "/membros/integracoes/mcp/:path*", "/api/auth/oauth2/:path*"].map(source => ({
       source, headers: [
         { key: "Referrer-Policy", value: "no-referrer" },
         { key: "Cache-Control", value: "no-store" },

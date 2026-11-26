@@ -1,0 +1,152 @@
+.page {
+  display: grid;
+  gap: 2rem;
+  padding-block-end: 3rem;
+}
+.page h1,
+.page h2,
+.page h3,
+.page p {
+  margin: 0;
+}
+.section {
+  display: grid;
+  gap: 1rem;
+}
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+:global([data-ap-interface]) .heading [data-ap-nav-icon] {
+  inline-size: 3.5rem;
+  block-size: 3.25rem;
+}
+.page .section > h2[data-ap-title] {
+  color: var(--ap-on-navy);
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+.panel h2,
+.panel h3 {
+  font-size: 1.18rem;
+  font-weight: 570;
+  line-height: 1.25;
+}
+.panel {
+  display: grid;
+  justify-items: start;
+  gap: 0.85rem;
+  padding: clamp(1rem, 3vw, 1.75rem);
+}
+.panel p {
+  color: var(--ap-muted);
+  max-width: 65ch;
+}
+.meta {
+  color: var(--ap-brand-sky);
+}
+.cards {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr));
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+.form,
+.gallery {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  width: 100%;
+  margin-block-start: 0.5rem;
+  border-block-start: 1px solid var(--ap-line);
+  padding-block-start: 1rem;
+}
+.fileOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.fileOptions label {
+  display: grid;
+  gap: 0.35rem;
+}
+.fileOptions input {
+  width: min(100%, 16rem);
+}
+.fileOptions input::file-selector-button {
+  min-height: 44px;
+  margin-inline-end: 0.5rem;
+}
+.consent {
+  display: flex;
+  align-items: start;
+  gap: 0.6rem;
+  max-width: 65ch;
+}
+.consent input {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+  margin-block-start: 0.15rem;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+  width: 100%;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.grid li {
+  min-width: 0;
+}
+.grid a,
+.support {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.thumbnail {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0.6rem;
+}
+.thumbnail img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.dialog {
+  margin: auto;
+  width: min(92vw, 48rem);
+  max-height: 90dvh;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--ap-line);
+  background: var(--ap-surface);
+  color: var(--ap-text);
+}
+.dialog::backdrop {
+  background: rgb(6 14 25 / 78%);
+}
+.dialog img {
+  max-height: 66dvh;
+  width: 100%;
+  object-fit: contain;
+  margin-block-end: 1rem;
+}
+.page :is(button, input, a):focus-visible {
+  outline: 2px solid var(--ap-accent);
+  outline-offset: 3px;
+}

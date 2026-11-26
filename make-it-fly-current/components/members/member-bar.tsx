@@ -10,9 +10,10 @@ import { collectionsEnabled } from "@/lib/opportunities/collections";
 import { MemberNavigation } from "./member-navigation";
 import { memberResourceAvailability } from "@/lib/members/resource-availability";
 import { radarAccess } from "@/lib/billing/store";
+import { EVENTS_PATH } from "@/lib/eventos/catalogo";
 import styles from "./member-navigation.module.css";
 
-export type MemberSection = "home" | "forum" | "perfil" | "radar" | "calendario" | "colecoes" | "protecao" | "ferramentas" | "beneficios" | "trilha" | "assinatura" | "suporte" | "blog" | "integracoes";
+export type MemberSection = "home" | "forum" | "perfil" | "radar" | "calendario" | "colecoes" | "protecao" | "ferramentas" | "beneficios" | "trilha" | "assinatura" | "suporte" | "blog" | "integracoes" | "eventos";
 export type MemberBarProps = { member: CurrentMember; current?: MemberSection };
 
 export async function MemberBar({ member, current }: MemberBarProps) {
@@ -27,6 +28,7 @@ export async function MemberBar({ member, current }: MemberBarProps) {
     { key: "beneficios", href: "/membros/beneficios", label: "Benefícios" },
   ];
   const more = [
+    { key: "eventos", href: EVENTS_PATH, label: "Eventos" },
     { key: "trilha", href: "/membros/trilha", label: "Trilha de Aprendizagem" },
     ...(resources.ferramentas ? [{ key: "ferramentas", href: "/membros/ferramentas", label: "Caixa de ferramentas" }] : []),
     ...(radar?.active && calendar ? [{ key: "calendario", href: "/membros/meu-calendario", label: "Meu calendário" }] : []),

@@ -27,6 +27,8 @@ html [data-ap-interface] header:is([data-adaptive],[data-editorial])[data-tone] 
 }
 html [data-ap-interface] header[data-tone] :is(nav a,summary) { color:var(--ap-text); }
 html [data-ap-interface] header[data-tone] summary { border-color:var(--ap-line); }
+html [data-ap-interface][data-ap-art="eventos"] header[data-tone] [data-account-menu] > summary { background: var(--ap-surface); }
+html [data-ap-interface][data-ap-art="eventos"] header[data-tone] [data-account-menu] > summary:is(:hover, :focus-visible) { background: var(--ap-frost); }
 html [data-ap-interface] header[data-tone] details nav {
   background: color-mix(in srgb,var(--ap-surface) 94%,transparent); color:var(--ap-text);
   border: 1px solid var(--ap-line); border-radius:var(--ap-control-radius);

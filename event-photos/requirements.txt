@@ -1,0 +1,5 @@
+numpy==2.4.6
+opencv-python-headless==4.13.0.92
+Pillow==12.2.0
+gunicorn==23.0.0
+packaging==26.2

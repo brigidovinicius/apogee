@@ -93,6 +93,7 @@
 [data-ap-art="ferramentas"], [data-ap-icon="ferramentas"] { --ap-art: url("/design-system/recursos/estojo-aberto.webp"); }
 [data-ap-art="comunidade"] { --ap-art: url("/design-system/recursos/forum.webp"); }
 [data-ap-art="participar"], [data-ap-icon="participar"] { --ap-art: url("/design-system/icons/participar.webp"); }
+[data-ap-art="eventos"], [data-ap-icon="eventos"] { --ap-art: url("/design-system/recursos/eventos.webp"); }
 [data-ap-art="calendario"] { --ap-art: url("/design-system/recursos/calendario.webp"); }
 [data-ap-art="colecoes"] { --ap-art: url("/design-system/recursos/colecoes.webp"); }
 [data-ap-art="forum"] { --ap-art: url("/design-system/recursos/forum.webp"); }
