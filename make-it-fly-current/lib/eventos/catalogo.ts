@@ -8,6 +8,7 @@ export const WORKSHOP = {
   recording: "/evento-openai/ao-vivo",
 };
 export const WORKSHOP_MEDIA_PATH = `${EVENTS_PATH}/${WORKSHOP.slug}`;
+export const WORKSHOP_REFERENCES_PATH = "/admin/eventos/fotos";
 
 export const upcomingEvents: readonly {
   slug: string;

@@ -11,7 +11,7 @@ import cv2
 
 from album import (
     CONSENT_VERSION, EVENT_RE, MEMBER_RE, PHOTO_RE, active, actor_key, change_consent, connect, consent_state,
-    paths, purge, region_crop, search_guard, upgrade, video_path,
+    index_opt_in, paths, purge, region_crop, remove_opt_in_region, search_guard, upgrade, video_path,
 )
 from vision import MAX_SELFIE, THRESHOLD, InvalidImage, Vision, decode
 
@@ -58,6 +58,16 @@ class Service:
                 return self.media(db, event, route[0], route[1], respond, env)
             if self.vision and route == ["consent"]:
                 return self.consent(db, event, env, respond, method)
+            if self.vision and route[:1] == ["references"]:
+                if method == "GET" and len(route) == 1:
+                    members = db.execute("""
+                        SELECT member_id FROM opt_in
+                        WHERE event=? AND version=? AND expires>?
+                        ORDER BY granted_at, member_id
+                    """, (event, CONSENT_VERSION, time.time()))
+                    return result(respond, "200 OK", {"members": [row["member_id"] for row in members]})
+                if len(route) == 2 and PHOTO_RE.fullmatch(route[1]) and method in {"GET", "PUT", "DELETE"}:
+                    return self.reference(db, event, route[1], env, respond, method)
             if method == "GET" and route[:1] == ["saved"] and (
                 len(route) == 1 or (len(route) == 2 and PHOTO_RE.fullmatch(route[1]))
             ):
@@ -115,6 +125,40 @@ class Service:
                 return result(respond, "429 Too Many Requests", {"error": "busy"})
             return result(respond, "200 OK", consent_state(db, event, actor))
         return result(respond, "404 Not Found", {"error": "not_found"})
+
+    def reference(self, db, event, photo_id, env, respond, method):
+        member = self.member(event, env)
+        if not member or not consent_state(db, event, env["HTTP_X_ALBUM_ACTOR"])["granted"]:
+            return result(respond, "409 Conflict", {"error": "consent_required"})
+        if method == "GET":
+            row = db.execute("""
+                SELECT r.left, r.top, r.right, r.bottom
+                FROM opt_in_region r JOIN photo p ON p.id=r.photo AND p.event=r.event
+                WHERE r.event=? AND r.actor=? AND r.photo=? AND p.state='ready'
+            """, (event, env["HTTP_X_ALBUM_ACTOR"], photo_id)).fetchone()
+            return result(respond, "200 OK", {"box": list(row) if row else None})
+
+        try:
+            if method == "DELETE":
+                remove_opt_in_region(event, member, photo_id, self.secret)
+                return result(respond, "200 OK", {"box": None})
+            size = env.get("CONTENT_LENGTH", "")
+            if not re.fullmatch(r"\d{1,3}", size) or not 0 < int(size) <= 256:
+                return result(respond, "400 Bad Request", {"error": "invalid_reference"})
+            try:
+                box = json.loads(env["wsgi.input"].read(int(size)))
+            except (ValueError, UnicodeError):
+                return result(respond, "400 Bad Request", {"error": "invalid_reference"})
+            if not isinstance(box, list) or len(box) != 4 or not all(
+                type(coordinate) in (int, float) and 0 <= coordinate <= 1 for coordinate in box
+            ):
+                return result(respond, "400 Bad Request", {"error": "invalid_reference"})
+            index_opt_in(event, member, photo_id, box, self.secret)
+            return result(respond, "200 OK", {"box": box})
+        except BlockingIOError:
+            return result(respond, "429 Too Many Requests", {"error": "busy"})
+        except ValueError:
+            return result(respond, "409 Conflict", {"error": "reference_unavailable"})
 
     def search(self, db, event, env, respond, validate_only=False):
         actor = env.get("HTTP_X_ALBUM_ACTOR", "")

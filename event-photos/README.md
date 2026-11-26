@@ -80,13 +80,15 @@ gunicorn --bind 127.0.0.1:8786 --workers 1 --threads 4 'service:create_app()'
 
 No macOS, se o Python instalado não localizar suas autoridades TLS, use a cadeia local com `SSL_CERT_FILE=/etc/ssl/cert.pem python cli.py models`.
 
-Para o site local, mantenha a configuração de desenvolvimento do Better Auth e PostgreSQL. Configure `APOGEE_WORKSHOP_MEDIA_ENABLED=true`, `APOGEE_WORKSHOP_MEDIA_URL=http://127.0.0.1:8786`, `APOGEE_WORKSHOP_MEDIA_MEMBER_IDS` com os IDs das contas de teste, e o mesmo `ALBUM_SECRET`. Use `APOGEE_WORKSHOP_MEDIA_BROWSE=true` para a opção de galeria. A busca é controlada separadamente por `APOGEE_WORKSHOP_SELFIE_ENABLED=true` no site e `ALBUM_SELFIE_ENABLED=true` no worker. Entre com uma conta autorizada e acesse `/membros/eventos`. A marcação de captura usa o seletor de arquivo nativo.
+Para o site local, mantenha a configuração de desenvolvimento do Better Auth e PostgreSQL. Configure `APOGEE_WORKSHOP_MEDIA_ENABLED=true`, `APOGEE_WORKSHOP_MEDIA_URL=http://127.0.0.1:8786`, `APOGEE_WORKSHOP_MEDIA_MEMBER_IDS` com os IDs das contas de teste, e o mesmo `ALBUM_SECRET`. Use `APOGEE_WORKSHOP_MEDIA_BROWSE=true` para a opção de galeria. A busca é controlada separadamente por `APOGEE_WORKSHOP_SELFIE_ENABLED=true` no site e `ALBUM_SELFIE_ENABLED=true` no worker. Entre com uma conta autorizada e acesse `/membros/eventos`. O navegador solicita acesso à câmera na página do Workshop.
 
 ### Preparar referências de um participante
 
-1. A pessoa entra em **Encontrar minhas fotos** e dá o aceite. A equipe consulta `python cli.py list-opt-ins "$album_event"` no serviço privado, usa a conta do evento e a galeria para identificar manualmente a foto e delimitar somente o rosto daquela pessoa.
-2. Use a posição normalizada de 0 a 1 na imagem orientada, na ordem esquerda, topo, direita e base. Use apenas recortes que contenham exclusivamente o rosto autorizado. O comando verifica o aceite vigente e cadastra apenas as coordenadas. A busca usa somente regiões com um rosto detectável.
-3. Repita nas fotos autorizadas. Depois, o participante pode buscar com uma selfie. A remoção de coordenadas e aceite pode ser pedida ao atendimento de privacidade.
+1. A pessoa entra em **Encontrar minhas fotos** e dá o aceite.
+2. Um administrador abre **Gerenciar marcações autorizadas** na ficha do Workshop, seleciona o participante e a foto, e indica os dois cantos da região que contém apenas o rosto daquela pessoa. O painel lista quem deu aceite e revalida a autorização ao registrar a marcação.
+3. Repita nas fotos autorizadas. As marcações ficam internas. A próxima busca do participante usa somente as regiões vinculadas à conta. As fotos encontradas ficam em **Minhas fotos salvas**.
+
+O CLI permanece disponível. Use os limites normalizados de 0 a 1 na imagem orientada, na ordem esquerda, topo, direita e base.
 
 ```sh
 python cli.py index-opt-in "$album_event" ID_OPACO_DA_FOTO   --member-id ID_DA_CONTA --box 0.25 0.17 0.42 0.53

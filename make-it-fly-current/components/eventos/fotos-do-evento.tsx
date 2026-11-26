@@ -12,7 +12,7 @@ const errors: Record<string, string> = {
   invalid_format: "A câmera não gerou uma imagem compatível. Tente novamente.",
   invalid_size: "A selfie ficou grande demais para enviar. Tire outra foto.",
   upload_timeout: "O envio demorou demais. Tente novamente.",
-  not_enrolled: "Sua busca está aguardando a preparação das fotos. Você já pode usar a galeria.",
+  not_enrolled: "Ainda não há fotos do evento vinculadas ao seu aceite. Você pode abrir o álbum completo.",
   busy: "Outra busca está em andamento. Tente novamente em instantes.",
   search_timeout: "Não foi possível concluir a busca a tempo. Tente novamente em instantes.",
   rate_limit: "Você fez várias buscas em sequência. Aguarde um minuto para tentar de novo.",
@@ -171,7 +171,6 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
     const preview = video.current;
     if (!cameraReady || !preview?.videoWidth || !preview.videoHeight) return;
 
-    const validateOnly = !optIn.indexed;
     setBusy(true);
     setError("");
     setMode("start");
@@ -190,6 +189,20 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
       const upload = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/jpeg", 0.9));
       canvas.width = 0;
       if (!upload) throw new Error();
+
+      let validateOnly = !optIn.indexed;
+      if (validateOnly) {
+        const availability = await fetch(PHOTO_CONSENT_API, { cache: "no-store" });
+        if (!availability.ok) throw new Error();
+        const state: PhotoOptIn = await availability.json();
+        setOptIn(state);
+        if (!state.granted) {
+          setError(errors.consent_required);
+          return;
+        }
+        validateOnly = !state.indexed;
+      }
+
       const response = await fetch(validateOnly ? `${PHOTO_API}?modo=validar` : PHOTO_API, {
         method: "POST", headers: { "Content-Type": upload.type, "X-Apogee-Consent": SELFIE_CONSENT },
         body: upload, cache: "no-store",
@@ -299,7 +312,7 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
       {optIn?.granted && <form className={styles.form} onSubmit={search} aria-busy={busy}>
         <p role="status">Autorização registrada.</p>
         <p>Vamos filtrar as fotos do evento. Tire uma selfie em que apareça só você. A selfie é descartada após a consulta e as fotos encontradas ficam salvas na sua conta.</p>
-        {!optIn.indexed && <p>A busca no álbum ainda aguarda referências autorizadas para sua conta.</p>}
+        {!optIn.indexed && !selfieValidated && <p>Você já pode validar a selfie. A busca começa quando houver fotos do evento vinculadas ao seu aceite.</p>}
         <video ref={video} className={styles.cameraPreview} hidden={camera === "off"} autoPlay muted playsInline
           aria-label="Prévia da câmera" onCanPlay={() => { if (stream.current) setCameraReady(true); }} />
         {camera === "opening" && <p role="status">Aguardando acesso à câmera…</p>}
@@ -309,7 +322,7 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
           </button>
           {camera !== "off" && <button type="button" data-ap-button="secondary" onClick={closeCamera}>Cancelar câmera</button>}
         </div>
-        {selfieValidated && <p role="status">Selfie validada. A busca no álbum ainda não está disponível para sua conta.</p>}
+        {selfieValidated && <p role="status">Selfie validada. Ainda não há fotos do evento vinculadas ao seu aceite para a busca.</p>}
       </form>}
     </div>
     {busy && <p role="status">{loadingSaved ? "Carregando suas fotos salvas…" : "Processando…"}</p>}

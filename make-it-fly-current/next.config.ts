@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { WORKSHOP_MEDIA_PATH } from "./lib/eventos/catalogo";
+import { WORKSHOP_MEDIA_PATH, WORKSHOP_REFERENCES_PATH } from "./lib/eventos/catalogo";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
     ] }, { source: "/pesquisas/:path*", headers: [
       { key: "X-Robots-Tag", value: "noindex, nofollow" },
       { key: "Cache-Control", value: "private, no-store" },
-    ] }, ...["/membros/eventos/:path*", "/api/eventos/:path*"].map(source => ({
+    ] }, ...["/membros/eventos/:path*", "/api/eventos/:path*", `${WORKSHOP_REFERENCES_PATH}/:path*`].map(source => ({
       source, headers: [
         { key: "Referrer-Policy", value: "no-referrer" },
         { key: "Cache-Control", value: "private, no-store" },
