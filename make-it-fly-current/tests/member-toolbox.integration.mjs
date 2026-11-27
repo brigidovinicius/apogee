@@ -166,6 +166,8 @@ test("GitHub has its own filters, private prompt with the canonical URL and an i
     categoryId, url: "https://github.com/example-integration/VideoTest/releases",
   })), /endereço principal/);
   await store.writeToolboxTool("admin", project);
+  const skills = await store.writeToolboxCategory("admin", categoryForm({ name: "Skills" }));
+  await store.writeToolboxTool("admin", toolForm({ categoryId: skills, name: "Skill de teste", url: "https://example.org/skill-tool" }));
   await assert.rejects(store.writeToolboxTool("admin", toolForm({
     categoryId, url: "https://github.com/example-integration/videotest",
   })), /já está cadastrado/);
@@ -173,8 +175,17 @@ test("GitHub has its own filters, private prompt with the canonical URL and an i
   const Page = load("app/membros/ferramentas/page.tsx").default;
   const render = async params => renderToStaticMarkup(await Page({ searchParams: Promise.resolve(params) }));
   current = "paid";
-  assert.doesNotMatch(await render({}), /Projeto de teste|VideoTest/);
+  const apps = await render({});
+  assert.match(apps, /aria-current="page"[^>]*>Aplicativos<\/a>/);
+  assert.match(apps, /Abrir aplicativo/);
+  assert.doesNotMatch(apps, /Projeto de teste|VideoTest|Skill de teste/);
+  const skillPage = await render({ categoria: "skills" });
+  assert.match(skillPage, /aria-current="page"[^>]*>Skills<\/a>/);
+  assert.match(skillPage, /Abrir skill/);
+  assert.match(skillPage, /Skill de teste/);
+  assert.doesNotMatch(skillPage, /Projeto de teste|VideoTest/);
   const html = await render({ secao: "github", categoria: "github-video", q: "legendar video", modo: "No navegador" });
+  assert.match(html, /aria-current="page"[^>]*>Apps para sua IA<\/a>/);
   assert.match(html, /Usar na minha IA/);
   assert.match(html, /Repositório oficial no GitHub: https:\/\/github\.com\/example-integration\/VideoTest/);
   assert.match(html, /href="https:\/\/github\.com\/example-integration\/VideoTest"/);

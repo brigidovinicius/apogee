@@ -45,7 +45,7 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
     const text = searchText([tool.name, tool.description, tool.categoryName, new URL(tool.url).hostname, repositoryKeywords].join(" "));
     return terms.every(term => text.includes(term));
   });
-  const noun = repositories ? "projeto" : skills ? "skill" : "ferramenta";
+  const noun = repositories ? "projeto" : skills ? "skill" : "aplicativo";
   const sectionPath = repositories ? repositoriesPath : skills ? skillsPath : toolboxPath;
   const filtered = Boolean(query || mode || (selected && !skills));
 
@@ -53,9 +53,9 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
     <ResourceHeader area="ferramentas" />
     {!access.allowed ? <LockedMemberArea kind="ferramentas" next={toolboxReturnPath(selected, repositories)} /> : <>
       <nav className={navigation.tabs} aria-label="Seções da Caixa de ferramentas">
-        <Link href={toolboxPath} aria-current={!skills && !repositories ? "page" : undefined}>Ferramentas</Link>
+        <Link href={toolboxPath} aria-current={!skills && !repositories ? "page" : undefined}>Aplicativos</Link>
         <Link href={skillsPath} aria-current={skills ? "page" : undefined}>Skills</Link>
-        <Link href={repositoriesPath} aria-current={repositories ? "page" : undefined}>Projetos do GitHub</Link>
+        <Link href={repositoriesPath} aria-current={repositories ? "page" : undefined}>Apps para sua IA</Link>
       </nav>
       {repositories && <section className={styles.repositoryHero} aria-labelledby="repository-intro">
         <Sparkles size={24} aria-hidden="true" />
@@ -106,7 +106,7 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
               return <li data-ap-card="" className={styles.tool} key={t.id}>
               <div><p className={styles.domain}>{new URL(t.url).hostname.replace(/^www\./, "")}</p><h3 data-ap-heading=""><ProductMark name={t.name} brand={skills ? undefined : toolBrand(t.name, t.url)} fallbackSrc={domain ? `/api/marcas?site=${encodeURIComponent(domain)}` : undefined} />{t.name}</h3><p className={styles.description}>{t.description}</p>{t.conditions && <p className={styles.conditions}>{t.conditions}</p>}</div>
               <a data-ap-button="primary" className={styles.open} href={t.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">
-                {skills ? "Abrir skill" : "Abrir ferramenta"}<span className="sr-only"> {t.name} (abre em nova aba)</span>
+                {skills ? "Abrir skill" : "Abrir aplicativo"}<span className="sr-only"> {t.name} (abre em nova aba)</span>
               </a>
             </li>;
             })}</ul>
@@ -114,9 +114,9 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
         })}</div>
         <p className={styles.footer}>Os links abrem em uma nova aba. Planos e créditos seguem as condições de cada fornecedor.</p>
       </> : <section className={styles.empty}>
-        <h2 data-ap-heading="">{filtered ? "Nenhum resultado para esses filtros" : repositories ? "Projetos em preparação" : skills ? "Skills em preparação" : "Ferramentas em preparação"}</h2>
+        <h2 data-ap-heading="">{filtered ? "Nenhum resultado para esses filtros" : repositories ? "Apps para sua IA em preparação" : skills ? "Skills em preparação" : "Aplicativos em preparação"}</h2>
         {filtered && <p>Tente outro termo ou escolha outra tarefa.</p>}
-        <Link href={filtered ? sectionPath : skills || repositories ? toolboxPath : "/membros"}>{filtered ? "Limpar filtros" : skills || repositories ? "Explorar ferramentas" : "Voltar para a comunidade"}</Link>
+        <Link href={filtered ? sectionPath : skills || repositories ? toolboxPath : "/membros"}>{filtered ? "Limpar filtros" : skills || repositories ? "Explorar aplicativos" : "Voltar para a comunidade"}</Link>
       </section>}
     </>}
   </div></MemberWorkspace>;
