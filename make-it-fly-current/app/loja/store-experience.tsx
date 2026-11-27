@@ -17,17 +17,19 @@ function ProductGallery({ product, onBuy }: { product: StoreProduct; onBuy: () =
   return (
     <article className={styles.product} aria-labelledby={`title-${product.slug}`}>
       <button className={styles.mainPhoto} type="button" onClick={() => dialog.current?.showModal()} aria-label={`Ampliar foto de ${product.name}`} aria-haspopup="dialog">
-        <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw" loading="lazy" />
+        <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" loading="lazy" />
         <span className={styles.enlarge} aria-hidden="true">Ampliar</span>
       </button>
-      <div className={styles.thumbnails} role="group" aria-label={`Fotos de ${product.name}`}>
-        {product.photos.map((item, index) => (
-          <button type="button" key={item.src} onClick={() => setActive(index)} aria-pressed={index === active} aria-label={item.alt}>
-            <Image src={item.src} alt="" width={80} height={80} sizes="64px" />
-          </button>
-        ))}
-        <span>{active + 1} / {product.photos.length}</span>
-      </div>
+      {product.photos.length > 1 && (
+        <div className={styles.thumbnails} role="group" aria-label={`Fotos de ${product.name}`}>
+          {product.photos.map((item, index) => (
+            <button type="button" key={item.src} onClick={() => setActive(index)} aria-pressed={index === active} aria-label={item.alt}>
+              <Image src={item.src} alt="" width={80} height={80} sizes="64px" />
+            </button>
+          ))}
+          <span>{active + 1} / {product.photos.length}</span>
+        </div>
+      )}
       <div className={styles.productHeading}><h3 id={`title-${product.slug}`}>{product.name}</h3><span>{product.detail}</span></div>
       <p>{product.description}</p>
       <button data-behavior-action="store_interest" className={styles.productLink} type="button" onClick={onBuy} aria-haspopup="dialog" aria-controls="drop-purchase-dialog" aria-label={`Receber aviso de lançamento · ${product.name}`}>Receber aviso de lançamento</button>

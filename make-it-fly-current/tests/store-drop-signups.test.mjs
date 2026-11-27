@@ -107,9 +107,16 @@ test("route records completed selections once and preserves original contact det
     assert.equal((await POST(request(valid, headers))).status, 200);
     assert.equal((await POST(request({ ...valid, name: "Different Person", phone: "11911112222" }))).status, 200);
     assert.equal((await POST(request({ ...valid, productSlug: "bone-made-to-create" }, headers))).status, 200);
+    const newShirt = { ...valid, productSlug: "camiseta-need-money-for-tokens" };
+    assert.equal((await POST(request(newShirt, headers))).status, 200);
+    assert.equal((await POST(request(newShirt, headers))).status, 200);
     assert.equal(rows.size, 1);
-    assert.deepEqual(rows.get("maria@example.com"), { name: "Maria Silva", phone: "+5511999991234", products: ["camiseta-apogee", "bone-made-to-create"] });
-    assert.deepEqual(recorded, ["allow-v1", "allow-v1"]);
+    assert.deepEqual(rows.get("maria@example.com"), {
+      name: "Maria Silva",
+      phone: "+5511999991234",
+      products: ["camiseta-apogee", "bone-made-to-create", "camiseta-need-money-for-tokens"],
+    });
+    assert.deepEqual(recorded, ["allow-v1", "allow-v1", "allow-v1"]);
   } finally {
     if (previous === undefined) delete process.env.BETTER_AUTH_SECRET;
     else process.env.BETTER_AUTH_SECRET = previous;
