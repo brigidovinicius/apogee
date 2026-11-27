@@ -157,3 +157,52 @@ test("local review catalogue survives a controlled database restart without rese
   try{assert.equal(fixture.resumed,true);assert.equal((await fixture.sql`select value from local_persistence_probe`)[0].value,'curation-kept');}
   finally{await fixture.close();}
 });
+
+test("GitHub has its own filters, private prompt with the canonical URL and an independent access gate", async () => {
+  const categoryId = await store.writeToolboxCategory("admin", categoryForm({ name: "GitHub Vídeo" }));
+  const project = toolForm({ categoryId, name: "Projeto de teste", description: "Use para legendar vídeos.", url: "https://github.com/example-integration/VideoTest",
+    conditions: "No navegador. Leia a documentação. Licença: MIT." });
+  await assert.rejects(store.writeToolboxTool("admin", toolForm({
+    categoryId, url: "https://github.com/example-integration/VideoTest/releases",
+  })), /endereço principal/);
+  await store.writeToolboxTool("admin", project);
+  const skills = await store.writeToolboxCategory("admin", categoryForm({ name: "Skills" }));
+  await store.writeToolboxTool("admin", toolForm({ categoryId: skills, name: "Skill de teste", url: "https://example.org/skill-tool" }));
+  await assert.rejects(store.writeToolboxTool("admin", toolForm({
+    categoryId, url: "https://github.com/example-integration/videotest",
+  })), /já está cadastrado/);
+
+  const Page = load("app/membros/ferramentas/page.tsx").default;
+  const render = async params => renderToStaticMarkup(await Page({ searchParams: Promise.resolve(params) }));
+  current = "paid";
+  const initial = await render({});
+  assert.match(initial, /aria-current="page"[^>]*>Super Poder para sua IA<\/a>/);
+  const tabs = initial.match(/<nav[^>]*aria-label="Seções da Caixa de ferramentas"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+  assert.match(tabs, /Super Poder para sua IA<\/a>.*Skills<\/a>.*Aplicativos<\/a>/s);
+  assert.match(initial, /data-repository-preview="frame"/);
+  assert.match(initial, /Vídeo com legendas/);
+  assert.match(initial, /Ilustrativo/);
+  const apps = await render({ secao: "aplicativos" });
+  assert.match(apps, /aria-current="page"[^>]*>Aplicativos<\/a>/);
+  assert.match(apps, /Abrir aplicativo/);
+  assert.doesNotMatch(apps, /Projeto de teste|VideoTest|Skill de teste|data-repository-preview/);
+  const skillPage = await render({ categoria: "skills" });
+  assert.match(skillPage, /aria-current="page"[^>]*>Skills<\/a>/);
+  assert.match(skillPage, /Abrir skill/);
+  assert.match(skillPage, /Skill de teste/);
+  assert.doesNotMatch(skillPage, /Projeto de teste|VideoTest|data-repository-preview/);
+  const html = await render({ secao: "github", categoria: "github-video", q: "legendar video", modo: "No navegador" });
+  assert.match(html, /aria-current="page"[^>]*>Super Poder para sua IA<\/a>/);
+  assert.match(html, /Usar na minha IA/);
+  assert.match(html, /Repositório oficial no GitHub: https:\/\/github\.com\/example-integration\/VideoTest/);
+  assert.match(html, /href="https:\/\/github\.com\/example-integration\/VideoTest"/);
+  assert.match(html, /Leia a documentação\. Licença: MIT\./);
+  assert.doesNotMatch(html, /labs\.google|Google Flow/);
+  assert.doesNotMatch(await render({ secao: "github", modo: "Instalação local" }), /Projeto de teste/);
+  for (const account of ["free", "legacy"]) {
+    current = account;
+    const locked = await render({ secao: "github" });
+    assert.match(locked, /Caixa de ferramentas para assinantes anuais/);
+    assert.doesNotMatch(locked, /Projeto de teste|VideoTest|Copiar prompt/);
+  }
+});

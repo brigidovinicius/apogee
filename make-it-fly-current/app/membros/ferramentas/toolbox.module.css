@@ -68,3 +68,73 @@
   .catalogue .open svg { transition: transform var(--ap-quick) var(--ap-ease); }
   .catalogue .open:is(:hover,:focus-visible) svg { transform: translate(2px,-2px); }
 }
+
+.repositoryHero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(.65rem, 2.5vw, 1.45rem);
+  padding: clamp(1.15rem, 3.5vw, 2.75rem);
+  margin-bottom: 1.1rem;
+  border: 1px solid #507fac;
+  border-radius: var(--ap-panel-radius);
+  background: radial-gradient(ellipse at 92% 5%, #356ba9 0%, transparent 58%), linear-gradient(120deg, #102441, #133f68);
+  color: #f4faff;
+}
+.repositoryHero > svg { margin-top: .3rem; color: #c1e2ff; }
+.repositoryHero h2 { margin: 0; max-width: 26ch; font: 640 clamp(1.4rem, 3.5vw, 2.6rem)/1.12 var(--ap-font); letter-spacing: -.045em; }
+.repositoryHero p { margin: .7rem 0 0; max-width: 58ch; color: #deebfa; line-height: 1.55; }
+.catalogue .repository h3 { margin: .5rem 0 .45rem; }
+.mode {
+  display: inline-flex;
+  margin: 0;
+  padding: .3rem .55rem;
+  border-radius: .4rem;
+  background: var(--ap-section);
+  color: var(--ap-accent);
+  font-size: .76rem;
+  font-weight: 630;
+}
+.setup { margin-top: .5rem; color: var(--ap-muted); font-size: .86rem; }
+.setup summary { width: fit-content; padding-block: .7rem; min-height: 44px; cursor: pointer; color: var(--ap-accent); font-weight: 560; }
+.setup summary:focus-visible, .promptDialog textarea:focus-visible { outline: 3px solid var(--ap-focus); outline-offset: 3px; }
+.setup p { margin: 0; line-height: 1.5; }
+.setup p + p { margin-top: .5rem; }
+.repositoryActions, .promptActions { display: flex; flex-wrap: wrap; gap: .55rem .7rem; align-items: center; }
+.repositoryActions > :is(button, a) { font-size: .85rem; text-decoration: none; max-width: 100%; }
+.useAi svg { flex: none; }
+.promptDialog {
+  margin: auto;
+  color: var(--ap-text);
+  background: var(--ap-surface);
+  border: 1px solid var(--ap-line);
+  border-radius: var(--ap-panel-radius);
+  padding: clamp(1rem, 4vw, 2rem);
+  width: min(38rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+.promptDialog::backdrop { background: #071428aa; }
+.promptHead { display: flex; gap: .75rem; justify-content: space-between; align-items: start; }
+.catalogue .promptHead h3 { margin: .2rem 0 0; overflow-wrap: anywhere; }
+.promptHead button { padding-inline: .65rem; }
+.promptDialog > p, .promptActions span { color: var(--ap-muted); font-size: .9rem; line-height: 1.55; }
+.promptLabel { display: grid; gap: .45rem; margin: 1rem 0; font-size: .86rem; font-weight: 600; }
+.promptDialog textarea {
+  box-sizing: border-box;
+  resize: vertical;
+  width: 100%;
+  min-height: 6rem;
+  max-height: 34dvh;
+  padding: .75rem;
+  border: 1px solid var(--ap-line);
+  border-radius: var(--ap-control-radius);
+  background: var(--ap-canvas);
+  color: var(--ap-text);
+  font: 400 1rem/1.55 var(--ap-font);
+}
+@media(max-width: 460px) {
+  .repositoryActions { align-items: stretch; }
+  .repositoryActions > :is(button, a) { justify-content: center; width: 100%; }
+  .catalogue nav[aria-label] a { padding-inline: .4rem; text-align: center; }
+}

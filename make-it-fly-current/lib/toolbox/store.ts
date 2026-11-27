@@ -1,20 +1,22 @@
-import { toolboxReturnPath } from "@/lib/billing/community-navigation";
+import { toolboxReturnPath, type ToolboxSection } from "@/lib/billing/community-navigation";
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { requireMember, requireSignedInMember } from "@/lib/members/dal";
 import { requireAdmin } from "@/lib/admin/access";
 import { getSql } from "@/lib/members/db";
 import { toolboxAccess } from "./access";
+import { isGitHubRepository, isRepositoryCategory } from "./repositories.mjs";
 import { categoryInput, toolInput, toolUrl, ToolboxInputError } from "./validation";
 import type { ToolboxCategory, ManagedTool, MemberTool, MemberToolCategory, ToolboxStatus } from "./types";
 
 export class ToolboxConflictError extends Error {}
-export async function memberToolbox(category: string | null = null) {
-  const member = await requireSignedInMember(toolboxReturnPath(category));
+export async function memberToolbox(category: string | null = null, section?: ToolboxSection) {
+  const next = toolboxReturnPath(category, section);
+  const member = await requireSignedInMember(next);
   const access = await toolboxAccess(member);
   // Never load or serialize catalogue fields for an ineligible account.
   if (!access.allowed) return { member, access, categories: [] as MemberToolCategory[], tools: [] as MemberTool[] };
-  await requireMember("/membros/ferramentas");
+  await requireMember(next);
   const sql = getSql();
   const categories = await sql`select c.slug,c.name,c.description,count(t.id)::integer as count
     from member_tool_category c join member_tool t on t.category_id=c.id and t.status='published'
@@ -70,8 +72,18 @@ export async function writeToolboxTool(actorId: string, form: FormData) {
   return getSql().begin(async tx => {
     const [actor] = await tx`select id from "user" where id=${actorId} and role='admin' and blocked=false for share`;
     if (!actor) throw new ToolboxInputError("A curadoria exige uma conta administrativa ativa.");
-    const [category] = await tx`select id from member_tool_category where id=${input.categoryId}`;
+    await tx`select pg_advisory_xact_lock(hashtext('apogee:member-toolbox-curation'))`;
+    const [category] = await tx`select id,slug from member_tool_category where id=${input.categoryId} for share`;
     if (!category) throw new ToolboxInputError("Escolha uma categoria existente.");
+    const repository = isRepositoryCategory(category.slug);
+    if (repository && !isGitHubRepository(input.url)) {
+      throw new ToolboxInputError("Informe o endereço principal do repositório no GitHub, sem páginas adicionais.");
+    }
+    const repositoryUrl = input.url.replace(/\/$/, "");
+    if (isGitHubRepository(repositoryUrl)) {
+      const duplicate = await tx`select id from member_tool where lower(rtrim(url,'/'))=lower(${repositoryUrl}) and (${input.id}::text is null or id<> ${input.id}) limit 1`;
+      if (duplicate.length) throw new ToolboxConflictError("Este repositório já está cadastrado na Caixa de Ferramentas.");
+    }
     const [previous] = input.id ? await tx`select * from member_tool where id=${input.id} for update` : [];
     if (input.id && (!previous || Number(previous.version) !== input.version)) {
       throw new ToolboxConflictError("Esta ferramenta mudou em outra edição. Reabra a ficha pela lista antes de salvar.");

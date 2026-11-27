@@ -36,3 +36,11 @@ node scripts/member-toolbox-curate.mjs --apply < manifesto-privado.json
 ```
 
 O exemplo não autoriza publicação ou banco por si só; a autorização vem do proprietário e do candidato de release revisado. A ativação de vendas live permanece separada.
+
+## Lote de projetos do GitHub
+
+O importador também aceita um manifesto com `kind: "github-repositories"`. As categorias desse lote têm slug iniciado por `github-` e alimentam **Super Poder para sua IA**, a primeira aba da Caixa. Cada ficha exibe um exemplo visual ilustrativo do tipo de resultado. O cadastro trabalha nas tabelas existentes. As fichas usam o endereço principal do GitHub e guardam o modo de uso, os primeiros passos e a licença conferida no campo de condições. Os modos aceitos no início da ficha são **No navegador.**, **Instalação local.**, **Docker ou servidor.** e **Código e terminal.**.
+
+O lote privado revisado tem 24 projetos em oito categorias e segue o mesmo contrato de fingerprint, preflight e apply. O mesmo nome pode identificar um aplicativo hospedado e seu projeto no GitHub, com links oficiais diferentes. Uma URL já cadastrada em outra aba aparece como conflito no preflight. A revisão de um catálogo existente mantém os dados editoriais administrados e os itens arquivados.
+
+Use a imagem do candidato aprovado para executar o preflight. Depois da atualização web, importe o lote aprovado e confira a aba com um perfil anual autorizado ou uma prévia administrativa. Verifique os filtros, o link direto e a presença do endereço oficial no texto copiado por **Usar na minha IA**. A interface abre o prompt no navegador para cópia por iniciativa do assinante.
