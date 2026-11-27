@@ -5,12 +5,13 @@ import { requireMember, requireSignedInMember } from "@/lib/members/dal";
 import { requireAdmin } from "@/lib/admin/access";
 import { getSql } from "@/lib/members/db";
 import { toolboxAccess } from "./access";
+import { isGitHubRepository, isRepositoryCategory } from "./repositories.mjs";
 import { categoryInput, toolInput, toolUrl, ToolboxInputError } from "./validation";
 import type { ToolboxCategory, ManagedTool, MemberTool, MemberToolCategory, ToolboxStatus } from "./types";
 
 export class ToolboxConflictError extends Error {}
-export async function memberToolbox(category: string | null = null) {
-  const member = await requireSignedInMember(toolboxReturnPath(category));
+export async function memberToolbox(category: string | null = null, repositories = false) {
+  const member = await requireSignedInMember(toolboxReturnPath(category, repositories));
   const access = await toolboxAccess(member);
   // Never load or serialize catalogue fields for an ineligible account.
   if (!access.allowed) return { member, access, categories: [] as MemberToolCategory[], tools: [] as MemberTool[] };
@@ -70,8 +71,18 @@ export async function writeToolboxTool(actorId: string, form: FormData) {
   return getSql().begin(async tx => {
     const [actor] = await tx`select id from "user" where id=${actorId} and role='admin' and blocked=false for share`;
     if (!actor) throw new ToolboxInputError("A curadoria exige uma conta administrativa ativa.");
-    const [category] = await tx`select id from member_tool_category where id=${input.categoryId}`;
+    await tx`select pg_advisory_xact_lock(hashtext('apogee:member-toolbox-curation'))`;
+    const [category] = await tx`select id,slug from member_tool_category where id=${input.categoryId} for share`;
     if (!category) throw new ToolboxInputError("Escolha uma categoria existente.");
+    const repository = isRepositoryCategory(category.slug);
+    if (repository && !isGitHubRepository(input.url)) {
+      throw new ToolboxInputError("Informe o endereço principal do repositório no GitHub, sem páginas adicionais.");
+    }
+    const repositoryUrl = input.url.replace(/\/$/, "");
+    if (isGitHubRepository(repositoryUrl)) {
+      const duplicate = await tx`select id from member_tool where lower(rtrim(url,'/'))=lower(${repositoryUrl}) and (${input.id}::text is null or id<> ${input.id}) limit 1`;
+      if (duplicate.length) throw new ToolboxConflictError("Este repositório já está cadastrado na Caixa de Ferramentas.");
+    }
     const [previous] = input.id ? await tx`select * from member_tool where id=${input.id} for update` : [];
     if (input.id && (!previous || Number(previous.version) !== input.version)) {
       throw new ToolboxConflictError("Esta ferramenta mudou em outra edição. Reabra a ficha pela lista antes de salvar.");

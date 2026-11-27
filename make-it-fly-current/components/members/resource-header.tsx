@@ -3,7 +3,7 @@ import styles from "./resource-header.module.css";
 
 const resources = {
   beneficios: { title: "Benefícios", href: "/membros/beneficios", summary: "Ofertas, condições e resgates." },
-  ferramentas: { title: "Caixa de ferramentas", href: "/membros/ferramentas", summary: "Ferramentas e skills por tarefa." },
+  ferramentas: { title: "Caixa de ferramentas", href: "/membros/ferramentas", summary: "Ferramentas, skills e projetos por tarefa." },
 };
 
 export function ResourceHeader({ area, showRelated = true }: { area: keyof typeof resources; showRelated?: boolean }) {

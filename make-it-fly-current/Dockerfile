@@ -38,6 +38,7 @@ COPY --from=builder --chown=nextjs:nextjs /app/scripts/radar-free-opportunity-mi
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/community-access-migrate.mjs ./scripts/community-access-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-toolbox-migrate.mjs ./scripts/member-toolbox-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-toolbox-curate.mjs ./scripts/member-toolbox-curate.mjs
+COPY --from=builder --chown=nextjs:nextjs /app/lib/toolbox/repositories.mjs ./lib/toolbox/repositories.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-deliverables-migrate.mjs ./scripts/member-deliverables-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-benefits-migrate.mjs ./scripts/member-benefits-migrate.mjs
 COPY --from=builder --chown=nextjs:nextjs /app/scripts/member-benefits-monitor.mjs ./scripts/member-benefits-monitor.mjs

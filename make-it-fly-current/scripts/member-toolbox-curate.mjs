@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import postgres from "postgres";
 import { databaseOptions } from "./members-grant-admin.mjs";
 import { migrateMemberToolbox } from "./member-toolbox-migrate.mjs";
+import { isGitHubRepository, isRepositoryCategory, repositorySetup } from "../lib/toolbox/repositories.mjs";
 
 const key = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const normalizedName = value => value.normalize("NFC").trim().toLocaleLowerCase("pt-BR");
@@ -19,21 +20,32 @@ function publicUrl(value) {
   return url.href;
 }
 export function validateToolboxCuration(manifest) {
+  const repositories = manifest.kind === "github-repositories";
+  if (manifest.kind !== undefined && !repositories) throw Error("Tipo de curadoria inválido.");
   text(manifest.id, 80);
   if (!key.test(manifest.id) || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(manifest.reviewedAt) || new Date(manifest.reviewedAt).toISOString() !== manifest.reviewedAt ||
       !["official-sources-agent-review","synthetic-test"].includes(manifest.reviewMethod) || !/^\d{4}-\d{2}-\d{2}$/.test(manifest.reviewedOn) || !Array.isArray(manifest.categories) || !manifest.categories.length || !Array.isArray(manifest.tools) || !manifest.tools.length) throw Error("Manifesto da curadoria inválido.");
   const slugs = new Set(), urls = new Set(), names = new Set();
   for (const category of manifest.categories) {
     text(category.slug, 80); text(category.name, 80); text(category.description, 240);
-    if (!key.test(category.slug) || slugs.has(category.slug) || !Number.isInteger(category.order) || category.order < 0 || category.order > 9999) throw Error("Categoria da curadoria inválida.");
+    if (!key.test(category.slug) || isRepositoryCategory(category.slug) !== repositories || slugs.has(category.slug) || !Number.isInteger(category.order) || category.order < 0 || category.order > 9999) throw Error("Categoria da curadoria inválida.");
     slugs.add(category.slug);
   }
   for (const tool of manifest.tools) {
     text(tool.name, 100); text(tool.description, 280);
-    const url = publicUrl(tool.url); publicUrl(tool.sourceUrl);
-    if (!slugs.has(tool.categorySlug) || urls.has(url) || names.has(normalizedName(tool.name)) || tool.conditions !== null ||
+    const url = publicUrl(tool.url);
+    const source = publicUrl(tool.sourceUrl);
+    if (repositories) {
+      text(tool.conditions, 280);
+      const setup = repositorySetup(tool.conditions);
+      if (!isGitHubRepository(url) || source.toLowerCase() !== url.toLowerCase() || !setup.mode || !setup.details) {
+        throw Error("Repositório inválido ou sem instrução de início conferida.");
+      }
+    }
+    const identity = repositories ? url.toLowerCase() : url;
+    if (!slugs.has(tool.categorySlug) || urls.has(identity) || names.has(normalizedName(tool.name)) || (!repositories && tool.conditions !== null) ||
         !Number.isInteger(tool.order) || tool.order < 0 || tool.order > 9999) throw Error("Ficha duplicada, categoria ou condições da curadoria inválidas.");
-    urls.add(url); names.add(normalizedName(tool.name));
+    urls.add(identity); names.add(normalizedName(tool.name));
   }
   return manifest;
 }
@@ -45,6 +57,7 @@ export function curationFingerprint(manifest) {
 
 export async function importMemberToolbox(sql, { apply = false, releaseSha, expectedRole = "apogee_app", manifest, expectedSha256 } = {}) {
   validateToolboxCuration(manifest);
+  const repositories = manifest.kind === "github-repositories";
   const fingerprint=curationFingerprint(manifest);
   if(apply && expectedSha256!==fingerprint) throw Error("Informe o SHA-256 exato da curadoria revisada; nada foi importado.");
   if(typeof releaseSha!=="string" || !/^[a-f0-9]{40}$/.test(releaseSha))throw Error("Informe o SHA exato do release operacional.");
@@ -55,22 +68,28 @@ export async function importMemberToolbox(sql, { apply = false, releaseSha, expe
     await tx`select set_config('statement_timeout','60s',true)`;
     await tx`select pg_advisory_xact_lock(hashtext('apogee:member-toolbox-curation'))`;
     const categories = await tx`select id,slug,status from member_tool_category for share`;
-    const tools = await tx`select id,name,url,status from member_tool for share`;
+    const tools = await tx`select id,category_id,name,url,status from member_tool for share`;
     const categoriesBySlug = new Map(categories.map(row => [row.slug, row]));
     const byUrl = new Map(tools.map(row => [row.url, row]));
-    const byName = new Map(tools.map(row => [normalizedName(row.name), row]));
+    const categoriesById = new Map(categories.map(row => [row.id, row]));
+    const belongsToGitHub = row => isRepositoryCategory(categoriesById.get(row.category_id)?.slug ?? "");
+    const byName = new Map(tools.filter(row => !repositories || belongsToGitHub(row)).map(row => [normalizedName(row.name), row]));
+    const githubByUrl = new Map(tools.map(row => [row.url.replace(/\/$/, "").toLowerCase(), row]).filter(([url]) => isGitHubRepository(url)));
+    const existingTool = tool => repositories ? githubByUrl.get(publicUrl(tool.url).toLowerCase()) : byUrl.get(publicUrl(tool.url));
     const conflicts = [];
     for (const category of manifest.categories) {
       if (categoriesBySlug.has(category.slug) && categoriesBySlug.get(category.slug).status !== "published") conflicts.push({category:category.slug, reason:"existing_category_not_published"});
     }
     for (const tool of manifest.tools) {
-      if (!byUrl.has(publicUrl(tool.url)) && byName.has(normalizedName(tool.name))) conflicts.push({tool:tool.name, reason:"existing_name_with_another_url"});
+      const existing = existingTool(tool);
+      if (repositories && existing && !belongsToGitHub(existing)) conflicts.push({tool:tool.name, reason:"existing_url_in_another_section"});
+      if (!existing && byName.has(normalizedName(tool.name))) conflicts.push({tool:tool.name, reason:"existing_name_with_another_url"});
     }
     const newCategories = manifest.categories.filter(category => !categoriesBySlug.has(category.slug));
-    const newTools = manifest.tools.filter(tool => !byUrl.has(publicUrl(tool.url)));
+    const newTools = manifest.tools.filter(tool => !existingTool(tool));
     const result = { actor:"release-import", releaseSha, reviewMethod:manifest.reviewMethod, manifest:manifest.id, sha256:fingerprint, apply,
       newCategories:newCategories.map(c=>c.slug), newTools:newTools.map(t=>t.name),
-      preservedTools:manifest.tools.filter(t=>byUrl.has(publicUrl(t.url))).map(t=>({name:t.name,status:byUrl.get(publicUrl(t.url)).status})), conflicts,
+      preservedTools:manifest.tools.filter(existingTool).map(t=>({name:t.name,status:existingTool(t).status})), conflicts,
       insertedCategories:0, insertedTools:0 };
     if (!apply) return result;
     if (conflicts.length) throw Error("Conflito com curadoria existente. Revise o preflight; nada foi importado.");
@@ -84,7 +103,7 @@ export async function importMemberToolbox(sql, { apply = false, releaseSha, expe
       const [category] = await tx`select id,status from member_tool_category where slug=${tool.categorySlug} for share`;
       if (!category || category.status !== "published") throw Error("Categoria alterada durante a importação; operação revertida.");
       const inserted = await tx`insert into member_tool(id,category_id,name,description,url,conditions,status,sort_order,reviewed_at,reviewed_by,updated_by)
-        values(${randomUUID()},${category.id},${tool.name},${tool.description},${publicUrl(tool.url)},null,'published',${tool.order},${manifest.reviewedAt},null,null)
+        values(${randomUUID()},${category.id},${tool.name},${tool.description},${publicUrl(tool.url)},${tool.conditions},'published',${tool.order},${manifest.reviewedAt},null,null)
         on conflict(url) do nothing returning id`;
       result.insertedTools += inserted.length;
     }

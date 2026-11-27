@@ -103,3 +103,48 @@ test("private reviewed catalogue imports, repeats and stays behind annual access
   const urls=new Set(manifest.tools.map(t=>t.url));assert.equal(visible.tools.filter(t=>urls.has(t.url)).length,26);
   for(const account of ['free','legacy']){current=account;const denied=await store.memberToolbox();assert.deepEqual(denied.tools,[]);assert.deepEqual(denied.categories,[]);}
 });
+
+test("reviewed GitHub batch preserves hosted apps, validates links and imports idempotently", async () => {
+  const manifest = {
+    ...toolboxCuration,
+    id: "synthetic-github",
+    kind: "github-repositories",
+    categories: [{ slug: "github-video", name: "Vídeo", description: "Projetos sintéticos de vídeo.", order: 0 }],
+    tools: [
+      { name: "Ferramenta B", description: "Use para legendar vídeos.", url: "https://github.com/example-integration/VideoDemo",
+        categorySlug: "github-video", order: 0, conditions: "No navegador. Consulte o README. Licença: MIT." },
+    ].map(tool => ({ ...tool, sourceUrl: tool.url })),
+  };
+  const parameters = { ...options, manifest, expectedSha256: curationFingerprint(manifest) };
+  for (const mutate of [
+    m => { m.tools[0].url += "/issues"; },
+    m => { m.tools[0].url = "https://github.com.example.org/example-integration/VideoDemo"; },
+    m => { m.tools[0].conditions = "Requer verificação."; },
+    m => { m.tools[0].sourceUrl = "https://github.com/example-integration/unrelated"; },
+    m => { m.tools.push({ ...m.tools[0], name: "Duplicado", url: m.tools[0].url.toLowerCase() }); },
+  ]) {
+    const invalid = structuredClone(manifest);
+    mutate(invalid);
+    assert.throws(() => validateToolboxCuration(invalid));
+  }
+  const preflight = await importMemberToolbox(sql, parameters);
+  assert.deepEqual(preflight.conflicts, []);
+  assert.deepEqual(preflight.newTools, ["Ferramenta B"]);
+  assert.equal((await importMemberToolbox(sql, { ...parameters, apply: true })).insertedTools, 1);
+  const repeat = await importMemberToolbox(sql, { ...parameters, apply: true });
+  assert.equal(repeat.insertedTools, 0);
+  const review = await sql`select t.url,t.conditions from member_tool t where name='Ferramenta B' order by t.url`;
+  assert.deepEqual(review.map(row => row.conditions), [null, manifest.tools[0].conditions]);
+});
+
+test("the private 24-project batch validates and imports in a disposable database", { skip: !process.env.APOGEE_PRIVATE_GITHUB_MANIFEST }, async () => {
+  const manifest = JSON.parse(readFileSync(process.env.APOGEE_PRIVATE_GITHUB_MANIFEST, "utf8"));
+  assert.equal(manifest.tools.length, 24);
+  assert.equal(manifest.categories.length, 8);
+  const parameters = { ...options, manifest, expectedSha256: curationFingerprint(manifest) };
+  const plan = await importMemberToolbox(sql, parameters);
+  assert.deepEqual(plan.conflicts, []);
+  assert.equal(plan.newTools.length, 24);
+  assert.equal((await importMemberToolbox(sql, { ...parameters, apply: true })).insertedTools, 24);
+  assert.equal((await importMemberToolbox(sql, { ...parameters, apply: true })).insertedTools, 0);
+});
