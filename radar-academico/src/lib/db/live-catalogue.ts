@@ -9,6 +9,7 @@ const liveQuery = `select
          o.opportunity_status as "opportunityStatus",
          o.verification_method as "verificationMethod",
          o.verified_at::text as "verifiedAt",
+         o.published_at::text as "publishedAt",
          o.title,
          o.discovery,
          o.employment,

@@ -5,9 +5,10 @@ import { formatCalendarDate } from "@/components/opportunities/calendar-list";
 import { MemberWorkspace } from "@/components/members/member-workspace";
 import { OpportunityCard } from "@/components/opportunities/opportunities-board";
 import { MonthlyQuota } from "@/components/community/radar-quota";
-import { memberRadarPath, radarCatalogueQuery } from "@/lib/opportunities/navigation";
+import { memberRadarPath } from "@/lib/opportunities/navigation";
 import { radarOpportunityDetail } from "@/lib/opportunities/detail-access";
-import { opportunityDetailPath } from "@/lib/opportunities/detail-path";
+import { opportunityDetailPath, radarDetailQuery } from "@/lib/opportunities/detail-path";
+import { RADAR_FOR_YOU } from "@/lib/opportunities/radar-preferences";
 import { openFreeOpportunity } from "./actions";
 import styles from "@/components/members/members.module.css";
 import { RadarAmplitude } from "@/components/analytics/radar-amplitude";
@@ -31,7 +32,7 @@ export default async function OpportunityDetailPage({ params, searchParams }: {
   return <MemberWorkspace member={result.member} current="radar"><div className={styles.container}>
 
     <div className={styles.opportunityDetail}>
-      <p><Link href={memberRadarPath(query)}>← Voltar ao Radar</Link></p>
+      <p><Link href={query.get("origem") === "para-voce" ? RADAR_FOR_YOU : memberRadarPath(query)}>← Voltar ao Radar</Link></p>
       <h1 className={styles.title}>{result.title}</h1>
       {result.quota ? <MonthlyQuota quota={result.quota} area="Radar" next={detailPath} /> : null}
       {result.opportunity ? <>
@@ -42,7 +43,7 @@ export default async function OpportunityDetailPage({ params, searchParams }: {
       </> : result.status === "purchase" ? <p><Link href={`/membros/radar/acesso?next=${encodeURIComponent(detailPath)}`}>Já tenho acesso ao Radar</Link></p> : <section className={styles.panel} aria-labelledby="free-detail-title">
         <h2 data-ap-heading="" id="free-detail-title">Consultar detalhes</h2>
         <p>Abrir usa uma consulta do Radar. Reabrir no mesmo mês não usa outra.</p>
-        <form action={openFreeOpportunity.bind(null, id, radarCatalogueQuery(query))}>
+        <form action={openFreeOpportunity.bind(null, id, radarDetailQuery(query))}>
           <button className={styles.primary} type="submit">Usar consulta gratuita</button>
         </form>
       </section>}
