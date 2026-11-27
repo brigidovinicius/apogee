@@ -21,5 +21,7 @@ Os avisos incluem o motivo, o prazo, a ficha no Radar e o link para ajustar ou p
 
 - PostgreSQL temporário aplicou as 32 migrações registradas e verificou preferências, isolamento por conta e exclusão em cascata.
 - A verificação isolada do motor executou dez cenários sintéticos, incluindo os seis perfis, combinações, localização, prazo e ocultação. Uma amostra de 26 fichas reais do Radar exercitou as indicações para estudante de Computação, entusiasta de IA e founder.
-- A análise sintática dos 22 arquivos TypeScript modificados, `node --check` no arquivo de testes e `git diff --check` passaram.
-- A rodada de regressões aguarda a fila global: `node --test --test-concurrency=1 tests/radar-profile-pilot.test.mjs tests/radar-catalogue.test.mjs tests/radar-member-feed.test.mjs tests/radar-location-ranking.test.mjs`. Typecheck do projeto, navegação autenticada e entrega real de e-mail permanecem pendentes.
+- `node --test --test-concurrency=1 tests/radar-*.test.mjs` passou com 157 testes. O typegen, o typecheck e o build otimizado da prévia local passaram. A integração do serviço Radar passou com 70 testes, incluindo a entrega da data de publicação e sua estabilidade após nova conferência da fonte.
+- Em 27/11/2026, no navegador interno, duas contas temporárias usaram o login da Apogee com um catálogo de cinco fichas de teste. A troca de IA por Artes e design substituiu a indicação temática e conservou os hackathons de Builder. A troca de Builder por Founder trouxe uma aceleração e conservou o workshop de Design.
+- A ocultação persistiu após recarregar, ficou restrita à conta que a fez e a segunda conta manteve sua recomendação. A navegação da ficha retornou à aba **Para você**.
+- A entrega real de e-mail permanece pendente. O envio ficou desativado na prévia.

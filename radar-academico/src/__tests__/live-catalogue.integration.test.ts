@@ -150,6 +150,7 @@ it("publishes automatically with real RLS and the same public/admin catalogue", 
  expect(adminItems[0]).toMatchObject(publicItems[0]);
  expect(publicItems[0]).not.toHaveProperty("evidence"); expect(publicItems[0]).not.toHaveProperty("version");
  expect(publicItems[0]).toMatchObject({ geographicScopeKind: "unknown", countryCode: null });
+ expect(Date.parse(publicItems[0].publishedAt)).toBeGreaterThan(Date.now() - 60_000);
  const row = (await state.db!.query("select human_verified_at,verification_method,next_source_check_at >= now() + interval '23 hours' as recheck_tomorrow from opportunities")).rows[0];
  expect(row).toEqual({ human_verified_at: null, verification_method: "automatic", recheck_tomorrow: true });
 });
@@ -254,6 +255,7 @@ it("refreshes unchanged content without duplicating and applies a retification w
  expect(await save()).toMatchObject({ saved: 0, published: 0 });
  let [next] = await listLiveCatalogue(true); expect(next.id).toBe(first.id); expect(next.version).toBe(first.version);
  expect(Date.parse(next.lastCheckedAt)).toBeGreaterThan(Date.now()-60_000);
+ expect(next.publishedAt).toBe(first.publishedAt);
  await save(candidate({ contentHash: "retification", deadlineAt: "2099-11-30", hasRetification: true }));
  [next] = await listLiveCatalogue(true); expect(next.id).toBe(first.id); expect(next.deadlineAt).toContain("2099-11-30");
  expect((await state.db!.query("select * from opportunity_management_events")).rows).toHaveLength(2);

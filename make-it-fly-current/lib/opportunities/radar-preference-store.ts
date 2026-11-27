@@ -35,7 +35,7 @@ export async function dismissedRadarOpportunities(userId: string) {
 
 export async function dismissRadarOpportunity(userId: string, id: string) {
   await getDb().insert(radarRecommendationDismissal)
-    .select(getDb().select({ userId: radarPreference.userId, opportunityId: sql<string>`${id}` })
+    .select(getDb().select({ userId: radarPreference.userId, opportunityId: sql<string>`${id}`.as("opportunity_id") })
       .from(radarPreference).where(eq(radarPreference.userId, userId)))
     .onConflictDoNothing();
 }
