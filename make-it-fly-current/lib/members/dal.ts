@@ -9,7 +9,6 @@ import { nameSchema } from "./validation";
 import { getAuth } from "./auth";
 import { isGeneratedGoogleUsername } from "./validation";
 import { memberClientIp } from "./client-ip";
-import { adultAccess } from "./protection";
 
 export type CurrentMember = {
   id: string;
@@ -42,7 +41,6 @@ export const getCurrentMember = cache(async (): Promise<CurrentMember | null> =>
   return getMemberFromHeaders(await headers());
 });
 
-// Radar details and billing require a real account, independently of community review.
 export async function requireSignedInMember(next?: string): Promise<CurrentMember> {
   const member = await getCurrentMember();
   if (!member) {
@@ -55,11 +53,7 @@ export async function requireSignedInMember(next?: string): Promise<CurrentMembe
   return member;
 }
 
-export async function requireMember(next?: string): Promise<CurrentMember> {
-  const member = await requireSignedInMember(next);
-  if (!(await adultAccess(member.id))) redirect("/membros/protecao");
-  return member;
-}
+export const requireMember = requireSignedInMember;
 
 export async function requireAdmin(next?: string): Promise<CurrentMember> {
   const member = await requireMember(next);

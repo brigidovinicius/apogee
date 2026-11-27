@@ -138,6 +138,13 @@ export function safeNextPath(value: unknown): string {
   }
 }
 
+/** Destino de links de confirmação antigos e atuais, sem retorno à própria tela. */
+export function emailVerificationDestination(value: unknown): string {
+  const next = safeNextPath(value);
+  const path = new URL(next, INTERNAL_ORIGIN).pathname.replace(/\/$/, "");
+  return path === "/membros/protecao" ? "/membros" : next;
+}
+
 export type FieldErrors = Partial<Record<string, string>>;
 
 export function fieldErrors(error: z.ZodError): FieldErrors {

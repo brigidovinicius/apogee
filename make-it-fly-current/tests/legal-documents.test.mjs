@@ -42,10 +42,9 @@ test('terms draft is local only and states that viewing is not acceptance or a c
   assert.match(content,/Versão\s+2026-11-01\.2/);
   assert.match(content,/contato@apogee.community/);assert.equal(page.generateMetadata().robots.index,false);
 }));
-test('publishing terms requires both exact document approvals and the actual protection flag',()=>scoped(()=>{
+test('publishing terms requires both exact document approvals',()=>scoped(()=>{
   process.env.APOGEE_TERMS_APPROVED_VERSION='2026-11-01.2';assert.throws(()=>page.default(),/NOT_FOUND/);
-  process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-11-08.1';assert.throws(()=>page.default(),/NOT_FOUND/);
-  process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED='true';assert.ok(page.default());assert.equal(page.generateMetadata().robots.index,true);
+  process.env.APOGEE_PRIVACY_APPROVED_VERSION='2026-11-08.1';assert.ok(page.default());assert.equal(page.generateMetadata().robots.index,true);
   process.env.APOGEE_TERMS_APPROVED_VERSION='old-version';assert.throws(()=>page.default(),/NOT_FOUND/);
 }));
 test('sitemap omits drafts and local previews; only approved public documents are included',()=>scoped(async()=>{

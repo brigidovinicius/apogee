@@ -25,13 +25,12 @@ test('isolated signup, email verification, recovery, session revocation and logo
     const headers=cookie=>({Origin:origin,'Content-Type':'application/json',...(cookie?{cookie}:{})});
     const call=(path,body,cookie)=>auth.handler(new Request(origin+'/api/auth/'+path,{method:'POST',headers:headers(cookie),body:JSON.stringify(body)}));
     const drain=async()=>{while(pending.length)await pending.shift()();};
-    const signup={email:'authjourney@example.test',name:'Pessoa Sintética',username:'authjourney',password:'SyntheticInitial2026!',adultDeclared:true,role:'admin',emailVerified:true};
+    const signup={email:'authjourney@example.test',name:'Pessoa Sintética',username:'authjourney',password:'SyntheticInitial2026!',role:'admin',emailVerified:true};
     let cookie,userId,unknownAcknowledgement;
-    await t.test('adult declaration, real persistence and no client promotion',async()=>{
-      assert.equal((await call('sign-up/email',{...signup,adultDeclared:false})).status,400);
+    await t.test('real registration without an age declaration and no client promotion',async()=>{
       const r=await call('sign-up/email',signup);assert.equal(r.status,200);userId=(await r.json()).user.id;cookie=r.headers.get('set-cookie').split(';')[0];
       const [row]=await db.sql`select role,email_verified,adult_declared from "user" where id=${userId}`;
-      assert.equal(row.role,'member');assert.equal(row.email_verified,false);assert.equal(row.adult_declared,true);assert.equal(emails.length,0);
+      assert.equal(row.role,'member');assert.equal(row.email_verified,false);assert.equal(row.adult_declared,false);assert.equal(emails.length,0);
     });
     await t.test('verification uses the trusted origin, correct recipient and no privilege change',async()=>{
       const summary = '/membros/assinatura?next=' + encodeURIComponent('/membros/ferramentas?categoria=video');

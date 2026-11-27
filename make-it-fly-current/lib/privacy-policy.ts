@@ -8,7 +8,7 @@ export const privacyIdentity: {name:string;document:string;location:string|null;
   audienceConfirmed:true,
 };
 export function publishedPrivacyVersion() {
-  if (privacyIdentity.email && privacyIdentity.audienceConfirmed && process.env.MEMBERS_SUPERVISED_REGISTRATION_ENABLED === "true") {
+  if (privacyIdentity.email && privacyIdentity.audienceConfirmed) {
     return approvedPrivacyVersion();
   }
 }

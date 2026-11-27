@@ -71,7 +71,7 @@ try {
   process.env.GOOGLE_CALENDAR_ENCRYPTION_KEY='ab'.repeat(32);process.env.GOOGLE_CALENDAR_SYNC_SECRET='s'.repeat(32);
   const raw=(await sql`select payload from radar_local_catalogue where id='demo-olimpiada'`)[0].payload;
   const load=opportunityLoader({'@/lib/members/db':{getSql:()=>qa},'@/lib/members/mail':{applicationOrigin:()=>origin},
-    '@/lib/billing/store':{radarAccess:async()=>({active:true})},'@/lib/members/protection':{calendarAdultAccess:async()=>true},
+    '@/lib/billing/store':{radarAccess:async()=>({active:true})},'@/lib/members/email-verification':{hasVerifiedMemberEmail:async()=>true},
     './radar-client':{listRadarOpportunities:async()=>[opportunityLoader()('lib/opportunities/radar-client.ts').toOpportunity(raw)]}});
   const sync=load('lib/opportunities/google-calendar-sync.ts'),store=load('lib/opportunities/google-calendar-store.ts');
   const encryption=load('lib/opportunities/google-calendar-config.ts');route=load('app/api/internal/google-agenda/sync/route.ts');

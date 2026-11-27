@@ -1,7 +1,6 @@
 import "server-only";
 import { cache } from "react";
 import { communityAccess } from "@/lib/billing/community-store";
-import { adultAccess } from "@/lib/members/protection";
 import { getSql } from "@/lib/members/db";
 
 const unavailable = { ferramentas: false };
@@ -20,7 +19,7 @@ export const publishedResourceAvailability = cache(async () => {
 export const memberResourceAvailability = cache(async (id: string, role: "member" | "admin") => {
   try {
     const authorized = role === "admin" || (await communityAccess(id, process.env.STRIPE_MODE !== "test")).active;
-    if (!authorized || !await adultAccess(id)) return unavailable;
+    if (!authorized) return unavailable;
     return await publishedResourceAvailability();
   } catch {
     return unavailable;

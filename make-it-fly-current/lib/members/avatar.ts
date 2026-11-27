@@ -2,7 +2,7 @@ import "server-only";
 import { RequestBodyError, readRequestBody, UPLOAD_BODY_TIMEOUT_MS } from "@/lib/request-body";
 
 import { randomUUID } from "node:crypto";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import sharp from "sharp";
 import { getDb } from "./db";
 import { memberAvatar, user } from "./schema";
@@ -95,6 +95,8 @@ export async function removeAvatar(userId: string): Promise<void> {
 
 export async function readAvatar(userId: string): Promise<Buffer | null> {
   const [record] = await getDb().select({ image: memberAvatar.image })
-    .from(memberAvatar).where(eq(memberAvatar.userId, userId)).limit(1);
+    .from(memberAvatar)
+    .innerJoin(user, eq(user.id, memberAvatar.userId))
+    .where(and(eq(memberAvatar.userId, userId), eq(user.blocked, false))).limit(1);
   return record?.image ?? null;
 }

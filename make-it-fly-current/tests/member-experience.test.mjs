@@ -41,29 +41,28 @@ test("the learning page requires a session and renders the coming-soon panel wit
   assert.doesNotMatch(html, /Um primeiro resultado com IA|name="activityId"|Conhecer a assinatura anual/);
 });
 
-test("pending free accounts can discover their home without reading the forum or granting access", async () => {
+test("free accounts see the community forum without gaining paid offers", async () => {
   let forumReads = 0;
   const Page = opportunityLoader({ ...uiMocks,
     "@/lib/members/dal": { requireSignedInMember: async () => member },
-    "@/lib/members/protection": { adultAccess: async () => false },
-    "@/lib/members/forum": { listCategories: async () => { forumReads++; throw Error("Private forum must remain unread"); } },
+    "@/lib/members/forum": { listCategories: async () => { forumReads++; return []; } },
     "@/lib/billing/store": { radarAccess: async () => ({ active: false }) },
     "@/lib/billing/community-store": { communityAccess: async () => ({ active: false }) },
   })("app/membros/page.tsx").default;
   const html = renderToStaticMarkup(await Page());
-  assert.equal(forumReads, 0);
+  assert.equal(forumReads, 1);
   assert.doesNotMatch(html, /href="\/membros\/ferramentas"/);
   for (const path of ["/membros/beneficios", "/membros/oportunidades", "/membros/assinatura"]) assert.ok(html.includes(`href="${path}"`), path);
-  assert.match(html, /Verificar minha conta/);
-  assert.match(html, /data-locked-preview="forum"/);
+  assert.match(html, /Conversas da comunidade/);
+  assert.doesNotMatch(html, /Verificar minha conta|data-locked-preview="forum"/);
 });
 
-test("free and legacy members never load paid catalogues; paid members still require account verification", async () => {
-  let paid = false, verificationChecks = 0, catalogueReads = 0;
+test("free and legacy members never load paid catalogues; paid catalogues still use the signed-in guard", async () => {
+  let paid = false, sessionChecks = 0, catalogueReads = 0;
   const load = opportunityLoader({
     "@/lib/members/dal": {
       requireSignedInMember: async () => member,
-      requireMember: async () => { verificationChecks++; throw Error("VERIFICATION_REQUIRED"); },
+      requireMember: async () => { sessionChecks++; throw Error("SESSION_REQUIRED"); },
     },
     "@/lib/members/db": { getSql: () => { catalogueReads++; throw Error("PRIVATE_READ"); } },
     "@/lib/billing/community-store": { communityAccess: async () => ({ active: paid, paidUntil: null }) },
@@ -71,50 +70,44 @@ test("free and legacy members never load paid catalogues; paid members still req
   const toolbox = load("lib/toolbox/store.ts"), deliverables = load("lib/deliverables/store.ts");
   assert.deepEqual((await toolbox.memberToolbox()).tools, []);
   assert.deepEqual((await deliverables.memberBenefits()).benefits, []);
-  assert.equal(verificationChecks, 0);
+  assert.equal(sessionChecks, 0);
   assert.equal(catalogueReads, 0);
   paid = true;
-  for (const read of [() => toolbox.memberToolbox(), () => deliverables.memberBenefits()]) await assert.rejects(read(), /VERIFICATION_REQUIRED/);
-  assert.equal(verificationChecks, 2);
+  for (const read of [() => toolbox.memberToolbox(), () => deliverables.memberBenefits()]) await assert.rejects(read(), /SESSION_REQUIRED/);
+  assert.equal(sessionChecks, 2);
   assert.equal(catalogueReads, 0);
 });
 
-test("administrator content access still requires account verification and never invents a paid subscription in the home", async () => {
-  let verified = false;
+test("administrator content is visible without inventing a paid subscription in the home", async () => {
   const admin = { ...member, role: "admin" };
   const load = opportunityLoader({ ...uiMocks,
-    "@/lib/members/dal": { requireSignedInMember: async () => admin, requireMember: async () => { throw Error("VERIFICATION_REQUIRED"); } },
+    "@/lib/members/dal": { requireSignedInMember: async () => admin, requireMember: async () => { throw Error("SESSION_REQUIRED"); } },
     "@/lib/members/db": { getSql: () => async (query) => {
       assert.doesNotMatch(query.join(""), /member_learning/);
-      assert.ok(verified, "unverified account must never query resource availability");
       return [{ ferramentas: true }];
     } },
     "@/lib/billing/community-store": { communityAccess: async () => ({ active: false }) },
     "@/lib/billing/store": { radarAccess: async () => ({ active: true }) },
-    "@/lib/members/protection": { adultAccess: async () => verified },
     "@/lib/members/forum": { listCategories: async () => [] },
   });
   const deliverables = load("lib/deliverables/store.ts");
-  await assert.rejects(deliverables.memberBenefits(), /VERIFICATION_REQUIRED/);
+  await assert.rejects(deliverables.memberBenefits(), /SESSION_REQUIRED/);
   const home = load("app/membros/page.tsx").default;
-  assert.doesNotMatch(renderToStaticMarkup(await home()), /href="\/membros\/ferramentas"/);
-  verified = true;
   const html = renderToStaticMarkup(await home());
   assert.doesNotMatch(html, /Exclusivo da assinatura|Assinatura anual ativa|Prévia administrativa/);
   assert.match(html, /href="\/membros\/ferramentas"/);
   assert.doesNotMatch(html, /Um primeiro resultado com IA|name="activityId"/);
 });
 
-test("calendar and collection previews preserve the destination and respect verification and existing Radar rights", async () => {
-  let state = { kind: "redirect", href: "/membros/protecao" };
+test("calendar and collection previews preserve the destination and respect existing Radar rights", async () => {
+  let state = { kind: "redirect", href: "/membros/radar/acesso" };
   const gates = opportunityLoader({ ...uiMocks,
     "@/lib/members/dal": { requireSignedInMember: async () => member },
-    "@/lib/members/protection": { adultAccess: async () => false },
     "@/lib/opportunities/personal-calendar": { calendarSaveAccess: async () => state },
   })("components/members/member-page-access.tsx");
   for (const kind of ["calendario", "colecoes"]) {
     const html = renderToStaticMarkup(await gates.calendarPagePreview(kind, `/membros/${kind}`));
-    assert.match(html, /Verificar minha conta/);
+    assert.match(html, /Conhecer a assinatura anual/);
     assert.ok(html.includes(encodeURIComponent(`/membros/${kind}`)));
   }
   state = { kind: "redirect", href: "/membros/radar/acesso" };

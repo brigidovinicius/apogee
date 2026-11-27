@@ -40,7 +40,6 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
 }) {
   const [optIn, setOptIn] = useState<PhotoOptIn | null>(null);
   const [loadingOptIn, setLoadingOptIn] = useState(false);
-  const [verificationRequired, setVerificationRequired] = useState(false);
   const [selfieValidated, setSelfieValidated] = useState(false);
   const [mode, setMode] = useState<"start" | "browse" | "results" | "saved">("start");
   const [expanded, setExpanded] = useState(false);
@@ -141,14 +140,12 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
     }
     setExpanded(true);
     setOptIn(null);
-    setVerificationRequired(false);
     setLoadingOptIn(true);
     setError("");
     try {
       const response = await fetch(PHOTO_CONSENT_API, { cache: "no-store" });
       const state = await response.json();
       if (response.ok) setOptIn(state);
-      else if (state.error === "verification_required") setVerificationRequired(true);
       else setError("Não foi possível abrir a busca. Feche e tente novamente.");
     } catch {
       setError("Não foi possível abrir a busca. Feche e tente novamente.");
@@ -267,13 +264,7 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
       const response = await fetch(PHOTO_CONSENT_API, { method: "POST", headers: { "X-Apogee-Consent": PHOTO_OPT_IN }, cache: "no-store" });
       const next = await response.json();
       if (!response.ok) {
-        if (next.error === "verification_required") {
-          setOptIn(null);
-          setVerificationRequired(true);
-          setConsent(false);
-        } else {
-          setError(errors[next.error] ?? "Não foi possível atualizar sua autorização. Tente novamente.");
-        }
+        setError(errors[next.error] ?? "Não foi possível atualizar sua autorização. Tente novamente.");
         return;
       }
       clear();
@@ -328,10 +319,6 @@ export function FotosDoEvento({ album, browse, expires, selfieEnabled }: {
     </div>
     <div id="busca-facial-workshop" className={styles.searchPanel} hidden={!expanded}>
       {loadingOptIn && <p role="status">Carregando a busca…</p>}
-      {verificationRequired && <div className={styles.form}>
-        <p role="status">Conclua a verificação da sua conta para usar a busca por selfie.</p>
-        <a href="/membros/protecao" data-ap-button="secondary">Verificar minha conta</a>
-      </div>}
       {optIn && !optIn.granted && <form className={styles.form} aria-busy={busy} onSubmit={changeOptIn}>
         <label className={styles.consent}><input type="checkbox" checked={consent} disabled={busy}
           onChange={event => setConsent(event.target.checked)} aria-describedby="busca-facial-privacidade" required />

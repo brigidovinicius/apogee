@@ -3,12 +3,11 @@ import Link from "next/link";
 import { COMMUNITY_BENEFITS_TERMS } from "@/content/community-offer";
 import { ArrowRight, LockKeyhole } from "lucide-react";
 import { requireSignedInMember } from "@/lib/members/dal";
-import { adultAccess } from "@/lib/members/protection";
 import { MemberWorkspace } from "@/components/members/member-workspace";
 import { communityBillingEnabled, COMMUNITY_ACCESS_PATH } from "@/lib/billing/community-config";
 import { communityMembership } from "@/lib/billing/community-store";
 import { radarAccess } from "@/lib/billing/store";
-import { annualResourceLabel, annualSummaryPath, communityReturnPath } from "@/lib/billing/community-navigation";
+import { annualResourceLabel, communityReturnPath } from "@/lib/billing/community-navigation";
 import styles from "@/components/members/members.module.css";
 import annual from "@/components/members/subscription.module.css";
 import { AnnualPaymentConfirmation } from "@/components/members/annual-payment-confirmation";
@@ -24,9 +23,7 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
   const membership = await communityMembership(member.id,livemode);
   const radar = await radarAccess(member.id,livemode);
   const legacy = radar.active && radar.source !== "community";
-  const verified = await adultAccess(member.id);
   const continueLabel = annualResourceLabel(next);
-  const verificationHref = `/membros/protecao?next=${encodeURIComponent(annualSummaryPath(next))}`;
   const pending = membership.subscription && !["canceled","incomplete_expired"].includes(membership.subscription.status);
   const awaitingPayment = params.payment === "received" && !membership.active &&
     !["refunded", "disputed", "fraud"].includes(membership.paymentStatus ?? "") &&
@@ -35,7 +32,7 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
 
     <header className={annual.annualHero}><h1 className={styles.title}>{membership.active ? "Minha assinatura" : awaitingPayment || pending ? "Situação da assinatura" : "Resumo da assinatura"}</h1></header>
     {reviewing ? <p role="note">Validação local com contas e pagamentos sintéticos. Nenhuma cobrança ou alteração na Stripe é realizada aqui.</p> : null}
-    {params.billing_error ? <p role="alert">{params.billing_error === "409" ? "Já existe uma assinatura ou um pagamento em andamento. Confira o estado abaixo antes de tentar novamente." : params.billing_error === "403" ? "Conclua a verificação da sua conta antes de contratar." : params.billing_error === "429" ? "Muitas tentativas. Aguarde alguns minutos antes de tentar novamente." : "Não foi possível concluir a operação. Confira o estado abaixo antes de tentar novamente."}</p> : null}
+    {params.billing_error ? <p role="alert">{params.billing_error === "409" ? "Já existe uma assinatura ou um pagamento em andamento. Confira o estado abaixo antes de tentar novamente." : params.billing_error === "429" ? "Muitas tentativas. Aguarde alguns minutos antes de tentar novamente." : "Não foi possível concluir a operação. Confira o estado abaixo antes de tentar novamente."}</p> : null}
     {params.payment === "received" && membership.active ? <p role="status" data-annual-stage="confirmed_return" className={annual.annualStatus}>Pagamento confirmado. Sua assinatura anual está ativa.</p> : null}
     {params.payment === "cancelled" ? <p role="status">Você voltou do checkout. Confira a situação da assinatura.</p> : null}
     {params.cancellation === "requested" ? <p role="status">{membership.subscription?.cancelAtPeriodEnd ? "Renovação anual cancelada. O período pago está preservado." : "Solicitação de cancelamento da renovação enviada. Atualize esta página em instantes para conferir a confirmação."}</p> : null}
@@ -48,7 +45,7 @@ export default async function MembershipPage({searchParams}:{searchParams:Promis
         <p role="status"><strong>Assinatura ativa. Acesso pago até {date(membership.paidUntil)}.</strong></p>
         <p>{membership.subscription?.cancelAtPeriodEnd ? "A renovação está cancelada. Seu acesso continua até o fim do período pago." : "A renovação automática está habilitada. Você pode cancelá-la antes da próxima cobrança."}</p>
         <Link className={annual.annualCta} href={next}>{continueLabel}<ArrowRight size={18} aria-hidden="true" /></Link>
-      </> : membership.paymentStatus === "refunded" ? <p role="status">A fatura anual foi reembolsada integralmente. O acesso incluído nessa fatura foi encerrado. Seus acessos antigos válidos ao Radar continuam preservados.</p> : ["disputed","fraud"].includes(membership.paymentStatus ?? "") ? <p role="status">O pagamento está em análise. O acesso anual depende da conclusão dessa análise. Seus acessos antigos válidos ao Radar continuam preservados.</p> : membership.subscription?.status === "past_due" || membership.subscription?.status === "unpaid" ? <p role="status">O pagamento anual está pendente. Confira a fatura e a forma de pagamento no portal antes de tentar novamente. Uma renovação não paga não estende o acesso.</p> : awaitingPayment ? <AnnualPaymentConfirmation /> : pending ? <p role="status">Há uma assinatura ou pagamento em andamento. Se uma renovação falhar, o acesso continua somente até o fim do último período pago. Confira o pagamento antes de iniciar outra assinatura.</p> : reviewing ? <p>A contratação anual está implementada e testada com pagamentos sintéticos. A conexão ao checkout Stripe será validada separadamente antes da publicação.</p> : !communityBillingEnabled() ? <p>A contratação anual está em validação. A entrada gratuita continua disponível.</p> : !verified ? <div><p>Verifique sua conta antes de seguir para o pagamento. Depois você retorna a este resumo.</p><Link className={annual.annualCta} href={verificationHref}>Verificar minha conta</Link></div> : <form data-behavior-action="checkout_start" data-annual-stage="account_ready" action={`/api/comunidade/assinatura/checkout?next=${encodeURIComponent(next)}`} method="post">
+      </> : membership.paymentStatus === "refunded" ? <p role="status">A fatura anual foi reembolsada integralmente. O acesso incluído nessa fatura foi encerrado. Seus acessos antigos válidos ao Radar continuam preservados.</p> : ["disputed","fraud"].includes(membership.paymentStatus ?? "") ? <p role="status">O pagamento está em análise. O acesso anual depende da conclusão dessa análise. Seus acessos antigos válidos ao Radar continuam preservados.</p> : membership.subscription?.status === "past_due" || membership.subscription?.status === "unpaid" ? <p role="status">O pagamento anual está pendente. Confira a fatura e a forma de pagamento no portal antes de tentar novamente. Uma renovação não paga não estende o acesso.</p> : awaitingPayment ? <AnnualPaymentConfirmation /> : pending ? <p role="status">Há uma assinatura ou pagamento em andamento. Se uma renovação falhar, o acesso continua somente até o fim do último período pago. Confira o pagamento antes de iniciar outra assinatura.</p> : reviewing ? <p>A contratação anual está implementada e testada com pagamentos sintéticos. A conexão ao checkout Stripe será validada separadamente antes da publicação.</p> : !communityBillingEnabled() ? <p>A contratação anual está em validação. A entrada gratuita continua disponível.</p> : <form data-behavior-action="checkout_start" data-annual-stage="account_ready" action={`/api/comunidade/assinatura/checkout?next=${encodeURIComponent(next)}`} method="post">
         <p className={annual.annualActivation}>Acesso liberado automaticamente após a confirmação do pagamento.</p>
         <p className={annual.annualCheckoutNote}>Na próxima etapa, você revisa o total e conclui sua assinatura no checkout seguro da Stripe.</p>
         <button className={annual.annualCta} type="submit">Continuar para pagamento<ArrowRight size={18} aria-hidden="true" /></button>

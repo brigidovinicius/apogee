@@ -2,7 +2,6 @@ import "server-only";
 import { createHmac } from "node:crypto";
 import { getSessionCookie } from "better-auth/cookies";
 import { getMemberFromHeaders } from "@/lib/members/dal";
-import { adultAccess } from "@/lib/members/protection";
 import { PHOTO_API, WORKSHOP, type AlbumPhoto } from "./catalogo";
 
 export const PRIVATE = { "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" };
@@ -30,10 +29,10 @@ export function canAccessAlbum(memberId: string, config: AlbumConfig) {
   return config.members || config.allowed.has(memberId);
 }
 
-export async function albumMember(headers: Headers, config: AlbumConfig, forSelfie = false) {
+export async function albumMember(headers: Headers, config: AlbumConfig) {
   if (!getSessionCookie(headers)) return null;
   const member = await getMemberFromHeaders(headers);
-  if (!member || !canAccessAlbum(member.id, config) || (forSelfie && !await adultAccess(member.id))) return null;
+  if (!member || !canAccessAlbum(member.id, config)) return null;
   return member;
 }
 

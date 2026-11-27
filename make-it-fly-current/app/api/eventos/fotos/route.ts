@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   if (!config?.selfie) return albumError("not_found", 404);
   try {
     if (request.headers.get("origin") !== applicationOrigin()) return albumError("forbidden", 403);
-    const member = await albumMember(request.headers, config, true);
+    const member = await albumMember(request.headers, config);
     if (!member) return albumError("forbidden", 403);
     if (request.headers.get("x-apogee-consent") !== SELFIE_CONSENT) return albumError("consent_required", 400);
     const type = request.headers.get("content-type");

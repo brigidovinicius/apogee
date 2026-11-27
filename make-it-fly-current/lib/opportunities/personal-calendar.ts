@@ -1,7 +1,6 @@
 import "server-only";
 import { redirect, notFound } from "next/navigation";
 import { getCurrentMember } from "@/lib/members/dal";
-import { adultAccess } from "@/lib/members/protection";
 import { isGeneratedGoogleUsername } from "@/lib/members/validation";
 import { calendarReturnPath } from './calendar-navigation';
 import type { CalendarSaveState } from './calendar-save-types';
@@ -17,7 +16,6 @@ export async function calendarSaveAccess(returnTo:unknown='/membros/meu-calendar
   const member=await getCurrentMember();
   if(!member)return {kind:'redirect',href:'/membros/entrar?next='+encodeURIComponent(next)} as const;
   if(isGeneratedGoogleUsername(member.username)||member.nameNeedsConfirmation)return {kind:'redirect',href:'/membros/perfil/configurar?next='+encodeURIComponent(next)} as const;
-  if(!(await adultAccess(member.id)))return {kind:'redirect',href:'/membros/protecao?next='+encodeURIComponent(next)} as const;
   if(!(await radarAccess(member.id,process.env.STRIPE_MODE!=="test")).active)return {kind:'redirect',href:RADAR_ACCESS_PATH+'?next='+encodeURIComponent(next)} as const;
   return {kind:'ready',member} as const;
 }

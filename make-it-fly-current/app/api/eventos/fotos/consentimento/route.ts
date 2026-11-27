@@ -1,5 +1,4 @@
 import { applicationOrigin } from "@/lib/members/mail";
-import { adultAccess } from "@/lib/members/protection";
 import { PHOTO_OPT_IN } from "@/lib/eventos/catalogo";
 import { PRIVATE, albumConfig, albumError, albumIdentity, albumMember, albumWorker } from "@/lib/eventos/fotos";
 
@@ -10,7 +9,6 @@ async function change(request: Request, method: "GET" | "POST" | "DELETE") {
     if (method !== "GET" && request.headers.get("origin") !== applicationOrigin()) return albumError("forbidden", 403);
     const member = await albumMember(request.headers, config);
     if (!member) return albumError("forbidden", 403);
-    if (!await adultAccess(member.id)) return albumError("verification_required", 403);
     if (method === "POST" && request.headers.get("x-apogee-consent") !== PHOTO_OPT_IN) {
       return albumError("consent_required", 400);
     }

@@ -135,7 +135,7 @@ test("motion follows the system by default and explicit pause leaves server cont
   assert.doesNotMatch(`${system}${paused}${animated}`, /motionEnabled=|onMenuRequest=/);
 });
 
-test("the store shows three real products and reveals signup only after requesting a launch notification", async () => {
+test("the store shows the four published products and reveals signup only after requesting a launch notification", async () => {
   const { opportunityLoader } = await import("./helpers/load-opportunity-module.mjs");
   const load = opportunityLoader({
     "next/image": { __esModule: true, default: ({ preload, ...props }) => { void preload; return React.createElement("img", props); } },
@@ -145,10 +145,11 @@ test("the store shows three real products and reveals signup only after requesti
   const { StoreExperience } = load("app/loja/store-experience.tsx");
   const { products } = load("lib/store/products.ts");
   const html = renderToStaticMarkup(React.createElement(StoreExperience));
-  assert.equal(products.length, 3);
-  assert.deepEqual(products.map(item => item.photos.length), [2, 3, 2]);
+  assert.equal(products.length, 4);
+  assert.equal(products[0].slug, "camiseta-need-money-for-tokens");
+  assert.deepEqual(products.map(item => item.photos.length), [1, 2, 3, 2]);
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-  assert.equal((html.match(/<article\b/g) ?? []).length, 3);
+  assert.equal((html.match(/<article\b/g) ?? []).length, products.length);
   for (const product of products) {
     assert.ok(html.includes(product.name));
     for (const photo of product.photos) {
@@ -157,7 +158,7 @@ test("the store shows three real products and reveals signup only after requesti
       await access(new URL(`../public${photo.src}`, import.meta.url));
     }
   }
-  assert.equal((html.match(/aria-label="Receber aviso de lançamento · /g) ?? []).length, 3);
+  assert.equal((html.match(/aria-label="Receber aviso de lançamento · /g) ?? []).length, products.length);
   assert.doesNotMatch(html, /<form|Quero receber novidades|href="#novos-drops"/);
   assert.match(html, /<dialog[^>]*id="drop-purchase-dialog"/);
   for (const [, anchor] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(html.includes(`id="${anchor}"`));

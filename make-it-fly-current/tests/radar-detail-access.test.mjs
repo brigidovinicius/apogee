@@ -20,7 +20,6 @@ function fixture() {
       return state.member;
     } },
     "@/lib/billing/store": { radarAccess: async () => ({ active: state.active }) },
-    "@/lib/members/protection": { adultAccess: async () => state.approved },
     "@/lib/opportunities/personal-calendar": { personalCalendarEnabled: () => state.calendarEnabled, savedOpportunities: async () => [] },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => { state.catalogueReads++; return [first, second]; } },
     "./detail-store": {
@@ -170,18 +169,14 @@ test("checkout return destination rejects external, unrelated, malformed and nes
   assert.equal(radarDetailReturnPath("/membros/oportunidades/radar-first?busca=IA&token=secret&pagina=2"), "/membros/oportunidades/radar-first?busca=IA&pagina=2");
 });
 
-test("paid details open before community approval while calendar controls retain their review requirement", async () => {
+test("paid details show the calendar controls with active Radar access", async () => {
   const { state, load } = fixture();
   state.active = true;
   state.calendarEnabled = true;
   const Page = load("app/membros/oportunidades/[id]/page.tsx").default;
   const props = { params: Promise.resolve({ id: first.id }), searchParams: Promise.resolve({}) };
-  let html = renderToStaticMarkup(await Page(props));
+  const html = renderToStaticMarkup(await Page(props));
   assert.match(html, /REQUISITO_PRIVADO/);
-  assert.doesNotMatch(html, /Salvar no meu calendário/);
-  assert.match(html, /conclua a verificação da conta/);
-  state.approved = true;
-  html = renderToStaticMarkup(await Page(props));
   assert.match(html, /Salvar no meu calendário/);
 });
 

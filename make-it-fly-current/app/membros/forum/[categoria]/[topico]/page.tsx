@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { MemberWorkspace } from "@/components/members/member-workspace";
-import { verificationPagePreview } from "@/components/members/member-page-access";
 import styles from "@/components/members/members.module.css";
 import { Pagination } from "@/components/members/pagination";
 import { PostCard } from "@/components/members/post-card";
@@ -21,8 +20,6 @@ export const metadata: Metadata = { title: "Tópico" };
 
 export default async function TopicPage({ params, searchParams }: Props) {
   const { categoria, topico } = await params;
-  const preview = await verificationPagePreview("forum", "Conversa da comunidade", `/membros/forum/${categoria}/${topico}`);
-  if (preview) return preview;
   const member = await requireMember(`/membros/forum/${categoria}/${topico}`);
   const topicId = parseTopicParam(topico);
   const topic = topicId ? await getTopic(topicId) : null;

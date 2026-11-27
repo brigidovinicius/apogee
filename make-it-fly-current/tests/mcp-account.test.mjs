@@ -7,7 +7,7 @@ test("account tools use real SQL ownership, current access and feature gates wit
   const original = { ...process.env };
   Object.assign(process.env, { RADAR_CALENDAR_PERSONAL_ENABLED: "true", RADAR_COLLECTIONS_ENABLED: "true", STRIPE_MODE: "test" });
   const database = await mcpTestDatabase({ accountTables: true });
-  const state = { active: true, adult: true, reads: [], sync: [], invalidated: [] };
+  const state = { active: true, reads: [], sync: [], invalidated: [] };
   const item = { id: "radar-synthetic", title: "Oportunidade atual", organization: "Instituição", summary: "Resumo", categories: ["competicoes"],
     kind: "Programa", level: "Graduação", location: "Online", benefit: "Apoio", deadline: "2099-12-31", deadlineLabel: "Até dezembro", verifiedAt: "2026-11-13",
     eligibility: "PRIVATE_ELIGIBILITY", officialUrl: "https://source.synthetic.test/private" };
@@ -15,7 +15,6 @@ test("account tools use real SQL ownership, current access and feature gates wit
     "@/lib/members/db": { getDb: () => database.db, getSql: () => database.sql },
     "./db": { getDb: () => database.db, getSql: () => database.sql },
     "@/lib/members/mail": { applicationOrigin: () => "https://www.apogee.community" },
-    "@/lib/members/protection": { adultAccess: async () => state.adult },
     "@/lib/billing/store": { radarAccess: async (id, mode, options) => { state.reads.push({ id, mode, options }); return { active: state.active }; } },
     "./radar-client": { listRadarOpportunities: async () => [item] },
     "@/lib/opportunities/radar-client": { listRadarOpportunities: async () => [item] },
@@ -90,16 +89,14 @@ test("account tools use real SQL ownership, current access and feature gates wit
       for (let i = 1; i < 20; i++) await run("a", "create_collection", { name: "Coleção " + i });
       await assert.rejects(run("a", "create_collection", { name: "Excedente" }), error => error.code === "invalid_arguments");
     });
-    await t.test("entitlement loss, protection, feature flags and blocked accounts stop later calls", async () => {
+    await t.test("entitlement loss, feature flags and blocked accounts stop later calls", async () => {
       state.active = false;
       for (const [tool, args] of [["list_my_calendar", {}], ["set_calendar_opportunity", { opportunityId: item.id, saved: true }],
         ["update_collection", { collectionId: a.id, name: "Bloqueada" }]]) {
         await assert.rejects(run("a", tool, args), error => error.code === "access_required");
       }
       assert.equal((await run("a", "get_account_profile", {})).name, "Pessoa A", "profile does not require paid Radar");
-      state.active = true; state.adult = false;
-      await assert.rejects(run("a", "get_account_profile", {}), error => error.code === "access_required");
-      state.adult = true; process.env.RADAR_COLLECTIONS_ENABLED = "false";
+      state.active = true; process.env.RADAR_COLLECTIONS_ENABLED = "false";
       await assert.rejects(run("a", "list_my_collections", {}), error => error.code === "feature_unavailable");
       process.env.RADAR_COLLECTIONS_ENABLED = "true"; process.env.RADAR_CALENDAR_PERSONAL_ENABLED = "false";
       await assert.rejects(run("a", "list_my_calendar", {}), error => error.code === "feature_unavailable");

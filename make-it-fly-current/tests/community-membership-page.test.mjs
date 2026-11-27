@@ -7,7 +7,6 @@ function pageFor(status, options={}){
   return opportunityLoader({
     '@/lib/offer-preview':{localFunctionalReview:()=>false},
     '@/lib/members/dal':{requireSignedInMember:async()=>({id:'owner',name:'Pessoa Teste'})},
-    '@/lib/members/protection':{adultAccess:async()=>options.verified ?? true},
     '@/components/members/member-bar':{MemberBar:()=>null},
     '@/lib/billing/community-store':{communityMembership:async()=>({active:false,paidUntil:null,paymentStatus:status,
       subscription:{id:'sub_own',status:status==='unpaid'?'past_due':'active',cancelAtPeriodEnd:true},...options.membership})},
@@ -47,10 +46,10 @@ for(const status of ['refunded','disputed','fraud','unpaid']) test(`checkout ret
   assert.doesNotMatch(html,/aguardando a confirmação|Pagamento confirmado|action="\/api\/comunidade\/assinatura\/checkout/);
 });
 
-test('new checkout remains gated by commercial switch and account verification',async()=>{
-  for(const options of [{enabled:false},{verified:false},{}]) {
+test('new checkout remains gated by commercial switch',async()=>{
+  for(const options of [{enabled:false},{}]) {
     const page=pageFor(null,{...options,membership:{subscription:null}});
     const html=renderToStaticMarkup(await page({searchParams:Promise.resolve({next:'/membros/ferramentas'})}));
-    assert.equal(html.includes('action="/api/comunidade/assinatura/checkout?next=%2Fmembros%2Fferramentas"'),!('enabled' in options || 'verified' in options));
+    assert.equal(html.includes('action="/api/comunidade/assinatura/checkout?next=%2Fmembros%2Fferramentas"'),options.enabled !== false);
   }
 });

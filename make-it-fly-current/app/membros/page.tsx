@@ -8,8 +8,6 @@ import { formatDateTime } from "@/components/members/format";
 import { MemberWorkspace } from "@/components/members/member-workspace";
 import styles from "@/components/members/members.module.css";
 import { requireSignedInMember } from "@/lib/members/dal";
-import { adultAccess } from "@/lib/members/protection";
-import { LockedMemberArea } from "@/components/members/locked-member-area";
 import { listCategories } from "@/lib/members/forum";
 import { MemberForumSection } from "@/components/members/member-forum-section";
 import { memberResourceAvailability } from "@/lib/members/resource-availability";
@@ -18,8 +16,7 @@ export const metadata: Metadata = { title: "Sua comunidade | Apogee" };
 
 export default async function MemberHomePage() {
   const member = await requireSignedInMember("/membros");
-  const verified = await adultAccess(member.id);
-  const categories = verified ? await listCategories() : [];
+  const categories = await listCategories();
   const access = await radarAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null);
 
   const annual = await communityAccess(member.id, process.env.STRIPE_MODE !== "test").catch(() => null);
@@ -35,13 +32,10 @@ export default async function MemberHomePage() {
         </div>
       </header>
 
-      <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} resources={resources} nextStep={!verified ? {
-        label: "Verificar minha conta", description: "Conclua a verificação para participar do fórum e acessar os recursos da sua conta.",
-        href: "/membros/protecao?next=%2Fmembros",
-      } : undefined} />
+      <MemberOfferOverview name={interfaceText(member.name).split(" ")[0]} radarFullAccess={access?.active ?? null} annual={annual?.active ?? false} resources={resources} />
       <MemberForumSection><h2 data-ap-heading="section" data-ap-art="forum" id="member-forum-title">Conversas da comunidade</h2>
 
-      {!verified ? <LockedMemberArea kind="forum" next="/membros#forum" reason="verification" /> : categories.length === 0 ? (
+      {categories.length === 0 ? (
         <p className={styles.empty}>Nenhuma categoria criada ainda</p>
       ) : (
         <ul className={styles.list}>

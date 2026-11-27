@@ -3,7 +3,6 @@ import { randomUUID } from "node:crypto";
 import type { TransactionSql } from "postgres";
 import { getSql } from "@/lib/members/db";
 import { requireAdmin } from "@/lib/members/dal";
-import { supervisedRegistrationEnabled, existingAccountCutoff } from "@/lib/members/protection";
 import { deliverableMember } from "@/lib/deliverables/store";
 import { identifier, officialBenefitUrl } from "@/lib/deliverables/validation";
 import { benefitFilters, savedBenefitInput, startBenefitInput, categoryInput, benefitCategorySlug, reviewRedemptionInput } from "./validation";
@@ -75,18 +74,9 @@ export async function memberBenefitDetail(id: string) {
 }
 
 async function lockedAccess(tx: TransactionSql, userId: string) {
-  const [account] = await tx`select id,role,blocked,email_verified,created_at from "user" where id=${userId} for update`;
+  const [account] = await tx`select id,role,blocked from "user" where id=${userId} for update`;
   if (!account || account.blocked) throw new BenefitActionError("Acesso indisponível para esta conta.");
   if (account.role === "admin") return;
-  // Match the existing protection policy, inside the same lock used by a
-  // review revocation. Never borrow another connection while holding it.
-  if (supervisedRegistrationEnabled()) {
-    const [review] = await tx`select status,reviewed_at from member_adult_review where user_id=${userId}`;
-    const cutoff = existingAccountCutoff(), created = new Date(account.created_at);
-    const approved = account.email_verified && review?.status === "approved";
-    const transition = cutoff && Number.isFinite(created.getTime()) && created < cutoff && !review?.reviewed_at && (!review?.status || review.status === "pending");
-    if (!approved && !transition) throw new BenefitActionError("A verificação desta conta precisa ser concluída antes de usar Benefícios.");
-  }
   const eligible = await tx`select 1 from community_subscription s join community_invoice i on i.subscription_id=s.id
     where s.user_id=${userId} and s.livemode=${process.env.STRIPE_MODE !== "test"} and i.status='paid' and i.fraud_review_required=false
       and i.period_start<=now() and i.period_end>now() for share of s,i`;

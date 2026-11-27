@@ -84,7 +84,6 @@ export function AccountMenu({ fallback }: { fallback: ReactNode }) {
       <nav aria-label="Minha conta">
         <Link href={account.username ? `/membros/perfil/${encodeURIComponent(account.username)}` : "/membros/perfil/configurar"}><AreaIcon area="perfil" />Meu perfil</Link>
         <Link href="/membros/assinatura"><AreaIcon area="assinatura" />Assinatura e acesso</Link>
-        <Link href="/membros/protecao"><AreaIcon area="protecao" />Verificação da conta</Link>
         <Link href="/membros/suporte"><AreaIcon area="suporte" />Ajuda e suporte</Link>
         {account.role === "admin" ? <Link href="/admin"><AreaIcon area="protecao" />Administração</Link> : null}
         <Link href="/"><AreaIcon area="home" />Voltar ao site</Link>

@@ -30,7 +30,7 @@ test('calendar connection resumes only allowlisted filters at the Google section
   assert.equal(nav.googleCalendarReturnPath('/membros/meu-calendario?busca=tech&periodo=30dias&google=failed&code=PRIVATE'),'/membros/meu-calendario?busca=tech&periodo=30dias&integracao=google#google-calendar-heading');
   assert.equal(nav.googleCalendarReturnPath('/calendarios/eventos?busca=tech'),'/membros/meu-calendario?busca=tech&calendario=eventos&catalogo=1&integracao=google#google-calendar-heading');
   for(const value of [null,'https://evil.test/membros/meu-calendario','//evil.test','/admin','/membros/colecoes','/membros/meu-calendario/../../admin','/membros\\evil','x'.repeat(5000)])assert.equal(nav.googleCalendarReturnPath(value),base);
-  const review=new URL(nav.googleCalendarReviewPath(base),'https://apogee.invalid');
+  const review=new URL(nav.googleCalendarVerificationPath(base),'https://apogee.invalid');
   assert.equal(review.pathname,'/membros/protecao');assert.equal(review.searchParams.get('next'),base);
   assert.equal(opportunityLoader()('lib/opportunities/calendar-navigation.ts').calendarReturnPath(base),base);
 });
@@ -52,7 +52,7 @@ function actionFixture(){
     'next/navigation':{redirect:href=>{throw Object.assign(Error('redirect'),{href});}},
     'next/cache':{revalidatePath:()=>{}},
     '@/lib/opportunities/personal-calendar':{requireCalendarMember:async next=>{state.members.push(next);return {id:'password-only-member'};}},
-    '@/lib/members/protection':{calendarAdultAccess:async()=>state.allowed},
+    '@/lib/members/email-verification':{hasVerifiedMemberEmail:async()=>state.allowed},
     '@/lib/opportunities/google-calendar-store':{beginGoogleCalendarOAuth:async id=>{state.started.push(id);return {state:'ab'.repeat(32),url:'https://accounts.google.com/authorized'};}},
     '@/lib/opportunities/google-calendar-sync':{syncGoogleCalendar:async(...args)=>{state.syncs.push(args);return 'synced';}},
     '@/lib/members/mail':{applicationOrigin:()=> 'https://apogee.example.test'},
@@ -68,7 +68,7 @@ test('a password session starts Calendar OAuth without linking a Google login',a
   for(const [, ,options] of state.cookies){assert.equal(options.httpOnly,true);assert.equal(options.secure,true);assert.equal(options.sameSite,'lax');assert.equal(options.maxAge,600);assert.equal(options.path,'/api/integracoes/google-agenda/callback');}
   assert.equal(state.cookies.find(([name])=>name==='apogee_google_calendar_return')[1],state.members[0]);
 });
-test('pending verification resumes the connection after review without starting OAuth',async()=>{
+test('email verification preserves the destination without starting OAuth',async()=>{
   const {state,actions}=actionFixture();state.allowed=false;
   const form=new FormData();form.set('next','/membros/meu-calendario?busca=tech');
   await assert.rejects(actions.connectGoogleCalendarAction(form),e=>new URL(e.href,'https://apogee.invalid').searchParams.get('next')==='/membros/meu-calendario?busca=tech&integracao=google#google-calendar-heading');
@@ -83,7 +83,7 @@ function callbackFixture(){
  const state={member:{id:'password-only-member'},active:true,allowed:true,exchanges:[],result:'synced'};
  const route=opportunityLoader({
   '@/lib/members/dal':{getMemberFromHeaders:async()=>state.member},
-  '@/lib/members/protection':{calendarAdultAccess:async()=>state.allowed},
+  '@/lib/members/email-verification':{hasVerifiedMemberEmail:async()=>state.allowed},
   '@/lib/billing/store':{radarAccess:async()=>({active:state.active})},
   '@/lib/members/mail':{applicationOrigin:()=> 'https://apogee.example.test'},
   '@/lib/opportunities/google-calendar-config':{googleCalendarConfig:()=>({}),GOOGLE_CALENDAR_COOKIE:'apogee_google_calendar_state',GOOGLE_CALENDAR_RETURN_COOKIE:'apogee_google_calendar_return',GOOGLE_CALENDAR_CALLBACK:'/api/integracoes/google-agenda/callback'},

@@ -60,19 +60,16 @@ try{
  const initialAuth=await sql`select id,provider_id,password from account where user_id=${id}`;
  assert.equal(initialAuth.length,1);assert.equal(initialAuth[0].provider_id,'credential');assert.ok(initialAuth[0].password);
  assert.equal((await sql`select email_verified from "user" where id=${id}`)[0].email_verified,false);mark('real password registration and session without Google login');
- const protection=load('lib/members/protection.ts'),store=load('lib/opportunities/google-calendar-store.ts'),sync=load('lib/opportunities/google-calendar-sync.ts');
+ const protection=load('lib/members/email-verification.ts'),store=load('lib/opportunities/google-calendar-store.ts'),sync=load('lib/opportunities/google-calendar-sync.ts');
  const callsBefore=providerCalls;await assert.rejects(store.beginGoogleCalendarOAuth(id));assert.equal(providerCalls,callsBefore);mark('unverified password account cannot authorize Calendar');
  const verification=await call('send-verification-email',{email,callbackURL:origin+'/membros/protecao?next=%2Fmembros%2Fmeu-calendario%23google-calendar-heading'},cookie);
  assert.equal(verification.status,200,await verification.clone().text());assert.equal(mail.length,1);
  const link=mail[0].text.match(/http:\/\/\S+/)[0];
  const confirmed=await auth.handler(new Request(link,{headers:actorHeaders}));assert.ok([200,302,303].includes(confirmed.status));
  assert.equal((await sql`select email_verified from "user" where id=${id}`)[0].email_verified,true);mark('real one-time email verification through intercepted message');
- await protection.requestAdultReview(id,true);
- await assert.rejects(store.beginGoogleCalendarOAuth(id));mark('pending adult review cannot authorize Calendar');
  // QA fixtures only: no production review or paid entitlement is granted.
- await sql`update member_adult_review set status='approved',reviewed_at=now(),evidence_reference='FICTIONAL LOCAL PASSWORD CALENDAR QA' where user_id=${id}`;
  await sql`insert into radar_legacy_access(user_id) values(${id})`;
- assert.equal(await protection.calendarAdultAccess(id),true);
+ assert.equal(await protection.hasVerifiedMemberEmail(id),true);
  const member=await load('lib/members/dal.ts').getMemberFromHeaders(actorHeaders);assert.equal(member.id,id);
  const save=load('app/membros/meu-calendario/actions.ts');
  assert.deepEqual(await save.saveOpportunityFromCard(item.id,true,'/calendarios/eventos'),{ok:true,saved:true});
@@ -84,7 +81,6 @@ try{
  const outsider=await call('sign-up/email',{name:'Outra Conta',username:'outra_senha_'+nonce,email:'calendar-other-'+nonce+'@radar.test',password,adultDeclared:true});assert.equal(outsider.status,200);
  const other=(await outsider.json()).user.id;created.push(other);
  await sql`update "user" set email_verified=true where id=${other}`;
- await sql`insert into member_adult_review(user_id,status,reviewed_at,evidence_reference) values(${other},'approved',now(),'FICTIONAL LOCAL QA')`;
  await assert.rejects(store.completeGoogleCalendarOAuth(other,first.state,first.state,'synthetic-code'));mark('state mismatch and another session cannot steal connection');
  await sql`update radar_google_calendar_oauth set expires_at=now()-interval '1 second' where user_id=${id}`;
  await assert.rejects(store.completeGoogleCalendarOAuth(id,first.state,first.state,'synthetic-code'));mark('expired consent is refused');

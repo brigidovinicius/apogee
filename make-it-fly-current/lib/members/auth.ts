@@ -9,12 +9,11 @@ import { applicationOrigin, sendMemberMail } from "./mail";
 import { getDb } from "./db";
 import { googleUsernameFromSubject } from "./google-oauth";
 import * as schema from "./schema";
-import { nameSchema, usernameSchema,isGeneratedGoogleUsername } from "./validation";
+import { nameSchema, usernameSchema } from "./validation";
 import { enforceMemberAuthAbuse } from "./auth-abuse";
 import { memberIpHeaders } from "./client-ip";
 import { billingConfig, RADAR_ACCESS_PATH, radarBillingEnabled } from "@/lib/billing/config";
 import { radarPurchaseNeedsVerification } from "@/lib/billing/store";
-import { supervisedRegistrationEnabled } from "./protection";
 import { PASSWORD_RESET_EXPIRES_IN } from "./password-recovery";
 import { oauthProvider } from "@better-auth/oauth-provider";
 import { mcpEnabled } from "@/lib/mcp/config";
@@ -130,7 +129,6 @@ function createAuth() {
       additionalFields: {
         canManageAdmins: { type: "boolean", required: false, defaultValue: false, input: false },
         blocked: { type: "boolean", required: false, defaultValue: false, input: false },
-        adultDeclared: { type: "boolean", required: false, defaultValue: false, input: true },
         nameNeedsConfirmation: { type: "boolean", required: false, defaultValue: false, input: false },
         bio: { type: "string", required: false, input: false },
         role: { type: "string", required: false, defaultValue: "member", input: false },
@@ -171,9 +169,6 @@ function createAuth() {
             const handle = usernameSchema.safeParse((user as { username?: unknown }).username);
             if (!name.success || !handle.success) {
               throw new APIError("BAD_REQUEST", { message: "Nome ou usuário inválido." });
-            }
-            if(supervisedRegistrationEnabled() && !isGeneratedGoogleUsername(handle.data) && !(user as {adultDeclared?:boolean}).adultDeclared) {
-              throw new APIError("BAD_REQUEST", {message:"A conta deve ser criada por um adulto. Menores são vinculados à conta do responsável."});
             }
             return { data: { ...user, name: name.data, username: handle.data, role: "member", canManageAdmins: false, blocked: false } };
           },

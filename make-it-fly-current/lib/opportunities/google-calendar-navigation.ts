@@ -11,6 +11,6 @@ export function googleCalendarReturnPath(value?: unknown): string {
   return '/membros/meu-calendario?'+params.toString()+GOOGLE_CALENDAR_ANCHOR;
 }
 
-export function googleCalendarReviewPath(value?: unknown): string {
+export function googleCalendarVerificationPath(value?: unknown): string {
   return '/membros/protecao?next=' + encodeURIComponent(googleCalendarReturnPath(value));
 }

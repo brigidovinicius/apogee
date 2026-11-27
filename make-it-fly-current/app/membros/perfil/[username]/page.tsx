@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { AvatarInitials } from "@/components/members/avatar-initials";
 import { formatDateTime, formatMonthYear, plural } from "@/components/members/format";
 import { MemberWorkspace } from "@/components/members/member-workspace";
-import { verificationPagePreview } from "@/components/members/member-page-access";
 import styles from "@/components/members/members.module.css";
 import { requireMember } from "@/lib/members/dal";
 import { getProfile } from "@/lib/members/forum";
@@ -20,8 +19,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProfilePage({ params }: Props) {
   const { username } = await params;
-  const preview = await verificationPagePreview("perfil", "Perfil da comunidade", `/membros/perfil/${username}`);
-  if (preview) return preview;
   const member = await requireMember(`/membros/perfil/${username}`);
   const handle = usernameSchema.safeParse(decodeURIComponent(username));
   const profile = handle.success ? await getProfile(handle.data) : null;

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MemberWorkspace } from "@/components/members/member-workspace";
-import { verificationPagePreview } from "@/components/members/member-page-access";
 import styles from "@/components/members/members.module.css";
 import { ProfileForm } from "@/components/members/profile-form";
 import { requireMember } from "@/lib/members/dal";
@@ -11,8 +10,6 @@ import { getOwnProfile } from "@/lib/members/forum";
 export const metadata: Metadata = { title: "Editar perfil" };
 
 export default async function EditProfilePage() {
-  const preview = await verificationPagePreview("perfil", "Meu perfil", "/membros/perfil/editar");
-  if (preview) return preview;
   const member = await requireMember("/membros/perfil/editar");
   const profile = await getOwnProfile(member.id);
   if (!profile) redirect("/membros/entrar");

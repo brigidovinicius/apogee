@@ -22,7 +22,6 @@ export function evaluateGoogleRelease({env={},evidence={},candidateSha='',checko
   add('localMigrations',['0008_radar_calendar','0009_google_calendar','0010_supervised_registration','0011_google_calendar_retries','0012_google_calendar_observability','0013_radar_calendar_filters'].every(tag=>manifest.some(m=>m.tag===tag&&/^[a-f0-9]{64}$/.test(m.sha256))),
     'Arquivos locais inventariados; aplicação no banco real é evidência separada.');
   add('httpsOrigin',origin,'Origem HTTPS de produção esperada, sem caminho ou parâmetros.');
-  add('supervisedRegistration',enabled('MEMBERS_SUPERVISED_REGISTRATION_ENABLED'),'Proteção de conta ativa na configuração pretendida.');
   const cutoff=env.MEMBERS_PROTECTION_EXISTING_ACCOUNTS_BEFORE??'',cutoffTime=Date.parse(cutoff);
   add('existingAccountTransition',/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(cutoff)&&Number.isFinite(cutoffTime)&&new Date(cutoffTime).toISOString()===cutoff&&cutoffTime<=Date.now(),
     'Corte UTC fixo para preservar contas existentes sem aprovar maioridade ou conceder Google.');

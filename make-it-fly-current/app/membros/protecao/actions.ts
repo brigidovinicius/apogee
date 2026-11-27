@@ -1,43 +1,32 @@
 "use server";
-import { safeNextPath } from "@/lib/members/validation";
-import {headers} from "next/headers";
-import {notFound,redirect} from "next/navigation";
-import {revalidatePath} from "next/cache";
-import {getCurrentMember} from "@/lib/members/dal";
-import {getAuth} from "@/lib/members/auth";
-import {applicationOrigin} from "@/lib/members/mail";
-import {consumeRateLimit} from "@/lib/members/rate-limit";
-import {getSql} from "@/lib/members/db";
-import {requestAdultReview,requestDependent,revokeDependent,supervisedRegistrationEnabled} from "@/lib/members/protection";
 
-async function perform(operation:(id:string)=>Promise<unknown>,next?:unknown) {
-  if(!supervisedRegistrationEnabled())notFound();
-  const member = await getCurrentMember();
-  if (!member) {
-    const resume = typeof next === "string" ? "/membros/protecao?next=" + encodeURIComponent(safeNextPath(next)) : "/membros/protecao";
-    redirect("/membros/entrar?next=" + encodeURIComponent(resume));
-  }
-  let result='ok';
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { getAuth } from "@/lib/members/auth";
+import { requireSignedInMember } from "@/lib/members/dal";
+import { getSql } from "@/lib/members/db";
+import { applicationOrigin } from "@/lib/members/mail";
+import { consumeRateLimit } from "@/lib/members/rate-limit";
+import { emailVerificationDestination } from "@/lib/members/validation";
+
+export async function sendMemberVerification(form: FormData) {
+  const next = emailVerificationDestination(form.get("next"));
+  const path = "/membros/protecao?next=" + encodeURIComponent(next);
+  const member = await requireSignedInMember(path);
+  const [account] = await getSql()`select email, email_verified from "user" where id=${member.id} and not blocked`;
+  if (account?.email_verified) redirect(next);
+
+  let result = "erro";
   try {
-    if(!(await consumeRateLimit('protection:'+member.id,6,60)))throw Error('Rate limited');
-    await operation(member.id);
-  }catch{result='erro';}
-  revalidatePath('/membros/protecao');revalidatePath('/admin/protecao');
-  redirect('/membros/protecao?resultado='+result+(typeof next==='string'?'&next='+encodeURIComponent(safeNextPath(next)):''));
-}
-export async function requestAdultAction(form:FormData) {
-  await perform(id=>requestAdultReview(id,form.get('adultDeclared')==='on'),form.get('next'));
-}
-export async function requestDependentAction(form:FormData) {
-  await perform(id=>requestDependent(id,{nickname:String(form.get('nickname')??''),ageBand:String(form.get('ageBand')??''),relationship:String(form.get('relationship')??''),consent:form.get('consent')==='on'}));
-}
-export async function revokeDependentAction(form:FormData) {
-  await perform(id=>revokeDependent(id,String(form.get('dependentId')??'')));
-}
-export async function sendProtectionVerificationAction(form:FormData) {
-  await perform(async id=>{
-    const [user]=await getSql()`select email from "user" where id=${id}`;
-    if(!user)throw Error('Account missing');
-    await getAuth().api.sendVerificationEmail({headers:await headers(),body:{email:String(user.email),callbackURL:applicationOrigin()+'/membros/protecao?next='+encodeURIComponent(safeNextPath(form.get('next')))}});
-  },form.get('next'));
+    if (account && await consumeRateLimit("member-email-confirmation:" + member.id, 6, 60)) {
+      await getAuth().api.sendVerificationEmail({
+        headers: await headers(),
+        body: { email: String(account.email), callbackURL: applicationOrigin() + path },
+      });
+      result = "enviado";
+    }
+  } catch {
+    // Surface mail failures without exposing account or provider details.
+  }
+  redirect(path + "&resultado=" + result);
 }

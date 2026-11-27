@@ -6,15 +6,15 @@ import { requireCalendarMember } from "@/lib/opportunities/personal-calendar";
 import { beginGoogleCalendarOAuth, disconnectGoogleCalendar } from "@/lib/opportunities/google-calendar-store";
 import { syncGoogleCalendar } from "@/lib/opportunities/google-calendar-sync";
 import { GOOGLE_CALENDAR_COOKIE, GOOGLE_CALENDAR_RETURN_COOKIE, GOOGLE_CALENDAR_CALLBACK, GOOGLE_CALENDAR_PATH } from "@/lib/opportunities/google-calendar-config";
-import { googleCalendarReturnPath, googleCalendarReviewPath } from "@/lib/opportunities/google-calendar-navigation";
+import { googleCalendarReturnPath, googleCalendarVerificationPath } from "@/lib/opportunities/google-calendar-navigation";
 import { applicationOrigin } from "@/lib/members/mail";
 import { getCurrentMember } from "@/lib/members/dal";
-import { calendarAdultAccess } from "@/lib/members/protection";
+import { hasVerifiedMemberEmail } from "@/lib/members/email-verification";
 
 export async function connectGoogleCalendarAction(form?: FormData) {
   const returnTo=googleCalendarReturnPath(form?.get('next'));
   const member = await requireCalendarMember(returnTo);
-  if (!(await calendarAdultAccess(member.id))) redirect(googleCalendarReviewPath(returnTo));
+  if (!(await hasVerifiedMemberEmail(member.id))) redirect(googleCalendarVerificationPath(returnTo));
   const result = await beginGoogleCalendarOAuth(member.id);
   const jar=await cookies();
   const options={
@@ -27,10 +27,9 @@ export async function connectGoogleCalendarAction(form?: FormData) {
 }
 export async function disconnectGoogleCalendarAction() {
   const member = await getCurrentMember();
-  if (!member) redirect('/membros/entrar?next=%2Fmembros%2Fprotecao');
+  if (!member) redirect('/membros/entrar?next=' + encodeURIComponent(GOOGLE_CALENDAR_PATH));
   await disconnectGoogleCalendar(member.id);
   revalidatePath(GOOGLE_CALENDAR_PATH);
-  revalidatePath('/membros/protecao');
 }
 export async function syncGoogleCalendarAction(form?: FormData): Promise<void> {
   const returnTo=googleCalendarReturnPath(form?.get('next'));

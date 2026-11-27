@@ -3,7 +3,6 @@ import {randomUUID} from 'node:crypto';
 import type {TransactionSql} from 'postgres';
 import {getSql} from '@/lib/members/db';
 import {applicationOrigin,memberMailAvailable,sendMemberMail} from '@/lib/members/mail';
-import {adultAccess} from '@/lib/members/protection';
 import {radarAccess} from '@/lib/billing/store';
 import {collectionDigestsEnabled} from './collections';
 import {lockDigestUser} from './collection-following';
@@ -119,7 +118,7 @@ export async function runCollectionDigests({now=new Date(),limit=5}:{now?:Date;l
  const items=(await listRadarOpportunities(true)).map(opportunityCardData);
  for(const row of rows){
   const userId=String(row.user_id);result.checked++;
-  if(!await adultAccess(userId)||!(await radarAccess(userId,process.env.STRIPE_MODE!=='test')).active){
+  if(!(await radarAccess(userId,process.env.STRIPE_MODE!=='test')).active){
    await getSql().begin(async tx=>{
     await lockDigestUser(tx,userId);
     await tx`update radar_calendar_digest_job set status='cancelled',payload=null,lease_token=null,finished_at=${now.toISOString()} where user_id=${userId} and status='pending'`;

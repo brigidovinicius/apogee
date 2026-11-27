@@ -1,50 +1,35 @@
-import { isAnnualPurchasePath } from "@/lib/billing/community-navigation";
-import { safeNextPath } from "@/lib/members/validation";
 import Link from "next/link";
-import {notFound,redirect} from "next/navigation";
-import {getCurrentMember} from "@/lib/members/dal";
-import {adultAccess,calendarAdultAccess,protectionOverview,supervisedRegistrationEnabled} from "@/lib/members/protection";
-import {googleCalendarStatus} from "@/lib/opportunities/google-calendar-store";
-import {disconnectGoogleCalendarAction} from "../meu-calendario/google-actions";
-import {MemberWorkspace} from "@/components/members/member-workspace";
-import {requestAdultAction,requestDependentAction,revokeDependentAction,sendProtectionVerificationAction} from "./actions";
+import { redirect } from "next/navigation";
+import { MemberWorkspace } from "@/components/members/member-workspace";
+import { requireSignedInMember } from "@/lib/members/dal";
+import { hasVerifiedMemberEmail } from "@/lib/members/email-verification";
+import { emailVerificationDestination } from "@/lib/members/validation";
+import { GOOGLE_CALENDAR_ANCHOR } from "@/lib/opportunities/google-calendar-navigation";
+import { sendMemberVerification } from "./actions";
 import styles from "./protection.module.css";
-export const dynamic='force-dynamic';
-export const metadata={title:'Cadastro protegido',robots:{index:false,follow:false}};
-const statuses:Record<string,string>={pending:'Em conferência',approved:'Aprovado',rejected:'Não aprovado',revoked:'Autorização revogada'};
-const ages:Record<string,string>={under_12:'Menor de 12 anos','12_15':'De 12 a 15 anos','16_17':'De 16 a 17 anos'};
-export default async function ProtectionPage({searchParams}:{searchParams:Promise<{resultado?:string;next?:string}>}) {
-  if(!supervisedRegistrationEnabled())notFound();
+
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Confirmação de e-mail", robots: { index: false, follow: false } };
+
+export default async function EmailVerificationPage({ searchParams }: {
+  searchParams: Promise<{ resultado?: string; next?: string }>;
+}) {
   const query = await searchParams;
-  const next = typeof query.next === "string" ? safeNextPath(query.next) : "/membros/meu-calendario";
-  const annual = isAnnualPurchasePath(next);
-  const member = await getCurrentMember();
-  if (!member) redirect("/membros/entrar?next=" + encodeURIComponent("/membros/protecao?next=" + encodeURIComponent(next)));
-  const overview = await protectionOverview(member.id);
-  const approved = await calendarAdultAccess(member.id);
-  const access = await adultAccess(member.id);
-  const google=await googleCalendarStatus(member.id);
-  return <MemberWorkspace member={member} current="protecao"><div className={styles.page}><h1>Cadastro protegido</h1>
-    <p><Link href="/membros">Voltar à minha comunidade</Link> · <Link href="/membros/suporte">Preciso de ajuda</Link></p>
-    <p>A conta de acesso pertence a um adulto. Menores de 18 anos, inclusive menores de 16, participam por vínculo privado com o responsável. O menor não recebe login próprio, perfil público ou acesso ao fórum.</p>
-    {annual ? <div><h2 data-ap-heading="">Verificação para a assinatura anual</h2>
-      <p>{access ? "Sua conta pode continuar para o pagamento." : overview.status === "pending" ? "Sua solicitação está em análise pela equipe. Retome a assinatura aqui após a aprovação." : "Confirme seu e-mail e solicite a conferência da conta para continuar sua assinatura."}</p>
-      <Link href={next}>{access ? "Continuar assinatura anual" : "Voltar ao resumo da assinatura"}</Link>
-    </div> : <p><Link href={next}>{next.startsWith('/membros/meu-calendario')&&next.endsWith('#google-calendar-heading')?'Voltar à conexão do Google Agenda':'Voltar ao calendário ou catálogo'}</Link></p>}<p><Link href="/privacidade#menores">Privacidade de crianças e adolescentes</Link></p>
-    {query.resultado && <p role="status">{query.resultado==='ok'?'Solicitação registrada.':'Não foi possível concluir. Confira os dados e a confirmação de e-mail ou procure a equipe.'}</p>}
-    {!overview.emailVerified && <section><h2 data-ap-heading="">Confirme seu e-mail</h2><p>Antes da conferência da conta, confirme o endereço de e-mail. Isso comprova o controle da caixa, não sua idade ou vínculo com um menor.</p><form action={sendProtectionVerificationAction}><input type="hidden" name="next" value={next}/><button>Enviar confirmação de e-mail</button></form></section>}
-    {!approved ? <section><h2 data-ap-heading="">Verificação da conta adulta</h2><p>Situação: {overview.status?statuses[overview.status]:'Ainda não solicitada'}.</p><p>A equipe fará a conferência de maioridade pelo atendimento em <a href="mailto:contato@apogee.community">contato@apogee.community</a>. Não envie documentos pelo formulário. A conexão Google e novos vínculos dependem da conferência.</p>
-      {access ? <p>Seu acesso existente está preservado durante a transição. Isso não representa aprovação de maioridade. <Link href="/membros/meu-calendario">Abrir meu calendário</Link></p> : <p>A liberação da comunidade também depende da aprovação.</p>}
-      {overview.emailVerified && overview.status!=='pending' && <form action={requestAdultAction}><input type="hidden" name="next" value={next}/><label><input type="checkbox" name="adultDeclared" required/> Tenho 18 anos ou mais e solicito a verificação da minha conta.</label><button>Solicitar verificação da conta</button></form>}
-    </section>:<><section><h2 data-ap-heading="">Vincular criança ou adolescente</h2><p>Use apenas um apelido e a faixa etária. Não informe nome completo, CPF, documentos, escola ou data de nascimento. A equipe verificará também sua condição de pai, mãe ou responsável legal antes de aprovar o vínculo.</p>
-      <form action={requestDependentAction}>
-        <label>Apelido do dependente<input name="nickname" minLength={2} maxLength={40} required autoComplete="off"/></label>
-        <label>Faixa etária<select name="ageBand" required defaultValue=""><option value="" disabled>Selecione</option>{Object.entries(ages).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-        <label>Seu vínculo<select name="relationship" required defaultValue=""><option value="" disabled>Selecione</option><option value="parent">Pai ou mãe</option><option value="legal_guardian">Responsável legal</option></select></label>
-        <label><input type="checkbox" name="consent" required/> Sou pai, mãe ou responsável legal, li a Política de Privacidade e autorizo este cadastro privado e o acompanhamento de oportunidades em benefício do menor.</label>
-        <button>Solicitar vínculo protegido</button>
-      </form></section><p>As oportunidades salvas e a conexão Google Agenda permanecem na sua conta. O vínculo não concede acesso pago, não compartilha sua senha e pode ser revogado aqui.</p><Link href="/membros/meu-calendario">Abrir meu calendário</Link></>}
-    {google.connected && <section><h2 data-ap-heading="">Conexão Google</h2><p>Você pode interromper as atualizações mesmo enquanto sua conta aguarda conferência ou está sem acesso pago.</p><form action={disconnectGoogleCalendarAction}><button>Desconectar Google Agenda</button></form></section>}
-    <section><h2 data-ap-heading="">Meus vínculos</h2>{!overview.dependents.length?<p>Nenhum vínculo registrado.</p>:<ul>{overview.dependents.map(row=><li key={String(row.id)}><strong>{String(row.nickname)}</strong> · {ages[String(row.age_band)]} · {statuses[String(row.status)]}{row.status!=='revoked' && <form action={revokeDependentAction}><input type="hidden" name="dependentId" value={String(row.id)}/><button>Revogar autorização de {String(row.nickname)}</button></form>}</li>)}</ul>}</section>
+  const next = emailVerificationDestination(query.next);
+  // Links do cadastro protegido anterior continuam apontando para a área pedida.
+  if (!next.endsWith(GOOGLE_CALENDAR_ANCHOR)) redirect(next);
+  const member = await requireSignedInMember("/membros/protecao?next=" + encodeURIComponent(next));
+  if (await hasVerifiedMemberEmail(member.id)) redirect(next);
+
+  return <MemberWorkspace member={member} current="protecao"><div className={styles.page}>
+    <h1>Confirme seu e-mail</h1>
+    <p>Para conectar o Google Agenda, solicite o link de confirmação e abra-o no e-mail cadastrado.</p>
+    {query.resultado === "enviado" && <p role="status">Confira a caixa de entrada e a pasta de spam.</p>}
+    {query.resultado === "erro" && <p role="alert">Não foi possível enviar a confirmação. Tente novamente em instantes.</p>}
+    <form action={sendMemberVerification}>
+      <input type="hidden" name="next" value={next} />
+      <button data-ap-button="primary" type="submit">Enviar confirmação de e-mail</button>
+    </form>
+    <p><Link href={next}>Voltar</Link> · <Link href="/membros/suporte">Preciso de ajuda</Link></p>
   </div></MemberWorkspace>;
 }

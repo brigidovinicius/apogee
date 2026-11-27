@@ -18,7 +18,6 @@ const liveItems = [
   { href: "/admin/pesquisas", label: "Pesquisas", exact: false },
   { href: "/admin/comportamento", label: "Comportamento", exact: false },
   { href: "/admin/usuarios", label: "Usuários", exact: false },
-  { href: "/admin/protecao", label: "Cadastros protegidos", exact: false },
   { href: "/admin/loja/drops", label: "Cadastros dos drops", exact: false },
 ] as const;
 

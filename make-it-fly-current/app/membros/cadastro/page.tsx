@@ -7,7 +7,6 @@ import { getCurrentMember } from "@/lib/members/dal";
 import { googleOAuthErrorMessage } from "@/lib/members/social-auth";
 import { isAnnualPurchasePath } from "@/lib/billing/community-navigation";
 import { safeNextPath } from "@/lib/members/validation";
-import {supervisedRegistrationEnabled} from "@/lib/members/protection";
 
 export const metadata: Metadata = { title: "Criar conta" };
 
@@ -25,7 +24,7 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
         <p className={styles.lead}>{annual ? "R$ 1.438,80 por ano, com renovação automática. Revise o total antes de pagar." : "Sem cartão. Consulte até 10 oportunidades no Radar e 10 ofertas em Benefícios por mês. Verifique a conta para participar do fórum."}</p>
       </header>
       <div className={`${styles.panel} ${styles.authPanel}`}>
-        <SignUpForm next={next} googleError={googleOAuthErrorMessage(params.error)} supervised={supervisedRegistrationEnabled()}/>
+        <SignUpForm next={next} googleError={googleOAuthErrorMessage(params.error)}/>
       </div>
       <p className={styles.switchAuth}>
         Já tem conta? <Link href={`/membros/entrar?next=${encodeURIComponent(next)}`}>Entrar</Link>

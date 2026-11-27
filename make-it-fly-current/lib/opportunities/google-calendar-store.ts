@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { getSql } from "@/lib/members/db";
-import { calendarAdultAccess } from "@/lib/members/protection";
+import { hasVerifiedMemberEmail } from "@/lib/members/email-verification";
 import { googleCalendarConfig, requiredGoogleCalendarConfig, sealGoogleSecret, openGoogleSecret, GOOGLE_CALENDAR_SCOPE } from "./google-calendar-config";
 import { googleTokens, GoogleCalendarError } from "./google-calendar-client";
 
@@ -12,7 +12,7 @@ export function sameOAuthState(state: string, cookie: string) {
 }
 export async function beginGoogleCalendarOAuth(userId: string) {
   const config = requiredGoogleCalendarConfig();
-  if (!(await calendarAdultAccess(userId))) throw new Error("Google Calendar access unavailable");
+  if (!(await hasVerifiedMemberEmail(userId))) throw new Error("Google Calendar access unavailable");
   const state = randomBytes(32).toString("hex");
   const verifier = randomBytes(32).toString("base64url");
   await getSql()`insert into radar_google_calendar_oauth (user_id,state_hash,verifier_encrypted,expires_at)
@@ -30,7 +30,7 @@ export async function completeGoogleCalendarOAuth(userId: string, state: string,
   if (!sameOAuthState(state,cookie) || !code || code.length > 4096) throw new GoogleCalendarError("reconnect");
   await getSql().begin('isolation level read committed',async tx => {
     await tx`select pg_advisory_xact_lock(hashtextextended(${'google-calendar:'+userId},0))`;
-    if (!(await calendarAdultAccess(userId,tx))) throw new Error("Google Calendar access unavailable");
+    if (!(await hasVerifiedMemberEmail(userId,tx))) throw new Error("Google Calendar access unavailable");
     // The lock also serializes disconnect with the token exchange.
     const [attempt] = await tx`delete from radar_google_calendar_oauth
       where user_id=${userId} and state_hash=${hash(state)} and expires_at>now() returning verifier_encrypted`;
@@ -58,7 +58,7 @@ export async function googleCalendarStatus(userId: string) {
   if (!googleCalendarConfig()) return { configured: false, connected: false, lastSync: null, error: null };
   const [row] = await getSql()`select refresh_token_encrypted is not null as connected,last_synced_at,last_error,retry_not_before,retry_paused
     from radar_google_calendar where user_id=${userId}`;
-  return { configured: true, connected: !!row?.connected, reviewRequired:!(await calendarAdultAccess(userId)),
+  return { configured: true, connected: !!row?.connected, emailVerificationRequired:!(await hasVerifiedMemberEmail(userId)),
     lastSync: row?.last_synced_at ? new Date(row.last_synced_at).toISOString() : null,
     error: row?.last_error ? String(row.last_error) : null,
     retryAt:row?.retry_not_before?new Date(row.retry_not_before).toISOString():null,paused:!!row?.retry_paused };

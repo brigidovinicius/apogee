@@ -5,7 +5,6 @@ import { RadarToolError } from "./radar";
 import { accountToolSchemas, type AccountToolName } from "./account-schemas";
 import { applicationOrigin } from "@/lib/members/mail";
 import { isGeneratedGoogleUsername } from "@/lib/members/validation";
-import { adultAccess } from "@/lib/members/protection";
 import { getOwnProfile } from "@/lib/members/forum";
 import { radarAccess } from "@/lib/billing/store";
 import { RADAR_ACCESS_PATH } from "@/lib/billing/config";
@@ -37,7 +36,6 @@ export async function runAccountTool(userId: string, name: AccountToolName, args
   if (member.nameNeedsConfirmation || isGeneratedGoogleUsername(member.username)) {
     throw new RadarToolError("profile_required", "Conclua seu perfil na Apogee.", url("/membros/perfil/configurar"));
   }
-  if (!(await adultAccess(userId))) throw new RadarToolError("access_required", "Conclua a liberação da sua conta na Apogee.", url("/membros/protecao"));
   if (name === "get_account_profile") {
     const profile = await getOwnProfile(userId);
     if (!profile) throw new RadarToolError("account_unavailable", "Conta indisponível.");

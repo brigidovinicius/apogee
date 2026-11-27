@@ -3,8 +3,8 @@
 import { WORKSHOP_REFERENCES_PATH } from "@/lib/eventos/catalogo";
 import { PHOTO_ID, albumConfig, albumIdentity, albumWorker, canAccessAlbum } from "@/lib/eventos/fotos";
 import { isFaceRegion, type FaceRegion } from "@/lib/eventos/regiao";
+import { getSql } from "@/lib/members/db";
 import { requireAdmin } from "@/lib/members/dal";
-import { adultAccess } from "@/lib/members/protection";
 
 type Result = { box: FaceRegion | null } | { error: string };
 const unavailable = "Não foi possível acessar a marcação. Tente novamente.";
@@ -23,7 +23,8 @@ async function reference(
   }
 
   try {
-    if (!await adultAccess(memberId)) return { error: "A conta selecionada precisa estar autorizada a usar a busca." };
+    const [account] = await getSql()`select id from "user" where id=${memberId} and not blocked`;
+    if (!account) return { error: unavailable };
     const response = await albumWorker(config, `/references/${photoId}`, {
       method,
       headers: { ...albumIdentity(config, memberId), ...(box && { "Content-Type": "application/json" }) },
