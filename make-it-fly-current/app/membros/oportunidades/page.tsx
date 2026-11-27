@@ -5,11 +5,10 @@ import { CalendarSaveProvider } from "@/components/opportunities/save-opportunit
 import { calendarSaveState } from "@/lib/opportunities/personal-calendar";
 import { calendarReturnPath } from "@/lib/opportunities/calendar-navigation";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { MemberWorkspace } from "@/components/members/member-workspace";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
 import styles from "@/components/members/members.module.css";
-import navigation from "@/components/members/resource-header.module.css";
+import { RadarTabs } from "@/components/opportunities/radar-tabs";
 import { requireSignedInMember } from "@/lib/members/dal";
 import { listMemberOpportunityPage } from "@/lib/opportunities/access";
 import { memberRadarPath } from "@/lib/opportunities/navigation";
@@ -50,10 +49,8 @@ export default async function MemberOpportunitiesPage({ searchParams }: {
         </div>
       </header>
       {quota ? <MonthlyQuota quota={quota} area="Radar" next={returnTo} /> : <p>Radar completo ativo.</p>}
-      {saveState.kind === "ready" && <nav className={navigation.tabs} aria-label="Seus recursos do Radar">
-        <Link href="/membros/meu-calendario">Meu calendário</Link>
-        {saveState.collections && <Link href="/membros/colecoes">Minhas coleções</Link>}
-      </nav>}
+      <RadarTabs current="catalogue" calendar={saveState.kind === "ready"}
+        collections={saveState.kind === "ready" && Boolean(saveState.collections)} />
       {catalogue ? <RadarAmplitude view="radar_list_viewed" memberId={member.id} /> : null}
       {catalogue ? <CalendarSaveProvider key={JSON.stringify([returnTo,saveState])} state={saveState} returnTo={returnTo}><OpportunitiesBoard opportunities={catalogue.opportunities} catalogue={catalogue} showCalendarLink editorialFeed /></CalendarSaveProvider> : <p role="alert">Catálogo temporariamente indisponível. Tente novamente em instantes</p>}
     </div></MemberWorkspace>

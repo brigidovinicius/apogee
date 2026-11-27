@@ -72,6 +72,8 @@ export type StudentOpportunity = OpportunityPreview & {
   officialUrl: string;
   verifiedAt: string;
   verificationTimestamp?: string;
+  /** Publication in the Radar, distinct from a source recheck. */
+  publishedAt?: string;
   opportunityStatus?: "open" | "upcoming" | "closed" | "result_published";
   verificationMethod?: "automatic" | "admin";
 };

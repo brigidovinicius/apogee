@@ -7,6 +7,7 @@ import styles from "@/components/members/members.module.css";
 import { ProfileForm } from "@/components/members/profile-form";
 import { requireMember } from "@/lib/members/dal";
 import { getOwnProfile } from "@/lib/members/forum";
+import { RADAR_PREFERENCES } from "@/lib/opportunities/radar-preferences";
 
 export const metadata: Metadata = { title: "Editar perfil" };
 
@@ -30,6 +31,7 @@ export default async function EditProfilePage() {
       <div className={styles.panel} style={{ marginTop: "2rem", maxWidth: "40rem" }}>
         <ProfileForm name={profile.name} userId={member.id} bio={profile.bio ?? ""} image={profile.image} />
       </div>
+      <p><Link href={RADAR_PREFERENCES} data-ap-button="secondary">Preferências do Radar</Link></p>
     </div></MemberWorkspace>
   );
 }

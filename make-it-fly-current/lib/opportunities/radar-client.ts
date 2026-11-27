@@ -141,6 +141,7 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
   if (deadlinePrecision !== "continuous_flow" && !deadlineUnknown && !deadline && !hasCalendarStages) return null;
 
   const editorialNature = editorialNatureFromRadar(value);
+  const publishedAt = stringValue(value.publishedAt);
   return {
     id: `radar-${id}`,
     discovery, employment,
@@ -177,6 +178,7 @@ export function toOpportunity(value: unknown): StudentOpportunity | null {
     deadlineLabel: deadlineLabel(deadlineAt, deadlinePrecision),
     officialUrl,
     verifiedAt,
+    publishedAt: publishedAt && Number.isFinite(Date.parse(publishedAt)) ? new Date(publishedAt).toISOString() : undefined,
     verificationTimestamp: new Date(value.verificationMethod === "admin" ? stringValue(value.verifiedAt) ?? lastCheckedAt : lastCheckedAt).toISOString(),
   };
 }
@@ -329,7 +331,7 @@ export function entranceExamFromRadar(value: Record<string, unknown>) {
 /** Only an explicit modality statement in verified requirements, never an online application URL. */
 export function participationFormatFromRadar(value: Record<string, unknown>): StudentOpportunity["participationFormat"] {
   const text = stringValue(value.requirementsText) ?? "";
-  const matches = [...text.matchAll(/\b(?:modalidade|formato|oferta)\s*(?::|é|em)?\s+(online|on-line|a distância|ead|presencial|híbrido|híbrida)\b/giu)]
+  const matches = [...text.matchAll(/\b(?:modalidade|formato|oferta|participação|evento|encontro|etapa|realização)\s*(?::|é|em)?\s+(online|on-line|a distância|ead|presencial|híbrido|híbrida)\b/giu)]
     .map(match => /híbr/i.test(match[1]) ? "hibrido" as const : /presencial/i.test(match[1]) ? "presencial" as const : "online" as const);
   const distinct = [...new Set(matches)];
   return distinct.length === 1 ? distinct[0] : null;
