@@ -99,6 +99,7 @@
 .setup summary { width: fit-content; padding-block: .7rem; min-height: 44px; cursor: pointer; color: var(--ap-accent); font-weight: 560; }
 .setup summary:focus-visible, .promptDialog textarea:focus-visible { outline: 3px solid var(--ap-focus); outline-offset: 3px; }
 .setup p { margin: 0; line-height: 1.5; }
+.setup p + p { margin-top: .5rem; }
 .repositoryActions, .promptActions { display: flex; flex-wrap: wrap; gap: .55rem .7rem; align-items: center; }
 .repositoryActions > :is(button, a) { font-size: .85rem; text-decoration: none; max-width: 100%; }
 .useAi svg { flex: none; }

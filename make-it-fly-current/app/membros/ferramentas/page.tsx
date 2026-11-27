@@ -95,7 +95,11 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
                     <h3 data-ap-heading="">{t.name}</h3>
                     <p className={styles.description}>{t.description}</p>
                     <RepositoryPreview project={t} />
-                    {details && <details className={styles.setup}><summary>Como começar<span className="sr-only"> com {t.name}</span></summary><p>{details}</p></details>}
+                    <details className={styles.setup}>
+                      <summary>Como começar<span className="sr-only"> com {t.name}</span></summary>
+                      <p>Abra sua IA. Clique em <strong>Usar na minha IA</strong>, logo abaixo, e depois em <strong>Copiar prompt</strong>. Cole o texto na conversa com a sua IA.</p>
+                      {details && <p>{details}</p>}
+                    </details>
                   </div>
                   <div className={styles.repositoryActions}>
                     <RepositoryPrompt name={t.name} prompt={repositoryPrompt(t)} />
