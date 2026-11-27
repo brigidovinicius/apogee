@@ -10,6 +10,9 @@ import { DROP_CONSENT_TEXT } from "@/lib/store/drop-consent";
 import { behaviorAllowed, behaviorDevice } from "@/components/analytics/behavior-client";
 import styles from "./loja.module.css";
 
+const [featuredProduct] = products;
+const [featuredPhoto] = featuredProduct.photos;
+
 function ProductGallery({ product, onBuy }: { product: StoreProduct; onBuy: () => void }) {
   const [active, setActive] = useState(0);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -117,8 +120,25 @@ export function StoreExperience() {
           <p className={styles.introCopy}>Peças da coleção Apogee Builders Club.</p>
         </section>
         <section className={styles.showcase} aria-labelledby="showcase-title">
-          <div className={styles.showcasePhoto}><Image src={products[0].photos[0].src} alt={products[0].photos[0].alt} width={1254} height={1254} sizes="(max-width: 760px) 100vw, 55vw" preload /></div>
-          <div className={styles.showcaseCopy}><p className={styles.eyebrow}>Apogee Builders Club</p><h2 id="showcase-title">Uma marca<br />para levar junto.</h2><p>Peças com a estrela da Apogee.</p><a className={styles.collectionLink} href="#produtos">Conhecer a coleção</a></div>
+          <div className={styles.showcasePhoto}>
+            <Image src={featuredPhoto.src} alt={featuredPhoto.alt} width={featuredPhoto.width} height={featuredPhoto.height} sizes="(max-width: 760px) 100vw, 55vw" preload />
+          </div>
+          <div className={styles.showcaseCopy}>
+            <p className={styles.eyebrow}>Destaque da coleção</p>
+            <h2 id="showcase-title">{featuredProduct.name}</h2>
+            <p>{featuredProduct.description}</p>
+            <button
+              className={styles.collectionLink}
+              type="button"
+              data-behavior-action="store_interest"
+              aria-haspopup="dialog"
+              aria-controls="drop-purchase-dialog"
+              onClick={() => setSelectedProduct(featuredProduct)}
+            >
+              Entrar na lista de espera
+            </button>
+            <a className={styles.availability} href="#produtos">Conhecer a coleção</a>
+          </div>
         </section>
         <section className={styles.collection} aria-labelledby="collection-title" id="produtos">
           <h2 className={styles.collectionTitle} id="collection-title">A coleção.</h2>

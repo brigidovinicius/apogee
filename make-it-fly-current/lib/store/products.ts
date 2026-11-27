@@ -1,5 +1,14 @@
 export const products = [
   {
+    slug: "camiseta-need-money-for-tokens",
+    name: "Camiseta Need Money for Tokens",
+    detail: "Branca",
+    description: "Camiseta de manga curta e gola redonda, com a frase Need Money for Tokens na frente.",
+    photos: [
+      { src: "/images/loja/camiseta-need-money-for-tokens.webp", alt: "Camiseta branca vista de frente, com a frase Need Money for Tokens em letras pretas", width: 1120, height: 1404 },
+    ],
+  },
+  {
     slug: "moletom-building-the-future",
     name: "Moletom Building the Future",
     detail: "Azul-marinho",
@@ -28,15 +37,6 @@ export const products = [
     photos: [
       { src: "/images/loja/camiseta-frente.jpg", alt: "Camiseta Apogee azul-marinho vista de frente com estrela no peito", width: 1254, height: 1254 },
       { src: "/images/loja/camiseta-costas.jpg", alt: "Costas da camiseta azul-marinho com a assinatura Apogee abaixo da gola", width: 1254, height: 1254 },
-    ],
-  },
-  {
-    slug: "camiseta-need-money-for-tokens",
-    name: "Camiseta Need Money for Tokens",
-    detail: "Branca",
-    description: "Camiseta de manga curta e gola redonda, com a frase Need Money for Tokens na frente.",
-    photos: [
-      { src: "/images/loja/camiseta-need-money-for-tokens.webp", alt: "Camiseta branca vista de frente, com a frase Need Money for Tokens em letras pretas", width: 1120, height: 1404 },
     ],
   },
 ] as const;

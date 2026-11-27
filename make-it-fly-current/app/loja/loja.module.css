@@ -81,7 +81,7 @@
 .page main .collectionLink { display:inline-flex; align-items:center; justify-content:center; gap:24px; min-height:48px; padding:14px 24px; margin-top:32px; background:#07182d; color:#fff; border:1px solid #07182d; border-radius:6px; text-decoration:none; font-size:15px; font-weight:500; line-height:1.25; transition:background-color 180ms,transform 180ms; }
 .page main .collectionLink:hover { background:#153656; transform:translateY(-2px); }
 .page main .collectionLink:active { transform:translateY(1px); }
-.availability { color:#526174; font-size:13px; margin-top:24px!important; }
+.page main .availability { display:block; width:fit-content; margin-top:16px; color:#526174; font-size:14px; text-decoration:underline; text-underline-offset:.2em; }
 .collection { padding:96px 0; gap:32px; border-top:1px solid #ced5dc; }
 .collectionTitle { grid-column:1/-1; margin-bottom:16px!important; }
 .mainPhoto { border-radius:0; background:#f6f6f5; }
