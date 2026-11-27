@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { RadarEmail, RadarPreferences } from "@/lib/opportunities/radar-preferences";
 import {
   bigint,
   boolean,
@@ -58,6 +59,29 @@ export const radarAmplitudeConsent = pgTable("radar_amplitude_consent", {
   policyVersion: integer("policy_version").notNull(),
   grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
 }, table => [check("radar_amplitude_consent_policy_version_check", sql`${table.policyVersion} > 0`)]);
+
+export const radarPreference = pgTable("radar_preference", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  settings: jsonb("settings").$type<RadarPreferences>().notNull(),
+  emailOption: text("email_option").$type<RadarEmail>().notNull().default("off"),
+  emailEnabledAt: timestamp("email_enabled_at", { withTimezone: true }),
+  mailCheckedAt: timestamp("mail_checked_at", { withTimezone: true }),
+});
+
+export const radarRecommendationDismissal = pgTable("radar_recommendation_dismissal", {
+  userId: text("user_id").notNull().references(() => radarPreference.userId, { onDelete: "cascade" }),
+  opportunityId: text("opportunity_id").notNull(),
+}, table => [primaryKey({ columns: [table.userId, table.opportunityId] })]);
+
+export const radarPreferenceDelivery = pgTable("radar_preference_delivery", {
+  userId: text("user_id").notNull().references(() => radarPreference.userId, { onDelete: "cascade" }),
+  deliveryKey: text("delivery_key").notNull(),
+  opportunityIds: text("opportunity_ids").array().notNull(),
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+}, table => [primaryKey({ columns: [table.userId, table.deliveryKey] })]);
 
 export const workshopVoucherBatch = pgTable("workshop_voucher_batch", {
   singleton: boolean("singleton").primaryKey().default(true),

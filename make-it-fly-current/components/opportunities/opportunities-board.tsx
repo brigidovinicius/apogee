@@ -423,13 +423,14 @@ export function OpportunitiesBoard({ opportunities, management = false, showCale
   );
 }
 
-export function OpportunityCard({ opportunity, management = false, detailed = management, detailHref, detailLabel = "Ver detalhes", showTitle = true }: {
+export function OpportunityCard({ opportunity, management = false, detailed = management, detailHref, detailLabel = "Ver detalhes", showTitle = true, recommendation }: {
   opportunity: StudentOpportunity;
   management?: boolean;
   detailed?: boolean;
   detailHref?: string;
   detailLabel?: string;
   showTitle?: boolean;
+  recommendation?: React.ReactNode;
 }) {
   const actionLabel = detailed ? "Ver página oficial e inscrição" : detailLabel;
   return (
@@ -441,6 +442,7 @@ export function OpportunityCard({ opportunity, management = false, detailed = ma
       <div className={styles.cardMain}>
         <p className={styles.organization} title={interfaceText(opportunity.organization)}>{interfaceText(opportunity.organization)}</p>
         {showTitle && <h3>{interfaceText(displayOpportunityTitle(opportunity.title))}</h3>}
+        {recommendation}
         <OpportunityBenefits opportunity={opportunity} />
         {detailed && <p className={styles.summary}>{interfaceText(opportunity.summary)}</p>}
       </div>
