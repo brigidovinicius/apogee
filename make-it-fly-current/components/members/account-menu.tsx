@@ -2,7 +2,7 @@
 
 import { AreaIcon } from "@/components/site/area-icon";
 import Link from "next/link";
-import { LogOut } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
@@ -62,9 +62,11 @@ export function AccountMenu({ fallback }: { fallback: ReactNode }) {
     };
     document.addEventListener("pointerdown", dismiss);
     document.addEventListener("focusin", dismiss);
+    document.addEventListener("click", dismiss);
     return () => {
       document.removeEventListener("pointerdown", dismiss);
       document.removeEventListener("focusin", dismiss);
+      document.removeEventListener("click", dismiss);
     };
   }, []);
   if (!account) {
@@ -78,7 +80,7 @@ export function AccountMenu({ fallback }: { fallback: ReactNode }) {
       details.current.querySelector("summary")?.focus();
     }
   }}>
-    <summary><AreaIcon area="perfil" /><span>Minha conta</span></summary>
+    <summary><AreaIcon area="perfil" /><span>Minha conta</span><ChevronDown className={styles.chevron} size={14} aria-hidden="true" /></summary>
     <div className={styles.panel}>
       <p className={styles.identity}>{account.name}<span>@{account.username}</span></p>
       <nav aria-label="Minha conta">

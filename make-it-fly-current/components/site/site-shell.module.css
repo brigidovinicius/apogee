@@ -330,6 +330,9 @@
 }
 .header[data-editorial][data-tone] .desktopNavigation a:hover,
 .header[data-editorial][data-tone] .desktopNavigation a[aria-current="page"] { color: #b9d3ee; }
+.header[data-editorial] .navigationBar .moreNavigation > summary { color: inherit; }
+.header[data-editorial] .navigationBar .moreNavigation > summary:hover,
+.header[data-editorial] .navigationBar .moreNavigation[open] > summary { color: var(--apogee-sky); }
 .header[data-editorial] .moreNavigation summary:focus-visible,
 .header[data-editorial] .navigationBar > nav > a:focus-visible { outline-color: #b9d3ee; }
 .header[data-editorial][data-tone] .desktopNavigation a::after { background: #b9d3ee; }
