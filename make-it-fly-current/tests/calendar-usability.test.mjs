@@ -29,6 +29,9 @@ test('saving resumes on the same item and preserves only supported return filter
   }
   assert.equal(billing.toolboxReturnPath('imagem-e-design'), '/membros/ferramentas?categoria=imagem-e-design');
   assert.equal(billing.toolboxReturnPath('not/a/category'), '/membros/ferramentas');
+  assert.equal(billing.toolboxReturnPath(null, 'aplicativos'), '/membros/ferramentas?secao=aplicativos');
+  assert.equal(billing.communityReturnPath('/membros/ferramentas?secao=aplicativos&categoria=video&ignored=1'), '/membros/ferramentas?secao=aplicativos&categoria=video');
+  assert.equal(billing.communityReturnPath('/membros/ferramentas?secao=github'), '/membros/ferramentas?secao=github');
 });
 test('ongoing events overlap the selected day while registration uses its closing date',()=>{
   const entries=[entry('event','2026-11-03','2026-11-07'),entry('registration','2026-11-01','2026-11-09'),entry('exam','2026-11-05T02:00:00Z')];

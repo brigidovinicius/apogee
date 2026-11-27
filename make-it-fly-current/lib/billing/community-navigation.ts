@@ -1,5 +1,7 @@
 import { radarDetailReturnPath } from "@/lib/opportunities/detail-path";
 
+export type ToolboxSection = "github" | "aplicativos";
+
 /** Only product destinations; never forward personal data, arbitrary queries or external URLs. */
 export function communityReturnPath(value: unknown): string {
   if (typeof value !== "string" || value.length > 4096 || /[\\\u0000-\u001f]/.test(value)) return "/membros/oportunidades";
@@ -18,7 +20,8 @@ export function communityReturnPath(value: unknown): string {
     if (u.pathname === "/membros/ferramentas") {
       const category = u.searchParams.get("categoria");
       const filters = new URLSearchParams();
-      if (u.searchParams.get("secao") === "github") filters.set("secao", "github");
+      const section = u.searchParams.get("secao");
+      if (section === "github" || section === "aplicativos") filters.set("secao", section);
       if (category && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(category) && category.length <= 80) filters.set("categoria", category);
       return u.pathname + (filters.size ? `?${filters}` : "");
     }
@@ -26,9 +29,9 @@ export function communityReturnPath(value: unknown): string {
   return radarDetailReturnPath(value);
 }
 
-export function toolboxReturnPath(category: string | null, repositories = false) {
+export function toolboxReturnPath(category: string | null, section?: ToolboxSection) {
   const filters = new URLSearchParams();
-  if (repositories) filters.set("secao", "github");
+  if (section) filters.set("secao", section);
   if (category) filters.set("categoria", category);
   return communityReturnPath("/membros/ferramentas" + (filters.size ? `?${filters}` : ""));
 }

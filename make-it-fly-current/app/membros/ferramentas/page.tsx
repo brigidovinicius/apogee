@@ -14,22 +14,24 @@ import { toolboxReturnPath } from "@/lib/billing/community-navigation";
 import { memberToolbox } from "@/lib/toolbox/store";
 import { isGitHubRepository, isRepositoryCategory, repositoryModes, repositoryPrompt, repositorySetup } from "@/lib/toolbox/repositories.mjs";
 import { RepositoryPrompt } from "./repository-prompt";
+import { RepositoryPreview } from "./repository-preview";
 import styles from "./toolbox.module.css";
 
 export const metadata: Metadata = { title: "Caixa de ferramentas | Apogee", robots: { index: false, follow: false } };
 const toolboxPath = "/membros/ferramentas";
 const skillsCategory = "skills";
 const skillsPath = toolboxReturnPath(skillsCategory);
-const repositoriesPath = toolboxReturnPath(null, true);
+const appsPath = toolboxReturnPath(null, "aplicativos");
 const searchText = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
 
 export default async function MemberToolboxPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const selected = typeof params.categoria === "string" && params.categoria ? params.categoria : null;
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
-  const repositories = params.secao === "github" || Boolean(selected && isRepositoryCategory(selected));
-  const skills = !repositories && selected === skillsCategory;
-  const { member, access, categories, tools } = await memberToolbox(selected, repositories);
+  const section = params.secao === "github" || params.secao === "aplicativos" ? params.secao : undefined;
+  const repositories = section ? section === "github" : !selected || isRepositoryCategory(selected);
+  const skills = !section && selected === skillsCategory;
+  const { member, access, categories, tools } = await memberToolbox(selected, section);
   const groups = categories.filter(category => repositories ? isRepositoryCategory(category.slug)
     : !isRepositoryCategory(category.slug) && skills === (category.slug === skillsCategory));
   if (access.allowed && selected && !skills && !groups.some(category => category.slug === selected)) notFound();
@@ -46,16 +48,16 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
     return terms.every(term => text.includes(term));
   });
   const noun = repositories ? "projeto" : skills ? "skill" : "aplicativo";
-  const sectionPath = repositories ? repositoriesPath : skills ? skillsPath : toolboxPath;
+  const sectionPath = repositories ? toolboxPath : skills ? skillsPath : appsPath;
   const filtered = Boolean(query || mode || (selected && !skills));
 
   return <MemberWorkspace member={member} current="ferramentas"><div data-ap-toolbox="" className={`${memberStyles.container} ${styles.catalogue}`}>
     <ResourceHeader area="ferramentas" />
-    {!access.allowed ? <LockedMemberArea kind="ferramentas" next={toolboxReturnPath(selected, repositories)} /> : <>
+    {!access.allowed ? <LockedMemberArea kind="ferramentas" next={toolboxReturnPath(selected, section)} /> : <>
       <nav className={navigation.tabs} aria-label="Seções da Caixa de ferramentas">
-        <Link href={toolboxPath} aria-current={!skills && !repositories ? "page" : undefined}>Aplicativos</Link>
+        <Link href={toolboxPath} aria-current={repositories ? "page" : undefined}>Super Poder para sua IA</Link>
         <Link href={skillsPath} aria-current={skills ? "page" : undefined}>Skills</Link>
-        <Link href={repositoriesPath} aria-current={repositories ? "page" : undefined}>Apps para sua IA</Link>
+        <Link href={appsPath} aria-current={!skills && !repositories ? "page" : undefined}>Aplicativos</Link>
       </nav>
       {repositories && <section className={styles.repositoryHero} aria-labelledby="repository-intro">
         <Sparkles size={24} aria-hidden="true" />
@@ -66,7 +68,7 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
       </section>}
       {groups.length > 0 && <form action={toolboxPath} method="get" role="search" aria-label={`Buscar ${noun}s`} className={navigation.filters}>
         <label>Buscar {noun}<span className={navigation.searchInput}><Search size={17} aria-hidden="true" /><input type="search" name="q" defaultValue={query} placeholder={repositories ? "Ex.: legendar vídeo ou ler PDF" : "Nome ou tarefa"} maxLength={100} /></span></label>
-        {repositories && <input type="hidden" name="secao" value="github" />}
+        {!skills && <input type="hidden" name="secao" value={repositories ? "github" : "aplicativos"} />}
         {skills ? <input type="hidden" name="categoria" value={skillsCategory} /> : <label>{repositories ? "O que você quer fazer?" : "Categoria"}<select name="categoria" defaultValue={selected ?? ""}>
           <option value="">{repositories ? "Todas as tarefas" : "Todas as categorias"}</option>{groups.map(c => <option key={c.slug} value={c.slug}>{c.name} ({c.count})</option>)}
         </select></label>}
@@ -92,6 +94,7 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
                     {mode && <p className={styles.mode}>{mode}</p>}
                     <h3 data-ap-heading="">{t.name}</h3>
                     <p className={styles.description}>{t.description}</p>
+                    <RepositoryPreview project={t} />
                     {details && <details className={styles.setup}><summary>Como começar<span className="sr-only"> com {t.name}</span></summary><p>{details}</p></details>}
                   </div>
                   <div className={styles.repositoryActions}>
@@ -114,9 +117,9 @@ export default async function MemberToolboxPage({ searchParams }: { searchParams
         })}</div>
         <p className={styles.footer}>Os links abrem em uma nova aba. Planos e créditos seguem as condições de cada fornecedor.</p>
       </> : <section className={styles.empty}>
-        <h2 data-ap-heading="">{filtered ? "Nenhum resultado para esses filtros" : repositories ? "Apps para sua IA em preparação" : skills ? "Skills em preparação" : "Aplicativos em preparação"}</h2>
+        <h2 data-ap-heading="">{filtered ? "Nenhum resultado para esses filtros" : repositories ? "Projetos em preparação" : skills ? "Skills em preparação" : "Aplicativos em preparação"}</h2>
         {filtered && <p>Tente outro termo ou escolha outra tarefa.</p>}
-        <Link href={filtered ? sectionPath : skills || repositories ? toolboxPath : "/membros"}>{filtered ? "Limpar filtros" : skills || repositories ? "Explorar aplicativos" : "Voltar para a comunidade"}</Link>
+        <Link href={filtered ? sectionPath : skills || repositories ? appsPath : "/membros"}>{filtered ? "Limpar filtros" : skills || repositories ? "Explorar aplicativos" : "Voltar para a comunidade"}</Link>
       </section>}
     </>}
   </div></MemberWorkspace>;

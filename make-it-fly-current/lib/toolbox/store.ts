@@ -1,4 +1,4 @@
-import { toolboxReturnPath } from "@/lib/billing/community-navigation";
+import { toolboxReturnPath, type ToolboxSection } from "@/lib/billing/community-navigation";
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { requireMember, requireSignedInMember } from "@/lib/members/dal";
@@ -10,12 +10,13 @@ import { categoryInput, toolInput, toolUrl, ToolboxInputError } from "./validati
 import type { ToolboxCategory, ManagedTool, MemberTool, MemberToolCategory, ToolboxStatus } from "./types";
 
 export class ToolboxConflictError extends Error {}
-export async function memberToolbox(category: string | null = null, repositories = false) {
-  const member = await requireSignedInMember(toolboxReturnPath(category, repositories));
+export async function memberToolbox(category: string | null = null, section?: ToolboxSection) {
+  const next = toolboxReturnPath(category, section);
+  const member = await requireSignedInMember(next);
   const access = await toolboxAccess(member);
   // Never load or serialize catalogue fields for an ineligible account.
   if (!access.allowed) return { member, access, categories: [] as MemberToolCategory[], tools: [] as MemberTool[] };
-  await requireMember("/membros/ferramentas");
+  await requireMember(next);
   const sql = getSql();
   const categories = await sql`select c.slug,c.name,c.description,count(t.id)::integer as count
     from member_tool_category c join member_tool t on t.category_id=c.id and t.status='published'
